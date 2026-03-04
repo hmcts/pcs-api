@@ -46,7 +46,6 @@ export class ActionEnforcementRegistry {
     ['selectEveryoneLivingAtTheProperty', new EnforcementAction()],
     ['selectRiskPosedByEveryoneAtProperty', new EnforcementAction()],
     ['provideRiskPosedByEveryoneAtProperty', new EnforcementAction()],
-    ['provideHowDefendantReturnToProperty', new EnforcementAction()],
     ['selectVulnerablePeopleInTheProperty', new EnforcementAction()],
     ['provideDetailsBasedOnRadioOptionSelection', new EnforcementAction()],
     ['createCaseAPI', new CreateCaseAPIAction()],

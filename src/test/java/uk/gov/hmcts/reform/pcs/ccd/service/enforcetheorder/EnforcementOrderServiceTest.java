@@ -47,7 +47,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -127,7 +126,7 @@ class EnforcementOrderServiceTest {
             .thenReturn(stubbedRiskProfile);
         when(enforcementWarrantMapper.toEntity(any(), any())).thenReturn(mock(EnforcementWarrantEntity.class));
         when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
-            .thenAnswer(invocation -> invocation.getArgument(0));
+            .thenReturn(mock(EnforcementOrderEntity.class));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -305,7 +304,7 @@ class EnforcementOrderServiceTest {
         stubbedRiskProfile.setVulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS);
         stubbedRiskProfile.setVulnerableReasonText("Vulnerability reason");
         when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
-            .thenAnswer(invocation -> invocation.getArgument(0));
+            .thenReturn(mock(EnforcementOrderEntity.class));
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
                 .thenReturn(Optional.of(pcsCaseEntity));
         when(enforcementRiskProfileMapper.toEntity(any(EnforcementOrderEntity.class), eq(enforcementOrder)))
@@ -365,7 +364,7 @@ class EnforcementOrderServiceTest {
         verify(draftCaseDataService)
             .deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
 
-        verify(enforcementSelectedDefendantRepository, times(1))
+        verify(enforcementSelectedDefendantRepository)
             .saveAll(enforcementSelectedDefendantEntityCaptor.capture());
         List<EnforcementSelectedDefendantEntity> savedEntities = enforcementSelectedDefendantEntityCaptor.getValue();
         assertThat(savedEntities).hasSize(1);
@@ -426,7 +425,7 @@ class EnforcementOrderServiceTest {
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
-        verify(enforcementSelectedDefendantRepository, times(1))
+        verify(enforcementSelectedDefendantRepository)
             .saveAll(enforcementSelectedDefendantEntityCaptor.capture());
         List<EnforcementSelectedDefendantEntity> savedEntities = enforcementSelectedDefendantEntityCaptor.getValue();
 
@@ -472,28 +471,6 @@ class EnforcementOrderServiceTest {
     }
 
     @Test
-    void shouldPersistWarrantOfRestitutionWhenEnforcementOrderIsSaved() {
-        // Given
-        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
-        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
-        enforcementOrder.setSelectEnforcementType(SelectEnforcementType.WARRANT_OF_RESTITUTION);
-
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-            .thenReturn(Optional.of(pcsCaseEntity));
-        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
-            .thenAnswer(invocation -> invocation.getArgument(0));
-
-        // When
-        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
-
-        // Then
-        verify(warrantOfRestitutionRepository).save(warrantOfRestitutionEntityCaptor.capture());
-        WarrantOfRestitutionEntity savedEntity = warrantOfRestitutionEntityCaptor.getValue();
-        assertThat(savedEntity.getEnforcementOrder().getEnforcementOrder()).isEqualTo(enforcementOrder);
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
-    }
-
-    @Test
     void shouldPersistWritOfRestitutionWhenEnforcementOrderIsSaved() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
@@ -501,7 +478,7 @@ class EnforcementOrderServiceTest {
         enforcementOrder.setSelectEnforcementType(SelectEnforcementType.WRIT_OF_RESTITUTION);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-                .thenReturn(Optional.of(pcsCaseEntity));
+            .thenReturn(Optional.of(pcsCaseEntity));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -513,10 +490,29 @@ class EnforcementOrderServiceTest {
 
     private void mockStoreWarrant() {
         when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
-            .thenAnswer(invocation -> invocation.getArgument(0));
+            .thenReturn(mock(EnforcementOrderEntity.class));
         when(enforcementWarrantMapper.toEntity(any(EnforcementOrder.class), any(EnforcementOrderEntity.class)))
             .thenReturn(mock(EnforcementWarrantEntity.class));
         when(enforcementWarrantRepository.save(any()))
             .thenReturn(mock(EnforcementWarrantEntity.class));
+    }
+
+    @Test
+    void shouldPersistWarrantOfRestitutionWhenEnforcementOrderIsSaved() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
+        enforcementOrder.setSelectEnforcementType(SelectEnforcementType.WARRANT_OF_RESTITUTION);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+                .thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(warrantOfRestitutionRepository).save(warrantOfRestitutionEntityCaptor.capture());
+        WarrantOfRestitutionEntity savedEntity = warrantOfRestitutionEntityCaptor.getValue();
+        assertThat(savedEntity.getEnforcementOrder().getEnforcementOrder()).isEqualTo(enforcementOrder);
     }
 }

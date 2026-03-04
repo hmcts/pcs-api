@@ -89,10 +89,12 @@ configurations {
   }
 }
 
+def integrationBuild = gradle.startParameter.taskNames.any { it.toLowerCase() in ['integration', 'build', 'check'] }
+
 ccd {
   configDir = file('build/definitions')
   decentralised = true
-  runtimeIndexing = true // brings the custom ES indexer in as an implementation dependency
+  runtimeIndexing = !integrationBuild
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -199,9 +201,6 @@ tasks.register('integration', Test) {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   failFast = true
-  ccd {
-    runtimeIndexing = false // To avoid issues when TestContainers DB is shutdown
-  }
 }
 
 tasks.register('smoke', Test) {
