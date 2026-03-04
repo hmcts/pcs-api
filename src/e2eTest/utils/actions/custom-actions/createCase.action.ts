@@ -450,7 +450,10 @@ export class CreateCaseAction implements IAction {
       throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
     }
     for (let n = 0; n < reasons.length; n++) {
-      await performAction('inputText',  {text:`${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasons[n]})`,index: n}, reasonsForPossession.detailsAboutYourReason+"-"+reasons[n]);
+      const reason = String(reasons[n]).trim();
+      const needsGrounds = /^(other|no)$/i.test(reason);
+      const reasonDisplay = needsGrounds ? `${reason} grounds` : reason;
+      await performAction('inputText', {text:`${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})`,index: n}, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
   }
