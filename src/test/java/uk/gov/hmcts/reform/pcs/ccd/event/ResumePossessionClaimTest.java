@@ -74,6 +74,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.taskmanagement.TaskManagementService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -195,6 +196,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private MoneyFormatter feeFormatter;
     @Mock
     private RentDetailsPage rentDetailsPage;
+    @Mock
+    private TaskManagementService taskManagementService;
 
     @BeforeEach
     void setUp() {
@@ -220,7 +223,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
             addressFormatter, rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage
+            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage, taskManagementService
         );
 
         setEventUnderTest(underTest);

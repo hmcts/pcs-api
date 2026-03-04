@@ -497,4 +497,9 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
+    private String defendantListMarkdown;
+
+    @CCD(label = "Is the list of defendants valid?")
+    private VerticalYesNo defendantListValid;
+
 }

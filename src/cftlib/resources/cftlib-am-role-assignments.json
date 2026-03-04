@@ -15,5 +15,56 @@
         "authorisations": []
       }
     ]
+  },
+  {
+    "email": "caseworker@pcs.com",
+    "id": "74e702fa-e20f-3a40-bc1d-d915f0874d00",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "pcs-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "LEGAL_OPERATIONS",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+        },
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "caseworker@pcs.com",
+    "id": "74e702fa-e20f-3a40-bc1d-d915f0874d00",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "caseworker-pcs",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+        },
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "pcs-system-user@localhost",
+    "id": "78acf0a0-079b-3112-8cad-549c81b83510",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "pcs-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "LEGAL_OPERATIONS",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+        },
+        "authorisations": []
+      }
+    ]
   }
 ]

@@ -10,6 +10,7 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -59,7 +60,7 @@ class PCSCaseViewTest {
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
-    @Mock
+    @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
     @Mock
     private ModelMapper modelMapper;
@@ -99,6 +100,7 @@ class PCSCaseViewTest {
     void setUp() {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder().build());
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,

@@ -51,7 +51,7 @@ public class RentArrears implements CcdPageConfiguration {
                                  </ul>
                                </section>
                                """)
-                    .mandatory(RentArrearsSection::getStatementDocuments)
+                    .optional(RentArrearsSection::getStatementDocuments)
 
                     // ---------- Total arrears ----------
                     .label("rentArrears-totalArrears-separator", "---")

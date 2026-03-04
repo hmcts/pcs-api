@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
@@ -92,6 +93,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.taskmanagement.TaskManagementService;
+import uk.gov.hmcts.reform.pcs.taskmanagement.model.TaskType;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -110,6 +113,8 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FE
 @Component
 @AllArgsConstructor
 public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
+
+    private static final int MAX_UNVALIDATED_DEFENDANTS = 25;
 
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
@@ -155,6 +160,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
     private final RentDetailsPage rentDetailsPage;
+    private final TaskManagementService taskManagementService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -313,14 +319,24 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         }
     }
 
-    public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
-        pcsCaseService.createMainClaimOnCase(caseReference, pcsCase);
+    public SubmitResponse<State> submitClaim(long caseReference, PCSCase caseData) {
+        pcsCaseService.createMainClaimOnCase(caseReference, caseData);
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
+        if (claimNeedsCaseworkerValidation(caseData)) {
+            taskManagementService
+                .enqueueInitiationTasks(List.of(TaskType.CHECK_MULTIPLE_DEFENDANTS), caseData, caseReference);
+
+            return SubmitResponse.<State>builder()
+                .confirmationBody(getCaseworkerValidationMarkdown())
+                .state(State.AWAITING_CLAIM_VALIDATION)
+                .build();
+        }
+
         schedulePartyAccessCodeGeneration(caseReference);
 
-        String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
+        String responsibleParty = getClaimantInfo(caseData).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
@@ -328,6 +344,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
             .build();
+    }
+
+    private static boolean claimNeedsCaseworkerValidation(PCSCase pcsCase) {
+        return pcsCase.getAddAnotherDefendant() == VerticalYesNo.YES
+            && pcsCase.getAdditionalDefendants().size() > (MAX_UNVALIDATED_DEFENDANTS - 1);
     }
 
     private SubmitResponse<State> saveForLater() {
@@ -380,6 +401,17 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );
+    }
+
+    private static String getCaseworkerValidationMarkdown() {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+            <span class="govuk-panel__title govuk-!-font-size-36">Awaiting validation</span>
+            </div>
+
+            Your claim needs to be reviewed by a caseworker before it can be issued. Please check back etc....
+            """;
     }
 
     private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {
