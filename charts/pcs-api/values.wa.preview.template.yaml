@@ -10,7 +10,7 @@ wa:
       ingressHost: wa-task-management-api-${SERVICE_FQDN}
       image: 'hmctspublic.azurecr.io/wa/task-management-api:pr-1576'
       environment:
-        ALLOWED_CASE_TYPES: wacasetype,criminalinjuriescompensation
+        ALLOWED_CASE_TYPES: "wacasetype,criminalinjuriescompensation,pcs,pcs-${CHANGE_ID}"
         ALLOWED_JURISDICTIONS: wa,st_cic,pcs
         WA_S2S_AUTHORIZED_SERVICES: ccd,ccd_data,ccd_gw,ccd_ps,iac,wa_task_management_api,xui_webapp,wa_task_monitor,camunda_bpm,wa_workflow_api,wa_case_event_handler,ccd_case_disposer,civil_service,sscs,sptribs_case_api,pcs_api
         TASK_MANAGEMENT_EXCLUSIVE_CLIENTS: wa_task_management_api,wa_task_monitor,wa_case_event_handler,wa_workflow_api,nfdiv_case_api,sptribs_case_api,pcs_api

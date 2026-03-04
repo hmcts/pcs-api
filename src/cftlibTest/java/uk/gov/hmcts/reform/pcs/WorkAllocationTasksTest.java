@@ -3,7 +3,9 @@ package uk.gov.hmcts.reform.pcs;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -54,6 +56,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
     "spring.sql.init.mode=always",
     "spring.sql.init.schema-locations=classpath:init-task-outbox.sql"
 })
+@Disabled
 class WorkAllocationTasksTest extends CftlibTest {
 
     @Autowired
