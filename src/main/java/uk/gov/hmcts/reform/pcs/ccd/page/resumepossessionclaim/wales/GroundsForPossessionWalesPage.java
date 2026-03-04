@@ -25,6 +25,7 @@ import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.allOf;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.contains;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.ref;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.OTHER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.STANDARD_CONTRACT;
@@ -35,8 +36,8 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @Slf4j
 public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
 
-    private static final ShowCondition.NamedFieldCondition DISCRETIONARY_GROUNDS =
-        when(PCSCase::getGroundsForPossessionWales, GroundsForPossessionWales::getDiscretionaryGrounds);
+    private static final ShowCondition.FieldRef DISCRETIONARY_GROUNDS =
+        ref(PCSCase::getGroundsForPossessionWales, GroundsForPossessionWales::getDiscretionaryGrounds);
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

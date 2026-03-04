@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.contains;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.ref;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.SECURE_CONTRACT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157;
@@ -30,7 +31,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @Component
 public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfiguration {
 
-    private static final ShowCondition.NamedFieldCondition DISCRETIONARY_GROUNDS = when(
+    private static final ShowCondition.FieldRef DISCRETIONARY_GROUNDS = ref(
         PCSCase::getSecureContractGroundsForPossessionWales,
         SecureContractGroundsForPossessionWales::getDiscretionaryGrounds
     );

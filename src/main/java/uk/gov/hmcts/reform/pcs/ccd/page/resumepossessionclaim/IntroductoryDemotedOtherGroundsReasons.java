@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.ref;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 @AllArgsConstructor
@@ -30,7 +31,7 @@ import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
-    private static final ShowCondition.NamedFieldCondition INTRODUCTORY_OTHER_GROUNDS = when(
+    private static final ShowCondition.FieldRef INTRODUCTORY_OTHER_GROUNDS = ref(
         PCSCase::getIntroductoryDemotedOrOtherGroundsForPossession,
         IntroductoryDemotedOtherGroundsForPossession::getIntroductoryDemotedOrOtherGrounds
     );

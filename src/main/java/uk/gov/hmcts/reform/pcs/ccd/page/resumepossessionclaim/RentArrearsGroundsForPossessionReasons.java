@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.contains;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.ref;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -29,11 +30,11 @@ import java.util.List;
 @Component
 public class RentArrearsGroundsForPossessionReasons implements CcdPageConfiguration {
 
-    private static final ShowCondition.NamedFieldCondition ADDITIONAL_MANDATORY_GROUNDS = when(
+    private static final ShowCondition.FieldRef ADDITIONAL_MANDATORY_GROUNDS = ref(
         PCSCase::getAssuredRentArrearsPossessionGrounds,
         AssuredRentArrearsPossessionGrounds::getAdditionalMandatoryGrounds
     );
-    private static final ShowCondition.NamedFieldCondition ADDITIONAL_DISCRETIONARY_GROUNDS = when(
+    private static final ShowCondition.FieldRef ADDITIONAL_DISCRETIONARY_GROUNDS = ref(
         PCSCase::getAssuredRentArrearsPossessionGrounds,
         AssuredRentArrearsPossessionGrounds::getAdditionalDiscretionaryGrounds
     );

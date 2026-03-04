@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.contains;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.ref;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
@@ -36,27 +36,27 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @Component
 public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
-    private static final ShowCondition.NamedFieldCondition STANDARD_MANDATORY_GROUNDS = when(
+    private static final ShowCondition.FieldRef STANDARD_MANDATORY_GROUNDS = ref(
         PCSCase::getGroundsForPossessionWales,
         GroundsForPossessionWales::getMandatoryGrounds
     );
-    private static final ShowCondition.NamedFieldCondition STANDARD_DISCRETIONARY_GROUNDS = when(
+    private static final ShowCondition.FieldRef STANDARD_DISCRETIONARY_GROUNDS = ref(
         PCSCase::getGroundsForPossessionWales,
         GroundsForPossessionWales::getDiscretionaryGrounds
     );
-    private static final ShowCondition.NamedFieldCondition STANDARD_ESTATE_MANAGEMENT_GROUNDS = when(
+    private static final ShowCondition.FieldRef STANDARD_ESTATE_MANAGEMENT_GROUNDS = ref(
         PCSCase::getGroundsForPossessionWales,
         GroundsForPossessionWales::getEstateManagementGrounds
     );
-    private static final ShowCondition.NamedFieldCondition SECURE_MANDATORY_GROUNDS = when(
+    private static final ShowCondition.FieldRef SECURE_MANDATORY_GROUNDS = ref(
         PCSCase::getSecureContractGroundsForPossessionWales,
         SecureContractGroundsForPossessionWales::getMandatoryGrounds
     );
-    private static final ShowCondition.NamedFieldCondition SECURE_DISCRETIONARY_GROUNDS = when(
+    private static final ShowCondition.FieldRef SECURE_DISCRETIONARY_GROUNDS = ref(
         PCSCase::getSecureContractGroundsForPossessionWales,
         SecureContractGroundsForPossessionWales::getDiscretionaryGrounds
     );
-    private static final ShowCondition.NamedFieldCondition SECURE_ESTATE_MANAGEMENT_GROUNDS = when(
+    private static final ShowCondition.FieldRef SECURE_ESTATE_MANAGEMENT_GROUNDS = ref(
         PCSCase::getSecureContractGroundsForPossessionWales,
         SecureContractGroundsForPossessionWales::getEstateManagementGrounds
     );
@@ -70,7 +70,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
             .pageLabel("Reasons for possession")
             .showWhen(when(PCSCase::getLegislativeCountry).is(WALES)
                 .and(when(PCSCase::getShowReasonsForGroundsPageWales).is(YesOrNo.YES)))
-            .readonly(PCSCase::getShowReasonsForGroundsPageWales, NEVER_SHOW)
+            .hidden(PCSCase::getShowReasonsForGroundsPageWales)
             .labelWhen("reasonsForPossessionWales-separator", "---")
             .complex(PCSCase::getGroundsReasonsWales)
 

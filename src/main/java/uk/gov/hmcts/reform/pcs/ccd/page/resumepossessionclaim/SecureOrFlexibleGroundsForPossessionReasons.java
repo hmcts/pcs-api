@@ -23,10 +23,10 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.allOf;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.anyOf;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.contains;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.ref;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.FLEXIBLE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.DOMESTIC_VIOLENCE;
@@ -54,7 +54,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandato
 @Component
 public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfiguration {
 
-    private static final ShowCondition.NamedFieldCondition DISCRETIONARY_GROUNDS = when(
+    private static final ShowCondition.FieldRef DISCRETIONARY_GROUNDS = ref(
         PCSCase::getSecureOrFlexiblePossessionGrounds,
         SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGrounds
     );
@@ -70,15 +70,15 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
         when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND);
     private static final ShowCondition IS_FLEXIBLE_TENANCY =
         when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence).is(FLEXIBLE_TENANCY);
-    private static final ShowCondition.NamedFieldCondition MANDATORY_GROUNDS = when(
+    private static final ShowCondition.FieldRef MANDATORY_GROUNDS = ref(
         PCSCase::getSecureOrFlexiblePossessionGrounds,
         SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGrounds
     );
-    private static final ShowCondition.NamedFieldCondition MANDATORY_GROUNDS_ALT = when(
+    private static final ShowCondition.FieldRef MANDATORY_GROUNDS_ALT = ref(
         PCSCase::getSecureOrFlexiblePossessionGrounds,
         SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGroundsAlt
     );
-    private static final ShowCondition.NamedFieldCondition DISCRETIONARY_GROUNDS_ALT = when(
+    private static final ShowCondition.FieldRef DISCRETIONARY_GROUNDS_ALT = ref(
         PCSCase::getSecureOrFlexiblePossessionGrounds,
         SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGroundsAlt
     );
@@ -455,8 +455,8 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     UNDER_OCCUPYING_AFTER_SUCCESSION
                 ))
             .done()
-                .readonly(PCSCase::getShowBreachOfTenancyTextarea,NEVER_SHOW)
-                .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW)
+                .hidden(PCSCase::getShowBreachOfTenancyTextarea)
+                .hidden(PCSCase::getShowReasonsForGroundsPage)
                 .labelWhen(SAVE_AND_RETURN_LABEL_ID, CommonPageContent.SAVE_AND_RETURN);
 
     }
