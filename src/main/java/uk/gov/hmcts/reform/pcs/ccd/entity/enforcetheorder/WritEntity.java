@@ -15,7 +15,9 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -73,5 +75,14 @@ public class WritEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo hasClaimTransferredToHighCourt;
+
+    @Enumerated(EnumType.STRING)
+    private LanguageUsed languageUsed;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private StatementOfTruthCompletedBy completedBy;
+
+    private String certification;
 
 }

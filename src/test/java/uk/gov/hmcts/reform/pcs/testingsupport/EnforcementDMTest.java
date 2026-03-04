@@ -65,10 +65,13 @@ class EnforcementDMTest {
 
     @Test
     void shouldCaptureAllMissingEntityFieldsFromTheEnforcementWarrantDetailsDomain() throws IOException {
-        domainDataModelSupportHelper = new DomainDataModelSupportHelper(EnforcementOrder.class);
+        domainDataModelSupportHelper = new DomainDataModelSupportHelper(WarrantDetails.class);
         domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
+                                                        EnforcementOrderEntity.class,
                                                         EnforcementRiskDetails.class, WritDetails.class);
-        domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails", "enforcementLanguageUsed");
+        domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails",
+                                                       "enforcementLanguageUsed", "anyRiskToBailiff",
+                                                       "riskCategories");
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
             domainDataModelSupportHelper.findMissingCCDFields(WarrantEntity.class);
 
@@ -84,9 +87,10 @@ class EnforcementDMTest {
     void shouldCaptureAllMissingEntityFieldsFromTheEnforcementWritDetailsDomain() throws IOException {
         domainDataModelSupportHelper = new DomainDataModelSupportHelper(WritDetails.class);
         domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
+                                                        EnforcementOrderEntity.class,
                                                         EnforcementRiskDetails.class, WarrantDetails.class);
         domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "warrantDetails",
-                                                       "enforcementLanguageUsed");
+                                                       "languageUsed");
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
             domainDataModelSupportHelper.findMissingCCDFields(WritEntity.class);
 
