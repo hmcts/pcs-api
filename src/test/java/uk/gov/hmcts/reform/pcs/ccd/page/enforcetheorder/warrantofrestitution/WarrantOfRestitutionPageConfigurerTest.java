@@ -42,6 +42,8 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         AtomicInteger verificationCount = new AtomicInteger(0);
         verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder.class,
                 verificationCount);
+        verifyAndCount(inOrder,pageBuilder, PropertyAccessDetailsWarrantOfRestitutionPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);
