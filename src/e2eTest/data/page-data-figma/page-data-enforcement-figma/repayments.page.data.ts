@@ -1,5 +1,5 @@
 export const repayments = { 
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Repayments`,
   caseNumberParagraph: `Case number:`,
@@ -16,15 +16,15 @@ export const repayments = {
   allRadioOptions: `All of it`,
   someRadioOptions: `Some of it`,
   noneRadioOptions: `None of it`,
-  enterTheAmountTextLabel: `Enter the amount that you want the defendants to repay`,
+  enterTheAmountTextLabelHidden: `Enter the amount that you want the defendants to repay`,
   enterTheAmountTextInput: `100.50`,
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  isRequiredErrMessage: `How much do you want the defendants to repay? is required`,
-  notValidErrMessage: `Enter the amount that you want the defendants to repay is not valid `,
-  shouldBeMoreThanErrMessage: `Should be more than or equal to £0.01`,
-  isNotValidValueErrMessage: `10000000000000000000 is not a valid value. Money GBP needs to be expressed in pence`,
-  dataEnteredIsNotValidErrMessage: `The data entered is not valid for How much do you want to reclaim?`
+  //isRequiredErrMessage: `How much do you want the defendants to repay? is required`,
+  //notValidErrMessage: `Enter the amount that you want the defendants to repay is not valid `,
+  //shouldBeMoreThanErrMessage: `Should be more than or equal to £0.01`,
+  //isNotValidValueErrMessage: `10000000000000000000 is not a valid value. Money GBP needs to be expressed in pence`,
+  //dataEnteredIsNotValidErrMessage: `The data entered is not valid for How much do you want to reclaim?`
 }

@@ -1,5 +1,5 @@
 export const knownDefendantsDOBInformation = {
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Enter the defendants’ dates of birth`,
   caseNumberParagraph: `Case number:`,
@@ -13,6 +13,6 @@ You can enter up to 6800 characters.`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  doYouKnowDefendantsDOBErrMessage: `Do you know the defendants’ dates of birth? is required` ,
-  whatAretheDefendantsErrMessage: `What are the defendants’ dates of birth? is required` 
+  //doYouKnowDefendantsDOBErrMessage: `Do you know the defendants’ dates of birth? is required` ,
+  //whatAretheDefendantsErrMessage: `What are the defendants’ dates of birth? is required` 
 }

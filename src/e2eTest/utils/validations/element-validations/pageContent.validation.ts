@@ -5,9 +5,9 @@ import * as path from 'path';
 import { cyaValidation, CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
 const ELEMENT_TYPES = [
-  'Button', 'Link', 'Header', 'Caption', 'Checkbox', 'Question',
+  'Button', 'Link', 'TableHeader', 'Header', 'Caption', 'Checkbox', 'Question',
   'RadioOption', 'SelectLabel', 'SelectOption', 'HintText',
-  'TextLabel', 'Paragraph', 'Tab', 'TableHeader'
+  'TextLabel', 'Paragraph', 'Tab'
 ] as const;
 
 type ValidationResult = { element: string; expected: string; status: 'pass' | 'fail' };
@@ -37,6 +37,12 @@ export class PageContentValidation implements IValidation {
                     [role="link"]:text("${value}"),
                     [aria-label*="${value}"]:text("${value}"),
                     summary>span:text("${value}")`),
+    TableHeader: (page: Page, value: string) => page.locator(`
+                th[scope="row"]:text-is("${value}"),
+                th[scope="col"]:text-is("${value}"),
+                th:text-is("${value}"),
+                [role="rowheader"]:text-is("${value}"),
+                [role="columnheader"]:text-is("${value}")`),
     Header: (page: Page, value: string) => page.locator(`
                     h1:text("${value}"),
                     h2:text("${value}"),
@@ -92,10 +98,7 @@ export class PageContentValidation implements IValidation {
                     strong:text("${value}")`),
     Text: (page: Page, value: string) => page.locator(`:text("${value}")`),
     Tab: (page: Page, value: string) => page.getByRole('tab', { name: value }),
-    /* TableHeader: (page: Page, value: string) => page.locator(`
-                    govuk-table__header:text("${value}"),
-                    th:text-is("${value}"),
-                    .header:text("${value}"`), */
+    
   };
 
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {

@@ -1,5 +1,5 @@
 export const confirmDefendantsDOB = {
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Confirm if you know the defendants’ dates of birth`,
   caseNumberParagraph: `Case number:`,
@@ -11,5 +11,5 @@ export const confirmDefendantsDOB = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  doYouKnowTheDefendantsDOBErrMessage: `Do you know the defendants’ dates of birth? is required`
+  //doYouKnowTheDefendantsDOBErrorMessage: `Do you know the defendants’ dates of birth? is required`
 }

@@ -1,5 +1,5 @@
 export const suspendedOrder = {
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Suspended order`,
   caseNumberParagraph: `Case number:`,
@@ -12,5 +12,5 @@ export const suspendedOrder = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  isYourOrderErrMessage: `Is your order a suspended order? is required`
+  //isYourOrderErrMessage: `Is your order a suspended order? is required`
 }

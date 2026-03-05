@@ -1,4 +1,5 @@
-export const statementOfTruth = { title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+export const statementOfTruth = { 
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Statement of truth`,
   caseNumberParagraph: `Case number:`,
@@ -30,10 +31,10 @@ export const statementOfTruth = { title: `Create a case - HM Courts & Tribunals 
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  firldIsReqErrMessage: `Field is required`,
-  completedByReqerrMessage: `Completed by is required`,
-  fullNameLengthExceedErrMessage: `Full name exceeds the maximum length`,
-  fullNameReqErrMessage: `Full name is required`,
-  positionOrOfficerLengthExceedErrMessage: `Position or office held exceeds the maximum length`,
-  positionIsReqErrMessage: `Position or office held is required` 
+  //firldIsReqErrMessage: `Field is required`,
+  //completedByReqerrMessage: `Completed by is required`,
+  //fullNameLengthExceedErrMessage: `Full name exceeds the maximum length`,
+ // fullNameReqErrMessage: `Full name is required`,
+ // positionOrOfficerLengthExceedErrMessage: `Position or office held exceeds the maximum length`,
+ // positionIsReqErrMessage: `Position or office held is required` 
 }

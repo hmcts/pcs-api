@@ -1,5 +1,5 @@
 export const moneyOwed = {
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `The amount the defendants owe you`,
   caseNumberParagraph: `Case number:`,
@@ -14,8 +14,8 @@ export const moneyOwed = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  whatIsTheTotalAmountErrMessage: `What is the total amount that the defendants owe you? is not valid`,
-  shouldBeMoreThanErrMessage: `Should be more than or equal to £0.01`,
-  isNotValidValueErrMessage: `10000000000000000000 is not a valid value. Money GBP needs to be expressed in pence`,
-  dataEnteredIsNotValidErrMessage: `The data entered is not valid for What is the total amount that the defendants owe you?`
+  //whatIsTheTotalAmountErrMessage: `What is the total amount that the defendants owe you? is not valid`,
+  //shouldBeMoreThanErrMessage: `Should be more than or equal to £0.01`,
+  //isNotValidValueErrMessage: `10000000000000000000 is not a valid value. Money GBP needs to be expressed in pence`,
+  //dataEnteredIsNotValidErrMessage: `The data entered is not valid for What is the total amount that the defendants owe you?`
 }

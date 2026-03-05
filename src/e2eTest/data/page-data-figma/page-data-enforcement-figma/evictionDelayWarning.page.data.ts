@@ -1,5 +1,5 @@
 export const evictionDelayWarning = {
-  title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',  
+  //title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',  
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: 'The eviction could be delayed if the bailiff identifies a risk on the day',
   caseNumberParagraph: `Case number:`,

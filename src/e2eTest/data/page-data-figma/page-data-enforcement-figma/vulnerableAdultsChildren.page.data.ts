@@ -1,5 +1,5 @@
 export const vulnerableAdultsChildren = {
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Vulnerable adults and children at the property`,
   caseNumberParagraph: `Case number:`,
@@ -24,6 +24,6 @@ export const vulnerableAdultsChildren = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  whatIsTheirHistoryErrMessage: `How are they vulnerable? is required`,
-  youEnteredMorChareErrMessage: `In ‘How are they vulnerable?’, you have entered more than the maximum number of characters (6,800)`
+  //whatIsTheirHistoryErrMessage: `How are they vulnerable? is required`,
+  //youEnteredMorChareErrMessage: `In ‘How are they vulnerable?’, you have entered more than the maximum number of characters (6,800)`
 }

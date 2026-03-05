@@ -1,5 +1,5 @@
 export const additionalInformation = {
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Anything else that could help with the eviction`,
   caseNumberParagraph: `Case number:`,
@@ -13,6 +13,6 @@ export const additionalInformation = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  anythingElseErrMessage: `Do you want to tell us anything else that could help with the eviction? is required `,
-  tellUsAnythingElseErrMessage: `Tell us anything else that could help with the eviction is required `
+  //anythingElseErrMessage: `Do you want to tell us anything else that could help with the eviction? is required `,
+  //tellUsAnythingElseErrMessage: `Tell us anything else that could help with the eviction is required `
 }

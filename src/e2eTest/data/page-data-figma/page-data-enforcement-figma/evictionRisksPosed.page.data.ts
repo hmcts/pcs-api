@@ -1,5 +1,5 @@
 export const evictionRisksPosed = {
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `The risks posed by everyone at the property`,
   caseNumberParagraph: `Case number:`,
@@ -17,5 +17,5 @@ export const evictionRisksPosed = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  whatKindOfRisksErrMessage: `What kind of risks do they pose to the bailiff? is required` 
+ // whatKindOfRisksErrMessage: `What kind of risks do they pose to the bailiff? is required` 
 }

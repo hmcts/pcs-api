@@ -1,5 +1,5 @@
 export const legalCostsWrit = {
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Legal costs`,
   caseNumberParagraph: `Case number:`,
@@ -21,9 +21,9 @@ export const legalCostsWrit = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  doYouWantToReclaimErrMessage: `Do you want to reclaim any legal costs? is required`,
-  howMuchdoYouWantToReclaimErrMessage: `How much do you want to reclaim? is not valid`,
-  shouldBeMoreThanErrMessage: `Should be more than or equal to £0.01`,
-  isNotValidValueErrMessage: `10000000000000000000 is not a valid value. Money GBP needs to be expressed in pence`,
-  dataEnteredIsNotValidErrMessage: `The data entered is not valid for How much do you want to reclaim?`
+  //doYouWantToReclaimErrMessage: `Do you want to reclaim any legal costs? is required`,
+  //howMuchdoYouWantToReclaimErrMessage: `How much do you want to reclaim? is not valid`,
+  //shouldBeMoreThanErrMessage: `Should be more than or equal to £0.01`,
+  //isNotValidValueErrMessage: `10000000000000000000 is not a valid value. Money GBP needs to be expressed in pence`,
+  //dataEnteredIsNotValidErrMessage: `The data entered is not valid for How much do you want to reclaim?`
 }

@@ -1,5 +1,5 @@
 export const livingInTheProperty = {
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Everyone living at the property`,
   caseNumberParagraph: `Case number:`,
