@@ -12,6 +12,7 @@ import { EnforcementAction } from '@utils/actions/custom-actions/custom-actions-
 import { CreateCaseAPIAction } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { ExpandSummaryAction } from '@utils/actions/element-actions';
 import { ClickLinkAndVerifyNewTabTitleAction } from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
+import { RetryOnCallBackError } from '@utils/actions/element-actions/reTryOnCallBackError.action';
 
 export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -26,6 +27,7 @@ export class ActionEnforcementRegistry {
     ['navigateToUrl', new NavigateToUrlAction()],
     ['clickRadioButton', new ClickRadioButtonAction()],
     ['clickLinkAndVerifyNewTabTitle', new ClickLinkAndVerifyNewTabTitleAction()],
+    ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['expandSummary', new ExpandSummaryAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],
     ['validateWritOrWarrantFeeAmount', new EnforcementAction()],
@@ -44,6 +46,7 @@ export class ActionEnforcementRegistry {
     ['selectEveryoneLivingAtTheProperty', new EnforcementAction()],
     ['selectRiskPosedByEveryoneAtProperty', new EnforcementAction()],
     ['provideRiskPosedByEveryoneAtProperty', new EnforcementAction()],
+    ['provideHowDefendantReturnToProperty', new EnforcementAction()],
     ['selectVulnerablePeopleInTheProperty', new EnforcementAction()],
     ['provideDetailsBasedOnRadioOptionSelection', new EnforcementAction()],
     ['createCaseAPI', new CreateCaseAPIAction()],
