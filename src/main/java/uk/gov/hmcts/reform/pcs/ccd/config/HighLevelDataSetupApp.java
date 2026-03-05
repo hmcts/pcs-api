@@ -62,7 +62,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         );
         if ("aat".equals(environmentName)) {
             files.add("build/definitions/CCD_Definition_" + CaseType.getCaseType()
-                          + "-staging_" + environmentName + ".xlsx");
+                          + "-STAGING_" + environmentName + ".xlsx");
         }
         return files;
     }
