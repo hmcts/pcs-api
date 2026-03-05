@@ -7,7 +7,7 @@ import { cyaValidation, CYAStore } from '@utils/validations/custom-validations/C
 const ELEMENT_TYPES = [
   'Button', 'Link', 'Header', 'Caption', 'Checkbox', 'Question',
   'RadioOption', 'SelectLabel', 'SelectOption', 'HintText',
-  'TextLabel', 'Paragraph', 'Tab'
+  'TextLabel', 'Paragraph', 'Tab', 'TableHeader'
 ] as const;
 
 type ValidationResult = { element: string; expected: string; status: 'pass' | 'fail' };
@@ -92,6 +92,10 @@ export class PageContentValidation implements IValidation {
                     strong:text("${value}")`),
     Text: (page: Page, value: string) => page.locator(`:text("${value}")`),
     Tab: (page: Page, value: string) => page.getByRole('tab', { name: value }),
+    /* TableHeader: (page: Page, value: string) => page.locator(`
+                    govuk-table__header:text("${value}"),
+                    th:text-is("${value}"),
+                    .header:text("${value}"`), */
   };
 
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {
