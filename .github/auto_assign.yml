@@ -35,9 +35,12 @@ reviewGroups:
     - reviewerE
     - reviewerF
   adminGroup:
-    - reviewerD
-    - reviewerE
-    - reviewerF
+    - adusumillipraveen
+    - JakeCG
+    - scottstewart-sl
+    - tvr-hmcts
+    - saurabhvalsangkar-hmcts
+    
 
 #--------------------------------------------------------------------------------------------------------
 
