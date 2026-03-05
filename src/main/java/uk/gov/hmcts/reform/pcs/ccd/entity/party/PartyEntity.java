@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.party;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -99,6 +100,7 @@ public class PartyEntity {
 
     private String pcqId;
 
+    @Column(name = "dob")
     private LocalDate dateOfBirth;
 
 }
