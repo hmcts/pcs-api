@@ -4,24 +4,52 @@ addReviewers: true
 # Set to true to add assignees to pull requests
 addAssignees: false
 
-# A list of reviewers to be added to pull requests (GitHub user name)
-reviewers:
-  - toby-plunkett
-  - libanAbdirahman1
-  - arun-hmcts
+#--------------------------------------------------------------------------------------------------------
 
 # A number of reviewers added to the pull request
 # Set 0 to add all the reviewers (default: 0)
 numberOfReviewers: 2
-# A list of assignees, overrides reviewers if set
-# assignees:
-#   - assigneeA
 
 # A number of assignees to add to the pull request
 # Set to 0 to add all of the assignees.
 # Uses numberOfReviewers if unset.
 # numberOfAssignees: 2
 
+#--------------------------------------------------------------------------------------------------------
+
+# Reviewer selection: 2 devs + 1 admin per PR.
+# Since numberOfReviewers applies equally to all groups, normal devs are split
+# across devGroupA and devGroupB (1 picked from each). This is statistically equivalent
+# to picking 2 from a single combined group — each dev has the same chance of selection.
+# Set to true to add reviewers from different groups to pull requests
+useReviewGroups: true
+
+# A list of reviewers, split into different groups, to be added to pull requests (GitHub user name)
+reviewGroups:
+  devGroupA:
+    - reviewerA
+    - reviewerB
+    - reviewerC
+  devGroupB:
+    - reviewerD
+    - reviewerE
+    - reviewerF
+  adminGroup:
+    - reviewerD
+    - reviewerE
+    - reviewerF
+
+#--------------------------------------------------------------------------------------------------------
+
+# A list of reviewers to be added to pull requests (GitHub user name)
+# reviewers:
+#  - reviewerA
+
+# A list of assignees, overrides reviewers if set
+# assignees:
+#   - assigneeA
+
+#--------------------------------------------------------------------------------------------------------
 # A list of keywords to be skipped the process that add reviewers if pull requests include it
 # skipKeywords:
 #   - wip
