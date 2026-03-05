@@ -45,7 +45,6 @@ withPipeline(type, product, component) {
   enableDbMigration('pcs')
 
   onPR() {
-    env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
     enablePactAs([
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
@@ -53,6 +52,7 @@ withPipeline(type, product, component) {
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
+      env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
       enableHighLevelDataSetup()
     } else {
       env.CCD_ENABLED = "false"
