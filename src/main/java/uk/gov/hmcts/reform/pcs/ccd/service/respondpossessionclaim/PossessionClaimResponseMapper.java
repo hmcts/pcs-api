@@ -83,6 +83,7 @@ public class PossessionClaimResponseMapper {
             .addressSameAsProperty(partyEntity.getAddressSameAsProperty())
             .phoneNumber(partyEntity.getPhoneNumber())
             .phoneNumberProvided(partyEntity.getPhoneNumberProvided())
+            .dateOfBirth(partyEntity.getDateOfBirth())
             .build();
     }
 
