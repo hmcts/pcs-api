@@ -115,6 +115,7 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         inputArray: evidenceUpload.errorValidationField.errorUpload,
         docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
         type: evidenceUpload.witnessStatementDropDownInput,
+        label: evidenceUpload.documentUploadHiddenTextLabel,
         button: evidenceUpload.continueButton
       });
 

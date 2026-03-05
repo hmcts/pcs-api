@@ -1,4 +1,5 @@
 import { expect, Page } from '@playwright/test';
+import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
@@ -527,7 +528,14 @@ export class EnforcementAction implements IAction {
             case 'upLoad':
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);
-                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+                if (item.type === 'invalid') {
+                  const fileInput = page.locator('input[type="file"].form-control.bottom-30');
+                  const filePath = path.resolve(__dirname, '../../../../data/inputFiles', item.file);
+                  await fileInput.last().setInputFiles(filePath);
+                  await performValidation('inputError', validationArr.label, item.errMessage);
+                } else {
+                  await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+                }
               }).toPass({
                 timeout: VERY_LONG_TIMEOUT,
               });

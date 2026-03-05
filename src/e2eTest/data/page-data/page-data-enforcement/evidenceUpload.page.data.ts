@@ -9,6 +9,7 @@ export const evidenceUpload = {
   policeReportDropDownInput: 'Police report',
   typeOfDocumentHiddenTextLabel: 'Type of document',
   shortDescriptionHiddenTextLabel: 'Short description',
+  documentUploadHiddenTextLabel: 'Document',
   shortDescriptionHiddenTextInput: 20,
   continueButton: 'Continue',
   removeButton: 'Remove',
@@ -25,6 +26,7 @@ export const evidenceUpload = {
     ],
     errorUpload: [
       { type: 'none', input: '', errMessage: 'Select or fill the required Document field' },
+      { type: 'invalid', file: 'testInvalidFile.json', errMessage: 'Your upload contains a disallowed file type' },
     ],
     errorTextField: [
       { type: 'moreThanMax', input: 200, errMessage: 'Short description exceeds the maximum length' },
