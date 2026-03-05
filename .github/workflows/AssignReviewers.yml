@@ -1,0 +1,10 @@
+            - name: Auto Assign Action
+  # You may pin to the exact commit or the version.
+  # uses: kentaro-m/auto-assign-action@a6d59add3a817df08cafa9b166367768d2c337f8
+  uses: kentaro-m/auto-assign-action@v2.0.1
+  with:
+    # A token for the repo
+    repo-token: # optional, default is ${{ github.token }}
+    # A path for the auto-assign configuration
+    configuration-path: # optional, default is .github/auto_assign.yml
+          
