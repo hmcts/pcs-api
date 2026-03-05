@@ -73,7 +73,7 @@ export class ActionRegistry {
     ['completingYourClaim', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
     ['selectUnderlesseeOrMortgageeEntitledToClaim', new CreateCaseAction()],
-    ['selectUnderlesseeOrMortgageeDetails', new CreateCaseAction()],
+    ['selectUnderlesseeMortgageeDetails', new CreateCaseAction()],
     ['enterReasonForDemotionOrder', new CreateCaseAction()],
     ['enterReasonForSuspensionAndDemotionOrder', new CreateCaseAction()],
     ['selectStatementOfExpressTerms', new CreateCaseAction()],

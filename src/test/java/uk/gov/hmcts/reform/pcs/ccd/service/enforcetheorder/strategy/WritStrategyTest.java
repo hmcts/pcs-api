@@ -1,4 +1,3 @@
-
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy;
 
 import org.junit.jupiter.api.BeforeEach;
