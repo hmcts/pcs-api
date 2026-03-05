@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
@@ -16,7 +16,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 
 import java.util.UUID;
 
@@ -26,7 +25,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Table(name = "enf_risk_profile")
 @Getter
 @Setter
-public class EnforcementRiskProfileEntity {
+public class RiskProfileEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

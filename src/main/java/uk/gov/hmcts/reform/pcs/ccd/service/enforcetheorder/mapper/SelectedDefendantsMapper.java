@@ -1,9 +1,9 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementSelectedDefendantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -19,7 +19,7 @@ public class SelectedDefendantsMapper {
 
     private final PartyRepository partyRepository;
 
-    public List<EnforcementSelectedDefendantEntity> mapToEntities(
+    public List<SelectedDefendantEntity> mapToEntities(
         EnforcementOrderEntity enforcementOrderEntity) {
 
         DynamicMultiSelectStringList selectedDefendants =
@@ -38,7 +38,7 @@ public class SelectedDefendantsMapper {
         List<PartyEntity> parties = partyRepository.findAllById(selectedIds);
 
         return parties.stream()
-            .map(party -> EnforcementSelectedDefendantEntity.builder()
+            .map(party -> SelectedDefendantEntity.builder()
                 .enforcementCase(enforcementOrderEntity)
                 .party(party)
                 .build()

@@ -1,7 +1,7 @@
-package uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrantofrestitution;
+package uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrantofrestitution.WarrantOfRestitutionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantOfRestitutionEntity;
 
 import java.util.UUID;
 
