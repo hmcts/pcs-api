@@ -110,4 +110,18 @@ class EnforcementOrderServiceTest {
         assertThat(retOrder).isNull();
     }
 
+    @Test
+    void shouldReturnFirstClaimFromPcsCaseEntity() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        ClaimEntity firstClaim = new ClaimEntity();
+        ClaimEntity secondClaim = new ClaimEntity();
+        pcsCaseEntity.setClaims(List.of(firstClaim, secondClaim));
+
+        // When
+        ClaimEntity result = enforcementOrderService.retrieveClaimEntity(pcsCaseEntity);
+
+        // Then
+        assertThat(result).isSameAs(firstClaim);
+    }
 }
