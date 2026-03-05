@@ -8,9 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcemen
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
-/**
- * Page for confirming defendants date of birth.
- */
 public class AnythingElseToHelpTheEvictionPlaceholder implements CcdPageConfiguration {
 
     @Override

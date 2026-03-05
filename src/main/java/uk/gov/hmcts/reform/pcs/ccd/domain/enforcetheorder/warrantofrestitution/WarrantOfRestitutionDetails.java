@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
