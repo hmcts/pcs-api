@@ -56,4 +56,7 @@ public class DefendantResponses {
 
     @CCD
     private LocalDate dateOfBirth;
+
+    @CCD
+    private VerticalYesNo defendantNameConfirmation;
 }

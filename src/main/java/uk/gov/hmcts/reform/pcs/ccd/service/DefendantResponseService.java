@@ -106,7 +106,7 @@ public class DefendantResponseService {
             .claim(claimRef)
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
-            .dateOfBirth(responses.getDateOfBirth())
+            .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .build();
 
         defendantResponseRepository.save(defendantResponse);

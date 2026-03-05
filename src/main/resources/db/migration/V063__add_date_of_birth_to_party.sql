@@ -1,2 +1,2 @@
-ALTER TABLE defendant_response
+ALTER TABLE party
     ADD COLUMN date_of_birth DATE;

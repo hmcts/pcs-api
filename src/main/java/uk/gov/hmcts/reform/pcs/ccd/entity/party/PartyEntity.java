@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -97,5 +98,7 @@ public class PartyEntity {
     private String emailAddress;
 
     private String pcqId;
+
+    private LocalDate dateOfBirth;
 
 }

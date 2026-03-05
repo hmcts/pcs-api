@@ -73,10 +73,25 @@ public class ClaimResponseService {
     }
 
     /**
-     * Updates party's contact details (phone number and email address).
+     * Updates party's contact details (phone number, email address, first name, and last name).
      * Only updates if the values are provided (non-blank).
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantResponse) {
+
+        if (StringUtils.isNotBlank(defendantResponse.getParty().getFirstName())) {
+            party.setFirstName(defendantResponse.getParty().getFirstName());
+            log.debug("Updated first name for party ID: {}", party.getId());
+        }
+
+        if (StringUtils.isNotBlank(defendantResponse.getParty().getLastName())) {
+            party.setLastName(defendantResponse.getParty().getLastName());
+            log.debug("Updated last name for party ID: {}", party.getId());
+        }
+
+        if (defendantResponse.getParty().getDateOfBirth() != null) {
+            party.setDateOfBirth(defendantResponse.getParty().getDateOfBirth());
+            log.debug("Updated date of birth for party ID: {}", party.getId());
+        }
 
         if (shouldSavePhoneNumAndTextPreference
             && StringUtils.isNotBlank(defendantResponse.getParty().getPhoneNumber())) {
