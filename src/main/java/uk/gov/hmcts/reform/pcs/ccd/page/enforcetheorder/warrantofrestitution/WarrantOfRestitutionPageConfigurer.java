@@ -9,12 +9,16 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigure
 @AllArgsConstructor
 public class WarrantOfRestitutionPageConfigurer implements EnforcementPageConfigurer {
 
+    private final ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
+
     private final PropertyAccessDetailsWarrantOfRestitutionPage propertyAccessDetailsWarrantOfRestitutionPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
-            .add(new PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder())
+            .add(new ShareEvidenceWithJudgePage())
+            .add(explainHowDefendantsReturnedPage)
+            .add(new EvidenceDefendantsAtPropertyPage())
             .add(propertyAccessDetailsWarrantOfRestitutionPage)
             .add(new AnythingElseToHelpTheEvictionPlaceholder());
     }

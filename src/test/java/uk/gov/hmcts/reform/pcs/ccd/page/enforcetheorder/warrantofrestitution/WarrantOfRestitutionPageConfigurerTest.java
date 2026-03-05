@@ -24,6 +24,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PageConfigurerHel
 @ExtendWith(MockitoExtension.class)
 class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
 
+    @Mock
+    private ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
+
     @InjectMocks
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
 
@@ -44,8 +47,9 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         InOrder inOrder = Mockito.inOrder(pageBuilder);
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
-        verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder.class,
-                verificationCount);
+        verifyAndCount(inOrder, pageBuilder, ShareEvidenceWithJudgePage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, explainHowDefendantsReturnedPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, EvidenceDefendantsAtPropertyPage.class, verificationCount);
         verifyAndCount(inOrder,pageBuilder, propertyAccessDetailsWarrantOfRestitutionPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, AnythingElseToHelpTheEvictionPlaceholder.class,
                        verificationCount);
