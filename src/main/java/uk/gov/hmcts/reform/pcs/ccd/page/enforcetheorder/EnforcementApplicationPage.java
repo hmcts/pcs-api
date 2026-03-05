@@ -29,8 +29,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnf
 @AllArgsConstructor
 public class EnforcementApplicationPage implements CcdPageConfiguration {
 
-    private EnforcementOrderService enforcementOrderService;
-    private WarrantOfRestitutionMapper warrantOfRestitutionMapper;
+    private final EnforcementOrderService enforcementOrderService;
+    private final WarrantOfRestitutionMapper warrantOfRestitutionMapper;
 
     private static final String STUB_GA_SUCCESSFUL_CONDITION =
         WRIT_FLOW + " AND writHasClaimTransferredToHighCourt=\"Yes\"";

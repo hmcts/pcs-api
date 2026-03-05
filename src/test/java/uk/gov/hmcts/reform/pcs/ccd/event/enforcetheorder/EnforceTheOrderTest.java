@@ -42,8 +42,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -358,7 +356,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         boolean warrantOfRestitutionOptionExists = enforcementTypes.getListItems().stream()
                 .anyMatch(item ->
                         item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
-        assertTrue(warrantOfRestitutionOptionExists);
+        assertThat(warrantOfRestitutionOptionExists).isTrue();
     }
 
     @Test
@@ -379,7 +377,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         boolean warrantOfRestitutionOptionExists = enforcementTypes.getListItems().stream()
                 .anyMatch(item ->
                         item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
-        assertFalse(warrantOfRestitutionOptionExists);
+        assertThat(warrantOfRestitutionOptionExists).isFalse();
     }
 
     private static Stream<Arguments> enforcementFeeScenarios() {

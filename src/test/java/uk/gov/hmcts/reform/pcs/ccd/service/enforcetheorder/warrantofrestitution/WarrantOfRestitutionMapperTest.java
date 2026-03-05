@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDeta
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT_OF_RESTITUTION;
 
@@ -48,14 +48,23 @@ class WarrantOfRestitutionMapperTest {
         // When
         warrantOfRestitutionMapper.prePopulateFieldsFromWarrantDetails(warrantOrder, enforcementOrder);
 
-        // Then
-        assertEquals(warrantOrder.getRawWarrantDetails().getVulnerablePeoplePresent(),
-                enforcementOrder.getRawWarrantRestDetails().getVulnerablePeoplePresent());
-        assertEquals(warrantOrder.getRawWarrantDetails().getVulnerableAdultsChildren(),
-                enforcementOrder.getRawWarrantRestDetails().getVulnerableAdultsChildren());
-        assertEquals(warrantOrder.getWarrantDetails().getAnyRiskToBailiff(),
-                enforcementOrder.getWarrantOfRestitutionDetails().getAnyRiskToBailiff());
-        assertEquals(warrantOrder.getWarrantDetails().getPropertyAccessDetails(),
-                enforcementOrder.getWarrantOfRestitutionDetails().getPropertyAccessDetails());
+        // Then - use AssertJ correctly: assert actual values equal expected values
+        assertThat(enforcementOrder.getRawWarrantRestDetails().getVulnerablePeoplePresent())
+                .isEqualTo(warrantOrder.getRawWarrantDetails().getVulnerablePeoplePresent());
+
+        assertThat(enforcementOrder.getRawWarrantRestDetails().getVulnerableAdultsChildren().getVulnerableCategory())
+                .isEqualTo(warrantOrder.getRawWarrantDetails().getVulnerableAdultsChildren().getVulnerableCategory());
+
+        assertThat(enforcementOrder.getRawWarrantRestDetails().getVulnerableAdultsChildren().getVulnerableReasonText())
+                .isEqualTo(warrantOrder.getRawWarrantDetails().getVulnerableAdultsChildren().getVulnerableReasonText());
+
+        assertThat(enforcementOrder.getWarrantOfRestitutionDetails().getAnyRiskToBailiff())
+                .isEqualTo(warrantOrder.getWarrantDetails().getAnyRiskToBailiff());
+
+        // PropertyAccessDetails should be equal in content but a different instance (defensive copy)
+        assertThat(enforcementOrder.getWarrantOfRestitutionDetails().getPropertyAccessDetails())
+                .isEqualTo(warrantOrder.getWarrantDetails().getPropertyAccessDetails());
+        assertThat(enforcementOrder.getWarrantOfRestitutionDetails().getPropertyAccessDetails())
+                .isNotSameAs(warrantOrder.getWarrantDetails().getPropertyAccessDetails());
     }
 }
