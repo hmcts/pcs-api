@@ -26,7 +26,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgree
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantDetailsMapper;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -35,10 +36,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class EnforcementWarrantMapperTest {
+class WarrantDetailsMapperTest {
 
     @InjectMocks
-    private EnforcementWarrantMapper mapper;
+    private WarrantDetailsMapper underTest;
 
     private EnforcementOrderEntity enforcementOrderEntity;
 
@@ -53,7 +54,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result).isNotNull();
@@ -71,7 +72,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.NO);
@@ -90,7 +91,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.NO);
@@ -104,7 +105,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getIsSuspendedOrder()).isEqualTo(VerticalYesNo.YES);
@@ -122,7 +123,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getAdditionalInformationSelect()).isEqualTo(VerticalYesNo.YES);
@@ -141,7 +142,7 @@ class EnforcementWarrantMapperTest {
             .build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getAdditionalInformationSelect()).isNull();
@@ -164,7 +165,7 @@ class EnforcementWarrantMapperTest {
             .build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.NO);
@@ -178,7 +179,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getEvictEveryone()).isEqualTo(VerticalYesNo.YES);
@@ -196,7 +197,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getIsDifficultToAccessProperty()).isEqualTo(VerticalYesNo.YES);
@@ -214,7 +215,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getAreLegalCostsToBeClaimed()).isEqualTo(VerticalYesNo.YES);
@@ -231,7 +232,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getAreLegalCostsToBeClaimed()).isEqualTo(VerticalYesNo.YES);
@@ -248,7 +249,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getAmountOwed()).isEqualByComparingTo(new BigDecimal("2500.75"));
@@ -263,7 +264,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getAmountOwed()).isNull();
@@ -280,7 +281,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getHaveLandRegistryFeesBeenPaid()).isEqualTo(VerticalYesNo.YES);
@@ -298,7 +299,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getHaveLandRegistryFeesBeenPaid()).isEqualTo(VerticalYesNo.YES);
@@ -319,7 +320,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getRepaymentChoice()).isEqualTo(RepaymentPreference.SOME.getLabel());
@@ -338,7 +339,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getRepaymentChoice()).isNull();
@@ -354,7 +355,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getDefendantsDOBKnown()).isEqualTo(VerticalYesNo.YES);
@@ -369,7 +370,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getDefendantsDOBKnown()).isEqualTo(VerticalYesNo.NO);
@@ -390,7 +391,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.CLAIMANT);
@@ -411,7 +412,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getAgreementClaimant()).isEqualTo(StatementOfTruthAgreementClaimant.BELIEVE_TRUE.name());
@@ -426,7 +427,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getAgreementClaimant()).isNull();
@@ -442,7 +443,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getAgreementLegalRep()).isEqualTo(StatementOfTruthAgreementLegalRep.AGREED.name());
@@ -459,7 +460,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result.getCertification()).isEqualTo(StatementOfTruthAgreement.CERTIFY.name());
@@ -471,7 +472,7 @@ class EnforcementWarrantMapperTest {
         EnforcementOrder enforcementOrder = createCompleteEnforcementOrder();
 
         // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
         assertThat(result).isNotNull();
