@@ -42,11 +42,6 @@ public class WritEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo correctNameAndAddress;
 
-    // Direct fields
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo showPeopleWhoWillBeEvictedPage;
-
     // LandRegistryFees
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

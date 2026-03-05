@@ -53,7 +53,6 @@ class WritDetailsMapperTest {
         writDetails = WritDetails.builder()
             .nameAndAddressForEviction(nameAndAddressForEviction)
             .showChangeNameAddressPage(YesOrNo.NO)
-            .showPeopleWhoWillBeEvictedPage(YesOrNo.YES)
             .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.YES)
             .hceoDetails("John Smith, Enforcement Ltd")
             .hasClaimTransferredToHighCourt(YesOrNo.YES)
@@ -70,7 +69,6 @@ class WritDetailsMapperTest {
 
         // Then
         assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.YES);
-        assertThat(entity.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(YesOrNo.YES);
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.YES);
         assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.YES);
@@ -164,7 +162,6 @@ class WritDetailsMapperTest {
                                            .correctNameAndAddress(VerticalYesNo.NO)
                                            .build())
             .showChangeNameAddressPage(YesOrNo.NO)
-            .showPeopleWhoWillBeEvictedPage(YesOrNo.NO)
             .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.NO)
             .hasClaimTransferredToHighCourt(YesOrNo.NO)
             .landRegistryFees(LandRegistryFees.builder()
@@ -181,7 +178,6 @@ class WritDetailsMapperTest {
 
         // Then
         assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.NO);
-        assertThat(entity.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(YesOrNo.NO);
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.NO);
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.NO);
         assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isEqualTo(VerticalYesNo.NO);

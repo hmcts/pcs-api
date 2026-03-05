@@ -33,9 +33,6 @@ public class WritDetails {
     @CCD(searchable = false)
     private YesOrNo showChangeNameAddressPage;
 
-    @CCD(searchable = false)
-    private YesOrNo showPeopleWhoWillBeEvictedPage;
-
     @CCD(
         label = "Have you hired a High Court enforcement officer?"
     )
@@ -82,7 +79,7 @@ public class WritDetails {
         label = "TEMPORARY TEST ONLY – Was the general application to transfer to the High Court successful?"
     )
     private YesOrNo wasGeneralApplicationToTransferToHighCourtSuccessful;
-    
+
     @JsonUnwrapped
     @CCD
     private StatementOfTruthDetailsEnforcement statementOfTruth;

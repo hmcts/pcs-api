@@ -16,15 +16,14 @@ ALTER TABLE public.enf_writ ADD COLUMN was_general_application_to_transfer_to_hi
 ALTER TABLE public.enf_writ ADD COLUMN completed_by STATEMENT_OF_TRUTH_COMPLETED_BY;
 ALTER TABLE public.enf_writ ADD COLUMN certification TEXT;
 
+
+
   -- Repayment
-  repayment_choice                        VARCHAR(20),
-  amount_of_repayment_costs               NUMERIC(10, 2),
+  --repayment_choice                        VARCHAR(20),
+  --amount_of_repayment_costs               NUMERIC(10, 2),
 
 
-ALTER TABLE public.enf_risk_details ADD COLUMN enforcement_risk_categories VARCHAR(6800);
+ALTER TABLE public.enf_risk_profile ADD COLUMN enforcement_risk_categories VARCHAR(6800);
 
 -- Not needed within Writ
 ALTER TABLE public.enf_writ DROP COLUMN show_people_who_will_be_evicted_page;
-
-
-
