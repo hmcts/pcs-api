@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -22,6 +23,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PageConfigurerHel
 
 @ExtendWith(MockitoExtension.class)
 class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
+
+    @Mock
+    private ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
 
     @InjectMocks
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
@@ -41,7 +45,8 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
         verifyAndCount(inOrder, pageBuilder, ShareEvidenceWithJudgePage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, ExplainHowDefendantsReturnedPlaceholder.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, ExplainHowDefendantsReturnedPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, EvidenceDefendantsAtPropertyPage.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);

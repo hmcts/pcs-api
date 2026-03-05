@@ -27,6 +27,17 @@ import java.util.Set;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class WarrantOfRestitutionDetails {
 
+    public static final String HOW_DEFENDANTS_RETURNED_LABEL =
+        "How did the defendants return to the property?";
+
+    @CCD(
+        label = HOW_DEFENDANTS_RETURNED_LABEL,
+        hint = "You can upload your evidence on the next page, for example a photograph. You can enter up to 6,800 "
+            + "characters",
+        typeOverride = FieldType.TextArea
+    )
+    private String howDefendantsReturned;
+
     @CCD(
             label = "Does anyone living at the property pose a risk to the bailiff?"
     )
