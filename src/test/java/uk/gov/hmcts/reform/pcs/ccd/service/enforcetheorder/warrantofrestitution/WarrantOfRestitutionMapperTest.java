@@ -2,69 +2,108 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrantofrestitution
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil;
+
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT_OF_RESTITUTION;
 
 @ExtendWith(MockitoExtension.class)
 class WarrantOfRestitutionMapperTest {
 
-    @InjectMocks
-    private WarrantOfRestitutionMapper warrantOfRestitutionMapper;
+    private final WarrantOfRestitutionMapper mapper = new WarrantOfRestitutionMapper();
 
     @Test
-    void shouldPrepopulateFieldsFromEnforcementOrder() {
-        // Given
-        EnforcementOrder warrantOrder = EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT);
-        warrantOrder.setRawWarrantDetails(RawWarrantDetails.builder()
-            .vulnerablePeoplePresent(YesNoNotSure.YES)
-            .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
-                    .vulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS_AND_CHILDREN)
-                    .vulnerableReasonText("Vulnerability reason")
-                    .build())
-            .build());
-        warrantOrder.setWarrantDetails(WarrantDetails.builder()
-            .anyRiskToBailiff(YesNoNotSure.YES)
-            .propertyAccessDetails(PropertyAccessDetails.builder()
-                    .isDifficultToAccessProperty(VerticalYesNo.NO)
-                    .build())
-            .build());
+    void shouldMapWarrantFieldsToWarrantOfRest() {
+        EnforcementOrder source = EnforcementOrder.builder().build();
 
-        EnforcementOrder enforcementOrder =
-                EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT_OF_RESTITUTION);
+        WarrantDetails warrantDetails = WarrantDetails.builder()
+                .anyRiskToBailiff(YesNoNotSure.YES)
+                .propertyAccessDetails(PropertyAccessDetails.builder()
+                        .isDifficultToAccessProperty(VerticalYesNo.YES)
+                        .clarificationOnAccessDifficultyText("original")
+                        .build())
+                .riskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .riskDetails(EnforcementRiskDetails.builder()
+                        .violentDetails("violent")
+                        .verbalThreatsDetails("verbal")
+                        .build())
+                .build();
+
+        RawWarrantDetails rawWarrantDetails = RawWarrantDetails.builder()
+                .vulnerablePeoplePresent(YesNoNotSure.YES)
+                .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+                        .vulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS)
+                        .vulnerableReasonText("reason")
+                        .build())
+                .build();
+
+        source.setWarrantDetails(warrantDetails);
+        source.setRawWarrantDetails(rawWarrantDetails);
+
+        EnforcementOrder target = EnforcementOrder.builder().build();
 
         // When
-        warrantOfRestitutionMapper.prePopulateFieldsFromWarrantDetails(warrantOrder, enforcementOrder);
+        mapper.prePopulateFieldsFromWarrantDetails(source, target);
 
-        // Then - use AssertJ correctly: assert actual values equal expected values
-        assertThat(enforcementOrder.getRawWarrantRestDetails().getVulnerablePeoplePresent())
-                .isEqualTo(warrantOrder.getRawWarrantDetails().getVulnerablePeoplePresent());
+        // Then - values copied
+        assertThat(target.getWarrantOfRestitutionDetails()).isNotNull();
+        assertThat(target.getWarrantOfRestitutionDetails().getAnyRiskToBailiff())
+                .isEqualTo(source.getWarrantDetails().getAnyRiskToBailiff());
 
-        assertThat(enforcementOrder.getRawWarrantRestDetails().getVulnerableAdultsChildren().getVulnerableCategory())
-                .isEqualTo(warrantOrder.getRawWarrantDetails().getVulnerableAdultsChildren().getVulnerableCategory());
+        // nested object copied and not same instance
+        assertThat(target.getWarrantOfRestitutionDetails().getPropertyAccessDetails())
+                .isEqualTo(source.getWarrantDetails().getPropertyAccessDetails());
+        assertThat(target.getWarrantOfRestitutionDetails().getPropertyAccessDetails())
+                .isNotSameAs(source.getWarrantDetails().getPropertyAccessDetails());
 
-        assertThat(enforcementOrder.getRawWarrantRestDetails().getVulnerableAdultsChildren().getVulnerableReasonText())
-                .isEqualTo(warrantOrder.getRawWarrantDetails().getVulnerableAdultsChildren().getVulnerableReasonText());
+        assertThat(target.getWarrantOfRestitutionDetails().getRiskCategories())
+                .isEqualTo(source.getWarrantDetails().getRiskCategories());
+        assertThat(target.getWarrantOfRestitutionDetails().getRiskCategories())
+                .isNotSameAs(source.getWarrantDetails().getRiskCategories());
 
-        assertThat(enforcementOrder.getWarrantOfRestitutionDetails().getAnyRiskToBailiff())
-                .isEqualTo(warrantOrder.getWarrantDetails().getAnyRiskToBailiff());
+        assertThat(target.getRawWarrantRestDetails()).isNotNull();
 
-        // PropertyAccessDetails should be equal in content but a different instance (defensive copy)
-        assertThat(enforcementOrder.getWarrantOfRestitutionDetails().getPropertyAccessDetails())
-                .isEqualTo(warrantOrder.getWarrantDetails().getPropertyAccessDetails());
-        assertThat(enforcementOrder.getWarrantOfRestitutionDetails().getPropertyAccessDetails())
-                .isNotSameAs(warrantOrder.getWarrantDetails().getPropertyAccessDetails());
+        target.getWarrantOfRestitutionDetails().getPropertyAccessDetails()
+                .setClarificationOnAccessDifficultyText("changed");
+        assertThat(source.getWarrantDetails().getPropertyAccessDetails().getClarificationOnAccessDifficultyText())
+                .isEqualTo("original");
+    }
+
+    @Test
+    void shouldHandleNullFields() {
+        EnforcementOrder source = EnforcementOrder.builder().build();
+
+        WarrantDetails warrantDetails = WarrantDetails.builder()
+                .anyRiskToBailiff(YesNoNotSure.YES)
+                .build();
+
+        RawWarrantDetails rawWarrantDetails = RawWarrantDetails.builder()
+                .build();
+
+        source.setWarrantDetails(warrantDetails);
+        source.setRawWarrantDetails(rawWarrantDetails);
+
+        EnforcementOrder target = EnforcementOrder.builder().build();
+
+        // When
+        mapper.prePopulateFieldsFromWarrantDetails(source, target);
+
+        // Then
+        assertThat(target.getWarrantOfRestitutionDetails().getRiskCategories()).isNull();
+        assertThat(target.getWarrantOfRestitutionDetails().getRiskDetails()).isNull();
+        assertThat(target.getWarrantOfRestitutionDetails().getPropertyAccessDetails()).isNull();
+        assertThat(target.getRawWarrantRestDetails().getVulnerableAdultsChildren()).isNull();
+        assertThat(target.getRawWarrantRestDetails().getVulnerablePeoplePresent()).isNull();
     }
 }

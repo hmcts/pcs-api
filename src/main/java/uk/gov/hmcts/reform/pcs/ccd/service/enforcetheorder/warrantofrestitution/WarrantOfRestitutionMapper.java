@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrantofrestitution;
 
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
@@ -11,20 +10,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.W
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Component
-@AllArgsConstructor
 public class WarrantOfRestitutionMapper {
 
     public void prePopulateFieldsFromWarrantDetails(EnforcementOrder warrantEnforcementOrder,
-                                                    EnforcementOrder current) {
+                                                    EnforcementOrder currentEnfOrder) {
         WarrantDetails warrantDetails = warrantEnforcementOrder.getWarrantDetails();
 
         WarrantOfRestitutionDetails warrantRestDetails = new WarrantOfRestitutionDetails();
@@ -55,28 +49,10 @@ public class WarrantOfRestitutionMapper {
             target.setClarificationOnAccessDifficultyText(src.getClarificationOnAccessDifficultyText());
             warrantRestDetails.setPropertyAccessDetails(target);
         }
-        current.setWarrantOfRestitutionDetails(warrantRestDetails);
+        currentEnfOrder.setWarrantOfRestitutionDetails(warrantRestDetails);
 
         RawWarrantDetails rawWarrantDetails = warrantEnforcementOrder.getRawWarrantDetails();
         RawWarrantRestDetails rawWarrantRestDetails = new RawWarrantRestDetails();
-
-        if (rawWarrantDetails.getSelectedDefendants() != null) {
-            DynamicMultiSelectStringList src = rawWarrantDetails.getSelectedDefendants();
-
-            List<DynamicStringListElement> valueCopy = null;
-            List<DynamicStringListElement> listItemsCopy = null;
-
-            if (src.getValue() != null) {
-                valueCopy = new ArrayList<>(src.getValue());
-            }
-            if (src.getListItems() != null) {
-                listItemsCopy = new ArrayList<>(src.getListItems());
-            }
-
-            rawWarrantRestDetails.setSelectedDefendants(
-                new DynamicMultiSelectStringList(valueCopy, listItemsCopy)
-            );
-        }
 
         rawWarrantRestDetails.setVulnerablePeoplePresent(rawWarrantDetails.getVulnerablePeoplePresent());
         if (rawWarrantDetails.getVulnerableAdultsChildren() != null) {
@@ -86,8 +62,7 @@ public class WarrantOfRestitutionMapper {
             target.setVulnerableReasonText(src.getVulnerableReasonText());
             rawWarrantRestDetails.setVulnerableAdultsChildren(target);
         }
-        rawWarrantRestDetails.setVulnerableAdultsChildren(rawWarrantDetails.getVulnerableAdultsChildren());
 
-        current.setRawWarrantRestDetails(rawWarrantRestDetails);
+        currentEnfOrder.setRawWarrantRestDetails(rawWarrantRestDetails);
     }
 }
