@@ -45,7 +45,7 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
         verifyAndCount(inOrder, pageBuilder, ShareEvidenceWithJudgePage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, ExplainHowDefendantsReturnedPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, explainHowDefendantsReturnedPage.getClass(), verificationCount);
         verifyAndCount(inOrder, pageBuilder, EvidenceDefendantsAtPropertyPage.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
