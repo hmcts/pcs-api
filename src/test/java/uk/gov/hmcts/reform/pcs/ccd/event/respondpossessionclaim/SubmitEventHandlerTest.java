@@ -23,7 +23,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import java.util.Optional;
 
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -46,6 +49,8 @@ class SubmitEventHandlerTest {
     private ClaimResponseService claimResponseService;
     @Mock
     private DefendantResponseService defendantResponseService;
+
+    private final ArgumentCaptor<PCSCase> pcsCaseCaptor = ArgumentCaptor.forClass(PCSCase.class);
 
     private SubmitEventHandler underTest;
 
@@ -95,10 +100,12 @@ class SubmitEventHandlerTest {
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
             .build();
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -111,20 +118,19 @@ class SubmitEventHandlerTest {
             .as("No errors when defendantContactDetails=null and defendantResponses!=null")
             .isNullOrEmpty();
 
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
-        );
+        ArgumentCaptor<PossessionClaimResponse> responseCaptor =
+            ArgumentCaptor.forClass(PossessionClaimResponse.class);
+        verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
 
-        PCSCase savedDraft = pcsCaseCaptor.getValue();
-        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails())
+        PossessionClaimResponse savedResponse = responseCaptor.getValue();
+        assertThat(savedResponse.getDefendantContactDetails())
             .as("defendantContactDetails should remain null when not provided")
             .isNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
+        assertThat(savedResponse.getDefendantResponses())
             .as("defendantResponses should be saved")
             .isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses()
-            .getTenancyTypeCorrect()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedResponse.getDefendantResponses().getTenancyTypeCorrect())
+            .isEqualTo(YesNoNotSure.YES);
     }
 
     @Test
@@ -147,10 +153,12 @@ class SubmitEventHandlerTest {
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
             .build();
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -163,18 +171,17 @@ class SubmitEventHandlerTest {
             .as("No errors when defendantResponses=null and defendantContactDetails!=null")
             .isNullOrEmpty();
 
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
-        );
+        ArgumentCaptor<PossessionClaimResponse> responseCaptor =
+            ArgumentCaptor.forClass(PossessionClaimResponse.class);
+        verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
 
-        PCSCase savedDraft = pcsCaseCaptor.getValue();
-        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails())
+        PossessionClaimResponse savedResponse = responseCaptor.getValue();
+        assertThat(savedResponse.getDefendantContactDetails())
             .as("defendantContactDetails should be saved")
             .isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails()
-            .getParty().getFirstName()).isEqualTo("Jane");
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
+        assertThat(savedResponse.getDefendantContactDetails().getParty().getFirstName())
+            .isEqualTo("Jane");
+        assertThat(savedResponse.getDefendantResponses())
             .as("defendantResponses should remain null when not provided")
             .isNull();
     }
@@ -187,7 +194,7 @@ class SubmitEventHandlerTest {
         // Given
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.NO)
-            .rent_arrears_amount_confirmation(YesNoNotSure.YES)
+            .oweRentArrears(YesNoNotSure.YES)
             .build();
 
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
@@ -293,43 +300,23 @@ class SubmitEventHandlerTest {
     }
 
     @Test
-    void shouldReturnErrorWhenDraftServiceThrowsException() {
+    void shouldThrowDraftNotFoundExceptionWhenDraftIsAbsent() {
         // Given
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .build();
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
             .defendantResponses(DefendantResponses.builder().build())
             .build();
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
             .build();
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        doThrow(new RuntimeException("Database connection failed"))
-            .when(draftCaseDataService).patchUnsubmittedEventData(
-                eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
-            );
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.empty());
 
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getErrors()).isNotNull();
-        assertThat(result.getErrors()).hasSize(1);
-        assertThat(result.getErrors().getFirst())
-            .isEqualTo("We couldn't save your response. Please try again or contact support.");
+        // When / Then
+        assertThrows(DraftNotFoundException.class, () -> underTest.submit(payload));
     }
 
     @Test
@@ -358,10 +345,12 @@ class SubmitEventHandlerTest {
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
             .build();
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -370,9 +359,7 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
-        );
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
     @Test
@@ -403,33 +390,31 @@ class SubmitEventHandlerTest {
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
             .build();
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
 
         // When
         underTest.submit(eventPayload);
 
         // Then
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
-        );
+        ArgumentCaptor<PossessionClaimResponse> responseCaptor =
+            ArgumentCaptor.forClass(PossessionClaimResponse.class);
+        verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
 
-        PCSCase savedDraft = pcsCaseCaptor.getValue();
-        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        DefendantContactDetails savedContactDetails = savedDraft.getPossessionClaimResponse()
-            .getDefendantContactDetails();
+        PossessionClaimResponse savedResponse = responseCaptor.getValue();
+        assertThat(savedResponse).isNotNull();
+        DefendantContactDetails savedContactDetails = savedResponse.getDefendantContactDetails();
         assertThat(savedContactDetails).isNotNull();
         assertThat(savedContactDetails.getParty()).isNotNull();
         assertThat(savedContactDetails.getParty().getFirstName()).isEqualTo("John");
         assertThat(savedContactDetails.getParty().getLastName()).isEqualTo("Doe");
-        assertThat(savedContactDetails.getParty().getEmailAddress())
-            .isEqualTo("john@example.com");
-        assertThat(savedContactDetails.getParty().getPhoneNumber())
-            .isEqualTo("07700900000");
+        assertThat(savedContactDetails.getParty().getEmailAddress()).isEqualTo("john@example.com");
+        assertThat(savedContactDetails.getParty().getPhoneNumber()).isEqualTo("07700900000");
         assertThat(savedContactDetails.getParty().getAddress()).isEqualTo(address);
-        // Note: submitDraftAnswers is NOT persisted to draft - it's a transient UI flag
     }
 
     @Test
@@ -454,7 +439,6 @@ class SubmitEventHandlerTest {
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.YES)
             .build();
 
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
@@ -464,7 +448,7 @@ class SubmitEventHandlerTest {
 
         assertThat(result.getErrors()).isNullOrEmpty();
         verify(claimResponseService).saveDraftData(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
-        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, responses);
+        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, null);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
@@ -666,6 +650,13 @@ class SubmitEventHandlerTest {
         // Then - Service should NOT be called due to validation failure
         verify(claimResponseService, never()).saveDraftData(any(), anyLong());
         assertThat(result.getErrors()).isNotEmpty();
+    }
+
+    private void submitAndVerifyDraftSaved(PCSCase caseData) {
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
+        SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
+        assertThat(result.getErrors()).isNullOrEmpty();
     }
 
     private EventPayload<PCSCase, State> createEventPayload(PCSCase caseData) {
