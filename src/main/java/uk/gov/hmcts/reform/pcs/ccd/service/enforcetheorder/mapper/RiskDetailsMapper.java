@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -24,7 +24,7 @@ public class RiskDetailsMapper {
         riskProfileEntity.setEnforcementOrder(enforcementOrderEntity);
         WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
         riskProfileEntity.setAnyRiskToBailiff(warrantDetails.getAnyRiskToBailiff());
-        EnforcementRiskDetails riskDetails = warrantDetails.getRiskDetails();
+        RiskDetails riskDetails = warrantDetails.getRiskDetails();
         if (riskDetails != null) {
             modelMapper.map(riskDetails, riskProfileEntity);
         }

@@ -21,7 +21,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 @NoArgsConstructor
 @AllArgsConstructor
-public class EnforcementRiskDetails {
+public class RiskDetails {
 
     @CCD(
         label = "How have they been violent or aggressive?",

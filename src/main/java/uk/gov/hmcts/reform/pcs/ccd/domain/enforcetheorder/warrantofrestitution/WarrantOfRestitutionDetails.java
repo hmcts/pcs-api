@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 
@@ -56,7 +56,7 @@ public class WarrantOfRestitutionDetails {
     @CCD(
             label = "Risk details"
     )
-    private EnforcementRiskDetails riskDetails;
+    private RiskDetails riskDetails;
 
     @JsonUnwrapped
     @CCD

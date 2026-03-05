@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
@@ -83,13 +83,13 @@ class WarrantStrategyTest {
     private EnforcementOrderEntity enforcementOrderEntity;
     private EnforcementOrder enforcementOrder;
     private WarrantDetails warrantDetails;
-    private EnforcementRiskDetails riskDetails;
+    private RiskDetails riskDetails;
 
     @BeforeEach
     void setUp() {
         enforcementOrderEntity = mock(EnforcementOrderEntity.class);
 
-        riskDetails = EnforcementRiskDetails.builder()
+        riskDetails = RiskDetails.builder()
             .violentDetails("Violent behavior reported")
             .firearmsDetails("Firearms present")
             .criminalDetails("Criminal history")

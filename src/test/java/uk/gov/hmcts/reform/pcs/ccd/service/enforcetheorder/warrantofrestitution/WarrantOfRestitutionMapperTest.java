@@ -6,7 +6,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
@@ -34,7 +34,7 @@ class WarrantOfRestitutionMapperTest {
                         .clarificationOnAccessDifficultyText("original")
                         .build())
                 .riskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(EnforcementRiskDetails.builder()
+                .riskDetails(RiskDetails.builder()
                         .violentDetails("violent")
                         .verbalThreatsDetails("verbal")
                         .build())

@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDeta
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 
@@ -30,8 +30,8 @@ public class WarrantOfRestitutionMapper {
         }
 
         if (warrantDetails.getRiskDetails() != null) {
-            EnforcementRiskDetails src = warrantDetails.getRiskDetails();
-            EnforcementRiskDetails target = new EnforcementRiskDetails();
+            RiskDetails src = warrantDetails.getRiskDetails();
+            RiskDetails target = new RiskDetails();
             target.setViolentDetails(src.getViolentDetails());
             target.setFirearmsDetails(src.getFirearmsDetails());
             target.setCriminalDetails(src.getCriminalDetails());

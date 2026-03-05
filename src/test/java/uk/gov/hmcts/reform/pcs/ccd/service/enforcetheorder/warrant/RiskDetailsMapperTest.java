@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory;
@@ -39,7 +39,7 @@ class RiskDetailsMapperTest {
             EnforcementOrder order = EnforcementOrder.builder()
                     .warrantDetails(WarrantDetails.builder()
                             .anyRiskToBailiff(YesNoNotSure.YES)
-                            .riskDetails(EnforcementRiskDetails.builder()
+                            .riskDetails(RiskDetails.builder()
                                     .violentDetails("Violent")
                                     .verbalThreatsDetails("Verbal")
                                     .firearmsDetails("Firearms")
