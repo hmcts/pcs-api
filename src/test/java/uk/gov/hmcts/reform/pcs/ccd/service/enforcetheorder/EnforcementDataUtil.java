@@ -79,18 +79,6 @@ public final class EnforcementDataUtil {
                 .build();
     }
 
-    public static EnforcementOrder buildEnforcementOrderWithSpecifiedType(SelectEnforcementType enforcementType) {
-        return EnforcementOrder.builder()
-                .selectEnforcementType(buildEnforcementTypes(enforcementType))
-                .warrantDetails(WarrantDetails.builder()
-                        .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                                .correctNameAndAddress(VerticalYesNo.YES)
-                                .build())
-                        .build())
-                .rawWarrantDetails(RawWarrantDetails.builder().build())
-                .build();
-    }
-
     public static EnforcementOrder buildEnforcementOrderWithSelectedDefendants(
         List<DynamicStringListElement> selectedValues,
         List<DynamicStringListElement> listItems) {
@@ -110,6 +98,18 @@ public final class EnforcementDataUtil {
                                    .selectedDefendants(selectedDefendants)
                                    .build())
             .build();
+    }
+
+    public static EnforcementOrder buildEnforcementOrderWithSpecifiedType(SelectEnforcementType enforcementType) {
+        return EnforcementOrder.builder()
+                .selectEnforcementType(buildEnforcementTypes(enforcementType))
+                .warrantDetails(WarrantDetails.builder()
+                        .nameAndAddressForEviction(NameAndAddressForEviction.builder()
+                                .correctNameAndAddress(VerticalYesNo.YES)
+                                .build())
+                        .build())
+                .rawWarrantDetails(RawWarrantDetails.builder().build())
+                .build();
     }
 
     public static DynamicStringList buildEnforcementTypes(SelectEnforcementType enforcementType) {

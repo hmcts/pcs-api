@@ -54,29 +54,6 @@ class EnforcementOrderServiceTest {
     private static final long CASE_REFERENCE = 1234L;
 
     @Test
-    void shouldSaveNewSubmittedEnforcementData() {
-        // Given
-        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
-        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-
-        when(enforcementOrderRepository.save(any())).thenReturn(new EnforcementOrderEntity());
-        when(strategyFactory.getStrategy(getSelectEnforcementTypeFromName(
-                enforcementOrder.getSelectEnforcementType().getValueCode())))
-            .thenReturn(mock(EnforcementTypeStrategy.class));
-
-        // When
-        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
-
-        // Then
-        verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
-        EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
-        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
-    }
-
-    @Test
     void shouldReturnEnforcementOrderIfFoundInDatabase() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
@@ -124,4 +101,27 @@ class EnforcementOrderServiceTest {
         // Then
         assertThat(result).isSameAs(firstClaim);
     }
+
+    @Test
+    void shouldSaveNewSubmittedEnforcementData() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(enforcementOrderRepository.save(any())).thenReturn(new EnforcementOrderEntity());
+        when(strategyFactory.getStrategy(getSelectEnforcementTypeFromName(
+                enforcementOrder.getSelectEnforcementType().getValueCode())))
+                .thenReturn(mock(EnforcementTypeStrategy.class));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
+        EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
+        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
+    }
+
 }
