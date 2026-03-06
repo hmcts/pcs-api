@@ -559,6 +559,7 @@ export class EnforcementAction implements IAction {
       }
     if (validationArr.buttonRemove) {
       await performAction('removeFile');
+      await page.waitForTimeout(5000);
     }
   }
 

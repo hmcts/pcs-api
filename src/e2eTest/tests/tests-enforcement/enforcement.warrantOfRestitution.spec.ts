@@ -83,14 +83,15 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         newPage: yourApplication.hceoPageTitle
       });
       await performAction('expandSummary', yourApplication.summarySaveApplication);
-      await performAction('inputErrorValidation', {
-        validationReq: yourApplication.errorValidation,
-        validationType: yourApplication.errorValidationType.three,
-        inputArray: yourApplication.errorValidationField.errorRadioOption,
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-        button: yourApplication.continueButton
-      });
+      await performAction('errorValidationYourApplicationPage', yourApplication.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: yourApplication.errorValidation,
+      //   validationType: yourApplication.errorValidationType.three,
+      //   inputArray: yourApplication.errorValidationField.errorRadioOption,
+      //   question: yourApplication.typeOfApplicationQuestion,
+      //   option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+      //   button: yourApplication.continueButton
+      // });
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
