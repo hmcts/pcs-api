@@ -1,12 +1,12 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution;
 
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AbstractVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
@@ -16,18 +16,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildrenPage implements CcdPageConfiguration {
+public class VulnerableAdultsChildrenRestPage extends AbstractVulnerableAdultsChildrenPage
+        implements CcdPageConfiguration {
 
-    public VulnerableAdultsChildrenPage(TextAreaValidationService textAreaValidationService) {
+    public VulnerableAdultsChildrenRestPage(TextAreaValidationService textAreaValidationService) {
         super(textAreaValidationService);
     }
 
     @Override
     public String getVulnerablePeoplePresentShowCondition() {
-        return "vulnerablePeoplePresent=\"YES\" "
-                + "AND (vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")";
+        return "vulnerablePeoplePresentRest=\"YES\" "
+                + "AND (vulnerableAdultsChildrenRest.vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                + "OR vulnerableAdultsChildrenRest.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+                + "OR vulnerableAdultsChildrenRest.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")";
     }
 
     @Override
@@ -35,14 +36,14 @@ public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildr
         pageBuilder
             .page(getPageId(), this::midEvent)
             .pageLabel(PAGE_LABEL)
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW)
             .label(getPageId() + "-line-separator", "---")
             .label(getPageId() + "-information-text", INFO_MARKUP)
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getRawWarrantDetails)
-            .mandatory(RawWarrantDetails::getVulnerablePeoplePresent)
-            .complex(RawWarrantDetails::getVulnerableAdultsChildren,
-                    "vulnerablePeoplePresent=\"YES\"")
+            .complex(EnforcementOrder::getRawWarrantRestDetails)
+            .mandatory(RawWarrantRestDetails::getVulnerablePeoplePresentRest)
+            .complex(RawWarrantRestDetails::getVulnerableAdultsChildrenRest,
+                    "vulnerablePeoplePresentRest=\"YES\"")
             .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
             .mandatory(VulnerableAdultsChildren::getVulnerableReasonText, getVulnerablePeoplePresentShowCondition())
             .done()
@@ -54,12 +55,12 @@ public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildr
     public List<String> performValidation(PCSCase data) {
         List<String> errors = new ArrayList<>();
 
-        if (vulnerablePeoplePresent.test(data.getEnforcementOrder().getRawWarrantDetails()
-                .getVulnerablePeoplePresent())) {
+        if (vulnerablePeoplePresent.test(data.getEnforcementOrder().getRawWarrantRestDetails()
+                .getVulnerablePeoplePresentRest())) {
             String txt = data.getEnforcementOrder()
-                    .getRawWarrantDetails().getVulnerableAdultsChildren() != null
+                    .getRawWarrantRestDetails().getVulnerableAdultsChildrenRest() != null
                     ? data.getEnforcementOrder()
-                    .getRawWarrantDetails().getVulnerableAdultsChildren().getVulnerableReasonText()
+                    .getRawWarrantRestDetails().getVulnerableAdultsChildrenRest().getVulnerableReasonText()
                     : null;
             errors.addAll(getValidationErrors(txt));
         }

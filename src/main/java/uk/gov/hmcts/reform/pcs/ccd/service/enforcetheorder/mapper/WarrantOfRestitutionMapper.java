@@ -54,13 +54,13 @@ public class WarrantOfRestitutionMapper {
         RawWarrantDetails rawWarrantDetails = warrantEnforcementOrder.getRawWarrantDetails();
         RawWarrantRestDetails rawWarrantRestDetails = new RawWarrantRestDetails();
 
-        rawWarrantRestDetails.setVulnerablePeoplePresent(rawWarrantDetails.getVulnerablePeoplePresent());
+        rawWarrantRestDetails.setVulnerablePeoplePresentRest(rawWarrantDetails.getVulnerablePeoplePresent());
         if (rawWarrantDetails.getVulnerableAdultsChildren() != null) {
             VulnerableAdultsChildren src = rawWarrantDetails.getVulnerableAdultsChildren();
             VulnerableAdultsChildren target = new VulnerableAdultsChildren();
             target.setVulnerableCategory(src.getVulnerableCategory());
             target.setVulnerableReasonText(src.getVulnerableReasonText());
-            rawWarrantRestDetails.setVulnerableAdultsChildren(target);
+            rawWarrantRestDetails.setVulnerableAdultsChildrenRest(target);
         }
 
         currentEnfOrder.setRawWarrantRestDetails(rawWarrantRestDetails);

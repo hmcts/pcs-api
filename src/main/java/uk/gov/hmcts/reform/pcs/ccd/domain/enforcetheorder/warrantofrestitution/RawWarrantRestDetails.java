@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
-
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 
 @Builder
 @Data
@@ -22,13 +19,7 @@ public class RawWarrantRestDetails {
     @CCD(
             label = "Is anyone living at the property vulnerable?"
     )
-    private YesNoNotSure vulnerablePeoplePresent;
+    private YesNoNotSure vulnerablePeoplePresentRest;
 
-    private VulnerableAdultsChildren vulnerableAdultsChildren;
-
-    @CCD(
-            label = "Who do you want to evict?",
-            typeOverride = DynamicMultiSelectList
-    )
-    private DynamicMultiSelectStringList selectedDefendants;
+    private VulnerableAdultsChildren vulnerableAdultsChildrenRest;
 }

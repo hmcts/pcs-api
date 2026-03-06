@@ -10,12 +10,14 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 public class WarrantOfRestitutionPageConfigurer implements PageConfigurer {
 
     private final ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
+    private final VulnerableAdultsChildrenRestPage  vulnerableAdultsChildrenRestPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
             .add(new ShareEvidenceWithJudgePage())
             .add(explainHowDefendantsReturnedPage)
-            .add(new EvidenceDefendantsAtPropertyPage());
+            .add(new EvidenceDefendantsAtPropertyPage())
+            .add(vulnerableAdultsChildrenRestPage);
     }
 }
