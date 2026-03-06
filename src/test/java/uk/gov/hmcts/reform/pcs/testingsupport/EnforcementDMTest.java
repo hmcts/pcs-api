@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.testingsupport;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -67,7 +67,7 @@ class EnforcementDMTest {
     void shouldCaptureAllMissingEntityFieldsFromTheEnforcementWarrantDetailsDomain() throws IOException {
         domainDataModelSupportHelper = new DomainDataModelSupportHelper(EnforcementOrder.class);
         domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
-                                                        EnforcementRiskDetails.class, WritDetails.class);
+                                                        RiskDetails.class, WritDetails.class);
         domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails",
                                                        "enforcementLanguageUsed");
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
@@ -85,7 +85,7 @@ class EnforcementDMTest {
     void shouldCaptureAllMissingEntityFieldsFromTheEnforcementWritDetailsDomain() throws IOException {
         domainDataModelSupportHelper = new DomainDataModelSupportHelper(WritDetails.class);
         domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
-                                                        EnforcementRiskDetails.class, WarrantDetails.class);
+                                                        RiskDetails.class, WarrantDetails.class);
         domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "warrantDetails",
                                                        "enforcementLanguageUsed");
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
