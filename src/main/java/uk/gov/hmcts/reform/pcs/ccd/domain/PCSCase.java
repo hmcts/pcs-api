@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +10,8 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.FlagLauncher;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
@@ -60,6 +63,8 @@ public class PCSCase {
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
+
+
 
     @CCD(
         searchable = false
@@ -495,10 +500,20 @@ public class PCSCase {
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
     @CCD(
-        label = "Search Criteria",
-        access = {GlobalSearchAccess.class}
+        label = "Search Criteria"
     )
+    @JsonProperty ("SearchCriteria")
     @SuppressWarnings("MemberName") // Field name is case-sensitive in CCD
-    private SearchCriteria searchCriteria;
+    private SearchCriteria SearchCriteria;
+
+    @CCD(access = {ClaimantAccess.class},
+        label = "Case Flags")
+    private Flags caseFlags;
+
+    @CCD(
+        label = "Launch the Flags screen",
+        access = {ClaimantAccess.class}
+    )
+    private FlagLauncher flagLauncher;
 
 }
