@@ -51,4 +51,5 @@ public class DefendantResponseEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "received_free_legal_advice")
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
+
 }
