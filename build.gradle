@@ -358,7 +358,7 @@ ext {
   springFrameworkBootVersion = "3.5.10"
   lombokVersion = "1.18.42"
   springSecurityVersion = "7.0.2"
-  pactVersion = "4.6.19"
+  pactVersion = "4.6.20"
   tomcatEmbedVersion = "11.0.18"
   nettyVersion = "4.1.130.Final"
 }
