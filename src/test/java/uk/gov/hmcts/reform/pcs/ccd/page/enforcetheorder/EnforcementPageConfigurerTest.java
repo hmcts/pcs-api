@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,13 +22,12 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PageConfigurerHelper.verifyAndCount;
 
 @ExtendWith(MockitoExtension.class)
-class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
+class EnforcementPageConfigurerTest extends BasePageTest {
 
     @Mock
-    private ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
-
+    private EnforcementApplicationPage enforcementApplicationPage;
     @InjectMocks
-    private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
+    private EnforcementPageConfigurer enforcementPageConfigurer;
 
     @Test
     void shouldConfigurePagesInCorrectOrder() {
@@ -37,16 +36,15 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         when(pageBuilder.add(any())).thenReturn(pageBuilder);
 
         // When
-        warrantOfRestitutionPageConfigurer.configurePages(pageBuilder);
+        enforcementPageConfigurer.configurePages(pageBuilder);
 
         // Then
         ArgumentCaptor<CcdPageConfiguration> pageCaptor = ArgumentCaptor.forClass(CcdPageConfiguration.class);
         InOrder inOrder = Mockito.inOrder(pageBuilder);
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
-        verifyAndCount(inOrder, pageBuilder, ShareEvidenceWithJudgePage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, explainHowDefendantsReturnedPage, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, DefendantAtPropertyPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, enforcementApplicationPage.getClass(),
+                verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);

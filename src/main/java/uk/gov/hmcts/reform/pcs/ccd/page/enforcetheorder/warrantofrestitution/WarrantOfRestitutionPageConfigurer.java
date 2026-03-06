@@ -3,11 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 
 @Component
 @AllArgsConstructor
-public class WarrantOfRestitutionPageConfigurer implements EnforcementPageConfigurer {
+public class WarrantOfRestitutionPageConfigurer implements PageConfigurer {
 
     private final ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
 

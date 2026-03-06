@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementTypes;
 
 @ExtendWith(MockitoExtension.class)
 class ExplainHowDefendantsReturnedPageTest extends BasePageTest {
@@ -35,7 +36,7 @@ class ExplainHowDefendantsReturnedPageTest extends BasePageTest {
                     .howDefendantsReturned("The defendants returned the following week.")
                     .build();
             EnforcementOrder order = EnforcementOrder.builder()
-                    .selectEnforcementType(SelectEnforcementType.WARRANT_OF_RESTITUTION)
+                    .selectEnforcementType(buildEnforcementTypes(SelectEnforcementType.WARRANT_OF_RESTITUTION))
                     .warrantOfRestitutionDetails(details)
                     .build();
             PCSCase caseData = PCSCase.builder()
@@ -56,7 +57,7 @@ class ExplainHowDefendantsReturnedPageTest extends BasePageTest {
                     .howDefendantsReturned(overLimit)
                     .build();
             EnforcementOrder order = EnforcementOrder.builder()
-                    .selectEnforcementType(SelectEnforcementType.WARRANT_OF_RESTITUTION)
+                    .selectEnforcementType(buildEnforcementTypes(SelectEnforcementType.WARRANT_OF_RESTITUTION))
                     .warrantOfRestitutionDetails(details)
                     .build();
             PCSCase caseData = PCSCase.builder()
