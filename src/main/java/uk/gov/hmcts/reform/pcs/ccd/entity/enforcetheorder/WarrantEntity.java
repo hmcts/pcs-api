@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompl
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -140,5 +141,7 @@ public class WarrantEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo showChangeNameAddressPage;
+
+    private LocalDate submissionDate;
 
 }

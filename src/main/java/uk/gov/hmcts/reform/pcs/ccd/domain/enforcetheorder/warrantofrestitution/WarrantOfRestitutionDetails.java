@@ -29,4 +29,5 @@ public class WarrantOfRestitutionDetails {
         typeOverride = FieldType.TextArea
     )
     private String howDefendantsReturned;
+
 }

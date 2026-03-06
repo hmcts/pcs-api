@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -79,5 +80,14 @@ public class WritEntity {
     private StatementOfTruthCompletedBy completedBy;
 
     private String certification;
+
+    private LocalDate submissionDate;
+
+    // Repayment
+    private String repaymentChoice;
+
+    private BigDecimal amountOfRepaymentCosts;
+
+    private String repaymentSummaryMarkdown;
 
 }

@@ -1,19 +1,28 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 
+import java.time.Clock;
+import java.time.LocalDate;
+
 @Component
 @Slf4j
+@AllArgsConstructor
 public class WritDetailsMapper {
+
+    private final Clock ukClock;
 
     public WritEntity toEntity(WritDetails writDetails) {
         WritEntity entity = new WritEntity();
@@ -26,6 +35,8 @@ public class WritDetailsMapper {
             convertToVerticalYesNo(writDetails.getHasHiredHighCourtEnforcementOfficer()));
         entity.setHceoDetails(writDetails.getHceoDetails());
         entity.setHasClaimTransferredToHighCourt(convertYesOrNo(writDetails.getHasClaimTransferredToHighCourt()));
+        entity.setLanguageUsed(writDetails.getLanguageUsed());
+        entity.setSubmissionDate(LocalDate.now(ukClock));
 
         // Map LandRegistryFees fields
         mapLandRegistryFees(writDetails.getLandRegistryFees(), entity);
@@ -35,8 +46,21 @@ public class WritDetailsMapper {
 
         // Map MoneyOwedByDefendants fields
         mapMoneyOwedByDefendants(writDetails.getMoneyOwedByDefendants(), entity);
+        // Map Repayment
+        mapRepaymentCosts(writDetails.getRepaymentCosts(), entity);
 
         return entity;
+    }
+
+    private void mapRepaymentCosts(RepaymentCosts repaymentCosts, WritEntity entity) {
+        if (repaymentCosts != null) {
+            RepaymentPreference repaymentChoice = repaymentCosts.getRepaymentChoice();
+            if (repaymentChoice != null) {
+                entity.setRepaymentChoice(repaymentChoice.getLabel());
+            }
+            entity.setAmountOfRepaymentCosts(repaymentCosts.getAmountOfRepaymentCosts());
+            entity.setRepaymentSummaryMarkdown(repaymentCosts.getRepaymentSummaryMarkdown());
+        }
     }
 
     private void mapNameAndAddressForEviction(NameAndAddressForEviction nameAndAddress,

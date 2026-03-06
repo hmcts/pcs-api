@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -34,4 +35,5 @@ public class WarrantOfRestitutionEntity {
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
 
+    private LocalDate submissionDate;
 }
