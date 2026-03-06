@@ -351,8 +351,7 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
@@ -377,8 +376,7 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
@@ -413,9 +411,7 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID))
-            .thenReturn(Optional.of(partyEntity));
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE))
             .thenReturn(Optional.of(CLAIM_ID));
