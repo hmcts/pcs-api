@@ -34,6 +34,12 @@ public class DefendantResponses {
     private BigDecimal rentArrearsAmount;
 
     @CCD
+    private VerticalYesNo disputeClaim;
+
+    @CCD
+    private String disputeDetails;
+
+    @CCD
     private YesNoNotSure noticeReceived;
 
     @CCD
