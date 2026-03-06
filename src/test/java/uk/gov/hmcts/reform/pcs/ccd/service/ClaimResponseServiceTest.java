@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -320,6 +321,94 @@ class ClaimResponseServiceTest {
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldSaveDateOfBirthFromDefendantResponses() {
+        // Given
+        final LocalDate dateOfBirth = LocalDate.of(2000, 1, 15);
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder()
+                .dateOfBirth(dateOfBirth)
+                .build()
+        );
+
+        stubCaseLookup();
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getDateOfBirth()).isEqualTo(dateOfBirth);
+    }
+
+    @Test
+    void shouldSaveDateOfBirthFromParty() {
+        // Given
+        final LocalDate dateOfBirth = LocalDate.of(1990, 5, 20);
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .dateOfBirth(dateOfBirth)
+                .build(),
+            DefendantResponses.builder().build()
+        );
+
+        stubCaseLookup();
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getDateOfBirth()).isEqualTo(dateOfBirth);
+    }
+
+    @Test
+    void shouldPrioritizeDefendantResponsesDateOfBirthWhenBothProvided() {
+        // Given
+        final LocalDate partyDateOfBirth = LocalDate.of(1990, 5, 20);
+        final LocalDate defendantResponsesDateOfBirth = LocalDate.of(2000, 1, 15);
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .dateOfBirth(partyDateOfBirth)
+                .build(),
+            DefendantResponses.builder()
+                .dateOfBirth(defendantResponsesDateOfBirth)
+                .build()
+        );
+
+        stubCaseLookup();
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getDateOfBirth()).isEqualTo(defendantResponsesDateOfBirth);
+    }
+
+    @Test
+    void shouldNotSetDateOfBirthWhenNeitherProvided() {
+        // Given
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder().build()
+        );
+
+        stubCaseLookup();
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getDateOfBirth()).isNull();
     }
 
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {
