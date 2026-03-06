@@ -10,6 +10,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -30,4 +33,9 @@ public class WarrantOfRestitutionDetails {
     )
     private String howDefendantsReturned;
 
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system"
+    )
+    private List<ListValue<EvidenceOfDefendants>> additionalDocuments;
 }
