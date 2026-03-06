@@ -68,7 +68,8 @@ class EnforcementDMTest {
         domainDataModelSupportHelper = new DomainDataModelSupportHelper(EnforcementOrder.class);
         domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
                                                         EnforcementRiskDetails.class, WritDetails.class);
-        domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails", "enforcementLanguageUsed");
+        domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails",
+                                                       "enforcementLanguageUsed");
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
             domainDataModelSupportHelper.findMissingCCDFields(WarrantEntity.class);
 
