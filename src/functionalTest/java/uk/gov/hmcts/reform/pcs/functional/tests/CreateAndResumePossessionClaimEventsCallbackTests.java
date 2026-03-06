@@ -3,10 +3,10 @@ package uk.gov.hmcts.reform.pcs.functional.tests;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
@@ -19,8 +19,6 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.RandomNumberUtil;
 
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
-
 @Tag("Smoke")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -30,17 +28,7 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
     ApiSteps apiSteps;
 
     private static final Long caseId = RandomNumberUtil.generateRandomNumber(16);
-    private static final String caseType;
-
-    static {
-        String ccdFlagEnabled = getEnv("CCD_ENABLED");
-
-        if (Boolean.parseBoolean(ccdFlagEnabled)) {
-            caseType = CaseType.getCaseType();
-        } else {
-            caseType = "PCS";
-        }
-    }
+    private static final String caseType = CaseType.getCaseType();
 
     @Title("createPossessionClaim start event callback test - returns 200")
     @Order(1)
