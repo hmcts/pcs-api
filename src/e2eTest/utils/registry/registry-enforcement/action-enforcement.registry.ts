@@ -10,10 +10,11 @@ import { LoginAction } from '@utils/actions/custom-actions/login.action';
 import { SearchCaseAction } from '@utils/actions/custom-actions/searchCase.action';
 import { EnforcementAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { CreateCaseAPIAction } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { ExpandSummaryAction } from '@utils/actions/element-actions';
+import { ExpandSummaryAction, UploadFileAction } from '@utils/actions/element-actions';
 import { ClickLinkAndVerifyNewTabTitleAction } from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import { RetryOnCallBackError } from '@utils/actions/element-actions/reTryOnCallBackError.action';
 import { ErrorValidationAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcementErrorValidation.action';
+import { RemoveFileAction } from '@utils/actions/element-actions/removeFile.action';
 
 export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -28,6 +29,7 @@ export class ActionEnforcementRegistry {
     ['navigateToUrl', new NavigateToUrlAction()],
     ['clickRadioButton', new ClickRadioButtonAction()],
     ['clickLinkAndVerifyNewTabTitle', new ClickLinkAndVerifyNewTabTitleAction()],
+    ['removeFile', new RemoveFileAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['expandSummary', new ExpandSummaryAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],
@@ -62,6 +64,7 @@ export class ActionEnforcementRegistry {
     ['confirmSuspendedOrder', new EnforcementAction()],
     ['selectStatementOfTruth', new EnforcementAction()],
     ['selectStatementOfTruthWrit', new EnforcementAction()],
+    ['uploadEvidenceThatDefendantsAreAtProperty', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
     ['generateRandomString', new EnforcementAction()],
     ['errorValidationYourApplicationPage', new ErrorValidationAction()],
@@ -79,6 +82,7 @@ export class ActionEnforcementRegistry {
     ['errorValidationSuspendOrderPage', new ErrorValidationAction()],
     ['errorValidationSOT1Page', new ErrorValidationAction()],
     ['errorValidationSOT2Page', new ErrorValidationAction()],
+    ['uploadFile', new UploadFileAction()]
   ]);
 
   static getAction(actionName: string): IAction {
