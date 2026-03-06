@@ -7,7 +7,7 @@
 The project uses [Gradle](https://gradle.org) as a build tool. It already contains
 `./gradlew` wrapper script, so there's no need to install gradle.
 
-To build the project execute the following command:
+To build the project e xecute the following command:
 
 ```bash
   ./gradlew build
@@ -31,7 +31,7 @@ This will start several containers:
 | IDAM Simulator                    | 5062 |
 | XUI Manage org                    | 3001 |
 
-Once successfully loaded open XUI at http://localhost:3000
+Once  successfully loaded open XUI at http://localhost:3000
 See CftlibConfig.java for users and login details.
 
 By default, this runs with local instance of IDAM and
