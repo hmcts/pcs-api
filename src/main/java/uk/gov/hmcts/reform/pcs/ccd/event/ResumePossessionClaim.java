@@ -11,7 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
+//import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -80,7 +80,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.model.CaseReferenceTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -328,8 +327,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
 
-        pcsCase.setSearchCriteria(new SearchCriteria());
-        scheduleSupplementaryDataSubmission(caseReference);
+        //pcsCase.setSearchCriteria(new SearchCriteria());
+        //scheduleSupplementaryDataSubmission(caseReference);
 
 
         return SubmitResponse.<State>builder()

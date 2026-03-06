@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
@@ -17,6 +18,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HM
  */
 @Component
 public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
+
+    @Value("${hmcts.hmctsOrgId}")
+    private String hmctsServiceId;
 
     private static final String CASE_TYPE_ID = "PCS";
     private static final String CASE_TYPE_NAME = "Civil Possessions";
@@ -46,6 +50,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
+
+        builder.hmctsServiceId(hmctsServiceId);
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
