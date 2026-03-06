@@ -2,8 +2,6 @@ export const legalCostsWrit = {
   //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Legal costs`,
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property address:`,
   reclaimLegalCostsQuestion: `Do you want to reclaim any legal costs?`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,

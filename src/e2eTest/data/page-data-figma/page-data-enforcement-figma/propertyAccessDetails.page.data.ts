@@ -2,8 +2,6 @@ export const propertyAccessDetails = {
   //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Access to the property`,
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property address:`,
   accessToThePropertyQuestion: `Is it difficult to access the property?`,
   forExampleHintText: `For example, explain if there is a communal entrance to the property and include the entry code. If the property has a car park or a designated parking space, tell the bailiff where they can park their car`,
   yesRadioOption: `Yes`,

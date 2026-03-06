@@ -1,9 +1,7 @@
 export const repaymentsWrit = { 
-  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Repayments`,
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property address:`,
   totalAmountCaption: `Total amount that can be repaid`,
   repaymentForTableHeader: `Repayment for`,
   amountTableHeader: `Amount`,

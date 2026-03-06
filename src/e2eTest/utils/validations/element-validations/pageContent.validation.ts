@@ -35,6 +35,12 @@ export class PageContentValidation implements IValidation {
                     [role="link"]:text-is("${value}"),
                     [aria-label="${value}"],
                     summary>span:text-is("${value}")`),
+    TableHeader: (page: Page, value: string) => page.locator(`
+                th[scope="row"]:text-is("${value}"),
+                th[scope="col"]:text-is("${value}"),
+                th:text-is("${value}"),
+                [role="rowheader"]:text-is("${value}"),
+                [role="columnheader"]:text-is("${value}")`),                
     Header: (page: Page, value: string) => page.getByRole('heading', {name: new RegExp(`^${escapeForRegex(value)}(\\s*\\([^)]*\\))?$`)})
       .or(page.locator(`h1:text-is("${value}"),
                     h2:text-is("${value}"),

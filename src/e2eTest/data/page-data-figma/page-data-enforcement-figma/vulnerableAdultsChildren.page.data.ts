@@ -2,8 +2,6 @@ export const vulnerableAdultsChildren = {
   //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Vulnerable adults and children at the property`,
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property address:`,
   theBailiffNeedsToKnowParagraph: `The bailiff needs to know if anyone at the property is vulnerable.`,
   someoneIsVulnerableParagraph: `Someone is vulnerable if they have:`,
   aHistoryOfDrugList: `a history of drug or alcohol abuse`,

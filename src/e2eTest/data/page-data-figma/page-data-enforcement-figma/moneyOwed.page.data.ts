@@ -2,8 +2,6 @@ export const moneyOwed = {
   //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `The amount the defendants owe you`,
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property address:`,
   youCanIncludeParagraph: `You can include:`,
   rentOrMortgageList: `rent or mortgage arrears`,
   theFeeYouPaidList: `the fee you paid to make a possession claim`,

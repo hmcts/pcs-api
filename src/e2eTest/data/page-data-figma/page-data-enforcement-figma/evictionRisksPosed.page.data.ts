@@ -2,8 +2,6 @@ export const evictionRisksPosed = {
   //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `The risks posed by everyone at the property`,
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property address:`,
   kindOfRiskQuestion: `What kind of risks do they pose to the bailiff?`,
   includeanyRisksHintText: `Include any risks posed by the defendants and also anyone else living at the property`,
   violentOrAggressiveBehaviourCheckbox: `Violent or aggressive behaviour`,

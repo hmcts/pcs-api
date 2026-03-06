@@ -2,8 +2,6 @@ export const livingInTheProperty = {
   //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Everyone living at the property`,
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property address:`,
   theBailiffNeedsToKnowParagraph: `The bailiff needs to know if anyone at the property poses a risk.`,
   forExampleParagraph: `For example if they:`,
   areVoilentList: `are violent or aggressive`,

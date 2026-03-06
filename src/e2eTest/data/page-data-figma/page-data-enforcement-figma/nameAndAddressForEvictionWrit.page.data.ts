@@ -1,9 +1,7 @@
 export const nameAndAddressForEvictionWrit = {
-  title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
+  //title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: 'The name and address for the eviction',
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property address:`,
   nameAndAddressCaption:  `Check the name and address for the eviction`,
   defendantsTableHeader: `Defendants`,
   addressTableHeader: `Address`,

@@ -2,8 +2,6 @@ export const enforcementApplicationPageData = {
  // title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Your application`,
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property address:`,
   typeOfApplicationQuestion: `What do you want to apply for?`,
   warrantOfPossessionRadioOption: `Warrant of possession`,
   writOfPossessionRadioOption: `Writ of possession`,
