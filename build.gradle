@@ -60,15 +60,6 @@ sourceSets {
     resources.srcDir file('src/integrationTest/resources')
   }
 
-  smokeTest {
-    java {
-      compileClasspath += main.output
-      runtimeClasspath += main.output
-      srcDir file('src/smokeTest/java')
-    }
-    resources.srcDir file('src/smokeTest/resources')
-  }
-
   contractTest {
     java {
       compileClasspath += main.output
@@ -98,10 +89,12 @@ configurations {
   }
 }
 
+def integrationBuild = gradle.startParameter.taskNames.any { it.toLowerCase() in ['integration', 'build', 'check'] }
+
 ccd {
   configDir = file('build/definitions')
   decentralised = true
-  runtimeIndexing = true // brings the custom ES indexer in as an implementation dependency
+  runtimeIndexing = !integrationBuild
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -208,16 +201,38 @@ tasks.register('integration', Test) {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   failFast = true
-//  ccd {
-//    runtimeIndexing = false // To avoid issues when TestContainers DB is shutdown
-//  }
 }
 
 tasks.register('smoke', Test) {
   description = "Runs Smoke Tests"
-  testClassesDirs = sourceSets.smokeTest.output.classesDirs
-  classpath = sourceSets.smokeTest.runtimeClasspath
+  group = "verification"
+  dependsOn assemble, testClasses
+  testClassesDirs = sourceSets.functionalTest.output.classesDirs
+  classpath = configurations.functionalTestRuntimeClasspath + sourceSets.functionalTest.output
+  useJUnitPlatform {
+    includeTags System.getProperty("tags", "Smoke")
+  }
+
+  doFirst {
+    delete "${rootDir}/target/site/serenity"
+    delete "${rootDir}/report-for-smoke-tests"
+    logger.quiet("Smoke test results directory cleaned before running smoke tests")
+  }
+
+  finalizedBy {
+    aggregate {
+      doLast {
+        new File("${rootDir}/report-for-smoke-tests").mkdirs()
+        file("${rootDir}/target/site/serenity").renameTo(file("${rootDir}/report-for-smoke-tests"))
+        logger.quiet("Smoke test report moved to ---> file://${rootDir}/report-for-smoke-tests/index.html")
+      }
+    }
+  }
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED"
+  }
 }
+smoke.finalizedBy(aggregate)
 
 tasks.register('yarnInstall', Exec) {
   workingDir = file("${project.projectDir}/src/e2eTest")
@@ -343,7 +358,7 @@ ext {
   springFrameworkBootVersion = "3.5.10"
   lombokVersion = "1.18.42"
   springSecurityVersion = "7.0.2"
-  pactVersion = "4.6.19"
+  pactVersion = "4.6.20"
   tomcatEmbedVersion = "11.0.18"
   nettyVersion = "4.1.130.Final"
 }
@@ -482,9 +497,6 @@ project.tasks.named("generateCCDConfig") {
 }
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
-project.tasks.named("processSmokeTestResources") {
-  duplicatesStrategy = 'include'
-}
 
 tasks.named('test') {
   doFirst {

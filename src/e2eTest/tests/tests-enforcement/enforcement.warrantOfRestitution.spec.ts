@@ -4,7 +4,11 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { caseSummary } from '@data/page-data';
 import {
   yourApplication,
-  peopleWillBeEvicted
+  evidenceUpload,
+  checkYourAnswers,
+  explainHowDefendantsReturned,
+  shareEvidenceWithJudge,
+  provideEvidence,
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -60,7 +64,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Restitution]', async () => {
-  test('Warrant - Apply for a Warrant of Restitution @enforcement @PR @regression',
+  test('Warrant - Apply for a Warrant of Restitution - upload more than one evidence @enforcement @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -90,7 +94,63 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
-        nextPage: peopleWillBeEvicted.mainHeaderWarrantOfRestitution
+        nextPage: shareEvidenceWithJudge.mainHeader
       });
+      await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: explainHowDefendantsReturned.errorValidation,
+        validationType: explainHowDefendantsReturned.errorValidationType.two,
+        inputArray: explainHowDefendantsReturned.errorValidationField.errorTextField,
+        header: explainHowDefendantsReturned.eventCouldNotBeCreatedErrorMessage,
+        label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
+        button: explainHowDefendantsReturned.continueButton
+      });
+      await performAction('provideHowDefendantReturnToProperty', {
+        label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
+        input: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextInput,
+        nextPage: provideEvidence.mainHeader
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.seven,
+        inputArray: evidenceUpload.errorValidationField.errorAddDocument,
+        button: evidenceUpload.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.eight,
+        inputArray: evidenceUpload.errorValidationField.errorDropDown,
+        docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
+        type: evidenceUpload.witnessStatementDropDownInput,
+        button: evidenceUpload.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.nine,
+        inputArray: evidenceUpload.errorValidationField.errorUpload,
+        docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
+        type: evidenceUpload.witnessStatementDropDownInput,
+        label: evidenceUpload.documentUploadHiddenTextLabel,
+        button: evidenceUpload.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.two,
+        inputArray: evidenceUpload.errorValidationField.errorTextField,
+        header: evidenceUpload.thereIsAProblemErrorMessageHeader,
+        label: evidenceUpload.shortDescriptionHiddenTextLabel,
+        button: evidenceUpload.continueButton,
+        buttonRemove: evidenceUpload.removeButton
+      });
+      await performAction('uploadEvidenceThatDefendantsAreAtProperty', {
+        documents: [
+          { type: evidenceUpload.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          { type: evidenceUpload.photoGraphicEvidenceDropDownInput, fileName: 'photographicEvidence.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          { type: evidenceUpload.otherDocumentDropDownInput, fileName: 'otherDocument.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          { type: evidenceUpload.policeReportDropDownInput, fileName: 'tenancyLicence.docx', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+        ],
+        nextPage: checkYourAnswers.mainHeader
+      })
     });
 });

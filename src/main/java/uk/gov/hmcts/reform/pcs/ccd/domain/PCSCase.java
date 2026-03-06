@@ -19,6 +19,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
@@ -64,11 +65,6 @@ public class PCSCase {
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
 
-
-    @CCD(
-        access = {DefendantAccess.class}
-    )
-    private YesOrNo submitDraftAnswers;
 
     @CCD(
         searchable = false
