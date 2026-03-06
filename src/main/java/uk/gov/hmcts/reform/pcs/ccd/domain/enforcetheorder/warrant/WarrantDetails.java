@@ -119,4 +119,5 @@ public class WarrantDetails {
     @CCD
     @JsonUnwrapped
     private DefendantsDOB defendantsDOB;
+
 }

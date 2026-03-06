@@ -4,6 +4,8 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -14,12 +16,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFee
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.DefendantsDOB;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PropertyAccessDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
@@ -329,24 +331,6 @@ class WarrantDetailsMapperTest {
     }
 
     @Test
-    void shouldHandleRepaymentCostsWithNullChoice() {
-        // Given
-        RepaymentCosts repaymentCosts = RepaymentCosts.builder()
-            .repaymentChoice(null)
-            .amountOfRepaymentCosts(new BigDecimal("1000.00"))
-            .build();
-        WarrantDetails warrantDetails = WarrantDetails.builder().repaymentCosts(repaymentCosts).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
-
-        // When
-        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getRepaymentChoice()).isNull();
-        assertThat(result.getAmountOfRepaymentCosts()).isEqualByComparingTo(new BigDecimal("1000.00"));
-    }
-
-    @Test
     void shouldMapDefendantsDOB() {
         // Given
         DefendantsDOB defendantsDOB = DefendantsDOB.builder().defendantsDOBDetails("01/01/1980").build();
@@ -480,6 +464,32 @@ class WarrantDetailsMapperTest {
         assertThat(result.getIsSuspendedOrder()).isEqualTo(VerticalYesNo.NO);
         assertThat(result.getAmountOfLegalCosts()).isEqualByComparingTo(new BigDecimal("1000.00"));
         assertThat(result.getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+    }
+
+    @ParameterizedTest
+    @EnumSource(RepaymentPreference.class)
+    void shouldMapRepaymentCostsForAllPreferences(RepaymentPreference repaymentPreference) {
+        // Given
+        WarrantDetails warrantDetails = WarrantDetails.builder()
+            .showChangeNameAddressPage(YesOrNo.YES)
+            .showPeopleWhoWillBeEvictedPage(YesOrNo.NO)
+            .showPeopleYouWantToEvictPage(YesOrNo.YES)
+            .build();
+        RepaymentCosts repaymentCosts = RepaymentCosts.builder()
+            .repaymentChoice(repaymentPreference)
+            .amountOfRepaymentCosts(new BigDecimal("500.00"))
+            .repaymentSummaryMarkdown("Repayment summary")
+            .build();
+        warrantDetails.setRepaymentCosts(repaymentCosts);
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
+
+        // When
+        WarrantEntity entity = underTest.toEntity(enforcementOrder, new EnforcementOrderEntity());
+
+        // Then
+        assertThat(entity.getRepaymentChoice()).isEqualTo(repaymentPreference.getLabel());
+        assertThat(entity.getAmountOfRepaymentCosts()).isEqualByComparingTo(new BigDecimal("500.00"));
+        assertThat(entity.getRepaymentSummaryMarkdown()).isEqualTo("Repayment summary");
     }
 
     private EnforcementOrder createCompleteEnforcementOrder() {

@@ -65,11 +65,13 @@ class EnforcementDMTest {
 
     @Test
     void shouldCaptureAllMissingEntityFieldsFromTheEnforcementWarrantDetailsDomain() throws IOException {
-        domainDataModelSupportHelper = new DomainDataModelSupportHelper(EnforcementOrder.class);
+        domainDataModelSupportHelper = new DomainDataModelSupportHelper(WarrantDetails.class);
         domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
+                                                        EnforcementOrderEntity.class,
                                                         EnforcementRiskDetails.class, WritDetails.class);
         domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails",
-                                                       "enforcementLanguageUsed");
+                                                       "enforcementLanguageUsed", "anyRiskToBailiff",
+                                                       "riskCategories");
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
             domainDataModelSupportHelper.findMissingCCDFields(WarrantEntity.class);
 
@@ -85,9 +87,12 @@ class EnforcementDMTest {
     void shouldCaptureAllMissingEntityFieldsFromTheEnforcementWritDetailsDomain() throws IOException {
         domainDataModelSupportHelper = new DomainDataModelSupportHelper(WritDetails.class);
         domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
+                                                        EnforcementOrderEntity.class,
                                                         EnforcementRiskDetails.class, WarrantDetails.class);
+        // showChangeNameAddressPage is not stored with this to flow path but used in the show conditions.
         domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "warrantDetails",
-                                                       "enforcementLanguageUsed");
+                                                       "wasGeneralApplicationToTransferToHighCourtSuccessful", // temp
+                                                       "showChangeNameAddressPage");
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
             domainDataModelSupportHelper.findMissingCCDFields(WritEntity.class);
 
