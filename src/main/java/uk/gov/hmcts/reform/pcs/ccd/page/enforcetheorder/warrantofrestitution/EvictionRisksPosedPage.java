@@ -22,7 +22,7 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .pageLabel("The risks posed by everyone at the property")
             .showCondition(
                 WARRANT_OF_RESTITUTION_FLOW
-                    + " AND warrantOfRestitutionAnyRiskToBailiff=\"YES\""
+                    + " AND warrant_restAnyRiskToBailiff=\"YES\""
             )
             .label("warrantOfRestitutionEvictionRisksPosed-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)

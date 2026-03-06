@@ -60,8 +60,8 @@ class EvictionDelayWarningPageTest {
 
         String expectedShowCondition =
             WARRANT_OF_RESTITUTION_FLOW
-                + " AND (warrantOfRestitutionAnyRiskToBailiff=\"NO\" "
-                + "OR warrantOfRestitutionAnyRiskToBailiff=\"NOT_SURE\")";
+                + " AND (warrant_restAnyRiskToBailiff=\"NO\" "
+                + "OR warrant_restAnyRiskToBailiff=\"NOT_SURE\")";
 
         verify(fieldBuilder).showCondition(expectedShowCondition);
         verify(fieldBuilder).label("warrantOfRestitutionEvictionDelayWarning-line-separator", "---");
