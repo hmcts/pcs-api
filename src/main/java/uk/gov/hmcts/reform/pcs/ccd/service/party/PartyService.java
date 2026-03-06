@@ -18,10 +18,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -52,6 +54,12 @@ public class PartyService {
                 claimEntity.addParty(underlesseeOrMortgagee, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
             }
         );
+    }
+
+    public PartyEntity getPartyEntityByIdamId(UUID idamId, long caseReference) {
+        return partyRepository.queryPartyByIdamId(idamId, caseReference)
+            .orElseThrow(() -> new PartyNotFoundException(
+                "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
     }
 
     private PartyEntity createClaimant(PCSCase pcsCase) {

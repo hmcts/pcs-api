@@ -15,12 +15,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
@@ -41,18 +41,17 @@ class DefendantResponseServiceTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
     private static final UUID USER_ID = UUID.randomUUID();
-    private static final UUID CASE_ID = UUID.randomUUID();
     private static final UUID PARTY_ID = UUID.randomUUID();
     private static final UUID CLAIM_ID = UUID.randomUUID();
 
+    @Mock
+    private PartyService partyService;
     @Mock
     private PartyRepository partyRepository;
     @Mock
     private ClaimRepository claimRepository;
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
-    @Mock
-    private PcsCaseRepository pcsCaseRepository;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
@@ -68,20 +67,12 @@ class DefendantResponseServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new DefendantResponseService(
+            partyService,
             partyRepository,
             claimRepository,
             defendantResponseRepository,
-            pcsCaseRepository,
             securityContextService
         );
-    }
-
-    private void stubCaseLookup() {
-        PcsCaseEntity caseEntity = new PcsCaseEntity();
-        caseEntity.setId(CASE_ID);
-        caseEntity.setCaseReference(CASE_REFERENCE);
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-            .thenReturn(Optional.of(caseEntity));
     }
 
     @Test
@@ -90,8 +81,7 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
@@ -119,8 +109,7 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
@@ -146,8 +135,7 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
@@ -173,8 +161,7 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
@@ -247,13 +234,13 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenPartyNotFound() {
+    void shouldPropagateExceptionWhenPartyNotFound() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.empty());
+        PartyNotFoundException expectedException = new PartyNotFoundException("test exception");
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenThrow(expectedException);
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
@@ -261,9 +248,7 @@ class DefendantResponseServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE, responses))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage(String.format("No party found for IDAM ID: %s and case reference: %d",
-                USER_ID, CASE_REFERENCE));
+            .isSameAs(expectedException);
 
         verify(claimRepository, never()).findIdByCaseReference(anyLong());
         verify(defendantResponseRepository, never()).save(any());
@@ -275,8 +260,7 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
@@ -298,8 +282,7 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
@@ -317,7 +300,6 @@ class DefendantResponseServiceTest {
         verify(claimRepository).getReferenceById(CLAIM_ID);
 
         // Verify ID-only queries used (not findById which loads full entity)
-        verify(partyRepository).findByIdamIdAndPcsCaseId(USER_ID, CASE_ID);
         verify(claimRepository).findIdByCaseReference(CASE_REFERENCE);
 
         // Verify duplicate check happens first (fail-fast)
@@ -331,8 +313,7 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
@@ -354,7 +335,6 @@ class DefendantResponseServiceTest {
             CASE_REFERENCE, USER_ID);
 
         // 3. Get IDs only (minimal lock time)
-        verify(partyRepository).findByIdamIdAndPcsCaseId(USER_ID, CASE_ID);
         verify(claimRepository).findIdByCaseReference(CASE_REFERENCE);
 
         // 4. Get JPA proxies (no database query)
