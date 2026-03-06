@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrantofrestitution;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

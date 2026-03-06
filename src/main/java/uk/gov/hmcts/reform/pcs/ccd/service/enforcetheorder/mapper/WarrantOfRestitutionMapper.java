@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrantofrestitution;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;

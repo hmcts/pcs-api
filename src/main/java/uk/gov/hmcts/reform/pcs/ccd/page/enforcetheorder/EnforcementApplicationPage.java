@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrantofrestitution.WarrantOfRestitutionMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 
 import java.util.List;
