@@ -38,15 +38,9 @@ public class WritDetailsMapper {
         entity.setLanguageUsed(writDetails.getLanguageUsed());
         entity.setSubmissionDate(LocalDate.now(ukClock));
 
-        // Map LandRegistryFees fields
         mapLandRegistryFees(writDetails.getLandRegistryFees(), entity);
-
-        // Map LegalCosts fields
         mapLegalCosts(writDetails.getLegalCosts(), entity);
-
-        // Map MoneyOwedByDefendants fields
         mapMoneyOwedByDefendants(writDetails.getMoneyOwedByDefendants(), entity);
-        // Map Repayment
         mapRepaymentCosts(writDetails.getRepaymentCosts(), entity);
 
         return entity;
@@ -55,9 +49,7 @@ public class WritDetailsMapper {
     private void mapRepaymentCosts(RepaymentCosts repaymentCosts, WritEntity entity) {
         if (repaymentCosts != null) {
             RepaymentPreference repaymentChoice = repaymentCosts.getRepaymentChoice();
-            if (repaymentChoice != null) {
-                entity.setRepaymentChoice(repaymentChoice.getLabel());
-            }
+            entity.setRepaymentChoice(repaymentChoice.getLabel());
             entity.setAmountOfRepaymentCosts(repaymentCosts.getAmountOfRepaymentCosts());
             entity.setRepaymentSummaryMarkdown(repaymentCosts.getRepaymentSummaryMarkdown());
         }

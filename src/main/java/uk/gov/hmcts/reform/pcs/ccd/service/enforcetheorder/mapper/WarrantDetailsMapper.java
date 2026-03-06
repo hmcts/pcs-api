@@ -165,9 +165,7 @@ public class WarrantDetailsMapper {
         if (warrantDetails.getRepaymentCosts() != null) {
             RepaymentCosts repaymentCosts = warrantDetails.getRepaymentCosts();
             RepaymentPreference repaymentChoice = repaymentCosts.getRepaymentChoice();
-            if (repaymentChoice != null) {
-                warrantEntity.setRepaymentChoice(repaymentChoice.getLabel());
-            }
+            warrantEntity.setRepaymentChoice(repaymentChoice.getLabel());
             warrantEntity.setAmountOfRepaymentCosts(repaymentCosts.getAmountOfRepaymentCosts());
             warrantEntity.setRepaymentSummaryMarkdown(repaymentCosts.getRepaymentSummaryMarkdown());
         }
