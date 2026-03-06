@@ -85,7 +85,8 @@ class PartyServiceTest {
             long caseReference = 1234L;
 
             PartyEntity expectedPartyEntity = mock(PartyEntity.class);
-            when(partyRepository.queryPartyByIdamId(idamId, caseReference)).thenReturn(Optional.of(expectedPartyEntity));
+            when(partyRepository.queryPartyByIdamId(idamId, caseReference))
+                .thenReturn(Optional.of(expectedPartyEntity));
 
             // When
             PartyEntity actualPartyEntity = underTest.getPartyEntityByIdamId(idamId, caseReference);
