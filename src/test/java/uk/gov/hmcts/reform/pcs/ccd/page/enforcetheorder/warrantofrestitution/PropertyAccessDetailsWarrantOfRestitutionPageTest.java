@@ -1,39 +1,44 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
 
-class PropertyAccessDetailsPageTest extends BasePageTest {
-
-    private static final String SHORTEST_VALID_TEXT = "A";
+class PropertyAccessDetailsWarrantOfRestitutionPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
         TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        setPageUnderTest(new PropertyAccessDetailsPage(textAreaValidationService));
+        setPageUnderTest(new PropertyAccessDetailsWarrantOfRestitutionPage(textAreaValidationService));
     }
 
-    @Test
-    void shouldAcceptValidShortestAllowedText() {
+    @ParameterizedTest
+    @MethodSource("provideStringsForValidText")
+    void shouldAcceptValidText(String validText) {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .warrantDetails(WarrantDetails.builder()
+                    .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
                                 .isDifficultToAccessProperty(VerticalYesNo.YES)
-                                .clarificationOnAccessDifficultyText(SHORTEST_VALID_TEXT)
+                                .clarificationOnAccessDifficultyText(validText)
                                 .build())
                         .build())
                     .build())
@@ -45,35 +50,9 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-            .getPropertyAccessDetails().getClarificationOnAccessDifficultyText())
-            .isEqualTo(SHORTEST_VALID_TEXT);
-    }
-
-    @Test
-    void shouldAcceptValidLongestAllowedText() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-                .enforcementOrder(EnforcementOrder.builder()
-                    .warrantDetails(WarrantDetails.builder()
-                        .propertyAccessDetails(PropertyAccessDetails.builder()
-                                .isDifficultToAccessProperty(VerticalYesNo.YES)
-                                .clarificationOnAccessDifficultyText(
-                                        SHORTEST_VALID_TEXT.repeat(6800))
-                                .build())
-                        .build())
-                    .build())
-                .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
-        assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+        assertThat(response.getData().getEnforcementOrder().getWarrantOfRestitutionDetails()
                 .getPropertyAccessDetails().getClarificationOnAccessDifficultyText()).isEqualTo(
-                        SHORTEST_VALID_TEXT.repeat(6800));
+                        validText);
     }
 
     @Test
@@ -82,7 +61,7 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         String longText = "a".repeat(6801);
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .warrantDetails(WarrantDetails.builder()
+                    .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
                                 .isDifficultToAccessProperty(VerticalYesNo.YES)
                                 .clarificationOnAccessDifficultyText(longText)
@@ -101,4 +80,34 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
 
         assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
+
+    @Test
+    void shouldNotValidateTextWhenDifficultToAccessPropertyIsNO(){
+        //  Given
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder()
+                                  .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                                                                   .propertyAccessDetails(PropertyAccessDetails
+                                                                                              .builder()
+                                                                                              .isDifficultToAccessProperty(
+                                                                                                  VerticalYesNo.NO).clarificationOnAccessDifficultyText("Some Text").build()).build()).build()).build();
+        //  When
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        //  Then
+        assertThat(response.getData().getEnforcementOrder().getWarrantOfRestitutionDetails()
+                       .getPropertyAccessDetails().getClarificationOnAccessDifficultyText() == null);
+    }
+
+    private static Stream<Arguments> provideStringsForValidText() {
+        return Stream.of(
+            Arguments.of("A"),
+            Arguments.of("A".repeat(6800)),
+            Arguments.of("Simple property details"),
+            Arguments.of("  "),
+            Arguments.of("Flat 2B, 52 Johns Street, SW11 1DW")
+        );
+    }
+
 }

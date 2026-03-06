@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 
 @Data
 @Builder
@@ -29,4 +31,8 @@ public class WarrantOfRestitutionDetails {
         typeOverride = FieldType.TextArea
     )
     private String howDefendantsReturned;
+
+    @JsonUnwrapped
+    @CCD
+    private PropertyAccessDetails propertyAccessDetails;
 }

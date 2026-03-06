@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,9 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
@@ -22,7 +22,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Component
-public class PropertyAccessDetailsPage implements CcdPageConfiguration {
+public class PropertyAccessDetailsWarrantOfRestitutionPage implements CcdPageConfiguration {
 
     private static final String CLARIFICATION_PROPERTY_ACCESS_LABEL =
             "Explain why it’s difficult to access the property";
@@ -32,18 +32,20 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("propertyAccessDetails", this::midEvent)
+                .page("propertyAccessDetailsWarrantOfRestitution", this::midEvent)
                 .pageLabel("Access to the property")
-                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
-                .label("propertyAccessDetails-line-separator", "---")
+                .showCondition(WARRANT_OF_RESTITUTION_FLOW)
+                .label("propertyAccessDetailsWarrantOfRestitution-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
-                .complex(EnforcementOrder::getWarrantDetails)
-                .complex(WarrantDetails::getPropertyAccessDetails)
+                .complex(EnforcementOrder::getWarrantOfRestitutionDetails)
+                .complex(WarrantOfRestitutionDetails::getPropertyAccessDetails)
                 .mandatory(PropertyAccessDetails::getIsDifficultToAccessProperty)
                 .mandatory(PropertyAccessDetails::getClarificationOnAccessDifficultyText,
-                        "warrantIsDifficultToAccessProperty=\"YES\"")
+                        "warrantOfRestitutionIsDifficultToAccessProperty=\"YES\"")
                 .done()
-                .label("propertyAccessDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .done()
+                .done()
+                .label("propertyAccessDetailsWarrantOfRestitution-saveAndReturn", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -61,10 +63,10 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
         List<String> errors = new ArrayList<>();
 
         String txt = data.getEnforcementOrder()
-                .getWarrantDetails().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
+                .getWarrantOfRestitutionDetails().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
 
-        if (data.getEnforcementOrder().getWarrantDetails().getPropertyAccessDetails().getIsDifficultToAccessProperty()
-            .equals(VerticalYesNo.YES)) {
+        if (data.getEnforcementOrder().getWarrantOfRestitutionDetails().getPropertyAccessDetails()
+            .getIsDifficultToAccessProperty() == VerticalYesNo.YES) {
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,
                 CLARIFICATION_PROPERTY_ACCESS_LABEL,

@@ -11,11 +11,15 @@ public class WarrantOfRestitutionPageConfigurer implements EnforcementPageConfig
 
     private final ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
 
+    private final PropertyAccessDetailsWarrantOfRestitutionPage propertyAccessDetailsWarrantOfRestitutionPage;
+
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
             .add(new ShareEvidenceWithJudgePage())
             .add(explainHowDefendantsReturnedPage)
-            .add(new EvidenceDefendantsAtPropertyPage());
+            .add(new EvidenceDefendantsAtPropertyPage())
+            .add(propertyAccessDetailsWarrantOfRestitutionPage)
+            .add(new AnythingElseToHelpTheEvictionPlaceholder());
     }
 }
