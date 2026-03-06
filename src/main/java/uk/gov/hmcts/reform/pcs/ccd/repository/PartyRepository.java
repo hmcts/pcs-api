@@ -13,6 +13,6 @@ import java.util.UUID;
 public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
 
     @Query("SELECT p FROM PartyEntity p WHERE p.idamId = :idamId AND p.pcsCase.caseReference = :caseReference")
-    Optional<PartyEntity> findByIdamId(@Param("idamId") UUID idamId, @Param("caseReference") long caseReference);
+    Optional<PartyEntity> queryPartyByIdamId(@Param("idamId") UUID idamId, @Param("caseReference") long caseReference);
 
 }

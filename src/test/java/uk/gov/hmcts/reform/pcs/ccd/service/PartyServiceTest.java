@@ -85,7 +85,7 @@ class PartyServiceTest {
             long caseReference = 1234L;
 
             PartyEntity expectedPartyEntity = mock(PartyEntity.class);
-            when(partyRepository.findByIdamId(idamId, caseReference)).thenReturn(Optional.of(expectedPartyEntity));
+            when(partyRepository.queryPartyByIdamId(idamId, caseReference)).thenReturn(Optional.of(expectedPartyEntity));
 
             // When
             PartyEntity actualPartyEntity = underTest.getPartyEntityByIdamId(idamId, caseReference);
@@ -100,7 +100,7 @@ class PartyServiceTest {
             UUID idamId = UUID.randomUUID();
             long caseReference = 1234L;
 
-            when(partyRepository.findByIdamId(idamId, caseReference)).thenReturn(Optional.empty());
+            when(partyRepository.queryPartyByIdamId(idamId, caseReference)).thenReturn(Optional.empty());
 
             // When
             Throwable throwable = catchThrowable(() -> underTest.getPartyEntityByIdamId(idamId, caseReference));
