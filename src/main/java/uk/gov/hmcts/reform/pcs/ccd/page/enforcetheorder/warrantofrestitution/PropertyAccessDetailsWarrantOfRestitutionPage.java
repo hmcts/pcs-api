@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
@@ -45,7 +45,7 @@ public class PropertyAccessDetailsWarrantOfRestitutionPage implements CcdPageCon
                 .done()
                 .done()
                 .done()
-                .label("propertyAccessDetailsWarrantOfRestitution-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .label("propertyAccessDetailsWarrantOfRestitution-saveAndReturn", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -66,8 +66,7 @@ public class PropertyAccessDetailsWarrantOfRestitutionPage implements CcdPageCon
                 .getWarrantOfRestitutionDetails().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
 
         if (data.getEnforcementOrder().getWarrantOfRestitutionDetails().getPropertyAccessDetails()
-            .getIsDifficultToAccessProperty()
-            .equals(VerticalYesNo.YES)) {
+            .getIsDifficultToAccessProperty() == VerticalYesNo.YES) {
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,
                 CLARIFICATION_PROPERTY_ACCESS_LABEL,

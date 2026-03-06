@@ -2,6 +2,10 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -11,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessD
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
@@ -23,10 +29,10 @@ class PropertyAccessDetailsWarrantOfRestitutionPageTest extends BasePageTest {
         setPageUnderTest(new PropertyAccessDetailsWarrantOfRestitutionPage(textAreaValidationService));
     }
 
-    @Test
-    void shouldAcceptValidText() {
+    @ParameterizedTest
+    @MethodSource("provideStringsForValidText")
+    void shouldAcceptValidText(String validText) {
         // Given
-        String validText = "Some property access details";
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                     .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
@@ -74,4 +80,33 @@ class PropertyAccessDetailsWarrantOfRestitutionPageTest extends BasePageTest {
 
         assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
+
+    @Test
+    void shouldNotValidateTextWhenDifficultToAccessPropertyIsNO(){
+        //  Given
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder()
+                                  .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                                                                   .propertyAccessDetails(PropertyAccessDetails
+                                                                                              .builder()
+                                                                                              .isDifficultToAccessProperty(
+                                                                                                  VerticalYesNo.NO).clarificationOnAccessDifficultyText("Some Text").build()).build()).build()).build();
+        //  When
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        //  Then
+        assertThat(response.getData().getEnforcementOrder().getWarrantOfRestitutionDetails().getPropertyAccessDetails().getClarificationOnAccessDifficultyText() == null);
+    }
+
+    private static Stream<Arguments> provideStringsForValidText() {
+        return Stream.of(
+            Arguments.of("A"),
+            Arguments.of("A".repeat(6800)),
+            Arguments.of("Simple property details"),
+            Arguments.of("  "),
+            Arguments.of("Flat 2B, 52 Johns Street, SW11 1DW")
+        );
+    }
+
 }
