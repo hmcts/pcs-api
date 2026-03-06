@@ -4,7 +4,6 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { caseSummary } from '@data/page-data';
 import {
   yourApplication,
-  peopleWillBeEvicted,
   evidenceUpload,
   checkYourAnswers,
   explainHowDefendantsReturned,
@@ -111,7 +110,6 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         input: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextInput,
         nextPage: provideEvidence.mainHeader
       });
-      await performAction('reTryOnCallBackError', peopleWillBeEvicted.continueButton, evidenceUpload.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: evidenceUpload.errorValidation,
         validationType: evidenceUpload.errorValidationType.seven,
