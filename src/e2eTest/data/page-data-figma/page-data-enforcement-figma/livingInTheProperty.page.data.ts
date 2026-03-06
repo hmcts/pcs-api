@@ -1,0 +1,22 @@
+export const livingInTheProperty = {
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  EnforceTheOrderCaption: `Enforce the order`,
+  mainHeader: `Everyone living at the property`,
+  theBailiffNeedsToKnowParagraph: `The bailiff needs to know if anyone at the property poses a risk.`,
+  forExampleParagraph: `For example if they:`,
+  areVoilentList: `are violent or aggressive`,
+  possessAFirearmList: `possess a firearm or other weapon`,
+  haveAHistoryList: `have a history of criminal or antisocial behaviour`,
+  haveMadeVErbalList: `have made verbal or written threats towards you`,
+  areAMemberList: `are a member of a group that protests evictions`,
+  haveHadVisitsList: `have had visits from the police or social services`,
+  ownAnAggressiveList: `own an aggressive dog or other animal`,
+  riskToBailiffQuestion: `Does anyone living at the property pose a risk to the bailiff?`,
+  yesRadioOption: `Yes`,
+  noRadioOption: `No`,
+  notSureRadioOption:`I’m not sure`,
+  summarySaveApplicationLink: `I want to save this application and return to it later`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`
+}

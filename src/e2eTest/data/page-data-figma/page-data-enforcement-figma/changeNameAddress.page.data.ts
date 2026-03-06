@@ -1,0 +1,21 @@
+export const changeNameAddress = {
+  //title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
+  EnforceTheOrderCaption: `Enforce the order`,
+  mainHeader: 'You need permission from a judge to change the name and address for the eviction',
+  youNeedToAskPermissionParagraph: `You need to ask permission from the judge before you can change the name or address for the eviction. `,
+  theJudgeWillDecideParagraph: `The judge will decide if you:`,
+  canChangeTheAddressList: `can change the address and continue with this application (if the change is something small, like a typing error)`,
+  mustStartAgainList: `must start again, with a new application (if the change is more significant, like a completely different address)`,
+  youCannotcontinueParagraph: `You cannot continue with your application until you have asked the judge for permission to make this change.`,
+  ifyouWantToProceedParagraph: `If you want to proceed with changing the name or address for the eviction`,
+  askTheJudgeParagraph: `Ask the judge if you can change the name or address for the eviction (GOV.UK, opens in a new tab).`,
+  ifyouWantToKeepParagraph: `If you want to keep the existing name or address`,
+  ifYouAreconfidentParagraph: `If you are confident that the name or address is correct, you can go back to the previous page and change your answer to the last question.`,
+  ifTheNameAndAddressParagraph: `If the name and address is incorrect, the bailiff will not be able to carry out the eviction.`,
+  summarySaveApplicationLink: `I want to save this application and return to it later`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`,
+  //eventCouldNotBeCreatedErrorMessage: 'The event could not be created',
+  //errMessage: 'You cannot continue with this application until you ask the judge for permission to change the name and address.'
+}

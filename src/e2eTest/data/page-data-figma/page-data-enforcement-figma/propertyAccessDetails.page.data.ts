@@ -1,0 +1,18 @@
+export const propertyAccessDetails = {
+  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  EnforceTheOrderCaption: `Enforce the order`,
+  mainHeader: `Access to the property`,
+  accessToThePropertyQuestion: `Is it difficult to access the property?`,
+  forExampleHintText: `For example, explain if there is a communal entrance to the property and include the entry code. If the property has a car park or a designated parking space, tell the bailiff where they can park their car`,
+  yesRadioOption: `Yes`,
+  noRadioOption: `No`,
+  whyItsDifficultToAccessToThePropertyTextLabelHidden: `Explain why it’s difficult to access the property`,
+  maxCharactersHintTextHidden: `You can enter up to 6800 characters.`,
+  whyItsDifficultToAccessToThePropertyTextInputHidden: `Test input Tell us anything else that could help with the eviction`,
+  summarySaveApplicationLink: `I want to save this application and return to it later`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`,
+  //isItDifficultErrMessage: `Is it difficult to access the property? is required `,
+  //whyItsDifficultErrMessage: `Explain why it’s difficult to access the property is required `
+}
