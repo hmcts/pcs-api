@@ -25,6 +25,6 @@ ALTER TABLE public.enf_writ DROP COLUMN show_people_who_will_be_evicted_page;
 
 
 
-DROP INDEX idx_enf_writ_of_restitution_case_id;
-DROP INDEX idx_enf_warrant_case_id;
+DROP INDEX IF EXISTS idx_enf_writ_of_restitution_case_id;
+DROP INDEX IF EXISTS idx_enf_warrant_case_id;
 
