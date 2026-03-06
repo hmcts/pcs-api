@@ -428,7 +428,7 @@ export class EnforcementAction implements IAction {
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
-    if (validationArr.validationReq === 'YES') {
+    //if (validationArr.validationReq === 'YES') {
 
       if (Array.isArray(validationArr.inputArray)) {
         for (const item of validationArr.inputArray) {
@@ -497,7 +497,7 @@ export class EnforcementAction implements IAction {
           };
         }
       }
-    }
+    //}
   }
 
   private async addFieldsToMap(fields: actionRecord) {

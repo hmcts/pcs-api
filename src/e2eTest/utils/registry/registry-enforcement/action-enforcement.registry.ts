@@ -13,6 +13,7 @@ import { CreateCaseAPIAction } from '@utils/actions/custom-actions/createCaseAPI
 import { ExpandSummaryAction } from '@utils/actions/element-actions';
 import { ClickLinkAndVerifyNewTabTitleAction } from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import { RetryOnCallBackError } from '@utils/actions/element-actions/reTryOnCallBackError.action';
+import { ErrorValidationAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcementErrorValidation.action';
 
 export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -63,6 +64,21 @@ export class ActionEnforcementRegistry {
     ['selectStatementOfTruthWrit', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
     ['generateRandomString', new EnforcementAction()],
+    ['errorValidationYourApplicationPage', new ErrorValidationAction()],
+    ['errorValidationNameAndAddressForEvictionPage', new ErrorValidationAction()],
+    ['errorValidationConfirmDefendantsDOBPage', new ErrorValidationAction()],
+    ['errorValidationEnterDefendantsDOBPage', new ErrorValidationAction()],
+    ['errorValidationRiskPosedByEveryonePage', new ErrorValidationAction()],
+    ['errorValidationViolentOrAggressiveBehaviourPage', new ErrorValidationAction()],
+    ['errorValidationVulnerablePeoplePage', new ErrorValidationAction()],
+    ['errorValidationMoneyOwedPage', new ErrorValidationAction()],
+    ['errorValidationLegalCostsPage', new ErrorValidationAction()],
+    ['errorValidationLandRegistryFeePage', new ErrorValidationAction()],
+    ['errorValidationRepaymentsPage', new ErrorValidationAction()],
+    ['errorValidationLanguageUsedPage', new ErrorValidationAction()],
+    ['errorValidationSuspendOrderPage', new ErrorValidationAction()],
+    ['errorValidationSOT1Page', new ErrorValidationAction()],
+    ['errorValidationSOT2Page', new ErrorValidationAction()],
   ]);
 
   static getAction(actionName: string): IAction {
