@@ -4,7 +4,8 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { caseSummary } from '@data/page-data';
 import {
   yourApplication,
-  peopleWillBeEvicted,
+  evidenceUpload,
+  checkYourAnswers,
   explainHowDefendantsReturned,
   shareEvidenceWithJudge,
   provideEvidence,
@@ -63,7 +64,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Restitution]', async () => {
-  test('Warrant - Apply for a Warrant of Restitution @enforcement @PR @regression',
+  test('Warrant - Apply for a Warrant of Restitution - upload more than one evidence @enforcement @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -109,5 +110,47 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         input: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextInput,
         nextPage: provideEvidence.mainHeader
       });
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.seven,
+        inputArray: evidenceUpload.errorValidationField.errorAddDocument,
+        button: evidenceUpload.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.eight,
+        inputArray: evidenceUpload.errorValidationField.errorDropDown,
+        docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
+        type: evidenceUpload.witnessStatementDropDownInput,
+        button: evidenceUpload.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.nine,
+        inputArray: evidenceUpload.errorValidationField.errorUpload,
+        docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
+        type: evidenceUpload.witnessStatementDropDownInput,
+        label: evidenceUpload.documentUploadHiddenTextLabel,
+        button: evidenceUpload.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.two,
+        inputArray: evidenceUpload.errorValidationField.errorTextField,
+        header: evidenceUpload.thereIsAProblemErrorMessageHeader,
+        label: evidenceUpload.shortDescriptionHiddenTextLabel,
+        button: evidenceUpload.continueButton,
+        buttonRemove: evidenceUpload.removeButton
+      });
+      await performAction('uploadEvidenceThatDefendantsAreAtProperty', {
+        documents: [
+          { type: evidenceUpload.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          { type: evidenceUpload.photoGraphicEvidenceDropDownInput, fileName: 'photographicEvidence.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          { type: evidenceUpload.otherDocumentDropDownInput, fileName: 'otherDocument.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          { type: evidenceUpload.policeReportDropDownInput, fileName: 'tenancyLicence.docx', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+        ],
+        nextPage: checkYourAnswers.mainHeader
+      })
     });
 });

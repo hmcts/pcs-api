@@ -12,11 +12,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -61,4 +63,12 @@ public class WarrantOfRestitutionDetails {
     @JsonUnwrapped
     @CCD
     private PropertyAccessDetails propertyAccessDetails;
+
+
+    @CCD(
+            label = "Add document",
+            hint = "Upload a document to the system"
+    )
+    private List<ListValue<EvidenceOfDefendants>> additionalDocuments;
+
 }
