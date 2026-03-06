@@ -58,6 +58,13 @@ public class ClaimResponseService {
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
         updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
 
+        // Copy dateOfBirth from defendantResponses to party entity if present
+        if (dataFromDraftTable.getDefendantResponses() != null
+            && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
+            defendant.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
+            log.debug("Updated date of birth from defendantResponses for party ID: {}", defendant.getId());
+        }
+
         log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
 
