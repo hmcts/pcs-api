@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -53,11 +52,4 @@ public class DefendantResponseEntity {
     @Column(name = "received_free_legal_advice")
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "repayment_agreed")
-    private YesNoNotSure repaymentAgreed;
-
-    @Column(name = "repayment_agreed_details", columnDefinition = "TEXT")
-    private String repaymentAgreedDetails;
 }
