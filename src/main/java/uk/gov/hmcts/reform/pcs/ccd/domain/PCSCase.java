@@ -10,6 +10,8 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.FlagLauncher;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
@@ -507,5 +509,15 @@ public class PCSCase {
     @JsonProperty ("SearchCriteria")
     @SuppressWarnings("MemberName") // Field name is case-sensitive in CCD
     private SearchCriteria SearchCriteria;
+
+    @CCD(access = {ClaimantAccess.class},
+        label = "Case Flags")
+    private Flags caseFlags;
+
+    @CCD(
+        label = "Launch the Flags screen",
+        access = {ClaimantAccess.class}
+    )
+    private FlagLauncher flagLauncher;
 
 }
