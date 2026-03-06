@@ -3,10 +3,14 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -21,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -78,6 +83,17 @@ class DefendantResponseServiceTest {
             .thenReturn(Optional.of(caseEntity));
     }
 
+    private void stubPartyLookup() {
+        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+    }
+
+    private void stubClaimLookup() {
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+    }
+
     @Test
     void shouldSaveDefendantResponseWithJpaProxies() {
         // Given
@@ -93,6 +109,7 @@ class DefendantResponseServiceTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .registeredLandlord(YesNoNotSure.YES)
             .build();
 
         // When
@@ -105,6 +122,7 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getParty()).isEqualTo(partyEntity);
         assertThat(savedResponse.getClaim()).isEqualTo(claimEntity);
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
+        assertThat(savedResponse.getRegisteredLandlord()).isEqualTo(YesNoNotSure.YES);
     }
 
     @Test
@@ -186,6 +204,40 @@ class DefendantResponseServiceTest {
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isNull();
+    }
+
+    @ParameterizedTest(name = "registeredLandlord={0}")
+    @MethodSource("registeredLandlordPersistenceScenarios")
+    void shouldPersistRegisteredLandlord(YesNoNotSure registeredLandlord) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubCaseLookup();
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .registeredLandlord(registeredLandlord)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getRegisteredLandlord()).isEqualTo(registeredLandlord);
+    }
+
+    private static Stream<Arguments> registeredLandlordPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of(YesNoNotSure.NOT_SURE),
+            Arguments.of((YesNoNotSure) null)
+        );
     }
 
     @Test
