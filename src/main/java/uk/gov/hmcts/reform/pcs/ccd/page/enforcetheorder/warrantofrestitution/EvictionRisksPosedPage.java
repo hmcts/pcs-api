@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
@@ -39,7 +39,7 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         WarrantDetails warrantDetails = data.getEnforcementOrder().getWarrantDetails();
 
         if (warrantDetails.getRiskDetails() == null) {
-            warrantDetails.setRiskDetails(EnforcementRiskDetails.builder().build());
+            warrantDetails.setRiskDetails(RiskDetails.builder().build());
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
