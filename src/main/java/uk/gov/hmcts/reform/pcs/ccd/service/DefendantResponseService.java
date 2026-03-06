@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DefendantResponseEntity;
@@ -92,10 +93,17 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
+        YesNoNotSure tenancyStartDateCorrect = responses.getTenancyStartDateCorrect();
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
+            .tenancyStartDateCorrect(tenancyStartDateCorrect)
+            .tenancyStartDate(
+                tenancyStartDateCorrect != null && tenancyStartDateCorrect != YesNoNotSure.NOT_SURE
+                    ? responses.getTenancyStartDate()
+                    : null
+            )
             .build();
 
         defendantResponseRepository.save(defendantResponse);
