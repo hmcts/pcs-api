@@ -41,6 +41,10 @@ public class EnforcementOrder {
     @CCD
     private RawWarrantDetails rawWarrantDetails;
 
+    @JsonUnwrapped(prefix = "warrant_rest")
+    @CCD
+    private WarrantOfRestitutionDetails warrantOfRestitutionDetails;
+
     @CCD(searchable = false)
     @External
     private String warrantFeeAmount;
@@ -48,9 +52,5 @@ public class EnforcementOrder {
     @CCD(searchable = false)
     @External
     private String writFeeAmount;
-
-    @JsonUnwrapped(prefix = "warrant_rest")
-    @CCD
-    private WarrantOfRestitutionDetails warrantOfRestitutionDetails;
 
 }
