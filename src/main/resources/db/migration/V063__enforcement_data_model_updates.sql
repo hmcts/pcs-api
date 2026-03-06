@@ -1,8 +1,8 @@
 -- Add Timestamps submission date to each of the existing tables
-ALTER TABLE public.enf_warrant ADD COLUMN submission_date DATE;
-ALTER TABLE public.enf_writ ADD COLUMN submission_date DATE;
-ALTER TABLE public.enf_warrant_of_restitution ADD COLUMN submission_date DATE;
-ALTER TABLE public.enf_writ_of_restitution ADD COLUMN submission_date DATE;
+ALTER TABLE public.enf_warrant ADD COLUMN created TIMESTAMP WITHOUT TIME ZONE NOT NULL;
+ALTER TABLE public.enf_writ ADD COLUMN created TIMESTAMP WITHOUT TIME ZONE NOT NULL;
+ALTER TABLE public.enf_warrant_of_restitution ADD COLUMN created TIMESTAMP WITHOUT TIME ZONE NOT NULL;
+ALTER TABLE public.enf_writ_of_restitution ADD COLUMN created TIMESTAMP WITHOUT TIME ZONE NOT NULL;
 
 -- Add Language used to each existing table
 ALTER TABLE public.enf_warrant ADD COLUMN language_used VARCHAR(30);

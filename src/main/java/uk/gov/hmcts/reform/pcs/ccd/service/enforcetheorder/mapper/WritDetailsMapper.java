@@ -14,15 +14,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressFor
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 
-import java.time.Clock;
-import java.time.LocalDate;
-
 @Component
 @Slf4j
 @AllArgsConstructor
 public class WritDetailsMapper {
-
-    private final Clock ukClock;
 
     public WritEntity toEntity(WritDetails writDetails) {
         WritEntity entity = new WritEntity();
@@ -36,7 +31,6 @@ public class WritDetailsMapper {
         entity.setHceoDetails(writDetails.getHceoDetails());
         entity.setHasClaimTransferredToHighCourt(convertYesOrNo(writDetails.getHasClaimTransferredToHighCourt()));
         entity.setLanguageUsed(writDetails.getLanguageUsed());
-        entity.setSubmissionDate(LocalDate.now(ukClock));
 
         mapLandRegistryFees(writDetails.getLandRegistryFees(), entity);
         mapLegalCosts(writDetails.getLegalCosts(), entity);

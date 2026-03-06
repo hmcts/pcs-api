@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -23,13 +22,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WritDetailsMapper;
 
 import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WritDetailsMapper Tests")
@@ -37,8 +31,6 @@ class WritDetailsMapperTest {
 
     @InjectMocks
     private WritDetailsMapper underTest;
-    @Mock
-    private Clock clock;
 
     private WritDetails writDetails;
     private NameAndAddressForEviction nameAndAddressForEviction;
@@ -73,8 +65,6 @@ class WritDetailsMapperTest {
             .legalCosts(legalCosts)
             .moneyOwedByDefendants(moneyOwedByDefendants)
             .build();
-        lenient().when(clock.instant()).thenReturn(Instant.parse("2026-03-05T00:00:00Z"));
-        lenient().when(clock.getZone()).thenReturn(ZoneId.of("Europe/London"));
     }
 
     @Test
@@ -313,15 +303,6 @@ class WritDetailsMapperTest {
         assertThat(entity.getCorrectNameAndAddress()).isNull();
         assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isNull();
         assertThat(entity.getAreLegalCostsToBeClaimed()).isNull();
-    }
-
-    @Test
-    void shouldMapSubmissionDateFromClock() {
-        // When
-        WritEntity entity = underTest.toEntity(writDetails);
-
-        // Then
-        assertThat(entity.getSubmissionDate()).isEqualTo(LocalDate.of(2026, 3, 5));
     }
 
     @Test

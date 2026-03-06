@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
@@ -33,30 +32,22 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantDetailsMapper;
 
 import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class WarrantDetailsMapperTest {
 
     @InjectMocks
     private WarrantDetailsMapper underTest;
-    @Mock
-    private Clock clock;
 
     private EnforcementOrderEntity enforcementOrderEntity;
 
     @BeforeEach
     void setUp() {
         enforcementOrderEntity = new EnforcementOrderEntity();
-        lenient().when(clock.instant()).thenReturn(Instant.parse("2026-03-05T00:00:00Z"));
-        lenient().when(clock.getZone()).thenReturn(ZoneId.of("Europe/London"));
     }
 
     @Test
