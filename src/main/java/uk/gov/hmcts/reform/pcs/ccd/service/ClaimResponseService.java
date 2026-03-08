@@ -6,16 +6,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
@@ -30,8 +29,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ClaimResponseService {
 
+    private final PartyService partyService;
     private final PartyRepository partyRepository;
-    private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
@@ -52,7 +51,7 @@ public class ClaimResponseService {
             throw new IllegalStateException("Current user IDAM ID is null");
         }
 
-        PartyEntity defendant = findDefendantByIdamId(currentUserIdamId, caseReference);
+        PartyEntity defendant = partyService.getPartyEntityByIdamId(currentUserIdamId, caseReference);
 
         //save to relevant tables
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
@@ -66,17 +65,6 @@ public class ClaimResponseService {
         }
 
         log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
-    }
-
-    private PartyEntity findDefendantByIdamId(UUID idamId, long caseReference) {
-        UUID caseId = pcsCaseRepository.findByCaseReference(caseReference)
-            .map(PcsCaseEntity::getId)
-            .orElseThrow(() -> new IllegalStateException(
-                "No case found for case reference: " + caseReference));
-
-        return partyRepository.findByIdamIdAndPcsCaseId(idamId, caseId)
-            .orElseThrow(() -> new IllegalStateException(
-                "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
     }
 
     /**

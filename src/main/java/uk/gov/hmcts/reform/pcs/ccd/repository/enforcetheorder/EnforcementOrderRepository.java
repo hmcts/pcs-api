@@ -6,4 +6,5 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity
 import java.util.UUID;
 
 public interface EnforcementOrderRepository extends JpaRepository<EnforcementOrderEntity, UUID> {
+
 }

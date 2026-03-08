@@ -45,7 +45,6 @@ withPipeline(type, product, component) {
   enableDbMigration('pcs')
 
   onPR() {
-    env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
     enablePactAs([
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
@@ -53,6 +52,7 @@ withPipeline(type, product, component) {
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
+      env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
       enableHighLevelDataSetup()
     } else {
       env.CCD_ENABLED = "false"
@@ -105,7 +105,6 @@ withPipeline(type, product, component) {
       generateDefinitions(builder)
       env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
       env.CASE_TYPE_SUFFIX=""
-      env.CCD_ENABLED = "true"
     }
     onPerftest{
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
@@ -113,6 +112,11 @@ withPipeline(type, product, component) {
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-perftest.service.core-compute-perftest.internal"
     }
     generateDefinitions(builder)
+  }
+
+  before('smoketest:aat') {
+    env.CASE_TYPE_SUFFIX="staging"
+    env.CCD_ENABLED = "true"
   }
 
   afterAlways('smoketest:preview') {
