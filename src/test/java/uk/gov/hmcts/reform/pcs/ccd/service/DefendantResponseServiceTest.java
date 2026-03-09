@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -17,6 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.HouseholdCircumstancesService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PaymentAgreementService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ReasonableAdjustmentsService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -50,6 +54,12 @@ class DefendantResponseServiceTest {
     @Mock
     private SecurityContextService securityContextService;
     @Mock
+    private ReasonableAdjustmentsService reasonableAdjustmentsService;
+    @Mock
+    private HouseholdCircumstancesService householdCircumstancesService;
+    @Mock
+    private PaymentAgreementService paymentAgreementService;
+    @Mock
     private PartyEntity partyEntity;
     @Mock
     private ClaimEntity claimEntity;
@@ -66,7 +76,10 @@ class DefendantResponseServiceTest {
             partyRepository,
             claimRepository,
             defendantResponseRepository,
-            securityContextService
+            securityContextService,
+            reasonableAdjustmentsService,
+            householdCircumstancesService,
+            paymentAgreementService
         );
     }
 
@@ -86,8 +99,12 @@ class DefendantResponseServiceTest {
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
             .build();
 
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
@@ -114,8 +131,12 @@ class DefendantResponseServiceTest {
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.NO)
             .build();
 
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
@@ -140,8 +161,12 @@ class DefendantResponseServiceTest {
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.PREFER_NOT_TO_SAY)
             .build();
 
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
@@ -166,8 +191,12 @@ class DefendantResponseServiceTest {
             .receivedFreeLegalAdvice(null)
             .build();
 
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
@@ -186,7 +215,11 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(null);
 
         // When / Then
-        assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE, responses))
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Current user IDAM ID is null");
 
@@ -205,7 +238,11 @@ class DefendantResponseServiceTest {
             CASE_REFERENCE, USER_ID)).thenReturn(true);
 
         // When / Then
-        assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE, responses))
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("A response has already been submitted for this case.");
 
@@ -221,7 +258,9 @@ class DefendantResponseServiceTest {
             CASE_REFERENCE, USER_ID)).thenReturn(false);
 
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, null);
+        underTest.saveDefendantResponse(CASE_REFERENCE, PossessionClaimResponse.builder()
+            .defendantResponses(null)
+            .build());
 
         // Then
         verify(claimRepository, never()).findIdByCaseReference(anyLong());
@@ -242,7 +281,11 @@ class DefendantResponseServiceTest {
             .build();
 
         // When / Then
-        assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE, responses))
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse))
             .isSameAs(expectedException);
 
         verify(claimRepository, never()).findIdByCaseReference(anyLong());
@@ -264,7 +307,11 @@ class DefendantResponseServiceTest {
             .build();
 
         // When / Then
-        assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE, responses))
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage(String.format("No claim found for case: %d", CASE_REFERENCE));
 
@@ -288,7 +335,11 @@ class DefendantResponseServiceTest {
             .build();
 
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then - Verify JPA proxy pattern used
         verify(partyRepository).getReferenceById(PARTY_ID);
@@ -319,7 +370,11 @@ class DefendantResponseServiceTest {
             .build();
 
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then - Verify execution order matches optimal pattern:
         // 1. Get current user ID

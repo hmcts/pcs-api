@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
@@ -39,6 +41,9 @@ public class DefendantResponseService {
     private final ClaimRepository claimRepository;
     private final DefendantResponseRepository defendantResponseRepository;
     private final SecurityContextService securityContextService;
+    private final ReasonableAdjustmentsService reasonableAdjustmentsService;
+    private final HouseholdCircumstancesService householdCircumstancesService;
+    private final PaymentAgreementService paymentAgreementService;
 
     /**
      * Saves defendant's responses to the defendant_response table.
@@ -55,12 +60,18 @@ public class DefendantResponseService {
      * without blocking each other or other case operations.
      *
      * @param caseReference The case reference number
-     * @param responses Defendant's responses from draft data
+     * @param possessionClaimResponse responses from draft data
      * @throws IllegalStateException if user ID is null, response already exists,
      *         party not found, or claim not found
      */
-    public void saveDefendantResponse(long caseReference, DefendantResponses responses) {
+    public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse) {
         UUID userId = securityContextService.getCurrentUserId();
+
+        // Early return if no responses to save
+        if (possessionClaimResponse == null) {
+            log.debug("No defendant responses to save for case {}", caseReference);
+            return;
+        }
 
         if (userId == null) {
             log.error("Cannot save defendant response: current user IDAM ID is null");
@@ -72,12 +83,6 @@ public class DefendantResponseService {
                 caseReference, userId)) {
             log.warn("Duplicate defendant response attempt for case {} user {}", caseReference, userId);
             throw new IllegalStateException("A response has already been submitted for this case.");
-        }
-
-        // Early return if no responses to save
-        if (responses == null) {
-            log.debug("No defendant responses to save for case {}", caseReference);
-            return;
         }
 
         UUID partyId = partyService.getPartyEntityByIdamId(userId, caseReference).getId();
@@ -92,14 +97,45 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
+        DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
             .build();
 
+        //set bidirectional relationship with the pcs case
+        claimRef.getPcsCase().addDefendantResponse(defendantResponse);
+        //empty for now to satisfy not null constraint
+        defendantResponse.setStatementOfTruth(new StatementOfTruthEntity());
+        buildAndLinkChildEntities(defendantResponse, possessionClaimResponse);
+
         defendantResponseRepository.save(defendantResponse);
 
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
+    }
+
+
+    public void buildAndLinkChildEntities(
+        DefendantResponseEntity defendantResponseEntity,
+        PossessionClaimResponse response) {
+
+        defendantResponseEntity.setReasonableAdjustment(
+            reasonableAdjustmentsService.createReasonableAdjustmentEntity(
+                response.getReasonableAdjustments()
+            )
+        );
+
+        defendantResponseEntity.setHouseholdCircumstances(
+            householdCircumstancesService.createHouseholdCircumstancesEntity(
+                response.getHouseholdCircumstances()
+            )
+        );
+
+        defendantResponseEntity.setPaymentAgreement(
+            paymentAgreementService.createPaymentAgreementEntity(
+                response.getPaymentAgreement()
+            )
+        );
     }
 }

@@ -20,10 +20,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -49,6 +54,15 @@ public class DefendantResponseEntity {
     @JoinColumn(name = "party_id", nullable = false)
     private PartyEntity party;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pcs_case_id", nullable = false)
+    private PcsCaseEntity pcsCase;
+
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "sot_id", nullable = false)
+    @JsonManagedReference
+    private StatementOfTruthEntity statementOfTruth;
+
     @OneToOne(cascade = ALL, mappedBy = "defendantResponse", orphanRemoval = true)
     @JsonManagedReference
     private HouseholdCircumstancesEntity householdCircumstances;
@@ -68,4 +82,94 @@ public class DefendantResponseEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "received_free_legal_advice")
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo correspondenceAddressConfirmation;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo possessionNoticeReceived;
+
+    private LocalDate noticeReceivedDate;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo rentArrearsAmountConfirmation;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo disputeClaim;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo landlordRegistered;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo makeCounterClaim;
+
+    private Integer version;
+
+    private String status;
+
+    private LocalDateTime responseSubmittedDate;
+
+    private LocalDateTime responseDeletedDate;
+
+    private LocalDateTime responseReceivedDate;
+
+    private String languageUsed;
+
+    private String channel;
+
+    private String ingestionSource;
+
+    public void setHouseholdCircumstances(HouseholdCircumstancesEntity housingActWales) {
+        if (this.householdCircumstances != null) {
+            this.householdCircumstances.setDefendantResponse(null);
+        }
+
+        this.householdCircumstances = housingActWales;
+
+        if (this.householdCircumstances != null) {
+            this.householdCircumstances.setDefendantResponse(this);
+        }
+    }
+
+    public void setReasonableAdjustment(ReasonableAdjustmentEntity reasonableAdjustment) {
+        if (this.reasonableAdjustment != null) {
+            this.reasonableAdjustment.setDefendantResponse(null);
+        }
+
+        this.reasonableAdjustment = reasonableAdjustment;
+
+        if (this.reasonableAdjustment != null) {
+            this.reasonableAdjustment.setDefendantResponse(this);
+        }
+    }
+
+    public void setPaymentAgreement(PaymentAgreementEntity paymentAgreement) {
+        if (this.paymentAgreement != null) {
+            this.paymentAgreement.setDefendantResponse(null);
+        }
+
+        this.paymentAgreement = paymentAgreement;
+
+        if (this.paymentAgreement != null) {
+            this.paymentAgreement.setDefendantResponse(this);
+        }
+    }
+
+    public void setStatementOfTruth(StatementOfTruthEntity statementOfTruth) {
+        if (this.statementOfTruth != null) {
+            this.statementOfTruth.setDefendantResponse(null);
+        }
+
+        this.statementOfTruth = statementOfTruth;
+
+        if (this.statementOfTruth != null) {
+            this.statementOfTruth.setDefendantResponse(this);
+        }
+    }
 }

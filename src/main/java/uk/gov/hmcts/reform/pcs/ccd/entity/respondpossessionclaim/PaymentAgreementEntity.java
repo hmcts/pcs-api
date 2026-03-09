@@ -10,6 +10,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 import java.math.BigDecimal;
@@ -17,6 +24,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "payment_agreement")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PaymentAgreementEntity {
 
     @Id
@@ -28,19 +40,23 @@ public class PaymentAgreementEntity {
     private DefendantResponseEntity defendantResponse;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo anyPaymentsMade;
 
     private String paymentDetails;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo paidMoneyToHousingOrg;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo repaymentPlanAgreed;
 
     private String repaymentAgreedDetails;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo repayArrearsInstalments;
 
     private BigDecimal additionalRentContribution;

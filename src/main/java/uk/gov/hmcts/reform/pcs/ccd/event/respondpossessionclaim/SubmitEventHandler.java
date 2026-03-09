@@ -66,7 +66,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .saveDraftData(responseDraftData, caseReference);
 
         defendantResponseService.saveDefendantResponse(caseReference,
-            responseDraftData.getDefendantResponses());
+            responseDraftData);
 
         //delete draft as it's no longer needed
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
