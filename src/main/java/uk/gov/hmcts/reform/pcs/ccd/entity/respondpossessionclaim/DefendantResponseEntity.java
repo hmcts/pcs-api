@@ -1,5 +1,6 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity;
+package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,9 +21,12 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.UUID;
+
+import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Table(name = "defendant_response")
@@ -43,6 +48,18 @@ public class DefendantResponseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "party_id", nullable = false)
     private PartyEntity party;
+
+    @OneToOne(cascade = ALL, mappedBy = "defendantResponse", orphanRemoval = true)
+    @JsonManagedReference
+    private HouseholdCircumstancesEntity householdCircumstances;
+
+    @OneToOne(cascade = ALL, mappedBy = "defendantResponse", orphanRemoval = true)
+    @JsonManagedReference
+    private PaymentAgreementEntity paymentAgreement;
+
+    @OneToOne(cascade = ALL, mappedBy = "defendantResponse", orphanRemoval = true)
+    @JsonManagedReference
+    private ReasonableAdjustmentEntity reasonableAdjustment;
 
     @Column(name = "possession_order_type", length = 30)
     private String possessionOrderType;
