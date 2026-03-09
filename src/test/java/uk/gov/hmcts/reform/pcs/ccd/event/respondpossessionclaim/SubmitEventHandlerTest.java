@@ -85,7 +85,7 @@ class SubmitEventHandlerTest {
     void shouldAllowSubmitWithOnlyDefendantResponses() {
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
-            .oweRentArrears(YesNoNotSure.NO)
+            .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
         PCSCase caseData = createDraftSaveCaseData(null, responses);
