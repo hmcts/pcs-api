@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.DefendantAtPropertyPage;
 
 @Component
 @AllArgsConstructor
@@ -26,6 +27,7 @@ public class WarrantPageConfigurer implements PageConfigurer {
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
             .add(new NameAndAddressForEvictionPage())
+            .add(new DatesWhenYouCannotPage())
             .add(new ChangeNameAddressPage())
             .add(new ConfirmIfDOBKnownPage())
             .add(defendantsDOBPage)
