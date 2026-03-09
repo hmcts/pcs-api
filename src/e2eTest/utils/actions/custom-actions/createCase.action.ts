@@ -1,5 +1,6 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import {expect, Page} from '@playwright/test';
+import {getCaseTypeId} from '@utils/common/caseType.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
   createCase,
@@ -450,7 +451,10 @@ export class CreateCaseAction implements IAction {
       throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
     }
     for (let n = 0; n < reasons.length; n++) {
-      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason+"-"+reasons[n]);
+      const reason = String(reasons[n]).trim();
+      const needsGrounds = /^(other|no)$/i.test(reason);
+      const reasonDisplay = needsGrounds ? `${reason} grounds` : reason;
+      await performAction('inputText', {text:`${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})`,index: n}, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
   }
@@ -864,7 +868,7 @@ export class CreateCaseAction implements IAction {
   private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
-    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS${process.env.CHANGE_ID ? `-${process.env.CHANGE_ID}` : ''}/${caseNumber.replace(/-/g, '')}#Next%20steps`);
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${caseNumber.replace(/-/g, '')}#Next%20steps`);
     //Skipping Find Case search as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
     //await performAction('searchCaseFromFindCase', caseNumber);
   }

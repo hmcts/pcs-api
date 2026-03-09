@@ -5,3 +5,4 @@ java:
   environment:
     ENABLE_TESTING_SUPPORT: true
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
+    CASE_TYPE_SUFFIX: "staging"
