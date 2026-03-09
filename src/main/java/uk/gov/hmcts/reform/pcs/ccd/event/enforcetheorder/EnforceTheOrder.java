@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigurer;
@@ -119,8 +120,15 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 enforcementOrderService.retrieveEnforcementOrder(caseReference, WARRANT);
         if (retrievedWarrantOrder != null) {
             enforcementTypes.add(WARRANT_OF_RESTITUTION);
+            setWarrantRestInfoText(enforcementOrder, CommonPageContent.WARRANT_OF_RESTITUTION_INFO_TEXT);
+        } else {
+            setWarrantRestInfoText(enforcementOrder, "");
         }
         enforcementOrder.setSelectEnforcementType(createDynamicStringList(enforcementTypes));
+    }
+
+    private void setWarrantRestInfoText(EnforcementOrder enforcementOrder, String text) {
+        enforcementOrder.setWarrantOfRestitutionInfoText(text);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
