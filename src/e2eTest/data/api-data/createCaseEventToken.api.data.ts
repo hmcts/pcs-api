@@ -9,5 +9,5 @@ export const createCaseEventTokenApiData = {
       'Accept': '*/*',
     }
   }),
-  createCaseEventTokenApiEndPoint: `/case-types/PCS${process.env.CHANGE_ID ? '-' + process.env.CHANGE_ID : ''}/event-triggers/createPossessionClaim`,
+  createCaseEventTokenApiEndPoint: `/case-types/PCS${process.env.CASE_TYPE_SUFFIX ? '-' + process.env.CASE_TYPE_SUFFIX : ''}/event-triggers/createPossessionClaim`,
 };

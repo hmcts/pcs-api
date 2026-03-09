@@ -135,7 +135,8 @@ await performValidationGroup(
 
 ### The following environment variables are needed to run the tests:
 
-- CHANGE_ID (same as PR number - Required only pointing to Preview env)
+- CHANGE_ID (same as PR number - Required only for Preview env URLs)
+- CASE_TYPE_SUFFIX (case type suffix: set to CHANGE_ID on Preview, "staging" on AAT by pipeline; E2E uses this for case type name/ID)
 - MANAGE_CASE_BASE_URL
 - PCS_API_IDAM_SECRET
 - IDAM_SYSTEM_USERNAME

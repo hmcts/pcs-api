@@ -68,7 +68,7 @@ test.beforeEach(async ({ page }, testInfo) => {
       payLoad: submitCaseApiData.submitCasePayload
     });
   }
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/${process.env.CASE_NUMBER}#Summary`);
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CASE_TYPE_SUFFIX ? `PCS-${process.env.CASE_TYPE_SUFFIX}` : 'PCS'}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
