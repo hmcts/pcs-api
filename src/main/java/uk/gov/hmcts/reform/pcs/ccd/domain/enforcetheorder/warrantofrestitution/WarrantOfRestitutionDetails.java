@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 
 import java.util.List;
 import java.util.Set;
@@ -70,5 +71,9 @@ public class WarrantOfRestitutionDetails {
             hint = "Upload a document to the system"
     )
     private List<ListValue<EvidenceOfDefendants>> additionalDocuments;
+
+    @JsonUnwrapped
+    @CCD
+    private AdditionalInformation additionalInformation;
 
 }
