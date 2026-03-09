@@ -23,8 +23,6 @@ ALTER TABLE public.enf_risk_profile ADD COLUMN enforcement_risk_categories VARCH
 -- Not needed within Writ
 ALTER TABLE public.enf_writ DROP COLUMN show_people_who_will_be_evicted_page;
 
-
-
 DROP INDEX IF EXISTS idx_enf_writ_of_restitution_case_id;
 DROP INDEX IF EXISTS idx_enf_warrant_case_id;
 DROP INDEX IF EXISTS idx_enf_selected_defendants_case;
