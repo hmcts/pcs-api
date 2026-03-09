@@ -103,6 +103,19 @@ class EnforcementOrderServiceTest {
     }
 
     @Test
+    void shouldReturnNullWhenNoClaimEntitiesPresent() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setClaims(List.of());
+
+        // When
+        ClaimEntity result = enforcementOrderService.retrieveClaimEntity(pcsCaseEntity);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
     void shouldSaveNewSubmittedEnforcementData() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
