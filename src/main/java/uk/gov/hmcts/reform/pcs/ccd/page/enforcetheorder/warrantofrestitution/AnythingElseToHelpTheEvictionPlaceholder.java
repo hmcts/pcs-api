@@ -13,14 +13,14 @@ public class AnythingElseToHelpTheEvictionPlaceholder implements CcdPageConfigur
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("AnythingElseThatCouldHelpWithTheEviction")
+            .page("anythingElseToHelpTheEviction")
             .pageLabel("Anything else that could help with the eviction")
             .showCondition(ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW)
-            .label("AnythingElseThatCouldHelpWithTheEviction-line-separator", "---")
+            .label("anythingElseToHelpTheEviction-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantOfRestitutionDetails)
             .done()
             .done()
-            .label("AnythingElseThatCouldHelpWithTheEviction-save-and-return", SAVE_AND_RETURN);
+            .label("anythingElseToHelpTheEviction-save-and-return", SAVE_AND_RETURN);
     }
 }
