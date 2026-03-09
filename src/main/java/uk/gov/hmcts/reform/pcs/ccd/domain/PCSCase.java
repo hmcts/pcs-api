@@ -501,4 +501,22 @@ public class PCSCase {
     @SuppressWarnings("MemberName") // Field name is case-sensitive in CCD
     private SearchCriteria searchCriteria;
 
+    @CCD(
+        label = "CaseNameHmctsRestricted",
+        access = {GlobalSearchAccess.class}
+    )
+    private String caseNameHmctsRestricted;
+
+    @CCD(
+        label = "CaseNameHmctsInternal",
+        access = {GlobalSearchAccess.class}
+    )
+    private String caseNameHmctsInternal;
+
+    @CCD(
+        label = "CaseNamePublic",
+        access = {GlobalSearchAccess.class}
+    )
+    private String caseNamePublic;
+
 }
