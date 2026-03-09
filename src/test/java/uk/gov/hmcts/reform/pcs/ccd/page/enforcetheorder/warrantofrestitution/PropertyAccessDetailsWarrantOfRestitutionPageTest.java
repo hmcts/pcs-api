@@ -98,8 +98,10 @@ class PropertyAccessDetailsWarrantOfRestitutionPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         //  Then
+        assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
+        assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantOfRestitutionDetails()
-                       .getPropertyAccessDetails().getClarificationOnAccessDifficultyText() == null);
+                       .getPropertyAccessDetails().getClarificationOnAccessDifficultyText()).isNull();
     }
 
     private static Stream<Arguments> provideStringsForValidText() {

@@ -62,16 +62,21 @@ public class PropertyAccessDetailsWarrantOfRestitutionPage implements CcdPageCon
     private List<String> getValidationErrors(PCSCase data) {
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder()
-                .getWarrantOfRestitutionDetails().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
+        PropertyAccessDetails propertyAccessDetails =
+            data.getEnforcementOrder()
+                .getWarrantOfRestitutionDetails()
+                .getPropertyAccessDetails();
 
-        if (data.getEnforcementOrder().getWarrantOfRestitutionDetails().getPropertyAccessDetails()
-            .getIsDifficultToAccessProperty() == VerticalYesNo.YES) {
+        if (propertyAccessDetails.getIsDifficultToAccessProperty() == VerticalYesNo.YES) {
+            String txt = propertyAccessDetails.getClarificationOnAccessDifficultyText();
+
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,
                 CLARIFICATION_PROPERTY_ACCESS_LABEL,
                 TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
             ));
+        } else {
+            propertyAccessDetails.setClarificationOnAccessDifficultyText(null);
         }
         return errors;
     }
