@@ -96,7 +96,7 @@ public class DefendantResponseService {
             .claim(claimRef)
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
-            .registeredLandlord(responses.getRegisteredLandlord())
+            .landlordRegistered(responses.getLandlordRegistered())
             .build();
 
         defendantResponseRepository.save(defendantResponse);

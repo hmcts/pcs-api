@@ -99,7 +99,7 @@ class DefendantResponseServiceTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
-            .registeredLandlord(YesNoNotSure.YES)
+            .landlordRegistered(YesNoNotSure.YES)
             .build();
 
         // When
@@ -112,7 +112,7 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getParty()).isEqualTo(partyEntity);
         assertThat(savedResponse.getClaim()).isEqualTo(claimEntity);
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
-        assertThat(savedResponse.getRegisteredLandlord()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
     }
 
     @Test
@@ -193,9 +193,9 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isNull();
     }
 
-    @ParameterizedTest(name = "registeredLandlord={0}")
-    @MethodSource("registeredLandlordPersistenceScenarios")
-    void shouldPersistRegisteredLandlord(YesNoNotSure registeredLandlord) {
+    @ParameterizedTest(name = "landlordRegistered={0}")
+    @MethodSource("landlordRegisteredPersistenceScenarios")
+    void shouldPersistlandlordRegistered(YesNoNotSure landlordRegistered) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
@@ -204,7 +204,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .registeredLandlord(registeredLandlord)
+            .landlordRegistered(landlordRegistered)
             .build();
 
         // When
@@ -214,10 +214,10 @@ class DefendantResponseServiceTest {
         verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
-        assertThat(savedResponse.getRegisteredLandlord()).isEqualTo(registeredLandlord);
+        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(landlordRegistered);
     }
 
-    private static Stream<Arguments> registeredLandlordPersistenceScenarios() {
+    private static Stream<Arguments> landlordRegisteredPersistenceScenarios() {
         return Stream.of(
             Arguments.of(YesNoNotSure.YES),
             Arguments.of(YesNoNotSure.NO),
