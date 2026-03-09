@@ -1,3 +1,5 @@
+import { getCaseTypeId } from '@utils/common/caseType.utils';
+
 export const createCaseApiData = {
   createCaseEventName: 'createPossessionClaim',
   createCasePayload: {
@@ -13,5 +15,5 @@ export const createCaseApiData = {
     },
     legislativeCountry: 'England'
   },
-  createCaseApiEndPoint: `/case-types/PCS${process.env.CASE_TYPE_SUFFIX ? '-' + process.env.CASE_TYPE_SUFFIX : ''}/cases`,
+  createCaseApiEndPoint: `/case-types/${getCaseTypeId()}/cases`,
 };

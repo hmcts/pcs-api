@@ -1,5 +1,6 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import {expect, Page} from '@playwright/test';
+import {getCaseTypeId} from '@utils/common/caseType.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
   createCase,
@@ -867,7 +868,7 @@ export class CreateCaseAction implements IAction {
   private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
-    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS${process.env.CASE_TYPE_SUFFIX ? `-${process.env.CASE_TYPE_SUFFIX}` : ''}/${caseNumber.replace(/-/g, '')}#Next%20steps`);
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${caseNumber.replace(/-/g, '')}#Next%20steps`);
     //Skipping Find Case search as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
     //await performAction('searchCaseFromFindCase', caseNumber);
   }
