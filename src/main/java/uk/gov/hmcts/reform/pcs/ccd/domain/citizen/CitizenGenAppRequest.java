@@ -1,0 +1,17 @@
+package uk.gov.hmcts.reform.pcs.ccd.domain.citizen;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GenAppType;
+
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CitizenGenAppRequest {
+
+    private GenAppType applicationType;
+
+}
