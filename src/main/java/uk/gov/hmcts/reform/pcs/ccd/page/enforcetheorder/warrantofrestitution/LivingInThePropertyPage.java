@@ -19,7 +19,8 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
             .showCondition(WARRANT_OF_RESTITUTION_FLOW)
             .label("livingInThePropertyRestitution-content", "---")
             .label(
-                "livingInThePropertyRestitution-information-text", """
+                "livingInThePropertyRestitution-information-text",
+                """
                     <p class="govuk-body govuk-!-font-weight-bold"> The bailiff needs to know if anyone at the property
                     poses a risk.</p>
                     <p class="govuk-body govuk-!-margin-bottom-1"> For example if they:</p>
