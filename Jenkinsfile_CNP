@@ -119,10 +119,6 @@ withPipeline(type, product, component) {
     env.CCD_ENABLED = "true"
   }
 
-  before('E2eTest:aat') {
-    env.CASE_TYPE_SUFFIX="staging"
-  }
-
   afterAlways('smoketest:preview') {
     archiveSmokeTestReports()
   }
