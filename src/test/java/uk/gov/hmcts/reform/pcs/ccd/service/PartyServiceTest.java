@@ -28,8 +28,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,6 +72,45 @@ class PartyServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new PartyService(partyRepository, addressMapper);
+    }
+
+    @Nested
+    @DisplayName("Get Party")
+    class GetPartyTests {
+
+        @Test
+        void shouldGetPartyEntityByIdamId() {
+            // Given
+            UUID idamId = UUID.randomUUID();
+            long caseReference = 1234L;
+
+            PartyEntity expectedPartyEntity = mock(PartyEntity.class);
+            when(partyRepository.queryPartyByIdamId(idamId, caseReference))
+                .thenReturn(Optional.of(expectedPartyEntity));
+
+            // When
+            PartyEntity actualPartyEntity = underTest.getPartyEntityByIdamId(idamId, caseReference);
+
+            // Then
+            assertThat(actualPartyEntity).isEqualTo(expectedPartyEntity);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenNoPartyEntityByIdamId() {
+            // Given
+            UUID idamId = UUID.randomUUID();
+            long caseReference = 1234L;
+
+            when(partyRepository.queryPartyByIdamId(idamId, caseReference)).thenReturn(Optional.empty());
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.getPartyEntityByIdamId(idamId, caseReference));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(PartyNotFoundException.class);
+        }
+
     }
 
     @Nested
