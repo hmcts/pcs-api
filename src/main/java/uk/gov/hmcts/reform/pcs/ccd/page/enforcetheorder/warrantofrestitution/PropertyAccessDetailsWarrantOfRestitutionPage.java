@@ -41,7 +41,7 @@ public class PropertyAccessDetailsWarrantOfRestitutionPage implements CcdPageCon
                 .complex(WarrantOfRestitutionDetails::getPropertyAccessDetails)
                 .mandatory(PropertyAccessDetails::getIsDifficultToAccessProperty)
                 .mandatory(PropertyAccessDetails::getClarificationOnAccessDifficultyText,
-                        "warrantOfRestitutionIsDifficultToAccessProperty=\"YES\"")
+                        "warrant_restIsDifficultToAccessProperty=\"YES\"")
                 .done()
                 .done()
                 .done()
