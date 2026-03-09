@@ -1,7 +1,8 @@
 name: 'Auto Assign'
 on:
   pull_request:
-    types: [opened, ready_for_review]
+    types: [labeled]
+    # types: [opened, ready_for_review]
 
 jobs:
   add-dev-reviews:
