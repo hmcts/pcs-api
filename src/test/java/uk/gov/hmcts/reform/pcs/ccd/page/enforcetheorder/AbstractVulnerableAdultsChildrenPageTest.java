@@ -23,9 +23,9 @@ class AbstractVulnerableAdultsChildrenPageTest {
 
     private ConcreteVulnerableAdultsChildrenPage pageUnderTest;
 
-    final List<String> errorList = List.of("error - too lomg");
-    final List<String> emptyErrorList = List.of();
-    PCSCase pcsCase;
+    private final List<String> errorList = List.of("error - too long");
+    private final List<String> emptyErrorList = List.of();
+    private PCSCase pcsCase;
 
     @BeforeEach
     void setup() {
@@ -50,7 +50,7 @@ class AbstractVulnerableAdultsChildrenPageTest {
         pageUnderTest.setReturnedText("some text");
         List<String> result = pageUnderTest.performValidation(pcsCase);
 
-        assertThat(result).containsExactly("error - too lomg");
+        assertThat(result).containsExactly("error - too long");
     }
 
     @Getter

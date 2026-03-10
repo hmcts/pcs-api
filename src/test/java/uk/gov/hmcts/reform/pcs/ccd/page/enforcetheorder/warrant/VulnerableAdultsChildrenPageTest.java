@@ -29,7 +29,7 @@ import static org.mockito.Mockito.lenient;
 class VulnerableAdultsChildrenPageTest {
 
     @Mock
-    TextAreaValidationService service;
+    private TextAreaValidationService service;
 
     @Mock
     private Event.EventBuilder<PCSCase, UserRole, State> eventBuilder;
