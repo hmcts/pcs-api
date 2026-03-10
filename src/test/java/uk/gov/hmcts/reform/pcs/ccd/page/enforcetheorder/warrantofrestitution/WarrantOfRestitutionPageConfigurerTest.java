@@ -53,6 +53,7 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, explainHowDefendantsReturnedPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, DefendantAtPropertyPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, vulnerableAdultsChildrenRestPage.getClass(), verificationCount);
+        verifyAndCount(inOrder, pageBuilder, PropertyAccessDetailsRestPlaceholder.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);

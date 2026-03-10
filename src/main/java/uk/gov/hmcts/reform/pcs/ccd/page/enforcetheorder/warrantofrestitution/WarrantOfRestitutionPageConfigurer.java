@@ -19,6 +19,7 @@ public class WarrantOfRestitutionPageConfigurer implements PageConfigurer {
             .add(new ShareEvidenceWithJudgePage())
             .add(explainHowDefendantsReturnedPage)
             .add(new DefendantAtPropertyPage())
-            .add(vulnerableAdultsChildrenRestPage);
+            .add(vulnerableAdultsChildrenRestPage)
+            .add(new PropertyAccessDetailsRestPlaceholder());
     }
 }

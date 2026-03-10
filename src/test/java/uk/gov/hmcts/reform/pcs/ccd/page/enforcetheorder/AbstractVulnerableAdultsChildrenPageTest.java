@@ -35,8 +35,6 @@ class AbstractVulnerableAdultsChildrenPageTest {
         pageUnderTest = new ConcreteVulnerableAdultsChildrenPage(service);
     }
 
-
-
     @Test
     void shouldReturnEmptyErrorsWhenNoText() {
         pageUnderTest.setValidationResult(emptyErrorList);
