@@ -70,6 +70,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("summary", "Summary")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getTestLabel)
             .field(PCSCase::getPropertyAddress);
 
         builder.tab("CaseHistory", "History")
