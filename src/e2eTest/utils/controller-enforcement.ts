@@ -83,9 +83,9 @@ function readValuesFromInputObjects(obj: object): string {
   const keys = Object.keys(obj);
   const formattedPairs = keys.map(key => {
     const value = (obj as actionRecord)[key];
-    let valueStr: string;
-    if (typeof value === 'string') valueStr = `${value}`;
-    else valueStr = String(value);
+    const valueStr = typeof value === 'object'
+      ? JSON.stringify(value)
+      : String(value);
     return `${key}: ${valueStr}`;
   });
   return `${formattedPairs.join(', ')}`;
