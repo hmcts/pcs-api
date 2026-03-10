@@ -71,6 +71,8 @@ class CaseNameHmctsFormatterTest {
 
         // Then
         verify(pcsCase).setCaseNameHmctsRestricted("Freeman vs Jackson");
+        verify(pcsCase).setCaseNameHmctsInternal("Freeman vs Jackson");
+        verify(pcsCase).setCaseNamePublic("Freeman vs Jackson");
     }
 
     @Test
@@ -85,6 +87,8 @@ class CaseNameHmctsFormatterTest {
 
         // Then
         verify(pcsCase).setCaseNameHmctsRestricted("Treetops Housing vs Jackson and Others");
+        verify(pcsCase).setCaseNameHmctsInternal("Treetops Housing vs Jackson and Others");
+        verify(pcsCase).setCaseNamePublic("Treetops Housing vs Jackson and Others");
     }
 
     @Test
@@ -97,5 +101,7 @@ class CaseNameHmctsFormatterTest {
 
         // Then
         verify(pcsCase).setCaseNameHmctsRestricted("Freeman vs persons unknown");
+        verify(pcsCase).setCaseNameHmctsInternal("Freeman vs persons unknown");
+        verify(pcsCase).setCaseNamePublic("Freeman vs persons unknown");
     }
 }
