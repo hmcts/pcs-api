@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
@@ -34,15 +36,19 @@ public class CreateCaseFlag implements CCDConfig<PCSCase, State, UserRole> {
             .name("Create Flag")
             .description("Create Flag")
             .showSummary()
-             .grant(Permission.CRUD, UserRole.PCS_SOLICITOR))
+            .grant(Permission.CRUD, UserRole.PCS_SOLICITOR))
             .page("caseworkerCaseFlag")
             .pageLabel("Case Flags")
             .optional(PCSCase::getCaseFlags, ALWAYS_HIDE, true, true)
-            .optional(PCSCase::getParties, ALWAYS_HIDE, true, true)
-            .optional(PCSCase::getDefendant1, ALWAYS_HIDE, true, true)
+            .list(PCSCase::getParties, ALWAYS_HIDE)
+                .optional(Party::getFlags, ALWAYS_HIDE, true)
+            .done()
+            .complex(PCSCase::getDefendant1, ALWAYS_HIDE, null, null, true)
+                .optional(DefendantDetails::getFlags, ALWAYS_HIDE, true)
+            .done()
             .optional(
                 PCSCase::getFlagLauncher,
-                null, null, null, null, "#ARGUMENT(CREATE)");
+                null, null, null, null, "#ARGUMENT(CREATE,VERSION2.1)");
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
