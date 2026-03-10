@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -189,7 +190,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .tenancyTypeCorrect(YesNoNotSure.YES)
             .oweRentArrears(YesNoNotSure.NO)
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
-            .contactByEmail(VerticalYesNo.YES)
+            .preferenceType(ContactPreferenceType.EMAIL)
             .contactByPhone(VerticalYesNo.NO)
             .build();
 
@@ -209,7 +210,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedResponses.getTenancyTypeCorrect()).isEqualTo(YesNoNotSure.YES);
         assertThat(savedResponses.getOweRentArrears()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponses.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
-        assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponses.getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
         assertThat(savedResponses.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
     }
 
@@ -230,7 +231,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
+            .preferenceType(ContactPreferenceType.EMAIL)
             .contactByText(VerticalYesNo.NO)
             .build();
 
@@ -255,7 +256,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedParty.getPhoneNumber()).isEqualTo("07123456789");
         assertThat(savedParty.getAddress().getAddressLine1()).isEqualTo("456 Another Road");
 
-        assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponses.getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
         assertThat(savedResponses.getContactByText()).isEqualTo(VerticalYesNo.NO);
     }
 
@@ -286,7 +287,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Given
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.NO)
-            .contactByPost(VerticalYesNo.YES)
+            .preferenceType(ContactPreferenceType.POST)
             .build();
 
         PCSCase caseData = buildCaseData(null, responses);

@@ -13,11 +13,6 @@ public enum ContactPreferenceType implements HasLabel {
 
     private final String label;
 
-    ContactPreferenceType(String label) {
-        this.label = label;
-    }
-
-
     @Override
     public String getLabel() {
         return label;
