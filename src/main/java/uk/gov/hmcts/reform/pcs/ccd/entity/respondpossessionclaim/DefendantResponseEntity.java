@@ -125,12 +125,12 @@ public class DefendantResponseEntity {
 
     private String ingestionSource;
 
-    public void setHouseholdCircumstances(HouseholdCircumstancesEntity housingActWales) {
+    public void setHouseholdCircumstances(HouseholdCircumstancesEntity householdCircumstances) {
         if (this.householdCircumstances != null) {
             this.householdCircumstances.setDefendantResponse(null);
         }
 
-        this.householdCircumstances = housingActWales;
+        this.householdCircumstances = householdCircumstances;
 
         if (this.householdCircumstances != null) {
             this.householdCircumstances.setDefendantResponse(this);
