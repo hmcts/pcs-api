@@ -5,7 +5,7 @@ export const explainHowDefendantsReturned = {
   howDidTheDefendantsReturnToThePropertyTextInput: 2000,
   continueButton: 'Continue',
   eventCouldNotBeCreatedErrorMessage: 'The event could not be created',
-  errorValidation: 'YES',//set it to 'NO' before raising a PR
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox',five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorTextField: [
