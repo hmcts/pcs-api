@@ -512,7 +512,7 @@ tasks.named('integration') {
 
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
-  authMode = AuthMode.Local
+  authMode = AuthMode.AAT
 
   //Attach mockito agent for inline mocking to remove warning in logs
   classpath += configurations.mockitoAgentConfig
@@ -527,9 +527,10 @@ tasks.withType(CftlibExec).configureEach {
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'PCS_DB_PORT', '6432'
   environment 'CCD_DECENTRALISED_CASE-TYPE-SERVICE-URLS_PCS', 'http://localhost:3206'
+  environment 'CCD_DECENTRALISED_CASE-TYPE-SERVICE-URLS_CIVIL', 'http://localhost:3206'
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
-  environment 'XUI_JURISDICTIONS', 'PCS'
+  environment 'XUI_JURISDICTIONS', 'PCS,CIVIL'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
