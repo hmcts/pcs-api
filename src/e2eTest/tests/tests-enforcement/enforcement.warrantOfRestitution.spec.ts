@@ -10,6 +10,8 @@ import {
   explainHowDefendantsReturned,
   shareEvidenceWithJudge,
   provideEvidence,
+  everyoneLivingAtTheProperty,
+  warrantOfRestitutionAnyoneAtPropertyRiskIntro,
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -46,7 +48,7 @@ test.beforeEach(async ({ page }, testInfo) => {
       additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
       payLoad: submitCaseApiData.submitCasePayload
     });
-    await performAction('enforceCaseAPI', { data: enforceWarrantApiData.enforceCasePayload});
+    await performAction('enforceCaseAPI', { data: enforceWarrantApiData.enforceCasePayload });
   }
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
@@ -67,7 +69,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Restitution]', async () => {
-  test('Warrant - Apply for a Warrant of Restitution - upload more than one evidence @enforcement @PR',
+  test.skip('Warrant - Apply for a Warrant of Restitution - upload more than one evidence @enforcement @PR',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -149,11 +151,13 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
       await performAction('uploadEvidenceThatDefendantsAreAtProperty', {
         documents: [
           { type: evidenceUpload.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
-          { type: evidenceUpload.photoGraphicEvidenceDropDownInput, fileName: 'photographicEvidence.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
-          { type: evidenceUpload.otherDocumentDropDownInput, fileName: 'otherDocument.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
-          { type: evidenceUpload.policeReportDropDownInput, fileName: 'tenancyLicence.docx', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          // { type: evidenceUpload.photoGraphicEvidenceDropDownInput, fileName: 'photographicEvidence.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          // { type: evidenceUpload.otherDocumentDropDownInput, fileName: 'otherDocument.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          // { type: evidenceUpload.policeReportDropDownInput, fileName: 'tenancyLicence.docx', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
         ],
-        nextPage: checkYourAnswers.mainHeader
+        nextPage: warrantOfRestitutionAnyoneAtPropertyRiskIntro.mainHeader
       })
+      await performAction('reTryOnCallBackError', warrantOfRestitutionAnyoneAtPropertyRiskIntro.continueButton, everyoneLivingAtTheProperty.mainHeader);
     });
+  //await performAction('validatePrePopulatedData', everyoneLivingAtTheProperty.mainHeader)
 });

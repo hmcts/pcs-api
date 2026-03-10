@@ -449,6 +449,19 @@ export class EnforcementAction implements IAction {
 
   }
 
+  private async validatePrePopulatedData(currentPage: string){
+
+    switch (currentPage) {
+      case 'Everyone living at the property':
+        
+        break;
+    
+      default:
+        break;
+    }
+
+  }
+
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
     if (validationArr.validationReq === 'YES') {

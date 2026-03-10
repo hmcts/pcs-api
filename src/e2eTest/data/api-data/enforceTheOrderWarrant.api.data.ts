@@ -34,7 +34,7 @@ export const enforceWarrantApiData = {
     warrantDefendantsDOBDetails: "tewt",
     warrantShowPeopleWhoWillBeEvictedPage: "Yes",
     warrantEvictEveryone: "YES",
-    warrantAnyRiskToBailiff: "YES",
+    warrantAnyRiskToBailiff: "NO",
     warrantEnforcementRiskCategories: [
       "PROTEST_GROUP_MEMBER"
     ],

@@ -111,7 +111,7 @@ export class CreateCaseAPIAction implements IAction {
       const responseBody = error?.response?.data;
       if (status === 404) {
         console.error(enforceWarrantApiData.enforceCasePayload);
-        throw new Error(`Submission failed: endpoint not found (404).please check the payload above \n ${error}`);
+        throw new Error(`Enforce the order failed: endpoint not found (404).please check the payload above \n ${error}`);
       }
       console.error("=== ERROR RESPONSE ===");
       console.error("HTTP Status:", status);
@@ -123,9 +123,9 @@ export class CreateCaseAPIAction implements IAction {
       console.error("Full response body:", JSON.stringify(responseBody, null, 2));
 
       if (!status) {
-        throw new Error('Submission failed: no response from server.');
+        throw new Error('Enforce the order failed: no response from server.');
       }
-      throw new Error(`Submission failed with status ${status}.Response received is ${responseBody?.message}}`);
+      throw new Error(`Enforce the order failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
   }
 
