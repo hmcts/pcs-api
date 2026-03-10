@@ -75,7 +75,7 @@ withPipeline(type, product, component) {
     ])
     enableHighLevelDataSetup("", true)
     setAatEnvVars()
-//    enableE2eTest() TODO: Re-enable when AAT staging can be used for e2e testing
+    enableE2eTest()
   }
 
   onDemo {
