@@ -7,27 +7,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AbstractVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildrenPage implements CcdPageConfiguration {
 
     public VulnerableAdultsChildrenPage(TextAreaValidationService textAreaValidationService) {
         super(textAreaValidationService);
-    }
-
-    @Override
-    public String getVulnerablePeoplePresentShowCondition() {
-        return "vulnerablePeoplePresent=\"YES\" "
-                + "AND (vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")";
     }
 
     @Override
@@ -51,19 +41,25 @@ public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildr
             .label(getPageId() + "-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
-    public List<String> performValidation(PCSCase data) {
-        List<String> errors = new ArrayList<>();
+    @Override
+    public String getVulnerablePeoplePresentShowCondition() {
+        return "vulnerablePeoplePresent=\"YES\" "
+                + "AND (vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+                + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")";
+    }
 
-        if (vulnerablePeoplePresent.test(data.getEnforcementOrder().getRawWarrantDetails()
-                .getVulnerablePeoplePresent())) {
-            String txt = data.getEnforcementOrder()
-                    .getRawWarrantDetails().getVulnerableAdultsChildren() != null
-                    ? data.getEnforcementOrder()
-                    .getRawWarrantDetails().getVulnerableAdultsChildren().getVulnerableReasonText()
-                    : null;
-            errors.addAll(getValidationErrors(txt));
-        }
+    @Override
+    public String getVulnerableReasonTextToValidate(PCSCase data) {
+        return data.getEnforcementOrder()
+                .getRawWarrantDetails().getVulnerableAdultsChildren() != null
+                ? data.getEnforcementOrder()
+                .getRawWarrantDetails().getVulnerableAdultsChildren().getVulnerableReasonText()
+                : null;
+    }
 
-        return errors;
+    @Override
+    public String getPageId() {
+        return CcdPage.getPageId(this.getClass());
     }
 }

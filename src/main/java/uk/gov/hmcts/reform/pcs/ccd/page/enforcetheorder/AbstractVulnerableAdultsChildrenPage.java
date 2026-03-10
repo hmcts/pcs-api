@@ -1,24 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.page.AbstractPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.TextValidatingPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
-import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 
 @Component
-@RequiredArgsConstructor
-public abstract class AbstractVulnerableAdultsChildrenPage extends AbstractPage {
-
-    protected final TextAreaValidationService textAreaValidationService;
+public abstract class AbstractVulnerableAdultsChildrenPage extends TextValidatingPage {
 
     public static final String INFO_MARKUP = """
                     <p class="govuk-body govuk-!-font-weight-bold">
@@ -36,26 +27,17 @@ public abstract class AbstractVulnerableAdultsChildrenPage extends AbstractPage 
 
     public static final String PAGE_LABEL = "Vulnerable adults and children at the property";
 
+    protected AbstractVulnerableAdultsChildrenPage(TextAreaValidationService textAreaValidationService) {
+        super(textAreaValidationService);
+    }
+
+    @Override
+    public List<String> performValidation(PCSCase data) {
+        return new ArrayList<>(getValidationErrors(getVulnerableReasonTextToValidate(data), "How are they vulnerable?",
+                TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT));
+    }
+
+    public abstract String getVulnerableReasonTextToValidate(PCSCase data);
+
     public abstract String getVulnerablePeoplePresentShowCondition();
-
-    public final Predicate<YesNoNotSure> vulnerablePeoplePresent = v -> v == YesNoNotSure.YES;
-
-    public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> before) {
-        PCSCase data = details.getData();
-        List<String> errors = performValidation(data);
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(data)
-                .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
-                .build();
-    }
-
-    public List<String> getValidationErrors(String txt) {
-        return textAreaValidationService.validateSingleTextArea(
-                txt,
-                "How are they vulnerable?",
-                TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT);
-    }
-
-    public abstract List<String> performValidation(PCSCase data);
 }
