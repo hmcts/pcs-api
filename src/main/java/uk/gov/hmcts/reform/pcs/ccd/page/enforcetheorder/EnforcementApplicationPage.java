@@ -97,24 +97,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             <p class="govuk-body">Contact a lawyer or a High Court Enforcement Officer (bailiff)
                             before you apply for a writ. They can help you to check if you have the evidence to apply
                             successfully.</p>
-                            <p class="govuk-body govuk-!-font-weight-bold">If you choose a warrant of restitution</p>
-                            <p class="govuk-body govuk-!-margin-bottom-1">It is free to apply for a warrant of
-                            restitution, but:</p>
-                            <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">you’ll need a warrant of possession before you can apply
-                              </li>
-                              <li class="govuk-!-font-size-19">you can only use it if you have already tried to evict
-                              someone, but they returned to the property after the eviction. For example, if they
-                              unlawfully returned after the bailiffs left.</li>
-                            </ul>
-                            <p class="govuk-body govuk-!-margin-bottom-1">In a warrant of restitution, the judge will:
-                            </p>
-                            <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">review evidence that the defendants returned to the
-                              property after the eviction</li>
-                              <li class="govuk-!-font-size-19">(in most cases) make a decision without a hearing</li>
-                            </ul>
-                        </div>
+                            ${warrantOfRestitutionInfoText} </div>
                     </details>
                     """;
 
@@ -130,6 +113,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .mandatory(EnforcementOrder::getSelectEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getWarrantOfRestitutionInfoText, NEVER_SHOW, true)
             .complex(EnforcementOrder::getWritDetails)
             .mandatory(
                 WritDetails::getHasClaimTransferredToHighCourt,

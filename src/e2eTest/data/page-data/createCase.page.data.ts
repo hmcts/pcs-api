@@ -1,3 +1,5 @@
+import { getCaseTypeName } from '@utils/common/caseType.utils';
+
 export const createCase =
   {
     title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
@@ -8,9 +10,7 @@ export const createCase =
     possessionsJurisdiction: 'Possessions',
     caseType:
       {
-        civilPossessions: process.env.CHANGE_ID
-          ? `Civil Possessions ${process.env.CHANGE_ID}`
-          : 'Civil Possessions'
+        civilPossessions: getCaseTypeName()
       },
     makeAPossessionClaimEvent: 'Make a claim',
     start: 'Start'

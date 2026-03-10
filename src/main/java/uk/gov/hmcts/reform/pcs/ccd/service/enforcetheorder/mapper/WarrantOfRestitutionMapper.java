@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
@@ -48,6 +49,15 @@ public class WarrantOfRestitutionMapper {
             target.setIsDifficultToAccessProperty(src.getIsDifficultToAccessProperty());
             target.setClarificationOnAccessDifficultyText(src.getClarificationOnAccessDifficultyText());
             warrantRestDetails.setPropertyAccessDetails(target);
+        }
+
+        if (warrantDetails.getAdditionalInformation() != null) {
+            AdditionalInformation additionalInformation = new AdditionalInformation();
+            additionalInformation.setAdditionalInformationSelect(warrantDetails.getAdditionalInformation()
+                    .getAdditionalInformationSelect());
+            additionalInformation.setAdditionalInformationDetails(warrantDetails.getAdditionalInformation()
+                    .getAdditionalInformationDetails());
+            warrantRestDetails.setAdditionalInformation(additionalInformation);
         }
         currentEnfOrder.setWarrantOfRestitutionDetails(warrantRestDetails);
 

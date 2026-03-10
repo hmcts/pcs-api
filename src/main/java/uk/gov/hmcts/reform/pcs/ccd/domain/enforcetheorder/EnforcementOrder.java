@@ -62,4 +62,6 @@ public class EnforcementOrder {
     @External
     private String writFeeAmount;
 
+    private String warrantOfRestitutionInfoText;
+
 }

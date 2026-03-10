@@ -21,19 +21,20 @@ export class UploadFileAction implements IAction {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
     await fileInput.last().setInputFiles(filePath);
-
+    let timeout = 6000;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(timeout);
     await expect(async () => {
       const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
                                          span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
       let limit = await rateLimit.count();
 
       while (limit > 0) {
-        await page.waitForTimeout(8000);
+        await page.waitForTimeout(timeout);
         await fileInput.last().setInputFiles(filePath);
         await performValidation('waitUntilElementDisappears', 'Uploading...');
         limit = await rateLimit.count();
+        timeout *= 2;
       };
     }).toPass({
       timeout: VERY_LONG_TIMEOUT,
