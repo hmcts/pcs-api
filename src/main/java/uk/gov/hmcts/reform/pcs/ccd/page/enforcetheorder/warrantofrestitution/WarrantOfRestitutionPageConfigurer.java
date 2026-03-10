@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 public class WarrantOfRestitutionPageConfigurer implements PageConfigurer {
 
     private final ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
+    private final VulnerableAdultsChildrenPlaceholderPage vulnerableAdultsChildrenPlaceholderPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
@@ -20,6 +21,7 @@ public class WarrantOfRestitutionPageConfigurer implements PageConfigurer {
             .add(new LivingInThePropertyIntroPage())
             .add(new LivingInThePropertyPage())
             .add(new EvictionDelayWarningPage())
+            .add(vulnerableAdultsChildrenPlaceholderPage)
             .add(new EvictionRisksPosedPage());
     }
 }
