@@ -15,6 +15,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { enforceWarrantApiData } from '@data/api-data/enforceTheOrderWarrant.api.data';
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
@@ -45,6 +46,7 @@ test.beforeEach(async ({ page }, testInfo) => {
       additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
       payLoad: submitCaseApiData.submitCasePayload
     });
+    await performAction('enforceCaseAPI', { data: enforceWarrantApiData.enforceCasePayload});
   }
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
