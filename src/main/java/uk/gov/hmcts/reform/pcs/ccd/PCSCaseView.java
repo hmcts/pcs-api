@@ -125,13 +125,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         alternativesToPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         housingActWalesView.setCaseFields(pcsCase, pcsCaseEntity);
         asbProhibitedConductView.setCaseFields(pcsCase, pcsCaseEntity);
-        Flags flags = new Flags();
-        flags.setRoleOnCase("defendant");
-        flags.setPartyName("test static");
-        DefendantDetails defendant1 = new DefendantDetails();
-        defendant1.setFlags(flags);
-        pcsCase.setDefendant1(defendant1);
-
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);

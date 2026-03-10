@@ -55,9 +55,5 @@ public class DefendantDetails {
     @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
     private AddressUK correspondenceAddress;
 
-    @CCD(
-        label = "Party Flags")
-    private Flags flags;
-
 }
 

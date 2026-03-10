@@ -8,7 +8,6 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -35,9 +34,6 @@ public class ManageCaseFlag implements CCDConfig<PCSCase, State, UserRole> {
             .optional(PCSCase::getCaseFlags, ALWAYS_HIDE, true, true)
             .list(PCSCase::getParties, ALWAYS_HIDE)
                 .optional(Party::getFlags, ALWAYS_HIDE, true)
-            .done()
-            .complex(PCSCase::getDefendant1, ALWAYS_HIDE, null, null, true)
-                .optional(DefendantDetails::getFlags, ALWAYS_HIDE, true)
             .done()
             .optional(
                 PCSCase::getFlagLauncher,
