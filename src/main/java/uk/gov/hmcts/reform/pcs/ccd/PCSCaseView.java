@@ -7,9 +7,11 @@ import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -36,12 +38,15 @@ import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
@@ -120,6 +125,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         alternativesToPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         housingActWalesView.setCaseFields(pcsCase, pcsCaseEntity);
         asbProhibitedConductView.setCaseFields(pcsCase, pcsCaseEntity);
+        Flags flags = new Flags();
+        flags.setRoleOnCase("defendant");
+        flags.setPartyName("test static");
+        DefendantDetails defendant1 = new DefendantDetails();
+        defendant1.setFlags(flags);
+        pcsCase.setDefendant1(defendant1);
 
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -226,8 +237,30 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {
         return partyEntities.stream()
-            .map(entity -> modelMapper.map(entity, Party.class))
-            .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
+            .map(entity -> {
+                Party party = modelMapper.map(entity, Party.class);
+                party.setFlags(buildFlags(entity));
+                return party;
+            })
+            .collect(Collectors.collectingAndThen(
+                Collectors.toList(),
+                ListValueUtils::wrapListItems
+            ));
+    }
+
+    private Flags buildFlags(PartyEntity entity) {
+        Flags flags = new Flags();
+        flags.setRoleOnCase(
+            entity.getOrgName() != null && !entity.getOrgName().isEmpty()
+                ? "claimant"
+                : "defendant"
+        );
+        flags.setPartyName(
+            Stream.of(entity.getFirstName(), entity.getLastName(), entity.getOrgName())
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(" "))
+        );
+        return flags;
     }
 
     private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity) {

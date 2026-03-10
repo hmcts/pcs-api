@@ -23,7 +23,7 @@ public class ManageCaseFlag implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
             .event("manageFlags")
-                            .forState(State.AWAITING_SUBMISSION_TO_HMCTS)
+                            .forAllStates()
             .name("Manage Flag")
             .description("Manage Flag")
             .showSummary()
@@ -31,6 +31,7 @@ public class ManageCaseFlag implements CCDConfig<PCSCase, State, UserRole> {
             .page("manageCaseFlag")
             .pageLabel("Manage Case Flags")
             .optional(PCSCase::getCaseFlags, ALWAYS_HIDE, true, true)
+            .optional(PCSCase::getParties, ALWAYS_HIDE, true, true)
             .optional(
                 PCSCase::getFlagLauncher,
                 null, null, null, null, "#ARGUMENT(UPDATE)");

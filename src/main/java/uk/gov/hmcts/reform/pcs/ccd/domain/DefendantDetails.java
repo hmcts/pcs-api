@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 
 @Builder
 @Data
@@ -53,6 +54,10 @@ public class DefendantDetails {
 
     @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
     private AddressUK correspondenceAddress;
+
+    @CCD(
+        label = "Party Flags")
+    private Flags flags;
 
 }
 

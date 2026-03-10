@@ -18,10 +18,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HM
 @Component
 public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
-    private static final String CASE_TYPE_ID = "PCS";
+    private static final String CASE_TYPE_ID = "CIVIL";
     private static final String CASE_TYPE_NAME = "Civil Possessions";
     private static final String CASE_TYPE_DESCRIPTION = "Civil Possessions Case Type";
-    private static final String JURISDICTION_ID = "PCS";
+    private static final String JURISDICTION_ID = "CIVIL";
     private static final String JURISDICTION_NAME = "Possessions";
     private static final String JURISDICTION_DESCRIPTION = "Possessions Jurisdiction";
 
@@ -86,6 +86,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("caseFlags", "Case Flags")
             .field(PCSCase::getFlagLauncher, null, "#ARGUMENT(READ)")
-            .field(PCSCase::getCaseFlags);
+            .field(PCSCase::getCaseFlags, NEVER_SHOW)
+            .field(PCSCase::getParties,NEVER_SHOW);
     }
 }
