@@ -7,12 +7,20 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.ReasonableAdjustmentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
@@ -63,6 +71,8 @@ class DefendantResponseServiceTest {
     private PartyEntity partyEntity;
     @Mock
     private ClaimEntity claimEntity;
+    @Mock
+    private PcsCaseEntity pcsCaseEntity;
 
     @Captor
     private ArgumentCaptor<DefendantResponseEntity> responseCaptor;
@@ -94,6 +104,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
@@ -113,6 +124,7 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getParty()).isEqualTo(partyEntity);
         assertThat(savedResponse.getClaim()).isEqualTo(claimEntity);
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
+        assertThat(savedResponse.getStatementOfTruth()).isNotNull();
     }
 
     @Test
@@ -126,6 +138,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.NO)
@@ -156,6 +169,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.PREFER_NOT_TO_SAY)
@@ -186,6 +200,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(null)
@@ -251,18 +266,14 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldReturnEarlyWhenResponsesIsNull() {
-        // Given
+    void shouldReturnEarlyWhenPossessionClaimResponseIsNull() {
+        // Given - no stubbing needed; service returns before any repository calls
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
 
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, PossessionClaimResponse.builder()
-            .defendantResponses(null)
-            .build());
+        underTest.saveDefendantResponse(CASE_REFERENCE, null);
 
-        // Then
+        // Then - duplicate check and save are never invoked
         verify(claimRepository, never()).findIdByCaseReference(anyLong());
         verify(defendantResponseRepository, never()).save(any());
     }
@@ -329,6 +340,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
@@ -364,6 +376,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
@@ -393,5 +406,67 @@ class DefendantResponseServiceTest {
 
         // 5. Save (only locks new row)
         verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
+    }
+
+    @Test
+    void shouldBuildAndLinkChildEntitiesWhenSavingDefendantResponse() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+        ReasonableAdjustments reasonableAdjustments = ReasonableAdjustments.builder()
+            .reasonableAdjustmentRequired("Wheelchair access")
+            .build();
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .dependantChildren(YesOrNo.YES)
+            .build();
+        PaymentAgreement paymentAgreement = PaymentAgreement.builder()
+            .anyPaymentsMade(YesOrNo.NO)
+            .build();
+
+        ReasonableAdjustmentEntity reasonableAdjustmentEntity = ReasonableAdjustmentEntity.builder()
+            .reasonableAdjustmentsRequired("Wheelchair access")
+            .build();
+        HouseholdCircumstancesEntity householdCircumstancesEntity = HouseholdCircumstancesEntity.builder()
+            .dependantChildren(YesOrNo.YES)
+            .build();
+        PaymentAgreementEntity paymentAgreementEntity = PaymentAgreementEntity.builder()
+            .anyPaymentsMade(YesOrNo.NO)
+            .build();
+
+        when(reasonableAdjustmentsService.createReasonableAdjustmentEntity(any(ReasonableAdjustments.class)))
+            .thenReturn(reasonableAdjustmentEntity);
+        when(householdCircumstancesService.createHouseholdCircumstancesEntity(any(HouseholdCircumstances.class)))
+            .thenReturn(householdCircumstancesEntity);
+        when(paymentAgreementService.createPaymentAgreementEntity(any(PaymentAgreement.class)))
+            .thenReturn(paymentAgreementEntity);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .reasonableAdjustments(reasonableAdjustments)
+            .householdCircumstances(householdCircumstances)
+            .paymentAgreement(paymentAgreement)
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        verify(reasonableAdjustmentsService).createReasonableAdjustmentEntity(any(ReasonableAdjustments.class));
+        verify(householdCircumstancesService).createHouseholdCircumstancesEntity(any(HouseholdCircumstances.class));
+        verify(paymentAgreementService).createPaymentAgreementEntity(any(PaymentAgreement.class));
+
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+        assertThat(saved.getReasonableAdjustment()).isSameAs(reasonableAdjustmentEntity);
+        assertThat(saved.getHouseholdCircumstances()).isSameAs(householdCircumstancesEntity);
+        assertThat(saved.getPaymentAgreement()).isSameAs(paymentAgreementEntity);
     }
 }
