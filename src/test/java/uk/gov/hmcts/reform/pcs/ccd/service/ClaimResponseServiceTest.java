@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
@@ -16,14 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +36,6 @@ class ClaimResponseServiceTest {
 
     private static final UUID TEST_IDAM_ID = UUID.randomUUID();
     private static final UUID TEST_PARTY_ID = UUID.randomUUID();
-    private static final UUID TEST_CASE_ID = UUID.randomUUID();
     private static final long TEST_CASE_REFERENCE = 1234567890L;
     private static final AddressUK TEST_ADDRESS = AddressUK.builder()
         .addressLine1("123 Test Street")
@@ -47,18 +44,14 @@ class ClaimResponseServiceTest {
         .build();
 
     @Mock
-    private PartyRepository partyRepository;
-
+    private PartyService partyService;
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
-
+    private PartyRepository partyRepository;
     @Mock
     private SecurityContextService securityContextService;
-
     @Mock
     private ModelMapper modelMapper;
 
-    @InjectMocks
     private ClaimResponseService underTest;
 
     @Captor
@@ -71,14 +64,8 @@ class ClaimResponseServiceTest {
         testParty = new PartyEntity();
         testParty.setId(TEST_PARTY_ID);
         testParty.setIdamId(TEST_IDAM_ID);
-    }
 
-    private void stubCaseLookup() {
-        PcsCaseEntity caseEntity = new PcsCaseEntity();
-        caseEntity.setId(TEST_CASE_ID);
-        caseEntity.setCaseReference(TEST_CASE_REFERENCE);
-        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE))
-            .thenReturn(Optional.of(caseEntity));
+        underTest = new ClaimResponseService(partyService, partyRepository, securityContextService, modelMapper);
     }
 
     @Test
@@ -99,9 +86,8 @@ class ClaimResponseServiceTest {
         );
 
         final AddressEntity addressEntity = new AddressEntity();
-        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
@@ -134,9 +120,8 @@ class ClaimResponseServiceTest {
                 .build()
         );
 
-        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
 
         // When
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
@@ -160,9 +145,8 @@ class ClaimResponseServiceTest {
                 .build()
         );
 
-        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
 
         // When
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
@@ -187,9 +171,8 @@ class ClaimResponseServiceTest {
                 .build()
         );
 
-        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
 
         // When
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
@@ -221,24 +204,23 @@ class ClaimResponseServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenPartyNotFound() {
+    void shouldPropagateExceptionWhenPartyNotFound() {
         // Given
         final PossessionClaimResponse response = buildResponse(
             Party.builder().build(),
             DefendantResponses.builder().build()
         );
 
-        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.empty());
 
-        // When
+        PartyNotFoundException expectedException = new PartyNotFoundException("test exception");
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE))
+            .thenThrow(expectedException);
+
+        // When / Then
         assertThatThrownBy(() -> underTest.saveDraftData(response, TEST_CASE_REFERENCE))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("No party found for IDAM ID:");
+            .isSameAs(expectedException);
 
-        // Then
-        verify(partyRepository).findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID);
     }
 
     @Test
@@ -254,9 +236,8 @@ class ClaimResponseServiceTest {
                 .build()
         );
 
-        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
 
         // When
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
@@ -293,9 +274,8 @@ class ClaimResponseServiceTest {
             .postcode("SW1A 1AA")
             .build();
 
-        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
