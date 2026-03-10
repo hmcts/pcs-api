@@ -1,3 +1,5 @@
+import { getCaseTypeId } from '@utils/common/caseType.utils';
+
 export const createCaseEventTokenApiData = {
   createCaseEventTokenApiInstance: () => ({
     baseURL: process.env.DATA_STORE_URL_BASE,
@@ -9,5 +11,5 @@ export const createCaseEventTokenApiData = {
       'Accept': '*/*',
     }
   }),
-  createCaseEventTokenApiEndPoint: `/case-types/PCS${process.env.CHANGE_ID ? '-' + process.env.CHANGE_ID : ''}/event-triggers/createPossessionClaim`,
+  createCaseEventTokenApiEndPoint: `/case-types/${getCaseTypeId()}/event-triggers/createPossessionClaim`,
 };
