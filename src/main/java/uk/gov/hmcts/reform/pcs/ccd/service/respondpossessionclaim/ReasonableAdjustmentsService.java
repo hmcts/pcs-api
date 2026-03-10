@@ -9,6 +9,10 @@ public class ReasonableAdjustmentsService {
 
     public ReasonableAdjustmentEntity createReasonableAdjustmentEntity(ReasonableAdjustments reasonableAdjustments) {
 
+        if (reasonableAdjustments == null) {
+            return null;
+        }
+
         ReasonableAdjustmentEntity reasonableAdjustmentEntity = ReasonableAdjustmentEntity.builder()
             .reasonableAdjustmentsRequired(reasonableAdjustments.getReasonableAdjustmentRequired())
             .build();

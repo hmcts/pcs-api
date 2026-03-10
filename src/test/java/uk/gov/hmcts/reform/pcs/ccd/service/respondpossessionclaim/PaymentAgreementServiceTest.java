@@ -34,5 +34,14 @@ class PaymentAgreementServiceTest {
         assertThat(entity.getAnyPaymentsMade()).isEqualTo(YesOrNo.YES);
     }
 
+    @Test
+    void shouldReturnNullWhenPaymentAgreementIsNull() {
+        // When
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(null);
+
+        // Then
+        assertThat(entity).isNull();
+    }
+
 }
 

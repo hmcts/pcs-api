@@ -34,5 +34,14 @@ class HouseholdCircumstancesServiceTest {
         assertThat(entity.getDependantChildren()).isEqualTo(YesOrNo.YES);
     }
 
+    @Test
+    void shouldReturnNullWhenHouseholdCircumstancesIsNull() {
+        // When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(null);
+
+        // Then
+        assertThat(entity).isNull();
+    }
+
 }
 

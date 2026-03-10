@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -17,7 +18,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -62,7 +66,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .noticeReceived(YesNoNotSure.NO)
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, responses);
+        PCSCase caseData = buildCaseData(contactDetails, responses,null,null,null);
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of());
@@ -94,7 +98,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                        .build())
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, null);
+        PCSCase caseData = buildCaseData(contactDetails, null,null,null,null);
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of("nameKnown", "addressKnown", "addressSameAsProperty"));
@@ -123,7 +127,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .oweRentArrears(YesNoNotSure.NO)
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, responses);
+        PCSCase caseData = buildCaseData(contactDetails, responses,null,null,null);
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -158,7 +162,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                        .build())
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, null);
+        PCSCase caseData = buildCaseData(contactDetails, null,null,null,null);
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of());
@@ -193,7 +197,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .contactByPhone(VerticalYesNo.NO)
             .build();
 
-        PCSCase caseData = buildCaseData(null, responses);
+        PCSCase caseData = buildCaseData(null, responses,null,null,null);
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -214,7 +218,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
-    void shouldSaveMixedContactDetailsAndResponses() {
+    void shouldSaveAllDefendantSectionsInPartialUpdate() {
         //Given
         AddressUK address = AddressUK.builder()
             .addressLine1("456 Another Road")
@@ -234,7 +238,23 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .contactByText(VerticalYesNo.NO)
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, responses);
+        ReasonableAdjustments reasonableAdjustments = ReasonableAdjustments.builder()
+            .reasonableAdjustmentRequired("Wheelchair access")
+            .build();
+
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .dependantChildren(YesOrNo.YES)
+            .build();
+
+        PaymentAgreement paymentAgreement = PaymentAgreement.builder()
+            .anyPaymentsMade(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .build();
+
+        PCSCase caseData = buildCaseData(contactDetails,
+                                         responses,
+                                         reasonableAdjustments,
+                                         householdCircumstances,
+                                         paymentAgreement);
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of());
@@ -257,6 +277,11 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedResponses.getContactByText()).isEqualTo(VerticalYesNo.NO);
+
+        PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
+        assertThat(savedResponse.getReasonableAdjustments()).isEqualTo(reasonableAdjustments);
+        assertThat(savedResponse.getHouseholdCircumstances()).isEqualTo(householdCircumstances);
+        assertThat(savedResponse.getPaymentAgreement()).isEqualTo(paymentAgreement);
     }
 
     @Test
@@ -264,7 +289,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Given
         PCSCase caseData = buildCaseData(
             DefendantContactDetails.builder().party(null).build(),
-            null
+            null,null,null,null
         );
 
         //When
@@ -289,7 +314,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .contactByPost(VerticalYesNo.YES)
             .build();
 
-        PCSCase caseData = buildCaseData(null, responses);
+        PCSCase caseData = buildCaseData(null, responses, null,null,null);
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -312,7 +337,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .party(Party.builder().firstName("Jack").lastName("Smith").build())
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, null);
+        PCSCase caseData = buildCaseData(contactDetails, null,null,null,null);
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of());
@@ -331,11 +356,18 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(response.getData()).isNull();
     }
 
-    private PCSCase buildCaseData(DefendantContactDetails contactDetails, DefendantResponses responses) {
+    private PCSCase buildCaseData(DefendantContactDetails contactDetails,
+                                  DefendantResponses responses,
+                                  ReasonableAdjustments reasonableAdjustments,
+                                  HouseholdCircumstances householdCircumstances,
+                                  PaymentAgreement paymentAgreement) {
         return PCSCase.builder()
             .possessionClaimResponse(PossessionClaimResponse.builder()
                                          .defendantContactDetails(contactDetails)
                                          .defendantResponses(responses)
+                                         .reasonableAdjustments(reasonableAdjustments)
+                                         .householdCircumstances(householdCircumstances)
+                                         .paymentAgreement(paymentAgreement)
                                          .build())
             .build();
     }

@@ -9,6 +9,10 @@ public class PaymentAgreementService {
 
     public PaymentAgreementEntity createPaymentAgreementEntity(PaymentAgreement paymentAgreement) {
 
+        if (paymentAgreement == null) {
+            return null;
+        }
+
         PaymentAgreementEntity paymentAgreementEntity = PaymentAgreementEntity.builder()
             .anyPaymentsMade(paymentAgreement.getAnyPaymentsMade())
             .build();

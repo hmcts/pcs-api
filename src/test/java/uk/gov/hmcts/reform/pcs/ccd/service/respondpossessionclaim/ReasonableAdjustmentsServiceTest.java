@@ -33,5 +33,14 @@ class ReasonableAdjustmentsServiceTest {
         assertThat(entity.getReasonableAdjustmentsRequired()).isEqualTo("Wheelchair access");
     }
 
+    @Test
+    void shouldReturnNullWhenPaymentAgreementIsNull() {
+        // When
+        ReasonableAdjustmentEntity entity = underTest.createReasonableAdjustmentEntity(null);
+
+        // Then
+        assertThat(entity).isNull();
+    }
+
 }
 

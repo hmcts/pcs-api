@@ -9,6 +9,10 @@ public class HouseholdCircumstancesService {
 
     public HouseholdCircumstancesEntity createHouseholdCircumstancesEntity(HouseholdCircumstances circumstances) {
 
+        if (circumstances == null) {
+            return null;
+        }
+
         HouseholdCircumstancesEntity householdCircumstancesEntity = HouseholdCircumstancesEntity.builder()
             .dependantChildren(circumstances.getDependantChildren())
             .build();
