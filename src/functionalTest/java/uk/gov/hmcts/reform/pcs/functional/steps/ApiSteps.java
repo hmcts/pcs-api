@@ -15,7 +15,6 @@ import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.testutils.CitizenUserGenerator;
 import uk.gov.hmcts.reform.pcs.functional.testutils.JsonAssertUtils;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
@@ -37,7 +36,6 @@ public class ApiSteps {
     public static String systemUserIdamToken;
     public static String citizenUserIdamToken;
     public static String solicitorUserIdamToken;
-    public static String createCitizenUser;
     Long caseId;
 
     @Step("Generate S2S tokens")
@@ -46,8 +44,6 @@ public class ApiSteps {
         pcsApiS2sToken = serviceAuthenticationGenerator.generate();
         pcsFrontendS2sToken = serviceAuthenticationGenerator.generate(TestConstants.PCS_FRONTEND);
         unauthorisedS2sToken = serviceAuthenticationGenerator.generate(TestConstants.CIVIL_SERVICE);
-
-        createCitizenUser = CitizenUserGenerator.createCitizenUser();
 
         systemUserIdamToken = PcsIdamTokenClient.generateToken(systemUser);
         citizenUserIdamToken = PcsIdamTokenClient.generateToken(citizenUser);

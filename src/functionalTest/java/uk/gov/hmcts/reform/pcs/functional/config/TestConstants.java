@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.functional.config;
 
-import uk.gov.hmcts.reform.pcs.functional.testutils.CitizenUserGenerator;
-
 import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 
 public class TestConstants {
@@ -14,8 +12,5 @@ public class TestConstants {
     public static final String EXPIRED_IDAM_TOKEN = getEnv("IDAM_EXPIRED_USER_TOKEN");
     public static final String PCS_SOLICITOR_USER = "pcs-solicitor-automation@test.com";
     public static final String PCS_SOLICITOR_AUTOMATION_IDAM_UID = getEnv("PCS_SOLICITOR_AUTOMATION_UID");
-
-    public static String getPcsCitizenUser() {
-        return CitizenUserGenerator.createCitizenUser();
-    }
+    public static final String GENERIC_PASSWORD = getEnv("IDAM_PCS_USER_PASSWORD");
 }
