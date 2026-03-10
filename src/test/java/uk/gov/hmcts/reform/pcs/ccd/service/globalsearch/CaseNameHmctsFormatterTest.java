@@ -56,6 +56,8 @@ class CaseNameHmctsFormatterTest {
 
         // Then
         verify(pcsCase).setCaseNameHmctsRestricted("Treetops Housing vs Jackson");
+        verify(pcsCase).setCaseNameHmctsInternal("Treetops Housing vs Jackson");
+        verify(pcsCase).setCaseNamePublic("Treetops Housing vs Jackson");
     }
 
     @Test
