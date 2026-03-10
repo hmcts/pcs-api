@@ -59,7 +59,7 @@ public class DefendantResponseEntity {
     private PcsCaseEntity pcsCase;
 
     @OneToOne(cascade = ALL, orphanRemoval = true)
-    @JoinColumn(name = "sot_id", nullable = false)
+    @JoinColumn(name = "sot_id")
     @JsonManagedReference
     private StatementOfTruthEntity statementOfTruth;
 

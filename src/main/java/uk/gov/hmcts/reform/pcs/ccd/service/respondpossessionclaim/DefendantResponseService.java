@@ -4,12 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
@@ -108,12 +105,6 @@ public class DefendantResponseService {
 
         //set bidirectional relationship with the pcs case
         claimRef.getPcsCase().addDefendantResponse(defendantResponse);
-        //empty for now to satisfy not null constraint
-        defendantResponse.setStatementOfTruth(StatementOfTruthEntity.builder()
-                                                   .completedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)
-                                                   .accepted(YesOrNo.YES)
-                                                   .fullName("John test")
-                                                   .build());
 
         buildAndLinkChildEntities(defendantResponse, possessionClaimResponse);
 

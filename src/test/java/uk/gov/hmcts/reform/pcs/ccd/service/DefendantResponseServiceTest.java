@@ -124,7 +124,6 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getParty()).isEqualTo(partyEntity);
         assertThat(savedResponse.getClaim()).isEqualTo(claimEntity);
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
-        assertThat(savedResponse.getStatementOfTruth()).isNotNull();
     }
 
     @Test
@@ -267,13 +266,13 @@ class DefendantResponseServiceTest {
 
     @Test
     void shouldReturnEarlyWhenPossessionClaimResponseIsNull() {
-        // Given - no stubbing needed; service returns before any repository calls
+        // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
 
         // When
         underTest.saveDefendantResponse(CASE_REFERENCE, null);
 
-        // Then - duplicate check and save are never invoked
+        // Then
         verify(claimRepository, never()).findIdByCaseReference(anyLong());
         verify(defendantResponseRepository, never()).save(any());
     }
