@@ -30,12 +30,12 @@ public class CaseNameHmctsFormatter {
 
         final List<ListValue<Party>> defendants = pcsCase.getAllDefendants();
 
-        pcsCase.setCaseNameHmctsRestricted(getFormattedClaimantName(claimantInformation)
-                                               + " vs " + getFormattedDefendantName(defendants));
-        pcsCase.setCaseNameHmctsInternal(getFormattedClaimantName(claimantInformation)
-                                             + " vs " + getFormattedDefendantName(defendants));
-        pcsCase.setCaseNamePublic(getFormattedClaimantName(claimantInformation)
-                                      + " vs " + getFormattedDefendantName(defendants));
+        final String formattedCaseName = getFormattedClaimantName(claimantInformation)
+            + " vs " + getFormattedDefendantName(defendants);
+
+        pcsCase.setCaseNameHmctsRestricted(formattedCaseName);
+        pcsCase.setCaseNameHmctsInternal(formattedCaseName);
+        pcsCase.setCaseNamePublic(formattedCaseName);
     }
 
     private String getFormattedClaimantName(ClaimantInformation claimantInformation) {

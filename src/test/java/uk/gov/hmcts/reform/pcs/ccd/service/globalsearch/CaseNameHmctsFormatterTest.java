@@ -20,9 +20,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class CaseNameHmctsFormatterTest {
 
-    private static String CLAIMANT_NAME = "Freeman";
-    private static String DEFENDANT_LAST_NAME = "Jackson";
-    private static String CLAIMANT_ORGANISATION_NAME = "Treetops Housing";
+    private static final String CLAIMANT_NAME = "Freeman";
+    private static final String DEFENDANT_LAST_NAME = "Jackson";
+    private static final String CLAIMANT_ORGANISATION_NAME = "Treetops Housing";
 
     @Mock
     private PCSCase pcsCase;
@@ -44,7 +44,7 @@ class CaseNameHmctsFormatterTest {
 
 
     @Test
-    void shouldSetCaseNameWhenClaimantIsOrgAndDefandantIsKnown() {
+    void shouldSetCaseNameWhenClaimantIsOrgAndDefendantIsKnown() {
         when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
         when(claimantInformation.getOrgNameFound()).thenReturn(YesOrNo.YES);
         when(pcsCase.getAllDefendants()).thenReturn(List.of(partyListValue));
@@ -61,7 +61,7 @@ class CaseNameHmctsFormatterTest {
     }
 
     @Test
-    void shouldSetCaseNameWhenClaimantIsCitizenAndDefandantIsKnown() {
+    void shouldSetCaseNameWhenClaimantIsCitizenAndDefendantIsKnown() {
         when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
         when(claimantInformation.getOrgNameFound()).thenReturn(YesOrNo.NO);
         when(pcsCase.getAllDefendants()).thenReturn(List.of(partyListValue));
@@ -78,7 +78,7 @@ class CaseNameHmctsFormatterTest {
     }
 
     @Test
-    void shouldSetCaseNameWhenClaimantIsOrgAndMultipleDefandants() {
+    void shouldSetCaseNameWhenClaimantIsOrgAndMultipleDefendants() {
         when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
         when(pcsCase.getAllDefendants()).thenReturn(List.of(partyListValue, partyListValue));
         when(claimantInformation.getClaimantName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
@@ -94,7 +94,7 @@ class CaseNameHmctsFormatterTest {
     }
 
     @Test
-    void shouldSetCaseNameWhenClaimantIsCitizenAndDefandantsUnkown() {
+    void shouldSetCaseNameWhenClaimantIsCitizenAndDefendantUnkown() {
         when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
         when(pcsCase.getAllDefendants()).thenReturn(null);
         when(claimantInformation.getClaimantName()).thenReturn(CLAIMANT_NAME);
