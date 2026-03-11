@@ -12,15 +12,19 @@ public class CitizenUserGenerator {
 
     private static final String BASE_URL = getEnv("IDAM_TESTING_SUPPORT_URL");
     private static final String GENERIC_PASSWORD = TestConstants.GENERIC_PASSWORD;
-    private static final String EMAIL = "pcs-citizen-" + System.currentTimeMillis() + "@test.com";
-
-    static String AUTHORIZATION
+    private static final String AUTHORIZATION
         = "Bearer " + PcsIdamTokenClient.generateToken(PcsIdamTokenClient.UserType.systemUser);
+
+    private static String generateCitizenEmail() {
+        return "pcs-citizen-" + System.currentTimeMillis() + "@test.com";
+    }
 
     public static String createCitizenUser() {
 
+        String email = generateCitizenEmail();
+
         Map<String, Object> user = Map.of(
-            "email", EMAIL,
+            "email", email,
             "forename", "PCS",
             "surname", "Citizen",
             "roleNames", new String[]{"citizen"}
@@ -42,12 +46,12 @@ public class CitizenUserGenerator {
         if (response.getStatusCode() != 201) {
             throw new RuntimeException(String.format(
                 "Failed to generate Citizen User '%s'. Status code: %d.%nResponse: %s",
-                EMAIL,
+                email,
                 response.getStatusCode(),
                 response.prettyPrint()
             ));
         }
 
-        return EMAIL;
+        return email;
     }
 }
