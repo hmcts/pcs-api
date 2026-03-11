@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -18,7 +19,7 @@ public class ConfirmIfDOBKnownPage implements CcdPageConfiguration {
         pageBuilder
             .page("confirmDefendantsDOB")
             .pageLabel("Confirm if you know the defendants’ dates of birth")
-            .showCondition("selectEnforcementType=\"WARRANT\"")
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("confirmDefendantsDOB-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

@@ -216,7 +216,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
 
     private PCSCase createCaseWithEnforcementType(WritDetails writDetails, SelectEnforcementType enforcementType) {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .selectEnforcementType(EnforcementDataUtil.buildEnforcementTypes(enforcementType))
+            .chooseEnforcementType(EnforcementDataUtil.buildEnforcementTypes(enforcementType))
             .writDetails(writDetails)
             .build();
 

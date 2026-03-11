@@ -124,6 +124,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         } else {
             setWarrantRestInfoText(enforcementOrder, "");
         }
+        // Keep both fields in sync while CCD transitions from selectEnforcementType to chooseEnforcementType
+        enforcementOrder.setChooseEnforcementType(createDynamicStringList(enforcementTypes));
         enforcementOrder.setSelectEnforcementType(createDynamicStringList(enforcementTypes));
     }
 
