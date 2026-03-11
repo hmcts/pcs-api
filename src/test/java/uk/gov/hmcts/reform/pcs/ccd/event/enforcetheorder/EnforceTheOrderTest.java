@@ -352,7 +352,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         callStartHandler(caseData);
 
         // Then
-        DynamicStringList enforcementTypes = caseData.getEnforcementOrder().getSelectEnforcementType();
+        DynamicStringList enforcementTypes = caseData.getEnforcementOrder().getChooseEnforcementType();
         boolean warrantOfRestitutionOptionExists = enforcementTypes.getListItems().stream()
                 .anyMatch(item ->
                         item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
@@ -373,7 +373,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         callStartHandler(caseData);
 
         // Then
-        DynamicStringList enforcementTypes = caseData.getEnforcementOrder().getSelectEnforcementType();
+        DynamicStringList enforcementTypes = caseData.getEnforcementOrder().getChooseEnforcementType();
         boolean warrantOfRestitutionOptionExists = enforcementTypes.getListItems().stream()
                 .anyMatch(item ->
                         item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));

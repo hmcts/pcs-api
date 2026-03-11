@@ -504,7 +504,7 @@ class WarrantStrategyTest {
     void shouldNotAddAnySelectedDefendantsWhenEvictEveryoneIsYes() {
         // Given
         final EnforcementOrder enfOrder = EnforcementOrder.builder()
-                .selectEnforcementType(buildEnforcementTypes(WARRANT))
+                .chooseEnforcementType(buildEnforcementTypes(WARRANT))
             .warrantDetails(WarrantDetails.builder()
                                 .nameAndAddressForEviction(NameAndAddressForEviction.builder()
                                                                .correctNameAndAddress(VerticalYesNo.YES)
