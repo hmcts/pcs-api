@@ -1,7 +1,7 @@
 import { expect, Page } from '@playwright/test';
 import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
-import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
+import { IAction, actionRecord } from '@utils/interfaces/action.interface';
 import {
   yourApplication,
   nameAndAddressForEviction,
@@ -29,8 +29,6 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
-import { RetrievePrePopulatedValues } from '@utils/actions/element-actions/retrievePrepoPulatedValues1.action';
-import { validationRecord } from '@utils/interfaces';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
