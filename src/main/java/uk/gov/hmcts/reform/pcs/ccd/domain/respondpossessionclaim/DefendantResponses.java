@@ -23,7 +23,8 @@ public class DefendantResponses {
     @CCD
     private YesNoNotSure tenancyTypeCorrect;
 
-    // testing change
+    @CCD
+    private String tenancyType;
 
     @CCD
     private YesNoNotSure tenancyStartDateCorrect;
