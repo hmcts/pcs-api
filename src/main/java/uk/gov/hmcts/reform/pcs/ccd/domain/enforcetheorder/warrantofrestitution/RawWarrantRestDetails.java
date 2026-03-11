@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RawWarrantDetails {
+public class RawWarrantRestDetails {
 
     @CCD(
             label = "Is anyone living at the property vulnerable?"

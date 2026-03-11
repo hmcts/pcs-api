@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -70,7 +71,9 @@ public class WritDetails {
             + "ask them if they answered any questions in Welsh. We’ll use this to "
             + "make sure your claim is processed correctly"
     )
-    private LanguageUsed enforcementLanguageUsed;
+
+    @JsonProperty("EnforcementLanguageUsed")
+    private LanguageUsed languageUsed;
     @CCD(
         searchable = false,
         label = "TEMPORARY TEST ONLY – Has the claim been transferred to the High Court?"

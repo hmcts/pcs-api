@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
 import org.modelmapper.ModelMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -8,14 +8,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.RiskDetailsMapper;
 
 import java.util.UUID;
 
@@ -39,7 +38,7 @@ class RiskDetailsMapperTest {
             EnforcementOrder order = EnforcementOrder.builder()
                     .warrantDetails(WarrantDetails.builder()
                             .anyRiskToBailiff(YesNoNotSure.YES)
-                            .riskDetails(EnforcementRiskDetails.builder()
+                            .riskDetails(RiskDetails.builder()
                                     .violentDetails("Violent")
                                     .verbalThreatsDetails("Verbal")
                                     .firearmsDetails("Firearms")
