@@ -8,9 +8,12 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
+
 @Component
 public abstract class AbstractVulnerableAdultsChildrenPage extends TextValidatingPage {
 
+    public static final String FIELD_LABEL = "How are they vulnerable?";
     public static final String INFO_MARKUP = """
                     <p class="govuk-body govuk-!-font-weight-bold">
                         The bailiff needs to know if anyone at the property is vulnerable.
@@ -33,8 +36,8 @@ public abstract class AbstractVulnerableAdultsChildrenPage extends TextValidatin
 
     @Override
     public List<String> performValidation(PCSCase data) {
-        return new ArrayList<>(getValidationErrors(getVulnerableReasonTextToValidate(data), "How are they vulnerable?",
-                TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT));
+        return new ArrayList<>(getValidationErrors(getVulnerableReasonTextToValidate(data), FIELD_LABEL,
+                RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT));
     }
 
     public abstract String getVulnerableReasonTextToValidate(PCSCase data);

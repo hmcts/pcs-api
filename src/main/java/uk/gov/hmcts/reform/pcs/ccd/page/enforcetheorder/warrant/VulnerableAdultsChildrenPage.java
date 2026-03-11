@@ -22,12 +22,13 @@ public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildr
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
+        String fieldPrefix = getFieldPrefix();
         pageBuilder
-            .page(getPageId(), this::midEvent)
+            .page(fieldPrefix, this::midEvent)
             .pageLabel(PAGE_LABEL)
             .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
-            .label(getPageId() + "-line-separator", "---")
-            .label(getPageId() + "-information-text", INFO_MARKUP)
+            .label(fieldPrefix + "-line-separator", "---")
+            .label(fieldPrefix + "-information-text", INFO_MARKUP)
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRawWarrantDetails)
             .mandatory(RawWarrantDetails::getVulnerablePeoplePresent)
@@ -38,7 +39,7 @@ public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildr
             .done()
             .done()
             .done()
-            .label(getPageId() + "-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label(fieldPrefix + "-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     @Override
@@ -59,7 +60,7 @@ public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildr
     }
 
     @Override
-    public String getPageId() {
-        return CcdPage.getPageId(this.getClass());
+    public String getFieldPrefix() {
+        return CcdPage.getFieldPrefix(this.getClass());
     }
 }

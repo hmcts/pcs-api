@@ -117,7 +117,7 @@ class VulnerableAdultsChildrenPageTest {
 
     @Test
     void shouldReturnPageIdWithoutSuffix() {
-        String pageId = pageUnderTest.getPageId();
+        String pageId = pageUnderTest.getFieldPrefix();
 
         assertThat(pageId).isEqualTo("VulnerableAdultsChildren");
     }

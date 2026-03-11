@@ -28,7 +28,7 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
     private ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
 
     @Mock
-    private VulnerableAdultsChildrenRestPage vulnerableAdultsChildrenRestPage;
+    private VulnerableAdultsChildrenWarrantRestPage vulnerableAdultsChildrenWarrantRestPage;
 
     @InjectMocks
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
@@ -52,7 +52,7 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, ShareEvidenceWithJudgePage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, explainHowDefendantsReturnedPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, DefendantAtPropertyPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, vulnerableAdultsChildrenRestPage.getClass(), verificationCount);
+        verifyAndCount(inOrder, pageBuilder, vulnerableAdultsChildrenWarrantRestPage.getClass(), verificationCount);
         verifyAndCount(inOrder, pageBuilder, PropertyAccessDetailsRestPlaceholder.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unchecked")
-class VulnerableAdultsChildrenRestPageTest {
+class VulnerableAdultsChildrenWarrantRestPageTest {
 
     @Mock
     private TextAreaValidationService service;
@@ -40,12 +40,12 @@ class VulnerableAdultsChildrenRestPageTest {
 
     private PageBuilder pageBuilder;
 
-    private VulnerableAdultsChildrenRestPage pageUnderTest;
+    private VulnerableAdultsChildrenWarrantRestPage pageUnderTest;
 
     @BeforeEach
     void setup() {
         pageBuilder = new PageBuilder(eventBuilder);
-        pageUnderTest = new VulnerableAdultsChildrenRestPage(service);
+        pageUnderTest = new VulnerableAdultsChildrenWarrantRestPage(service);
 
         lenient().when(eventBuilder.fields()).thenReturn(fieldBuilder);
         lenient().when(fieldBuilder.page(anyString(), any(MidEvent.class))).thenReturn(fieldBuilder);
@@ -118,8 +118,8 @@ class VulnerableAdultsChildrenRestPageTest {
 
     @Test
     void shouldReturnPageIdWithoutSuffix() {
-        String pageId = pageUnderTest.getPageId();
+        String pageId = pageUnderTest.getFieldPrefix();
 
-        assertThat(pageId).isEqualTo("VulnerableAdultsChildrenRest");
+        assertThat(pageId).isEqualTo("VulnerableAdultsChildrenWarrantRest");
     }
 }

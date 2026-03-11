@@ -85,7 +85,7 @@ class AbstractVulnerableAdultsChildrenPageTest {
         }
 
         @Override
-        public String getPageId() {
+        public String getFieldPrefix() {
             return "testPage";
         }
     }

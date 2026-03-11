@@ -2,15 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page;
 
 public interface CcdPage {
 
-    String getPageId();
+    String getFieldPrefix();
 
-    @SuppressWarnings("rawtypes")
-    static String getPageId(Class clazz) {
-        String pageId = clazz.getSimpleName();
-
-        if (pageId.endsWith("Page")) {
-            pageId = pageId.substring(0, pageId.length() - "Page".length());
-        }
-        return pageId;
+    static String getFieldPrefix(Class<? extends CcdPage> clazz) {
+        return clazz.getSimpleName().replaceFirst("Page$", "");
     }
 }

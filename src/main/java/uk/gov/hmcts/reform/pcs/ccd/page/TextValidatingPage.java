@@ -22,10 +22,9 @@ public abstract class TextValidatingPage implements CcdPage {
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                  CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
-        List<String> errors = performValidation(data);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
-                .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
+                .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", performValidation(data)))
                 .build();
     }
 

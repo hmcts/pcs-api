@@ -14,21 +14,22 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcemen
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 @Component
-public class VulnerableAdultsChildrenRestPage extends AbstractVulnerableAdultsChildrenPage
+public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableAdultsChildrenPage
         implements CcdPageConfiguration {
 
-    public VulnerableAdultsChildrenRestPage(TextAreaValidationService textAreaValidationService) {
+    public VulnerableAdultsChildrenWarrantRestPage(TextAreaValidationService textAreaValidationService) {
         super(textAreaValidationService);
     }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
+        String fieldPrefix = getFieldPrefix();
         pageBuilder
-            .page(getPageId(), this::midEvent)
+            .page(fieldPrefix, this::midEvent)
             .pageLabel(PAGE_LABEL)
             .showCondition(ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW)
-            .label(getPageId() + "-line-separator", "---")
-            .label(getPageId() + "-information-text", INFO_MARKUP)
+            .label(fieldPrefix + "-line-separator", "---")
+            .label(fieldPrefix + "-information-text", INFO_MARKUP)
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRawWarrantRestDetails)
             .mandatory(RawWarrantRestDetails::getVulnerablePeoplePresentRest)
@@ -39,7 +40,7 @@ public class VulnerableAdultsChildrenRestPage extends AbstractVulnerableAdultsCh
             .done()
             .done()
             .done()
-            .label(getPageId() + "-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label(fieldPrefix + "-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class VulnerableAdultsChildrenRestPage extends AbstractVulnerableAdultsCh
     }
 
     @Override
-    public String getPageId() {
-        return CcdPage.getPageId(this.getClass());
+    public String getFieldPrefix() {
+        return CcdPage.getFieldPrefix(this.getClass());
     }
 }
