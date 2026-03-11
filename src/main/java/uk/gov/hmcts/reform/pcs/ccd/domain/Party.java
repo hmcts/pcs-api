@@ -4,7 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 
 @Builder
 @Data
@@ -31,5 +34,9 @@ public class Party {
     private String phoneNumber;
 
     private VerticalYesNo phoneNumberProvided;
+
+    @CCD(
+        label = "Party Flags")
+    private Flags flags;
 
 }

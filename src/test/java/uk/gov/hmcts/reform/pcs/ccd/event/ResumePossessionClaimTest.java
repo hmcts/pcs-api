@@ -24,7 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.CaseReferenceTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
@@ -62,6 +62,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.CcdSupplementaryDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -107,6 +108,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private CcdSupplementaryDataService ccdSupplementaryDataService;
     @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
     @Mock
@@ -586,7 +589,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            AccessCodeTaskData taskData = getScheduledTaskData(ACCESS_CODE_TASK_DESCRIPTOR);
+            CaseReferenceTaskData taskData = getScheduledTaskData(ACCESS_CODE_TASK_DESCRIPTOR);
             assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
