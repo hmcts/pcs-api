@@ -38,9 +38,23 @@ public class CreateCaseFlag implements CCDConfig<PCSCase, State, UserRole> {
             .pageLabel("Case Flags")
             .optional(PCSCase::getCaseFlags, ALWAYS_HIDE, true, true)
             .optional(PCSCase::getParties, ALWAYS_HIDE, true, true)
+            .list(PCSCase::getParties, ALWAYS_HIDE)
+                .optional(Party::getFirstName, ALWAYS_HIDE)
+                .optional(Party::getLastName, ALWAYS_HIDE)
+                .optional(Party::getOrgName, ALWAYS_HIDE)
+                .optional(Party::getNameKnown, ALWAYS_HIDE)
+                .optional(Party::getEmailAddress, ALWAYS_HIDE)
+                .complex(Party::getAddress, ALWAYS_HIDE)
+                .done()
+                .optional(Party::getAddressKnown, ALWAYS_HIDE)
+                .optional(Party::getAddressSameAsProperty, ALWAYS_HIDE)
+                .optional(Party::getPhoneNumber, ALWAYS_HIDE)
+                .optional(Party::getPhoneNumberProvided, ALWAYS_HIDE)
+                .optional(Party::getFlags, ALWAYS_HIDE, true)
+            .done()
             .optional(
                 PCSCase::getFlagLauncher,
-                null, null, null, null, "#ARGUMENT(CREATE)");
+                null, null, null, null, "#ARGUMENT(CREATE,VERSION2.1)");
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

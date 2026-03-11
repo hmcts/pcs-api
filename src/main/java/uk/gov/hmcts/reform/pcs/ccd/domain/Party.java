@@ -36,7 +36,8 @@ public class Party {
     private VerticalYesNo phoneNumberProvided;
 
     @CCD(
-        label = "Party Flags")
+        label = "Party Flags",
+        retainHiddenValue = true)
     private Flags flags;
 
 }
