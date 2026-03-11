@@ -57,7 +57,7 @@ public class CftlibConfig implements CFTLibConfigurer {
         createRoleAssignments(lib);
 
         // Generate CCD definitions
-       configWriter.generateAllCaseTypesToJSON(new File("build/definitions"));
+       //configWriter.generateAllCaseTypesToJSON(new File("build/definitions"));
 
         // Import CCD definitions
         lib.importJsonDefinition(new File("build/definitions/" + CaseType.getCaseType()));

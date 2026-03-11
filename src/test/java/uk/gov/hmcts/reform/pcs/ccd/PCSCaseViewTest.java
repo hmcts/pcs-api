@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -169,7 +170,9 @@ class PCSCaseViewTest {
     void shouldMapPartyEntity() {
         // Given
         PartyEntity partyEntity = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
         when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
+        when(partyEntity.getId()).thenReturn(partyId);
 
         Party party = mock(Party.class);
 
@@ -181,7 +184,41 @@ class PCSCaseViewTest {
         // Then
         List<ListValue<Party>> mappedParties = pcsCase.getParties();
         assertThat(mappedParties).hasSize(1);
+        assertThat(mappedParties.getFirst().getId()).isEqualTo(partyId.toString());
         assertThat(mappedParties.getFirst().getValue()).isSameAs(party);
+    }
+
+    @Test
+    void shouldMapPersistedCaseFlags() {
+        Flags caseFlags = new Flags();
+        caseFlags.setPartyName("case-flags");
+        when(pcsCaseEntity.getCaseFlags()).thenReturn(caseFlags);
+
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        assertThat(pcsCase.getCaseFlags()).isSameAs(caseFlags);
+    }
+
+    @Test
+    void shouldRetainPersistedPartyFlagsAndDerivedDefaults() {
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
+        when(partyEntity.getId()).thenReturn(partyId);
+
+        Flags persistedFlags = new Flags();
+        persistedFlags.setPartyName("Persisted Party");
+        persistedFlags.setRoleOnCase("claimant");
+        when(partyEntity.getFlags()).thenReturn(persistedFlags);
+
+        Party party = Party.builder().build();
+        when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
+
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        Flags mappedFlags = pcsCase.getParties().getFirst().getValue().getFlags();
+        assertThat(mappedFlags.getPartyName()).isEqualTo("Persisted Party");
+        assertThat(mappedFlags.getRoleOnCase()).isEqualTo("claimant");
     }
 
     @Test

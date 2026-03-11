@@ -8,12 +8,16 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -22,6 +26,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -182,8 +188,59 @@ class PcsCaseServiceTest {
         verify(pcsCaseEntity).setTenancyLicence(tenancyLicenceEntity);
     }
 
+    @Test
+    void shouldPersistCaseFlagsAndPartyFlags() {
+        PcsCaseEntity pcsCaseEntity = stubFindRealCase();
+        PartyEntity partyEntity = new PartyEntity();
+        UUID partyId = UUID.randomUUID();
+        partyEntity.setId(partyId);
+        pcsCaseEntity.setParties(Set.of(partyEntity));
+
+        Flags caseFlags = new Flags();
+        caseFlags.setPartyName("case-level");
+
+        Flags partyFlags = new Flags();
+        partyFlags.setPartyName("party-level");
+
+        Party party = Party.builder().flags(partyFlags).build();
+        List<ListValue<Party>> parties = List.of(ListValue.<Party>builder()
+            .id(partyId.toString())
+            .value(party)
+            .build());
+
+        underTest.updateCaseFlags(CASE_REFERENCE, caseFlags, parties);
+
+        assertThat(pcsCaseEntity.getCaseFlags()).isSameAs(caseFlags);
+        assertThat(partyEntity.getFlags()).isSameAs(partyFlags);
+        verify(pcsCaseRepository).save(pcsCaseEntity);
+    }
+
+    @Test
+    void shouldIgnorePartyFlagsWithUnknownPartyId() {
+        PcsCaseEntity pcsCaseEntity = stubFindRealCase();
+        pcsCaseEntity.setParties(Set.of());
+
+        Flags caseFlags = new Flags();
+        Party party = Party.builder().flags(new Flags()).build();
+        List<ListValue<Party>> parties = List.of(ListValue.<Party>builder()
+            .id(UUID.randomUUID().toString())
+            .value(party)
+            .build());
+
+        underTest.updateCaseFlags(CASE_REFERENCE, caseFlags, parties);
+
+        assertThat(pcsCaseEntity.getCaseFlags()).isSameAs(caseFlags);
+        verify(pcsCaseRepository).save(pcsCaseEntity);
+    }
+
     private PcsCaseEntity stubFindCase() {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        return pcsCaseEntity;
+    }
+
+    private PcsCaseEntity stubFindRealCase() {
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         return pcsCaseEntity;
     }

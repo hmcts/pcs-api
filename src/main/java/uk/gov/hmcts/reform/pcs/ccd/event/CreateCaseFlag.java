@@ -37,18 +37,17 @@ public class CreateCaseFlag implements CCDConfig<PCSCase, State, UserRole> {
             .page("caseworkerCaseFlag")
             .pageLabel("Case Flags")
             .optional(PCSCase::getCaseFlags, ALWAYS_HIDE, true, true)
-            .list(PCSCase::getParties, ALWAYS_HIDE)
-                .optional(Party::getFlags, ALWAYS_HIDE, true)
-            .done()
+            .optional(PCSCase::getParties, ALWAYS_HIDE, true, true)
             .optional(
                 PCSCase::getFlagLauncher,
-                null, null, null, null, "#ARGUMENT(CREATE,VERSION2.1)");
+                null, null, null, null, "#ARGUMENT(CREATE)");
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
+        pcsCaseService.updateCaseFlags(caseReference, pcsCase.getCaseFlags(), pcsCase.getParties());
         log.info("Create case flag Submitted {}", pcsCase);
         return SubmitResponse.defaultResponse();
     }

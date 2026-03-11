@@ -16,6 +16,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -53,6 +56,10 @@ public class PcsCaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "claimant_type")
     private ClaimantType claimantType;
+
+    @Column(name = "case_flags", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Flags caseFlags;
 
     private Integer caseManagementLocation;
 

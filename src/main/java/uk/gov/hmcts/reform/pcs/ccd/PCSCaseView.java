@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -48,6 +47,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 /**
@@ -110,6 +110,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+            .caseFlags(pcsCaseEntity.getCaseFlags())
             .allClaimants(partyMap.get(PartyRole.CLAIMANT))
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
@@ -233,26 +234,33 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .map(entity -> {
                 Party party = modelMapper.map(entity, Party.class);
                 party.setFlags(buildFlags(entity));
-                return party;
+                return ListValue.<Party>builder()
+                    .id(entity.getId().toString())
+                    .value(party)
+                    .build();
             })
-            .collect(Collectors.collectingAndThen(
-                Collectors.toList(),
-                ListValueUtils::wrapListItems
-            ));
+            .toList();
     }
 
     private Flags buildFlags(PartyEntity entity) {
-        Flags flags = new Flags();
-        flags.setRoleOnCase(
-            entity.getOrgName() != null && !entity.getOrgName().isEmpty()
-                ? "claimant"
-                : "defendant"
-        );
-        flags.setPartyName(
-            Stream.of(entity.getFirstName(), entity.getLastName(), entity.getOrgName())
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining(" "))
-        );
+        Flags flags = Optional.ofNullable(entity.getFlags()).orElseGet(Flags::new);
+
+        if (isBlank(flags.getRoleOnCase())) {
+            flags.setRoleOnCase(
+                entity.getOrgName() != null && !entity.getOrgName().isEmpty()
+                    ? "claimant"
+                    : "defendant"
+            );
+        }
+
+        if (isBlank(flags.getPartyName())) {
+            flags.setPartyName(
+                Stream.of(entity.getFirstName(), entity.getLastName(), entity.getOrgName())
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining(" "))
+            );
+        }
+
         return flags;
     }
 
