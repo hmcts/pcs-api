@@ -116,6 +116,34 @@ class EnforcementOrderServiceTest {
     }
 
     @Test
+    void shouldReturnNullWhenNoClaimEntityOnRetrieveEnforcementOrder() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setClaims(List.of());
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        EnforcementOrder result = enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void shouldThrowWhenSavingWithNoClaimEntityPresent() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setClaims(List.of());
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When / Then
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+            () -> enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, new EnforcementOrder())
+        ).isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("no claim entity exists");
+    }
+
+    @Test
     void shouldSaveNewSubmittedEnforcementData() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
