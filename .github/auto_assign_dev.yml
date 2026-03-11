@@ -47,7 +47,13 @@ reviewGroups:
     
 
 #--------------------------------------------------------------------------------------------------------
+# Only run when label added
 
+filterLabels:
+  include:
+    - dev-review
+
+#--------------------------------------------------------------------------------------------------------
 # A list of reviewers to be added to pull requests (GitHub user name)
 # reviewers:
 #  - reviewerA
