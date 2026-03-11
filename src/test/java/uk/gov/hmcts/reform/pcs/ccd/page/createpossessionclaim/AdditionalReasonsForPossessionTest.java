@@ -35,7 +35,7 @@ class AdditionalReasonsForPossessionTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        // Configure TextAreaValidationService mocks
+        // Configure TextAreaValidationService mocks-
         lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
             .validateSingleTextArea(any(), any(), anyInt());
         doAnswer(invocation -> {
@@ -46,7 +46,7 @@ class AdditionalReasonsForPossessionTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
+
         setPageUnderTest(new AdditionalReasonsForPossession(textAreaValidationService));
     }
 
