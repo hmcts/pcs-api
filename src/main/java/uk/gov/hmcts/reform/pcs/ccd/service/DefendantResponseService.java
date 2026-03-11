@@ -93,14 +93,14 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
-        YesNoNotSure tenancyStartDateCorrect = responses.getTenancyStartDateCorrect();
+        YesNoNotSure tenancyStartDateConfirmation = responses.getTenancyStartDateConfirmation();
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
-            .tenancyStartDateCorrect(tenancyStartDateCorrect)
+            .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
-                tenancyStartDateCorrect != null && tenancyStartDateCorrect != YesNoNotSure.NOT_SURE
+                tenancyStartDateConfirmation != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
                     ? responses.getTenancyStartDate()
                     : null
             )

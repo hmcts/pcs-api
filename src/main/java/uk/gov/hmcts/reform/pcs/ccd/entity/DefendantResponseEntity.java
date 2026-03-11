@@ -56,8 +56,8 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "tenancy_start_date_correct")
-    private YesNoNotSure tenancyStartDateCorrect;
+    @Column(name = "tenancy_start_date_confirmation")
+    private YesNoNotSure tenancyStartDateConfirmation;
 
     @Column(name = "tenancy_start_date")
     private LocalDate tenancyStartDate;

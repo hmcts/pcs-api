@@ -27,7 +27,7 @@ public class DefendantResponses {
     private LocalDate tenancyStartDate;
 
     @CCD
-    private YesNoNotSure tenancyStartDateCorrect;
+    private YesNoNotSure tenancyStartDateConfirmation;
 
     @CCD
     private YesNoNotSure oweRentArrears;

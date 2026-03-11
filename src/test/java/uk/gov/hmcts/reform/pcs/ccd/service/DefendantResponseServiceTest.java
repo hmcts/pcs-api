@@ -385,7 +385,7 @@ class DefendantResponseServiceTest {
         LocalDate date = LocalDate.of(2023, 7, 1);
 
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyStartDateCorrect(YesNoNotSure.YES)
+            .tenancyStartDateConfirmation(YesNoNotSure.YES)
             .tenancyStartDate(date)
             .build();
 
@@ -395,14 +395,14 @@ class DefendantResponseServiceTest {
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity saved = responseCaptor.getValue();
-        assertThat(saved.getTenancyStartDateCorrect()).isEqualTo(YesNoNotSure.YES);
+        assertThat(saved.getTenancyStartDateConfirmation()).isEqualTo(YesNoNotSure.YES);
         assertThat(saved.getTenancyStartDate()).isEqualTo(date);
     }
 
     @ParameterizedTest
-    @MethodSource("isTenancyStartDateCorrectScenarios")
-    void shouldSaveDefendantResponseWithTenancyStartDateCorrect(
-        YesNoNotSure tenancyStartDateCorrect,
+    @MethodSource("tenancyStartDateConfirmationScenarios")
+    void shouldSaveDefendantResponseWithTenancyStartDateConfirmation(
+        YesNoNotSure tenancyStartDateConfirmation,
         LocalDate inputTenancyStartDate,
         LocalDate expectedSavedTenancyStartDate
     ) {
@@ -420,7 +420,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyStartDateCorrect(tenancyStartDateCorrect)
+            .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(inputTenancyStartDate)
             .build();
 
@@ -432,11 +432,11 @@ class DefendantResponseServiceTest {
 
         DefendantResponseEntity saved = responseCaptor.getValue();
 
-        assertThat(saved.getTenancyStartDateCorrect()).isEqualTo(tenancyStartDateCorrect);
+        assertThat(saved.getTenancyStartDateConfirmation()).isEqualTo(tenancyStartDateConfirmation);
         assertThat(saved.getTenancyStartDate()).isEqualTo(expectedSavedTenancyStartDate);
     }
 
-    private static Stream<Arguments> isTenancyStartDateCorrectScenarios() {
+    private static Stream<Arguments> tenancyStartDateConfirmationScenarios() {
         return Stream.of(
             Arguments.of(YesNoNotSure.YES, LocalDate.of(2007, 7, 7), LocalDate.of(2007, 7, 7)),
             Arguments.of(YesNoNotSure.NOT_SURE, LocalDate.of(2012, 9, 11), null),
