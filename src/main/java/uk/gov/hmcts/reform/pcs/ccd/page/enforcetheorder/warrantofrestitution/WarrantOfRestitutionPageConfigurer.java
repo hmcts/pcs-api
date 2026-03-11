@@ -22,7 +22,7 @@ public class WarrantOfRestitutionPageConfigurer implements PageConfigurer {
             .add(new LivingInThePropertyIntroPage())
             .add(new LivingInThePropertyPage())
             .add(new EvictionDelayWarningPage())
-            .add(vulnerableAdultsChildrenPlaceholderPage)
-            .add(new EvictionRisksPosedPage());
+            .add(new EvictionRisksPosedPage())
+            .add(vulnerableAdultsChildrenPlaceholderPage);
     }
 }
