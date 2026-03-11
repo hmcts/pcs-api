@@ -110,7 +110,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW, true)
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getSelectEnforcementType)
+            .mandatory(EnforcementOrder::getChooseEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWarrantOfRestitutionInfoText, NEVER_SHOW, true)
@@ -136,7 +136,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         List<String> errors = validateWritTransfer(data);
         EnforcementOrder enforcementOrder = data.getEnforcementOrder();
         if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
-                .equals(enforcementOrder.getSelectEnforcementType().getValueCode())) {
+                .equals(enforcementOrder.getChooseEnforcementType().getValueCode())) {
             populateWarrantRestDetails(enforcementOrder, details.getId());
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -162,7 +162,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     private List<String> validateWritTransfer(PCSCase pcsCase) {
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
         if (SelectEnforcementType.getSelectEnforcementTypeFromName(
-                enforcementOrder.getSelectEnforcementType().getValueCode()) != SelectEnforcementType.WRIT) {
+                enforcementOrder.getChooseEnforcementType().getValueCode()) != SelectEnforcementType.WRIT) {
             return List.of();
         }
 

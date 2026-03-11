@@ -44,7 +44,7 @@ public final class EnforcementDataUtil {
 
     public static EnforcementOrder buildEnforcementOrder() {
         return EnforcementOrder.builder()
-                .selectEnforcementType(buildEnforcementTypes(WARRANT))
+                .chooseEnforcementType(buildEnforcementTypes(WARRANT))
                 .rawWarrantDetails(RawWarrantDetails.builder().build())
                 .warrantDetails(WarrantDetails.builder()
                     .anyRiskToBailiff(YesNoNotSure.YES)
@@ -63,7 +63,7 @@ public final class EnforcementDataUtil {
 
     public static EnforcementOrder buildEnforcementOrderWithVulnerability() {
         return EnforcementOrder.builder()
-                .selectEnforcementType(buildEnforcementTypes(WARRANT))
+                .chooseEnforcementType(buildEnforcementTypes(WARRANT))
                 .warrantDetails(WarrantDetails.builder()
                         .nameAndAddressForEviction(NameAndAddressForEviction.builder()
                                 .correctNameAndAddress(VerticalYesNo.YES)
@@ -85,7 +85,7 @@ public final class EnforcementDataUtil {
         DynamicMultiSelectStringList selectedDefendants = new DynamicMultiSelectStringList(selectedValues, listItems);
 
         return EnforcementOrder.builder()
-            .selectEnforcementType(buildEnforcementTypes(WARRANT))
+            .chooseEnforcementType(buildEnforcementTypes(WARRANT))
             .warrantDetails(WarrantDetails.builder()
                                 .nameAndAddressForEviction(NameAndAddressForEviction.builder()
                                                                .correctNameAndAddress(VerticalYesNo.YES)
@@ -102,7 +102,7 @@ public final class EnforcementDataUtil {
 
     public static EnforcementOrder buildEnforcementOrderWithSpecifiedType(SelectEnforcementType enforcementType) {
         return EnforcementOrder.builder()
-                .selectEnforcementType(buildEnforcementTypes(enforcementType))
+                .chooseEnforcementType(buildEnforcementTypes(enforcementType))
                 .warrantDetails(WarrantDetails.builder()
                         .nameAndAddressForEviction(NameAndAddressForEviction.builder()
                                 .correctNameAndAddress(VerticalYesNo.YES)

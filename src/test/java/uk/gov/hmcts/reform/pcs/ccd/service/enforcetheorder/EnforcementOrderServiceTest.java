@@ -111,7 +111,7 @@ class EnforcementOrderServiceTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(enforcementOrderRepository.save(any())).thenReturn(new EnforcementOrderEntity());
         when(strategyFactory.getStrategy(getSelectEnforcementTypeFromName(
-                enforcementOrder.getSelectEnforcementType().getValueCode())))
+                enforcementOrder.getChooseEnforcementType().getValueCode())))
                 .thenReturn(mock(EnforcementTypeStrategy.class));
 
         // When
