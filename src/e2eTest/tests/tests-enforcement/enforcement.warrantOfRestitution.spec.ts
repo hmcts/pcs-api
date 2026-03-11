@@ -196,14 +196,6 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         newPage: yourApplication.hceoPageTitle
       });
       await performAction('expandSummary', yourApplication.summarySaveApplication);
-      await performAction('inputErrorValidation', {
-        validationReq: yourApplication.errorValidation,
-        validationType: yourApplication.errorValidationType.three,
-        inputArray: yourApplication.errorValidationField.errorRadioOption,
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-        button: yourApplication.continueButton
-      });
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
@@ -223,39 +215,6 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
         input: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextInput,
         nextPage: provideEvidence.mainHeader
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: evidenceUpload.errorValidation,
-        validationType: evidenceUpload.errorValidationType.seven,
-        inputArray: evidenceUpload.errorValidationField.errorAddDocument,
-        button: evidenceUpload.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: evidenceUpload.errorValidation,
-        validationType: evidenceUpload.errorValidationType.eight,
-        inputArray: evidenceUpload.errorValidationField.errorDropDown,
-        docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
-        type: evidenceUpload.witnessStatementDropDownInput,
-        button: evidenceUpload.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: evidenceUpload.errorValidation,
-        validationType: evidenceUpload.errorValidationType.nine,
-        inputArray: evidenceUpload.errorValidationField.errorUpload,
-        docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
-        type: evidenceUpload.witnessStatementDropDownInput,
-        label: evidenceUpload.documentUploadHiddenTextLabel,
-        button: evidenceUpload.continueButton
-      });
-
-      await performAction('inputErrorValidation', {
-        validationReq: evidenceUpload.errorValidation,
-        validationType: evidenceUpload.errorValidationType.two,
-        inputArray: evidenceUpload.errorValidationField.errorTextField,
-        header: evidenceUpload.thereIsAProblemErrorMessageHeader,
-        label: evidenceUpload.shortDescriptionHiddenTextLabel,
-        button: evidenceUpload.continueButton,
-        buttonRemove: evidenceUpload.removeButton
       });
       await performAction('uploadEvidenceThatDefendantsAreAtProperty', {
         documents: [

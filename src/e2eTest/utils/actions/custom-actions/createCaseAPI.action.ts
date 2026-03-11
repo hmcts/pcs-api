@@ -110,7 +110,7 @@ export class CreateCaseAPIAction implements IAction {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
       if (status === 404) {
-        console.error(enforceWarrantApiData.enforceCasePayload);
+        console.error(enforceWarrantApiData.enforceCasePayloadYesJourney);
         throw new Error(`Enforce the order failed: endpoint not found (404).please check the payload above \n ${error}`);
       }
       console.error("=== ERROR RESPONSE ===");

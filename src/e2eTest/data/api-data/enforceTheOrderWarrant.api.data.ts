@@ -1,7 +1,7 @@
 export const enforceWarrantApiData = {
   enforceCaseEventName: 'enforceTheOrder',
   enforceCasePayloadYesJourney: {
-    selectEnforcementType: {
+    chooseEnforcementType: {
       value: {
         code: "WARRANT",
         label: "Warrant of possession"
@@ -63,7 +63,7 @@ export const enforceWarrantApiData = {
 
   },
   enforceCasePayloadNoJourney: {
-    selectEnforcementType: {
+    chooseEnforcementType: {
       value: {
         code: "WARRANT",
         label: "Warrant of possession"
