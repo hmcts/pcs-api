@@ -15,13 +15,10 @@ public class CitizenUserGenerator {
     private static final String AUTHORIZATION
         = "Bearer " + PcsIdamTokenClient.generateToken(PcsIdamTokenClient.UserType.systemUser);
 
-    private static String generateCitizenEmail() {
-        return "pcs-citizen-" + System.currentTimeMillis() + "@test.com";
-    }
-
     public static String createCitizenUser() {
 
-        String email = generateCitizenEmail();
+        String email = "pcs-citizen-" + System.currentTimeMillis() + "@test.com";
+
 
         Map<String, Object> user = Map.of(
             "email", email,
