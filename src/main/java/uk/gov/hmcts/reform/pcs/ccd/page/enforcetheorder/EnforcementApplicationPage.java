@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -12,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 
 import java.util.List;
@@ -21,7 +25,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 
+@Component
+@AllArgsConstructor
 public class EnforcementApplicationPage implements CcdPageConfiguration {
+
+    private final EnforcementOrderService enforcementOrderService;
+    private final WarrantOfRestitutionMapper warrantOfRestitutionMapper;
 
     private static final String STUB_GA_SUCCESSFUL_CONDITION =
         WRIT_FLOW + " AND writHasClaimTransferredToHighCourt=\"Yes\"";
@@ -88,24 +97,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             <p class="govuk-body">Contact a lawyer or a High Court Enforcement Officer (bailiff)
                             before you apply for a writ. They can help you to check if you have the evidence to apply
                             successfully.</p>
-                            <p class="govuk-body govuk-!-font-weight-bold">If you choose a warrant of restitution</p>
-                            <p class="govuk-body govuk-!-margin-bottom-1">It is free to apply for a warrant of
-                            restitution, but:</p>
-                            <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">you’ll need a warrant of possession before you can apply
-                              </li>
-                              <li class="govuk-!-font-size-19">you can only use it if you have already tried to evict
-                              someone, but they returned to the property after the eviction. For example, if they
-                              unlawfully returned after the bailiffs left.</li>
-                            </ul>
-                            <p class="govuk-body govuk-!-margin-bottom-1">In a warrant of restitution, the judge will:
-                            </p>
-                            <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">review evidence that the defendants returned to the
-                              property after the eviction</li>
-                              <li class="govuk-!-font-size-19">(in most cases) make a decision without a hearing</li>
-                            </ul>
-                        </div>
+                            ${warrantOfRestitutionInfoText} </div>
                     </details>
                     """;
 
@@ -121,6 +113,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .mandatory(EnforcementOrder::getSelectEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getWarrantOfRestitutionInfoText, NEVER_SHOW, true)
             .complex(EnforcementOrder::getWritDetails)
             .mandatory(
                 WritDetails::getHasClaimTransferredToHighCourt,
@@ -141,6 +134,11 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         setFormattedDefendantNames(data.getAllDefendants(), data);
         List<String> errors = validateWritTransfer(data);
+        EnforcementOrder enforcementOrder = data.getEnforcementOrder();
+        if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
+                .equals(enforcementOrder.getSelectEnforcementType().getValueCode())) {
+            populateWarrantRestDetails(enforcementOrder, details.getId());
+        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
             .errors(errors.isEmpty() ? null : errors)
@@ -163,7 +161,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private List<String> validateWritTransfer(PCSCase pcsCase) {
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
-        if (enforcementOrder.getSelectEnforcementType() != SelectEnforcementType.WRIT) {
+        if (SelectEnforcementType.getSelectEnforcementTypeFromName(
+                enforcementOrder.getSelectEnforcementType().getValueCode()) != SelectEnforcementType.WRIT) {
             return List.of();
         }
 
@@ -186,5 +185,14 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         return TestSupportEnvironment.isNonProdTestSupportEnabled()
             ? STUB_GA_SUCCESSFUL_CONDITION
             : NEVER_SHOW;
+    }
+
+    private void populateWarrantRestDetails(EnforcementOrder currentEnforcementOrder, long caseReference) {
+        EnforcementOrder warrantEnforcementOrder =
+                enforcementOrderService.retrieveEnforcementOrder(caseReference, SelectEnforcementType.WARRANT);
+        if (warrantEnforcementOrder != null) {
+            warrantOfRestitutionMapper.prePopulateFieldsFromWarrantDetails(
+                    warrantEnforcementOrder, currentEnforcementOrder);
+        }
     }
 }
