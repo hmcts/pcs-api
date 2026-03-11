@@ -3,11 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 
 @Component
 @AllArgsConstructor
-public class WarrantPageConfigurer implements EnforcementPageConfigurer {
+public class WarrantPageConfigurer implements PageConfigurer {
 
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
     private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
@@ -24,7 +24,6 @@ public class WarrantPageConfigurer implements EnforcementPageConfigurer {
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
-        configureInitialPages(pageBuilder);
         pageBuilder
             .add(new NameAndAddressForEvictionPage())
             .add(new ChangeNameAddressPage())
