@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -81,7 +80,6 @@ class WarrantPageConfigurerTest extends BasePageTest {
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
 
-        verifyAndCount(inOrder, pageBuilder, EnforcementApplicationPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ConfirmIfDOBKnownPage.class, verificationCount);
