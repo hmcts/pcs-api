@@ -536,6 +536,10 @@ tasks.withType(CftlibExec).configureEach {
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
 }
 
+tasks.named('cftlibTest', CftlibExec) {
+  authMode = AuthMode.Local
+}
+
 tasks.register('highLevelDataSetup', JavaExec) {
   mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
   classpath += sourceSets.main.runtimeClasspath
