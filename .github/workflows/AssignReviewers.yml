@@ -8,6 +8,9 @@ jobs:
   add-dev-reviews:
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for label to register
+        run: sleep 5
+    
       - uses: kentaro-m/auto-assign-action@v2.0.1
         with:
           configuration-path: '.github/auto_assign_dev.yml'
