@@ -7,7 +7,7 @@ ALTER TABLE defendant_response
     ADD COLUMN notice_received_date DATE,
     ADD COLUMN rent_arrears_amount_confirmation YES_NO,
     ADD COLUMN dispute_claim YES_NO,
-    ADD COLUMN dispute_claim_details VARCHAR(6800)
+    ADD COLUMN dispute_claim_details VARCHAR(6800),
     ADD COLUMN landlord_registered YES_NO,
     ADD COLUMN make_counter_claim YES_NO,
     ADD COLUMN version INT,
