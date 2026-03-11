@@ -14,8 +14,7 @@ public class EvictionDelayWarningPage implements CcdPageConfiguration {
             .pageLabel("The eviction could be delayed if the bailiff identifies a risk on the day")
             .showCondition(
                 WARRANT_OF_RESTITUTION_FLOW
-                    + " AND (warrant_restAnyRiskToBailiff=\"NO\" "
-                    + "OR warrant_restAnyRiskToBailiff=\"NOT_SURE\")"
+                    + " AND warrant_restAnyRiskToBailiff=\"NOT_SURE\""
             )
             .label("warrantOfRestitutionEvictionDelayWarning-line-separator", "---")
             .label(
