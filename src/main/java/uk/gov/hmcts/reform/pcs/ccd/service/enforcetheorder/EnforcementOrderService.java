@@ -41,7 +41,7 @@ public class EnforcementOrderService {
                 .stream()
                 .map(EnforcementOrderEntity::getEnforcementOrder)
                 .filter(order ->
-                        order.getSelectEnforcementType().getValue().getCode().equals(enforcementType.name()))
+                        order.getChooseEnforcementType().getValue().getCode().equals(enforcementType.name()))
                 .findFirst()
                 .orElse(null);
     }
@@ -67,7 +67,7 @@ public class EnforcementOrderService {
         EnforcementOrderEntity orderEntity = enforcementOrderRepository
             .save(mapToEntity(enforcementOrder, claimEntity));
         strategyFactory.getStrategy(SelectEnforcementType.getSelectEnforcementTypeFromName(
-                        enforcementOrder.getSelectEnforcementType().getValueCode()))
+                        enforcementOrder.getChooseEnforcementType().getValueCode()))
                 .process(orderEntity, enforcementOrder);
     }
 
