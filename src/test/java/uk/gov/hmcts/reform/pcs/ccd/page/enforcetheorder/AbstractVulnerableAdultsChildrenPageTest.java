@@ -53,6 +53,17 @@ class AbstractVulnerableAdultsChildrenPageTest {
         assertThat(result).containsExactly("error - too long");
     }
 
+    @Test
+    void shouldReturnCorrectShowCondition() {
+        String text = pageUnderTest.getVulnerablePeoplePresentShowCondition();
+
+        assertThat(text).contains("vulnerablePeoplePresentWarrantRest=\"YES\"")
+                .contains("vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_ADULTS\"")
+                .contains("vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_CHILDREN\"")
+                .contains("vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\"");
+
+    }
+
     @Getter
     @Setter
     static class ConcreteVulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildrenPage {
@@ -70,8 +81,8 @@ class AbstractVulnerableAdultsChildrenPageTest {
         }
 
         @Override
-        public String getVulnerablePeoplePresentShowCondition() {
-            return "dummy";
+        public String getFieldSuffix() {
+            return "WarrantRest";
         }
 
         @Override
@@ -86,7 +97,7 @@ class AbstractVulnerableAdultsChildrenPageTest {
 
         @Override
         public String getFieldPrefix() {
-            return "testPage";
+            return "vulnerableAdultsChildren";
         }
     }
 }

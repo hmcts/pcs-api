@@ -44,14 +44,6 @@ public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildr
     }
 
     @Override
-    public String getVulnerablePeoplePresentShowCondition() {
-        return "vulnerablePeoplePresent=\"YES\" "
-                + "AND (vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")";
-    }
-
-    @Override
     public String getVulnerableReasonTextToValidate(PCSCase data) {
         return data.getEnforcementOrder()
                 .getRawWarrantDetails().getVulnerableAdultsChildren() != null
@@ -63,5 +55,10 @@ public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildr
     @Override
     public String getFieldPrefix() {
         return CcdPage.getFieldPrefix(this.getClass());
+    }
+
+    @Override
+    public String getFieldSuffix() {
+        return "";
     }
 }

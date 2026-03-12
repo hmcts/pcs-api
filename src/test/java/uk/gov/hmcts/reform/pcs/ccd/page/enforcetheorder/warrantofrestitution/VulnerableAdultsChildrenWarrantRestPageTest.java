@@ -67,17 +67,6 @@ class VulnerableAdultsChildrenWarrantRestPageTest {
     }
 
     @Test
-    void shouldReturnExpectedShowCondition() {
-
-        String condition = pageUnderTest.getVulnerablePeoplePresentShowCondition();
-
-        assertThat(condition).contains("vulnerablePeoplePresentWarrantRest=\"YES\"")
-            .contains("vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_ADULTS\"")
-            .contains("vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_CHILDREN\"")
-            .contains("vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\"");
-    }
-
-    @Test
     void shouldReturnVulnerableReasonTextFromCase() {
         String expectedText = "Some vulnerability details";
 

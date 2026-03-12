@@ -18,6 +18,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnf
 public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableAdultsChildrenPage
         implements CcdPageConfiguration {
 
+    private static final String FIELD_SUFFIX = "WarrantRest";
+
     public VulnerableAdultsChildrenWarrantRestPage(TextAreaValidationService textAreaValidationService) {
         super(textAreaValidationService);
     }
@@ -45,14 +47,6 @@ public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableA
     }
 
     @Override
-    public String getVulnerablePeoplePresentShowCondition() {
-        return "vulnerablePeoplePresentWarrantRest=\"YES\" "
-                + "AND (vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                + "OR vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                + "OR vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")";
-    }
-
-    @Override
     public String getVulnerableReasonTextToValidate(PCSCase data) {
         return data.getEnforcementOrder()
                 .getRawWarrantRestDetails().getVulnerableAdultsChildrenWarrantRest() != null
@@ -64,5 +58,10 @@ public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableA
     @Override
     public String getFieldPrefix() {
         return CcdPage.getFieldPrefix(this.getClass());
+    }
+
+    @Override
+    public String getFieldSuffix() {
+        return FIELD_SUFFIX;
     }
 }

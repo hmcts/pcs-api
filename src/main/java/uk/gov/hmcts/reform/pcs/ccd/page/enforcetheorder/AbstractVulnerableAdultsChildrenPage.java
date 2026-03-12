@@ -42,5 +42,13 @@ public abstract class AbstractVulnerableAdultsChildrenPage extends TextValidatin
 
     public abstract String getVulnerableReasonTextToValidate(PCSCase data);
 
-    public abstract String getVulnerablePeoplePresentShowCondition();
+    public String getVulnerablePeoplePresentShowCondition() {
+        return "vulnerablePeoplePresent" + getFieldSuffix() + "=\"YES\" "
+            + "AND (vulnerableAdultsChildren" + getFieldSuffix() + ".vulnerableCategory=\"VULNERABLE_ADULTS\" "
+            + "OR vulnerableAdultsChildren" + getFieldSuffix() + ".vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+            + "OR vulnerableAdultsChildren" + getFieldSuffix()
+                + ".vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")";
+    }
+
+    public abstract String getFieldSuffix();
 }
