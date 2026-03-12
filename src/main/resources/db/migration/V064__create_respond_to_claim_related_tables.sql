@@ -53,7 +53,7 @@ CREATE TABLE payment_agreement (
      any_payments_made YES_NO,
      payment_details VARCHAR(500),
      paid_money_to_housing_org YES_NO,
-     repayment_plan_agreed YES_NO,
+     repayment_plan_agreed YES_NO_NOT_SURE,
      repayment_agreed_details VARCHAR(500),
      repay_arrears_instalments YES_NO,
      additional_rent_contribution DECIMAL(18,2),

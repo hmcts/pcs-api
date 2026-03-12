@@ -7,10 +7,10 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -158,7 +158,6 @@ public class StartEventHandler implements Start<PCSCase, State> {
         // Filter to ONLY defendant's editable fields (exclude claimantOrganisations)
         PossessionClaimResponse defendantFieldsOnly = PossessionClaimResponse.builder()
             .defendantContactDetails(response.getDefendantContactDetails())
-            .defendantResponses(response.getDefendantResponses())
             .build();  // claimantOrganisations intentionally excluded - view data only
 
         PCSCase draftWithOnlyResponseData = PCSCase.builder()
