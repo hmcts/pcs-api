@@ -30,6 +30,9 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
     @InjectMocks
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
 
+    @Mock
+    private PropertyAccessDetailsWarrantOfRestitutionPage propertyAccessDetailsWarrantOfRestitutionPage;
+
     @Test
     void shouldConfigurePagesInCorrectOrder() {
         // Given
@@ -49,6 +52,9 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, ShareEvidenceWithJudgePage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, explainHowDefendantsReturnedPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, DefendantAtPropertyPage.class, verificationCount);
+        verifyAndCount(inOrder,pageBuilder, propertyAccessDetailsWarrantOfRestitutionPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, AnythingElseToHelpTheEvictionPlaceholder.class,
+                       verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);
