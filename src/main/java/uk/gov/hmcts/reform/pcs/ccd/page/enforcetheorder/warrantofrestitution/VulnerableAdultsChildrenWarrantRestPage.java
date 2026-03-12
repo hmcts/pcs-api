@@ -7,7 +7,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AbstractVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -53,11 +52,6 @@ public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableA
                 ? data.getEnforcementOrder()
                 .getRawWarrantRestDetails().getVulnerableAdultsChildrenWarrantRest().getVulnerableReasonText()
                 : null;
-    }
-
-    @Override
-    public String getPageKey() {
-        return CcdPage.derivePageKey(this.getClass());
     }
 
     @Override

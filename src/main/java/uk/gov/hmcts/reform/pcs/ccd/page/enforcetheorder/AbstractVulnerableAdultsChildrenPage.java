@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.TextValidatingPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -49,6 +50,11 @@ public abstract class AbstractVulnerableAdultsChildrenPage extends TextValidatin
             + "OR vulnerableAdultsChildren" + fieldSuffix + ".vulnerableCategory=\"VULNERABLE_CHILDREN\" "
             + "OR vulnerableAdultsChildren" + fieldSuffix
                 + ".vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")";
+    }
+
+    @Override
+    public String getPageKey() {
+        return CcdPage.derivePageKey(this.getClass());
     }
 
     public abstract String getFieldSuffix();
