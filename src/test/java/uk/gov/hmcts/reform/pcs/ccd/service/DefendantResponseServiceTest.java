@@ -407,6 +407,7 @@ class DefendantResponseServiceTest {
         // 5. Save (only locks new row)
         verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
     }
+
     @Test
     void shouldNotSaveDefendantResponseWhenTenancyDateIsEmpty() {
         //Given
@@ -418,6 +419,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyStartDate(null)
             .build();
@@ -445,6 +447,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         LocalDate date = LocalDate.of(2023, 7, 1);
 
@@ -486,6 +489,7 @@ class DefendantResponseServiceTest {
         when(partyRepository.getReferenceById(PARTY_ID))
             .thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
@@ -509,7 +513,15 @@ class DefendantResponseServiceTest {
     @Test
     void shouldBuildAndLinkChildEntitiesWhenSavingDefendantResponse() {
 
-        //Given
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
         ReasonableAdjustments reasonableAdjustments = ReasonableAdjustments.builder()
             .reasonableAdjustmentRequired("Wheelchair access")
             .build();

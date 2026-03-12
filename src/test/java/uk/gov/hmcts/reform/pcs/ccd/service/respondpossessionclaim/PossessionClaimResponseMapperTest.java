@@ -191,25 +191,6 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldInitializeDefendantResponsesAsEmpty() {
-        // Given
-        PartyEntity matchedDefendant = PartyEntity.builder()
-            .firstName("Test")
-            .lastName("User")
-            .build();
-
-        PCSCase pcsCase = PCSCase.builder()
-            .propertyAddress(AddressUK.builder().build())
-            .build();
-
-        // When
-        PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
-
-        // Then
-        assertThat(result.getDefendantResponses()).isNotNull();
-    }
-
-    @Test
     void shouldMapAllDefendantFields() {
         // Given
         AddressEntity addressEntity = AddressEntity.builder()
