@@ -38,10 +38,9 @@ export class ValidatePrePopulatedValues implements IValidation {
       locator = count > 1
         ? locator.nth(Number(fieldName.index))
         : locator.first();
-    }
-    let retrievedText;    
-    retrievedText = await locator.inputValue();
-    expect(String(retrievedText), `The PrePopulated value for the text field: ${fieldName.textLabel as string} is ${data.expected as string} and the retrieved value is: ${retrievedText}`).toEqual(data.expected as string);
+    }   
+    let retrievedText = await locator.inputValue();
+    expect(retrievedText, `The PrePopulated value for the text field: ${fieldName.textLabel as string} is ${data.expected as string} and the retrieved value is: ${retrievedText}`).toEqual(data.expected as string);
 
   }
 }
