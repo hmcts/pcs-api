@@ -18,6 +18,7 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -51,7 +52,7 @@ public class PaymentAgreementEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo repaymentPlanAgreed;
+    private YesNoNotSure repaymentPlanAgreed;
 
     private String repaymentAgreedDetails;
 

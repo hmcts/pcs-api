@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 
@@ -42,6 +43,35 @@ class PaymentAgreementServiceTest {
         // Then
         assertThat(entity).isNull();
     }
+
+    @Test
+    void shouldMapRepaymentPlanAgreedField() {
+        //Given
+        PaymentAgreement model = PaymentAgreement.builder()
+            .repaymentPlanAgreed(YesNoNotSure.YES)
+            .build();
+
+        //When
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
+
+        //Then
+        assertThat(entity.getRepaymentPlanAgreed()).isEqualTo(YesNoNotSure.YES);
+    }
+
+    @Test
+    void shouldMapRepaymentAgreedDetailsField() {
+        //Given
+        PaymentAgreement model = PaymentAgreement.builder()
+            .repaymentAgreedDetails("Monthly installments")
+            .build();
+
+        //When
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
+
+        //Then
+        assertThat(entity.getRepaymentAgreedDetails()).isEqualTo("Monthly installments");
+    }
+
 
 }
 
