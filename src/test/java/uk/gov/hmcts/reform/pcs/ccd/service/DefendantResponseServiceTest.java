@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -398,5 +399,98 @@ class DefendantResponseServiceTest {
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getRentArrearsAmount()).isEqualByComparingTo(amountWithPennies);
+    }
+
+    @Test
+    void shouldSaveDisputeClaimFields() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .disputeClaim(VerticalYesNo.YES)
+            .disputeDetails("I dispute this claim because...")
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getDisputeClaim()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponse.getDisputeDetails()).isEqualTo("I dispute this claim because...");
+    }
+
+    @Test
+    void shouldSaveDisputeClaimWhenNoIsSelected() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .disputeClaim(VerticalYesNo.NO)
+            .disputeDetails(null)  // Should be null when NO is selected
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getDisputeClaim()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedResponse.getDisputeDetails()).isNull();
+    }
+
+    @Test
+    void shouldSaveAllFieldsTogether() {
+        // Given - All fields populated (dispute + rent arrears + legal advice)
+        BigDecimal rentAmount = new BigDecimal("500000.50");
+
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .disputeClaim(VerticalYesNo.YES)
+            .disputeDetails("I dispute the claim amount")
+            .rentArrearsAmountConfirmation(YesNoNotSure.NO)
+            .rentArrearsAmount(rentAmount)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        // Verify all fields are saved correctly
+        assertThat(savedResponse.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
+        assertThat(savedResponse.getDisputeClaim()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponse.getDisputeDetails()).isEqualTo("I dispute the claim amount");
+        assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
+        assertThat(savedResponse.getRentArrearsAmount()).isEqualByComparingTo(rentAmount);
     }
 }
