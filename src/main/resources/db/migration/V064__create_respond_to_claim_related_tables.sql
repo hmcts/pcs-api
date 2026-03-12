@@ -1,7 +1,8 @@
+
 -- reasonable_adjustments
 CREATE TABLE reasonable_adjustments (
     id UUID PRIMARY KEY,
-    defendant_response_id UUID NOT NULL REFERENCES defendant_response(id),
+    defendant_response_id UUID NOT NULL UNIQUE REFERENCES defendant_response(id),
     reasonable_adjustments_required VARCHAR(250),
     reasonable_adjustment_description VARCHAR(500),
     hearing_enhancement_description VARCHAR(250),
@@ -18,7 +19,7 @@ CREATE TABLE reasonable_adjustments (
 -- household_circumstances
 CREATE TABLE household_circumstances (
      id UUID PRIMARY KEY,
-     defendant_response_id UUID NOT NULL REFERENCES defendant_response(id),
+     defendant_response_id UUID NOT NULL UNIQUE REFERENCES defendant_response(id),
      dependant_children YES_NO,
      dependant_children_details VARCHAR(500),
      other_dependants YES_NO,
@@ -48,7 +49,7 @@ CREATE TABLE household_circumstances (
 -- payment_agreement
 CREATE TABLE payment_agreement (
      id UUID PRIMARY KEY,
-     defendant_response_id UUID NOT NULL REFERENCES defendant_response(id),
+     defendant_response_id UUID NOT NULL UNIQUE REFERENCES defendant_response(id),
      any_payments_made YES_NO,
      payment_details VARCHAR(500),
      paid_money_to_housing_org YES_NO,

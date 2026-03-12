@@ -79,13 +79,41 @@ class SubmitEventHandlerTest {
         );
     }
 
+    @Test
+    void shouldReturnErrorWhenDefendantResponsesIsNull() {
+        // Given
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(null)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNotNull();
+        assertThat(result.getErrors()).hasSize(1);
+        assertThat(result.getErrors().getFirst())
+            .isEqualTo("Invalid submission: missing defendant response data");
+
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(anyLong(), eq(respondPossessionClaim));
+        verify(claimResponseService, never()).saveDraftData(any(), anyLong());
+        verify(defendantResponseService, never()).saveDefendantResponse(anyLong(), any());
+    }
+
     // ========== INDEPENDENT FIELD SUBMISSION TESTS ==========
 
     @Test
     void shouldAllowSubmitWithOnlyDefendantResponses() {
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
-            .oweRentArrears(YesNoNotSure.NO)
+            .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
         PCSCase caseData = createDraftSaveCaseData(null, responses);

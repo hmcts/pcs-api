@@ -27,7 +27,7 @@ public class DefendantResponses {
     private YesNoNotSure tenancyStartDateCorrect;
 
     @CCD
-    private YesNoNotSure oweRentArrears;
+    private YesNoNotSure rentArrearsAmountConfirmation;
 
     @CCD(typeOverride = FieldType.MoneyGBP)
     @JacksonMoneyGBP

@@ -48,6 +48,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return error("Invalid submission: missing response data");
         }
 
+        if (possessionClaimResponse.getDefendantResponses() == null) {
+            log.error("Submit failed for case {}: defendantResponses is null", caseReference);
+            return error("Invalid submission: missing defendant response data");
+        }
         return null;
     }
 

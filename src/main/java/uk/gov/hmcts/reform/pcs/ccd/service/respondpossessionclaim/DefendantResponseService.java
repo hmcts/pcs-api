@@ -45,32 +45,30 @@ public class DefendantResponseService {
     private final PaymentAgreementService paymentAgreementService;
 
     /**
-     * Saves defendant's responses to the defendant_response table.
+     * Saves a defendant's response to the defendant_response table
+     * and its related details to the linked child tables.
      *
      * <p>Uses optimized approach with minimal locking:
      * <ol>
      *   <li>Check duplicate first (fail fast)</li>
      *   <li>Get IDs only (minimal lock time)</li>
      *   <li>Use getReferenceById() for proxies (no query)</li>
-     *   <li>Save - only locks new row being inserted</li>
+     *   <li>Build the DefendantResponseEntity and link it to the owning PcsCaseEntity</li>
+     *   <li>Attach one-to-one child entities (household circumstances, payment agreement, reasonable adjustments)</li>
+     *   <li>Persist the entities in a single save, only locks new row being inserted</li></li>
      * </ol>
      *
      * <p>This approach ensures concurrent defendants can submit simultaneously
      * without blocking each other or other case operations.
      *
      * @param caseReference The case reference number
-     * @param possessionClaimResponse responses from draft data
+     * @param possessionClaimResponse the possession claim response from draft data
      * @throws IllegalStateException if user ID is null, response already exists,
      *         party not found, or claim not found
      */
     public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse) {
         UUID userId = securityContextService.getCurrentUserId();
-
-        // Early return if no responses to save
-        if (possessionClaimResponse == null) {
-            log.debug("No defendant responses to save for case {}", caseReference);
-            return;
-        }
+        DefendantResponses defendantResponses = possessionClaimResponse.getDefendantResponses();
 
         if (userId == null) {
             log.error("Cannot save defendant response: current user IDAM ID is null");
@@ -96,23 +94,33 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
-        DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
+        DefendantResponseEntity responseEntity = buildDefendantResponseEntity(claimRef, partyRef, defendantResponses);
+
+        buildAndLinkChildEntities(responseEntity, possessionClaimResponse);
+
+        defendantResponseRepository.save(responseEntity);
+
+        log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
+    }
+
+    public DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
+                                                                PartyEntity partyRef,
+                                                                DefendantResponses responses) {
+
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
+            .possessionNoticeReceived(responses.getNoticeReceived())
+            .noticeReceivedDate(responses.getNoticeReceivedDate())
+            .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
             .build();
 
         //set bidirectional relationship with the pcs case
         claimRef.getPcsCase().addDefendantResponse(defendantResponse);
 
-        buildAndLinkChildEntities(defendantResponse, possessionClaimResponse);
-
-        defendantResponseRepository.save(defendantResponse);
-
-        log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
+        return defendantResponse;
     }
-
 
     public void buildAndLinkChildEntities(
         DefendantResponseEntity defendantResponseEntity,
