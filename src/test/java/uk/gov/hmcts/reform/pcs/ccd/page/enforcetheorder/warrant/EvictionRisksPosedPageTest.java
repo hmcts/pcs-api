@@ -8,8 +8,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -52,7 +52,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
                                                        String expectedCriminalDetails) {
         // Given
         PCSCase caseData = createCaseData(selectedCategories,
-            EnforcementRiskDetails.builder()
+            RiskDetails.builder()
                 .violentDetails(violentDetails)
                 .firearmsDetails(firearmsDetails)
                 .criminalDetails(criminalDetails)
@@ -107,7 +107,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
     }
 
     // Helper method to reduce duplication
-    private PCSCase createCaseData(Set<RiskCategory> selectedCategories, EnforcementRiskDetails riskDetails) {
+    private PCSCase createCaseData(Set<RiskCategory> selectedCategories, RiskDetails riskDetails) {
         return PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .warrantDetails(WarrantDetails.builder()
