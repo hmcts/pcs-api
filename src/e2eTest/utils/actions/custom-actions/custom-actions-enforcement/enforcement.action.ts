@@ -460,6 +460,9 @@ export class EnforcementAction implements IAction {
 
       case 'Access to the property':
         await performValidation('validateRadioButtonValues', { question: prePopulatedData.question }, { expected: expectedVal.expectedRadioValue });
+        if (expectedVal.expectedRadioValue === 'YES') {
+          await performValidation('validateInputTextValues', { textLabel: prePopulatedData.textLabel }, { expected: expectedVal.expectedTextValue });
+        }
         break;
 
       default:

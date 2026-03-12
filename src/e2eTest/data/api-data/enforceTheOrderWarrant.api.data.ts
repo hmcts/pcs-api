@@ -40,7 +40,7 @@ export const enforceWarrantApiData = {
       vulnerableReasonText: "adults"
     },
     warrantIsDifficultToAccessProperty: "YES",
-    warrantClarificationOnAccessDifficultyText: "Explain why it’s difficult to access the property",
+    warrantClarificationOnAccessDifficultyText: "User input informing the difficulties accessing the property",
     warrantAdditionalInformationSelect: "YES",
     warrantAdditionalInformationDetails: "Tell us anything else that could help with the eviction",
     warrantAmountOwed: "1200",

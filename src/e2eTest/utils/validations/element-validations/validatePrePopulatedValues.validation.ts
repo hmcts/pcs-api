@@ -31,14 +31,17 @@ export class ValidatePrePopulatedValues implements IValidation {
   }
 
   private async validateInputTextValues(page: Page, fieldName: validationRecord, data: validationRecord): Promise<void> {
-
-    const inputFields = page.locator(`//span[text()="${fieldName.textLabel}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`)
-    let retrievedText;
-    const count = await inputFields.count();
-
+    let locator = page.locator(`//span[text()="${fieldName.textLabel}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
+    const count = await locator.count();
     if (count === 0) throw new Error(`Text field related to the label ${fieldName.textLabel} not found`);
-    retrievedText = await inputFields.inputValue();
-    expect(String(retrievedText), `The PrePopulated value for the text field: ${fieldName.textLabel as string} is ${data.expected as string} and the retrieved value is: ${retrievedText}`).toEqual(String(data.expected).toLowerCase());
+    if (typeof fieldName !== 'string' && fieldName.index !== null) {
+      locator = count > 1
+        ? locator.nth(Number(fieldName.index))
+        : locator.first();
+    }
+    let retrievedText;    
+    retrievedText = await locator.inputValue();
+    expect(String(retrievedText), `The PrePopulated value for the text field: ${fieldName.textLabel as string} is ${data.expected as string} and the retrieved value is: ${retrievedText}`).toEqual(data.expected as string);
 
   }
 }
