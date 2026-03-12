@@ -53,4 +53,10 @@ public class DefendantResponses {
 
     @CCD
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
+
+    @CCD
+    private YesNoNotSure repaymentAgreed;
+
+    @CCD
+    private String repaymentAgreedDetails;
 }
