@@ -19,7 +19,7 @@ public class RawWarrantRestDetails {
     @CCD(
             label = "Is anyone living at the property vulnerable?"
     )
-    private YesNoNotSure vulnerablePeoplePresentRest;
+    private YesNoNotSure vulnerablePeoplePresentWarrantRest;
 
-    private VulnerableAdultsChildren vulnerableAdultsChildrenRest;
+    private VulnerableAdultsChildren vulnerableAdultsChildrenWarrantRest;
 }

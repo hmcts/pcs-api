@@ -33,9 +33,9 @@ public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableA
             .label(fieldPrefix + "-information-text", INFO_MARKUP)
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRawWarrantRestDetails)
-            .mandatory(RawWarrantRestDetails::getVulnerablePeoplePresentRest)
-            .complex(RawWarrantRestDetails::getVulnerableAdultsChildrenRest,
-                    "vulnerablePeoplePresentRest=\"YES\"")
+            .mandatory(RawWarrantRestDetails::getVulnerablePeoplePresentWarrantRest)
+            .complex(RawWarrantRestDetails::getVulnerableAdultsChildrenWarrantRest,
+                    "vulnerablePeoplePresentWarrantRest=\"YES\"")
             .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
             .mandatory(VulnerableAdultsChildren::getVulnerableReasonText, getVulnerablePeoplePresentShowCondition())
             .done()
@@ -46,18 +46,18 @@ public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableA
 
     @Override
     public String getVulnerablePeoplePresentShowCondition() {
-        return "vulnerablePeoplePresentRest=\"YES\" "
-                + "AND (vulnerableAdultsChildrenRest.vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                + "OR vulnerableAdultsChildrenRest.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                + "OR vulnerableAdultsChildrenRest.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")";
+        return "vulnerablePeoplePresentWarrantRest=\"YES\" "
+                + "AND (vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                + "OR vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+                + "OR vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")";
     }
 
     @Override
     public String getVulnerableReasonTextToValidate(PCSCase data) {
         return data.getEnforcementOrder()
-                .getRawWarrantRestDetails().getVulnerableAdultsChildrenRest() != null
+                .getRawWarrantRestDetails().getVulnerableAdultsChildrenWarrantRest() != null
                 ? data.getEnforcementOrder()
-                .getRawWarrantRestDetails().getVulnerableAdultsChildrenRest().getVulnerableReasonText()
+                .getRawWarrantRestDetails().getVulnerableAdultsChildrenWarrantRest().getVulnerableReasonText()
                 : null;
     }
 

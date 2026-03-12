@@ -71,10 +71,10 @@ class VulnerableAdultsChildrenWarrantRestPageTest {
 
         String condition = pageUnderTest.getVulnerablePeoplePresentShowCondition();
 
-        assertThat(condition).contains("vulnerablePeoplePresentRest=\"YES\"")
-            .contains("vulnerableAdultsChildrenRest.vulnerableCategory=\"VULNERABLE_ADULTS\"")
-            .contains("vulnerableAdultsChildrenRest.vulnerableCategory=\"VULNERABLE_CHILDREN\"")
-            .contains("vulnerableAdultsChildrenRest.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\"");
+        assertThat(condition).contains("vulnerablePeoplePresentWarrantRest=\"YES\"")
+            .contains("vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_ADULTS\"")
+            .contains("vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_CHILDREN\"")
+            .contains("vulnerableAdultsChildrenWarrantRest.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\"");
     }
 
     @Test
@@ -83,7 +83,7 @@ class VulnerableAdultsChildrenWarrantRestPageTest {
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
             .rawWarrantRestDetails(RawWarrantRestDetails.builder()
-                .vulnerableAdultsChildrenRest(VulnerableAdultsChildren.builder()
+                .vulnerableAdultsChildrenWarrantRest(VulnerableAdultsChildren.builder()
                     .vulnerableReasonText(expectedText)
                     .build())
                 .build())
@@ -103,7 +103,7 @@ class VulnerableAdultsChildrenWarrantRestPageTest {
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
                 .rawWarrantRestDetails(RawWarrantRestDetails.builder()
-                        .vulnerableAdultsChildrenRest(null)
+                        .vulnerableAdultsChildrenWarrantRest(null)
                         .build())
                 .build();
 

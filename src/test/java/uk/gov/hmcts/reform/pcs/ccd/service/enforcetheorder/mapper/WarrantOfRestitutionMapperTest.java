@@ -103,7 +103,7 @@ class WarrantOfRestitutionMapperTest {
         assertThat(target.getWarrantOfRestitutionDetails().getRiskCategories()).isNull();
         assertThat(target.getWarrantOfRestitutionDetails().getRiskDetails()).isNull();
         assertThat(target.getWarrantOfRestitutionDetails().getPropertyAccessDetails()).isNull();
-        assertThat(target.getRawWarrantRestDetails().getVulnerableAdultsChildrenRest()).isNull();
-        assertThat(target.getRawWarrantRestDetails().getVulnerablePeoplePresentRest()).isNull();
+        assertThat(target.getRawWarrantRestDetails().getVulnerableAdultsChildrenWarrantRest()).isNull();
+        assertThat(target.getRawWarrantRestDetails().getVulnerablePeoplePresentWarrantRest()).isNull();
     }
 }
