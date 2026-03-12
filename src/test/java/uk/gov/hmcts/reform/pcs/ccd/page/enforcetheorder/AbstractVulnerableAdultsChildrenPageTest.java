@@ -96,7 +96,7 @@ class AbstractVulnerableAdultsChildrenPageTest {
         }
 
         @Override
-        public String getFieldPrefix() {
+        public String getPageKey() {
             return "vulnerableAdultsChildren";
         }
     }

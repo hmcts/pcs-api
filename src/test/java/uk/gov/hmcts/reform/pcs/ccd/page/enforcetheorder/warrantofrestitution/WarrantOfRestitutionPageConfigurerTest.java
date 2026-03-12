@@ -47,13 +47,13 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         InOrder inOrder = Mockito.inOrder(pageBuilder);
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
-        verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder.class,
+        verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedWarrantRestPlaceholder.class,
                 verificationCount);
         verifyAndCount(inOrder, pageBuilder, ShareEvidenceWithJudgePage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, explainHowDefendantsReturnedPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, DefendantAtPropertyPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, vulnerableAdultsChildrenWarrantRestPage.getClass(), verificationCount);
-        verifyAndCount(inOrder, pageBuilder, PropertyAccessDetailsRestPlaceholder.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, PropertyAccessDetailsWarrantRestPlaceholder.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);

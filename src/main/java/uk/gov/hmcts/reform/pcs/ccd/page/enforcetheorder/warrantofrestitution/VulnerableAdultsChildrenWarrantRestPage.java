@@ -26,7 +26,7 @@ public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableA
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        String fieldPrefix = getFieldPrefix();
+        String fieldPrefix = getPageKey();
         pageBuilder
             .page(fieldPrefix, this::midEvent)
             .pageLabel(PAGE_LABEL)
@@ -56,8 +56,8 @@ public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableA
     }
 
     @Override
-    public String getFieldPrefix() {
-        return CcdPage.getFieldPrefix(this.getClass());
+    public String getPageKey() {
+        return CcdPage.derivePageKey(this.getClass());
     }
 
     @Override

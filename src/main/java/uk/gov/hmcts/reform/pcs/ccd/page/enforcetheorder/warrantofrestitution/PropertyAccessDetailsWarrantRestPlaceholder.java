@@ -5,7 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-public class PropertyAccessDetailsRestPlaceholder implements CcdPageConfiguration {
+public class PropertyAccessDetailsWarrantRestPlaceholder implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

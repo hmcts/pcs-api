@@ -13,7 +13,7 @@ class CcdPageTest {
         Class<? extends CcdPage> clazz = VulnerableAdultsChildrenPage.class;
 
         // When
-        String pageId = CcdPage.getFieldPrefix(clazz);
+        String pageId = CcdPage.derivePageKey(clazz);
 
         // Then
         assertThat(pageId).isEqualTo("VulnerableAdultsChildren");

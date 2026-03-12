@@ -72,7 +72,7 @@ class TextValidatingPageTest {
         }
 
         @Override
-        public String getFieldPrefix() {
+        public String getPageKey() {
             return "someCcdPageId";
         }
     }
