@@ -51,13 +51,11 @@ withNightlyPipeline(type, product, component) {
   handleEnvironmentSetting()
   enableFortifyScan()
 
-  enableE2eTest()
-
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
   }
-
-  afterAlways('E2eTest') {
+  afterAlways('fortify-scan') {
+    runE2ETests()
     postAllureResultsToSlack()
   }
 }
@@ -82,7 +80,36 @@ def handleEnvironmentSetting() {
 
   env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
     ? "pr"
-    : "all-browsers"
+    : "chrome"
+}
+
+def runE2ETests() {
+  runE2ETestsForBrowser('Chrome')
+  runE2ETestsForBrowser('Firefox')
+}
+
+def runE2ETestsForBrowser(String browser) {
+  def scriptSuffix = browser.toLowerCase()
+  stage("Full E2E Test - ${browser}") {
+    node {
+      checkout scm
+      try {
+        sh "cd src/e2eTest && yarn test:${scriptSuffix}"
+      } catch (err) {
+        unstable(message: "${STAGE_NAME} is unstable: " + err.toString())
+      } finally {
+        publishHTML([
+          allowMissing: true,
+          alwaysLinkToLastBuild: true,
+          keepAll: true,
+          reportDir: 'e2e-output',
+          reportFiles: 'index.html',
+          reportName: "Full ${browser} E2E Test Report"
+        ])
+        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'e2e-output/**/*'
+      }
+    }
+  }
 }
 
 // E2E stage notification to #qa-pipeline-status
