@@ -18,10 +18,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
+import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -60,4 +66,13 @@ public class DefendantResponseEntity {
 
     @Column(name = "dispute_details", columnDefinition = "TEXT")
     private String disputeDetails;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "rent_arrears_amount_confirmation")
+    private YesNoNotSure rentArrearsAmountConfirmation;
+
+    @CCD(typeOverride = FieldType.MoneyGBP)
+    @JacksonMoneyGBP
+    private BigDecimal rentArrearsAmount;
 }

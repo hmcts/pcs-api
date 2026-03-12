@@ -90,7 +90,7 @@ class SubmitEventHandlerTest {
     void shouldAllowSubmitWithOnlyDefendantResponses() {
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
-            .oweRentArrears(YesNoNotSure.NO)
+            .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
@@ -194,7 +194,7 @@ class SubmitEventHandlerTest {
         // Given
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.NO)
-            .oweRentArrears(YesNoNotSure.YES)
+            .rentArrearsAmountConfirmation(YesNoNotSure.YES)
             .build();
 
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()

@@ -98,6 +98,8 @@ public class DefendantResponseService {
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
             .disputeClaim(responses.getDisputeClaim())
             .disputeDetails(responses.getDisputeDetails())
+            .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
+            .rentArrearsAmount(responses.getRentArrearsAmount())
             .build();
 
         defendantResponseRepository.save(defendantResponse);
