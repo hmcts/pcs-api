@@ -14,11 +14,10 @@ import {
   accessToTheProperty,
   anythingElseHelpWithEviction,
 } from '@data/page-data/page-data-enforcement';
-import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { createCaseApiData, enforceWarrantApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { enforceWarrantApiData } from '@data/api-data/enforceTheOrderWarrant.api.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
