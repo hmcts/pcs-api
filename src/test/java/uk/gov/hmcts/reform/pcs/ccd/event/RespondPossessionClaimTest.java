@@ -506,6 +506,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .possessionClaimResponse(null)
             .build();
 
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
+
         var response = callSubmitHandler(caseData);
 
         assertThat(response.getErrors()).isNotNull();
