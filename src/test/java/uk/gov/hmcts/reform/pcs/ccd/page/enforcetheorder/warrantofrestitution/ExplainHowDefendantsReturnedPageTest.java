@@ -36,7 +36,7 @@ class ExplainHowDefendantsReturnedPageTest extends BasePageTest {
                     .howDefendantsReturned("The defendants returned the following week.")
                     .build();
             EnforcementOrder order = EnforcementOrder.builder()
-                    .selectEnforcementType(buildEnforcementTypes(SelectEnforcementType.WARRANT_OF_RESTITUTION))
+                    .chooseEnforcementType(buildEnforcementTypes(SelectEnforcementType.WARRANT_OF_RESTITUTION))
                     .warrantOfRestitutionDetails(details)
                     .build();
             PCSCase caseData = PCSCase.builder()
@@ -57,7 +57,7 @@ class ExplainHowDefendantsReturnedPageTest extends BasePageTest {
                     .howDefendantsReturned(overLimit)
                     .build();
             EnforcementOrder order = EnforcementOrder.builder()
-                    .selectEnforcementType(buildEnforcementTypes(SelectEnforcementType.WARRANT_OF_RESTITUTION))
+                    .chooseEnforcementType(buildEnforcementTypes(SelectEnforcementType.WARRANT_OF_RESTITUTION))
                     .warrantOfRestitutionDetails(details)
                     .build();
             PCSCase caseData = PCSCase.builder()

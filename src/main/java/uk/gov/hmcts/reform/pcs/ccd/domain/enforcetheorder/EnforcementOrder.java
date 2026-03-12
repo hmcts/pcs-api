@@ -28,11 +28,19 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EnforcementOrder {
 
+    // Redundant field to support the existing CCD definition, will be removed in the future once the
+    // CCD definition is updated to use the new field
     @CCD(
         label = "What do you want to apply for?",
         typeOverride = DynamicRadioList
     )
     private DynamicStringList selectEnforcementType;
+
+    @CCD(
+        label = "What do you want to apply for?",
+        typeOverride = DynamicRadioList
+    )
+    private DynamicStringList chooseEnforcementType;
 
     @JsonUnwrapped(prefix = "warrant")
     @CCD
