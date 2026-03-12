@@ -19,7 +19,7 @@ public abstract class AbstractVulnerableAdultsChildrenPage extends TextValidatin
                         The bailiff needs to know if anyone at the property is vulnerable.
                     </p>
                     <p class="govuk-body govuk-!-margin-bottom-0">Someone is vulnerable if they have:</p>
-                    <ul class="govuk-list govuk-list--bullet" style="color: #0b0c0c;">
+                    <ul class="govuk-list govuk-list--bullet">
                         <li class="govuk-!-font-size-19">a history of drug or alcohol abuse</li>
                         <li class="govuk-!-font-size-19">a mental health condition</li>
                         <li class="govuk-!-font-size-19">a disability, for example a learning disability or
