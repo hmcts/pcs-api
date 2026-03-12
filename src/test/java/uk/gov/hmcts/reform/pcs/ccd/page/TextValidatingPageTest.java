@@ -23,11 +23,11 @@ class TextValidatingPageTest {
     @Mock
     private TextAreaValidationService service;
 
-    private ConcretePageUnderTest pageUnderTest;
+    private ConcreteTextValidatingPage pageUnderTest;
 
     @BeforeEach
     void setup() {
-        pageUnderTest = new ConcretePageUnderTest(service);
+        pageUnderTest = new ConcreteTextValidatingPage(service);
     }
 
     @Test
@@ -58,11 +58,11 @@ class TextValidatingPageTest {
         verify(service).validateSingleTextArea("txt", "msg", 10);
     }
 
-    static class ConcretePageUnderTest extends TextValidatingPage {
+    static class ConcreteTextValidatingPage extends TextValidatingPage {
 
         static final List<String> errorList = List.of("error 1", "error 2");
 
-        public ConcretePageUnderTest(TextAreaValidationService textAreaValidationService) {
+        public ConcreteTextValidatingPage(TextAreaValidationService textAreaValidationService) {
             super(textAreaValidationService);
         }
 
