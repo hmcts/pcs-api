@@ -14,6 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MAX_MONETARY_AMOUNT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MIN_MONETARY_AMOUNT;
+
 @Builder
 @Data
 @NoArgsConstructor
@@ -27,11 +30,21 @@ public class DefendantResponses {
     private YesNoNotSure tenancyStartDateCorrect;
 
     @CCD
-    private YesNoNotSure oweRentArrears;
+    private YesNoNotSure rentArrearsAmountConfirmation;
 
-    @CCD(typeOverride = FieldType.MoneyGBP)
+    @CCD(
+        typeOverride = FieldType.MoneyGBP,
+        min = MIN_MONETARY_AMOUNT,
+        max = MAX_MONETARY_AMOUNT
+    )
     @JacksonMoneyGBP
     private BigDecimal rentArrearsAmount;
+
+    @CCD
+    private VerticalYesNo disputeClaim;
+
+    @CCD
+    private String disputeDetails;
 
     @CCD
     private YesNoNotSure noticeReceived;
