@@ -110,6 +110,14 @@ public class DefendantResponseEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo makeCounterClaim;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "tenancy_start_date_confirmation")
+    private YesNoNotSure tenancyStartDateConfirmation;
+
+    @Column(name = "tenancy_start_date")
+    private LocalDate tenancyStartDate;
+
     private Integer version;
 
     private String status;

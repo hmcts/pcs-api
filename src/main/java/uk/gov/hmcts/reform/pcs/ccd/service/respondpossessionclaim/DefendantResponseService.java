@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -107,6 +108,7 @@ public class DefendantResponseService {
                                                                 PartyEntity partyRef,
                                                                 DefendantResponses responses) {
 
+        YesNoNotSure tenancyStartDateConfirmation = responses.getTenancyStartDateConfirmation();
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
@@ -114,6 +116,12 @@ public class DefendantResponseService {
             .possessionNoticeReceived(responses.getNoticeReceived())
             .noticeReceivedDate(responses.getNoticeReceivedDate())
             .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
+            .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
+            .tenancyStartDate(
+                tenancyStartDateConfirmation != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
+                    ? responses.getTenancyStartDate()
+                    : null
+            )
             .build();
 
         //set bidirectional relationship with the pcs case
