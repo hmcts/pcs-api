@@ -36,7 +36,8 @@ public class TenancyLicenceDetails {
     @CCD(
         label = DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
         hint = "You can enter up to 500 characters",
-        typeOverride = TextArea
+        typeOverride = TextArea,
+        access = {CaseworkerReadAccess.class, CitizenAccess.class}
     )
     private String detailsOfOtherTypeOfTenancyLicence;
 
