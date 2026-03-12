@@ -8,10 +8,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AbstractVulnerableAdultsChildrenPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW;
 
 @Component
 public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableAdultsChildrenPage
@@ -27,7 +28,7 @@ public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableA
         pageBuilder
             .page(fieldPrefix, this::midEvent)
             .pageLabel(PAGE_LABEL)
-            .showCondition(ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW)
+            .showCondition(WARRANT_OF_RESTITUTION_FLOW)
             .label(fieldPrefix + "-line-separator", "---")
             .label(fieldPrefix + "-information-text", INFO_MARKUP)
             .complex(PCSCase::getEnforcementOrder)
@@ -40,7 +41,7 @@ public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableA
             .done()
             .done()
             .done()
-            .label(fieldPrefix + "-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label(fieldPrefix + "-saveAndReturn", SAVE_AND_RETURN);
     }
 
     @Override
