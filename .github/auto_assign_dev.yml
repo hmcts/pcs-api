@@ -32,23 +32,23 @@ useReviewGroups: true
 # A list of reviewers, split into different groups, to be added to pull requests (GitHub user name)
 reviewGroups:
   devGroupA:
-  #   - arun-hmcts
-  #   - ayub-macalim
-  #   - guygrewal77
-  #   - andrewdami11
-  #   - m014389b
+    - arun-hmcts
+    - ayub-macalim
+    - guygrewal77
+    - andrewdami11
+    - m014389b
   # devGroupB:
-  #   - aqibh25
-  #   - toby-plunkett
-  #   - SachinPNaikHMCTS
+    - aqibh25
+    - toby-plunkett
+    - SachinPNaikHMCTS
     - libanAbdirahman1
-  #   - nicole-samuels
+    - nicole-samuels
   # adminGroup:
-  #   - adusumillipraveen
-  #   - JakeCG
-  #   - scottstewart-sl
-  #   - tvr-hmcts
-  #   - saurabhvalsangkar-hmcts
+    - adusumillipraveen
+    - JakeCG
+    - scottstewart-sl
+    - tvr-hmcts
+    - saurabhvalsangkar-hmcts
 
 #--------------------------------------------------------------------------------------------------------
 # A list of reviewers to be added to pull requests (GitHub user name)
