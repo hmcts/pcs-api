@@ -44,7 +44,7 @@ public class TenancyLicenceDetails {
     @CCD(
         label = "What date did the tenancy or licence begin?",
         hint = "For example, 16 4 2021",
-        access = {CitizenAccess.class}
+        access = {CaseworkerReadAccess.class, CitizenAccess.class}
     )
     private LocalDate tenancyLicenceDate;
 
