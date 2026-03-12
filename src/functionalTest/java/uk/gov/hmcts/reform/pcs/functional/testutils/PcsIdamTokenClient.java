@@ -18,8 +18,7 @@ public class PcsIdamTokenClient {
     private static final String BASE_URL = getEnv("IDAM_API_URL");
     private static final String IDAM_SYSTEM_USERNAME = getEnv("IDAM_SYSTEM_USERNAME");
     private static final String IDAM_SYSTEM_PASSWORD = getEnv("IDAM_SYSTEM_USER_PASSWORD");
-    private static final String CITIZEN_USERNAME = TestConstants.PCS_CITIZEN_USER;
-    private static final String GENERIC_PASSWORD = getEnv("IDAM_PCS_USER_PASSWORD");
+    private static final String GENERIC_PASSWORD = TestConstants.GENERIC_PASSWORD;
     private static final String SOLICITOR_USERNAME = TestConstants.PCS_SOLICITOR_USER;
     private static final String CLIENT_SECRET = getEnv("PCS_API_IDAM_SECRET");
 
@@ -33,7 +32,7 @@ public class PcsIdamTokenClient {
 
         String username = switch (user) {
             case systemUser -> IDAM_SYSTEM_USERNAME;
-            case citizenUser -> CITIZEN_USERNAME;
+            case citizenUser -> CitizenUserGenerator.createCitizenUser();
             case solicitorUser -> SOLICITOR_USERNAME;
         };
 
