@@ -1,10 +1,9 @@
 export const landRegistryFeesWrit = {
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Land Registry fees`,
   propertyAddressParagraph: `Property address:`,
   landRegistryFeeQuestion: `Have you paid any Land Registry fees?`,
-  forExampleHintText: `For example, if you paid the Land Registry a fee to view the property boundary. 
+  forExampleHintText: `For example, if you paid the Land Registry a fee to view the property boundary.
 If you have paid a Land Registry fee, but you do not want the defendant to repay it, you can choose ‘No’`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,

@@ -1,5 +1,4 @@
 export const suspendedOrder = {
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Suspended order`,
   suspendedOrderQuestion: `Is your order a suspended order?`,

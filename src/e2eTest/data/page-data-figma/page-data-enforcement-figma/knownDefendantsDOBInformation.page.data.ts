@@ -1,5 +1,4 @@
 export const knownDefendantsDOBInformation = {
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Enter the defendants’ dates of birth`,
   defendantsDOBQuestion: `What are the defendants’ dates of birth?`,
@@ -9,5 +8,5 @@ export const knownDefendantsDOBInformation = {
   continueButton: `Continue`,
   cancelLink: `Cancel`,
   //doYouKnowDefendantsDOBErrMessage: `Do you know the defendants’ dates of birth? is required` ,
-  //whatAretheDefendantsErrMessage: `What are the defendants’ dates of birth? is required` 
+  //whatAretheDefendantsErrMessage: `What are the defendants’ dates of birth? is required`
 }

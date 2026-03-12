@@ -1,5 +1,4 @@
 export const confirmDefendantsDOB = {
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Confirm if you know the defendants’ dates of birth`,
   defendantsDOBQuestion: `Do you know the defendants’ dates of birth?`,

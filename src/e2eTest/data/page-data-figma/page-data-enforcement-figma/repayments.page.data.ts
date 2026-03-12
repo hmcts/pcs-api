@@ -1,5 +1,4 @@
-export const repayments = { 
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+export const repayments = {
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Repayments`,
   totalAmountCaption: `Total amount that can be repaid`,
@@ -15,7 +14,7 @@ export const repayments = {
   someRadioOptions: `Some of it`,
   noneRadioOptions: `None of it`,
   enterTheAmountTextLabelHidden: `Enter the amount that you want the defendants to repay`,
-  enterTheAmountTextInput: `100.50`,
+  enterTheAmountTextInputHidden: `100.50`,
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,

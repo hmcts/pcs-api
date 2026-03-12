@@ -1,10 +1,11 @@
-export const statementOfTruth = { 
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+export const statementOfTruth = {
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Statement of truth`,
-  iCertifyCheckbox: `I certify that:`,
-  defendantHasNotVacatedParagraph: `the defendant has not vacated the land as ordered (*and that the whole or part of any instalments due under the judgment or order have not been paid) (†and the balance now due is as shown)`,
-  noticeHasBeenGivenParagraph: `notice has been given in accordance with The Dwelling Houses (Execution of Possession Orders by Mortgagees) Regulations 2010. `,
+  //Will create dynamic elements while page replacement for below 4 lines as its diff in Warrant/Writ
+  //iCertifyCheckbox: `I certify that:`,
+  //defendantHasNotVacatedParagraph: `the defendant has not vacated the land as ordered (*and that the whole or part of any instalments due under the judgment or order have not been paid) (†and the balance now due is as shown)`,
+  //commented above line as this is expected to be changeds as per discussion with Nafees and is reported in HDPI-5199 scenario3
+ // noticeHasBeenGivenParagraph: `notice has been given in accordance with The Dwelling Houses (Execution of Possession Orders by Mortgagees) Regulations 2010. `,
   //aStatementOfThePaymentParagraph: `a statement of the payments due and made under the judgment or order is attached to this request.††`,  // not in all cases only for suspended order
   paymentDueCaption: `The payments due`,
   repaymentForTableHeader: `Repayment for`,
@@ -12,7 +13,7 @@ export const statementOfTruth = {
   arrearsAndOtherCostsTableHeader: `Arrears and other costs`,
   legalCostsTableHeader: `Legal costs`,
   landRegistryFeesTableHeader: `Land Registry fees`,
-  warrantOfPossessionFeeTableHeader: `Warrant of possession fee`, //not in WritScreen 
+  //warrantOfPossessionFeeTableHeader: `Warrant of possession fee`, //Will create Dynamic element for this during page replacement
   //writOfPossessionFeeTableHeader: `Writ of possession fee`,
   TotalTableHeader: `Total`,
   completedByLabel: `Completed by`,
@@ -35,5 +36,5 @@ export const statementOfTruth = {
   //fullNameLengthExceedErrMessage: `Full name exceeds the maximum length`,
  // fullNameReqErrMessage: `Full name is required`,
  // positionOrOfficerLengthExceedErrMessage: `Position or office held exceeds the maximum length`,
- // positionIsReqErrMessage: `Position or office held is required` 
+ // positionIsReqErrMessage: `Position or office held is required`
 }

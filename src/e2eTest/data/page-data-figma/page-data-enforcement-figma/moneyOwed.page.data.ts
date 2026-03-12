@@ -1,5 +1,4 @@
 export const moneyOwed = {
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `The amount the defendants owe you`,
   youCanIncludeParagraph: `You can include:`,

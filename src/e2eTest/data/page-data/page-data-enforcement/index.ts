@@ -1,9 +1,3 @@
-export * from '@data/page-data/page-data-enforcement/animalsAtTheProperty.page.data';
-export * from '@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data';
-export * from '@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data';
-export * from '@data/page-data/page-data-enforcement/evictionCouldBeDelayed.page.data';
-export * from '@data/page-data/page-data-enforcement/firearmPossession.page.data';
-export * from '@data/page-data/page-data-enforcement/groupProtestsEviction.page.data';
 export * from '@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data';
 export * from '@data/page-data/page-data-enforcement/claimSentToHighCourt.page.data';
 export * from '@data/page-data/page-data-enforcement/confirmDefendantsDOB.page.data';
@@ -18,8 +12,6 @@ export * from '@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page
 export * from '@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data';
 export * from '@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data';
 export * from '@data/page-data/page-data-enforcement/yourApplication.page.data';
-export * from '@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data';
-export * from '@data/page-data/page-data-enforcement/accessToTheProperty.page.data';
 export * from '@data/page-data/page-data-enforcement/peopleWhoWillBeEvicted.page.data';
 export * from '@data/page-data/page-data-enforcement/peopleYouWantToEvict.page.data';
 export * from '@data/page-data/page-data-enforcement/youNeedPermission.page.data';
@@ -36,3 +28,4 @@ export * from '@data/page-data/page-data-enforcement/evidenceUpload.page.data';
 export * from '@data/page-data/page-data-enforcement/explainHowDefendants.page.data';
 export * from '@data/page-data/page-data-enforcement/shareEvidenceWithJudge.page.data';
 export * from '@data/page-data/page-data-enforcement/provideEvidence.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/propertyAccessDetails.page.data';

@@ -1,5 +1,4 @@
 export const violentAggressiveRisk = {
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Their violent or aggressive behaviour`,
   howHaveTheyBeenViolentAndAggressiveQuestion: `How have they been violent or aggressive?`,

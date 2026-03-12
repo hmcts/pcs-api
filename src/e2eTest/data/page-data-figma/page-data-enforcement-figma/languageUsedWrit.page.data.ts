@@ -1,5 +1,4 @@
 export const languageUsedWrit = {
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Language used`,
   whichLanguageUsedQuestion: `Which language did you use to complete this service?`,

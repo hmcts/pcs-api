@@ -1,5 +1,4 @@
 export const peopleYouWantToEvict = {
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `The people you want to evict`,
   whoDoYouWantToEvictQuestion: `Who do you want to evict?`,
@@ -9,5 +8,5 @@ export const peopleYouWantToEvict = {
   continueButton: `Continue`,
   cancelLink: `Cancel`,
   //thereIsAProblemErrMessage: `There is a problem`,
-  //whoDoYouWantToEvictErrrMessage: `Who do you want to evict? is required` 
+  //whoDoYouWantToEvictErrrMessage: `Who do you want to evict? is required`
 }

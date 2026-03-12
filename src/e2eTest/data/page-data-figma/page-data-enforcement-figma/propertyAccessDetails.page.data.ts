@@ -1,5 +1,4 @@
 export const propertyAccessDetails = {
-  //title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Access to the property`,
   accessToThePropertyQuestion: `Is it difficult to access the property?`,
@@ -8,7 +7,7 @@ export const propertyAccessDetails = {
   noRadioOption: `No`,
   whyItsDifficultToAccessToThePropertyTextLabelHidden: `Explain why it’s difficult to access the property`,
   maxCharactersHintTextHidden: `You can enter up to 6800 characters.`,
-  whyItsDifficultToAccessToThePropertyTextInputHidden: `Test input Tell us anything else that could help with the eviction`,
+  whyItsDifficultToAccessToThePropertyTextInputHidden: 1100,
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
