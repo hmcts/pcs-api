@@ -1,6 +1,6 @@
 export const changeNameAddress = {
   EnforceTheOrderCaption: `Enforce the order`,
-  mainHeader: 'You need permission from a judge to change the name and address for the eviction',
+  mainHeader: `You need permission from a judge to change the name and address for the eviction`,
   youNeedToAskPermissionParagraph: `You need to ask permission from the judge before you can change the name or address for the eviction. `,
   theJudgeWillDecideParagraph: `The judge will decide if you:`,
   canChangeTheAddressList: `can change the address and continue with this application (if the change is something small, like a typing error)`,

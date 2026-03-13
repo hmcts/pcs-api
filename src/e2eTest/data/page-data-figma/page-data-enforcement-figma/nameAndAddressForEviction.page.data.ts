@@ -1,6 +1,6 @@
 export const nameAndAddressForEviction = {
   EnforceTheOrderCaption: `Enforce the order`,
-  mainHeader: 'The name and address for the eviction',
+  mainHeader: `The name and address for the eviction`,
   nameAndAddressCaption:  `Check the name and address for the eviction`,
   defendantsTableHeader: `Defendants`,
   addressTableHeader: `Address`,
