@@ -1,7 +1,7 @@
-import { expect, Page } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
-import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
+import { IAction, actionRecord } from '@utils/interfaces/action.interface';
 import {
   yourApplication,
   nameAndAddressForEviction,
@@ -42,7 +42,7 @@ export const moneyMap = new Map<string, number>();
 export const fieldsMap = new Map<string, string>();
 
 export class EnforcementAction implements IAction {
-  async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
+  async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
@@ -74,6 +74,7 @@ export class EnforcementAction implements IAction {
       ['selectStatementOfTruthWrit', () => this.selectStatementOfTruthWrit(fieldName as actionRecord, page)],
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
+      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -446,6 +447,35 @@ export class EnforcementAction implements IAction {
       }
     }
     await performAction('reTryOnCallBackError', evidenceUpload.continueButton, uploadEvidence.nextPage as string);
+
+  }
+
+  private async validatePrePopulatedData(prePopulatedData: actionRecord) {
+
+    await test.step(`PrePopulated data validation`, async () => {
+      const page = prePopulatedData?.testPage ?? 'Unknown';
+      const count = Array.isArray(prePopulatedData?.inputData)
+        ? prePopulatedData.inputData.length
+        : prePopulatedData?.inputData ? 1 : 0;
+        expect(page,`Validation of prepopulated data started for page => [${page}] and the number of elements getting validated is : [${count}]`).not.toBe('Unknown');
+    });
+    const items = Array.isArray(prePopulatedData.inputData)
+      ? prePopulatedData.inputData
+      : [prePopulatedData.inputData];
+
+    for (const item of items) {
+      switch (item.type) {
+        case 'radio':
+          await performValidation('validateRadioButtonValues', { question: item.inputRadioQuestion }, { expected: item.expectedAnswer });
+          break;
+
+        case 'inputText':
+          await performValidation('validateInputTextValues', { textLabel: item.inputTextLabel }, { expected: item.expectedAnswer });
+          break
+        default:
+          break;
+      }
+    }
 
   }
 
