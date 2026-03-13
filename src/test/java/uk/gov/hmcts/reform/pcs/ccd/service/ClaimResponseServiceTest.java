@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
@@ -78,10 +79,10 @@ class ClaimResponseServiceTest {
                 .address(TEST_ADDRESS)
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
+                .preferenceType(ContactPreferenceType.EMAIL)
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
-                .contactByPost(VerticalYesNo.NO)
+                .preferenceType(ContactPreferenceType.POST)
                 .build()
         );
 
@@ -101,10 +102,9 @@ class ClaimResponseServiceTest {
         assertThat(savedParty.getAddress()).isEqualTo(addressEntity);
 
         ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
-        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedPrefs.getPreferenceType()).isEqualTo(ContactPreferenceType.POST);
     }
 
     @Test
@@ -141,7 +141,7 @@ class ClaimResponseServiceTest {
                 .emailAddress("defendant@example.com")
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
+                .preferenceType(ContactPreferenceType.EMAIL)
                 .build()
         );
 
@@ -167,7 +167,7 @@ class ClaimResponseServiceTest {
                 .emailAddress("   ")
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
+                .preferenceType(ContactPreferenceType.EMAIL)
                 .build()
         );
 
@@ -181,7 +181,7 @@ class ClaimResponseServiceTest {
         verify(partyRepository).save(partyCaptor.capture());
         PartyEntity savedParty = partyCaptor.getValue();
         assertThat(savedParty.getContactPreferences()).isNotNull();
-        assertThat(savedParty.getContactPreferences().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedParty.getContactPreferences().getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
     }
 
     @Test
@@ -229,10 +229,10 @@ class ClaimResponseServiceTest {
         final PossessionClaimResponse response = buildResponse(Party.builder()
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.NO)
+                .preferenceType(ContactPreferenceType.EMAIL)
                 .contactByPhone(VerticalYesNo.NO)
                 //no text option is possible when contact by phone = no
-                .contactByPost(VerticalYesNo.NO)
+                .preferenceType(ContactPreferenceType.POST)
                 .build()
         );
 
@@ -245,10 +245,9 @@ class ClaimResponseServiceTest {
         // Then
         verify(partyRepository).save(partyCaptor.capture());
         ContactPreferencesEntity savedPrefs = partyCaptor.getValue().getContactPreferences();
-        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.NO);
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
         assertThat(savedPrefs.getContactByText()).isEqualTo(null);
-        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedPrefs.getPreferenceType()).isEqualTo(ContactPreferenceType.POST);
     }
 
     @Test
@@ -261,10 +260,10 @@ class ClaimResponseServiceTest {
                 .address(TEST_ADDRESS)
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
+                .preferenceType(ContactPreferenceType.EMAIL)
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
-                .contactByPost(VerticalYesNo.YES)
+                .preferenceType(ContactPreferenceType.POST)
                 .build()
         );
 
@@ -296,10 +295,9 @@ class ClaimResponseServiceTest {
         assertThat(savedParty.getEmailAddress()).isEqualTo("test@example.com");
 
         ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
-        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getPreferenceType()).isEqualTo(ContactPreferenceType.POST);
     }
 
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {
