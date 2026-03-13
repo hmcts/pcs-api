@@ -20,7 +20,5 @@ export const vulnerableAdultsChildren = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //whatIsTheirHistoryErrMessage: `How are they vulnerable? is required`,
-  //youEnteredMorChareErrMessage: `In ‘How are they vulnerable?’, you have entered more than the maximum number of characters (6,800)`
+  cancelLink: `Cancel`
 }

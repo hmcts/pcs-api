@@ -1,5 +1,4 @@
 export const enforcementApplication = {
- // title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Your application`,
   typeOfApplicationQuestion: `What do you want to apply for?`,
@@ -33,6 +32,5 @@ export const enforcementApplication = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //whatDoYouWantToApplyForErrMessageHidden: `What do you want to apply for? is required`
+  cancelLink: `Cancel`
 }

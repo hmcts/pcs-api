@@ -1,7 +1,7 @@
 export const statementOfTruth = {
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Statement of truth`,
-  //Will create dynamic elements while page replacement for below 4 lines as its diff in Warrant/Writ
+  //Will create dynamic elements while page replacement with HDPI-3644 for below 4 lines as its diff in Warrant/Writ
   //iCertifyCheckbox: `I certify that:`,
   //defendantHasNotVacatedParagraph: `the defendant has not vacated the land as ordered (*and that the whole or part of any instalments due under the judgment or order have not been paid) (†and the balance now due is as shown)`,
   //commented above line as this is expected to be changeds as per discussion with Nafees and is reported in HDPI-5199 scenario3
@@ -30,11 +30,5 @@ export const statementOfTruth = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //firldIsReqErrMessage: `Field is required`,
-  //completedByReqerrMessage: `Completed by is required`,
-  //fullNameLengthExceedErrMessage: `Full name exceeds the maximum length`,
- // fullNameReqErrMessage: `Full name is required`,
- // positionOrOfficerLengthExceedErrMessage: `Position or office held exceeds the maximum length`,
- // positionIsReqErrMessage: `Position or office held is required`
+  cancelLink: `Cancel`
 }

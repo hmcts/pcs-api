@@ -6,7 +6,5 @@ export const peopleYouWantToEvict = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //thereIsAProblemErrMessage: `There is a problem`,
-  //whoDoYouWantToEvictErrrMessage: `Who do you want to evict? is required`
+  cancelLink: `Cancel`
 }

@@ -7,7 +7,5 @@ export const verbalOrWrittenThreatsRisk = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
- // whatIsTheirHistoryErrMessage: `What kind of verbal or written threats have they made? is required`,
-  //youEnteredMorChareErrMessage: `In ‘What kind of verbal or written threats have they made?’, you have entered more than the maximum number of characters (6,800)`
+  cancelLink: `Cancel`
 }

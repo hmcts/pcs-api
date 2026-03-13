@@ -10,14 +10,5 @@ export const cannotApplyForWritInfo = {
   errMessage: 'You cannot continue with this application until you ask the judge for permission to transfer to the High Court',
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
+  cancelLink: `Cancel`
 }
-
- 
-
- 
-
-
-
- 
-

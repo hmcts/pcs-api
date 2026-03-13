@@ -9,7 +9,5 @@ export const additionalInformation = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //anythingElseErrMessage: `Do you want to tell us anything else that could help with the eviction? is required `,
-  //tellUsAnythingElseErrMessage: `Tell us anything else that could help with the eviction is required `
+  cancelLink: `Cancel`
 }

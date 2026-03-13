@@ -9,6 +9,5 @@ export const suspendedOrder = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //isYourOrderErrMessage: `Is your order a suspended order? is required`
+  cancelLink: `Cancel`
 }

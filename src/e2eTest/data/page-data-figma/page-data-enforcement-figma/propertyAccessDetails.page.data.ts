@@ -11,7 +11,5 @@ export const propertyAccessDetails = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //isItDifficultErrMessage: `Is it difficult to access the property? is required `,
-  //whyItsDifficultErrMessage: `Explain why it’s difficult to access the property is required `
+  cancelLink: `Cancel`
 }

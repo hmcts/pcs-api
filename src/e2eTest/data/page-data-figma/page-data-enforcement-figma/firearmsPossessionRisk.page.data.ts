@@ -1,5 +1,4 @@
 export const firearmsPossessionRisk = {
- // title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Their history of firearm possession`,
   whatIsTheirHistoryOfFirearmPossessionQuestion: `What is their history of firearm possession?`,
@@ -8,7 +7,5 @@ export const firearmsPossessionRisk = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
- // whatIsTheirHistoryOfFirearmPossessionErrMessage: `What is their history of firearm possession? is required`,
- // youEnteredMorChareErrMessage: `In ‘What is their history of firearm possession?’, you have entered more than the maximum number of characters (6,800)`
+  cancelLink: `Cancel`
 }

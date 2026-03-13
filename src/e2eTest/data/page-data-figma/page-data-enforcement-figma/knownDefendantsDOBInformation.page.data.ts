@@ -6,7 +6,5 @@ export const knownDefendantsDOBInformation = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //doYouKnowDefendantsDOBErrMessage: `Do you know the defendants’ dates of birth? is required` ,
-  //whatAretheDefendantsErrMessage: `What are the defendants’ dates of birth? is required`
+  cancelLink: `Cancel`
 }

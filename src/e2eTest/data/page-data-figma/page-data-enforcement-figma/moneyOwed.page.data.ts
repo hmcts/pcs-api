@@ -10,9 +10,5 @@ export const moneyOwed = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //whatIsTheTotalAmountErrMessage: `What is the total amount that the defendants owe you? is not valid`,
-  //shouldBeMoreThanErrMessage: `Should be more than or equal to £0.01`,
-  //isNotValidValueErrMessage: `10000000000000000000 is not a valid value. Money GBP needs to be expressed in pence`,
-  //dataEnteredIsNotValidErrMessage: `The data entered is not valid for What is the total amount that the defendants owe you?`
+  cancelLink: `Cancel`
 }

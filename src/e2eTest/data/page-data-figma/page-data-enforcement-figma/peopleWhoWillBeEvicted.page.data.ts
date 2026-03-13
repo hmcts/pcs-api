@@ -8,6 +8,5 @@ export const peopleWhoWillBeEvicted = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //doYouWantToEvictEveryoneErrorMessage: `Do you want to evict everyone at the property? is required `
+  cancelLink: `Cancel`
 }

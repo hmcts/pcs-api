@@ -52,7 +52,7 @@ export default {
     'enforceTheOrdersuspendedOrderWrit': 'suspendedOrder',
     'enforceTheOrderstatementOfTruthWrit': 'statementOfTruth',
     'enforceTheOrderamountDefendantOwes': 'amountDefendantOwes',
-    'enforceTheOrderrepayments-writ': 'repayments-writ',
+    'enforceTheOrderrepayments-writ': 'repaymentsWrit',
     'enforceTheOrdercannotApplyForWritInfo': 'cannotApplyForWritInfo',
     'enforceTheOrderconfirmHCEOfficer': 'confirmHCEOfficer',
     'enforceTheOrderenforcementOfficerSelection': 'enforcementOfficerSelection',

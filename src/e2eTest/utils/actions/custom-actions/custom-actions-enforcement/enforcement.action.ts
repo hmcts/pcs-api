@@ -27,8 +27,9 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
-import { propertyAccessDetails } from '@data/page-data-figma/page-data-enforcement-figma/propertyAccessDetails.page.data';
-import { livingInTheProperty } from '@data/page-data-figma/page-data-enforcement-figma/livingInTheProperty.page.data';
+import { propertyAccessDetails,
+         livingInTheProperty 
+} from '@data/page-data-figma/page-data-enforcement-figma';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,

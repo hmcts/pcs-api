@@ -18,10 +18,5 @@ export const repayments = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //isRequiredErrMessage: `How much do you want the defendants to repay? is required`,
-  //notValidErrMessage: `Enter the amount that you want the defendants to repay is not valid `,
-  //shouldBeMoreThanErrMessage: `Should be more than or equal to £0.01`,
-  //isNotValidValueErrMessage: `10000000000000000000 is not a valid value. Money GBP needs to be expressed in pence`,
-  //dataEnteredIsNotValidErrMessage: `The data entered is not valid for How much do you want to reclaim?`
+  cancelLink: `Cancel`
 }

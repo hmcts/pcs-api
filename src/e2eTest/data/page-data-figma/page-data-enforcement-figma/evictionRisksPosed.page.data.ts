@@ -13,6 +13,5 @@ export const evictionRisksPosed = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
- // whatKindOfRisksErrMessage: `What kind of risks do they pose to the bailiff? is required`
+  cancelLink: `Cancel`
 }

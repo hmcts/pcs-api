@@ -1,5 +1,4 @@
 export const protestorGroupRisk = {
- // title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `Their membership of a group that protests evictions`,
   whichGroupMemberQuestion: `Which group are they a member of and how have they protested?`,
@@ -8,7 +7,5 @@ export const protestorGroupRisk = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  // whatIsTheirHistoryErrMessage: `Which group are they a member of and how have they protested? is required`,
-  //youEnteredMorChareErrMessage: `In ‘Which group are they a member of and how have they protested?’, you have entered more than the maximum number of characters (6,800)`
+  cancelLink: `Cancel`
 }

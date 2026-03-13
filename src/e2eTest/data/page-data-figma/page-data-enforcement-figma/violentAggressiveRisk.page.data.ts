@@ -7,7 +7,5 @@ export const violentAggressiveRisk = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-  //howHaveBeenTheyVoilentErrMessage: `How have they been violent or aggressive? is required`,
-  //youEnteredMorChareErrMessage: `In ‘How have they been violent or aggressive?’, you have entered more than the maximum number of characters (6,800)`
+  cancelLink: `Cancel`
 }
