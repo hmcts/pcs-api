@@ -26,19 +26,21 @@ import {
   statementOfTruthTwo,
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
-import { propertyAccessDetails } from '@data/page-data-figma/page-data-enforcement-figma/propertyAccessDetails.page.data';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { aggressiveAnimalsRisk } from '@data/page-data-figma/page-data-enforcement-figma/aggressiveAnimalsRisk.page.data';
-import { additionalInformation } from '@data/page-data-figma/page-data-enforcement-figma/additionalInformation.page.data';
-import { criminalAntisocialRisk } from '@data/page-data-figma/page-data-enforcement-figma/criminalAntisocialRisk.page.data';
-import { livingInTheProperty } from '@data/page-data-figma/page-data-enforcement-figma/livingInTheProperty.page.data';
-import { evictionDelayWarning } from '@data/page-data-figma/page-data-enforcement-figma/evictionDelayWarning.page.data';
-import { firearmsPossessionRisk } from '@data/page-data-figma/page-data-enforcement-figma/firearmsPossessionRisk.page.data';
-import { protestorGroupRisk } from '@data/page-data-figma/page-data-enforcement-figma/protestorGroupRisk.page.data';
+import { aggressiveAnimalsRisk,
+         additionalInformation,
+         criminalAntisocialRisk,
+         livingInTheProperty,
+         evictionDelayWarning,
+         firearmsPossessionRisk,
+         protestorGroupRisk,
+         propertyAccessDetails
+ } from '@data/page-data-figma/page-data-enforcement-figma';
+ 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
