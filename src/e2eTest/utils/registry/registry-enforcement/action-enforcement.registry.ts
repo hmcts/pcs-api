@@ -82,6 +82,10 @@ export class ActionEnforcementRegistry {
     ['errorValidationSuspendOrderPage', new ErrorValidationAction()],
     ['errorValidationSOT1Page', new ErrorValidationAction()],
     ['errorValidationSOT2Page', new ErrorValidationAction()],
+    ['errorValidationConfirmHCEOHiredPage', new ErrorValidationAction()],
+    ['errorValidationYourHCEOPage', new ErrorValidationAction()],
+    ['errorValidationHowDefendantsEnteredPage', new ErrorValidationAction()],
+    ['errorValidationExplainHowDefendantsEnteredPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()]
   ]);
 

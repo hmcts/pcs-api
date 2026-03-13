@@ -93,14 +93,15 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         newPage: yourApplication.hceoPageTitle
       });
       await performAction('expandSummary', yourApplication.summarySaveApplication);
-      await performAction('inputErrorValidation', {
-        validationReq: yourApplication.errorValidation,
-        validationType: yourApplication.errorValidationType.three,
-        inputArray: yourApplication.errorValidationField.errorRadioOption,
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.writOfPossession,
-        button: yourApplication.continueButton
-      });
+      await performAction('errorValidationYourApplicationPage', yourApplication.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: yourApplication.errorValidation,
+      //   validationType: yourApplication.errorValidationType.three,
+      //   inputArray: yourApplication.errorValidationField.errorRadioOption,
+      //   question: yourApplication.typeOfApplicationQuestion,
+      //   option: yourApplication.typeOfApplicationOptions.writOfPossession,
+      //   button: yourApplication.continueButton
+      // });
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.writOfPossession,
@@ -109,77 +110,82 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         option1: yourApplication.yesRadioOption,
         nextPage: nameAndAddressForEviction.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: nameAndAddressForEviction.errorValidation,
-        validationType: nameAndAddressForEviction.errorValidationType.three,
-        inputArray: nameAndAddressForEviction.errorValidationField.errorRadioOption,
-        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-        option: nameAndAddressForEviction.yesRadioOption,
-        button: nameAndAddressForEviction.continueButton
-      });
+      await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: nameAndAddressForEviction.errorValidation,
+      //   validationType: nameAndAddressForEviction.errorValidationType.three,
+      //   inputArray: nameAndAddressForEviction.errorValidationField.errorRadioOption,
+      //   question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+      //   option: nameAndAddressForEviction.yesRadioOption,
+      //   button: nameAndAddressForEviction.continueButton
+      // });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
         nextPage: confirmHCEOHired.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: confirmHCEOHired.errorValidation,
-        validationType: confirmHCEOHired.errorValidationType.three,
-        inputArray: confirmHCEOHired.errorValidationField.errorRadioOption,
-        question: confirmHCEOHired.haveYouHiredHCEOQuestion,
-        option: confirmHCEOHired.yesRadioOption,
-        button: confirmHCEOHired.continueButton
-      });
+      await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOHired.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: confirmHCEOHired.errorValidation,
+      //   validationType: confirmHCEOHired.errorValidationType.three,
+      //   inputArray: confirmHCEOHired.errorValidationField.errorRadioOption,
+      //   question: confirmHCEOHired.haveYouHiredHCEOQuestion,
+      //   option: confirmHCEOHired.yesRadioOption,
+      //   button: confirmHCEOHired.continueButton
+      // });
       await performAction('selectHaveHiredHCEO', {
         question: confirmHCEOHired.haveYouHiredHCEOQuestion,
         option: confirmHCEOHired.yesRadioOption,
         nextPage: yourHCEO.mainHeader
       });
       await performValidation('mainHeader', yourHCEO.mainHeader);
-      await performAction('inputErrorValidation', {
-        validationReq: yourHCEO.errorValidation,
-        validationType: yourHCEO.errorValidationType.two,
-        inputArray: yourHCEO.errorValidationField.errorTextField,
-        header: yourHCEO.thereIsAProblemErrorMessageHeader,
-        label: yourHCEO.nameOfYourHCEOTextLabel,
-        button: yourHCEO.continueButton
-      });
+      await performAction('errorValidationYourHCEOPage', yourHCEO.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: yourHCEO.errorValidation,
+      //   validationType: yourHCEO.errorValidationType.two,
+      //   inputArray: yourHCEO.errorValidationField.errorTextField,
+      //   header: yourHCEO.thereIsAProblemErrorMessageHeader,
+      //   label: yourHCEO.nameOfYourHCEOTextLabel,
+      //   button: yourHCEO.continueButton
+      // });
       await performAction('nameYourHCEO', {
         label: yourHCEO.nameOfYourHCEOTextLabel,
         input: yourHCEO.nameOfYourHCEOTextInput,
         nextPage: moneyOwed.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: moneyOwed.errorValidation,
-        validationType: moneyOwed.errorValidationType.one,
-        inputArray: moneyOwed.errorValidationField.errorMoneyField,
-        label: moneyOwed.totalAmountOwedTextLabel,
-        button: moneyOwed.continueButton
-      });
+      await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: moneyOwed.errorValidation,
+      //   validationType: moneyOwed.errorValidationType.one,
+      //   inputArray: moneyOwed.errorValidationField.errorMoneyField,
+      //   label: moneyOwed.totalAmountOwedTextLabel,
+      //   button: moneyOwed.continueButton
+      // });
       await performAction('provideMoneyOwed', {
         label: moneyOwed.totalAmountOwedTextLabel,
         input: moneyOwed.totalAmountOwedTextInput,
         nextPage: legalCosts.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: legalCosts.errorValidation,
-        validationType: legalCosts.errorValidationType.three,
-        inputArray: legalCosts.errorValidationField.errorRadioOption,
-        question: legalCosts.reclaimLegalCostsQuestion,
-        option: legalCosts.yesRadioOption,
-        button: legalCosts.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: legalCosts.errorValidation,
-        validationType: legalCosts.errorValidationType.five,
-        inputArray: legalCosts.errorValidationField.errorMoneyField,
-        question: legalCosts.reclaimLegalCostsQuestion,
-        option: legalCosts.yesRadioOption,
-        option2: legalCosts.noRadioOption,
-        label: legalCosts.howMuchYouWantToReclaimTextLabel,
-        button: legalCosts.continueButton
-      });
+      await performAction('errorValidationLegalCostsPage', legalCosts.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: legalCosts.errorValidation,
+      //   validationType: legalCosts.errorValidationType.three,
+      //   inputArray: legalCosts.errorValidationField.errorRadioOption,
+      //   question: legalCosts.reclaimLegalCostsQuestion,
+      //   option: legalCosts.yesRadioOption,
+      //   button: legalCosts.continueButton
+      // });
+      // await performAction('inputErrorValidation', {
+      //   validationReq: legalCosts.errorValidation,
+      //   validationType: legalCosts.errorValidationType.five,
+      //   inputArray: legalCosts.errorValidationField.errorMoneyField,
+      //   question: legalCosts.reclaimLegalCostsQuestion,
+      //   option: legalCosts.yesRadioOption,
+      //   option2: legalCosts.noRadioOption,
+      //   label: legalCosts.howMuchYouWantToReclaimTextLabel,
+      //   button: legalCosts.continueButton
+      // });
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.yesRadioOption,
@@ -187,24 +193,25 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         input: legalCosts.howMuchYouWantToReclaimTextInput,
         nextPage: landRegistryFees.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: landRegistryFees.errorValidation,
-        validationType: landRegistryFees.errorValidationType.three,
-        inputArray: landRegistryFees.errorValidationField.errorRadioOption,
-        question: landRegistryFees.landRegistryFeeQuestion,
-        option: landRegistryFees.yesRadioOption,
-        button: landRegistryFees.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: landRegistryFees.errorValidation,
-        validationType: landRegistryFees.errorValidationType.five,
-        inputArray: landRegistryFees.errorValidationField.errorMoneyField,
-        question: landRegistryFees.landRegistryFeeQuestion,
-        option: landRegistryFees.yesRadioOption,
-        option2: landRegistryFees.noRadioOption,
-        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
-        button: landRegistryFees.continueButton
-      });
+      await performAction('errorValidationLandRegistryFeePage', landRegistryFees.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: landRegistryFees.errorValidation,
+      //   validationType: landRegistryFees.errorValidationType.three,
+      //   inputArray: landRegistryFees.errorValidationField.errorRadioOption,
+      //   question: landRegistryFees.landRegistryFeeQuestion,
+      //   option: landRegistryFees.yesRadioOption,
+      //   button: landRegistryFees.continueButton
+      // });
+      // await performAction('inputErrorValidation', {
+      //   validationReq: landRegistryFees.errorValidation,
+      //   validationType: landRegistryFees.errorValidationType.five,
+      //   inputArray: landRegistryFees.errorValidationField.errorMoneyField,
+      //   question: landRegistryFees.landRegistryFeeQuestion,
+      //   option: landRegistryFees.yesRadioOption,
+      //   option2: landRegistryFees.noRadioOption,
+      //   label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      //   button: landRegistryFees.continueButton
+      // });
       await performAction('provideLandRegistryFees', {
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.yesRadioOption,
@@ -214,24 +221,25 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
       await performValidation('mainHeader', rePayments.mainHeader);
       await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
-      await performAction('inputErrorValidation', {
-        validationReq: rePayments.errorValidation,
-        validationType: rePayments.errorValidationType.three,
-        inputArray: rePayments.errorValidationField.errorRadioOption,
-        question: rePayments.rePaymentQuestion,
-        option: rePayments.rePaymentRadioOptions.some,
-        button: rePayments.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: rePayments.errorValidation,
-        validationType: rePayments.errorValidationType.five,
-        inputArray: rePayments.errorValidationField.errorMoneyField,
-        question: rePayments.rePaymentQuestion,
-        option: rePayments.rePaymentRadioOptions.some,
-        option2: rePayments.rePaymentRadioOptions.none,
-        label: rePayments.enterTheAmountTextLabel,
-        button: rePayments.continueButton
-      });
+      await performAction('errorValidationRepaymentsPage', rePayments.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: rePayments.errorValidation,
+      //   validationType: rePayments.errorValidationType.three,
+      //   inputArray: rePayments.errorValidationField.errorRadioOption,
+      //   question: rePayments.rePaymentQuestion,
+      //   option: rePayments.rePaymentRadioOptions.some,
+      //   button: rePayments.continueButton
+      // });
+      // await performAction('inputErrorValidation', {
+      //   validationReq: rePayments.errorValidation,
+      //   validationType: rePayments.errorValidationType.five,
+      //   inputArray: rePayments.errorValidationField.errorMoneyField,
+      //   question: rePayments.rePaymentQuestion,
+      //   option: rePayments.rePaymentRadioOptions.some,
+      //   option2: rePayments.rePaymentRadioOptions.none,
+      //   label: rePayments.enterTheAmountTextLabel,
+      //   button: rePayments.continueButton
+      // });
       await performAction('provideAmountToRePay', {
         question: rePayments.rePaymentQuestion,
         option: rePayments.rePaymentRadioOptions.some,
@@ -239,52 +247,54 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         input: rePayments.enterTheAmountTextInput,
         nextPage: languageUsed.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: languageUsed.errorValidation,
-        validationType: languageUsed.errorValidationType.three,
-        inputArray: languageUsed.errorValidationField.errorRadioOption,
-        question: languageUsed.whichLanguageUsedQuestion,
-        option: languageUsed.languageUsedRadioOptions.englishRadioOption,
-        button: languageUsed.continueButton
-      });
+      await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: languageUsed.errorValidation,
+      //   validationType: languageUsed.errorValidationType.three,
+      //   inputArray: languageUsed.errorValidationField.errorRadioOption,
+      //   question: languageUsed.whichLanguageUsedQuestion,
+      //   option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+      //   button: languageUsed.continueButton
+      // });
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
         option: languageUsed.languageUsedRadioOptions.englishRadioOption,
         nextPage: statementOfTruthOne.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.three,
-        inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
-        question: statementOfTruthOne.completedByLabel,
-        option: statementOfTruthOne.claimantRadioOption,
-        button: statementOfTruthOne.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.four,
-        inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
-        label: statementOfTruthOne.checkBoxGenericErrorLabel,
-        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-        checkBox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        button: statementOfTruthOne.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.two,
-        inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
-        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthOne.fullNameHiddenTextLabel,
-        button: statementOfTruthOne.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.two,
-        inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
-        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-        button: statementOfTruthOne.continueButton
-      });
+      await performAction('errorValidationSOT1Page', statementOfTruthOne.errorValidation);
+      // await performAction('inputErrorValidation', {
+      //   validationReq: statementOfTruthOne.errorValidation,
+      //   validationType: statementOfTruthOne.errorValidationType.three,
+      //   inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
+      //   question: statementOfTruthOne.completedByLabel,
+      //   option: statementOfTruthOne.claimantRadioOption,
+      //   button: statementOfTruthOne.continueButton
+      // });
+      // await performAction('inputErrorValidation', {
+      //   validationReq: statementOfTruthOne.errorValidation,
+      //   validationType: statementOfTruthOne.errorValidationType.four,
+      //   inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
+      //   label: statementOfTruthOne.checkBoxGenericErrorLabel,
+      //   header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
+      //   checkBox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
+      //   button: statementOfTruthOne.continueButton
+      // });
+      // await performAction('inputErrorValidation', {
+      //   validationReq: statementOfTruthOne.errorValidation,
+      //   validationType: statementOfTruthOne.errorValidationType.two,
+      //   inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
+      //   header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
+      //   label: statementOfTruthOne.fullNameHiddenTextLabel,
+      //   button: statementOfTruthOne.continueButton
+      // });
+      // await performAction('inputErrorValidation', {
+      //   validationReq: statementOfTruthOne.errorValidation,
+      //   validationType: statementOfTruthOne.errorValidationType.two,
+      //   inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
+      //   header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
+      //   label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
+      //   button: statementOfTruthOne.continueButton
+      // });
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
       await performAction('selectStatementOfTruthWrit', {
         question: statementOfTruthOne.completedByLabel,
@@ -333,13 +343,14 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
     await performAction('clickButton', theNICEWillChoose.continueButton);
     await performValidation('mainHeader', moneyOwed.mainHeader);
-    await performAction('inputErrorValidation', {
-      validationReq: moneyOwed.errorValidation,
-      validationType: moneyOwed.errorValidationType.one,
-      inputArray: moneyOwed.errorValidationField.errorMoneyField,
-      label: moneyOwed.totalAmountOwedTextLabel,
-      button: moneyOwed.continueButton
-    });
+    await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
+    // await performAction('inputErrorValidation', {
+    //   validationReq: moneyOwed.errorValidation,
+    //   validationType: moneyOwed.errorValidationType.one,
+    //   inputArray: moneyOwed.errorValidationField.errorMoneyField,
+    //   label: moneyOwed.totalAmountOwedTextLabel,
+    //   button: moneyOwed.continueButton
+    // });
     await performAction('provideMoneyOwed', {
       label: moneyOwed.totalAmountOwedTextLabel,
       input: moneyOwed.totalAmountOwedTextInput,
@@ -373,47 +384,48 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       option: languageUsed.languageUsedRadioOptions.welshRadioOption,
       nextPage: statementOfTruthOne.mainHeader
     });
-    await performAction('inputErrorValidation', {
-      validationReq: statementOfTruthOne.errorValidation,
-      validationType: statementOfTruthOne.errorValidationType.three,
-      inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
-      question: statementOfTruthOne.completedByLabel,
-      option: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
-      button: statementOfTruthOne.continueButton
-    });
-    await performAction('inputErrorValidation', {
-      validationReq: statementOfTruthOne.errorValidation,
-      validationType: statementOfTruthOne.errorValidationType.four,
-      inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
-      label: statementOfTruthOne.checkBoxGenericErrorLabel,
-      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-      checkBox: statementOfTruthOne.signThisStatementHiddenCheckbox,
-      button: statementOfTruthOne.continueButton
-    });
-    await performAction('inputErrorValidation', {
-      validationReq: statementOfTruthOne.errorValidation,
-      validationType: statementOfTruthOne.errorValidationType.two,
-      inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
-      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-      label: statementOfTruthOne.fullNameHiddenTextLabel,
-      button: statementOfTruthOne.continueButton
-    });
-    await performAction('inputErrorValidation', {
-      validationReq: statementOfTruthOne.errorValidation,
-      validationType: statementOfTruthOne.errorValidationType.two,
-      inputArray: statementOfTruthOne.errorValidationField.errorTextField2,
-      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-      label: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-      button: statementOfTruthOne.continueButton
-    });
-    await performAction('inputErrorValidation', {
-      validationReq: statementOfTruthOne.errorValidation,
-      validationType: statementOfTruthOne.errorValidationType.two,
-      inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
-      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-      label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-      button: statementOfTruthOne.continueButton
-    });
+    await performAction('errorValidationSOT1Page', statementOfTruthOne.errorValidation);
+    // await performAction('inputErrorValidation', {
+    //   validationReq: statementOfTruthOne.errorValidation,
+    //   validationType: statementOfTruthOne.errorValidationType.three,
+    //   inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
+    //   question: statementOfTruthOne.completedByLabel,
+    //   option: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
+    //   button: statementOfTruthOne.continueButton
+    // });
+    // await performAction('inputErrorValidation', {
+    //   validationReq: statementOfTruthOne.errorValidation,
+    //   validationType: statementOfTruthOne.errorValidationType.four,
+    //   inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
+    //   label: statementOfTruthOne.checkBoxGenericErrorLabel,
+    //   header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
+    //   checkBox: statementOfTruthOne.signThisStatementHiddenCheckbox,
+    //   button: statementOfTruthOne.continueButton
+    // });
+    // await performAction('inputErrorValidation', {
+    //   validationReq: statementOfTruthOne.errorValidation,
+    //   validationType: statementOfTruthOne.errorValidationType.two,
+    //   inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
+    //   header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
+    //   label: statementOfTruthOne.fullNameHiddenTextLabel,
+    //   button: statementOfTruthOne.continueButton
+    // });
+    // await performAction('inputErrorValidation', {
+    //   validationReq: statementOfTruthOne.errorValidation,
+    //   validationType: statementOfTruthOne.errorValidationType.two,
+    //   inputArray: statementOfTruthOne.errorValidationField.errorTextField2,
+    //   header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
+    //   label: statementOfTruthOne.nameOfFirmHiddenTextLabel,
+    //   button: statementOfTruthOne.continueButton
+    // });
+    // await performAction('inputErrorValidation', {
+    //   validationReq: statementOfTruthOne.errorValidation,
+    //   validationType: statementOfTruthOne.errorValidationType.two,
+    //   inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
+    //   header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
+    //   label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
+    //   button: statementOfTruthOne.continueButton
+    // });
     await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
     await performAction('selectStatementOfTruthWrit', {
       question: statementOfTruthOne.completedByLabel,
