@@ -13,5 +13,5 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 public class ReasonableAdjustments {
 
     @CCD
-    private String reasonableAdjustmentRequired;
+    private String reasonableAdjustmentsRequired;
 }

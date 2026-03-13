@@ -14,7 +14,7 @@ public class ReasonableAdjustmentsService {
         }
 
         ReasonableAdjustmentEntity reasonableAdjustmentEntity = ReasonableAdjustmentEntity.builder()
-            .reasonableAdjustmentsRequired(reasonableAdjustments.getReasonableAdjustmentRequired())
+            .reasonableAdjustmentsRequired(reasonableAdjustments.getReasonableAdjustmentsRequired())
             .build();
 
         return reasonableAdjustmentEntity;

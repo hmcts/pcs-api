@@ -69,7 +69,6 @@ public class DefendantResponseService {
      */
     public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse) {
         UUID userId = securityContextService.getCurrentUserId();
-        DefendantResponses defendantResponses = possessionClaimResponse.getDefendantResponses();
 
         if (userId == null) {
             log.error("Cannot save defendant response: current user IDAM ID is null");
@@ -95,7 +94,12 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
-        DefendantResponseEntity responseEntity = buildDefendantResponseEntity(claimRef, partyRef, defendantResponses);
+        DefendantResponseEntity responseEntity =
+            buildDefendantResponseEntity(
+                claimRef,
+                partyRef,
+                possessionClaimResponse.getDefendantResponses()
+            );
 
         buildAndLinkChildEntities(responseEntity, possessionClaimResponse);
 
@@ -104,7 +108,7 @@ public class DefendantResponseService {
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
     }
 
-    public DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
+    private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
                                                                 PartyEntity partyRef,
                                                                 DefendantResponses responses) {
 
@@ -130,7 +134,7 @@ public class DefendantResponseService {
         return defendantResponse;
     }
 
-    public void buildAndLinkChildEntities(
+    private void buildAndLinkChildEntities(
         DefendantResponseEntity defendantResponseEntity,
         PossessionClaimResponse response) {
 

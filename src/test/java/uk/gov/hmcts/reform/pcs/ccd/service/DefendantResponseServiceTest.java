@@ -523,7 +523,7 @@ class DefendantResponseServiceTest {
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
         ReasonableAdjustments reasonableAdjustments = ReasonableAdjustments.builder()
-            .reasonableAdjustmentRequired("Wheelchair access")
+            .reasonableAdjustmentsRequired("Wheelchair access")
             .build();
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .dependantChildren(YesOrNo.YES)

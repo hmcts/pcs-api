@@ -22,19 +22,19 @@ class ReasonableAdjustmentsServiceTest {
     @Test
     void shouldMapReasonableAdjustmentsRequiredField() {
         //Given
-        ReasonableAdjustments model = ReasonableAdjustments.builder()
-            .reasonableAdjustmentRequired("Wheelchair access")
+        ReasonableAdjustments reasonableAdjustments = ReasonableAdjustments.builder()
+            .reasonableAdjustmentsRequired("Wheelchair access")
             .build();
 
         //When
-        ReasonableAdjustmentEntity entity = underTest.createReasonableAdjustmentEntity(model);
+        ReasonableAdjustmentEntity entity = underTest.createReasonableAdjustmentEntity(reasonableAdjustments);
 
         //Then
         assertThat(entity.getReasonableAdjustmentsRequired()).isEqualTo("Wheelchair access");
     }
 
     @Test
-    void shouldReturnNullWhenPaymentAgreementIsNull() {
+    void shouldReturnNullWhenReasonableAdjustmentIsNull() {
         // When
         ReasonableAdjustmentEntity entity = underTest.createReasonableAdjustmentEntity(null);
 

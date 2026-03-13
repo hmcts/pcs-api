@@ -23,12 +23,12 @@ class HouseholdCircumstancesServiceTest {
     @Test
     void shouldMapDependantChildrenField() {
         //Given
-        HouseholdCircumstances model = HouseholdCircumstances.builder()
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .dependantChildren(YesOrNo.YES)
             .build();
 
         //When
-        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(model);
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
 
         //Then
         assertThat(entity.getDependantChildren()).isEqualTo(YesOrNo.YES);
