@@ -139,10 +139,6 @@ public class WarrantEntity {
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo showChangeNameAddressPage;
-
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
     private Instant created;

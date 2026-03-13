@@ -71,7 +71,9 @@ class EnforcementDMTest {
                                                         EnforcementRiskDetails.class, WritDetails.class);
         domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails",
                                                        "enforcementLanguageUsed", "anyRiskToBailiff",
-                                                       "riskCategories");
+                                                       "riskCategories",
+                                                       "showChangeNameAddressPage" // Domain only field
+        );
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
             domainDataModelSupportHelper.findMissingCCDFields(WarrantEntity.class);
 
@@ -92,7 +94,8 @@ class EnforcementDMTest {
         // showChangeNameAddressPage is not stored with this to flow path but used in the show conditions.
         domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "warrantDetails",
                                                        "wasGeneralApplicationToTransferToHighCourtSuccessful", // temp
-                                                       "showChangeNameAddressPage");
+                                                       "showChangeNameAddressPage" // Domain only field
+                                                       );
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
             domainDataModelSupportHelper.findMissingCCDFields(WritEntity.class);
 
