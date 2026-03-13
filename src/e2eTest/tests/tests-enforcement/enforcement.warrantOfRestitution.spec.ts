@@ -6,15 +6,21 @@ import { caseSummary } from '@data/page-data';
 import {
   yourApplication,
   evidenceUpload,
-  checkYourAnswers,
   explainHowDefendantsReturned,
   shareEvidenceWithJudge,
   provideEvidence,
+  everyoneLivingAtTheProperty,
+  warrantOfRestitutionAnyoneAtPropertyRiskIntro,
+  riskPosedByEveryoneAtProperty,
+  peopleWillBeEvicted,
+  peopleYouWantToEvict,
+  vulnerableAdultsAndChildren,
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { enforceWarrantApiData } from '@data/api-data/enforceTheOrderWarrant.api.data';
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
@@ -45,6 +51,11 @@ test.beforeEach(async ({ page }, testInfo) => {
       additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
       payLoad: submitCaseApiData.submitCasePayload
     });
+    if (testInfo.title.includes('@allYES')) {
+      await performAction('enforceCaseAPI', { data: enforceWarrantApiData.enforceCasePayloadYesJourney });
+    } else if (testInfo.title.includes('@allNO')) {
+      await performAction('enforceCaseAPI', { data: enforceWarrantApiData.enforceCasePayloadNoJourney });
+    }
   }
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
@@ -65,7 +76,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Restitution]', async () => {
-  test('Warrant - Apply for a Warrant of Restitution - upload more than one evidence @enforcement @PR',
+  test('Warrant - Apply for a Warrant of Restitution - Warrant with all YES selection - no update on prepopulated data ,upload more than one evidence @allYES @enforcement @PR',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -95,8 +106,9 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
-        nextPage: shareEvidenceWithJudge.mainHeader
+        nextPage: peopleWillBeEvicted.mainHeaderWarrantOfRestitution
       });
+      await performAction('reTryOnCallBackError', peopleYouWantToEvict.continueButton, shareEvidenceWithJudge.mainHeader);
       await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: explainHowDefendantsReturned.errorValidation,
@@ -151,7 +163,75 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
           { type: evidenceUpload.otherDocumentDropDownInput, fileName: 'otherDocument.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
           { type: evidenceUpload.policeReportDropDownInput, fileName: 'tenancyLicence.docx', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
         ],
-        nextPage: checkYourAnswers.mainHeader
-      })
+        nextPage: warrantOfRestitutionAnyoneAtPropertyRiskIntro.mainHeader
+      });
+      await performAction('reTryOnCallBackError', warrantOfRestitutionAnyoneAtPropertyRiskIntro.continueButton, everyoneLivingAtTheProperty.mainHeader);
+      await performAction('validatePrePopulatedData', {
+        testPage: everyoneLivingAtTheProperty.mainHeader,
+        question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
+      },
+        {
+          expectedValue: enforceWarrantApiData.enforceCasePayloadYesJourney.warrantAnyRiskToBailiff
+        });
+      await performAction('reTryOnCallBackError', everyoneLivingAtTheProperty.continueButton, riskPosedByEveryoneAtProperty.mainHeader);
+      await performAction('reTryOnCallBackError', riskPosedByEveryoneAtProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
     });
+
+  test('Warrant - Apply for a Warrant of Restitution - Warrant with all NO selection - no update on prepopulated data  @allNO @enforcement @PR',
+    async () => {
+      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+      await performAction('clickButton', caseSummary.go);
+      await performValidation('mainHeader', yourApplication.mainHeader);
+      await performAction('validateWritOrWarrantFeeAmount', {
+        journey: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
+        type: yourApplication.summaryWritOrWarrant,
+        label1: yourApplication.warrantFeeValidationLabel,
+        text1: yourApplication.warrantFeeValidationText,
+        label2: yourApplication.writFeeValidationLabel,
+        text2: yourApplication.writFeeValidationText
+      });
+      await performAction('validateGetQuoteFromBailiffLink', {
+        type: yourApplication.summaryWritOrWarrant,
+        link: yourApplication.quoteFromBailiffLink,
+        newPage: yourApplication.hceoPageTitle
+      });
+      await performAction('expandSummary', yourApplication.summarySaveApplication);
+      await performAction('selectApplicationType', {
+        question: yourApplication.typeOfApplicationQuestion,
+        option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
+        nextPage: peopleWillBeEvicted.mainHeaderWarrantOfRestitution
+      });
+      await performAction('reTryOnCallBackError', peopleYouWantToEvict.continueButton, shareEvidenceWithJudge.mainHeader);
+      await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: explainHowDefendantsReturned.errorValidation,
+        validationType: explainHowDefendantsReturned.errorValidationType.two,
+        inputArray: explainHowDefendantsReturned.errorValidationField.errorTextField,
+        header: explainHowDefendantsReturned.eventCouldNotBeCreatedErrorMessage,
+        label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
+        button: explainHowDefendantsReturned.continueButton
+      });
+      await performAction('provideHowDefendantReturnToProperty', {
+        label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
+        input: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextInput,
+        nextPage: provideEvidence.mainHeader
+      });
+      await performAction('uploadEvidenceThatDefendantsAreAtProperty', {
+        documents: [
+          { type: evidenceUpload.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel }
+        ],
+        nextPage: warrantOfRestitutionAnyoneAtPropertyRiskIntro.mainHeader
+      });
+      await performAction('reTryOnCallBackError', warrantOfRestitutionAnyoneAtPropertyRiskIntro.continueButton, everyoneLivingAtTheProperty.mainHeader);
+      await performAction('validatePrePopulatedData', {
+        testPage: everyoneLivingAtTheProperty.mainHeader,
+        question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
+      },
+        {
+          expectedValue: enforceWarrantApiData.enforceCasePayloadNoJourney.warrantAnyRiskToBailiff
+        });
+      await performAction('reTryOnCallBackError', everyoneLivingAtTheProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
+
+    });
+
 });
