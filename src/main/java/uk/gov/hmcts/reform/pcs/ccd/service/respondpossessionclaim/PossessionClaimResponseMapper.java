@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -39,7 +38,6 @@ public class PossessionClaimResponseMapper {
      */
     public PossessionClaimResponse mapFrom(PCSCase pcsCase, PartyEntity matchedDefendant) {
         DefendantContactDetails contactDetails = buildContactDetails(pcsCase, matchedDefendant);
-        DefendantResponses responses = DefendantResponses.builder().build();
 
         // Extract org names from CLAIMANT-role parties (pre-filtered by PCSCaseView.getPartyMap)
         List<ListValue<String>> claimantOrgs = extractClaimantOrganisations(pcsCase);
@@ -47,7 +45,6 @@ public class PossessionClaimResponseMapper {
         return PossessionClaimResponse.builder()
             .claimantOrganisations(claimantOrgs)
             .defendantContactDetails(contactDetails)
-            .defendantResponses(responses)
             .build();
     }
 

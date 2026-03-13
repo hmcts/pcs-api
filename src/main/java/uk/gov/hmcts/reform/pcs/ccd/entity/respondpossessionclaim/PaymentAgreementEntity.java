@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity.claim;
+package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -18,44 +19,50 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
-@Builder
+@Table(name = "payment_agreement")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "statement_of_truth")
-public class StatementOfTruthEntity {
+public class PaymentAgreementEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne
-    @JsonBackReference
-    private ClaimEntity claim;
-
-    @OneToOne(mappedBy = "statementOfTruth", fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "defendant_response_id")
     @JsonBackReference
     private DefendantResponseEntity defendantResponse;
 
     @Enumerated(EnumType.STRING)
-    private StatementOfTruthCompletedBy completedBy;
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo anyPaymentsMade;
+
+    private String paymentDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo accepted;
+    private YesOrNo paidMoneyToHousingOrg;
 
-    private String fullName;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesNoNotSure repaymentPlanAgreed;
 
-    private String firmName;
+    private String repaymentAgreedDetails;
 
-    private String positionHeld;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo repayArrearsInstalments;
 
+    private BigDecimal additionalRentContribution;
+
+    private String additionalContributionFrequency;
 }
