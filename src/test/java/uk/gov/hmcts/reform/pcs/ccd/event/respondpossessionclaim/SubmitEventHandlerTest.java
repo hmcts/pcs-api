@@ -17,9 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 
 import java.util.Optional;
 
@@ -79,13 +79,41 @@ class SubmitEventHandlerTest {
         );
     }
 
+    @Test
+    void shouldReturnErrorWhenDefendantResponsesIsNull() {
+        // Given
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(null)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNotNull();
+        assertThat(result.getErrors()).hasSize(1);
+        assertThat(result.getErrors().getFirst())
+            .isEqualTo("Invalid submission: missing defendant response data");
+
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(anyLong(), eq(respondPossessionClaim));
+        verify(claimResponseService, never()).saveDraftData(any(), anyLong());
+        verify(defendantResponseService, never()).saveDefendantResponse(anyLong(), any());
+    }
+
     // ========== INDEPENDENT FIELD SUBMISSION TESTS ==========
 
     @Test
     void shouldAllowSubmitWithOnlyDefendantResponses() {
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
-            .oweRentArrears(YesNoNotSure.NO)
+            .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
         PCSCase caseData = createDraftSaveCaseData(null, responses);
@@ -97,7 +125,7 @@ class SubmitEventHandlerTest {
 
         assertThat(result.getErrors()).isNullOrEmpty();
         verify(claimResponseService).saveDraftData(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
-        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, responses);
+        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, caseData.getPossessionClaimResponse());
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 

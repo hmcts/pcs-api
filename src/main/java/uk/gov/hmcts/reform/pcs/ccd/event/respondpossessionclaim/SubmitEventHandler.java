@@ -9,9 +9,9 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
 import java.util.List;
@@ -48,6 +48,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return error("Invalid submission: missing response data");
         }
 
+        if (possessionClaimResponse.getDefendantResponses() == null) {
+            log.error("Submit failed for case {}: defendantResponses is null", caseReference);
+            return error("Invalid submission: missing defendant response data");
+        }
         return null;
     }
 
@@ -66,7 +70,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .saveDraftData(responseDraftData, caseReference);
 
         defendantResponseService.saveDefendantResponse(caseReference,
-            responseDraftData.getDefendantResponses());
+            responseDraftData);
 
         //delete draft as it's no longer needed
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
