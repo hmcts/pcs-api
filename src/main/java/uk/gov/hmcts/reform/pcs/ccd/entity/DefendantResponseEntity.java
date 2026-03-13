@@ -18,10 +18,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -55,6 +56,12 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "tenancy_start_date_confirmation")
+    private YesNoNotSure tenancyStartDateConfirmation;
+
+    @Column(name = "tenancy_start_date")
+    private LocalDate tenancyStartDate;
+
     @Column(name = "landlord_registered")
     private YesNoNotSure landlordRegistered;
 }

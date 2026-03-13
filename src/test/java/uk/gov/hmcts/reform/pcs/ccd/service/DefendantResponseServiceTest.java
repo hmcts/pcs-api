@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -388,5 +389,105 @@ class DefendantResponseServiceTest {
 
         // 5. Save (only locks new row)
         verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
+    }
+
+    @Test
+    void shouldNotSaveDefendantResponseWhenTenancyDateIsEmpty() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyStartDate(null)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+        assertThat(saved.getTenancyStartDate()).isNull();
+    }
+
+    @Test
+    void shouldSaveDefendantResponseWhenTenancyDateIsPresent() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+
+        LocalDate date = LocalDate.of(2023, 7, 1);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyStartDateConfirmation(YesNoNotSure.YES)
+            .tenancyStartDate(date)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+        assertThat(saved.getTenancyStartDateConfirmation()).isEqualTo(YesNoNotSure.YES);
+        assertThat(saved.getTenancyStartDate()).isEqualTo(date);
+    }
+
+    @ParameterizedTest
+    @MethodSource("tenancyStartDateConfirmationScenarios")
+    void shouldSaveDefendantResponseWithTenancyStartDateConfirmation(
+        YesNoNotSure tenancyStartDateConfirmation,
+        LocalDate inputTenancyStartDate,
+        LocalDate expectedSavedTenancyStartDate
+    ) {
+
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(CLAIM_ID));
+        when(partyRepository.getReferenceById(PARTY_ID))
+            .thenReturn(partyEntity);
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
+            .tenancyStartDate(inputTenancyStartDate)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+
+        DefendantResponseEntity saved = responseCaptor.getValue();
+
+        assertThat(saved.getTenancyStartDateConfirmation()).isEqualTo(tenancyStartDateConfirmation);
+        assertThat(saved.getTenancyStartDate()).isEqualTo(expectedSavedTenancyStartDate);
+    }
+
+    private static Stream<Arguments> tenancyStartDateConfirmationScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES, LocalDate.of(2007, 7, 7), LocalDate.of(2007, 7, 7)),
+            Arguments.of(YesNoNotSure.NOT_SURE, LocalDate.of(2012, 9, 11), null),
+            Arguments.of(YesNoNotSure.NO, null, null),
+            Arguments.of(YesNoNotSure.NO, LocalDate.of(2024, 5, 15), LocalDate.of(2024, 5, 15))
+        );
     }
 }
