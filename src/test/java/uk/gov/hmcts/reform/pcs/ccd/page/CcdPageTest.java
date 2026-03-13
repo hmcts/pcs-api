@@ -8,19 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CcdPageTest {
 
     @Test
-    void shouldReturnClassNameWithoutPageSuffixIfFound() {
-        // Given
-        Class<? extends CcdPage> clazz = VulnerableAdultsChildrenPage.class;
-
-        // When
-        String pageId = CcdPage.derivePageKey(clazz);
-
-        // Then
-        assertThat(pageId).isEqualTo("VulnerableAdultsChildren");
-    }
-
-    @Test
-    void shouldDecapitalizeLeadingCharacter() {
+    void shouldReturnClassNameWithoutPageSuffixAndLeadingLowerCaseCharIfFound() {
         // Given
         Class<? extends CcdPage> clazz = VulnerableAdultsChildrenPage.class;
 
