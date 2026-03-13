@@ -28,3 +28,4 @@ export * from '@data/page-data/page-data-enforcement/evidenceUpload.page.data';
 export * from '@data/page-data/page-data-enforcement/explainHowDefendants.page.data';
 export * from '@data/page-data/page-data-enforcement/shareEvidenceWithJudge.page.data';
 export * from '@data/page-data/page-data-enforcement/provideEvidence.page.data';
+export * from '@data/page-data/page-data-enforcement/warrantOfRestitutionAnyoneAtPropertyRiskIntro.page.data';

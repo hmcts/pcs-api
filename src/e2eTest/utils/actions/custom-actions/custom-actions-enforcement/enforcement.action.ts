@@ -1,7 +1,7 @@
 import { expect, Page } from '@playwright/test';
 import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
-import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
+import { IAction, actionRecord } from '@utils/interfaces/action.interface';
 import {
   yourApplication,
   nameAndAddressForEviction,
@@ -43,7 +43,7 @@ export const moneyMap = new Map<string, number>();
 export const fieldsMap = new Map<string, string>();
 
 export class EnforcementAction implements IAction {
-  async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
+  async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
@@ -75,6 +75,7 @@ export class EnforcementAction implements IAction {
       ['selectStatementOfTruthWrit', () => this.selectStatementOfTruthWrit(fieldName as actionRecord, page)],
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
+      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord, data as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -448,6 +449,20 @@ export class EnforcementAction implements IAction {
       }
     }
     await performAction('reTryOnCallBackError', evidenceUpload.continueButton, uploadEvidence.nextPage as string);
+
+  }
+
+  private async validatePrePopulatedData(prePopulatedData: actionRecord, expectedVal: actionRecord) {
+
+    switch (prePopulatedData.testPage) {
+
+      case 'Everyone living at the property':
+        await performValidation('validateRadioButtonValues', { question: prePopulatedData.question }, { expected: expectedVal.expectedValue });
+        break;
+
+      default:
+        break;
+    }
 
   }
 
