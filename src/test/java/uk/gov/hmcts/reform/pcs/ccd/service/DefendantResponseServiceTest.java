@@ -473,7 +473,7 @@ class DefendantResponseServiceTest {
 
     @Test
     void shouldNotSaveDefendantResponseWhenTenancyDateIsEmpty() {
-        // Given
+
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
@@ -482,15 +482,18 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyStartDate(null)
             .build();
 
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
 
-        // Then
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
         verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity saved = responseCaptor.getValue();
         assertThat(saved.getTenancyStartDate()).isNull();
@@ -507,6 +510,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         LocalDate date = LocalDate.of(2023, 7, 1);
 
@@ -515,8 +519,12 @@ class DefendantResponseServiceTest {
             .tenancyStartDate(date)
             .build();
 
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
@@ -544,14 +552,19 @@ class DefendantResponseServiceTest {
         when(partyRepository.getReferenceById(PARTY_ID))
             .thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(inputTenancyStartDate)
             .build();
 
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
