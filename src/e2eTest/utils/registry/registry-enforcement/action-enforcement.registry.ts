@@ -54,6 +54,7 @@ export class ActionEnforcementRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
+    ['enforceCaseAPI', new CreateCaseAPIAction()],
     ['provideMoneyOwed', new EnforcementAction()],
     ['provideLegalCosts', new EnforcementAction()],
     ['provideLandRegistryFees', new EnforcementAction()],
@@ -66,7 +67,8 @@ export class ActionEnforcementRegistry {
     ['uploadEvidenceThatDefendantsAreAtProperty', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
     ['generateRandomString', new EnforcementAction()],
-    ['uploadFile', new UploadFileAction()]
+    ['uploadFile', new UploadFileAction()],
+    ['validatePrePopulatedData', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {
