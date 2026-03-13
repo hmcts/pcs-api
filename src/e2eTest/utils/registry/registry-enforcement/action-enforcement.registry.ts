@@ -55,6 +55,7 @@ export class ActionEnforcementRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
+    ['enforceCaseAPI', new CreateCaseAPIAction()],
     ['provideMoneyOwed', new EnforcementAction()],
     ['provideLegalCosts', new EnforcementAction()],
     ['provideLandRegistryFees', new EnforcementAction()],
@@ -86,7 +87,8 @@ export class ActionEnforcementRegistry {
     ['errorValidationYourHCEOPage', new ErrorValidationAction()],
     ['errorValidationHowDefendantsEnteredPage', new ErrorValidationAction()],
     ['errorValidationExplainHowDefendantsEnteredPage', new ErrorValidationAction()],
-    ['uploadFile', new UploadFileAction()]
+    ['uploadFile', new UploadFileAction()],
+    ['validatePrePopulatedData', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {
