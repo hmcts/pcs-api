@@ -74,7 +74,7 @@ export class EnforcementAction implements IAction {
       ['selectStatementOfTruthWrit', () => this.selectStatementOfTruthWrit(fieldName as actionRecord, page)],
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
-      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord, data as actionRecord)],
+      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -450,7 +450,7 @@ export class EnforcementAction implements IAction {
 
   }
 
-  private async validatePrePopulatedData(prePopulatedData: actionRecord, expectedVal: actionRecord) {
+  private async validatePrePopulatedData(prePopulatedData: actionRecord) {
 
     await test.step(`PrePopulated data validation`, async () => {
       const page = prePopulatedData?.testPage ?? 'Unknown';
