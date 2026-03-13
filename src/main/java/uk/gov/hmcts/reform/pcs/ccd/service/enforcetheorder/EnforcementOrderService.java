@@ -32,11 +32,6 @@ public class EnforcementOrderService {
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
-        if (claimEntity == null) {
-            log.debug("No claim entities found for PCS case when retrieving enforcement order for caseReference={}",
-                      caseReference);
-            return null;
-        }
         Set<EnforcementOrderEntity> enforcementEntitySet = claimEntity.getEnforcementOrders();
         if (CollectionUtils.isEmpty(enforcementEntitySet)) {
             return null;
@@ -54,9 +49,6 @@ public class EnforcementOrderService {
     ClaimEntity retrieveClaimEntity(PcsCaseEntity pcsCaseEntity) {
         List<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
 
-        if (CollectionUtils.isEmpty(claimEntities)) {
-            return null;
-        }
         // Assuming 1 claim per PcsCase
         return claimEntities.getFirst();
     }
@@ -71,10 +63,6 @@ public class EnforcementOrderService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
-        if (claimEntity == null) {
-            throw new IllegalStateException("Cannot create enforcement order because no claim entity exists for "
-                                            + "caseReference=" + caseReference);
-        }
 
         EnforcementOrderEntity orderEntity = enforcementOrderRepository
             .save(mapToEntity(enforcementOrder, claimEntity));

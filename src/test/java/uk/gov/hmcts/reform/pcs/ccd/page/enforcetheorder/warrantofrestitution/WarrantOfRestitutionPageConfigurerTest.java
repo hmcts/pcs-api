@@ -26,8 +26,9 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
 
     @Mock
     private ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
+
     @Mock
-    private VulnerableAdultsChildrenPlaceholderPage vulnerableAdultsChildrenPlaceholderPage;
+    private VulnerableAdultsChildrenWarrantRestPage vulnerableAdultsChildrenWarrantRestPage;
 
     @InjectMocks
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
@@ -46,7 +47,7 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         InOrder inOrder = Mockito.inOrder(pageBuilder);
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
-        verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder.class,
+        verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedWarrantRestPlaceholder.class,
                 verificationCount);
         verifyAndCount(inOrder, pageBuilder, ShareEvidenceWithJudgePage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, explainHowDefendantsReturnedPage, verificationCount);
@@ -55,7 +56,8 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, LivingInThePropertyPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EvictionDelayWarningPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EvictionRisksPosedPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, vulnerableAdultsChildrenPlaceholderPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, vulnerableAdultsChildrenWarrantRestPage.getClass(), verificationCount);
+        verifyAndCount(inOrder, pageBuilder, PropertyAccessDetailsWarrantRestPlaceholder.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);
