@@ -18,4 +18,16 @@ class CcdPageTest {
         // Then
         assertThat(pageId).isEqualTo("VulnerableAdultsChildren");
     }
+
+    @Test
+    void shouldDecapitalizeLeadingCharacter() {
+        // Given
+        Class<? extends CcdPage> clazz = VulnerableAdultsChildrenPage.class;
+
+        // When
+        String pageId = CcdPage.derivePageKey(clazz);
+
+        // Then
+        assertThat(pageId).isEqualTo("vulnerableAdultsChildren");
+    }
 }
