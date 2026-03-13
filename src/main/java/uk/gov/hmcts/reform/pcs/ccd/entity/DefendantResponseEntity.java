@@ -62,6 +62,8 @@ public class DefendantResponseEntity {
     @Column(name = "tenancy_start_date")
     private LocalDate tenancyStartDate;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "landlord_registered")
     private YesNoNotSure landlordRegistered;
 }
