@@ -8,9 +8,10 @@ import {MainHeaderValidation} from '@utils/validations/element-validations/pageH
 import {ErrorMessageValidation} from '@utils/validations/element-validations/error-message.validation';
 import {RadioButtonValidation} from '@utils/validations/element-validations/radioButton.validation';
 import {InputErrorValidation} from "@utils/validations/element-validations/inputError.validation";
+import {ValidatePrePopulatedValues} from '@utils/validations/element-validations/validatePrePopulatedValues.validation';
 
 export class ValidationRegistry {
-  private static validations: Map<string, IValidation> = new Map([
+  private static validations: Map<string, IValidation> = new Map<string, IValidation>([
     ['text', new TextValidation()],
     ['bannerAlert', new BannerAlertValidation()],
     ['formLabelValue', new FormLabelValueValidation()],
@@ -22,6 +23,7 @@ export class ValidationRegistry {
     ['elementNotToBeVisible', new VisibilityValidation()],
     ['waitUntilElementDisappears', new VisibilityValidation()],
     ['inputError', new InputErrorValidation()],
+    ['validateRadioButtonValues', new ValidatePrePopulatedValues()]
   ]);
 
   static getValidation(validationType: string): IValidation {

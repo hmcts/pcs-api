@@ -50,9 +50,18 @@ export async function performAction(action: string, fieldName?: actionData | act
 
 export async function performValidation(validation: string, inputFieldName: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
   const executor = getExecutor();
-  const [fieldName, data] = typeof inputFieldName === 'string'
-    ? [inputFieldName, inputData]
-    : ['', inputFieldName];
+
+  let fieldName: any;
+  let data: any;
+
+  if (typeof inputFieldName === 'object' && inputFieldName !== null && !Array.isArray(inputFieldName) && inputData !== null && typeof inputData === 'object') {
+    [fieldName, data] = [inputFieldName, inputData];
+  } else if (typeof inputFieldName === 'string') {
+    [fieldName, data] = [inputFieldName, inputData];
+  } else {
+    [fieldName, data] = ['', inputFieldName];
+  }
+
   const validationInstance = ValidationRegistry.getValidation(validation);
   await test.step(`Validated ${validation} - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
