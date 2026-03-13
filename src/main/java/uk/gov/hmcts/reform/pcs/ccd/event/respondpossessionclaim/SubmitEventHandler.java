@@ -68,6 +68,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return error("Invalid submission: missing response data");
         }
 
+        // Only persist the defendant response and its related entities if there is actual defendant response draft data
         if (possessionClaimResponse.getDefendantResponses() == null) {
             log.error("Submit failed for case {}: defendant responses is null", caseReference);
             return error("Invalid submission: missing defendant response data");
