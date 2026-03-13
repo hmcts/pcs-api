@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionRecord } from '@utils/interfaces/action.interface';
@@ -452,21 +452,29 @@ export class EnforcementAction implements IAction {
 
   private async validatePrePopulatedData(prePopulatedData: actionRecord, expectedVal: actionRecord) {
 
-    switch (prePopulatedData.testPage) {
+    await test.step(`PrePopulated data validation`, async () => {
+      const page = prePopulatedData?.testPage ?? 'Unknown';
+      const count = Array.isArray(prePopulatedData?.inputData)
+        ? prePopulatedData.inputData.length
+        : prePopulatedData?.inputData ? 1 : 0;
+        expect(page,`Validation of prepopulated data started for page => [${page}] and the number of elements getting validated is : [${count}]`).not.toBe('Unknown');
+    });
+    const items = Array.isArray(prePopulatedData.inputData)
+      ? prePopulatedData.inputData
+      : [prePopulatedData.inputData];
 
-      case 'Everyone living at the property':
-        await performValidation('validateRadioButtonValues', { question: prePopulatedData.question }, { expected: expectedVal.expectedRadioValue });
-        break;
+    for (const item of items) {
+      switch (item.type) {
+        case 'radio':
+          await performValidation('validateRadioButtonValues', { question: item.inputRadioQuestion }, { expected: item.expectedAnswer });
+          break;
 
-      case 'Access to the property':
-        await performValidation('validateRadioButtonValues', { question: prePopulatedData.question }, { expected: expectedVal.expectedRadioValue });
-        if (expectedVal.expectedRadioValue === 'YES') {
-          await performValidation('validateInputTextValues', { textLabel: prePopulatedData.textLabel }, { expected: expectedVal.expectedTextValue });
-        }
-        break;
-
-      default:
-        break;
+        case 'inputText':
+          await performValidation('validateInputTextValues', { textLabel: item.inputTextLabel }, { expected: item.expectedAnswer });
+          break
+        default:
+          break;
+      }
     }
 
   }

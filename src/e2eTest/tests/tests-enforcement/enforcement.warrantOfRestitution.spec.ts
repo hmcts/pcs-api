@@ -163,17 +163,18 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         ],
         nextPage: accessToTheProperty.mainHeader
       });
-      
+
       await performAction('validatePrePopulatedData', {
         testPage: accessToTheProperty.mainHeader,
-        question: accessToTheProperty.accessToThePropertyQuestion,
-        textLabel: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel
-      },
-        {
-          expectedRadioValue: enforceWarrantApiData.enforceCasePayloadYesJourney.warrantIsDifficultToAccessProperty,
-          expectedTextValue: enforceWarrantApiData.enforceCasePayloadYesJourney.warrantClarificationOnAccessDifficultyText
-        });
-        await performAction('reTryOnCallBackError', accessToTheProperty.continueButton, anythingElseHelpWithEviction.mainHeader);      
+        inputData:
+          [
+            { type: 'radio', inputRadioQuestion: accessToTheProperty.accessToThePropertyQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.warrantIsDifficultToAccessProperty },
+            {
+              type: 'inputText', inputTextLabel: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.warrantClarificationOnAccessDifficultyText
+            }
+          ]
+      });
+      await performAction('reTryOnCallBackError', accessToTheProperty.continueButton, anythingElseHelpWithEviction.mainHeader);
     });
 
   test('Warrant - Apply for a Warrant of Restitution - Warrant with all NO selection - no update on prepopulated data  @allNO @enforcement @PR',
@@ -212,17 +213,12 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
           { type: evidenceUpload.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
         ],
         nextPage: accessToTheProperty.mainHeader
-      }); 
+      });
       await performAction('validatePrePopulatedData', {
         testPage: accessToTheProperty.mainHeader,
-        question: accessToTheProperty.accessToThePropertyQuestion,
-        textLabel: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel
-      },
-        {
-          expectedRadioValue: enforceWarrantApiData.enforceCasePayloadNoJourney.warrantIsDifficultToAccessProperty,
-          expectedTextValue: enforceWarrantApiData.enforceCasePayloadNoJourney.warrantClarificationOnAccessDifficultyText
-        });
-        await performAction('reTryOnCallBackError', accessToTheProperty.continueButton, anythingElseHelpWithEviction.mainHeader);
+        inputData: { type: 'radio', inputRadioQuestion: accessToTheProperty.accessToThePropertyQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadNoJourney.warrantIsDifficultToAccessProperty }
+      });
+      await performAction('reTryOnCallBackError', accessToTheProperty.continueButton, anythingElseHelpWithEviction.mainHeader);
     });
 
 });
