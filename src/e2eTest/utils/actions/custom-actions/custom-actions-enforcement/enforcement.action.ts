@@ -336,7 +336,6 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: landRegistry.question, option: landRegistry.option });
-    //if (landRegistry.option === accessToTheProperty.yesRadioOption) {
     if (landRegistry.option === propertyAccessDetails.yesRadioOption) {
       const langRegistryAmtEntered = EnforcementCommonUtils.getRandomElementForAnArray(landRegistry.input as Array<string>)
       await performAction('inputText', landRegistry.label, langRegistryAmtEntered);
