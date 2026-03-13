@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -66,4 +67,12 @@ public class DefendantResponseEntity {
     @CCD(typeOverride = FieldType.MoneyGBP)
     @JacksonMoneyGBP
     private BigDecimal rentArrearsAmount;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "tenancy_start_date_confirmation")
+    private YesNoNotSure tenancyStartDateConfirmation;
+
+    @Column(name = "tenancy_start_date")
+    private LocalDate tenancyStartDate;
 }
