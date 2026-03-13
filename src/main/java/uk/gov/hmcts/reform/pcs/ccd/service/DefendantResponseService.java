@@ -99,7 +99,6 @@ public class DefendantResponseService {
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
             .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
-            .rentArrearsAmount(responses.getRentArrearsAmount())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
                 tenancyStartDateConfirmation != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE

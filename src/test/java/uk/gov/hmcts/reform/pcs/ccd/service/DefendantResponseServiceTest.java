@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
@@ -344,65 +343,6 @@ class DefendantResponseServiceTest {
 
         // 5. Save (only locks new row)
         verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
-    }
-
-    @Test
-    void shouldSaveRentArrearsAmountUpToOneBillion() {
-        // Given - Maximum allowed amount (1 billion)
-        BigDecimal oneBillion = new BigDecimal("1000000000.00");
-
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .rentArrearsAmountConfirmation(YesNoNotSure.YES)
-            .rentArrearsAmount(oneBillion)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.YES);
-        assertThat(savedResponse.getRentArrearsAmount()).isEqualByComparingTo(oneBillion);
-    }
-
-    @Test
-    void shouldSaveRentArrearsAmountWithDecimalPlaces() {
-        // Given - Amount with pennies
-        BigDecimal amountWithPennies = new BigDecimal("999999999.99");
-
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .rentArrearsAmountConfirmation(YesNoNotSure.NO)
-            .rentArrearsAmount(amountWithPennies)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getRentArrearsAmount()).isEqualByComparingTo(amountWithPennies);
     }
 
     @Test
