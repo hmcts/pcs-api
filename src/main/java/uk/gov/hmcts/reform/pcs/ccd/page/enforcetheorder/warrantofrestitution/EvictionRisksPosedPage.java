@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW;
@@ -26,8 +26,8 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             )
             .label("warrantOfRestitutionEvictionRisksPosed-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getWarrantDetails)
-            .mandatory(WarrantDetails::getRiskCategories)
+            .complex(EnforcementOrder::getWarrantOfRestitutionDetails)
+            .mandatory(WarrantOfRestitutionDetails::getRiskCategories)
             .done()
             .done()
             .label("warrantOfRestitutionEvictionRisksPosed-save-and-return", SAVE_AND_RETURN);
@@ -36,10 +36,10 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
-        WarrantDetails warrantDetails = data.getEnforcementOrder().getWarrantDetails();
+        WarrantOfRestitutionDetails warrantRestDetails = data.getEnforcementOrder().getWarrantOfRestitutionDetails();
 
-        if (warrantDetails.getRiskDetails() == null) {
-            warrantDetails.setRiskDetails(RiskDetails.builder().build());
+        if (warrantRestDetails.getRiskDetails() == null) {
+            warrantRestDetails.setRiskDetails(RiskDetails.builder().build());
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
