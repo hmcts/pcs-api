@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.citizen.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
@@ -502,5 +503,8 @@ public class PCSCase {
     @SuppressWarnings("MemberName") // Field name is case-sensitive in CCD
     @JsonProperty("SearchCriteria")
     private SearchCriteria searchCriteria;
+
+    @CCD(access = DefendantAccess.class)
+    private CitizenGenAppRequest citizenGenAppRequest;
 
 }
