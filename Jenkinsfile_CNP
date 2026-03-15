@@ -16,6 +16,7 @@ def secrets = [
     secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
     secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
+    secret('idam-testing-support-url', 'IDAM_TESTING_SUPPORT_URL'),
     secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
     secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
     secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
@@ -45,7 +46,6 @@ withPipeline(type, product, component) {
   enableDbMigration('pcs')
 
   onPR() {
-    env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
     enablePactAs([
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
@@ -53,6 +53,7 @@ withPipeline(type, product, component) {
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
+      env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
       enableHighLevelDataSetup()
     } else {
       env.CCD_ENABLED = "false"
@@ -75,7 +76,7 @@ withPipeline(type, product, component) {
     ])
     enableHighLevelDataSetup("", true)
     setAatEnvVars()
-//    enableE2eTest() TODO: Re-enable when AAT staging can be used for e2e testing
+    enableE2eTest()
   }
 
   onDemo {
@@ -105,7 +106,6 @@ withPipeline(type, product, component) {
       generateDefinitions(builder)
       env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
       env.CASE_TYPE_SUFFIX=""
-      env.CCD_ENABLED = "true"
     }
     onPerftest{
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
@@ -113,6 +113,11 @@ withPipeline(type, product, component) {
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-perftest.service.core-compute-perftest.internal"
     }
     generateDefinitions(builder)
+  }
+
+  before('smoketest:aat') {
+    env.CASE_TYPE_SUFFIX="staging"
+    env.CCD_ENABLED = "true"
   }
 
   afterAlways('smoketest:preview') {

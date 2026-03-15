@@ -1,6 +1,7 @@
 import { expect, Page } from '@playwright/test';
-import { performAction, performValidation } from '@utils/controller-enforcement';
-import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
+import path from 'path';
+import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
+import { IAction, actionRecord } from '@utils/interfaces/action.interface';
 import {
   yourApplication,
   nameAndAddressForEviction,
@@ -21,7 +22,9 @@ import {
   enterDefendantsDOB,
   suspendedOrder,
   confirmHCEOHired,
-  yourHCEO} from '@data/page-data/page-data-enforcement';
+  yourHCEO,
+  evidenceUpload
+} from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
@@ -39,7 +42,7 @@ export const moneyMap = new Map<string, number>();
 export const fieldsMap = new Map<string, string>();
 
 export class EnforcementAction implements IAction {
-  async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
+  async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
@@ -69,7 +72,9 @@ export class EnforcementAction implements IAction {
       ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord, page)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord, page)],
       ['selectStatementOfTruthWrit', () => this.selectStatementOfTruthWrit(fieldName as actionRecord, page)],
+      ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
+      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord, data as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -105,7 +110,7 @@ export class EnforcementAction implements IAction {
     if (applicationType.option === 'Writ of possession' && applicationType.option1 !== 'No') {
       await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
       await performAction('reTryOnCallBackError', yourApplication.continueButton, applicationType.nextPage as string);
-    } else if (applicationType.option === 'Warrant of possession'|| applicationType.option === 'Warrant of restitution') {
+    } else if (applicationType.option === 'Warrant of possession' || applicationType.option === 'Warrant of restitution') {
       await performAction('reTryOnCallBackError', yourApplication.continueButton, applicationType.nextPage as string);
     }
 
@@ -426,6 +431,39 @@ export class EnforcementAction implements IAction {
     await performAction('reTryOnCallBackError', statementOfTruthOne.continueButton, claimantSOT.nextPage as string);
   }
 
+  private async uploadEvidenceThatDefendantsAreAtProperty(uploadEvidence: actionRecord, page: Page) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    if (Array.isArray(uploadEvidence.documents)) {
+      for (let fileIndex = 0; fileIndex < uploadEvidence.documents.length; fileIndex++) {
+        const document = uploadEvidence.documents[fileIndex];
+        const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, document.label as string, document.description as number);
+        await performActions(
+          'Add Document',
+          ['uploadFile', document.fileName],
+          ['select', { dropdown: document.docType, index: fileIndex }, document.type],
+          ['inputText', { text: document.label, index: fileIndex }, testInput]
+        );
+      }
+    }
+    await performAction('reTryOnCallBackError', evidenceUpload.continueButton, uploadEvidence.nextPage as string);
+
+  }
+
+  private async validatePrePopulatedData(prePopulatedData: actionRecord, expectedVal: actionRecord) {
+
+    switch (prePopulatedData.testPage) {
+
+      case 'Everyone living at the property':
+        await performValidation('validateRadioButtonValues', { question: prePopulatedData.question }, { expected: expectedVal.expectedValue });
+        break;
+
+      default:
+        break;
+    }
+
+  }
+
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
     if (validationArr.validationReq === 'YES') {
@@ -492,11 +530,52 @@ export class EnforcementAction implements IAction {
               await performAction('check', validationArr.checkBox);
               break;
 
+            case 'addDocument':
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              }).toPass({
+                timeout: VERY_LONG_TIMEOUT,
+              });
+              await performAction('clickButton', 'Add new');
+              break;
+
+            case 'dropDown':
+              await performAction('clickButton', validationArr.button);
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              }).toPass({
+                timeout: VERY_LONG_TIMEOUT,
+              });
+              await performAction('select', validationArr.docType, validationArr.type);
+              break;
+
+            case 'upLoad':
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                if (item.type === 'invalid') {
+                  const fileInput = page.locator('input[type="file"].form-control.bottom-30');
+                  const filePath = path.resolve(__dirname, '../../../../data/inputFiles', item.file);
+                  await fileInput.last().setInputFiles(filePath);
+                  await performValidation('inputError', validationArr.label, item.errMessage);
+                } else {
+                  await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+                }
+              }).toPass({
+                timeout: VERY_LONG_TIMEOUT,
+              });
+              break;
+
             default:
               throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
           };
         }
       }
+    }
+    if (validationArr.buttonRemove) {
+      await performAction('removeFile');
+      await page.waitForTimeout(6000);
     }
   }
 

@@ -4,15 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -35,10 +35,10 @@ import java.util.UUID;
 @Transactional
 public class DefendantResponseService {
 
+    private final PartyService partyService;
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final DefendantResponseRepository defendantResponseRepository;
-    private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
 
     /**
@@ -81,16 +81,7 @@ public class DefendantResponseService {
             return;
         }
 
-        UUID caseId = pcsCaseRepository.findByCaseReference(caseReference)
-            .map(PcsCaseEntity::getId)
-            .orElseThrow(() -> new IllegalStateException(
-                "No case found for case reference: " + caseReference));
-
-        PartyEntity party = partyRepository.findByIdamIdAndPcsCaseId(userId, caseId)
-            .orElseThrow(() -> new IllegalStateException(
-                "No party found for IDAM ID: " + userId + " and case reference: " + caseReference));
-
-        UUID partyId = party.getId();
+        UUID partyId = partyService.getPartyEntityByIdamId(userId, caseReference).getId();
 
         UUID claimId = claimRepository.findIdByCaseReference(caseReference)
             .orElseThrow(() -> {
@@ -102,11 +93,17 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
+        YesNoNotSure tenancyStartDateConfirmation = responses.getTenancyStartDateConfirmation();
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
-            .tenancyStartDate(responses.getTenancyStartDate())
+            .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
+            .tenancyStartDate(
+                responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
+                    ? responses.getTenancyStartDate()
+                    : null
+            )
             .build();
 
         defendantResponseRepository.save(defendantResponse);
