@@ -25,12 +25,10 @@ public class CaseNameHmctsFormatter {
      */
     public void setCaseNameHmctsField(final PCSCase pcsCase) {
 
-        ClaimantInformation claimantInformation = getClaimantInfo(pcsCase);
-        Objects.requireNonNull(claimantInformation, "Claimant must be provided");
-
         final List<ListValue<Party>> defendants = pcsCase.getAllDefendants();
+        final List<ListValue<Party>> claimants = pcsCase.getAllClaimants();
 
-        final String formattedCaseName = getFormattedClaimantName(claimantInformation)
+        final String formattedCaseName = getFormattedClaimantName(claimants)
             + " vs " + getFormattedDefendantName(defendants);
 
         pcsCase.setCaseNameHmctsRestricted(formattedCaseName);
@@ -38,12 +36,16 @@ public class CaseNameHmctsFormatter {
         pcsCase.setCaseNamePublic(formattedCaseName);
     }
 
-    private String getFormattedClaimantName(ClaimantInformation claimantInformation) {
+    private String getFormattedClaimantName(final List<ListValue<Party>> claimants) {
         StringBuilder formattedClaimantName = new StringBuilder();
-        if (claimantInformation != null && claimantInformation.getOrgNameFound() == YesOrNo.NO) {
-            formattedClaimantName.append(claimantInformation.getFallbackClaimantName());
-        } else {
-            formattedClaimantName.append(claimantInformation.getClaimantName());
+        if (claimants != null && !claimants.isEmpty()) {
+            formattedClaimantName.append(claimants.stream()
+                                             .findFirst()
+                                             .map(claimant ->
+                                                                                claimant.getValue().getOrgName()!=null?
+                                                                                claimant.getValue().getOrgName():
+                                                                                claimant.getValue().getLastName())
+                                             .orElse(null));
         }
         return formattedClaimantName.toString();
     }
@@ -62,10 +64,5 @@ public class CaseNameHmctsFormatter {
             formattedDefendantName.append("persons unknown");
         }
         return formattedDefendantName.toString();
-    }
-
-    private ClaimantInformation getClaimantInfo(PCSCase caseData) {
-        return Optional.ofNullable(caseData.getClaimantInformation())
-            .orElse(ClaimantInformation.builder().build());
     }
 }

@@ -4,8 +4,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
@@ -29,13 +27,16 @@ class CaseNameHmctsFormatterTest {
     private CaseNameHmctsFormatter underTest;
 
     @Mock
-    private ClaimantInformation claimantInformation;
+    private ListValue<Party> defendantPartyListValue;
 
     @Mock
-    private ListValue<Party> partyListValue;
+    private ListValue<Party> claimantListValue;
 
     @Mock
-    private Party party;
+    private Party defendantParty;
+
+    @Mock
+    private Party claimantParty;
 
     @BeforeEach
     void setUp() {
@@ -45,12 +46,12 @@ class CaseNameHmctsFormatterTest {
 
     @Test
     void shouldSetCaseNameWhenClaimantIsOrgAndDefendantIsKnown() {
-        when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-        when(claimantInformation.getOrgNameFound()).thenReturn(YesOrNo.YES);
-        when(pcsCase.getAllDefendants()).thenReturn(List.of(partyListValue));
-        when(claimantInformation.getClaimantName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
-        when(partyListValue.getValue()).thenReturn(party);
-        when(party.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
+        when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
+        when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
+        when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
+        when(claimantListValue.getValue()).thenReturn(claimantParty);
+        when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
+        when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
 
         underTest.setCaseNameHmctsField(pcsCase);
 
@@ -62,12 +63,12 @@ class CaseNameHmctsFormatterTest {
 
     @Test
     void shouldSetCaseNameWhenClaimantIsCitizenAndDefendantIsKnown() {
-        when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-        when(claimantInformation.getOrgNameFound()).thenReturn(YesOrNo.NO);
-        when(pcsCase.getAllDefendants()).thenReturn(List.of(partyListValue));
-        when(claimantInformation.getFallbackClaimantName()).thenReturn(CLAIMANT_NAME);
-        when(partyListValue.getValue()).thenReturn(party);
-        when(party.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
+        when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
+        when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
+        when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
+        when(claimantListValue.getValue()).thenReturn(claimantParty);
+        when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
+        when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
 
         underTest.setCaseNameHmctsField(pcsCase);
 
@@ -79,11 +80,12 @@ class CaseNameHmctsFormatterTest {
 
     @Test
     void shouldSetCaseNameWhenClaimantIsOrgAndMultipleDefendants() {
-        when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-        when(pcsCase.getAllDefendants()).thenReturn(List.of(partyListValue, partyListValue));
-        when(claimantInformation.getClaimantName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
-        when(partyListValue.getValue()).thenReturn(party);
-        when(party.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
+        when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
+        when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue, defendantPartyListValue));
+        when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
+        when(claimantListValue.getValue()).thenReturn(claimantParty);
+        when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
+        when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
 
         underTest.setCaseNameHmctsField(pcsCase);
 
@@ -95,9 +97,10 @@ class CaseNameHmctsFormatterTest {
 
     @Test
     void shouldSetCaseNameWhenClaimantIsCitizenAndDefendantUnkown() {
-        when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
+        when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
         when(pcsCase.getAllDefendants()).thenReturn(null);
-        when(claimantInformation.getClaimantName()).thenReturn(CLAIMANT_NAME);
+        when(claimantListValue.getValue()).thenReturn(claimantParty);
+        when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
 
         underTest.setCaseNameHmctsField(pcsCase);
 
