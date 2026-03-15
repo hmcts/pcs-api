@@ -1,14 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.globalsearch;
 
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,9 +38,9 @@ public class CaseNameHmctsFormatter {
             formattedClaimantName.append(claimants.stream()
                                              .findFirst()
                                              .map(claimant ->
-                                                                                claimant.getValue().getOrgName()!=null?
-                                                                                claimant.getValue().getOrgName():
-                                                                                claimant.getValue().getLastName())
+                                                      claimant.getValue().getOrgName() != null
+                                                          ? claimant.getValue().getOrgName() :
+                                                          claimant.getValue().getLastName())
                                              .orElse(null));
         }
         return formattedClaimantName.toString();
