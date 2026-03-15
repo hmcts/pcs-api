@@ -68,7 +68,7 @@ class EnforcementDMTest {
         domainDataModelSupportHelper = new DomainDataModelSupportHelper(WarrantDetails.class);
         domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
                                                         EnforcementOrderEntity.class,
-                                                        EnforcementRiskDetails.class, WritDetails.class);
+                                                        RiskDetails.class, WritDetails.class);
         domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails",
                                                        "enforcementLanguageUsed", "anyRiskToBailiff",
                                                        "riskCategories",
@@ -90,7 +90,7 @@ class EnforcementDMTest {
         domainDataModelSupportHelper = new DomainDataModelSupportHelper(WritDetails.class);
         domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
                                                         EnforcementOrderEntity.class,
-                                                        EnforcementRiskDetails.class, WarrantDetails.class);
+                                                        RiskDetails.class, WarrantDetails.class);
         // showChangeNameAddressPage is not stored with this to flow path but used in the show conditions.
         domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "warrantDetails",
                                                        "wasGeneralApplicationToTransferToHighCourtSuccessful", // temp
