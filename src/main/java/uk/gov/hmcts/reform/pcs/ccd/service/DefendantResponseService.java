@@ -101,7 +101,7 @@ public class DefendantResponseService {
             .landlordRegistered(responses.getLandlordRegistered())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
-                tenancyStartDateConfirmation != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
+                responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
                     ? responses.getTenancyStartDate()
                     : null
             )
