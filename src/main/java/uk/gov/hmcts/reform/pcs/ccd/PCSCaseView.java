@@ -1,8 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -12,13 +14,16 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -35,7 +40,10 @@ import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -49,6 +57,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
  */
 @Component
 @AllArgsConstructor
+@Slf4j
 public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private final PcsCaseRepository pcsCaseRepository;
@@ -66,6 +75,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final RentArrearsView rentArrearsView;
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
+    private final EnforcementOrderRepository enforcementOrderRepository;
 
 
     /**
@@ -77,12 +87,105 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         long caseReference = request.caseRef();
         State state = request.state();
         PCSCase pcsCase = getSubmittedCase(caseReference);
-
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
+        setBaillifDate(1, pcsCase);
 
         return pcsCase;
+    }
+
+    private void setBaillifDate(long caseReference, PCSCase pcsCase){
+        if(caseReference > 0) {
+            pcsCase.setShowConfirmEvictionJourney(YesOrNo.YES);
+            pcsCase.setConfirmEvictionSummaryMarkup(String.format("""
+                                                        <h2 class="govuk-heading-m govuk-!-padding-top-1">Confirm the
+                                                        eviction date</h2>
+                                                        <p class="govuk-body govuk-!-padding-bottom-2">
+                                                         The bailiff has given you an eviction date of %s.
+                                                         They need you to confirm if you are available on this date.
+                                                        </p>
+                                                        <p class="govuk-body govuk-!-padding-bottom-2">
+                                                         You must confirm the eviction details before %s.
+                                                         If you try to confirm the eviction after this
+                                                         date, the bailiff will cancel your eviction.
+                                                         They will also ask you to confirm if the defendants
+                                                         (the person or people being evicted) pose any risk to the
+                                                         bailiff.
+                                                         The bailiff needs this information to carry out the eviction
+                                                         safely.
+                                                        </p>
+                                                        <p class="govuk-body">
+                                                         To confirm the eviction date, select ‘Confirm the eviction
+                                                         date’ from the dropdown menu.
+                                                        </p>
+                                                        """,formatDate("2025-06-25 10:00:00+00"),
+                                                                  minusGivenHoursFormatted("2025-05-04 10:00:00+00",72)));
+        }
+        else {
+            pcsCase.setShowConfirmEvictionJourney(YesOrNo.NO);
+            pcsCase.setConfirmEvictionSummaryMarkup("""
+            <h2 class="govuk-heading-m govuk-!-padding-top-1">You cannot enforce the order at the moment</h2>
+            <p class="govuk-body govuk-!-padding-bottom-2">
+             You cannot enforce the order at the moment (use a bailiff to evict someone).
+            </p>
+            <p class="govuk-body govuk-!-font-weight-bold govuk-!-padding-bottom-2"> How to find out why you cannot
+             enforce the order
+            </p>
+            <p class="govuk-body govuk-!-margin-bottom-0">To find out why you cannot enforce the order, you can:</p>
+            <ul class="govuk-list govuk-list--bullet">
+             <li class="govuk-!-font-size-19">check the tab: ‘Case file view’ (you should see an order from the court,
+             explaining why you cannot enforce), or</li>
+             <li class="govuk-!-font-size-19">
+             <a href="https://www.gov.uk/find-court-tribunal"
+                              rel="noreferrer noopener"
+                              target="_blank" class="govuk-link">
+             contact your local court.</a> You will need to tell them your case number
+             (you can find this at the top of this page). If you do not know the name of your local court, select the
+             ‘Money’ category and then the ‘Housing’ category to find it.</li>
+            </ul>
+            """);
+        }
+
+       // EnforcementOrder order = getEnforcementOrder(caseReference);
+       // System.out.println(order);
+
+    }
+
+    private EnforcementOrder getEnforcementOrder(long caseReference) {
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+
+        ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
+
+        EnforcementOrderEntity entity = enforcementOrderRepository
+            .findByClaimId(claimEntity.getId())
+            .orElseThrow(() -> new RuntimeException("Enforcement order not found"));
+
+        return entity.getEnforcementOrder();
+    }
+
+    private String formatDate(String input) {
+        DateTimeFormatter inputFormatter =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssX");
+
+        DateTimeFormatter outputFormatter =
+            DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.UK);
+
+        OffsetDateTime dateTime = OffsetDateTime.parse(input, inputFormatter);
+
+        return dateTime.format(outputFormatter);
+    }
+
+    private String minusGivenHoursFormatted(String input, int hours) {
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssX");
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
+
+        OffsetDateTime dateTime = OffsetDateTime.parse(input, inputFormatter)
+            .minusHours(hours);
+
+        return dateTime.format(outputFormatter);
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {

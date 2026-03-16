@@ -10,7 +10,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -25,6 +27,8 @@ import static jakarta.persistence.FetchType.LAZY;
 @Table(name = "enf_case")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class EnforcementOrderEntity {
 
     @Id
