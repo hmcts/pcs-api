@@ -243,8 +243,7 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
             { type: 'radio', inputRadioQuestion: livingInTheProperty.riskToBailiffQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadNoJourney.warrantAnyRiskToBailiff },
           ]
       });
-      await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, riskPosedByEveryoneAtProperty.mainHeader);
-      await performAction('reTryOnCallBackError', riskPosedByEveryoneAtProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
+      await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
       await performAction('reTryOnCallBackError', vulnerableAdultsAndChildren.continueButton, propertyAccessDetails.mainHeader);
       await performAction('validatePrePopulatedData', {
         testPage: propertyAccessDetails.mainHeader,
