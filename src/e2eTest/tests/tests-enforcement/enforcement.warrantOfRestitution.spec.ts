@@ -9,13 +9,13 @@ import {
   explainHowDefendantsReturned,
   shareEvidenceWithJudge,
   provideEvidence,
-  everyoneLivingAtTheProperty,
   warrantOfRestitutionAnyoneAtPropertyRiskIntro,
   riskPosedByEveryoneAtProperty,
   peopleWillBeEvicted,
   peopleYouWantToEvict,
   vulnerableAdultsAndChildren,
 } from '@data/page-data/page-data-enforcement';
+import { livingInTheProperty } from '@data/page-data-figma/page-data-enforcement-figma';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
@@ -165,15 +165,15 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         ],
         nextPage: warrantOfRestitutionAnyoneAtPropertyRiskIntro.mainHeader
       });
-      await performAction('reTryOnCallBackError', warrantOfRestitutionAnyoneAtPropertyRiskIntro.continueButton, everyoneLivingAtTheProperty.mainHeader);
+      await performAction('reTryOnCallBackError', warrantOfRestitutionAnyoneAtPropertyRiskIntro.continueButton, livingInTheProperty.mainHeader);
       await performAction('validatePrePopulatedData', {
-        testPage: everyoneLivingAtTheProperty.mainHeader,
-        question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
+        testPage: livingInTheProperty.mainHeader,
+        question: livingInTheProperty.riskToBailiffQuestion,
       },
         {
           expectedValue: enforceWarrantApiData.enforceCasePayloadYesJourney.warrantAnyRiskToBailiff
         });
-      await performAction('reTryOnCallBackError', everyoneLivingAtTheProperty.continueButton, riskPosedByEveryoneAtProperty.mainHeader);
+      await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, riskPosedByEveryoneAtProperty.mainHeader);
       await performAction('reTryOnCallBackError', riskPosedByEveryoneAtProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
     });
 
@@ -222,15 +222,15 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         ],
         nextPage: warrantOfRestitutionAnyoneAtPropertyRiskIntro.mainHeader
       });
-      await performAction('reTryOnCallBackError', warrantOfRestitutionAnyoneAtPropertyRiskIntro.continueButton, everyoneLivingAtTheProperty.mainHeader);
+      await performAction('reTryOnCallBackError', warrantOfRestitutionAnyoneAtPropertyRiskIntro.continueButton, livingInTheProperty.mainHeader);
       await performAction('validatePrePopulatedData', {
-        testPage: everyoneLivingAtTheProperty.mainHeader,
-        question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
+        testPage: livingInTheProperty.mainHeader,
+        question: livingInTheProperty.riskToBailiffQuestion,
       },
         {
           expectedValue: enforceWarrantApiData.enforceCasePayloadNoJourney.warrantAnyRiskToBailiff
         });
-      await performAction('reTryOnCallBackError', everyoneLivingAtTheProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
+      await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
 
     });
 
