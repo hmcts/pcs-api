@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.Set;
@@ -31,8 +31,8 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(
                 EnforcementOrder.builder()
-                    .warrantDetails(
-                        WarrantDetails.builder()
+                    .warrantOfRestitutionDetails(
+                        WarrantOfRestitutionDetails.builder()
                             .riskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
                             .riskDetails(null)
                             .build()
@@ -48,7 +48,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData()
                        .getEnforcementOrder()
-                       .getWarrantDetails()
+                       .getWarrantOfRestitutionDetails()
                        .getRiskDetails())
             .isNotNull()
             .isInstanceOf(RiskDetails.class);

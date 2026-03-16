@@ -23,7 +23,7 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
-
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
@@ -71,6 +71,7 @@ test.afterEach(async () => {
   if (caseInfo.id) {
     await performAction('deleteCaseRole', '[CREATOR]');
   }
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Enforcement - Writ of Possession]', async () => {
