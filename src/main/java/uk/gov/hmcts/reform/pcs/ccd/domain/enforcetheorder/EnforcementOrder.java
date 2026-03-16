@@ -31,9 +31,10 @@ public class EnforcementOrder {
     // Redundant field to support the existing CCD definition, will be removed in the future once the
     // CCD definition is updated to use the new field
     @CCD(
-        label = "What do you want to apply for?"
+        label = "What do you want to apply for?",
+        typeOverride = DynamicRadioList
     )
-    private SelectEnforcementType selectEnforcementType;
+    private DynamicStringList selectEnforcementType;
 
     @CCD(
         label = "What do you want to apply for?",
