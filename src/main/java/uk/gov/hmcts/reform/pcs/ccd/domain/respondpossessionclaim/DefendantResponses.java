@@ -62,4 +62,7 @@ public class DefendantResponses {
 
     @CCD
     private VerticalYesNo defendantNameConfirmation;
+
+    @CCD
+    private YesNoNotSure landlordRegistered;
 }
