@@ -473,7 +473,8 @@ export class EnforcementAction implements IAction {
 
         case 'inputText':
           await performValidation('validateInputTextValues', { textLabel: item.inputTextLabel }, { expected: item.expectedAnswer });
-          break
+          break;
+
         default:
           break;
       }
