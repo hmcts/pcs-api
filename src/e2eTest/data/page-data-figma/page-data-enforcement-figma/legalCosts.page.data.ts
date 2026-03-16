@@ -1,0 +1,21 @@
+export const legalCosts = {
+  EnforceTheOrderCaption: `Enforce the order`,
+  mainHeader: `Legal costs`,
+  reclaimLegalCostsQuestion: `Do you want to reclaim any legal costs?`,
+  yesRadioOption: `Yes`,
+  noRadioOption: `No`,
+  howMuchYouWantToReclaimTextLabelHidden: `How much do you want to reclaim?`,
+  howMuchYouWantToReclaimTextInput: `155559.7`,
+  iDoNotKnowLink: `I do not know if I need to reclaim any legal costs`,
+  legalCostsAreTheCostsParagraphHidden: `Legal costs are the costs you incur when a lawyer, legal representative, or someone working in a legal department applies for a writ or a warrant on your behalf.`,
+  theyWillInvoiceParagraphHidden: `They will invoice these costs to you, and you can reclaim them from the defendant.`,
+  ifYouAreNotSureParagraphHidden: `If you are not sure how much you can reclaim`,
+  theamountYouParagraphHidden: `The amount you can reclaim from the defendant is usually fixed.`,
+  youCanEitherParagraphHidden: `You can either:`,
+  askYourLawyerListHidden: `ask your lawyer or legal representative how much you can reclaim, or`,
+  checkTheCivilLinkHidden: `check the Civil Procedure Rules (Justice.gov website, opens in a new tab)`,
+  summarySaveApplicationLink: `I want to save this application and return to it later`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`
+}
