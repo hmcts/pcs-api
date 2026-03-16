@@ -552,12 +552,13 @@ class DefendantResponseServiceTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
-            .build();
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
             .reasonableAdjustments(reasonableAdjustments)
             .householdCircumstances(householdCircumstances)
             .paymentAgreement(paymentAgreement)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
             .build();
 
         //When

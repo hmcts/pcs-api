@@ -243,11 +243,6 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                        .build())
             .build();
 
-        DefendantResponses responses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByText(VerticalYesNo.NO)
-            .build();
-
         ReasonableAdjustments reasonableAdjustments = ReasonableAdjustments.builder()
             .reasonableAdjustmentsRequired("Wheelchair access")
             .build();
@@ -260,12 +255,17 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .anyPaymentsMade(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
             .build();
 
+        DefendantResponses responses = DefendantResponses.builder()
+            .contactByEmail(VerticalYesNo.YES)
+            .contactByText(VerticalYesNo.NO)
+            .reasonableAdjustments(reasonableAdjustments)
+            .householdCircumstances(householdCircumstances)
+            .paymentAgreement(paymentAgreement)
+            .build();
+
         PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
                                              .defendantContactDetails(contactDetails)
                                              .defendantResponses(responses)
-                                             .reasonableAdjustments(reasonableAdjustments)
-                                             .paymentAgreement(paymentAgreement)
-                                             .householdCircumstances(householdCircumstances)
                                              .build());
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
@@ -290,7 +290,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedResponses.getContactByText()).isEqualTo(VerticalYesNo.NO);
 
-        PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
+        DefendantResponses savedResponse = savedDraft.getPossessionClaimResponse().getDefendantResponses();
         assertThat(savedResponse.getReasonableAdjustments()).isEqualTo(reasonableAdjustments);
         assertThat(savedResponse.getHouseholdCircumstances()).isEqualTo(householdCircumstances);
         assertThat(savedResponse.getPaymentAgreement()).isEqualTo(paymentAgreement);

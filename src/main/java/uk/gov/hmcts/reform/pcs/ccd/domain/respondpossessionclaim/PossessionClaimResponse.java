@@ -40,13 +40,5 @@ public class PossessionClaimResponse {
     @CCD(access = {CitizenAccess.class})
     private DefendantResponses defendantResponses;
 
-    @CCD(access = {CitizenAccess.class})
-    private ReasonableAdjustments reasonableAdjustments;
-
-    @CCD(access = {CitizenAccess.class})
-    private HouseholdCircumstances householdCircumstances;
-
-    @CCD(access = {CitizenAccess.class})
-    private PaymentAgreement paymentAgreement;
 }
 

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -56,4 +57,13 @@ public class DefendantResponses {
 
     @CCD
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
+
+    @CCD(access = {CitizenAccess.class})
+    private ReasonableAdjustments reasonableAdjustments;
+
+    @CCD(access = {CitizenAccess.class})
+    private HouseholdCircumstances householdCircumstances;
+
+    @CCD(access = {CitizenAccess.class})
+    private PaymentAgreement paymentAgreement;
 }

@@ -101,7 +101,7 @@ public class DefendantResponseService {
                 possessionClaimResponse.getDefendantResponses()
             );
 
-        buildAndLinkChildEntities(responseEntity, possessionClaimResponse);
+        buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
 
         defendantResponseRepository.save(responseEntity);
 
@@ -136,7 +136,7 @@ public class DefendantResponseService {
 
     private void buildAndLinkChildEntities(
         DefendantResponseEntity defendantResponseEntity,
-        PossessionClaimResponse response) {
+        DefendantResponses response) {
 
         defendantResponseEntity.setReasonableAdjustment(
             reasonableAdjustmentsService.createReasonableAdjustmentEntity(
