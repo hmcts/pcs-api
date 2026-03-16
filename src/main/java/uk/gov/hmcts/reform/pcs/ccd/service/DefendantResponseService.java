@@ -100,7 +100,7 @@ public class DefendantResponseService {
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
-                tenancyStartDateConfirmation != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
+                responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
                     ? responses.getTenancyStartDate()
                     : null
             )
