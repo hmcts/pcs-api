@@ -104,6 +104,7 @@ public class DefendantResponseService {
                     ? responses.getTenancyStartDate()
                     : null
             )
+            .landlordLicensed(responses.getLandlordLicensed())
             .build();
 
         defendantResponseRepository.save(defendantResponse);
