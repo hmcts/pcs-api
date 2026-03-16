@@ -1,0 +1,14 @@
+export const moneyOwed = {
+  EnforceTheOrderCaption: `Enforce the order`,
+  mainHeader: `The amount the defendants owe you`,
+  youCanIncludeParagraph: `You can include:`,
+  rentOrMortgageList: `rent or mortgage arrears`,
+  theFeeYouPaidList: `the fee you paid to make a possession claim`,
+  ifYouDoNotKnowParagraph: `If you do not know the fee you paid to make your possession claim, check the service request tab (opens in a new tab). This shows all of the fees you have paid when you made a claim`,
+  totalAmountOwedQuestion: `What is the total amount that the defendants owe you?`,
+  totalAmountOwedTextInput: `9999.99`,
+  summarySaveApplicationLink: `I want to save this application and return to it later`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`
+}
