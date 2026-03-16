@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -90,6 +91,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         setBaillifDate(caseReference, pcsCase);
+
+        //allows indexing for Global Search
+        pcsCase.setSearchCriteria(new SearchCriteria());
 
         return pcsCase;
     }

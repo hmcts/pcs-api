@@ -7,10 +7,12 @@ import {OptionListValidation} from '@utils/validations/element-validations/optio
 import {MainHeaderValidation} from '@utils/validations/element-validations/pageHeader.validation';
 import {ErrorMessageValidation} from '@utils/validations/element-validations/error-message.validation';
 import {RadioButtonValidation} from '@utils/validations/element-validations/radioButton.validation';
+import {PageContentValidation} from "@utils/validations/element-validations/pageContent.validation";
 import {InputErrorValidation} from "@utils/validations/element-validations/inputError.validation";
+import {ValidatePrePopulatedValues} from '@utils/validations/element-validations/validatePrePopulatedValues.validation';
 
 export class ValidationRegistry {
-  private static validations: Map<string, IValidation> = new Map([
+  private static validations: Map<string, IValidation> = new Map<string, IValidation>([
     ['text', new TextValidation()],
     ['bannerAlert', new BannerAlertValidation()],
     ['formLabelValue', new FormLabelValueValidation()],
@@ -21,7 +23,9 @@ export class ValidationRegistry {
     ['elementToBeVisible', new VisibilityValidation()],
     ['elementNotToBeVisible', new VisibilityValidation()],
     ['waitUntilElementDisappears', new VisibilityValidation()],
+    ['autoValidatePageContent', new PageContentValidation()],
     ['inputError', new InputErrorValidation()],
+    ['validateRadioButtonValues', new ValidatePrePopulatedValues()]
   ]);
 
   static getValidation(validationType: string): IValidation {
