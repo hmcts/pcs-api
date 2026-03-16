@@ -34,7 +34,7 @@ public class EnforcementOrder {
         label = "What do you want to apply for?",
         typeOverride = DynamicRadioList
     )
-    private DynamicStringList selectEnforcementType;
+    private SelectEnforcementType selectEnforcementType;
 
     @CCD(
         label = "What do you want to apply for?",
