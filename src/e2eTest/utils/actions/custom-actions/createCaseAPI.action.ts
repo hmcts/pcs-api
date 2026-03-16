@@ -4,6 +4,8 @@ import { Page } from '@playwright/test';
 import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
+import { enforceWarrantApiData } from '@data/api-data/enforceTheOrderWarrant.api.data';
+import { enforceOrderEventTokenApiData } from '@data/api-data/enforceOrderEventToken.api.data';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 

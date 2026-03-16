@@ -126,5 +126,4 @@ export const enforceWarrantApiData = {
   },
     enforceCaseApiEndPoint: () =>
       `/cases/${process.env.CASE_NUMBER}/events`,
-  
 }

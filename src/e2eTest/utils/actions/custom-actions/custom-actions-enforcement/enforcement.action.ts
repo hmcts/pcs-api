@@ -6,10 +6,8 @@ import {
   yourApplication,
   nameAndAddressForEviction,
   confirmDefendantsDOB,
-  everyoneLivingAtTheProperty,
   vulnerableAdultsAndChildren,
   riskPosedByEveryoneAtProperty,
-  accessToTheProperty,
   peopleWillBeEvicted,
   youNeedPermission,
   legalCosts,
@@ -29,6 +27,10 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
+import {
+  propertyAccessDetails,
+  livingInTheProperty
+} from '@data/page-data-figma/page-data-enforcement-figma';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -253,7 +255,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: riskToBailiff.question, option: riskToBailiff.option });
-    await performAction('reTryOnCallBackError', everyoneLivingAtTheProperty.continueButton, riskToBailiff.nextPage as string);
+    await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, riskToBailiff.nextPage as string);
   }
 
   private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord, page: Page) {
@@ -335,7 +337,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: landRegistry.question, option: landRegistry.option });
-    if (landRegistry.option === accessToTheProperty.yesRadioOption) {
+    if (landRegistry.option === propertyAccessDetails.yesRadioOption) {
       const langRegistryAmtEntered = EnforcementCommonUtils.getRandomElementForAnArray(landRegistry.input as Array<string>)
       await performAction('inputText', landRegistry.label, langRegistryAmtEntered);
       const landRegistryFeeAmt = EnforcementCommonUtils.retrieveAmountFromString(langRegistryAmtEntered as string);
@@ -457,7 +459,7 @@ export class EnforcementAction implements IAction {
       const count = Array.isArray(prePopulatedData?.inputData)
         ? prePopulatedData.inputData.length
         : prePopulatedData?.inputData ? 1 : 0;
-        expect(page,`Validation of prepopulated data started for page => [${page}] and the number of elements getting validated is : [${count}]`).not.toBe('Unknown');
+      expect(page, `Validation of prepopulated data started for page => [${page}] and the number of elements getting validated is : [${count}]`).not.toBe('Unknown');
     });
     const items = Array.isArray(prePopulatedData.inputData)
       ? prePopulatedData.inputData
