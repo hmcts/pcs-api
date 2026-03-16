@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -14,7 +14,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -90,13 +89,15 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
-        setBaillifDate(1, pcsCase);
+        setBaillifDate(caseReference, pcsCase);
 
         return pcsCase;
     }
 
     private void setBaillifDate(long caseReference, PCSCase pcsCase){
-        if(caseReference > 0) {
+        EnforcementOrderEntity enforcementOrder = getEnforcementOrder(caseReference);
+
+        if(enforcementOrder.getBailiffDate() != null) {
             pcsCase.setShowConfirmEvictionJourney(YesOrNo.YES);
             pcsCase.setConfirmEvictionSummaryMarkup(String.format("""
                                                         <h2 class="govuk-heading-m govuk-!-padding-top-1">Confirm the
@@ -146,13 +147,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             </ul>
             """);
         }
-
-       // EnforcementOrder order = getEnforcementOrder(caseReference);
-       // System.out.println(order);
-
     }
 
-    private EnforcementOrder getEnforcementOrder(long caseReference) {
+    @Transactional
+    private EnforcementOrderEntity getEnforcementOrder(long caseReference) {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
@@ -163,7 +161,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .findByClaimId(claimEntity.getId())
             .orElseThrow(() -> new RuntimeException("Enforcement order not found"));
 
-        return entity.getEnforcementOrder();
+        return entity;
     }
 
     private String formatDate(String input) {

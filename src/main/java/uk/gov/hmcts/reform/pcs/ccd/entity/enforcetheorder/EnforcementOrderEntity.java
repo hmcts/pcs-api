@@ -19,6 +19,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -46,5 +47,8 @@ public class EnforcementOrderEntity {
 
     @OneToOne(mappedBy = "enforcementOrder", fetch = LAZY)
     private WarrantEntity warrantDetails;
+
+    @Column(name = "bailiff_date")
+    private Instant bailiffDate;
 
 }

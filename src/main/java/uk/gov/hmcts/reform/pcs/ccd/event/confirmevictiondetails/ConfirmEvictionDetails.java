@@ -35,7 +35,7 @@ public class ConfirmEvictionDetails implements CCDConfig<PCSCase, State, UserRol
             configBuilder
                 .decentralisedEvent(confirmEvictionDetails.name(), this::submit, this::start)
                 .forAllStates()
-//                .showCondition("showConfirmEvictionJourney=\"NO\"")
+                .showCondition("showConfirmEvictionJourney=\"Yes\"")
                 .name("Confirm the eviction details")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
