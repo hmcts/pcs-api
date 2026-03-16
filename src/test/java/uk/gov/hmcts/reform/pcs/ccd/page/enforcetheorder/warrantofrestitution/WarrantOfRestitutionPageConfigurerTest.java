@@ -26,6 +26,8 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
 
     @Mock
     private ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
+    @Mock
+    private VulnerableAdultsChildrenPlaceholderPage vulnerableAdultsChildrenPlaceholderPage;
 
     @InjectMocks
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
@@ -44,9 +46,16 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         InOrder inOrder = Mockito.inOrder(pageBuilder);
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
+        verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder.class,
+                verificationCount);
         verifyAndCount(inOrder, pageBuilder, ShareEvidenceWithJudgePage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, explainHowDefendantsReturnedPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, DefendantAtPropertyPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, LivingInThePropertyIntroPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, LivingInThePropertyPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, EvictionDelayWarningPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, EvictionRisksPosedPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, vulnerableAdultsChildrenPlaceholderPage, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);
@@ -54,4 +63,3 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         verifyNoMoreInteractions(pageBuilder);
     }
 }
-

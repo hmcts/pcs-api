@@ -64,8 +64,6 @@ public class PCSCase {
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
-
-
     @CCD(
         searchable = false
     )
@@ -500,11 +498,12 @@ public class PCSCase {
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
     @CCD(
-        label = "Search Criteria"
+        label = "Search Criteria",
+        access = {GlobalSearchAccess.class}
     )
-    @JsonProperty ("SearchCriteria")
     @SuppressWarnings("MemberName") // Field name is case-sensitive in CCD
-    private SearchCriteria SearchCriteria;
+    @JsonProperty("SearchCriteria")
+    private SearchCriteria searchCriteria;
 
     @CCD(access = {ClaimantAccess.class},
         label = "Case Flags")
@@ -515,5 +514,4 @@ public class PCSCase {
         access = {ClaimantAccess.class}
     )
     private FlagLauncher flagLauncher;
-
 }
