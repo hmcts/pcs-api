@@ -63,6 +63,8 @@ class SubmitEventHandlerTest {
             .possessionClaimResponse(null)
             .build();
 
+        stubDraft(caseData);
+
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // When
@@ -74,9 +76,10 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).hasSize(1);
         assertThat(result.getErrors().getFirst()).isEqualTo("Invalid submission: missing response data");
 
-        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
-        );
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+        verify(claimResponseService, never()).saveDraftData(any(), anyLong());
+        verify(defendantResponseService, never()).saveDefendantResponse(anyLong(), any());
+        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), eq(respondPossessionClaim));
     }
 
     @Test
@@ -90,6 +93,8 @@ class SubmitEventHandlerTest {
             .possessionClaimResponse(possessionClaimResponse)
             .build();
 
+        stubDraft(caseData);
+
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // When
@@ -102,9 +107,10 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors().getFirst())
             .isEqualTo("Invalid submission: missing defendant response data");
 
-        verify(draftCaseDataService, never()).getUnsubmittedCaseData(anyLong(), eq(respondPossessionClaim));
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
         verify(claimResponseService, never()).saveDraftData(any(), anyLong());
         verify(defendantResponseService, never()).saveDefendantResponse(anyLong(), any());
+        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), eq(respondPossessionClaim));
     }
 
     // ========== INDEPENDENT FIELD SUBMISSION TESTS ==========
@@ -118,8 +124,7 @@ class SubmitEventHandlerTest {
 
         PCSCase caseData = createDraftSaveCaseData(null, responses);
 
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(Optional.of(caseData));
+        stubDraft(caseData);
 
         SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
 
@@ -164,11 +169,11 @@ class SubmitEventHandlerTest {
             .possessionClaimResponse(response)
             .build();
 
+        stubDraft(caseData);
+
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         // When
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(Optional.of(caseData));
         SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then
@@ -212,13 +217,11 @@ class SubmitEventHandlerTest {
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(response)
             .build();
+        stubDraft(caseData);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         // When
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(Optional.of(caseData));
-
         SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then
@@ -252,12 +255,11 @@ class SubmitEventHandlerTest {
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(response)
             .build();
+        stubDraft(caseData);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         //when
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(Optional.of(caseData));
 
         // Mock service to throw exception
         doThrow(new IllegalStateException("No party found for IDAM ID"))
@@ -297,10 +299,9 @@ class SubmitEventHandlerTest {
             .possessionClaimResponse(response)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+        stubDraft(caseData);
 
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(Optional.of(caseData));
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         // When
         SubmitResponse<State> result = underTest.submit(eventPayload);
@@ -312,26 +313,13 @@ class SubmitEventHandlerTest {
         assertThat(result.getState()).isNull(); // Default response has null state
     }
 
-    @Test
-    void shouldNotCallContactPreferencesServiceWhenValidationFails() {
-        // Given - Missing possessionClaimResponse
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(null)  // Will fail validation
-            .build();
-
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
-
-        // When
-        SubmitResponse<State> result = underTest.submit(eventPayload);
-
-        // Then - Service should NOT be called due to validation failure
-        verify(claimResponseService, never()).saveDraftData(any(), anyLong());
-        assertThat(result.getErrors()).isNotEmpty();
+    private void stubDraft(PCSCase draft) {
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(draft));
     }
 
     private EventPayload<PCSCase, State> createEventPayload(PCSCase caseData) {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
-        when(eventPayload.caseData()).thenReturn(caseData);
         return eventPayload;
     }
 
