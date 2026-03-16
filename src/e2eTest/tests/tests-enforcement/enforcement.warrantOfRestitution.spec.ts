@@ -96,14 +96,6 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
       });
       await performAction('expandSummary', yourApplication.summarySaveApplication);
       await performAction('errorValidationYourApplicationPage', yourApplication.errorValidation);
-      // await performAction('inputErrorValidation', {
-      //   validationReq: yourApplication.errorValidation,
-      //   validationType: yourApplication.errorValidationType.three,
-      //   inputArray: yourApplication.errorValidationField.errorRadioOption,
-      //   question: yourApplication.typeOfApplicationQuestion,
-      //   option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-      //   button: yourApplication.continueButton
-      // });
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
@@ -112,53 +104,12 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
       await performAction('reTryOnCallBackError', peopleYouWantToEvict.continueButton, shareEvidenceWithJudge.mainHeader);
       await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
       await performAction('errorValidationHowDefendantsEnteredPage', explainHowDefendantsReturned.errorValidation);
-      // await performAction('inputErrorValidation', {
-      //   validationReq: explainHowDefendantsReturned.errorValidation,
-      //   validationType: explainHowDefendantsReturned.errorValidationType.two,
-      //   inputArray: explainHowDefendantsReturned.errorValidationField.errorTextField,
-      //   header: explainHowDefendantsReturned.eventCouldNotBeCreatedErrorMessage,
-      //   label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
-      //   button: explainHowDefendantsReturned.continueButton
-      // });
       await performAction('provideHowDefendantReturnToProperty', {
         label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
         input: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextInput,
         nextPage: provideEvidence.mainHeader
       });
       await performAction('errorValidationExplainHowDefendantsEnteredPage', evidenceUpload.errorValidation);
-      // await performAction('inputErrorValidation', {
-      //   validationReq: evidenceUpload.errorValidation,
-      //   validationType: evidenceUpload.errorValidationType.seven,
-      //   inputArray: evidenceUpload.errorValidationField.errorAddDocument,
-      //   button: evidenceUpload.continueButton
-      // });
-      // await performAction('inputErrorValidation', {
-      //   validationReq: evidenceUpload.errorValidation,
-      //   validationType: evidenceUpload.errorValidationType.eight,
-      //   inputArray: evidenceUpload.errorValidationField.errorDropDown,
-      //   docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
-      //   type: evidenceUpload.witnessStatementDropDownInput,
-      //   button: evidenceUpload.continueButton
-      // });
-      // await performAction('inputErrorValidation', {
-      //   validationReq: evidenceUpload.errorValidation,
-      //   validationType: evidenceUpload.errorValidationType.nine,
-      //   inputArray: evidenceUpload.errorValidationField.errorUpload,
-      //   docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
-      //   type: evidenceUpload.witnessStatementDropDownInput,
-      //   label: evidenceUpload.documentUploadHiddenTextLabel,
-      //   button: evidenceUpload.continueButton
-      // });
-
-      // await performAction('inputErrorValidation', {
-      //   validationReq: evidenceUpload.errorValidation,
-      //   validationType: evidenceUpload.errorValidationType.two,
-      //   inputArray: evidenceUpload.errorValidationField.errorTextField,
-      //   header: evidenceUpload.thereIsAProblemErrorMessageHeader,
-      //   label: evidenceUpload.shortDescriptionHiddenTextLabel,
-      //   button: evidenceUpload.continueButton,
-      //   buttonRemove: evidenceUpload.removeButton
-      // });
       await performAction('uploadEvidenceThatDefendantsAreAtProperty', {
         documents: [
           { type: evidenceUpload.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
@@ -207,14 +158,6 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
     });
     await performAction('reTryOnCallBackError', peopleYouWantToEvict.continueButton, shareEvidenceWithJudge.mainHeader);
     await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
-    await performAction('inputErrorValidation', {
-      validationReq: explainHowDefendantsReturned.errorValidation,
-      validationType: explainHowDefendantsReturned.errorValidationType.two,
-      inputArray: explainHowDefendantsReturned.errorValidationField.errorTextField,
-      header: explainHowDefendantsReturned.eventCouldNotBeCreatedErrorMessage,
-      label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
-      button: explainHowDefendantsReturned.continueButton
-    });
     await performAction('provideHowDefendantReturnToProperty', {
       label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
       input: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextInput,

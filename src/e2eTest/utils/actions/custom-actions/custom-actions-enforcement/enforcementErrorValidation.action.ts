@@ -1,7 +1,8 @@
-import { confirmDefendantsDOB, confirmHCEOHired, enterDefendantsDOB, explainHowDefendantsReturned, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, rePayments, riskPosedByEveryoneAtProperty, statementOfTruthOne, statementOfTruthTwo, suspendedOrder, violentOrAggressiveBehaviour, vulnerableAdultsAndChildren, yourApplication, yourHCEO } from '@data/page-data/page-data-enforcement';
+import { confirmDefendantsDOB, confirmHCEOHired, enterDefendantsDOB, evidenceUpload, explainHowDefendantsReturned, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, peopleYouWantToEvict, rePayments, riskPosedByEveryoneAtProperty, statementOfTruthOne, statementOfTruthTwo, suspendedOrder, violentOrAggressiveBehaviour, vulnerableAdultsAndChildren, yourApplication, yourHCEO } from '@data/page-data/page-data-enforcement';
 import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
+import { defendantDetails } from './enforcement.action';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
@@ -25,6 +26,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationYourHCEOPage', () => this.errorValidationYourHCEOPage(errorFlag as string)],
       ['errorValidationHowDefendantsEnteredPage', () => this.errorValidationHowDefendantsEnteredPage(errorFlag as string)],
       ['errorValidationExplainHowDefendantsEnteredPage', () => this.errorValidationExplainHowDefendantsEnteredPage(errorFlag as string)],
+      ['errorValidationPeopleYouWantToEvictPage', () => this.errorValidationPeopleYouWantToEvictPage(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -385,12 +387,47 @@ export class ErrorValidationAction implements IAction {
   private async errorValidationExplainHowDefendantsEnteredPage(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
-        validationType: explainHowDefendantsReturned.errorValidationType.two,
-        inputArray: explainHowDefendantsReturned.errorValidationField.errorTextField,
-        header: explainHowDefendantsReturned.eventCouldNotBeCreatedErrorMessage,
-        label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
-        button: explainHowDefendantsReturned.continueButton
+        validationType: evidenceUpload.errorValidationType.seven,
+        inputArray: evidenceUpload.errorValidationField.errorAddDocument,
+        button: evidenceUpload.continueButton
       });
+      await performAction('inputErrorValidation', {
+        validationType: evidenceUpload.errorValidationType.eight,
+        inputArray: evidenceUpload.errorValidationField.errorDropDown,
+        docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
+        type: evidenceUpload.witnessStatementDropDownInput,
+        button: evidenceUpload.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: evidenceUpload.errorValidationType.nine,
+        inputArray: evidenceUpload.errorValidationField.errorUpload,
+        docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
+        type: evidenceUpload.witnessStatementDropDownInput,
+        label: evidenceUpload.documentUploadHiddenTextLabel,
+        button: evidenceUpload.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: evidenceUpload.errorValidationType.two,
+        inputArray: evidenceUpload.errorValidationField.errorTextField,
+        header: evidenceUpload.thereIsAProblemErrorMessageHeader,
+        label: evidenceUpload.shortDescriptionHiddenTextLabel,
+        button: evidenceUpload.continueButton,
+        buttonRemove: evidenceUpload.removeButton
+      });
+    }
+  }
+
+  private async errorValidationPeopleYouWantToEvictPage(validationReq: string) {
+    if (validationReq === 'YES') {
+       await performAction('inputErrorValidation', {
+           validationType: peopleYouWantToEvict.errorValidationType.six,
+           inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
+           label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+           header: peopleYouWantToEvict.thereIsAProblemErrorMessageHeader,
+           checkBox: defendantDetails[0],
+           button: peopleYouWantToEvict.continueButton
+         });
     }
   }
 }

@@ -87,6 +87,7 @@ export class ActionEnforcementRegistry {
     ['errorValidationYourHCEOPage', new ErrorValidationAction()],
     ['errorValidationHowDefendantsEnteredPage', new ErrorValidationAction()],
     ['errorValidationExplainHowDefendantsEnteredPage', new ErrorValidationAction()],
+    ['errorValidationPeopleYouWantToEvictPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
   ]);
