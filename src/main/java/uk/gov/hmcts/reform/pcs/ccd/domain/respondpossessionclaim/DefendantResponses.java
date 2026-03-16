@@ -63,4 +63,5 @@ public class DefendantResponses {
 
     @CCD
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
+
 }

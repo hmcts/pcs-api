@@ -25,7 +25,8 @@ export class ValidationRegistry {
     ['waitUntilElementDisappears', new VisibilityValidation()],
     ['autoValidatePageContent', new PageContentValidation()],
     ['inputError', new InputErrorValidation()],
-    ['validateRadioButtonValues', new ValidatePrePopulatedValues()]
+    ['validateRadioButtonValues', new ValidatePrePopulatedValues()],
+    ['validateInputTextValues', new ValidatePrePopulatedValues()],
   ]);
 
   static getValidation(validationType: string): IValidation {

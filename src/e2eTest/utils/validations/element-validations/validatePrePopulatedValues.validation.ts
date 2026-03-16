@@ -5,6 +5,7 @@ export class ValidatePrePopulatedValues implements IValidation {
   async validate(page: Page, validation: string, fieldName: validationRecord, data: validationRecord): Promise<void> {
     const validationsMap = new Map<string, () => Promise<void>>([
       ['validateRadioButtonValues', () => this.validateRadioButtonValues(page, fieldName as validationRecord, data as validationRecord)],
+      ['validateInputTextValues', () => this.validateInputTextValues(page, fieldName as validationRecord, data as validationRecord)],
     ]);
 
     const validationToPerform = validationsMap.get(validation);
@@ -27,5 +28,19 @@ export class ValidatePrePopulatedValues implements IValidation {
       }
     }
     expect(String(retrieved).toLowerCase(), `The PrePopulated value for the radio button: ${fieldName.question as string} is ${data.expected as string} and the retrieved value is: ${retrieved}`).toEqual(String(data.expected).toLowerCase());
+  }
+
+  private async validateInputTextValues(page: Page, fieldName: validationRecord, data: validationRecord): Promise<void> {
+    let locator = page.locator(`//span[text()="${fieldName.textLabel}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
+    const count = await locator.count();
+    if (count === 0) throw new Error(`Text field related to the label ${fieldName.textLabel} not found`);
+    if (typeof fieldName !== 'string' && fieldName.index !== null) {
+      locator = count > 1
+        ? locator.nth(Number(fieldName.index))
+        : locator.first();
+    }   
+    let retrievedText = await locator.inputValue();
+    expect(retrievedText, `The PrePopulated value for the text field: ${fieldName.textLabel as string} is ${data.expected as string} and the retrieved value is: ${retrievedText}`).toEqual(data.expected as string);
+
   }
 }
