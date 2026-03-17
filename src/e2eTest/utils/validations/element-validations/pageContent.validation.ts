@@ -6,7 +6,7 @@ import * as path from 'path';
 import {CYAStore, cyaValidation} from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
 const ELEMENT_TYPES = [
-  'Button', 'Link', 'Header', 'Caption', 'Checkbox', 'Question',
+  'Button', 'Link', 'TableHeader', 'Header', 'Caption', 'Checkbox', 'Question',
   'RadioOption', 'SelectLabel', 'SelectOption', 'HintText',
   'TextLabel', 'Paragraph', 'Tab'
 ] as const;
@@ -35,6 +35,12 @@ export class PageContentValidation implements IValidation {
                     [role="link"]:text-is("${value}"),
                     [aria-label="${value}"],
                     summary>span:text-is("${value}")`),
+    TableHeader: (page: Page, value: string) => page.locator(`
+                th[scope="row"]:text-is("${value}"),
+                th[scope="col"]:text-is("${value}"),
+                th:text-is("${value}"),
+                [role="rowheader"]:text-is("${value}"),
+                [role="columnheader"]:text-is("${value}")`),                
     Header: (page: Page, value: string) => page.getByRole('heading', {name: new RegExp(`^${escapeForRegex(value)}(\\s*\\([^)]*\\))?$`)})
       .or(page.locator(`h1:text-is("${value}"),
                     h2:text-is("${value}"),
@@ -149,7 +155,7 @@ export class PageContentValidation implements IValidation {
 
     PageContentValidation.pageToFileNameMap.set(page.url(), fileName);
 
-    return this.loadPageDataFile(fileName);
+    return this.loadPageDataFile(fileName, page);
   }
 
   private getUrlSegment(url: string): string {
@@ -165,7 +171,13 @@ export class PageContentValidation implements IValidation {
 
   private async getFileName(urlSegment: string, page: Page): Promise<string | null> {
     try {
-      const mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
+      let mappingPath;
+      if(page.url().includes("enforceTheOrder")){
+         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
+      }
+      else{
+         mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
+      }
       if (!fs.existsSync(mappingPath)) return null;
       const mappingContent = fs.readFileSync(mappingPath, 'utf8');
       const match = mappingContent.match(/export default\s*({[\s\S]*?});/);
@@ -212,8 +224,14 @@ export class PageContentValidation implements IValidation {
     }
   }
 
-  private async loadPageDataFile(fileName: string): Promise<any> {
-    const filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
+  private async loadPageDataFile(fileName: string, page: Page): Promise<any> {
+   let filePath;
+      if(page.url().includes("enforceTheOrder")){
+        filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
+      }
+      else{
+         filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
+      } 
     if (!fs.existsSync(filePath)) return null;
     try {
       delete require.cache[require.resolve(filePath)];
@@ -342,7 +360,13 @@ export class PageContentValidation implements IValidation {
     const segment = segments[segments.length - 1] || 'home';
 
     try {
-      const mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
+      let mappingPath;
+      if(url.includes("enforceTheOrder")){
+         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
+      }
+      else{
+         mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
+      }
       if (!fs.existsSync(mappingPath)) return segment;
       const mappingContent = fs.readFileSync(mappingPath, 'utf8');
       const match = mappingContent.match(/export default\s*({[\s\S]*?});/);

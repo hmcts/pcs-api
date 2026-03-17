@@ -11,6 +11,7 @@ public class WarrantOfRestitutionPageConfigurer implements PageConfigurer {
 
     private final ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
     private final VulnerableAdultsChildrenWarrantRestPage vulnerableAdultsChildrenWarrantRestPage;
+    private final PropertyAccessDetailsWarrantOfRestitutionPage propertyAccessDetailsWarrantOfRestitutionPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
@@ -24,6 +25,8 @@ public class WarrantOfRestitutionPageConfigurer implements PageConfigurer {
             .add(new EvictionDelayWarningPage())
             .add(new EvictionRisksPosedPage())
             .add(vulnerableAdultsChildrenWarrantRestPage)
-            .add(new PropertyAccessDetailsWarrantRestPlaceholder());
+            .add(propertyAccessDetailsWarrantOfRestitutionPage)
+            .add(new AnythingElseToHelpTheEvictionPlaceholder());
+
     }
 }
