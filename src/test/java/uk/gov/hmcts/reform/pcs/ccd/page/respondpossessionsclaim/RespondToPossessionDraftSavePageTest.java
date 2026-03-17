@@ -66,7 +66,10 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .noticeReceived(YesNoNotSure.NO)
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, responses,null,null,null);
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantContactDetails(contactDetails)
+                                             .defendantResponses(responses)
+                                             .build());
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of());
@@ -98,7 +101,9 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                        .build())
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, null,null,null,null);
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantContactDetails(contactDetails)
+                                             .build());
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of("nameKnown", "addressKnown", "addressSameAsProperty"));
@@ -127,7 +132,10 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, responses,null,null,null);
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantContactDetails(contactDetails)
+                                             .defendantResponses(responses)
+                                             .build());
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -162,7 +170,9 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                        .build())
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, null,null,null,null);
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantContactDetails(contactDetails)
+                                             .build());
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of());
@@ -197,7 +207,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .contactByPhone(VerticalYesNo.NO)
             .build();
 
-        PCSCase caseData = buildCaseData(null, responses,null,null,null);
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder().defendantResponses(responses).build());
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -233,13 +243,8 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                        .build())
             .build();
 
-        DefendantResponses responses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByText(VerticalYesNo.NO)
-            .build();
-
         ReasonableAdjustments reasonableAdjustments = ReasonableAdjustments.builder()
-            .reasonableAdjustmentRequired("Wheelchair access")
+            .reasonableAdjustmentsRequired("Wheelchair access")
             .build();
 
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
@@ -250,11 +255,18 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .anyPaymentsMade(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails,
-                                         responses,
-                                         reasonableAdjustments,
-                                         householdCircumstances,
-                                         paymentAgreement);
+        DefendantResponses responses = DefendantResponses.builder()
+            .contactByEmail(VerticalYesNo.YES)
+            .contactByText(VerticalYesNo.NO)
+            .reasonableAdjustments(reasonableAdjustments)
+            .householdCircumstances(householdCircumstances)
+            .paymentAgreement(paymentAgreement)
+            .build();
+
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantContactDetails(contactDetails)
+                                             .defendantResponses(responses)
+                                             .build());
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of());
@@ -278,7 +290,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedResponses.getContactByText()).isEqualTo(VerticalYesNo.NO);
 
-        PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
+        DefendantResponses savedResponse = savedDraft.getPossessionClaimResponse().getDefendantResponses();
         assertThat(savedResponse.getReasonableAdjustments()).isEqualTo(reasonableAdjustments);
         assertThat(savedResponse.getHouseholdCircumstances()).isEqualTo(householdCircumstances);
         assertThat(savedResponse.getPaymentAgreement()).isEqualTo(paymentAgreement);
@@ -287,10 +299,12 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     @Test
     void shouldAllowNullPartyInPartialUpdate() {
         //Given
-        PCSCase caseData = buildCaseData(
-            DefendantContactDetails.builder().party(null).build(),
-            null,null,null,null
-        );
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantContactDetails(
+                                                 DefendantContactDetails.builder()
+                                                     .party(null)
+                                                     .build())
+                                             .build());
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -314,7 +328,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .contactByPost(VerticalYesNo.YES)
             .build();
 
-        PCSCase caseData = buildCaseData(null, responses, null,null,null);
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder().defendantResponses(responses).build());
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -337,7 +351,10 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .party(Party.builder().firstName("Jack").lastName("Smith").build())
             .build();
 
-        PCSCase caseData = buildCaseData(contactDetails, null,null,null,null);
+
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantContactDetails(contactDetails)
+                                             .build());
 
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of());
@@ -356,20 +373,11 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(response.getData()).isNull();
     }
 
-    private PCSCase buildCaseData(DefendantContactDetails contactDetails,
-                                  DefendantResponses responses,
-                                  ReasonableAdjustments reasonableAdjustments,
-                                  HouseholdCircumstances householdCircumstances,
-                                  PaymentAgreement paymentAgreement) {
+    private PCSCase buildCaseData(PossessionClaimResponse possessionClaimResponse) {
         return PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder()
-                                         .defendantContactDetails(contactDetails)
-                                         .defendantResponses(responses)
-                                         .reasonableAdjustments(reasonableAdjustments)
-                                         .householdCircumstances(householdCircumstances)
-                                         .paymentAgreement(paymentAgreement)
-                                         .build())
+            .possessionClaimResponse(possessionClaimResponse)
             .build();
+
     }
 }
 

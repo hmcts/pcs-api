@@ -24,12 +24,12 @@ class PaymentAgreementServiceTest {
     @Test
     void shouldMapAnyPaymentsMadeField() {
         //Given
-        PaymentAgreement model = PaymentAgreement.builder()
+        PaymentAgreement paymentAgreement = PaymentAgreement.builder()
             .anyPaymentsMade(YesOrNo.YES)
             .build();
 
         //When
-        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(paymentAgreement);
 
         //Then
         assertThat(entity.getAnyPaymentsMade()).isEqualTo(YesOrNo.YES);

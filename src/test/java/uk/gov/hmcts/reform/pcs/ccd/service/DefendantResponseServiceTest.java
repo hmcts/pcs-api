@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
@@ -100,24 +99,34 @@ class DefendantResponseServiceTest {
         );
     }
 
+    private void stubPartyLookup() {
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+    }
+
+    private void stubClaimLookup() {
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+    }
+
     @Test
     void shouldSaveDefendantResponseWithJpaProxies() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
             .noticeReceived(YesNoNotSure.YES)
             .noticeReceivedDate(LocalDate.of(2024, 1, 15))
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
+            .landlordRegistered(YesNoNotSure.YES)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -137,8 +146,9 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getPossessionNoticeReceived()).isEqualTo(YesNoNotSure.YES);
         assertThat(savedResponse.getNoticeReceivedDate()).isEqualTo(LocalDate.of(2024, 1, 15));
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
-
+        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);
+
     }
 
     @Test
@@ -147,12 +157,9 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.NO)
@@ -178,12 +185,9 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.PREFER_NOT_TO_SAY)
@@ -209,12 +213,9 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(null)
@@ -232,6 +233,43 @@ class DefendantResponseServiceTest {
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isNull();
+    }
+
+    @ParameterizedTest(name = "landlordRegistered={0}")
+    @MethodSource("landlordRegisteredPersistenceScenarios")
+    void shouldPersistlandlordRegistered(YesNoNotSure landlordRegistered) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .landlordRegistered(landlordRegistered)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(landlordRegistered);
+    }
+
+    private static Stream<Arguments> landlordRegisteredPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of(YesNoNotSure.NOT_SURE),
+            Arguments.of((YesNoNotSure) null)
+        );
     }
 
     @Test
@@ -336,12 +374,9 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
@@ -372,22 +407,19 @@ class DefendantResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
             .build();
 
-        // When
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(responses)
             .build();
 
+        // When
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then - Verify execution order matches optimal pattern:
@@ -409,20 +441,91 @@ class DefendantResponseServiceTest {
         verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
     }
 
-    @Test
-    void shouldBuildAndLinkChildEntitiesWhenSavingDefendantResponse() {
+    @ParameterizedTest(name = "tenancyStartDate={0}")
+    @MethodSource("tenancyStartDatePersistenceScenarios")
+    void shouldPersistTenancyStartDate(LocalDate tenancyStartDate) {
+        // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .tenancyStartDate(tenancyStartDate)
+            .build();
+
+        // When
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getTenancyStartDate()).isEqualTo(tenancyStartDate);
+    }
+
+
+    private static Stream<Arguments> tenancyStartDatePersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(LocalDate.of(2010, 1, 1)),
+            Arguments.of((LocalDate) null)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("tenancyStartDateConfirmationScenarios")
+    void shouldSaveDefendantResponseWithTenancyStartDateConfirmation(
+        YesNoNotSure tenancyStartDateConfirmation,
+        LocalDate inputTenancyStartDate,
+        LocalDate expectedSavedTenancyStartDate
+    ) {
+
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
+            .tenancyStartDate(inputTenancyStartDate)
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+
+        DefendantResponseEntity saved = responseCaptor.getValue();
+
+        assertThat(saved.getTenancyStartDateConfirmation()).isEqualTo(tenancyStartDateConfirmation);
+        assertThat(saved.getTenancyStartDate()).isEqualTo(expectedSavedTenancyStartDate);
+    }
+
+    @Test
+    void shouldBuildAndLinkChildEntitiesWhenSavingDefendantResponse() {
+
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+
+        stubPartyLookup();
+        stubClaimLookup();
 
         ReasonableAdjustments reasonableAdjustments = ReasonableAdjustments.builder()
-            .reasonableAdjustmentRequired("Wheelchair access")
+            .reasonableAdjustmentsRequired("Wheelchair access")
             .build();
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .dependantChildren(YesOrNo.YES)
@@ -441,6 +544,7 @@ class DefendantResponseServiceTest {
             .anyPaymentsMade(YesOrNo.NO)
             .build();
 
+        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
         when(reasonableAdjustmentsService.createReasonableAdjustmentEntity(any(ReasonableAdjustments.class)))
             .thenReturn(reasonableAdjustmentEntity);
         when(householdCircumstancesService.createHouseholdCircumstancesEntity(any(HouseholdCircumstances.class)))
@@ -450,16 +554,19 @@ class DefendantResponseServiceTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
-            .build();
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
             .reasonableAdjustments(reasonableAdjustments)
             .householdCircumstances(householdCircumstances)
             .paymentAgreement(paymentAgreement)
             .build();
 
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        //When
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
+        //Then
         verify(reasonableAdjustmentsService).createReasonableAdjustmentEntity(any(ReasonableAdjustments.class));
         verify(householdCircumstancesService).createHouseholdCircumstancesEntity(any(HouseholdCircumstances.class));
         verify(paymentAgreementService).createPaymentAgreementEntity(any(PaymentAgreement.class));
@@ -471,116 +578,14 @@ class DefendantResponseServiceTest {
         assertThat(saved.getPaymentAgreement()).isSameAs(paymentAgreementEntity);
     }
 
-    @Test
-    void shouldNotSaveDefendantResponseWhenTenancyDateIsEmpty() {
-
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .tenancyStartDate(null)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity saved = responseCaptor.getValue();
-        assertThat(saved.getTenancyStartDate()).isNull();
-    }
-
-    @Test
-    void shouldSaveDefendantResponseWhenTenancyDateIsPresent() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
-
-        LocalDate date = LocalDate.of(2023, 7, 1);
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .tenancyStartDateConfirmation(YesNoNotSure.YES)
-            .tenancyStartDate(date)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity saved = responseCaptor.getValue();
-        assertThat(saved.getTenancyStartDateConfirmation()).isEqualTo(YesNoNotSure.YES);
-        assertThat(saved.getTenancyStartDate()).isEqualTo(date);
-    }
-
-    @ParameterizedTest
-    @MethodSource("tenancyStartDateConfirmationScenarios")
-    void shouldSaveDefendantResponseWithTenancyStartDateConfirmation(
-        YesNoNotSure tenancyStartDateConfirmation,
-        LocalDate inputTenancyStartDate,
-        LocalDate expectedSavedTenancyStartDate
-    ) {
-
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE))
-            .thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID))
-            .thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
-        when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
-            .tenancyStartDate(inputTenancyStartDate)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-
-        DefendantResponseEntity saved = responseCaptor.getValue();
-
-        assertThat(saved.getTenancyStartDateConfirmation()).isEqualTo(tenancyStartDateConfirmation);
-        assertThat(saved.getTenancyStartDate()).isEqualTo(expectedSavedTenancyStartDate);
-    }
-
     private static Stream<Arguments> tenancyStartDateConfirmationScenarios() {
         return Stream.of(
             Arguments.of(YesNoNotSure.YES, LocalDate.of(2007, 7, 7), LocalDate.of(2007, 7, 7)),
             Arguments.of(YesNoNotSure.NOT_SURE, LocalDate.of(2012, 9, 11), null),
             Arguments.of(YesNoNotSure.NO, null, null),
-            Arguments.of(YesNoNotSure.NO, LocalDate.of(2024, 5, 15), LocalDate.of(2024, 5, 15))
+            Arguments.of(YesNoNotSure.NO, LocalDate.of(2024, 5, 15), LocalDate.of(2024, 5, 15)),
+            Arguments.of(null, LocalDate.of(2018, 3, 10), LocalDate.of(2018, 3, 10))
         );
+
     }
 }

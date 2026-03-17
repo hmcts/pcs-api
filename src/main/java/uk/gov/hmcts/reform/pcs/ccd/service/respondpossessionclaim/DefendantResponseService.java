@@ -69,7 +69,6 @@ public class DefendantResponseService {
      */
     public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse) {
         UUID userId = securityContextService.getCurrentUserId();
-        DefendantResponses defendantResponses = possessionClaimResponse.getDefendantResponses();
 
         if (userId == null) {
             log.error("Cannot save defendant response: current user IDAM ID is null");
@@ -95,16 +94,21 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
-        DefendantResponseEntity responseEntity = buildDefendantResponseEntity(claimRef, partyRef, defendantResponses);
+        DefendantResponseEntity responseEntity =
+            buildDefendantResponseEntity(
+                claimRef,
+                partyRef,
+                possessionClaimResponse.getDefendantResponses()
+            );
 
-        buildAndLinkChildEntities(responseEntity, possessionClaimResponse);
+        buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
 
         defendantResponseRepository.save(responseEntity);
 
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
     }
 
-    public DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
+    private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
                                                                 PartyEntity partyRef,
                                                                 DefendantResponses responses) {
 
@@ -114,14 +118,16 @@ public class DefendantResponseService {
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
             .possessionNoticeReceived(responses.getNoticeReceived())
-            .noticeReceivedDate(responses.getNoticeReceivedDate())
-            .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
+            .defendantNameConfirmation(responses.getDefendantNameConfirmation())
+            .landlordRegistered(responses.getLandlordRegistered())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
-                tenancyStartDateConfirmation != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
+                responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
                     ? responses.getTenancyStartDate()
                     : null
             )
+            .noticeReceivedDate(responses.getNoticeReceivedDate())
+            .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
             .build();
 
         //set bidirectional relationship with the pcs case
@@ -130,9 +136,9 @@ public class DefendantResponseService {
         return defendantResponse;
     }
 
-    public void buildAndLinkChildEntities(
+    private void buildAndLinkChildEntities(
         DefendantResponseEntity defendantResponseEntity,
-        PossessionClaimResponse response) {
+        DefendantResponses response) {
 
         defendantResponseEntity.setReasonableAdjustment(
             reasonableAdjustmentsService.createReasonableAdjustmentEntity(

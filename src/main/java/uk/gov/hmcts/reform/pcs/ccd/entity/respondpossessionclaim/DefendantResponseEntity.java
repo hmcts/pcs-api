@@ -21,8 +21,10 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -86,6 +88,19 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "tenancy_start_date_confirmation")
+    private YesNoNotSure tenancyStartDateConfirmation;
+
+    @Column(name = "tenancy_start_date")
+    private LocalDate tenancyStartDate;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "defendant_name_confirmation")
+    private VerticalYesNo defendantNameConfirmation;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo correspondenceAddressConfirmation;
 
     @Enumerated(EnumType.STRING)
@@ -102,8 +117,11 @@ public class DefendantResponseEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo disputeClaim;
 
+    private String disputeClaimDetails;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "landlord_registered")
     private YesNoNotSure landlordRegistered;
 
     @Enumerated(EnumType.STRING)
@@ -111,16 +129,7 @@ public class DefendantResponseEntity {
     private YesOrNo makeCounterClaim;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "tenancy_start_date_confirmation")
-    private YesNoNotSure tenancyStartDateConfirmation;
-
-    @Column(name = "tenancy_start_date")
-    private LocalDate tenancyStartDate;
-
-    private Integer version;
-
-    private String status;
+    private DefendantResponseStatus status;
 
     private LocalDateTime responseSubmittedDate;
 
@@ -181,4 +190,5 @@ public class DefendantResponseEntity {
             this.statementOfTruth.setDefendantResponse(this);
         }
     }
+
 }
