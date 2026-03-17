@@ -24,7 +24,10 @@ public class DefendantResponses {
     private YesNoNotSure tenancyTypeCorrect;
 
     @CCD
-    private YesNoNotSure tenancyStartDateCorrect;
+    private LocalDate tenancyStartDate;
+
+    @CCD
+    private YesNoNotSure tenancyStartDateConfirmation;
 
     @CCD
     private YesNoNotSure oweRentArrears;
@@ -53,4 +56,13 @@ public class DefendantResponses {
 
     @CCD
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
+
+    @CCD
+    private LocalDate dateOfBirth;
+
+    @CCD
+    private VerticalYesNo defendantNameConfirmation;
+
+    @CCD
+    private YesNoNotSure landlordRegistered;
 }
