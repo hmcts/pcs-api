@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.ConfirmEvictionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.ConfirmEvictionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -21,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementT
 
 import java.util.List;
 import java.util.Set;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.getSelectEnforcementTypeFromName;
 
 @Service
 @Slf4j
@@ -75,7 +76,8 @@ public class EnforcementOrderService {
         ClaimEntity claimEntity = getClaimEntity(caseReference);
         EnforcementOrderEntity orderEntity = enforcementOrderRepository
             .save(mapToEntity(enforcementOrder, claimEntity));
-        strategyFactory.getStrategy(enforcementOrder.getSelectEnforcementType())
+        strategyFactory.getStrategy(getSelectEnforcementTypeFromName(
+                enforcementOrder.getChooseEnforcementType().getValueCode()))
             .process(orderEntity, enforcementOrder);
     }
 
@@ -83,8 +85,8 @@ public class EnforcementOrderService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         List<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
         if (CollectionUtils.isEmpty(claimEntities)) {
-            log.error("No claim found for case reference {}", caseReference);
-            throw new ClaimNotFoundException(pcsCaseEntity.getCaseReference());
+            throw new IllegalStateException("Cannot create enforcement order because no claim entity exists for "
+                                                + "caseReference=" + caseReference);
         }
         // Assuming 1 claim per PcsCase
         return claimEntities.getFirst();
