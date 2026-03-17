@@ -89,6 +89,10 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.hearings.mapping.HearingRequestMapper;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingResponse;
+import uk.gov.hmcts.reform.pcs.hearings.service.HmcHearingService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -155,6 +159,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
     private final RentDetailsPage rentDetailsPage;
+    private final HmcHearingService hmcHearingService;
+    private final HearingRequestMapper hearingRequestMapper;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -316,6 +322,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         pcsCaseService.createMainClaimOnCase(caseReference, pcsCase);
 
+        requestHearing(caseReference, pcsCase);
+
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
         schedulePartyAccessCodeGeneration(caseReference);
@@ -328,6 +336,17 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
             .build();
+    }
+
+    private void requestHearing(long caseReference, PCSCase pcsCase) {
+        try {
+            HearingRequest request = hearingRequestMapper.buildHearingRequest(1773740689320483L, pcsCase);
+            HearingResponse response = hmcHearingService.createHearing(request);
+            pcsCaseService.saveHearingId(caseReference, String.valueOf(response.getHearingRequestId()));
+            log.info("Hearing created for case {}: hearingId={}", caseReference, response.getHearingRequestId());
+        } catch (Exception e) {
+            log.error("Failed to create HMC hearing for case {}: {}", caseReference, e.getMessage(), e);
+        }
     }
 
     private SubmitResponse<State> saveForLater() {

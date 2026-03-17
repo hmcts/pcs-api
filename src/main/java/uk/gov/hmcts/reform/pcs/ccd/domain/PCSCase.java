@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
@@ -500,5 +501,12 @@ public class PCSCase {
     )
     @SuppressWarnings("MemberName") // Field name is case-sensitive in CCD
     private SearchCriteria searchCriteria;
+
+    @CCD(
+        label = "Hearing ID",
+        searchable = false,
+        access = {CaseworkerReadAccess.class}
+    )
+    private String hearingId;
 
 }

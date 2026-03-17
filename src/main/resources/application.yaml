@@ -107,8 +107,15 @@ azure:
 
 hmc:
   deployment-id: ${HMC_DEPLOYMENT_ID:}
-  api-url: ${HMC_API_URL:http://localhost:8084}
-  serviceId: ${HMC_SERVICE_ID:AAA3}
+  api-url: ${HMC_API_URL:http://hmc-cft-hearing-service-aat.service.core-compute-aat.internal}
+  serviceId: ${HMC_SERVICE_ID:BBA3}
+  hearingType: ${HMC_HEARING_TYPE:BBA3-SUB}
+  defaultHearingDurationMinutes: ${HMC_DEFAULT_HEARING_DURATION_MINUTES:60}
+  temp-user-token: ${TEMP_USER_TOKEN:}
+  temp-s2s-token: ${TEMP_S2S_TOKEN:}
+
+exui:
+  url: ${EXUI_URL:https://manage-case.aat.platform.hmcts.net}
 
 location-reference:
   api-url: ${LOCATION_REF_URL:http://localhost:8089}

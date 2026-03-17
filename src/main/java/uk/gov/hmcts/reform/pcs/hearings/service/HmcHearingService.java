@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.hearings.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.hearings.model.DeleteHearingRequest;
@@ -22,24 +23,37 @@ public class HmcHearingService {
     private final IdamService idamService;
     @Value("${hmc.deployment-id}")
     private String hmctsDeploymentId;
+    // TODO: remove once pcs-api system user has hearing-manager role assigned in RAS
+    @Value("${hmc.temp-user-token:}")
+    private String tempUserToken;
+    @Value("${hmc.temp-s2s-token:}")
+    private String tempS2sToken;
 
     public HearingResponse createHearing(@RequestBody HearingRequest hearingPayload) {
-        return hmcHearingApi.createHearing(idamService.getSystemUserAuthorisation(), authTokenGenerator.generate(),
+        return hmcHearingApi.createHearing(getAuthorisation(), authTokenGenerator.generate(),
                                            hmctsDeploymentId, hearingPayload);
     }
 
     public HearingResponse updateHearing(String id, @RequestBody UpdateHearingRequest hearingPayload) {
-        return hmcHearingApi.updateHearing(idamService.getSystemUserAuthorisation(), authTokenGenerator.generate(),
+        return hmcHearingApi.updateHearing(getAuthorisation(), authTokenGenerator.generate(),
                                            hmctsDeploymentId, id, hearingPayload);
     }
 
     public HearingResponse deleteHearing(String id, @RequestBody DeleteHearingRequest hearingDeletePayload) {
-        return hmcHearingApi.deleteHearing(idamService.getSystemUserAuthorisation(), authTokenGenerator.generate(),
+        return hmcHearingApi.deleteHearing(getAuthorisation(), authTokenGenerator.generate(),
                                            hmctsDeploymentId, id, hearingDeletePayload);
     }
 
     public GetHearingsResponse getHearing(String id) {
-        return hmcHearingApi.getHearing(idamService.getSystemUserAuthorisation(), authTokenGenerator.generate(),
+        return hmcHearingApi.getHearing(getAuthorisation(), authTokenGenerator.generate(),
                                         hmctsDeploymentId, id, null);
+    }
+
+    private String getAuthorisation() {
+        return StringUtils.hasText(tempUserToken) ? tempUserToken : idamService.getSystemUserAuthorisation();
+    }
+
+    private String getServiceAuthorisation() {
+        return StringUtils.hasText(tempS2sToken) ? tempS2sToken : getServiceAuthorisation();
     }
 }
