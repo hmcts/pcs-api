@@ -44,6 +44,9 @@ public class DefendantResponses {
     private BigDecimal rentArrearsAmount;
 
     @CCD
+    private VerticalYesNo defendantNameConfirmation;
+
+    @CCD
     private YesNoNotSure noticeReceived;
 
     @CCD
