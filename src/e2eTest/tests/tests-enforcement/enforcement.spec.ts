@@ -31,16 +31,17 @@ import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-act
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { aggressiveAnimalsRisk,
-         additionalInformation,
-         criminalAntisocialRisk,
-         livingInTheProperty,
-         evictionDelayWarning,
-         firearmsPossessionRisk,
-         protestorGroupRisk,
-         propertyAccessDetails
- } from '@data/page-data-figma/page-data-enforcement-figma';
- 
+import {
+  aggressiveAnimalsRisk,
+  additionalInformation,
+  criminalAntisocialRisk,
+  livingInTheProperty,
+  evictionDelayWarning,
+  firearmsPossessionRisk,
+  protestorGroupRisk,
+  propertyAccessDetails
+} from '@data/page-data-figma/page-data-enforcement-figma';
+
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);

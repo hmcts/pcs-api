@@ -58,6 +58,9 @@ public class DefendantResponses {
     @CCD
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
 
+    @CCD
+    private YesNoNotSure landlordRegistered;
+
     @CCD(access = {CitizenAccess.class})
     private ReasonableAdjustments reasonableAdjustments;
 

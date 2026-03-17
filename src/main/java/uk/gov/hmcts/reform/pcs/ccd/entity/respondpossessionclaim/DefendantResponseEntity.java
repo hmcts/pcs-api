@@ -119,6 +119,7 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "landlord_registered")
     private YesNoNotSure landlordRegistered;
 
     @Enumerated(EnumType.STRING)
@@ -187,4 +188,5 @@ public class DefendantResponseEntity {
             this.statementOfTruth.setDefendantResponse(this);
         }
     }
+
 }

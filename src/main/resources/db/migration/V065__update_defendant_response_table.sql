@@ -8,7 +8,6 @@ ALTER TABLE defendant_response
     ADD COLUMN rent_arrears_amount_confirmation YES_NO_NOT_SURE,
     ADD COLUMN dispute_claim YES_NO,
     ADD COLUMN dispute_claim_details VARCHAR(6800),
-    ADD COLUMN landlord_registered YES_NO_NOT_SURE,
     ADD COLUMN make_counter_claim YES_NO,
     ADD COLUMN version INT,
     ADD COLUMN status VARCHAR(60),

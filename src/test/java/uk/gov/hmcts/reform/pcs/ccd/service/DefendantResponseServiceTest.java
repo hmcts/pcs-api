@@ -126,6 +126,7 @@ class DefendantResponseServiceTest {
             .noticeReceived(YesNoNotSure.YES)
             .noticeReceivedDate(LocalDate.of(2024, 1, 15))
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
+            .landlordRegistered(YesNoNotSure.YES)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -145,8 +146,9 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getPossessionNoticeReceived()).isEqualTo(YesNoNotSure.YES);
         assertThat(savedResponse.getNoticeReceivedDate()).isEqualTo(LocalDate.of(2024, 1, 15));
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
-
+        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);
+
     }
 
     @Test
@@ -231,6 +233,43 @@ class DefendantResponseServiceTest {
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isNull();
+    }
+
+    @ParameterizedTest(name = "landlordRegistered={0}")
+    @MethodSource("landlordRegisteredPersistenceScenarios")
+    void shouldPersistlandlordRegistered(YesNoNotSure landlordRegistered) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .landlordRegistered(landlordRegistered)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(landlordRegistered);
+    }
+
+    private static Stream<Arguments> landlordRegisteredPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of(YesNoNotSure.NOT_SURE),
+            Arguments.of((YesNoNotSure) null)
+        );
     }
 
     @Test
