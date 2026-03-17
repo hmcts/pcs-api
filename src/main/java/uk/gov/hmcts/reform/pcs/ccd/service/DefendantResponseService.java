@@ -98,9 +98,10 @@ public class DefendantResponseService {
             .claim(claimRef)
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
+            .landlordRegistered(responses.getLandlordRegistered())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
-                tenancyStartDateConfirmation != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
+                responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
                     ? responses.getTenancyStartDate()
                     : null
             )
