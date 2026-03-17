@@ -59,4 +59,10 @@ public class DefendantResponses {
 
     @CCD
     private YesNoNotSure landlordRegistered;
+
+    @CCD
+    private VerticalYesNo disputeClaim;
+
+    @CCD
+    private String disputeDetails;
 }
