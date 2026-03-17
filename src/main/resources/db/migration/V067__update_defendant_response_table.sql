@@ -1,7 +1,6 @@
 ALTER TABLE defendant_response
     ADD COLUMN sot_id UUID UNIQUE REFERENCES statement_of_truth(id),
     ADD COLUMN pcs_case_id UUID NOT NULL REFERENCES pcs_case(id),
-    ADD COLUMN defendant_name_confirmation YES_NO,
     ADD COLUMN correspondence_address_confirmation YES_NO,
     ADD COLUMN possession_notice_received YES_NO_NOT_SURE,
     ADD COLUMN notice_received_date DATE,

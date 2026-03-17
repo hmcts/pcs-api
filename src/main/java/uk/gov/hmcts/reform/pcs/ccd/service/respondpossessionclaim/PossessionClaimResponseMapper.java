@@ -39,12 +39,15 @@ public class PossessionClaimResponseMapper {
     public PossessionClaimResponse mapFrom(PCSCase pcsCase, PartyEntity matchedDefendant) {
         DefendantContactDetails contactDetails = buildContactDetails(pcsCase, matchedDefendant);
 
+        Party claimantEnteredDetails = buildPartyFromEntity(matchedDefendant, pcsCase);
+
         // Extract org names from CLAIMANT-role parties (pre-filtered by PCSCaseView.getPartyMap)
         List<ListValue<String>> claimantOrgs = extractClaimantOrganisations(pcsCase);
 
         return PossessionClaimResponse.builder()
             .claimantOrganisations(claimantOrgs)
             .defendantContactDetails(contactDetails)
+            .claimantEnteredDefendantDetails(claimantEnteredDetails)
             .build();
     }
 
@@ -56,22 +59,28 @@ public class PossessionClaimResponseMapper {
      * @return DefendantContactDetails with initialized party details
      */
     private DefendantContactDetails buildContactDetails(PCSCase pcsCase, PartyEntity matchedDefendant) {
-        AddressUK contactAddress = resolveAddress(matchedDefendant, pcsCase);
-
-        Party defendantParty = Party.builder()
-            .firstName(matchedDefendant.getFirstName())
-            .lastName(matchedDefendant.getLastName())
-            .nameKnown(matchedDefendant.getNameKnown())
-            .emailAddress(matchedDefendant.getEmailAddress())
-            .address(contactAddress)
-            .addressKnown(matchedDefendant.getAddressKnown())
-            .addressSameAsProperty(matchedDefendant.getAddressSameAsProperty())
-            .phoneNumber(matchedDefendant.getPhoneNumber())
-            .phoneNumberProvided(matchedDefendant.getPhoneNumberProvided())
-            .build();
+        Party defendantParty = buildPartyFromEntity(matchedDefendant, pcsCase);
 
         return DefendantContactDetails.builder()
             .party(defendantParty)
+            .build();
+    }
+
+
+    public Party buildPartyFromEntity(PartyEntity partyEntity, PCSCase pcsCase) {
+        AddressUK contactAddress = resolveAddress(partyEntity, pcsCase);
+
+        return Party.builder()
+            .firstName(partyEntity.getFirstName())
+            .lastName(partyEntity.getLastName())
+            .nameKnown(partyEntity.getNameKnown())
+            .emailAddress(partyEntity.getEmailAddress())
+            .address(contactAddress)
+            .addressKnown(partyEntity.getAddressKnown())
+            .addressSameAsProperty(partyEntity.getAddressSameAsProperty())
+            .phoneNumber(partyEntity.getPhoneNumber())
+            .phoneNumberProvided(partyEntity.getPhoneNumberProvided())
+            .dateOfBirth(partyEntity.getDateOfBirth())
             .build();
     }
 

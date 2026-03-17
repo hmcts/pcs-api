@@ -303,6 +303,61 @@ class ClaimResponseServiceTest {
         assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.YES);
     }
 
+    @Test
+    void shouldUpdateFirstNameAndLastName() {
+        // Given
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .firstName("John")
+                .lastName("Doe")
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .build()
+        );
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        verify(partyRepository).save(partyCaptor.capture());
+        PartyEntity savedParty = partyCaptor.getValue();
+        assertThat(savedParty.getFirstName()).isEqualTo("John");
+        assertThat(savedParty.getLastName()).isEqualTo("Doe");
+    }
+
+    @Test
+    void shouldNotUpdateFirstNameAndLastNameWhenBlank() {
+        // Given
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .firstName("")
+                .lastName("   ")
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .build()
+        );
+
+        testParty.setFirstName("ExistingFirst");
+        testParty.setLastName("ExistingLast");
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        verify(partyRepository).save(partyCaptor.capture());
+        PartyEntity savedParty = partyCaptor.getValue();
+        assertThat(savedParty.getFirstName()).isEqualTo("ExistingFirst");
+        assertThat(savedParty.getLastName()).isEqualTo("ExistingLast");
+    }
+
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {
         return PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder().party(party).build())

@@ -1,0 +1,2 @@
+ALTER TABLE party
+    ADD COLUMN dob DATE;

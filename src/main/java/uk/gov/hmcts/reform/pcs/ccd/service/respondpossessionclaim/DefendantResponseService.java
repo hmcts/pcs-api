@@ -118,6 +118,7 @@ public class DefendantResponseService {
             .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
             .possessionNoticeReceived(responses.getNoticeReceived())
+            .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
