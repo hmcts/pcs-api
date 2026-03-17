@@ -94,6 +94,7 @@ public class DefendantResponseService {
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         YesNoNotSure tenancyStartDateConfirmation = responses.getTenancyStartDateConfirmation();
+        // TODO: rentArrearsAmount on final submit will be later stored in party attribute assertion
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
