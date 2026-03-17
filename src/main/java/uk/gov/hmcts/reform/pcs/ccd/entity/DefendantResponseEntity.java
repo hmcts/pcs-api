@@ -57,6 +57,11 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "defendant_name_confirmation")
+    private VerticalYesNo defendantNameConfirmation;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "tenancy_start_date_confirmation")
     private YesNoNotSure tenancyStartDateConfirmation;
 
