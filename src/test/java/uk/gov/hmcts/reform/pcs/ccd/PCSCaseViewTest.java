@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -210,6 +211,7 @@ class PCSCaseViewTest {
         persistedFlags.setPartyName("Persisted Party");
         persistedFlags.setRoleOnCase("claimant");
         when(partyEntity.getFlags()).thenReturn(persistedFlags);
+        when(partyEntity.getExternalFlags()).thenReturn(null);
 
         Party party = Party.builder().build();
         when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
@@ -219,6 +221,33 @@ class PCSCaseViewTest {
         Flags mappedFlags = pcsCase.getParties().getFirst().getValue().getFlags();
         assertThat(mappedFlags.getPartyName()).isEqualTo("Persisted Party");
         assertThat(mappedFlags.getRoleOnCase()).isEqualTo("claimant");
+        assertThat(mappedFlags.getVisibility()).isEqualTo(FlagVisibility.INTERNAL);
+        assertThat(mappedFlags.getGroupId()).isEqualTo(partyId);
+    }
+
+    @Test
+    void shouldMapPersistedExternalPartyFlags() {
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
+        when(partyEntity.getId()).thenReturn(partyId);
+        when(partyEntity.getFlags()).thenReturn(null);
+
+        Flags externalFlags = new Flags();
+        externalFlags.setPartyName("External Party");
+        externalFlags.setRoleOnCase("defendant");
+        when(partyEntity.getExternalFlags()).thenReturn(externalFlags);
+
+        Party party = Party.builder().build();
+        when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
+
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        Flags mappedFlags = pcsCase.getParties().getFirst().getValue().getExternalCaseFlags();
+        assertThat(mappedFlags.getPartyName()).isEqualTo("External Party");
+        assertThat(mappedFlags.getRoleOnCase()).isEqualTo("defendant");
+        assertThat(mappedFlags.getVisibility()).isEqualTo(FlagVisibility.EXTERNAL);
+        assertThat(mappedFlags.getGroupId()).isEqualTo(partyId);
     }
 
     @Test

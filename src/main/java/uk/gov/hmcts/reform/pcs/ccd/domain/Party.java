@@ -40,4 +40,9 @@ public class Party {
         retainHiddenValue = true)
     private Flags flags;
 
+    @CCD(
+        label = "Party Flags",
+        retainHiddenValue = true)
+    private Flags externalCaseFlags;
+
 }

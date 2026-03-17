@@ -8,6 +8,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -201,6 +202,7 @@ class PcsCaseServiceTest {
 
         Flags partyFlags = new Flags();
         partyFlags.setPartyName("party-level");
+        partyFlags.setVisibility(FlagVisibility.INTERNAL);
 
         Party party = Party.builder().flags(partyFlags).build();
         List<ListValue<Party>> parties = List.of(ListValue.<Party>builder()
@@ -212,6 +214,35 @@ class PcsCaseServiceTest {
 
         assertThat(pcsCaseEntity.getCaseFlags()).isSameAs(caseFlags);
         assertThat(partyEntity.getFlags()).isSameAs(partyFlags);
+        assertThat(partyEntity.getFlags().getGroupId()).isEqualTo(partyId);
+        assertThat(partyEntity.getFlags().getVisibility()).isEqualTo(FlagVisibility.INTERNAL);
+        verify(pcsCaseRepository).save(pcsCaseEntity);
+    }
+
+    @Test
+    void shouldPersistExternalPartyFlagsByVisibility() {
+        PcsCaseEntity pcsCaseEntity = stubFindRealCase();
+        PartyEntity partyEntity = new PartyEntity();
+        UUID partyId = UUID.randomUUID();
+        partyEntity.setId(partyId);
+        pcsCaseEntity.setParties(Set.of(partyEntity));
+
+        Flags externalFlags = new Flags();
+        externalFlags.setPartyName("external-party-level");
+        externalFlags.setVisibility(FlagVisibility.EXTERNAL);
+
+        Party party = Party.builder().externalCaseFlags(externalFlags).build();
+        List<ListValue<Party>> parties = List.of(ListValue.<Party>builder()
+            .id(partyId.toString())
+            .value(party)
+            .build());
+
+        underTest.updateCaseFlags(CASE_REFERENCE, new Flags(), parties);
+
+        assertThat(partyEntity.getFlags()).isNull();
+        assertThat(partyEntity.getExternalFlags()).isSameAs(externalFlags);
+        assertThat(partyEntity.getExternalFlags().getGroupId()).isEqualTo(partyId);
+        assertThat(partyEntity.getExternalFlags().getVisibility()).isEqualTo(FlagVisibility.EXTERNAL);
         verify(pcsCaseRepository).save(pcsCaseEntity);
     }
 

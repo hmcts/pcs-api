@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.party;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -83,6 +84,10 @@ public class PartyEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     private Flags flags;
+
+    @Column(name = "external_flags", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Flags externalFlags;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

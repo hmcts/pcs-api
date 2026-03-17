@@ -93,5 +93,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getFlagLauncher, null, "#ARGUMENT(READ)")
             .field(PCSCase::getCaseFlags, NEVER_SHOW)
             .field(PCSCase::getParties,NEVER_SHOW);
+
+        builder.tab("support", "Support")
+            .field(PCSCase::getExternalFlagLauncher, null, "#ARGUMENT(READ,EXTERNAL)")
+            .field(PCSCase::getCaseFlags, NEVER_SHOW)
+            .field(PCSCase::getParties,NEVER_SHOW);
     }
 }

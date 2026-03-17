@@ -514,4 +514,10 @@ public class PCSCase {
         access = {ClaimantAccess.class}
     )
     private FlagLauncher flagLauncher;
+
+    @CCD(
+        label = "Launch the external Flags screen",
+        access = {ClaimantAccess.class}
+    )
+    private FlagLauncher externalFlagLauncher;
 }

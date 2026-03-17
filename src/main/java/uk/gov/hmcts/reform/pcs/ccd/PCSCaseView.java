@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
@@ -232,7 +233,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return partyEntities.stream()
             .map(entity -> {
                 Party party = modelMapper.map(entity, Party.class);
-                party.setFlags(buildFlags(entity));
+                party.setFlags(buildFlags(entity.getFlags(), entity, FlagVisibility.INTERNAL));
+                party.setExternalCaseFlags(buildFlags(entity.getExternalFlags(), entity, FlagVisibility.EXTERNAL));
                 return ListValue.<Party>builder()
                     .id(entity.getId().toString())
                     .value(party)
@@ -241,8 +243,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .toList();
     }
 
-    private Flags buildFlags(PartyEntity entity) {
-        Flags flags = Optional.ofNullable(entity.getFlags()).orElseGet(Flags::new);
+    private Flags buildFlags(Flags persistedFlags, PartyEntity entity, FlagVisibility defaultVisibility) {
+        Flags flags = Optional.ofNullable(persistedFlags).orElseGet(Flags::new);
 
         if (isBlank(flags.getRoleOnCase())) {
             flags.setRoleOnCase(
@@ -258,6 +260,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                     .filter(Objects::nonNull)
                     .collect(Collectors.joining(" "))
             );
+        }
+
+        if (flags.getVisibility() == null) {
+            flags.setVisibility(defaultVisibility);
+        }
+
+        if (flags.getGroupId() == null) {
+            flags.setGroupId(entity.getId());
         }
 
         return flags;

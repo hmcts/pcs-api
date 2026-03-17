@@ -3,9 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -93,12 +94,32 @@ public class PcsCaseService {
 
                 PartyEntity partyEntity = partiesById.get(partyId);
                 if (partyEntity != null) {
-                    partyEntity.setFlags(partyListValue.getValue().getFlags());
+                    Party party = partyListValue.getValue();
+                    partyEntity.setFlags(prepareFlags(party.getFlags(), FlagVisibility.INTERNAL, partyId));
+                    partyEntity.setExternalFlags(prepareFlags(
+                        party.getExternalCaseFlags(),
+                        FlagVisibility.EXTERNAL,
+                        partyId
+                    ));
                 }
             }
         }
 
         pcsCaseRepository.save(pcsCaseEntity);
+    }
+
+    private Flags prepareFlags(Flags flags, FlagVisibility targetVisibility, UUID partyId) {
+        if (flags == null) {
+            return null;
+        }
+
+        if (flags.getVisibility() != null && flags.getVisibility() != targetVisibility) {
+            return null;
+        }
+
+        flags.setVisibility(targetVisibility);
+        flags.setGroupId(partyId);
+        return flags;
     }
 
 }
