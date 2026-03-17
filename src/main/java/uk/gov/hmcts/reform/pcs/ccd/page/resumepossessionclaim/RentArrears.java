@@ -51,7 +51,7 @@ public class RentArrears implements CcdPageConfiguration {
                                  </ul>
                                </section>
                                """)
-                    .optional(RentArrearsSection::getStatementDocuments)
+                    .mandatory(RentArrearsSection::getStatementDocuments)
 
                     // ---------- Total arrears ----------
                     .label("rentArrears-totalArrears-separator", "---")
@@ -61,7 +61,7 @@ public class RentArrears implements CcdPageConfiguration {
                             <h3 class="govuk-heading-s govuk-!-margin-top-0 govuk-!-margin-bottom-0">
                             How much are the total rent arrears as shown on the rent statement?</h3>
                             """)
-                    .optional(RentArrearsSection::getTotal)
+                    .mandatory(RentArrearsSection::getTotal)
 
                     // ---------- Third-party payments ----------
                     .label("rentArrears-thirdPartyPayments-separator", "---")
