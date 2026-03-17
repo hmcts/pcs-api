@@ -104,6 +104,7 @@ public class DefendantResponseService {
                     ? responses.getTenancyStartDate()
                     : null
             )
+            .tenancyTypeCorrect(responses.getTenancyTypeCorrect())
             .build();
 
         defendantResponseRepository.save(defendantResponse);
