@@ -56,7 +56,7 @@ export class ValidatePrePopulatedValues implements IValidation {
     if (count === 0) throw new Error(`Radio button related to the question ${fieldName.question} not found`);
 
     expectedString = Array.isArray(data.expected)
-      ? data.expected.map((ele) => EnforcementCommonUtils.formatPayLoadData(ele)).join(" ")
+      ? data.expected.map((ele) => EnforcementCommonUtils.formatPayLoadData(ele)).join(",")
       : EnforcementCommonUtils.formatPayLoadData(data.expected as string);
 
 
@@ -68,7 +68,7 @@ export class ValidatePrePopulatedValues implements IValidation {
         retrievedArray.push(text);
       }
     }
-    retrieved = retrievedArray.join(" ");
+    retrieved = retrievedArray.join(",");
     expect(retrieved, `The PrePopulated value for the radio button: ${fieldName.question as string} is ${expectedString} and the retrieved value is: ${retrieved}`).toEqual(expectedString);
 
   }
