@@ -1,4 +1,4 @@
-# pcs-api - SDM arbitrary comment for PR number
+# pcs-api
 
 ## Building and deploying the application
 
