@@ -219,6 +219,39 @@ class DefendantResponseServiceTest {
         );
     }
 
+    @ParameterizedTest(name = "writtenTerms={0}")
+    @MethodSource("writtenTermsPersistenceScenarios")
+    void shouldPersistWrittenTerms(YesNoNotSure writtenTerms) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .writtenTerms(writtenTerms)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getWrittenTerms()).isEqualTo(writtenTerms);
+    }
+
+    private static Stream<Arguments> writtenTermsPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of(YesNoNotSure.NOT_SURE),
+            Arguments.of((YesNoNotSure) null)
+        );
+    }
+
     @Test
     void shouldThrowExceptionWhenCurrentUserIdIsNull() {
         // Given

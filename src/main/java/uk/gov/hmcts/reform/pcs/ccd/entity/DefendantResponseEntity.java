@@ -72,4 +72,9 @@ public class DefendantResponseEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "landlord_registered")
     private YesNoNotSure landlordRegistered;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "written_terms")
+    private YesNoNotSure writtenTerms;
 }
