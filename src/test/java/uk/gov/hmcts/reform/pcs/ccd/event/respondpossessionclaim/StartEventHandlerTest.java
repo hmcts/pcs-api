@@ -10,7 +10,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -211,8 +213,6 @@ class StartEventHandlerTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenThrow(new CaseAccessException(exceptionMessage));
@@ -314,5 +314,81 @@ class StartEventHandlerTest {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
         return eventPayload;
+    }
+
+    @Test
+    void shouldPopulateClaimantEnteredDefendantDetailsWhenDraftExists() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+
+        // Draft has defendant edits
+        PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
+            .defendantContactDetails(DefendantContactDetails.builder()
+                .party(Party.builder()
+                    .firstName("Lax")
+                    .lastName("lax")
+                    .build())
+                .build())
+            .build();
+
+        PCSCase savedDraft = PCSCase.builder()
+            .possessionClaimResponse(draftResponse)
+            .build();
+
+        // Original party data from party table
+        PartyEntity matchedDefendant = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("Arun")
+            .lastName("Kumar")
+            .nameKnown(VerticalYesNo.YES)
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        Party originalParty = Party.builder()
+            .firstName("Arun")
+            .lastName("Kumar")
+            .nameKnown(VerticalYesNo.YES)
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(savedDraft));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(matchedDefendant);
+        when(responseMapper.buildPartyFromEntity(eq(matchedDefendant), any(PCSCase.class))).thenReturn(originalParty);
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
+
+        // When
+        PCSCase result = underTest.start(eventPayload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getPossessionClaimResponse()).isNotNull();
+
+        // Verify claimantEnteredDefendantDetails has original data
+        assertThat(result.getPossessionClaimResponse().getClaimantEnteredDefendantDetails()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getClaimantEnteredDefendantDetails().getFirstName())
+            .isEqualTo("Arun");
+        assertThat(result.getPossessionClaimResponse().getClaimantEnteredDefendantDetails().getLastName())
+            .isEqualTo("Kumar");
+
+        // Verify defendantContactDetails has draft edits
+        assertThat(result.getPossessionClaimResponse().getDefendantContactDetails().getParty().getFirstName())
+            .isEqualTo("Lax");
+        assertThat(result.getPossessionClaimResponse().getDefendantContactDetails().getParty().getLastName())
+            .isEqualTo("lax");
+
+        // Verify different (comparison possible)
+        assertThat(result.getPossessionClaimResponse().getClaimantEnteredDefendantDetails().getFirstName())
+            .isNotEqualTo(result.getPossessionClaimResponse().getDefendantContactDetails().getParty().getFirstName());
+
+        verify(pcsCaseService).loadCase(CASE_REFERENCE);
+        verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
+        verify(responseMapper).buildPartyFromEntity(eq(matchedDefendant), any(PCSCase.class));
     }
 }

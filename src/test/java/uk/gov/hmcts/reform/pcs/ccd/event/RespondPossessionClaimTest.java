@@ -198,8 +198,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
-            .thenReturn(false);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenThrow(new CaseAccessException("No defendants associated with this case"));
 
@@ -219,8 +217,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
-            .thenReturn(false);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenThrow(new CaseAccessException("No claim found for this case"));
 
@@ -258,8 +254,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(differentUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
-            .thenReturn(false);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, differentUserId))
             .thenThrow(new CaseAccessException("User is not linked as a defendant on this case"));
 

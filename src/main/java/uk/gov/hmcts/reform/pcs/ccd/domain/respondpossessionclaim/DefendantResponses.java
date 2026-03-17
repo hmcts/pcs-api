@@ -57,4 +57,12 @@ public class DefendantResponses {
     @CCD
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
 
+    @CCD
+    private LocalDate dateOfBirth;
+
+    @CCD
+    private VerticalYesNo defendantNameConfirmation;
+
+    @CCD
+    private YesNoNotSure landlordRegistered;
 }
