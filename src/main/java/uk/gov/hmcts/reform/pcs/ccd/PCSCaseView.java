@@ -151,6 +151,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             </ul>
             """);
         }
+        log.warn("---------------------------");
+        log.warn(String.valueOf(pcsCase.getShowConfirmEvictionJourney()));
     }
 
     @Transactional

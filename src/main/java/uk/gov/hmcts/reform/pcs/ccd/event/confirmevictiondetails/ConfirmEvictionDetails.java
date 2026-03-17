@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.confirmevictiondetails.ConfirmEvictionDetailsPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmEvictionDetails;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 
@@ -35,7 +37,8 @@ public class ConfirmEvictionDetails implements CCDConfig<PCSCase, State, UserRol
             configBuilder
                 .decentralisedEvent(confirmEvictionDetails.name(), this::submit, this::start)
                 .forAllStates()
-                .showCondition("showConfirmEvictionJourney=\"Yes\"")
+//                .showCondition(ShowConditions.fieldEquals("showConfirmEvictionJourney", YES))
+                .showCondition("showConfirmEvictionJourney=\"YES\"")
                 .name("Confirm the eviction details")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
@@ -47,7 +50,8 @@ public class ConfirmEvictionDetails implements CCDConfig<PCSCase, State, UserRol
         PCSCase pcsCase = eventPayload.caseData();
 //        pcsCase.setFormattedPropertyAddress(addressFormatter
 //                .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
-
+        log.warn("---------------------------");
+        log.warn(String.valueOf(pcsCase.getShowConfirmEvictionJourney()));
         return pcsCase;
     }
 

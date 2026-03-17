@@ -526,6 +526,6 @@ public class PCSCase {
     @CCD(searchable = false )
     private String confirmEvictionSummaryMarkup;
 
-    @CCD(searchable = false )
+    @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
 }

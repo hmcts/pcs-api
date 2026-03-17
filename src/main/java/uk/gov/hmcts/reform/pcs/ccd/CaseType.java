@@ -86,7 +86,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
-            .field(PCSCase::getCaseTitleMarkdown);
+            .field(PCSCase::getCaseTitleMarkdown)
+            .field(PCSCase::getShowConfirmEvictionJourney);
 
         builder.tab("serviceRequest", "Service Request")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
