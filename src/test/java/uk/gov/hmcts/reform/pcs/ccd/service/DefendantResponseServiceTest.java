@@ -98,6 +98,7 @@ class DefendantResponseServiceTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .landlordRegistered(YesNoNotSure.YES)
             .build();
 
         // When
@@ -110,6 +111,7 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getParty()).isEqualTo(partyEntity);
         assertThat(savedResponse.getClaim()).isEqualTo(claimEntity);
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
+        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
     }
 
     @Test
@@ -182,6 +184,39 @@ class DefendantResponseServiceTest {
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isNull();
+    }
+
+    @ParameterizedTest(name = "landlordRegistered={0}")
+    @MethodSource("landlordRegisteredPersistenceScenarios")
+    void shouldPersistlandlordRegistered(YesNoNotSure landlordRegistered) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .landlordRegistered(landlordRegistered)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(landlordRegistered);
+    }
+
+    private static Stream<Arguments> landlordRegisteredPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of(YesNoNotSure.NOT_SURE),
+            Arguments.of((YesNoNotSure) null)
+        );
     }
 
     @Test
