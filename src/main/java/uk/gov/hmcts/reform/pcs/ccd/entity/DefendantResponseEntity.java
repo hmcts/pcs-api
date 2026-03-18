@@ -78,6 +78,6 @@ public class DefendantResponseEntity {
     @Column(name = "dispute_claim")
     private VerticalYesNo disputeClaim;
 
-    @Column(name = "dispute_details", columnDefinition = "TEXT")
-    private String disputeDetails;
+    @Column(name = "dispute_claim_details", length = 6800)
+    private String disputeClaimDetails;
 }

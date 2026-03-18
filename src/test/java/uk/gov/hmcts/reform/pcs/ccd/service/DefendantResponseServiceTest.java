@@ -497,10 +497,10 @@ class DefendantResponseServiceTest {
         stubPartyLookup();
         stubClaimLookup();
 
-        String disputeDetails = "I dispute this claim because the rent has been paid in full";
+        String disputeClaimDetails = "I dispute this claim because the rent has been paid in full";
         DefendantResponses responses = DefendantResponses.builder()
             .disputeClaim(VerticalYesNo.YES)
-            .disputeDetails(disputeDetails)
+            .disputeClaimDetails(disputeClaimDetails)
             .build();
 
         // When
@@ -511,7 +511,7 @@ class DefendantResponseServiceTest {
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getDisputeClaim()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getDisputeDetails()).isEqualTo(disputeDetails);
+        assertThat(savedResponse.getDisputeClaimDetails()).isEqualTo(disputeClaimDetails);
     }
 
     @Test
@@ -525,7 +525,7 @@ class DefendantResponseServiceTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .disputeClaim(VerticalYesNo.NO)
-            .disputeDetails(null)
+            .disputeClaimDetails(null)
             .build();
 
         // When
@@ -536,6 +536,6 @@ class DefendantResponseServiceTest {
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getDisputeClaim()).isEqualTo(VerticalYesNo.NO);
-        assertThat(savedResponse.getDisputeDetails()).isNull();
+        assertThat(savedResponse.getDisputeClaimDetails()).isNull();
     }
 }

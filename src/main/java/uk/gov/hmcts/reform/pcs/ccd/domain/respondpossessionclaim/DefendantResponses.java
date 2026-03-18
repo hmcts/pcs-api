@@ -70,5 +70,5 @@ public class DefendantResponses {
     private VerticalYesNo disputeClaim;
 
     @CCD
-    private String disputeDetails;
+    private String disputeClaimDetails;
 }
