@@ -89,7 +89,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         try {
             HearingRequest request = hearingRequestMapper.buildHearingRequest(caseReference, pcsCase);
             HearingResponse response = hmcHearingService.createHearing(request);
-
             pcsCaseService.saveHearingId(caseReference, String.valueOf(response.getHearingRequestId()));
             log.info("Hearing created for case {}: hearingId={}", caseReference, response.getHearingRequestId());
         } catch (Exception e) {

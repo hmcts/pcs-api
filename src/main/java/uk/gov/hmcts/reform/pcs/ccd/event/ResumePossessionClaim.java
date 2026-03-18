@@ -322,8 +322,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         pcsCaseService.createMainClaimOnCase(caseReference, pcsCase);
 
-        requestHearing(caseReference, pcsCase);
-
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
         schedulePartyAccessCodeGeneration(caseReference);
@@ -336,18 +334,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
             .build();
-    }
-
-    private void requestHearing(long caseReference, PCSCase pcsCase) {
-        try {
-            HearingRequest request = hearingRequestMapper.buildHearingRequest(caseReference, pcsCase);
-            HearingResponse response = hmcHearingService.createHearing(request);
-
-            pcsCaseService.saveHearingId(caseReference, String.valueOf(response.getHearingRequestId()));
-            log.info("Hearing created for case {}: hearingId={}", caseReference, response.getHearingRequestId());
-        } catch (Exception e) {
-            log.error("Failed to create HMC hearing for case {}: {}", caseReference, e.getMessage(), e);
-        }
     }
 
     private SubmitResponse<State> saveForLater() {
