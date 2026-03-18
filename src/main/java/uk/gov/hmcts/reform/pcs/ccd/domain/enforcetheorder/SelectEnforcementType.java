@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
+import java.util.Arrays;
+
 @AllArgsConstructor
 @Getter
 public enum SelectEnforcementType implements HasLabel {
@@ -14,4 +16,11 @@ public enum SelectEnforcementType implements HasLabel {
     WRIT_OF_RESTITUTION("Writ of restitution");
 
     private final String label;
+
+    public static SelectEnforcementType getSelectEnforcementTypeFromName(String code) {
+        return Arrays.stream(values())
+                .filter(type -> type.name().equals(code))
+                .findFirst()
+                .orElse(null);
+    }
 }

@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -37,7 +37,7 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
                                 .riskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
-                                .riskDetails(EnforcementRiskDetails.builder()
+                                .riskDetails(RiskDetails.builder()
                                         .protestGroupDetails(riskDetails)
                                         .build())
                                 .build())
@@ -62,7 +62,7 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
                                 .riskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
-                                .riskDetails(EnforcementRiskDetails.builder()
+                                .riskDetails(RiskDetails.builder()
                                         .protestGroupDetails(longText)
                                         .build())
                                 .build())

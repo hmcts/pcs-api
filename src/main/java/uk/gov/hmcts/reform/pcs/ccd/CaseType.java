@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
@@ -25,6 +26,9 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private static final String JURISDICTION_NAME = "Possessions";
     private static final String JURISDICTION_DESCRIPTION = "Possessions Jurisdiction";
 
+    @Value("${hmcts.hmctsOrgId}")
+    private String hmctsServiceId;
+
     public static String getCaseType() {
         return withSuffix(CASE_TYPE_ID, "-");
     }
@@ -49,6 +53,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
+        builder.hmctsServiceId(hmctsServiceId);
 
         builder.searchInputFields()
             .caseReferenceField();

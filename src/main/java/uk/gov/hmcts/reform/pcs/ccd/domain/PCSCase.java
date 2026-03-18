@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -500,6 +501,7 @@ public class PCSCase {
         access = {GlobalSearchAccess.class}
     )
     @SuppressWarnings("MemberName") // Field name is case-sensitive in CCD
+    @JsonProperty("SearchCriteria")
     private SearchCriteria searchCriteria;
 
     @CCD(
