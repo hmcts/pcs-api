@@ -38,7 +38,7 @@ CREATE TABLE household_circumstances (
      uc_application_date DATE,
      priority_debts YES_NO,
      debt_total DECIMAL(18,2),
-     debt_contribution VARCHAR(60),
+     debt_contribution DECIMAL(18,2),
      debt_contribution_frequency VARCHAR(60),
      regular_expenses VARCHAR(500),
      expense_amount DECIMAL(18,2),

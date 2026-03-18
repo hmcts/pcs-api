@@ -202,7 +202,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .contactByEmail(VerticalYesNo.YES)
             .contactByPhone(VerticalYesNo.NO)
             .build();
@@ -222,7 +222,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         DefendantResponses savedResponses = savedDraft.getPossessionClaimResponse().getDefendantResponses();
         assertThat(savedResponses.getTenancyTypeCorrect()).isEqualTo(YesNoNotSure.YES);
         assertThat(savedResponses.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
-        assertThat(savedResponses.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
+        assertThat(savedResponses.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedResponses.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
     }
@@ -324,7 +324,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     void shouldSkipValidationWhenDefendantContactDetailsIsNull() {
         //Given
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.NO)
+            .freeLegalAdvice(YesNoPreferNotToSay.NO)
             .contactByPost(VerticalYesNo.YES)
             .build();
 

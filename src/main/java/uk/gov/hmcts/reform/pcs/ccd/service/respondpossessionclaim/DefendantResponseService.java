@@ -116,7 +116,7 @@ public class DefendantResponseService {
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
-            .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
+            .freeLegalAdvice(responses.getFreeLegalAdvice())
             .possessionNoticeReceived(responses.getNoticeReceived())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
