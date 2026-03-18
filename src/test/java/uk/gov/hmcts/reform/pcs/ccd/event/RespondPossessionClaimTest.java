@@ -179,6 +179,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(contactDetails.getParty().getLastName()).isEqualTo("Doe");
         assertThat(contactDetails.getParty().getAddress()).isEqualTo(expectedAddress);
 
+        verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
+
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
@@ -349,6 +351,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(contactDetails.getParty().getFirstName()).isEqualTo("Jane");
         assertThat(contactDetails.getParty().getLastName()).isEqualTo("Smith");
         assertThat(contactDetails.getParty().getAddress()).isEqualTo(propertyAddress);
+
+        verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
     }
 
     @Test
@@ -412,6 +416,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(contactDetails.getParty().getFirstName()).isNull();
         assertThat(contactDetails.getParty().getLastName()).isNull();
         assertThat(contactDetails.getParty().getAddress()).isEqualTo(emptyAddress);
+
+        verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
@@ -486,6 +492,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(contactDetails.getParty().getLastName()).isEqualTo("SavedLastName");
         assertThat(contactDetails.getParty().getEmailAddress()).isEqualTo("saved@example.com");
 
+        verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
+        verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
+
         // Should NOT call patchUnsubmittedEventData when draft already exists
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
@@ -508,6 +517,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
         assertThat(response.getErrors().getFirst()).isEqualTo("Invalid submission: missing response data");
+
+        verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),

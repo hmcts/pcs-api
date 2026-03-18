@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -59,6 +60,7 @@ public class DefendantResponseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pcs_case_id", nullable = false)
+    @JsonBackReference
     private PcsCaseEntity pcsCase;
 
     @OneToOne(cascade = ALL, orphanRemoval = true)
