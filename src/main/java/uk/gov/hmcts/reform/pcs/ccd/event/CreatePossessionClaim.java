@@ -21,6 +21,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.hearings.mapping.HearingRequestMapper;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingResponse;
+import uk.gov.hmcts.reform.pcs.hearings.service.HmcHearingService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 
@@ -35,6 +39,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
+    private final HmcHearingService hmcHearingService;
+    private final HearingRequestMapper hearingRequestMapper;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -75,7 +81,19 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
 
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
-
+        requestHearing(caseReference, caseData);
         return SubmitResponse.defaultResponse();
+    }
+
+    private void requestHearing(long caseReference, PCSCase pcsCase) {
+        try {
+            HearingRequest request = hearingRequestMapper.buildHearingRequest(caseReference, pcsCase);
+            HearingResponse response = hmcHearingService.createHearing(request);
+
+            pcsCaseService.saveHearingId(caseReference, String.valueOf(response.getHearingRequestId()));
+            log.info("Hearing created for case {}: hearingId={}", caseReference, response.getHearingRequestId());
+        } catch (Exception e) {
+            log.error("Failed to create HMC hearing for case {}: {}", caseReference, e.getMessage(), e);
+        }
     }
 }
