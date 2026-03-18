@@ -23,6 +23,10 @@ public class HmcHearingService {
     private final IdamService idamService;
     @Value("${hmc.deployment-id}")
     private String hmctsDeploymentId;
+    @Value("${core_case_data.api.url}")
+    private String dataStoreUrl;
+    @Value("${role-assignment.api.url}")
+    private String roleAssignmentUrl;
     // TODO: remove once pcs-api system user has hearing-manager role assigned in RAS
     @Value("${hmc.temp-user-token:}")
     private String tempUserToken;
@@ -31,22 +35,22 @@ public class HmcHearingService {
 
     public HearingResponse createHearing(@RequestBody HearingRequest hearingPayload) {
         return hmcHearingApi.createHearing(getAuthorisation(), authTokenGenerator.generate(),
-                                           hmctsDeploymentId, hearingPayload);
+                                           hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, hearingPayload);
     }
 
     public HearingResponse updateHearing(String id, @RequestBody UpdateHearingRequest hearingPayload) {
         return hmcHearingApi.updateHearing(getAuthorisation(), authTokenGenerator.generate(),
-                                           hmctsDeploymentId, id, hearingPayload);
+                                           hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, id, hearingPayload);
     }
 
     public HearingResponse deleteHearing(String id, @RequestBody DeleteHearingRequest hearingDeletePayload) {
-        return hmcHearingApi.deleteHearing(getAuthorisation(), authTokenGenerator.generate(),
-                                           hmctsDeploymentId, id, hearingDeletePayload);
+        return hmcHearingApi.deleteHearing(getAuthorisation(), authTokenGenerator.generate(), hmctsDeploymentId,
+            dataStoreUrl, roleAssignmentUrl, id, hearingDeletePayload);
     }
 
     public GetHearingsResponse getHearing(String id) {
         return hmcHearingApi.getHearing(getAuthorisation(), authTokenGenerator.generate(),
-                                        hmctsDeploymentId, id, null);
+                                        hmctsDeploymentId, dataStoreUrl, roleAssignmentUrl, id, null);
     }
 
     private String getAuthorisation() {

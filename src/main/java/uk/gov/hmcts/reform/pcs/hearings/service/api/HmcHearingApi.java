@@ -24,6 +24,8 @@ import uk.gov.hmcts.reform.pcs.hearings.model.GetHearingsResponse;
 public interface HmcHearingApi {
 
     String SERVICE_AUTHORIZATION = "ServiceAuthorization";
+    String DATA_STORE_URL = "Data-Store-Url";
+    String ROLE_ASSIGNMENT_URL = "Role-Assignment-Url";
     String HEARING_ENDPOINT = "/hearing";
     String ID = "id";
     String HMCTS_DEPLOYMENT_ID = "hmctsDeploymentId";
@@ -33,6 +35,8 @@ public interface HmcHearingApi {
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @RequestHeader(value = HMCTS_DEPLOYMENT_ID, required = false) String hmctsDeploymentId,
+        @RequestHeader(value = DATA_STORE_URL, required = false) String dataStoreUrl,
+        @RequestHeader(value = ROLE_ASSIGNMENT_URL, required = false) String roleAssignmentUrl,
         @RequestBody HearingRequest hearingPayload
     );
 
@@ -41,6 +45,8 @@ public interface HmcHearingApi {
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @RequestHeader(value = HMCTS_DEPLOYMENT_ID, required = false) String hmctsDeploymentId,
+        @RequestHeader(value = DATA_STORE_URL, required = false) String dataStoreUrl,
+        @RequestHeader(value = ROLE_ASSIGNMENT_URL, required = false) String roleAssignmentUrl,
         @PathVariable(ID) String id,
         @RequestBody UpdateHearingRequest hearingPayload
     );
@@ -50,6 +56,8 @@ public interface HmcHearingApi {
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @RequestHeader(value = HMCTS_DEPLOYMENT_ID, required = false) String hmctsDeploymentId,
+        @RequestHeader(value = DATA_STORE_URL, required = false) String dataStoreUrl,
+        @RequestHeader(value = ROLE_ASSIGNMENT_URL, required = false) String roleAssignmentUrl,
         @PathVariable(ID) String id,
         @RequestBody DeleteHearingRequest hearingDeletePayload
     );
@@ -59,6 +67,8 @@ public interface HmcHearingApi {
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @RequestHeader(value = HMCTS_DEPLOYMENT_ID, required = false) String hmctsDeploymentId,
+        @RequestHeader(value = DATA_STORE_URL, required = false) String dataStoreUrl,
+        @RequestHeader(value = ROLE_ASSIGNMENT_URL, required = false) String roleAssignmentUrl,
         @PathVariable(ID) String id,
         @RequestParam(name = "isValid", required = false) Boolean isValid
     );
