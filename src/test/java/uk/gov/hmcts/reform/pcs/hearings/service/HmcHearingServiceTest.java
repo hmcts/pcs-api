@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
 class HmcHearingServiceTest {
@@ -33,6 +34,8 @@ class HmcHearingServiceTest {
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
     private static final String DEPLOYMENT_ID = null;
+    private static final String DATA_STORE_URL = "http://localhost:4452";
+    private static final String ROLE_ASSIGNMENT_URL = "http://localhost:4096";
     private static final String HEARING_ID = "123";
 
     @BeforeEach
@@ -40,6 +43,8 @@ class HmcHearingServiceTest {
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_HEADER);
         when(idamService.getSystemUserAuthorisation()).thenReturn(AUTH_HEADER);
         hmcHearingService = new HmcHearingService(hmcHearingApi, authTokenGenerator, idamService);
+        setField(hmcHearingService, "dataStoreUrl", DATA_STORE_URL);
+        setField(hmcHearingService, "roleAssignmentUrl", ROLE_ASSIGNMENT_URL);
     }
 
     @Test
@@ -47,13 +52,14 @@ class HmcHearingServiceTest {
         HearingRequest request = new HearingRequest();
         HearingResponse response = new HearingResponse();
 
-        when(hmcHearingApi.createHearing(AUTH_HEADER,
-                                         SERVICE_AUTH_HEADER, DEPLOYMENT_ID, request)).thenReturn(response);
+        when(hmcHearingApi.createHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID,
+                                         DATA_STORE_URL, ROLE_ASSIGNMENT_URL, request)).thenReturn(response);
 
         HearingResponse result = hmcHearingService.createHearing(request);
 
         assertThat(result).isNotNull().isEqualTo(response);
-        verify(hmcHearingApi).createHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, request);
+        verify(hmcHearingApi).createHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID,
+                                            DATA_STORE_URL, ROLE_ASSIGNMENT_URL, request);
     }
 
     @Test
@@ -61,13 +67,14 @@ class HmcHearingServiceTest {
         UpdateHearingRequest request = new UpdateHearingRequest();
         HearingResponse response = new HearingResponse();
 
-        when(hmcHearingApi.updateHearing(AUTH_HEADER,
-            SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request)).thenReturn(response);
+        when(hmcHearingApi.updateHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, DATA_STORE_URL,
+            ROLE_ASSIGNMENT_URL, HEARING_ID, request)).thenReturn(response);
 
         HearingResponse result = hmcHearingService.updateHearing(HEARING_ID, request);
 
         assertThat(result).isNotNull().isEqualTo(response);
-        verify(hmcHearingApi).updateHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request);
+        verify(hmcHearingApi).updateHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID,
+                                            DATA_STORE_URL, ROLE_ASSIGNMENT_URL, HEARING_ID, request);
     }
 
     @Test
@@ -75,34 +82,27 @@ class HmcHearingServiceTest {
         DeleteHearingRequest request = new DeleteHearingRequest();
         HearingResponse response = new HearingResponse();
 
-        // Ensure that the API method is mocked correctly
-        when(hmcHearingApi.deleteHearing(AUTH_HEADER,
-                                         SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request)).thenReturn(response);
+        when(hmcHearingApi.deleteHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, DATA_STORE_URL,
+            ROLE_ASSIGNMENT_URL, HEARING_ID, request)).thenReturn(response);
 
-        // Call the service method that triggers the API method
         HearingResponse result = hmcHearingService.deleteHearing(HEARING_ID, request);
 
-        // Debugging output to check if the result is null
-        System.out.println("Delete Hearing Response: " + result);
-        System.out.println("Deployment ID used: " + DEPLOYMENT_ID);
-
-        // Check that the result is not null and equals the expected response
         assertThat(result).isNotNull().isEqualTo(response);
-
-        // Verify that the deleteHearing method was called once with the correct arguments
-        verify(hmcHearingApi).deleteHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request);
+        verify(hmcHearingApi).deleteHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID,
+                                            DATA_STORE_URL, ROLE_ASSIGNMENT_URL, HEARING_ID, request);
     }
 
     @Test
     void shouldGetHearing() {
         GetHearingsResponse response = new GetHearingsResponse();
 
-        when(hmcHearingApi.getHearing(AUTH_HEADER,
-                                      SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, null)).thenReturn(response);
+        when(hmcHearingApi.getHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, DATA_STORE_URL,
+             ROLE_ASSIGNMENT_URL, HEARING_ID, null)).thenReturn(response);
 
         GetHearingsResponse result = hmcHearingService.getHearing(HEARING_ID);
 
         assertThat(result).isNotNull().isEqualTo(response);
-        verify(hmcHearingApi).getHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, null);
+        verify(hmcHearingApi).getHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID,
+                                         DATA_STORE_URL, ROLE_ASSIGNMENT_URL, HEARING_ID, null);
     }
 }

@@ -340,8 +340,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     private void requestHearing(long caseReference, PCSCase pcsCase) {
         try {
-            HearingRequest request = hearingRequestMapper.buildHearingRequest(1773740689320483L, pcsCase);
+            HearingRequest request = hearingRequestMapper.buildHearingRequest(caseReference, pcsCase);
             HearingResponse response = hmcHearingService.createHearing(request);
+
             pcsCaseService.saveHearingId(caseReference, String.valueOf(response.getHearingRequestId()));
             log.info("Hearing created for case {}: hearingId={}", caseReference, response.getHearingRequestId());
         } catch (Exception e) {

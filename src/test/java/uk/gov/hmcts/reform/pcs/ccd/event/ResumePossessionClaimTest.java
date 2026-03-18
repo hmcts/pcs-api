@@ -71,6 +71,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.hearings.mapping.HearingRequestMapper;
+import uk.gov.hmcts.reform.pcs.hearings.service.HmcHearingService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -105,6 +107,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private static final UUID USER_ID = UUID.randomUUID();
     private static final BigDecimal CLAIM_FEE_AMOUNT = new BigDecimal("123.40");
 
+    @Mock
+    private HmcHearingService hmcHearingService;
+    @Mock
+    private HearingRequestMapper hearingRequestMapper;
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock(strictness = LENIENT)
@@ -220,7 +226,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
             addressFormatter, rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage
+            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage, hmcHearingService,
+            hearingRequestMapper
         );
 
         setEventUnderTest(underTest);
