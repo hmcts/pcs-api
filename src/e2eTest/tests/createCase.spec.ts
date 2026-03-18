@@ -1229,3 +1229,4 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 });
+
