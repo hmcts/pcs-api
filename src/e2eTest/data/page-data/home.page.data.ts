@@ -7,3 +7,4 @@ export const home =
     findCaseTab: 'Find case',
     signOutButton: 'Sign out'
   }
+// regression
