@@ -20,8 +20,8 @@ To build the project execute the following command:
 ```
 Above command starts PCS API + CCD & all dependencies
 
-This will start several containers:
-
+This will start severa l containers:
+    
 | Container                         | Port |
 |-----------------------------------|------|
 | PCS-API                           | 3206 |
