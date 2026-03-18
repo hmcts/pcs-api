@@ -22,7 +22,7 @@ jobs:
           # Fetch team members - let's see the raw response
           echo "Fetching members from: https://api.github.com/orgs/$ORG_NAME/teams/$TEAM_SLUG/members"
           
-          RESPONSE=$(curl -sH "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          RESPONSE=$(curl -sH "Authorization: token ${{ secrets.ORG_ACCESS_TOKEN }}" \
             "https://api.github.com/orgs/$ORG_NAME/teams/$TEAM_SLUG/members")
           
           # Debug: print the raw response
