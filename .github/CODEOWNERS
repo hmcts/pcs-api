@@ -1,4 +1,4 @@
-* @hmcts/possession-claim-service-admins @hmcts/possession-claim-backend
+* @hmcts/possession-claim-service-admins
 
 # Ignore files updated by Renovate
 gradle/wrapper/gradle-wrapper.properties
