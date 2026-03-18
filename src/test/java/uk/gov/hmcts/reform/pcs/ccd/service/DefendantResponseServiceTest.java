@@ -488,8 +488,9 @@ class DefendantResponseServiceTest {
         );
     }
 
-    @Test
-    void shouldPersistDisputeDetails() {
+    @ParameterizedTest(name = "disputeClaimDetails={0}")
+    @MethodSource("disputeClaimDetailsPersistenceScenarios")
+    void shouldPersistDisputeClaimDetails(String disputeClaimDetails) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
@@ -497,9 +498,7 @@ class DefendantResponseServiceTest {
         stubPartyLookup();
         stubClaimLookup();
 
-        String disputeClaimDetails = "I dispute this claim because the rent has been paid in full";
         DefendantResponses responses = DefendantResponses.builder()
-            .disputeClaim(VerticalYesNo.YES)
             .disputeClaimDetails(disputeClaimDetails)
             .build();
 
@@ -510,32 +509,13 @@ class DefendantResponseServiceTest {
         verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
-        assertThat(savedResponse.getDisputeClaim()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedResponse.getDisputeClaimDetails()).isEqualTo(disputeClaimDetails);
     }
 
-    @Test
-    void shouldPersistNullDisputeDetails() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubPartyLookup();
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .disputeClaim(VerticalYesNo.NO)
-            .disputeClaimDetails(null)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getDisputeClaim()).isEqualTo(VerticalYesNo.NO);
-        assertThat(savedResponse.getDisputeClaimDetails()).isNull();
+    private static Stream<Arguments> disputeClaimDetailsPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of("I dispute this claim because the rent has been paid in full"),
+            Arguments.of((String) null)
+        );
     }
 }

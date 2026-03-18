@@ -75,9 +75,7 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "dispute_claim")
     private VerticalYesNo disputeClaim;
 
-    @Column(name = "dispute_claim_details", length = 6800)
     private String disputeClaimDetails;
 }
