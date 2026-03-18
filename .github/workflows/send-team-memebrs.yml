@@ -20,7 +20,7 @@ jobs:
           WEBHOOK_URL="${{ secrets.WEBHOOK_URL }}"
           
           # Fetch team members from GitHub API
-          MEMBERS=$(curl -sH "Authorization: token ${{ secrets.ORG_ACCESS_TOKEN }}" \
+          MEMBERS=$(curl -sH "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/orgs/$ORG_NAME/teams/$TEAM_SLUG/members")
           
           # Extract just the usernames
