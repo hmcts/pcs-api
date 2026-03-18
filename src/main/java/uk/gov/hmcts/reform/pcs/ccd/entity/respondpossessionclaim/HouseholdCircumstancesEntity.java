@@ -97,7 +97,7 @@ public class HouseholdCircumstancesEntity {
 
     private BigDecimal debtTotal;
 
-    private String debtContribution;
+    private BigDecimal debtContribution;
 
     private String debtContributionFrequency;
 

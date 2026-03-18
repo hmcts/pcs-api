@@ -122,7 +122,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .noticeReceived(YesNoNotSure.YES)
             .noticeReceivedDate(LocalDate.of(2024, 1, 15))
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
@@ -142,7 +142,7 @@ class DefendantResponseServiceTest {
 
         assertThat(savedResponse.getParty()).isEqualTo(partyEntity);
         assertThat(savedResponse.getClaim()).isEqualTo(claimEntity);
-        assertThat(savedResponse.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
+        assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponse.getPossessionNoticeReceived()).isEqualTo(YesNoNotSure.YES);
         assertThat(savedResponse.getNoticeReceivedDate()).isEqualTo(LocalDate.of(2024, 1, 15));
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
@@ -162,7 +162,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.NO)
+            .freeLegalAdvice(YesNoPreferNotToSay.NO)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -176,7 +176,7 @@ class DefendantResponseServiceTest {
         verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
-        assertThat(savedResponse.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.NO);
+        assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.NO);
     }
 
     @Test
@@ -190,7 +190,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.PREFER_NOT_TO_SAY)
+            .freeLegalAdvice(YesNoPreferNotToSay.PREFER_NOT_TO_SAY)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -204,7 +204,7 @@ class DefendantResponseServiceTest {
         verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
-        assertThat(savedResponse.getReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.PREFER_NOT_TO_SAY);
+        assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.PREFER_NOT_TO_SAY);
     }
 
     @Test
@@ -218,7 +218,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(null)
+            .freeLegalAdvice(null)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -232,7 +232,7 @@ class DefendantResponseServiceTest {
         verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
-        assertThat(savedResponse.getReceivedFreeLegalAdvice()).isNull();
+        assertThat(savedResponse.getFreeLegalAdvice()).isNull();
     }
 
     @ParameterizedTest(name = "landlordRegistered={0}")
@@ -276,7 +276,7 @@ class DefendantResponseServiceTest {
     void shouldThrowExceptionWhenCurrentUserIdIsNull() {
         // Given
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(null);
@@ -297,7 +297,7 @@ class DefendantResponseServiceTest {
     void shouldThrowExceptionWhenDuplicateResponseExists() {
         // Given
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
@@ -327,7 +327,7 @@ class DefendantResponseServiceTest {
         when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenThrow(expectedException);
 
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .build();
 
         // When / Then
@@ -353,7 +353,7 @@ class DefendantResponseServiceTest {
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .build();
 
         // When / Then
@@ -379,7 +379,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .build();
 
         // When
@@ -412,7 +412,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -453,7 +453,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .tenancyStartDate(tenancyStartDate)
             .build();
 
@@ -553,7 +553,7 @@ class DefendantResponseServiceTest {
             .thenReturn(paymentAgreementEntity);
 
         DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .reasonableAdjustments(reasonableAdjustments)
             .householdCircumstances(householdCircumstances)
             .paymentAgreement(paymentAgreement)

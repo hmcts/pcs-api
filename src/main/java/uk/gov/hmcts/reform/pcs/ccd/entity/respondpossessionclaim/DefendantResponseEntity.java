@@ -80,13 +80,10 @@ public class DefendantResponseEntity {
     @JsonManagedReference
     private ReasonableAdjustmentEntity reasonableAdjustment;
 
-    @Column(name = "possession_order_type", length = 30)
-    private String possessionOrderType;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "received_free_legal_advice")
-    private YesNoPreferNotToSay receivedFreeLegalAdvice;
+    @Column(name = "free_legal_advice")
+    private YesNoPreferNotToSay freeLegalAdvice;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
