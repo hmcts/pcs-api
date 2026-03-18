@@ -66,6 +66,7 @@ public class DefendantResponses {
     @CCD
     private YesNoNotSure landlordRegistered;
 
+    @CCD
     private YesNoNotSure landlordLicensed;
 
 }
