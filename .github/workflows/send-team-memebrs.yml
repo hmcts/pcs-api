@@ -27,7 +27,7 @@ jobs:
           USERNAMES=$(echo "$MEMBERS" | jq -r '.[].login' | paste -sd "," -)
           
           # Format for webhook (adjust based on your needs)
-          PAYLOAD=$(jq -n --arg users "$USERNAMES" '{"text": texttext}')
+          PAYLOAD=$(jq -n --arg users "$USERNAMES" '{"text": "texttext"}')
           
           # Send to webhook
           curl -X POST "$WEBHOOK_URL" \
