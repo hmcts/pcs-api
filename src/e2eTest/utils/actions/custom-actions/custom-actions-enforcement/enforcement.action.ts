@@ -454,7 +454,7 @@ export class EnforcementAction implements IAction {
 
   private async validatePrePopulatedData(prePopulatedData: actionRecord) {
 
-    await test.step(`PrePopulated data validation`, async () => {
+     await test.step(`PrePopulated data validation`, async () => {
       const page = prePopulatedData?.testPage ?? 'Unknown';
       const count = Array.isArray(prePopulatedData?.inputData)
         ? prePopulatedData.inputData.length
@@ -473,6 +473,10 @@ export class EnforcementAction implements IAction {
 
         case 'inputText':
           await performValidation('validateInputTextValues', { textLabel: item.inputTextLabel }, { expected: item.expectedAnswer });
+          break;
+
+        case 'checkBox':
+          await performValidation('validateCheckBoxSelection', { question: item.inputCheckBoxQuestion }, { expected: item.expectedAnswer });
           break;
 
         default:
