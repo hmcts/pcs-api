@@ -1,8 +1,8 @@
 name: Send Team Members to Webhook
 
 on:
-    pull_request:
-      types: [labeled]
+  pull_request:
+    types: [labeled]
   
 jobs:
   send_team_members:
@@ -15,23 +15,34 @@ jobs:
       - name: Fetch team members and send to webhook
         run: |
           # Configuration
-          TEAM_SLUG="possession-claim-backend"           # Replace with your team slug
-          ORG_NAME="hmcts"             # Replace with your organization name
+          TEAM_SLUG="possession-claim-backend"
+          ORG_NAME="hmcts"
           WEBHOOK_URL="${{ secrets.WEBHOOK_URL }}"
+
+          # Fetch team members - let's see the raw response
+          echo "Fetching members from: https://api.github.com/orgs/$ORG_NAME/teams/$TEAM_SLUG/members"
           
-          # Fetch team members from GitHub API
-          MEMBERS=$(curl -sH "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          RESPONSE=$(curl -sH "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/orgs/$ORG_NAME/teams/$TEAM_SLUG/members")
           
-          # Extract just the usernames
-          USERNAMES=$(echo "$MEMBERS" | jq -r '.[].login' | paste -sd "," -)
+          # Debug: print the raw response
+          echo "Raw API Response:"
+          echo "$RESPONSE"
           
-          # Format for webhook (adjust based on your needs)
-          PAYLOAD=$(jq -n --arg users "$USERNAMES" '{"text": "texttext"}')
+          # Check if it's valid JSON and an array
+          if echo "$RESPONSE" | jq -e 'type == "array"' > /dev/null 2>&1; then
+            echo "Response is a valid array"
+            USERNAMES=$(echo "$RESPONSE" | jq -r '.[].login' | paste -sd "," -)
+            echo "Found users: $USERNAMES"
+          else
+            echo "ERROR: Response is not an array. Likely an API error:"
+            echo "$RESPONSE" | jq '.'
+            exit 1
+          fi
           
-          # Send to webhook
+          # Send to webhook (hardcoded for testing)
           curl -X POST "$WEBHOOK_URL" \
             -H "Content-Type: application/json" \
-            -d "$PAYLOAD"
+            -d '{"text": "test message"}'
           
-          echo "Sent team members to webhook successfully!"
+          echo "Sent to webhook successfully!"
