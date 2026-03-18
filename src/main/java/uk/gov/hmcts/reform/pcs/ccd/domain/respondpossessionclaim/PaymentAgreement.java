@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+
+import java.math.BigDecimal;
 
 @Builder
 @Data
@@ -15,5 +18,26 @@ public class PaymentAgreement {
 
     @CCD
     private YesOrNo anyPaymentsMade;
+
+    @CCD
+    private String paymentDetails;
+
+    @CCD
+    private YesOrNo paidMoneyToHousingOrg;
+
+    @CCD
+    private YesNoNotSure repaymentPlanAgreed;
+
+    @CCD
+    private String repaymentAgreedDetails;
+
+    @CCD
+    private YesOrNo repayArrearsInstalments;
+
+    @CCD
+    private BigDecimal additionalRentContribution;
+
+    @CCD
+    private String additionalContributionFrequency;
 
 }
