@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.CaseLink;
+import uk.gov.hmcts.ccd.sdk.type.LinkReason;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -18,9 +20,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -38,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -327,6 +332,98 @@ class PCSCaseViewTest {
         verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
+    }
+
+    @Test
+    void shouldMapAndWrapCaseLinks() {
+        // Given
+        CaseLinkReasonEntity caseLinkReasonEntity1 = createCaseLinkReasonEntity(UUID.randomUUID(),
+                                                                                "CLR003", "Same Party");
+        CaseLinkReasonEntity caseLinkReasonEntity2 = createCaseLinkReasonEntity(UUID.randomUUID(),
+                                                                                "CLR010", "Bail");
+
+        CaseLinkEntity caseLinkEntity1 = createCaseLinkEntity(UUID.randomUUID(), List.of(caseLinkReasonEntity1),
+                                                              1234L, "CCD1");
+        CaseLinkEntity caseLinkEntity2 = createCaseLinkEntity(UUID.randomUUID(), List.of(caseLinkReasonEntity2),
+                                                              1234L, "CCD2");
+
+        when(pcsCaseEntity.getCaseLinks()).thenReturn(List.of(caseLinkEntity1, caseLinkEntity2));
+
+
+        LinkReason linkReason1 = createLinkReason(caseLinkReasonEntity1.getReasonCode(),
+                                                  caseLinkReasonEntity1.getReasonText());
+        List<ListValue<LinkReason>> linkReasons1 = List.of(
+            ListValue.<LinkReason>builder()
+                .id(caseLinkReasonEntity1.getId().toString())
+                .value(linkReason1)
+                .build());
+
+        LinkReason linkReason2 = createLinkReason(caseLinkReasonEntity1.getReasonCode(),
+                                                  caseLinkReasonEntity1.getReasonText());
+        List<ListValue<LinkReason>> linkReasons2 = List.of(
+            ListValue.<LinkReason>builder()
+                .id(caseLinkReasonEntity2.getId().toString())
+                .value(linkReason2)
+                .build());
+
+        CaseLink expectedCaseLink1 = creatCaseLink(String.valueOf(caseLinkEntity1.getLinkedCaseReference()),
+                                                   caseLinkEntity1.getCcdListId(), linkReasons1, null);
+        CaseLink expectedCaseLink2 = creatCaseLink(String.valueOf(caseLinkEntity2.getLinkedCaseReference()),
+                                                   caseLinkEntity2.getCcdListId(), linkReasons2, null);
+
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        List<ListValue<CaseLink>> mappedCaseLinks = pcsCase.getCaseLinks();
+        assertThat(mappedCaseLinks).hasSize(2);
+        assertThat(mappedCaseLinks.getFirst().getValue().getCaseReference()).isEqualTo(
+            expectedCaseLink1.getCaseReference());
+        assertThat(mappedCaseLinks.get(1).getValue().getCaseType().equals(expectedCaseLink2.getCaseType()));
+    }
+
+    private CaseLinkReasonEntity createCaseLinkReasonEntity(UUID id, String reasonCode, String reasonText) {
+
+        CaseLinkEntity caseLinkEntity = mock(CaseLinkEntity.class);
+
+        return CaseLinkReasonEntity.builder()
+            .id(id)
+            .reasonCode(reasonCode)
+            .reasonText(reasonText)
+            .caseLink(caseLinkEntity)
+            .build();
+    }
+
+    private CaseLinkEntity createCaseLinkEntity(UUID id, List<CaseLinkReasonEntity> linkReasonEntities,
+                                                Long linkedCaseRef, String ccdId) {
+
+        return CaseLinkEntity.builder()
+            .id(id)
+            .linkedCaseReference(linkedCaseRef)
+            .ccdListId(ccdId)
+            .reasons(linkReasonEntities)
+            .pcsCase(pcsCaseEntity)
+            .build();
+    }
+
+    private CaseLink creatCaseLink(String ref, String caseType, List<ListValue<LinkReason>> reasons,
+                                   LocalDateTime time) {
+
+        return CaseLink.builder()
+            .caseReference(ref)
+            .caseType(caseType)
+            .reasonForLink(reasons)
+            .createdDateTime(time)
+            .build();
+    }
+
+    private LinkReason createLinkReason(String reason, String description) {
+
+        return LinkReason.builder()
+            .reason(reason)
+            .description(description)
+            .build();
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

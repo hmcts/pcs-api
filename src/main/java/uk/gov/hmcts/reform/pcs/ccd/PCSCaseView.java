@@ -6,10 +6,12 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.LinkReason;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -110,6 +112,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
             .allDocuments(mapAndWrapDocuments(pcsCaseEntity))
+            .caseLinks(mapAndWrapCaseLinks(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -248,6 +251,42 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                            .build())
                 .build())
             .collect(Collectors.toList());
+    }
+
+    private List<ListValue<CaseLink>> mapAndWrapCaseLinks(PcsCaseEntity pcsCaseEntity) {
+
+        if (pcsCaseEntity.getCaseLinks().isEmpty()) {
+            return List.of();
+        }
+
+        return pcsCaseEntity.getCaseLinks().stream()
+            .map(linkEntity -> ListValue.<CaseLink>builder()
+                .id(linkEntity.getLinkedCaseReference().toString())
+                .value(
+                        CaseLink.builder()
+                            // BIGINT linked case reference -> CCD expects String
+                            .caseReference(linkEntity.getLinkedCaseReference().toString())
+                            .caseType(linkEntity.getCcdListId())
+                            // map reasons
+                            .reasonForLink(
+                                linkEntity.getReasons().stream()
+                                    .map(reasonEntity -> ListValue.<LinkReason>builder()
+                                        .id(reasonEntity.getId().toString())
+                                        .value(
+                                            LinkReason.builder()
+                                                .reason(reasonEntity.getReasonCode())
+                                                .description(reasonEntity.getReasonText())
+                                                .build()
+                                        )
+                                        .build()
+                                    )
+                                    .toList()
+                            )
+                            .build()
+                        )
+                        .build()
+                )
+            .toList();
     }
 
 }

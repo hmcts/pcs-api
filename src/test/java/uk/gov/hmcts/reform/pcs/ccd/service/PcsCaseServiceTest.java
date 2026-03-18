@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.atLeastOnce;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseServiceTest {
@@ -47,6 +48,8 @@ class PcsCaseServiceTest {
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private AddressMapper addressMapper;
+    @Mock
+    private PcsCaseMergeService pcsCaseMergeService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -61,7 +64,8 @@ class PcsCaseServiceTest {
             partyService,
             documentService,
             tenancyLicenceService,
-            addressMapper
+            addressMapper,
+            pcsCaseMergeService
         );
     }
 
@@ -180,6 +184,21 @@ class PcsCaseServiceTest {
 
         // Then
         verify(pcsCaseEntity).setTenancyLicence(tenancyLicenceEntity);
+    }
+
+    @Test
+    void shouldMergeCaseData() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder().build();
+        PCSCase caseData = PCSCase.builder().build();
+
+        //doNothing().when(pcsCaseMergeService).mergeCaseData(pcsCaseEntity, caseData);
+
+        // When
+        underTest.mergeCaseData(pcsCaseEntity, caseData);
+
+        // Then
+        verify(pcsCaseMergeService, atLeastOnce()).mergeCaseData(pcsCaseEntity, caseData);
     }
 
     private PcsCaseEntity stubFindCase() {

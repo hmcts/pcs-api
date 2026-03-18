@@ -16,6 +16,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.ccd.sdk.type.CaseLink;
+import uk.gov.hmcts.ccd.sdk.type.LinkReason;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -23,8 +26,11 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
@@ -77,6 +83,12 @@ public class PcsCaseEntity {
     @JsonManagedReference
     private List<DocumentEntity> documents = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pcsCase",
+        cascade = ALL,
+        orphanRemoval = true)
+    @Builder.Default
+    private List<CaseLinkEntity> caseLinks = new ArrayList<>();
+
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
             this.tenancyLicence.setPcsCase(null);
@@ -104,5 +116,53 @@ public class PcsCaseEntity {
             document.setPcsCase(this);
             this.documents.add(document);
         }
+    }
+
+    public void mergeCaseLinks(List<ListValue<CaseLink>> incomingLinkedCases) {
+
+        if (incomingLinkedCases == null) {
+            this.caseLinks.clear();
+            return;
+        }
+
+        Map<Long, CaseLinkEntity> existingLinkedCases =
+            this.caseLinks.stream()
+                .collect(Collectors.toMap(CaseLinkEntity::getLinkedCaseReference,
+                                          Function.identity()
+                ));
+
+        List<CaseLinkEntity> result = new ArrayList<>();
+
+        for (ListValue<CaseLink> caseLinkListValue : incomingLinkedCases) {
+            CaseLink dto = caseLinkListValue.getValue();
+            Long incomingCaseRef = Long.valueOf(dto.getCaseReference());
+
+            CaseLinkEntity caseLinkEntity = existingLinkedCases.remove(incomingCaseRef);
+
+            if (caseLinkEntity == null) {
+                caseLinkEntity = new CaseLinkEntity();
+                caseLinkEntity.setPcsCase(this);
+                caseLinkEntity.setLinkedCaseReference(incomingCaseRef);
+            }
+
+            caseLinkEntity.setCcdListId(dto.getCaseType());
+
+            caseLinkEntity.getReasons().clear();
+
+            if (dto.getReasonForLink() != null) {
+                for (ListValue<LinkReason> incomingLinkReason : dto.getReasonForLink()) {
+                    caseLinkEntity.addReason(
+                        incomingLinkReason.getValue().getReason(),
+                        incomingLinkReason.getValue().getDescription()
+                    );
+                }
+            }
+
+            result.add(caseLinkEntity);
+        }
+
+        this.caseLinks.clear();
+        this.caseLinks.addAll(result);
+
     }
 }
