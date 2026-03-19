@@ -30,7 +30,7 @@ jobs:
             
             echo "$MAPPINGS" | jq --arg user "$github_user" '.[] | select(.github == $user)'
             
-            slack_id=$(echo "$MAPPINGS" | jq -r --arg user "$github_user" '.[] | select(.github == $user) | .slack')
+            slack_id=$(echo "$MAPPINGS" | jq -r --arg user "$github_user" '.users[] | select(.github == $user) | .slack')
             
             echo "Found slack_id: '$slack_id'"
             
