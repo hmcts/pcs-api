@@ -19,10 +19,6 @@ public class FeeApplier {
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
 
-    public void applyFeeAmount(HasFeeAmount target, FeeType feeType) {
-        applyFeeAmount(feeType, target::setFeeAmount);
-    }
-
     public void applyFeeAmount(FeeType feeType, Consumer<String> setter) {
         try {
             BigDecimal feeAmount = feeService.getFee(feeType).getFeeAmount();

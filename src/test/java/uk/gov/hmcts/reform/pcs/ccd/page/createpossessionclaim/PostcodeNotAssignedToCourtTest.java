@@ -12,8 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 
 import java.util.stream.Stream;
 

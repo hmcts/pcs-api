@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
+import uk.gov.hmcts.ccd.sdk.api.CcdEventBinding;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
-import uk.gov.hmcts.ccd.sdk.api.DtoEventRef;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
@@ -23,6 +23,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
+import java.util.function.Consumer;
+
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 
 
@@ -31,8 +33,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 @AllArgsConstructor
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
-    public static final DtoEventRef<CreateClaimData> EVENT =
-        DtoEventRef.of(createPossessionClaim.name(), "cpc", CreateClaimData.class);
+    public static final CcdEventBinding<CreateClaimData> EVENT =
+        CcdEventBinding.of(createPossessionClaim.name(), "cpc", CreateClaimData.class);
 
     private final PcsCaseService pcsCaseService;
     private final FeeApplier feeApplier;
@@ -60,12 +62,12 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private CreateClaimData start(EventPayload<CreateClaimData, State> eventPayload) {
         CreateClaimData caseData = eventPayload.caseData();
 
-        applyCaseIssueFeeAmount(caseData);
+        applyCaseIssueFeeAmount(caseData::setFeeAmount);
         return caseData;
     }
 
-    private void applyCaseIssueFeeAmount(CreateClaimData pcsCase) {
-        feeApplier.applyFeeAmount(pcsCase, FeeType.CASE_ISSUE_FEE);
+    private void applyCaseIssueFeeAmount(Consumer<String> setter) {
+        feeApplier.applyFeeAmount(FeeType.CASE_ISSUE_FEE, setter);
     }
 
     private SubmitResponse<State> submit(EventPayload<CreateClaimData, State> eventPayload) {

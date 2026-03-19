@@ -12,8 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
@@ -111,6 +111,7 @@ class EnterPropertyAddressTest extends BasePageTest {
 
         // When
         AboutToStartOrSubmitResponse<CreateClaimData, State> response = callDtoMidEventHandler(caseData);
+
         // Then
         CreateClaimData resultData = response.getData();
         assertThat(resultData.getShowCrossBorderPage()).isEqualTo(expectedShowCrossBorder);
@@ -220,7 +221,7 @@ class EnterPropertyAddressTest extends BasePageTest {
         AboutToStartOrSubmitResponse<CreateClaimData, State> response = callDtoMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrorMessageOverride()).isEqualTo("error 1\nerror 2");
+        assertThat(response.getErrors()).containsExactly("error 1", "error 2");
     }
 
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {

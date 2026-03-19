@@ -13,8 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -152,7 +152,6 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
     @Test
     @DisplayName("Should not show Property Not Eligible page if property is eligible")
     void shouldNotShowNotEligibleOrNotAssignedPagesIfPropertyIsEligible() {
-
         // Given: page visible (from MakeAClaim), PNE hidden
         var caseData = buildCrossBorderCaseWithFlags(LegislativeCountry.WALES);
 
@@ -177,7 +176,6 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
     @DisplayName("NOT_ELIGIBLE shows PropertyNotEligible and keeps cross-border page visible")
     void shouldShowPropertyNotEligiblePageWhenCrossBorderPropertyIsNotEligible(
         LegislativeCountry selectedCountry) {
-
         // Given: page visible (from MakeAClaim), PNE hidden
         var caseData = buildCrossBorderCaseWithFlags(
             selectedCountry
@@ -223,5 +221,4 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .showCrossBorderPage(YesOrNo.YES)
             .build();
     }
-
 }

@@ -31,11 +31,10 @@ public abstract class BasePageTest {
         event = buildPageInTestEvent(pageUnderTest);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     protected <D> void setDtoPageUnderTest(Class<D> dtoClass,
         Consumer<Event.EventBuilder<D, UserRole, State>> pageSetup) {
         ConfigBuilderImpl<PCSCase, State, UserRole> configBuilder = createConfigBuilder();
-        Event.EventBuilder eventBuilder = (Event.EventBuilder) configBuilder
+        Event.EventBuilder<D, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(TEST_EVENT_ID, dtoClass, TEST_FIELD_PREFIX, null)
             .forAllStates();
         pageSetup.accept(eventBuilder);
@@ -53,14 +52,15 @@ public abstract class BasePageTest {
         return getMidEventForPage().handle(caseDetails, null);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     protected <D> AboutToStartOrSubmitResponse<D, State> callDtoMidEventHandler(D caseData) {
-        CaseDetails caseDetails = CaseDetails.builder()
+        CaseDetails<D, State> caseDetails = CaseDetails.<D, State>builder()
             .id(TEST_CASE_REFERENCE)
             .data(caseData)
             .build();
 
-        return (AboutToStartOrSubmitResponse<D, State>) getMidEventForPage().handle(caseDetails, null);
+        MidEvent<D, State> midEvent = (MidEvent<D, State>) getMidEventForPage();
+        return midEvent.handle(caseDetails, null);
     }
 
     private Event<PCSCase, UserRole, State> buildPageInTestEvent(CcdPageConfiguration page) {
@@ -92,7 +92,7 @@ public abstract class BasePageTest {
             .forAllStates();
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     private MidEvent<PCSCase, State> getMidEventForPage() {
         Collection<MidEvent> midEventHandlers = getEvent().getFields().getPagesToMidEvent().values();
 

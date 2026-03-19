@@ -87,7 +87,7 @@ class FeeApplierTest extends BaseEventTest {
         when(feeService.getFee(feeType)).thenReturn(feeDetails);
 
         // When
-        underTest.applyFeeAmount(pcsCase, feeType);
+        underTest.applyFeeAmount(feeType, pcsCase::setFeeAmount);
 
         // Then
         verify(feeService).getFee(feeType);
