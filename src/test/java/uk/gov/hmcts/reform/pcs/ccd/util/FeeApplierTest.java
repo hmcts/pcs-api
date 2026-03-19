@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.math.BigDecimal;
-import java.util.function.BiConsumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -49,11 +48,8 @@ class FeeApplierTest extends BaseEventTest {
                 .feeAmount(feeAmount)
                 .build()
         );
-        BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
-            .getEnforcementOrder().setWarrantFeeAmount(fee);
-
         // When
-        underTest.applyFeeAmount(pcsCase, feeType, setter);
+        underTest.applyFeeAmount(feeType, pcsCase.getEnforcementOrder()::setWarrantFeeAmount);
 
         // Then
         verify(feeService).getFee(feeType);
@@ -71,11 +67,8 @@ class FeeApplierTest extends BaseEventTest {
 
         when(feeService.getFee(feeType))
             .thenThrow(new RuntimeException("Fee service error"));
-        BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
-            .getEnforcementOrder().setWarrantFeeAmount(fee);
-
         // When
-        underTest.applyFeeAmount(pcsCase, feeType, setter);
+        underTest.applyFeeAmount(feeType, pcsCase.getEnforcementOrder()::setWarrantFeeAmount);
 
         // Then
         verify(feeService).getFee(feeType);
@@ -93,10 +86,8 @@ class FeeApplierTest extends BaseEventTest {
 
         when(feeService.getFee(feeType)).thenReturn(feeDetails);
 
-        BiConsumer<PCSCase, String> setter = PCSCase::setFeeAmount;
-
         // When
-        underTest.applyFeeAmount(pcsCase, feeType, setter);
+        underTest.applyFeeAmount(pcsCase, feeType);
 
         // Then
         verify(feeService).getFee(feeType);

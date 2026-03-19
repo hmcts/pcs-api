@@ -67,11 +67,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private void applyCaseIssueFeeAmount(CreateClaimData pcsCase) {
-        feeApplier.applyFeeAmount(
-            pcsCase,
-            FeeType.CASE_ISSUE_FEE,
-            CreateClaimData::setFeeAmount
-        );
+        feeApplier.applyFeeAmount(pcsCase, FeeType.CASE_ISSUE_FEE);
     }
 
     private SubmitResponse<State> submit(EventPayload<CreateClaimData, State> eventPayload) {

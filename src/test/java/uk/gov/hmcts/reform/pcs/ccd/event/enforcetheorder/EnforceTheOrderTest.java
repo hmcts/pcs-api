@@ -34,7 +34,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -282,12 +282,10 @@ class EnforceTheOrderTest extends BaseEventTest {
         String expectedFormattedFee = "£" + (1 + FEE_AMOUNT);
 
         doAnswer(invocation -> {
-            PCSCase pcs = invocation.getArgument(0);
-            BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
-            setter.accept(pcs, expectedFormattedFee);
+            Consumer<String> setter = invocation.getArgument(1);
+            setter.accept(expectedFormattedFee);
             return null;
         }).when(feeApplier).applyFeeAmount(
-            any(PCSCase.class),
             any(FeeType.class),
             any()
         );
@@ -297,7 +295,7 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedFormattedFee);
-        verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
+        verify(feeApplier).applyFeeAmount(eq(fee), any());
     }
 
     @ParameterizedTest
@@ -308,16 +306,14 @@ class EnforceTheOrderTest extends BaseEventTest {
         String expectedFeesMessage = FeeApplier.UNABLE_TO_RETRIEVE;
 
         doAnswer(invocation -> {
-            PCSCase pcs = invocation.getArgument(0);
-            BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
+            Consumer<String> setter = invocation.getArgument(1);
             try {
                 throw new RuntimeException("Fee not found");
             } catch (RuntimeException e) {
-                setter.accept(pcs, expectedFeesMessage);
+                setter.accept(expectedFeesMessage);
             }
             return null;
         }).when(feeApplier).applyFeeAmount(
-            eq(caseData),
             any(FeeType.class),
             any());
 
@@ -326,7 +322,7 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedFeesMessage);
-        verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
+        verify(feeApplier).applyFeeAmount(eq(fee), any());
     }
 
     private static Stream<Arguments> enforcementFeeScenarios() {

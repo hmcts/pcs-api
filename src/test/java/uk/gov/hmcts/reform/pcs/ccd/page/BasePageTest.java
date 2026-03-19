@@ -24,6 +24,7 @@ public abstract class BasePageTest {
     protected static final long TEST_CASE_REFERENCE = 1234L;
 
     private static final String TEST_EVENT_ID = "test-event";
+    private static final String TEST_FIELD_PREFIX = "tst";
     protected Event<PCSCase, UserRole, State> event;
 
     protected void setPageUnderTest(CcdPageConfiguration pageUnderTest) {
@@ -35,7 +36,7 @@ public abstract class BasePageTest {
         Consumer<Event.EventBuilder<D, UserRole, State>> pageSetup) {
         ConfigBuilderImpl<PCSCase, State, UserRole> configBuilder = createConfigBuilder();
         Event.EventBuilder eventBuilder = (Event.EventBuilder) configBuilder
-            .decentralisedEvent(TEST_EVENT_ID, dtoClass, null)
+            .decentralisedEvent(TEST_EVENT_ID, dtoClass, TEST_FIELD_PREFIX, null)
             .forAllStates();
         pageSetup.accept(eventBuilder);
         ResolvedCCDConfig<PCSCase, State, UserRole> resolvedCCDConfig = configBuilder.build();

@@ -9,13 +9,14 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.util.HasFeeAmount;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateClaimData {
+public class CreateClaimData implements HasFeeAmount {
     private AddressUK propertyAddress;
     private LegislativeCountry legislativeCountry;
     private String feeAmount;

@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.util.HasFeeAmount;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
@@ -52,7 +53,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
  */
 @Builder(toBuilder = true)
 @Data
-public class PCSCase {
+public class PCSCase implements HasFeeAmount {
 
     // Field label constants - shared between domain annotations and validation
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
