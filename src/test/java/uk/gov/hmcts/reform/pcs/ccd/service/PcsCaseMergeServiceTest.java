@@ -69,7 +69,7 @@ class PcsCaseMergeServiceTest {
         underTest.mergeCaseData(pcsCaseEntity, caseData);
 
         // Then
-        assertThat(pcsCaseEntity.getCaseLinks().size()).isEqualTo(1);
+        assertThat(pcsCaseEntity.getCaseLinks()).hasSize(1);
         assertThat(pcsCaseEntity.getCaseLinks().getFirst().getCcdListId()).isEqualTo("CCD");
 
     }

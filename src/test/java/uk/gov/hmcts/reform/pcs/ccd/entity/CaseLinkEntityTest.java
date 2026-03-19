@@ -30,7 +30,7 @@ class CaseLinkEntityTest {
         underTest.addReason(reasonCode, reasonText);
 
         // Then
-        assertThat(underTest.getReasons().size()).isEqualTo(1);
+        assertThat(underTest.getReasons()).hasSize(1);
         assertThat(underTest.getReasons().getFirst().getReasonCode()).isEqualTo("CLR003");
         assertThat(underTest.getReasons().getFirst().getReasonText()).isEqualTo("Same Party");
     }

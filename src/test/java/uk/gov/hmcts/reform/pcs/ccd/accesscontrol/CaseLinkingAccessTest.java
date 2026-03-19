@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
-public class CaseLinkingAccessTest {
+class CaseLinkingAccessTest {
 
     private CaseLinkingAccess underTest;
 

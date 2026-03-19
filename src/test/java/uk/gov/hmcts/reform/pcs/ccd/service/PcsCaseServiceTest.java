@@ -192,8 +192,6 @@ class PcsCaseServiceTest {
         final PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder().build();
         PCSCase caseData = PCSCase.builder().build();
 
-        //doNothing().when(pcsCaseMergeService).mergeCaseData(pcsCaseEntity, caseData);
-
         // When
         underTest.mergeCaseData(pcsCaseEntity, caseData);
 

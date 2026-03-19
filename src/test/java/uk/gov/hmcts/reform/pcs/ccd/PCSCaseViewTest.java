@@ -380,7 +380,7 @@ class PCSCaseViewTest {
         assertThat(mappedCaseLinks).hasSize(2);
         assertThat(mappedCaseLinks.getFirst().getValue().getCaseReference()).isEqualTo(
             expectedCaseLink1.getCaseReference());
-        assertThat(mappedCaseLinks.get(1).getValue().getCaseType().equals(expectedCaseLink2.getCaseType()));
+        assertThat(mappedCaseLinks.get(1).getValue().getCaseType()).isEqualTo(expectedCaseLink2.getCaseType());
     }
 
     private CaseLinkReasonEntity createCaseLinkReasonEntity(UUID id, String reasonCode, String reasonText) {
