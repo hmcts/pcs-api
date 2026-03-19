@@ -24,12 +24,14 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
+  
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
@@ -161,7 +163,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         option: languageUsed.languageUsedRadioOptions.englishRadioOption,
         nextPage: statementOfTruthOne.mainHeader
       });
-      await performAction('errorValidationSOT1Page', statementOfTruthOne.errorValidation);
+      await performAction('errorValidationSOTWritPage', statementOfTruthOne.errorValidation);
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
       await performAction('selectStatementOfTruthWrit', {
         question: statementOfTruthOne.completedByLabel,
@@ -244,7 +246,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       option: languageUsed.languageUsedRadioOptions.welshRadioOption,
       nextPage: statementOfTruthOne.mainHeader
     });
-    await performAction('errorValidationSOT1Page', statementOfTruthOne.errorValidation);
     await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
     await performAction('selectStatementOfTruthWrit', {
       question: statementOfTruthOne.completedByLabel,

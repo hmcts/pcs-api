@@ -137,6 +137,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: defendantDetails,
         nextPage: peopleWillBeEvicted.mainHeader
       });
+      await performAction('errorValidationPeopleWhoWillBeEvictedPage', peopleWillBeEvicted.errorValidation);
       await performAction('selectPeopleWhoWillBeEvicted', {
         question: peopleWillBeEvicted.evictEveryOneQuestion,
         option: peopleWillBeEvicted.yesRadioOption,

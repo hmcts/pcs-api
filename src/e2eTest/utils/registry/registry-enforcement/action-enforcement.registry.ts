@@ -83,11 +83,13 @@ export class ActionEnforcementRegistry {
     ['errorValidationSuspendOrderPage', new ErrorValidationAction()],
     ['errorValidationSOT1Page', new ErrorValidationAction()],
     ['errorValidationSOT2Page', new ErrorValidationAction()],
+    ['errorValidationSOTWritPage', new ErrorValidationAction()],
     ['errorValidationConfirmHCEOHiredPage', new ErrorValidationAction()],
     ['errorValidationYourHCEOPage', new ErrorValidationAction()],
     ['errorValidationHowDefendantsEnteredPage', new ErrorValidationAction()],
     ['errorValidationExplainHowDefendantsEnteredPage', new ErrorValidationAction()],
     ['errorValidationPeopleYouWantToEvictPage', new ErrorValidationAction()],
+    ['errorValidationPeopleWhoWillBeEvictedPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
   ]);

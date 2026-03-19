@@ -1,6 +1,6 @@
-import { confirmDefendantsDOB, confirmHCEOHired, enterDefendantsDOB, evidenceUpload, explainHowDefendantsReturned, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, peopleYouWantToEvict, rePayments, riskPosedByEveryoneAtProperty, statementOfTruthOne, statementOfTruthTwo, suspendedOrder, violentOrAggressiveBehaviour, vulnerableAdultsAndChildren, yourApplication, yourHCEO } from '@data/page-data/page-data-enforcement';
-import { expect, Page } from '@playwright/test';
-import { performAction, performValidation } from '@utils/controller-enforcement';
+import { confirmDefendantsDOB, confirmHCEOHired, enterDefendantsDOB, evidenceUpload, explainHowDefendantsReturned, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, peopleWillBeEvicted, peopleYouWantToEvict, rePayments, riskPosedByEveryoneAtProperty, statementOfTruthOne, statementOfTruthTwo, suspendedOrder, violentOrAggressiveBehaviour, vulnerableAdultsAndChildren, yourApplication, yourHCEO } from '@data/page-data/page-data-enforcement';
+import { Page } from '@playwright/test';
+import { performAction } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import { defendantDetails } from './enforcement.action';
 
@@ -22,11 +22,13 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationSuspendOrderPage', () => this.errorValidationSuspendOrderPage(errorFlag as string)],
       ['errorValidationSOT1Page', () => this.errorValidationSOT1Page(errorFlag as string)],
       ['errorValidationSOT2Page', () => this.errorValidationSOT2Page(errorFlag as string)],
+      ['errorValidationSOTWritPage', () => this.errorValidationSOTWritPage(errorFlag as string)],
       ['errorValidationConfirmHCEOHiredPage', () => this.errorValidationConfirmHCEOHiredPage(errorFlag as string)],
       ['errorValidationYourHCEOPage', () => this.errorValidationYourHCEOPage(errorFlag as string)],
       ['errorValidationHowDefendantsEnteredPage', () => this.errorValidationHowDefendantsEnteredPage(errorFlag as string)],
       ['errorValidationExplainHowDefendantsEnteredPage', () => this.errorValidationExplainHowDefendantsEnteredPage(errorFlag as string)],
       ['errorValidationPeopleYouWantToEvictPage', () => this.errorValidationPeopleYouWantToEvictPage(errorFlag as string)],
+      ['errorValidationPeopleWhoWillBeEvictedPage', () => this.errorValidationPeopleWhoWillBeEvictedPage(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -347,6 +349,43 @@ export class ErrorValidationAction implements IAction {
     }
   }
 
+  private async errorValidationSOTWritPage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+
+        validationType: statementOfTruthOne.errorValidationType.three,
+        inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
+        question: statementOfTruthOne.completedByLabel,
+        option: statementOfTruthOne.claimantRadioOption,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+
+        validationType: statementOfTruthOne.errorValidationType.four,
+        inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
+        label: statementOfTruthOne.checkBoxGenericErrorLabel,
+        checkBox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+
+        validationType: statementOfTruthOne.errorValidationType.two,
+        inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
+        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruthOne.fullNameHiddenTextLabel,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+
+        validationType: statementOfTruthOne.errorValidationType.two,
+        inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
+        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
+        button: statementOfTruthOne.continueButton
+      });
+    }
+  }
+
   private async errorValidationConfirmHCEOHiredPage(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
@@ -420,14 +459,26 @@ export class ErrorValidationAction implements IAction {
 
   private async errorValidationPeopleYouWantToEvictPage(validationReq: string) {
     if (validationReq === 'YES') {
-       await performAction('inputErrorValidation', {
-           validationType: peopleYouWantToEvict.errorValidationType.six,
-           inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
-           label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
-           header: peopleYouWantToEvict.thereIsAProblemErrorMessageHeader,
-           checkBox: defendantDetails[0],
-           button: peopleYouWantToEvict.continueButton
-         });
+      await performAction('inputErrorValidation', {
+        validationType: peopleYouWantToEvict.errorValidationType.six,
+        inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
+        label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+        header: peopleYouWantToEvict.thereIsAProblemErrorMessageHeader,
+        checkBox: defendantDetails[0],
+        button: peopleYouWantToEvict.continueButton
+      });
+    }
+  }
+
+  private async errorValidationPeopleWhoWillBeEvictedPage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: peopleWillBeEvicted.errorValidationType.three,
+        inputArray: peopleWillBeEvicted.errorValidationField.errorRadioOption,
+        question: peopleWillBeEvicted.evictEveryOneQuestion,
+        option: peopleWillBeEvicted.yesRadioOption,
+        button: peopleWillBeEvicted.continueButton
+      });
     }
   }
 }

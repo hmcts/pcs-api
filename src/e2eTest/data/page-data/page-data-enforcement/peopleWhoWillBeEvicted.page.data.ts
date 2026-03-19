@@ -5,5 +5,13 @@ export const peopleWillBeEvicted = {
   evictEveryOneQuestion: 'Do you want to evict everyone at the property?',
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
-  continueButton: 'Continue'
+  continueButton: 'Continue',
+  thereIsAProblemErrorMessageHeader: 'There is a problem',
+  errorValidation: 'YES',//set it to 'NO' before raising a PR
+  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
+  errorValidationField: {
+    errorRadioOption: [
+      { type: 'none', input: '', errMessage: 'Do you want to evict everyone at the property? is required' },
+    ],
+  },
 }
