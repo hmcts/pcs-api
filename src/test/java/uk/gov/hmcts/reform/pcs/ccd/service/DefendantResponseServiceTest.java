@@ -286,8 +286,12 @@ class DefendantResponseServiceTest {
             .landlordLicensed(landlordLicensed)
             .build();
 
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
