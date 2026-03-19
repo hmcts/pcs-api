@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -30,7 +32,7 @@ public class DefendantResponses {
     private YesNoNotSure tenancyStartDateConfirmation;
 
     @CCD
-    private YesNoNotSure oweRentArrears;
+    private YesNoNotSure rentArrearsAmountConfirmation;
 
     @CCD(typeOverride = FieldType.MoneyGBP)
     @JacksonMoneyGBP
@@ -55,7 +57,7 @@ public class DefendantResponses {
     private VerticalYesNo contactByPhone;
 
     @CCD
-    private YesNoPreferNotToSay receivedFreeLegalAdvice;
+    private YesNoPreferNotToSay freeLegalAdvice;
 
     @CCD
     private LocalDate dateOfBirth;
@@ -67,8 +69,18 @@ public class DefendantResponses {
     private YesNoNotSure landlordRegistered;
 
     @CCD
-    private VerticalYesNo disputeClaim;
+    private YesOrNo disputeClaim;
 
     @CCD
     private String disputeClaimDetails;
+
+    @CCD(access = {CitizenAccess.class})
+    private ReasonableAdjustments reasonableAdjustments;
+
+    @CCD(access = {CitizenAccess.class})
+    private HouseholdCircumstances householdCircumstances;
+
+    @CCD(access = {CitizenAccess.class})
+    private PaymentAgreement paymentAgreement;
+
 }

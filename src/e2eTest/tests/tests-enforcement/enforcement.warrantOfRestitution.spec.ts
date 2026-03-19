@@ -20,6 +20,7 @@ import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-act
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { additionalInformation, livingInTheProperty, propertyAccessDetails } from '@data/page-data-figma/page-data-enforcement-figma';
+import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -174,13 +175,39 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
           ]
       });
       await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, riskPosedByEveryoneAtProperty.mainHeader);
+      await performAction('validatePrePopulatedData', {
+        testPage: riskPosedByEveryoneAtProperty.mainHeader,
+        inputData:
+          [
+            {
+              type: 'checkBox', inputCheckBoxQuestion: riskPosedByEveryoneAtProperty.kindOfRiskQuestion, expectedAnswer: EnforcementCommonUtils.mapRiskPosedPayLoadWithUI(enforceWarrantApiData.enforceCasePayloadYesJourney.warrantEnforcementRiskCategories)
+            },
+          ]
+      });
       await performAction('reTryOnCallBackError', riskPosedByEveryoneAtProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
+      await performAction('validatePrePopulatedData', {
+        testPage: vulnerableAdultsAndChildren.mainHeader,
+        inputData:
+          [
+            {
+              type: 'radio', inputRadioQuestion: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.vulnerablePeoplePresent
+            },
+            {
+              type: 'radio', inputRadioQuestion: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion, expectedAnswer: EnforcementCommonUtils.formatPayLoadData(enforceWarrantApiData.enforceCasePayloadYesJourney.vulnerableAdultsChildren.vulnerableCategory)
+            },
+            {
+              type: 'inputText', inputTextLabel: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.vulnerableAdultsChildren.vulnerableReasonText
+            }
+          ]
+      });
       await performAction('reTryOnCallBackError', vulnerableAdultsAndChildren.continueButton, propertyAccessDetails.mainHeader);
       await performAction('validatePrePopulatedData', {
         testPage: propertyAccessDetails.mainHeader,
         inputData:
           [
-            { type: 'radio', inputRadioQuestion: propertyAccessDetails.accessToThePropertyQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.warrantIsDifficultToAccessProperty },
+            {
+              type: 'radio', inputRadioQuestion: propertyAccessDetails.accessToThePropertyQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.warrantIsDifficultToAccessProperty
+            },
             {
               type: 'inputText', inputTextLabel: propertyAccessDetails.whyItsDifficultToAccessToThePropertyTextLabelHidden, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.warrantClarificationOnAccessDifficultyText
             }
@@ -244,6 +271,15 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
           ]
       });
       await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
+      await performAction('validatePrePopulatedData', {
+        testPage: vulnerableAdultsAndChildren.mainHeader,
+        inputData:
+          [
+            {
+              type: 'radio', inputRadioQuestion: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadNoJourney.vulnerablePeoplePresent
+            },
+          ]
+      });
       await performAction('reTryOnCallBackError', vulnerableAdultsAndChildren.continueButton, propertyAccessDetails.mainHeader);
       await performAction('validatePrePopulatedData', {
         testPage: propertyAccessDetails.mainHeader,
