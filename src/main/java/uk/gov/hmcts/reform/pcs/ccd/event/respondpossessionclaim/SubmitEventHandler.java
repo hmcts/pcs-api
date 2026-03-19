@@ -9,9 +9,9 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
 import java.util.List;
@@ -30,25 +30,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        //extract data from event
-        PossessionClaimResponse defendantResponse = eventPayload.caseData().getPossessionClaimResponse();
-
         log.info("RespondPossessionClaim submit callback invoked for Case Reference: {}", caseReference);
-
-        SubmitResponse<State> validationError = validate(defendantResponse, caseReference);
-        if (validationError != null) {
-            return validationError;
-        }
         return processFinalSubmit(caseReference);
-    }
-
-    private SubmitResponse<State> validate(PossessionClaimResponse possessionClaimResponse, long caseReference) {
-        if (possessionClaimResponse == null) {
-            log.error("Submit failed for case {}: possessionClaimResponse is null", caseReference);
-            return error("Invalid submission: missing response data");
-        }
-
-        return null;
     }
 
     private SubmitResponse<State> processFinalSubmit(long caseReference) {
@@ -61,18 +44,36 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         //get only possession response from draft
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
 
-        //call services to save to relevant tables
-        claimResponseService
-            .saveDraftData(responseDraftData, caseReference);
+        //validate draft data
+        SubmitResponse<State> validationError = validate(responseDraftData, caseReference);
+        if (validationError != null) {
+            return validationError;
+        }
 
-        defendantResponseService.saveDefendantResponse(caseReference,
-            responseDraftData.getDefendantResponses());
+        //call services to save to relevant tables
+        claimResponseService.saveDraftData(responseDraftData, caseReference);
+
+        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
 
         //delete draft as it's no longer needed
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
 
         log.info("Successfully saved defendant response for case: {}", caseReference);
         return success();
+    }
+
+    private SubmitResponse<State> validate(PossessionClaimResponse possessionClaimResponse, long caseReference) {
+        if (possessionClaimResponse == null) {
+            log.error("Submit failed for case {}: possession claim response is null", caseReference);
+            return error("Invalid submission: missing response data");
+        }
+
+        // Only persist the defendant response and its related entities if there is actual defendant response draft data
+        if (possessionClaimResponse.getDefendantResponses() == null) {
+            log.error("Submit failed for case {}: defendant responses is null", caseReference);
+            return error("Invalid submission: missing defendant response data");
+        }
+        return null;
     }
 
     private SubmitResponse<State> success() {
