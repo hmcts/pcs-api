@@ -11,8 +11,10 @@ jobs:
 
     steps:
       - name: Send assigned reviewers to webhook
+        env: 
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
         run: |
-          WEBHOOK_URL="${{ secrets.WEBHOOK_URL }}"
+          WEBHOOK_URL="$WEBHOOK_URL"
           
           echo "Fetching GitHub-Slack user mappings..."
           MAPPINGS=$(curl -s https://raw.githubusercontent.com/hmcts/github-slack-user-mappings/master/slack.json)
