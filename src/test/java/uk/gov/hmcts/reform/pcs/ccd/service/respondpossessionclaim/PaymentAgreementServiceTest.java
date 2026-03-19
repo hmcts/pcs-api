@@ -59,32 +59,53 @@ class PaymentAgreementServiceTest {
         assertThat(entity).isNull();
     }
 
-    @Test
-    void shouldMapRepaymentPlanAgreedField() {
-        //Given
+    @ParameterizedTest
+    @MethodSource("repaymentPlanAgreedScenarios")
+    void shouldMapRepaymentPlanAgreedField(YesNoNotSure expected) {
+        // Given
         PaymentAgreement model = PaymentAgreement.builder()
-            .repaymentPlanAgreed(YesNoNotSure.YES)
-            .build();
+                .repaymentPlanAgreed(expected)
+                .build();
 
-        //When
+        // When
         PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
 
-        //Then
-        assertThat(entity.getRepaymentPlanAgreed()).isEqualTo(YesNoNotSure.YES);
+        // Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getRepaymentPlanAgreed()).isEqualTo(expected);
     }
 
-    @Test
-    void shouldMapRepaymentAgreedDetailsField() {
-        //Given
-        PaymentAgreement model = PaymentAgreement.builder()
-            .repaymentAgreedDetails("Monthly installments")
-            .build();
+    private static Stream<Arguments> repaymentPlanAgreedScenarios() {
+        return Stream.of(
+                Arguments.of(YesNoNotSure.YES),
+                Arguments.of(YesNoNotSure.NO),
+                Arguments.of(YesNoNotSure.NOT_SURE),
+                Arguments.of((YesNoNotSure) null)
+        );
+    }
 
-        //When
+    @ParameterizedTest
+    @MethodSource("repaymentAgreedDetailsScenarios")
+    void shouldMapRepaymentAgreedDetailsField(String expected) {
+        // Given
+        PaymentAgreement model = PaymentAgreement.builder()
+                .repaymentAgreedDetails(expected)
+                .build();
+
+        // When
         PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
 
-        //Then
-        assertThat(entity.getRepaymentAgreedDetails()).isEqualTo("Monthly installments");
+        // Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getRepaymentAgreedDetails()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> repaymentAgreedDetailsScenarios() {
+        return Stream.of(
+                Arguments.of("Monthly installments"),
+                Arguments.of(""),
+                Arguments.of((String) null)
+        );
     }
 
 
