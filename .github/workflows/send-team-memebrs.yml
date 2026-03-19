@@ -16,20 +16,30 @@ jobs:
           echo "Fetching GitHub-Slack user mappings..."
           MAPPINGS=$(curl -s https://raw.githubusercontent.com/hmcts/github-slack-user-mappings/master/slack.json)
           
-          echo "Mappings fetched:"
-          echo "$MAPPINGS" | jq '.'
+          echo "=== Full mappings JSON ==="
+          echo "$MAPPINGS"
+          echo "========================="
           
           GITHUB_REVIEWERS=$(echo '${{ toJson(github.event.pull_request.requested_reviewers) }}' | jq -r '.[].login')
           
+          echo "GitHub reviewers to lookup: $GITHUB_REVIEWERS"
+          
           SLACK_IDS=""
           for github_user in $GITHUB_REVIEWERS; do
+            echo "Looking up: $github_user"
+            
+            echo "$MAPPINGS" | jq --arg user "$github_user" '.[] | select(.github == $user)'
+            
             slack_id=$(echo "$MAPPINGS" | jq -r --arg user "$github_user" '.[] | select(.github == $user) | .slack')
+            
+            echo "Found slack_id: '$slack_id'"
+            
             if [ -n "$slack_id" ]; then
               SLACK_IDS="$SLACK_IDS<@$slack_id> "
-              echo "Mapped $github_user -> $slack_id"
+              echo "✓ Mapped $github_user -> $slack_id"
             else
               SLACK_IDS="$SLACK_IDS@$github_user "
-              echo "No mapping found for $github_user, using GitHub username"
+              echo "✗ No mapping found for $github_user"
             fi
           done
           
@@ -39,10 +49,7 @@ jobs:
           PR_URL="${{ github.event.pull_request.html_url }}"
           PR_AUTHOR="${{ github.event.pull_request.user.login }}"
           
-          MESSAGE="New PR review requested: '$PR_TITLE' by @$PR_AUTHOR\nReviewers: $SLACK_IDS${TEAM_REVIEWERS:+Team: $TEAM_REVIEWERS}\n$PR_URL"
-          
-          echo "Final message:"
-          echo "$MESSAGE"
+          MESSAGE="New PR review requested: '$PR_TITLE' by @$PR_AUTHOR - Reviewers: $SLACK_IDS${TEAM_REVIEWERS:+Team: $TEAM_REVIEWERS} - $PR_URL"
           
           PAYLOAD=$(jq -n --arg text "$MESSAGE" '{"text": $text}')
           
