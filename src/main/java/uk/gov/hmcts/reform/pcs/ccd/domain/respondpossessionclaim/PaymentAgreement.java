@@ -42,5 +42,4 @@ public class PaymentAgreement {
 
     @CCD
     private String additionalContributionFrequency;
-
 }
