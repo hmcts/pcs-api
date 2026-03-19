@@ -13,25 +13,37 @@ jobs:
         run: |
           WEBHOOK_URL="${{ secrets.WEBHOOK_URL }}"
           
-          # Get individual reviewers
-          REVIEWERS=$(echo '${{ toJson(github.event.pull_request.requested_reviewers) }}' | jq -r '.[].login' | paste -sd "," -)
+          echo "Fetching GitHub-Slack user mappings..."
+          MAPPINGS=$(curl -s https://raw.githubusercontent.com/hmcts/github-slack-user-mappings/master/slack.json)
           
-          # Get team reviewers (if teams were assigned)
+          echo "Mappings fetched:"
+          echo "$MAPPINGS" | jq '.'
+          
+          GITHUB_REVIEWERS=$(echo '${{ toJson(github.event.pull_request.requested_reviewers) }}' | jq -r '.[].login')
+          
+          SLACK_IDS=""
+          for github_user in $GITHUB_REVIEWERS; do
+            slack_id=$(echo "$MAPPINGS" | jq -r --arg user "$github_user" '.[$user] // empty')
+            if [ -n "$slack_id" ]; then
+              SLACK_IDS="$SLACK_IDS<@$slack_id> "
+              echo "Mapped $github_user -> $slack_id"
+            else
+              SLACK_IDS="$SLACK_IDS@$github_user "
+              echo "No mapping found for $github_user, using GitHub username"
+            fi
+          done
+          
           TEAM_REVIEWERS=$(echo '${{ toJson(github.event.pull_request.requested_teams) }}' | jq -r '.[].name' | paste -sd "," -)
           
-          # Combine both
-          ALL_REVIEWERS="${REVIEWERS}${TEAM_REVIEWERS:+,}${TEAM_REVIEWERS}"
-          
-          echo "Assigned reviewers: $ALL_REVIEWERS"
-          
-          # Build the message
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_URL="${{ github.event.pull_request.html_url }}"
           PR_AUTHOR="${{ github.event.pull_request.user.login }}"
           
-          MESSAGE="New PR review requested: '$PR_TITLE' by @$PR_AUTHOR - Reviewers: $ALL_REVIEWERS - $PR_URL"
+          MESSAGE="New PR review requested: '$PR_TITLE' by @$PR_AUTHOR\nReviewers: $SLACK_IDS${TEAM_REVIEWERS:+Team: $TEAM_REVIEWERS}\n$PR_URL"
           
-          # Send to webhook
+          echo "Final message:"
+          echo "$MESSAGE"
+          
           PAYLOAD=$(jq -n --arg text "$MESSAGE" '{"text": $text}')
           
           curl -X POST "$WEBHOOK_URL" \
