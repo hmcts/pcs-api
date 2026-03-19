@@ -21,11 +21,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -179,6 +179,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(contactDetails.getParty().getLastName()).isEqualTo("Doe");
         assertThat(contactDetails.getParty().getAddress()).isEqualTo(expectedAddress);
 
+        verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
+
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
@@ -198,8 +200,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
-            .thenReturn(false);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenThrow(new CaseAccessException("No defendants associated with this case"));
 
@@ -219,8 +219,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
-            .thenReturn(false);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenThrow(new CaseAccessException("No claim found for this case"));
 
@@ -258,8 +256,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(differentUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
-            .thenReturn(false);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, differentUserId))
             .thenThrow(new CaseAccessException("User is not linked as a defendant on this case"));
 
@@ -355,6 +351,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(contactDetails.getParty().getFirstName()).isEqualTo("Jane");
         assertThat(contactDetails.getParty().getLastName()).isEqualTo("Smith");
         assertThat(contactDetails.getParty().getAddress()).isEqualTo(propertyAddress);
+
+        verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
     }
 
     @Test
@@ -418,6 +416,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(contactDetails.getParty().getFirstName()).isNull();
         assertThat(contactDetails.getParty().getLastName()).isNull();
         assertThat(contactDetails.getParty().getAddress()).isEqualTo(emptyAddress);
+
+        verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
@@ -492,6 +492,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(contactDetails.getParty().getLastName()).isEqualTo("SavedLastName");
         assertThat(contactDetails.getParty().getEmailAddress()).isEqualTo("saved@example.com");
 
+        verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
+        verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
+
         // Should NOT call patchUnsubmittedEventData when draft already exists
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
@@ -506,11 +509,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .possessionClaimResponse(null)
             .build();
 
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
+
         var response = callSubmitHandler(caseData);
 
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
         assertThat(response.getErrors().getFirst()).isEqualTo("Invalid submission: missing response data");
+
+        verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
