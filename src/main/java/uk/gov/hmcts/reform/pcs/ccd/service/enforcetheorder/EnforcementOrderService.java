@@ -35,15 +35,8 @@ public class EnforcementOrderService {
     private final ConfirmEvictionRepository confirmEvictionRepository;
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
-        if (claimEntity == null) {
-            log.debug("No claim entities found for PCS case when retrieving enforcement order for caseReference={}",
-                      caseReference);
-            return null;
-        }
-        Set<EnforcementOrderEntity> enforcementEntitySet = claimEntity.getEnforcementOrders();
-        if (CollectionUtils.isEmpty(enforcementEntitySet)) {
+        Set<EnforcementOrderEntity> enforcementEntitySet = getEnforcementOrderEntities(caseReference);
+        if (enforcementEntitySet == null) {
             return null;
         }
 
@@ -54,6 +47,22 @@ public class EnforcementOrderService {
                         order.getChooseEnforcementType().getValue().getCode().equals(enforcementType.name()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private Set<EnforcementOrderEntity> getEnforcementOrderEntities(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
+        if (claimEntity == null) {
+            log.debug("No claim entities found for PCS case when retrieving enforcement order for caseReference={}",
+                      caseReference
+            );
+            return null;
+        }
+        Set<EnforcementOrderEntity> enforcementEntitySet = claimEntity.getEnforcementOrders();
+        if (CollectionUtils.isEmpty(enforcementEntitySet)) {
+            return null;
+        }
+        return enforcementEntitySet;
     }
 
     ClaimEntity retrieveClaimEntity(PcsCaseEntity pcsCaseEntity) {
@@ -77,7 +86,7 @@ public class EnforcementOrderService {
         EnforcementOrderEntity orderEntity = enforcementOrderRepository
             .save(mapToEntity(enforcementOrder, claimEntity));
         strategyFactory.getStrategy(getSelectEnforcementTypeFromName(
-                enforcementOrder.getChooseEnforcementType().getValueCode()))
+            enforcementOrder.getChooseEnforcementType().getValueCode()))
             .process(orderEntity, enforcementOrder);
     }
 
@@ -98,14 +107,25 @@ public class EnforcementOrderService {
     }
 
     private ConfirmEvictionEntity mapToConfirmEvictionEntity(long caseReference, EnforcementOrder enforcementOrder) {
-        EnforcementOrderEntity orderEntity = enforcementOrderRepository
-            .save(mapToEntity(enforcementOrder, getClaimEntity(caseReference)));
         ConfirmEvictionEntity confirmEviction = new ConfirmEvictionEntity();
-        confirmEviction.setEnforcementOrder(orderEntity);
 
         // ...
+        // confirmEviction.setEnforcementOrder();
+
 
         return confirmEviction;
+    }
+
+    /**
+     * Currently this is an assumption that it is the latest EnforcementOrder that is the one we are interested in.
+     * @return
+     */
+    private EnforcementOrderEntity retrieveMostRecentEnforcementOrderForClaim(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
+
+        claimEntity.getEnforcementOrders();
+
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
