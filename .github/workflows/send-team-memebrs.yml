@@ -7,6 +7,7 @@ on:
 jobs:
   send_reviewers:
     runs-on: ubuntu-latest
+    if: github.event.label.name =='notify-reviewers'
 
     steps:
       - name: Send assigned reviewers to webhook
