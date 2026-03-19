@@ -43,5 +43,6 @@ public class PossessionClaimResponse {
 
     @CCD(access = {CitizenAccess.class})
     private DefendantResponses defendantResponses;
+
 }
 
