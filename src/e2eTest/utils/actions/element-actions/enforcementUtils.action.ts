@@ -124,4 +124,29 @@ export class EnforcementCommonUtils {
 
   }
 
+  public static formatPayLoadData(input: string): string {
+
+    let formattedOutput = "";
+    const splitInput = input.toLowerCase().split("_");
+    formattedOutput = splitInput
+      .map((str, i) => (i === 0 ? str.charAt(0).toUpperCase() + str.slice(1) : str))
+      .join(" ");
+    return formattedOutput;
+
+  }
+
+  public static mapRiskPosedPayLoadWithUI(inputArr: string[]): string[] {
+
+    const riskMapping: Record<string, string> = {
+      "VIOLENT_OR_AGGRESSIVE": "Violent or aggressive behaviour",
+      "FIREARMS_POSSESSION": "History of firearm possession",
+      "CRIMINAL_OR_ANTISOCIAL": "Criminal or antisocial behaviour",
+      "VERBAL_OR_WRITTEN_THREATS": "Verbal or written threats",
+      "PROTEST_GROUP_MEMBER": "Member of a group that protests evictions",
+      "AGGRESSIVE_ANIMALS": "Aggressive dogs or other animals",
+      "AGENCY_VISITS": "Police or social services visits to the property"
+    };
+    return inputArr.map(item => riskMapping[item] ?? "");
+  }
+
 } 
