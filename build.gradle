@@ -95,6 +95,11 @@ ccd {
   configDir = file('build/definitions')
   decentralised = true
   runtimeIndexing = !integrationBuild
+  tsBindings {
+    enabled = true
+    outputDir.set(layout.projectDirectory.dir('../pcs-frontend/src/main/generated/ccd'))
+    moduleName = 'pcs'
+  }
 }
 
 tasks.withType(JavaCompile).configureEach {

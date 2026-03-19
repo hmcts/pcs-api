@@ -40,20 +40,6 @@ public abstract class BaseEventTest {
         return submitHandler.submit(eventPayload);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected <D> D callDtoStartHandler(D caseData) {
-        EventPayload<D, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
-        Start startHandler = getConfiguredEvent().getStartHandler();
-        return (D) startHandler.start(eventPayload);
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected <D> void callDtoSubmitHandler(D caseData) {
-        EventPayload<D, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
-        Submit submitHandler = getConfiguredEvent().getSubmitHandler();
-        submitHandler.submit(eventPayload);
-    }
-
     private ResolvedCCDConfig<PCSCase, State, UserRole> buildEventConfig(
         CCDConfig<PCSCase, State, UserRole> eventConfig) {
 
