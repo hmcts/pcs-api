@@ -11,6 +11,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import uk.gov.hmcts.ccd.sdk.CcdEventTestClient;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
@@ -29,15 +31,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CreatePossessionClaim.EVENT;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -54,6 +56,9 @@ class CreatePossessionClaimTest extends CftlibTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private CcdEventTestClient ccdEventTestClient;
+
     private String idamToken;
     private String s2sToken;
     private Long caseReference;
@@ -67,19 +72,24 @@ class CreatePossessionClaimTest extends CftlibTest {
     @Test
     @Order(1)
     void createPossessionClaim() {
-        Map<String, Object> caseData = Map.of(
-            "cpcpropertyAddress",
-            Map.of(
-                "AddressLine1", "123 Baker Street",
-                "AddressLine2", "Marylebone",
-                "PostTown", "London",
-                "County", "Greater London",
-                "PostCode", "NW1 6XE"
-            ),
-            "cpclegislativeCountry", LegislativeCountry.ENGLAND.getLabel()
-        );
+        CreateClaimData caseData = CreateClaimData.builder()
+            .propertyAddress(AddressUK.builder()
+                                 .addressLine1("123 Baker Street")
+                                 .addressLine2("Marylebone")
+                                 .postTown("London")
+                                 .county("Greater London")
+                                 .postCode("NW1 6XE")
+                                 .build())
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
 
-        CaseDetails caseDetails = startAndSubmitCreationEvent(createPossessionClaim, caseData);
+        CaseDetails caseDetails = ccdEventTestClient.startAndSubmitCreateEvent(
+            idamToken,
+            s2sToken,
+            CaseType.getCaseType(),
+            EVENT,
+            caseData
+        );
 
         caseReference = caseDetails.getId();
         assertThat(caseReference).isNotNull();
@@ -123,24 +133,6 @@ class CreatePossessionClaimTest extends CftlibTest {
                 .containsExactly("Danny");
 
         assertThat(retrievedCase.getState()).isEqualTo(State.PENDING_CASE_ISSUED.name());
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private CaseDetails startAndSubmitCreationEvent(EventId eventId, Object caseData) {
-        StartEventResponse startEventResponse = ccdApi.startCase(
-            idamToken,
-            s2sToken,
-            CaseType.getCaseType(),
-            eventId.name()
-        );
-
-        CaseDataContent content = CaseDataContent.builder()
-            .data(caseData)
-            .event(Event.builder().id(eventId.name()).build())
-            .eventToken(startEventResponse.getToken())
-            .build();
-
-        return ccdApi.submitCaseCreation(idamToken, s2sToken, CaseType.getCaseType(), content);
     }
 
     @SuppressWarnings("SameParameterValue")

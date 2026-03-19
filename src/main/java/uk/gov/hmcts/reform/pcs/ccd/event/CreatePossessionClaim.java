@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.DtoEventRef;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
@@ -30,6 +31,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 @AllArgsConstructor
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
+    public static final DtoEventRef<CreateClaimData> EVENT =
+        DtoEventRef.of(createPossessionClaim.name(), "cpc", CreateClaimData.class);
+
     private final PcsCaseService pcsCaseService;
     private final FeeApplier feeApplier;
     private final EnterPropertyAddress enterPropertyAddress;
@@ -40,13 +44,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<CreateClaimData, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(
-                    createPossessionClaim.name(),
-                    CreateClaimData.class,
-                    "cpc",
-                    this::submit,
-                    this::start
-                )
+                .decentralisedEvent(EVENT, this::submit, this::start)
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")

@@ -69,6 +69,9 @@ class CreatePossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldConfigureEventFieldPrefix() {
+        assertThat(CreatePossessionClaim.EVENT.id()).isEqualTo(configuredEvent.getId());
+        assertThat(CreatePossessionClaim.EVENT.fieldPrefix()).isEqualTo("cpc");
+        assertThat(CreatePossessionClaim.EVENT.dtoClass()).isEqualTo(CreateClaimData.class);
         assertThat(configuredEvent.getFieldPrefix()).isEqualTo("cpc");
         assertThat(configuredEvent.getEventFieldPrefix()).isEqualTo("cpc");
     }
