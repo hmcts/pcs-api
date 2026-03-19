@@ -1,22 +1,25 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution;
 
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AbstractVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_FLOW;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW;
 
 @Component
-public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildrenPage implements CcdPageConfiguration {
+public class VulnerableAdultsChildrenWarrantRestPage extends AbstractVulnerableAdultsChildrenPage
+        implements CcdPageConfiguration {
 
-    public VulnerableAdultsChildrenPage(TextAreaValidationService textAreaValidationService) {
+    private static final String FIELD_SUFFIX = "WarrantRest";
+
+    public VulnerableAdultsChildrenWarrantRestPage(TextAreaValidationService textAreaValidationService) {
         super(textAreaValidationService);
     }
 
@@ -26,14 +29,14 @@ public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildr
         pageBuilder
             .page(fieldPrefix, this::midEvent)
             .pageLabel(PAGE_LABEL)
-            .showCondition(WARRANT_FLOW)
+            .showCondition(WARRANT_OF_RESTITUTION_FLOW)
             .label(fieldPrefix + "-line-separator", "---")
             .label(fieldPrefix + "-information-text", INFO_MARKUP)
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getRawWarrantDetails)
-            .mandatory(RawWarrantDetails::getVulnerablePeoplePresent)
-            .complex(RawWarrantDetails::getVulnerableAdultsChildren,
-                    "vulnerablePeoplePresent=\"YES\"")
+            .complex(EnforcementOrder::getRawWarrantRestDetails)
+            .mandatory(RawWarrantRestDetails::getVulnerablePeoplePresentWarrantRest)
+            .complex(RawWarrantRestDetails::getVulnerableAdultsChildrenWarrantRest,
+                    "vulnerablePeoplePresentWarrantRest=\"YES\"")
             .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
             .mandatory(VulnerableAdultsChildren::getVulnerableReasonText, getVulnerablePeoplePresentShowCondition())
             .done()
@@ -45,14 +48,14 @@ public class VulnerableAdultsChildrenPage extends AbstractVulnerableAdultsChildr
     @Override
     public String getVulnerableReasonTextToValidate(PCSCase data) {
         return data.getEnforcementOrder()
-                .getRawWarrantDetails().getVulnerableAdultsChildren() != null
+                .getRawWarrantRestDetails().getVulnerableAdultsChildrenWarrantRest() != null
                 ? data.getEnforcementOrder()
-                .getRawWarrantDetails().getVulnerableAdultsChildren().getVulnerableReasonText()
+                .getRawWarrantRestDetails().getVulnerableAdultsChildrenWarrantRest().getVulnerableReasonText()
                 : null;
     }
 
     @Override
     public String getFieldSuffix() {
-        return "";
+        return FIELD_SUFFIX;
     }
 }

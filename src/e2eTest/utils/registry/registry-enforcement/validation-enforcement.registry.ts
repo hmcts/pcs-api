@@ -27,6 +27,7 @@ export class ValidationRegistry {
     ['inputError', new InputErrorValidation()],
     ['validateRadioButtonValues', new ValidatePrePopulatedValues()],
     ['validateInputTextValues', new ValidatePrePopulatedValues()],
+    ['validateCheckBoxSelection', new ValidatePrePopulatedValues()],
   ]);
 
   static getValidation(validationType: string): IValidation {

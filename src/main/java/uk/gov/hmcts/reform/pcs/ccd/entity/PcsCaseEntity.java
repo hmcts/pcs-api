@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
@@ -72,6 +73,11 @@ public class PcsCaseEntity {
     @JsonManagedReference
     private List<ClaimEntity> claims = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private List<DefendantResponseEntity> defendantResponses = new ArrayList<>();
+
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @Builder.Default
     @JsonManagedReference
@@ -104,5 +110,10 @@ public class PcsCaseEntity {
             document.setPcsCase(this);
             this.documents.add(document);
         }
+    }
+
+    public void addDefendantResponse(DefendantResponseEntity defendantResponse) {
+        defendantResponses.add(defendantResponse);
+        defendantResponse.setPcsCase(this);
     }
 }
