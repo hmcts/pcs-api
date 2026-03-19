@@ -475,6 +475,10 @@ export class EnforcementAction implements IAction {
           await performValidation('validateInputTextValues', { textLabel: item.inputTextLabel }, { expected: item.expectedAnswer });
           break;
 
+        case 'checkBox':
+          await performValidation('validateCheckBoxSelection', { question: item.inputCheckBoxQuestion }, { expected: item.expectedAnswer });
+          break;
+
         default:
           break;
       }

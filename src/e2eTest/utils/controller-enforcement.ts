@@ -53,7 +53,9 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 
       await performValidation('autoValidatePageContent');
       try {
-        await new AxeUtils(executor.page).audit();
+        await test.step("Running Accessibility Scan", async () => {
+          await new AxeUtils(executor.page).audit();
+        });
       } catch (error) {
         const errorMessage = String((error as Error).message || error).toLowerCase();
         if (errorMessage.includes('execution context was destroyed') ||
@@ -87,7 +89,7 @@ export async function performAction(action: string, fieldName?: actionData | act
     displayValue = '*'.repeat(value.length);
   } else if (typeof fieldName === 'object' && fieldName !== null && 'password' in fieldName) {
     const obj = fieldName as Record<string, any>;
-    displayValue = {...obj, password: '*'.repeat(String(obj.password).length)};
+    displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
     displayFieldName = displayValue;
   }
   let errorValidationRequired = false;
@@ -107,61 +109,61 @@ export async function performAction(action: string, fieldName?: actionData | act
     await validatePageIfNavigated(action);
   }
 }
-  
-  export async function performValidation(validation: string, inputFieldName?: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
-    const executor = getExecutor();
-    let fieldName: any;
-    let data: any;
-    if (typeof inputFieldName === 'object' && inputFieldName !== null && !Array.isArray(inputFieldName) && inputData !== null && typeof inputData === 'object') {
-      [fieldName, data] = [inputFieldName, inputData];
-    } else if (typeof inputFieldName === 'string') {
+
+export async function performValidation(validation: string, inputFieldName?: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
+  const executor = getExecutor();
+  let fieldName: any;
+  let data: any;
+  if (typeof inputFieldName === 'object' && inputFieldName !== null && !Array.isArray(inputFieldName) && inputData !== null && typeof inputData === 'object') {
     [fieldName, data] = [inputFieldName, inputData];
-    } else {
+  } else if (typeof inputFieldName === 'string') {
+    [fieldName, data] = [inputFieldName, inputData];
+  } else {
     [fieldName, data] = ['', inputFieldName];
+  }
+  const validationInstance = ValidationRegistry.getValidation(validation);
+  await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
+    await validationInstance.validate(executor.page, validation, fieldName, data);
+  });
+}
+
+export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {
+  getExecutor();
+  await test.step(`Performed action group: ${groupName}`, async () => {
+    for (const action of actions) {
+      const [actionName, fieldName, value] = action;
+      await performAction(actionName, fieldName, value);
     }
-    const validationInstance = ValidationRegistry.getValidation(validation);
-    await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
-      await validationInstance.validate(executor.page, validation, fieldName, data);
-    });
-  }
+  });
+}
 
-  export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {
-    getExecutor();
-    await test.step(`Performed action group: ${groupName}`, async () => {
-      for (const action of actions) {
-        const [actionName, fieldName, value] = action;
-        await performAction(actionName, fieldName, value);
-      }
-    });
-  }
+export async function performValidations(groupName: string, ...validations: validationTuple[]): Promise<void> {
+  getExecutor();
+  await test.step(`Performed validation group: ${groupName}`, async () => {
+    for (const validation of validations) {
+      const [validationType, fieldName, data] = validation;
+      await performValidation(validationType, fieldName, data);
+    }
+  });
+}
 
-  export async function performValidations(groupName: string, ...validations: validationTuple[]): Promise<void> {
-    getExecutor();
-    await test.step(`Performed validation group: ${groupName}`, async () => {
-      for (const validation of validations) {
-        const [validationType, fieldName, data] = validation;
-        await performValidation(validationType, fieldName, data);
-      }
-    });
-  }
-
-  function readValuesFromInputObjects(obj: object): string {
-    const keys = Object.keys(obj);
-    const formattedPairs = keys.map(key => {
-      const value = (obj as actionRecord)[key];
-      let valueString: string;
-      if (Array.isArray(value)) {
-        valueString = `[${value.map(item =>
-          typeof item === 'object'
-            ? `{ ${readValuesFromInputObjects(item)} }`
-            : String(item)
-        ).join(', ')}]`;
-      } else if (typeof value === 'object' && value !== null) {
-        valueString = `{ ${readValuesFromInputObjects(value)} }`;
-      } else {
-        valueString = String(value);
-      }
-      return `${key}: ${valueString}`;
-    });
-    return `${formattedPairs.join(', ')}`;
-  }
+function readValuesFromInputObjects(obj: object): string {
+  const keys = Object.keys(obj);
+  const formattedPairs = keys.map(key => {
+    const value = (obj as actionRecord)[key];
+    let valueString: string;
+    if (Array.isArray(value)) {
+      valueString = `[${value.map(item =>
+        typeof item === 'object'
+          ? `{ ${readValuesFromInputObjects(item)} }`
+          : String(item)
+      ).join(', ')}]`;
+    } else if (typeof value === 'object' && value !== null) {
+      valueString = `{ ${readValuesFromInputObjects(value)} }`;
+    } else {
+      valueString = String(value);
+    }
+    return `${key}: ${valueString}`;
+  });
+  return `${formattedPairs.join(', ')}`;
+}
