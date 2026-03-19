@@ -16,30 +16,25 @@ jobs:
           echo "Fetching GitHub-Slack user mappings..."
           MAPPINGS=$(curl -s https://raw.githubusercontent.com/hmcts/github-slack-user-mappings/master/slack.json)
           
-          echo "=== Full mappings JSON ==="
-          echo "$MAPPINGS"
-          echo "========================="
+          echo "Testing jq parse..."
+          echo "$MAPPINGS" | jq -e '.users' > /dev/null || { echo "Failed to parse users array"; exit 1; }
           
           GITHUB_REVIEWERS=$(echo '${{ toJson(github.event.pull_request.requested_reviewers) }}' | jq -r '.[].login')
           
-          echo "GitHub reviewers to lookup: $GITHUB_REVIEWERS"
+          echo "GitHub reviewers: $GITHUB_REVIEWERS"
           
           SLACK_IDS=""
           for github_user in $GITHUB_REVIEWERS; do
             echo "Looking up: $github_user"
             
-            echo "$MAPPINGS" | jq --arg user "$github_user" '.[] | select(.github == $user)'
-            
             slack_id=$(echo "$MAPPINGS" | jq -r --arg user "$github_user" '.users[] | select(.github == $user) | .slack')
-            
-            echo "Found slack_id: '$slack_id'"
             
             if [ -n "$slack_id" ]; then
               SLACK_IDS="$SLACK_IDS<@$slack_id> "
               echo "✓ Mapped $github_user -> $slack_id"
             else
               SLACK_IDS="$SLACK_IDS@$github_user "
-              echo "✗ No mapping found for $github_user"
+              echo "✗ No mapping for $github_user"
             fi
           done
           
@@ -57,4 +52,4 @@ jobs:
             -H "Content-Type: application/json" \
             -d "$PAYLOAD"
           
-          echo "Sent reviewers to webhook successfully!"
+          echo "Sent to webhook successfully!"
