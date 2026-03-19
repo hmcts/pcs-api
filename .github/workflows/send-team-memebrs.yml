@@ -23,7 +23,7 @@ jobs:
           
           SLACK_IDS=""
           for github_user in $GITHUB_REVIEWERS; do
-            slack_id=$(echo "$MAPPINGS" | jq -r --arg user "$github_user" '.[$user] // empty')
+            slack_id=$(echo "$MAPPINGS" | jq -r --arg user "$github_user" '.[] | select(.github == $user) | .slack')
             if [ -n "$slack_id" ]; then
               SLACK_IDS="$SLACK_IDS<@$slack_id> "
               echo "Mapped $github_user -> $slack_id"
