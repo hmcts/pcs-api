@@ -11,7 +11,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
@@ -35,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
@@ -67,18 +67,17 @@ class CreatePossessionClaimTest extends CftlibTest {
     @Test
     @Order(1)
     void createPossessionClaim() {
-
-        PCSCase caseData = PCSCase.builder()
-            .propertyAddress(AddressUK.builder()
-                                 .addressLine1("123 Baker Street")
-                                 .addressLine2("Marylebone")
-                                 .postTown("London")
-                                 .county("Greater London")
-                                 .postCode("NW1 6XE")
-                                 .build()
-            )
-            .legislativeCountry(LegislativeCountry.ENGLAND)
-            .build();
+        Map<String, Object> caseData = Map.of(
+            "cpcpropertyAddress",
+            Map.of(
+                "AddressLine1", "123 Baker Street",
+                "AddressLine2", "Marylebone",
+                "PostTown", "London",
+                "County", "Greater London",
+                "PostCode", "NW1 6XE"
+            ),
+            "cpclegislativeCountry", LegislativeCountry.ENGLAND.getLabel()
+        );
 
         CaseDetails caseDetails = startAndSubmitCreationEvent(createPossessionClaim, caseData);
 
@@ -127,7 +126,7 @@ class CreatePossessionClaimTest extends CftlibTest {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private CaseDetails startAndSubmitCreationEvent(EventId eventId, PCSCase caseData) {
+    private CaseDetails startAndSubmitCreationEvent(EventId eventId, Object caseData) {
         StartEventResponse startEventResponse = ccdApi.startCase(
             idamToken,
             s2sToken,
