@@ -310,7 +310,7 @@ class ClaimResponseServiceTest {
                 .lastName("Doe")
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
+                .preferenceType(ContactPreferenceType.EMAIL)
                 .build()
         );
 
@@ -336,7 +336,7 @@ class ClaimResponseServiceTest {
                 .lastName("   ")
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
+                .preferenceType(ContactPreferenceType.EMAIL)
                 .build()
         );
 
