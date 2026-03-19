@@ -56,7 +56,7 @@ public class DefendantResponses {
     private VerticalYesNo contactByPhone;
 
     @CCD
-    private YesNoPreferNotToSay receivedFreeLegalAdvice;
+    private YesNoPreferNotToSay freeLegalAdvice;
 
     @CCD
     private LocalDate dateOfBirth;

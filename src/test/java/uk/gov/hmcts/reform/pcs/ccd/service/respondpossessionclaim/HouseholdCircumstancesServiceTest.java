@@ -3,10 +3,15 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,18 +25,28 @@ class HouseholdCircumstancesServiceTest {
         underTest = new HouseholdCircumstancesService();
     }
 
-    @Test
-    void shouldMapDependantChildrenField() {
+    @ParameterizedTest
+    @MethodSource("dependantChildrenScenarios")
+    void shouldMapDependantChildrenField(YesOrNo expected) {
         //Given
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .dependantChildren(YesOrNo.YES)
+            .dependantChildren(expected)
             .build();
 
         //When
         HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
 
         //Then
-        assertThat(entity.getDependantChildren()).isEqualTo(YesOrNo.YES);
+        assertThat(entity).isNotNull();
+        assertThat(entity.getDependantChildren()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> dependantChildrenScenarios() {
+        return Stream.of(
+            Arguments.of(YesOrNo.YES),
+            Arguments.of(YesOrNo.NO),
+            Arguments.of((YesOrNo) null)
+        );
     }
 
     @Test

@@ -15,6 +15,11 @@ ALTER TABLE defendant_response
     ADD COLUMN response_received_date TIMESTAMP,
     ADD COLUMN language_used TEXT,
     ADD COLUMN channel VARCHAR(60),
-    ADD COLUMN ingestion_source VARCHAR(60);
+    ADD COLUMN ingestion_source VARCHAR(60),
+    DROP COLUMN possession_order_type;
+
+-- Rename column must be separate alter statement
+ALTER TABLE defendant_response
+    RENAME COLUMN "received_free_legal_advice" TO free_legal_advice;
 
 CREATE INDEX defendant_response_pcs_case_idx ON defendant_response (pcs_case_id);
