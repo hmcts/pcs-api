@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,8 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AbstractVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unchecked")
-class VulnerableAdultsChildrenPageTest {
+class VulnerableAdultsChildrenWarrantRestPageTest {
 
     @Mock
     private TextAreaValidationService service;
@@ -40,12 +40,12 @@ class VulnerableAdultsChildrenPageTest {
 
     private PageBuilder pageBuilder;
 
-    private VulnerableAdultsChildrenPage pageUnderTest;
+    private VulnerableAdultsChildrenWarrantRestPage pageUnderTest;
 
     @BeforeEach
     void setup() {
         pageBuilder = new PageBuilder(eventBuilder);
-        pageUnderTest = new VulnerableAdultsChildrenPage(service);
+        pageUnderTest = new VulnerableAdultsChildrenWarrantRestPage(service);
 
         lenient().when(eventBuilder.fields()).thenReturn(fieldBuilder);
         lenient().when(fieldBuilder.page(anyString(), any(MidEvent.class))).thenReturn(fieldBuilder);
@@ -62,7 +62,8 @@ class VulnerableAdultsChildrenPageTest {
 
     @Test
     void shouldConfigurePageMetadataAndShowCondition() {
-        assertThatCode(() -> pageUnderTest.addTo(pageBuilder)).doesNotThrowAnyException();
+        assertThatCode(() -> pageUnderTest.addTo(pageBuilder))
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -70,8 +71,8 @@ class VulnerableAdultsChildrenPageTest {
         String expectedText = "Some vulnerability details";
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .rawWarrantDetails(RawWarrantDetails.builder()
-                .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+            .rawWarrantRestDetails(RawWarrantRestDetails.builder()
+                .vulnerableAdultsChildrenWarrantRest(VulnerableAdultsChildren.builder()
                     .vulnerableReasonText(expectedText)
                     .build())
                 .build())
@@ -90,8 +91,8 @@ class VulnerableAdultsChildrenPageTest {
     void shouldReturnNullVulnerableReasonTextFromCaseIfNoDetailsFound() {
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .rawWarrantDetails(RawWarrantDetails.builder()
-                        .vulnerableAdultsChildren(null)
+                .rawWarrantRestDetails(RawWarrantRestDetails.builder()
+                        .vulnerableAdultsChildrenWarrantRest(null)
                         .build())
                 .build();
 
@@ -108,6 +109,6 @@ class VulnerableAdultsChildrenPageTest {
     void shouldReturnPageIdWithoutSuffix() {
         String pageId = pageUnderTest.getPageKey();
 
-        assertThat(pageId).isEqualTo("vulnerableAdultsChildren");
+        assertThat(pageId).isEqualTo("vulnerableAdultsChildrenWarrantRest");
     }
 }
