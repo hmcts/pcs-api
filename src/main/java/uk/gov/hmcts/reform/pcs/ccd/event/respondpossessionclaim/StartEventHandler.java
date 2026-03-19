@@ -7,10 +7,10 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -50,25 +50,27 @@ public class StartEventHandler implements Start<PCSCase, State> {
         long caseReference = eventPayload.caseReference();
         log.info("RespondPossessionClaim start callback invoked for Case Reference: {}", caseReference);
 
-        PCSCase pcsCase = eventPayload.caseData();  // Already has view-populated claim data
+        PCSCase pcsCase = eventPayload.caseData();
+        PartyEntity matchedDefendant = loadAndValidateDefendant(caseReference);
 
-        // Restore existing draft if defendant has already started responding
-        if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim)) {
-            return restoreSavedDraftAnswers(caseReference, pcsCase);
+        if (hasDraftInProgress(caseReference)) {
+            return restoreSavedDraftAnswers(caseReference, pcsCase, matchedDefendant);
         }
 
-        // First time: Load case entity only for access validation and matched defendant
+        return initializeFirstTimeResponse(caseReference, pcsCase, matchedDefendant);
+    }
+
+    private PartyEntity loadAndValidateDefendant(long caseReference) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
-        PartyEntity matchedDefendant = accessValidator.validateAndGetDefendant(
-            caseEntity,
-            securityContextService.getCurrentUserId()
-        );
+        return accessValidator.validateAndGetDefendant(caseEntity, securityContextService.getCurrentUserId());
+    }
 
-        // Initialize only defendant's editable contact details
-        // Claim data already visible in pcsCase via CitizenAccess
+    private boolean hasDraftInProgress(long caseReference) {
+        return draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim);
+    }
+
+    private PCSCase initializeFirstTimeResponse(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant) {
         PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, matchedDefendant);
-
-        // Save initial draft (only defendant contact details and responses, not claim data)
         createInitialDraft(caseReference, response);
 
         return pcsCase.toBuilder()
@@ -76,30 +78,36 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .build();
     }
 
-    /**
-     * Restores defendant's draft answers from previous session.
-     *
-     * <p>Merges two sources:
-     * - pcsCase: View-populated claim data (fresh from view classes)
-     * - savedDraft: Defendant's saved answers from draft table
-     *
-     * <p>Sets hasUnsubmittedCaseData=YES so UI shows "Continue" button instead of "Start"
-     *
-     * <p><b>IMPORTANT:</b> Uses {@code .toBuilder()} to safely merge fresh claimantOrganisations
-     * with saved defendant data. This automatically copies all defendant fields (defendantContactDetails,
-     * defendantResponses) while only overriding claimantOrganisations with fresh view data.
-     */
-    private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase pcsCase) {
-        PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
-            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
+    private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant) {
+        PCSCase savedDraft = loadSavedDraft(caseReference);
+        Party claimantEnteredDetails = responseMapper.buildPartyFromEntity(matchedDefendant, pcsCase);
 
-        PossessionClaimResponse merged = mergeLatestCaseData(
+        PossessionClaimResponse mergedResponse = buildMergedResponse(
             pcsCase,
-            savedDraft.getPossessionClaimResponse()
+            savedDraft.getPossessionClaimResponse(),
+            claimantEnteredDetails
         );
 
+        return buildCaseWithDraft(pcsCase, mergedResponse);
+    }
+
+    private PCSCase loadSavedDraft(long caseReference) {
+        return draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
+            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
+    }
+
+    private PossessionClaimResponse buildMergedResponse(PCSCase latestCase,
+                                                         PossessionClaimResponse savedResponses,
+                                                         Party claimantEnteredDetails) {
+        return mergeLatestCaseData(latestCase, savedResponses)
+            .toBuilder()
+            .claimantEnteredDefendantDetails(claimantEnteredDetails)
+            .build();
+    }
+
+    private PCSCase buildCaseWithDraft(PCSCase pcsCase, PossessionClaimResponse response) {
         return pcsCase.toBuilder()
-            .possessionClaimResponse(merged)
+            .possessionClaimResponse(response)
             .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
     }
@@ -158,7 +166,6 @@ public class StartEventHandler implements Start<PCSCase, State> {
         // Filter to ONLY defendant's editable fields (exclude claimantOrganisations)
         PossessionClaimResponse defendantFieldsOnly = PossessionClaimResponse.builder()
             .defendantContactDetails(response.getDefendantContactDetails())
-            .defendantResponses(response.getDefendantResponses())
             .build();  // claimantOrganisations intentionally excluded - view data only
 
         PCSCase draftWithOnlyResponseData = PCSCase.builder()
