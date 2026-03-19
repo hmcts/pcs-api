@@ -1,4 +1,4 @@
-name: Send Reviewers to Webhook
+name: send-team-members.yml
 on:
   pull_request:
     types: [labeled]
