@@ -1,48 +1,41 @@
-name: Send Team Members to Webhook
+name: Send Reviewers to Webhook
 
 on:
   pull_request:
     types: [labeled]
-  
+
 jobs:
-  send_team_members:
+  send_reviewers:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Fetch team members and send to webhook
+      - name: Send assigned reviewers to webhook
         run: |
-          # Configuration
-          TEAM_SLUG="possession-claim-backend"
-          ORG_NAME="hmcts"
           WEBHOOK_URL="${{ secrets.WEBHOOK_URL }}"
-
-          # Fetch team members - let's see the raw response
-          echo "Fetching members from: https://api.github.com/orgs/$ORG_NAME/teams/$TEAM_SLUG/members"
           
-          RESPONSE=$(curl -sH "Authorization: token ${{ secrets.ORG_ACCESS_TOKEN }}" \
-            "https://api.github.com/orgs/$ORG_NAME/teams/$TEAM_SLUG/members")
+          # Get individual reviewers
+          REVIEWERS=$(echo '${{ toJson(github.event.pull_request.requested_reviewers) }}' | jq -r '.[].login' | paste -sd "," -)
           
-          # Debug: print the raw response
-          echo "Raw API Response:"
-          echo "$RESPONSE"
+          # Get team reviewers (if teams were assigned)
+          TEAM_REVIEWERS=$(echo '${{ toJson(github.event.pull_request.requested_teams) }}' | jq -r '.[].name' | paste -sd "," -)
           
-          # Check if it's valid JSON and an array
-          if echo "$RESPONSE" | jq -e 'type == "array"' > /dev/null 2>&1; then
-            echo "Response is a valid array"
-            USERNAMES=$(echo "$RESPONSE" | jq -r '.[].login' | paste -sd "," -)
-            echo "Found users: $USERNAMES"
-          else
-            echo "ERROR: Response is not an array. Likely an API error:"
-            echo "$RESPONSE" | jq '.'
-            exit 1
-          fi
+          # Combine both
+          ALL_REVIEWERS="${REVIEWERS}${TEAM_REVIEWERS:+,}${TEAM_REVIEWERS}"
           
-          # Send to webhook (hardcoded for testing)
+          echo "Assigned reviewers: $ALL_REVIEWERS"
+          
+          # Build the message
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          
+          MESSAGE="New PR review requested: '$PR_TITLE' by @$PR_AUTHOR - Reviewers: $ALL_REVIEWERS - $PR_URL"
+          
+          # Send to webhook
+          PAYLOAD=$(jq -n --arg text "$MESSAGE" '{"text": $text}')
+          
           curl -X POST "$WEBHOOK_URL" \
             -H "Content-Type: application/json" \
-            -d '{"text": "test message"}'
+            -d "$PAYLOAD"
           
-          echo "Sent to webhook successfully!"
+          echo "Sent reviewers to webhook successfully!"
