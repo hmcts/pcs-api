@@ -7,7 +7,7 @@ export const peopleWillBeEvicted = {
   noRadioOption: 'No',
   continueButton: 'Continue',
   thereIsAProblemErrorMessageHeader: 'There is a problem',
-  errorValidation: 'YES',//set it to 'NO' before raising a PR
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorRadioOption: [

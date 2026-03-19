@@ -10,7 +10,7 @@ export const riskPosedByEveryoneAtProperty = {
   aggressiveAnimalsCheckbox: 'Aggressive dogs or other animals',
   kindOfRiskQuestion: 'What kind of risks do they pose to the bailiff?',
   continueButton: 'Continue',
-  errorValidation: 'YES',//set it to 'NO' before raising a PR
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorCheckBoxOption: [

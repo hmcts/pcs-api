@@ -8,7 +8,7 @@ export const legalCosts = {
   howMuchYouWantToReclaimTextInput: ['755559.7','119999','1099.95','6320.00','890.10','111.01'],
   legalCostsFee: 'Legal costs',
   continueButton: 'Continue',
-  errorValidation: 'YES',//set it to 'NO' before raising a PR
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorMoneyField: [
