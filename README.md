@@ -18,7 +18,7 @@ To build the project execute the following command:
 ```bash
 ./gradlew bootWithCCD
 ```
-Above command starts PCS API + CCD & all dependencies
+Above  command starts PCS API + CCD & all dependencies
 
 This will start several containers:
 
