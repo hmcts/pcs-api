@@ -78,14 +78,13 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
             .field(PCSCase::getPropertyAddress);
 
-
         builder.tab("CaseHistory", "History")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("caseHistory");
 
         builder.tab("hidden", "HiddenFields")
-            .field(PCSCase::getCaseTitleMarkdown)
-            .field(PCSCase::getShowConfirmEvictionJourney);
+            .showCondition(NEVER_SHOW)
+            .field(PCSCase::getCaseTitleMarkdown);
 
         builder.tab("serviceRequest", "Service Request")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))

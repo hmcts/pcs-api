@@ -38,8 +38,6 @@ public class EnforcementOrderMediator {
                     noBailiffDate(pcsCase);
                 }
             }
-            log.warn("---------------------------");
-            log.warn(String.valueOf(pcsCase.getShowConfirmEvictionJourney()));
         }
     }
 

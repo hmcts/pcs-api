@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.confirmeviction;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -17,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.ConfirmE
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmEviction;
 
-@Slf4j
 @Component
 @AllArgsConstructor
 public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
@@ -28,19 +26,12 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(confirmEviction.name(), this::submit, this::start)
+                .decentralisedEvent(confirmEviction.name(), this::submit)
                 .forAllStates()
                 .name("Confirm the eviction details")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
         confirmEvictionConfigurer.configurePages(new PageBuilder(eventBuilder));
-    }
-
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase pcsCase = eventPayload.caseData();
-        log.warn("---------------------------");
-        log.warn(String.valueOf(pcsCase.getShowConfirmEvictionJourney()));
-        return pcsCase;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

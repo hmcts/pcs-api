@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.ArgumentMatchers.isA;
 
-public class PageConfigurerHelper {
+public final class PageConfigurerHelper {
 
     public static void verifyAndCount(InOrder inOrder, PageBuilder pageBuilder,
                                 Class<? extends CcdPageConfiguration> pageClass, AtomicInteger counter) {
@@ -20,6 +20,10 @@ public class PageConfigurerHelper {
                                 CcdPageConfiguration specificInstance, AtomicInteger counter) {
         inOrder.verify(pageBuilder).add(specificInstance);
         counter.incrementAndGet();
+    }
+
+    private PageConfigurerHelper() {
+        
     }
 
 }
