@@ -61,7 +61,8 @@ class WarrantOfRestitutionStrategyTest {
                 .vulnerablePeoplePresentWarrantRest(YesNoNotSure.YES)
                 .vulnerableAdultsChildrenWarrantRest(vulnerableAdultsChildren).build();
 
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantOfRestitutionDetails(warrantOfRestitutionDetails)
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(warrantOfRestitutionDetails)
                 .rawWarrantRestDetails(rawWarrantRestDetails).build();
         WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder().build();
         when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
