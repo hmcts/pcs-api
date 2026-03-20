@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.W
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WarrantOfRestitutionRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.RiskProfileService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.StatementOfTruthMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 
@@ -28,6 +29,8 @@ class WarrantOfRestitutionStrategyTest {
 
     @InjectMocks
     private WarrantOfRestitutionStrategy underTest;
+    @Mock
+    private RiskProfileService riskProfileService;
     @Mock
     private WarrantOfRestitutionMapper warrantOfRestitutionMapper;
     @Mock
@@ -49,7 +52,8 @@ class WarrantOfRestitutionStrategyTest {
                 .vulnerableCategory(VULNERABLE_CHILDREN).vulnerableReasonText("Young children present").build();
 
         RawWarrantRestDetails rawWarrantRestDetails = RawWarrantRestDetails.builder()
-                .vulnerablePeoplePresent(YesNoNotSure.YES).vulnerableAdultsChildren(vulnerableAdultsChildren).build();
+                .vulnerablePeoplePresentWarrantRest(YesNoNotSure.YES)
+                .vulnerableAdultsChildrenWarrantRest(vulnerableAdultsChildren).build();
 
         enforcementOrder = EnforcementOrder.builder().warrantOfRestitutionDetails(warrantOfRestitutionDetails)
                 .rawWarrantRestDetails(rawWarrantRestDetails).build();
@@ -63,6 +67,7 @@ class WarrantOfRestitutionStrategyTest {
             ArgumentCaptor.forClass(WarrantOfRestitutionEntity.class);
 
         // Then
+        verify(riskProfileService).processRisk(enforcementOrder, enforcementOrderEntity);
         verify(warrantOfRestitutionRepository).save(captor.capture());
         verify(statementOfTruthMapper).mapStatementOfTruthForWarrantRest(enforcementOrder, enforcementOrderEntity);
         WarrantOfRestitutionEntity saved = captor.getValue();

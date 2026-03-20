@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -39,7 +38,8 @@ public class PossessionClaimResponseMapper {
      */
     public PossessionClaimResponse mapFrom(PCSCase pcsCase, PartyEntity matchedDefendant) {
         DefendantContactDetails contactDetails = buildContactDetails(pcsCase, matchedDefendant);
-        DefendantResponses responses = DefendantResponses.builder().build();
+
+        Party claimantEnteredDetails = buildPartyFromEntity(matchedDefendant, pcsCase);
 
         // Extract org names from CLAIMANT-role parties (pre-filtered by PCSCaseView.getPartyMap)
         List<ListValue<String>> claimantOrgs = extractClaimantOrganisations(pcsCase);
@@ -47,7 +47,7 @@ public class PossessionClaimResponseMapper {
         return PossessionClaimResponse.builder()
             .claimantOrganisations(claimantOrgs)
             .defendantContactDetails(contactDetails)
-            .defendantResponses(responses)
+            .claimantEnteredDefendantDetails(claimantEnteredDetails)
             .build();
     }
 
@@ -59,22 +59,28 @@ public class PossessionClaimResponseMapper {
      * @return DefendantContactDetails with initialized party details
      */
     private DefendantContactDetails buildContactDetails(PCSCase pcsCase, PartyEntity matchedDefendant) {
-        AddressUK contactAddress = resolveAddress(matchedDefendant, pcsCase);
-
-        Party defendantParty = Party.builder()
-            .firstName(matchedDefendant.getFirstName())
-            .lastName(matchedDefendant.getLastName())
-            .nameKnown(matchedDefendant.getNameKnown())
-            .emailAddress(matchedDefendant.getEmailAddress())
-            .address(contactAddress)
-            .addressKnown(matchedDefendant.getAddressKnown())
-            .addressSameAsProperty(matchedDefendant.getAddressSameAsProperty())
-            .phoneNumber(matchedDefendant.getPhoneNumber())
-            .phoneNumberProvided(matchedDefendant.getPhoneNumberProvided())
-            .build();
+        Party defendantParty = buildPartyFromEntity(matchedDefendant, pcsCase);
 
         return DefendantContactDetails.builder()
             .party(defendantParty)
+            .build();
+    }
+
+
+    public Party buildPartyFromEntity(PartyEntity partyEntity, PCSCase pcsCase) {
+        AddressUK contactAddress = resolveAddress(partyEntity, pcsCase);
+
+        return Party.builder()
+            .firstName(partyEntity.getFirstName())
+            .lastName(partyEntity.getLastName())
+            .nameKnown(partyEntity.getNameKnown())
+            .emailAddress(partyEntity.getEmailAddress())
+            .address(contactAddress)
+            .addressKnown(partyEntity.getAddressKnown())
+            .addressSameAsProperty(partyEntity.getAddressSameAsProperty())
+            .phoneNumber(partyEntity.getPhoneNumber())
+            .phoneNumberProvided(partyEntity.getPhoneNumberProvided())
+            .dateOfBirth(partyEntity.getDateOfBirth())
             .build();
     }
 
