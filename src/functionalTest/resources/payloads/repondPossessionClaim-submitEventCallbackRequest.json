@@ -1,0 +1,51 @@
+{
+  "case_details_before": {},
+  "case_details": {
+    "defendantResponses": {
+      "tenancyTypeCorrect": true,
+      "tenancyStartDate": "2020-01-01",
+      "tenancyStartDateConfirmation": true,
+      "rentArrearsAmountConfirmation": true,
+      "rentArrearsAmount": 1000.00,
+      "noticeReceived": true,
+      "noticeReceivedDate": "2020-01-01",
+      "contactByEmail": "YES",
+      "contactByText": "NO",
+      "contactByPost": "NO",
+      "contactByPhone": "YES",
+      "freeLegalAdvice": "NO",
+      "dateOfBirth": "1990-01-01",
+      "defendantNameConfirmation": "YES",
+      "landlordRegistered": "YES",
+      "reasonableAdjustments": {
+        "hearingLoop": "YES",
+        "disabledAccess": "YES",
+        "signLanguageInterpreter": "YES",
+        "otherReasonableAdjustment": "YES",
+        "otherReasonableAdjustmentDetails": "Other reasonable adjustment details"
+      },
+      "householdCircumstances": {
+        "householdMembers": "YES",
+        "householdMembersDetails": "Household members details",
+        "children": "YES",
+        "childrenDetails": "Children details",
+        "pregnant": "YES",
+        "pregnantDetails": "Pregnant details",
+        "vulnerable": "YES",
+        "vulnerableDetails": "Vulnerable details"
+      },
+      "paymentAgreement": {
+        "paymentAgreementOption": "AGREEMENT_REACHED",
+        "paymentAgreementDetails": "Payment agreement details"
+      }
+    }
+  },
+  "event_details": {
+    "case_type": "${caseTypeId}",
+    "event_name": "respondPossessionClaim",
+    "event_id": "respondPossessionClaim"
+  },
+  "internal_case_id": "${caseId}",
+  "start_revision": 1,
+  "merge_revision": 1
+}
