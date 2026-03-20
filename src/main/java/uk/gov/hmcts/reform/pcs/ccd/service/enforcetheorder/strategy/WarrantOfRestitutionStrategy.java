@@ -25,8 +25,8 @@ public class WarrantOfRestitutionStrategy implements EnforcementTypeStrategy {
     @Override
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
         riskProfileService.processRisk(enforcementOrder, enforcementOrderEntity);
-        processStatementOfTruth(enforcementOrder, enforcementOrderEntity);
         processWarrantOfRestitution(enforcementOrder, enforcementOrderEntity);
+        processStatementOfTruth(enforcementOrder, enforcementOrderEntity);
     }
 
     private void processWarrantOfRestitution(EnforcementOrder enforcementOrder,

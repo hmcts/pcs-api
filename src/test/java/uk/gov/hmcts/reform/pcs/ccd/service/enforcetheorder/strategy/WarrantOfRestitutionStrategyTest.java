@@ -11,15 +11,21 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantOfRestitutionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.StatementOfTruthRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WarrantOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.RiskProfileService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.StatementOfTruthMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory.VULNERABLE_CHILDREN;
@@ -37,14 +43,14 @@ class WarrantOfRestitutionStrategyTest {
     private WarrantOfRestitutionRepository warrantOfRestitutionRepository;
     @Mock
     private StatementOfTruthMapper statementOfTruthMapper;
+    @Mock
+    private StatementOfTruthRepository statementOfTruthRepository;
 
     @Test
     void shouldProcessWarrantOfRestitutionDetailsAndSaveToRepository() {
         // Given
-        EnforcementOrderEntity enforcementOrderEntity;
-        EnforcementOrder enforcementOrder;
         WarrantOfRestitutionDetails warrantOfRestitutionDetails;
-        enforcementOrderEntity = mock(EnforcementOrderEntity.class);
+        EnforcementOrderEntity enforcementOrderEntity = mock(EnforcementOrderEntity.class);
 
         warrantOfRestitutionDetails = WarrantOfRestitutionDetails.builder().anyRiskToBailiff(YesNoNotSure.YES).build();
 
@@ -55,7 +61,7 @@ class WarrantOfRestitutionStrategyTest {
                 .vulnerablePeoplePresentWarrantRest(YesNoNotSure.YES)
                 .vulnerableAdultsChildrenWarrantRest(vulnerableAdultsChildren).build();
 
-        enforcementOrder = EnforcementOrder.builder().warrantOfRestitutionDetails(warrantOfRestitutionDetails)
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantOfRestitutionDetails(warrantOfRestitutionDetails)
                 .rawWarrantRestDetails(rawWarrantRestDetails).build();
         WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder().build();
         when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
@@ -73,5 +79,60 @@ class WarrantOfRestitutionStrategyTest {
         WarrantOfRestitutionEntity saved = captor.getValue();
         assertThat(saved).isNotNull();
         assertThat(saved.getEnforcementOrder()).isSameAs(enforcementOrderEntity);
+    }
+
+    @Test
+    void shouldProcessStatementOfTruthAndSaveToRepository() {
+        // Given
+        StatementOfTruthDetails statementOfTruthDetails = StatementOfTruthDetails.builder()
+                .completedBy(StatementOfTruthCompletedBy.CLAIMANT)
+                .fullNameClaimant("Claimant name")
+                .positionClaimant("Claimant position")
+                .build();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .rawWarrantRestDetails(RawWarrantRestDetails.builder()
+                        .statementOfTruthWarrantRest(statementOfTruthDetails)
+                        .build())
+                .build();
+        EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder().build();
+        StatementOfTruthEntity statementOfTruthEntity = StatementOfTruthEntity.builder()
+                        .completedBy(StatementOfTruthCompletedBy.CLAIMANT)
+                        .fullName("Claimant name")
+                        .positionHeld("Claimant position")
+                .build();
+        enforcementOrderEntity.setStatementOfTruth(statementOfTruthEntity);
+        WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder().build();
+
+        when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
+                .thenReturn(warrantOfRestitutionEntity);
+        when(warrantOfRestitutionRepository.save(warrantOfRestitutionEntity)).thenReturn(warrantOfRestitutionEntity);
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(statementOfTruthMapper).mapStatementOfTruthForWarrantRest(enforcementOrder, enforcementOrderEntity);
+    }
+
+    @Test
+    void shouldHandleNullStatementOfTruthAndSave() {
+        // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .rawWarrantRestDetails(RawWarrantRestDetails.builder()
+                        .statementOfTruthWarrantRest(null)
+                        .build())
+                .build();
+        EnforcementOrderEntity enforcementOrderEntity = mock(EnforcementOrderEntity.class);
+        WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder().build();
+
+        when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
+                .thenReturn(warrantOfRestitutionEntity);
+        when(warrantOfRestitutionRepository.save(warrantOfRestitutionEntity)).thenReturn(warrantOfRestitutionEntity);
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(statementOfTruthRepository, never()).save(any());
     }
 }
