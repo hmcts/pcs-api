@@ -17,11 +17,12 @@ public class StatementOfTruthService {
             || pcsCase.getStatementOfTruth().getCompletedBy() == null) {
             return null;
         }
+        return createStatementOfTruth(pcsCase.getStatementOfTruth());
+    }
 
-        StatementOfTruthDetails statementOfTruth = pcsCase.getStatementOfTruth();
-        StatementOfTruthCompletedBy completedBy = statementOfTruth.getCompletedBy();
+    public StatementOfTruthEntity createStatementOfTruth(StatementOfTruthDetails statementOfTruth) {
         StatementOfTruthEntity statementOfTruthEntity = new StatementOfTruthEntity();
-
+        StatementOfTruthCompletedBy completedBy = statementOfTruth.getCompletedBy();
         statementOfTruthEntity.setCompletedBy(completedBy);
 
         if (completedBy == StatementOfTruthCompletedBy.CLAIMANT) {
@@ -41,7 +42,6 @@ public class StatementOfTruthService {
             statementOfTruthEntity.setFirmName(statementOfTruth.getFirmNameLegalRep());
             statementOfTruthEntity.setPositionHeld(statementOfTruth.getPositionLegalRep());
         }
-
         return statementOfTruthEntity;
     }
 

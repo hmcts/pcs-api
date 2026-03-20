@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -29,5 +31,9 @@ public class EnforcementTypeUtil {
         enforcementTypes.setListItems(listItems);
 
         return enforcementTypes;
+    }
+
+    public static VerticalYesNo convertYesOrNoToVerticalYesNo(YesOrNo yesOrNo) {
+        return yesOrNo == YesOrNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
     }
 }

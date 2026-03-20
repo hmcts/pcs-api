@@ -13,11 +13,13 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 
 import java.util.List;
 import java.util.Set;
@@ -29,6 +31,16 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class WarrantOfRestitutionDetails {
+
+    @CCD(searchable = false)
+    private YesOrNo showPeopleWhoWillBeEvictedPage;
+
+    @CCD(searchable = false)
+    private YesOrNo showPeopleYouWantToEvictPage;
+
+    @JsonUnwrapped
+    @CCD
+    private PeopleToEvict peopleToEvict;
 
     public static final String HOW_DEFENDANTS_RETURNED_LABEL =
         "How did the defendants return to the property?";
@@ -75,5 +87,4 @@ public class WarrantOfRestitutionDetails {
     @JsonUnwrapped
     @CCD
     private AdditionalInformation additionalInformation;
-
 }

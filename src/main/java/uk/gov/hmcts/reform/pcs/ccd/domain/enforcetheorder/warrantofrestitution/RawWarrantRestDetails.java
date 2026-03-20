@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
@@ -31,4 +32,7 @@ public class RawWarrantRestDetails {
             typeOverride = DynamicMultiSelectList
     )
     private DynamicMultiSelectStringList selectedDefendants;
+
+    @CCD
+    private StatementOfTruthDetails statementOfTruthWarrantRest;
 }
