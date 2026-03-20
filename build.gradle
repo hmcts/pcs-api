@@ -299,12 +299,6 @@ jacocoTestReport {
   }
 }
 
-configurations.cftlibTestRuntimeClasspath {
-  resolutionStrategy {
-    force 'org.junit.platform:junit-platform-console-standalone:1.12.2'
-  }
-}
-
 tasks.named('sonarqube') {
   dependsOn jacocoTestReport
 }
