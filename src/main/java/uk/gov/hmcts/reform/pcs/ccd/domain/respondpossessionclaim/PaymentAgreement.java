@@ -17,7 +17,7 @@ public class PaymentAgreement {
     @CCD
     private YesOrNo anyPaymentsMade;
 
-    @CCD
+    @CCD(searchable = false)
     private YesNoNotSure repaymentPlanAgreed;
 
     @CCD
