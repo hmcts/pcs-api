@@ -10,11 +10,10 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
-import uk.gov.hmcts.reform.pcs.ccd.page.confirmevictiondetails.ConfirmEvictionConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.ConfirmEvictionConfigurer;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmEviction;
 
@@ -23,7 +22,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmEviction;
 @AllArgsConstructor
 public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ConfirmEvictionConfigurer confirmEvictionConfigurer;
 
     @Override
@@ -35,8 +33,7 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Confirm the eviction details")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
-        SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, confirmEviction);
-        confirmEvictionConfigurer.configurePages(pageBuilder);
+        confirmEvictionConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

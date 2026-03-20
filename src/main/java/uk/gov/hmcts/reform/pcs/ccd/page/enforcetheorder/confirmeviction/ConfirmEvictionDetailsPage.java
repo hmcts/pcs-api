@@ -1,9 +1,10 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.confirmevictiondetails;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 
-public class ConfirmEvictionDetailsPage implements CcdPageConfiguration {
+public class ConfirmEvictionDetailsPage implements CcdPageConfiguration, CcdPage {
 
     public static final String CONFIRM_EVICTION_DETAILS_CONTENT  = """
                     <p class="govuk-body">
@@ -40,10 +41,16 @@ public class ConfirmEvictionDetailsPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
+        String pageKey = getPageKey();
         pageBuilder
-            .page("confirmEvictionDetails")
+            .page(pageKey)
             .pageLabel("Confirm the eviction details")
-            .label("confirmEvictionDetails-line-separator", "---")
-            .label("confirmEvictionDetails-content", CONFIRM_EVICTION_DETAILS_CONTENT);
+            .label(pageKey + "-line-separator", "---")
+            .label(pageKey + "-content", CONFIRM_EVICTION_DETAILS_CONTENT);
+    }
+
+    @Override
+    public String getPageKey() {
+        return CcdPage.derivePageKey(this.getClass());
     }
 }

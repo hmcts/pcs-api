@@ -17,12 +17,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -39,11 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -75,8 +69,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final RentArrearsView rentArrearsView;
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
-    private final EnforcementOrderRepository enforcementOrderRepository;
-
+    private final EnforcementOrderMediator enforcementOrderMediator;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -90,75 +83,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
-        handleEnforcementRequirements(caseReference, pcsCase);
+        enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
 
         //allows indexing for Global Search
         pcsCase.setSearchCriteria(new SearchCriteria());
 
         return pcsCase;
-    }
-
-    private void handleEnforcementRequirements(long caseReference, PCSCase pcsCase) {
-        if (caseReference > 0 && pcsCase != null) {
-            Optional<EnforcementOrderEntity> optionalEnforcementOrder = getEnforcementOrder(caseReference);
-            if (optionalEnforcementOrder.isPresent()) {
-                EnforcementOrderEntity enforcementOrderEntity = optionalEnforcementOrder.get();
-                if (enforcementOrderEntity.getBailiffDate() != null) {
-                    hasBailiffDate(pcsCase, enforcementOrderEntity.getBailiffDate());
-                } else {
-                    noBailiffDate(pcsCase);
-                }
-            }
-            log.warn("---------------------------");
-            log.warn(String.valueOf(pcsCase.getShowConfirmEvictionJourney()));
-        }
-    }
-
-    private Optional<EnforcementOrderEntity> getEnforcementOrder(long caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException(caseReference));
-        List<ClaimEntity> claims = pcsCaseEntity.getClaims();
-        if (claims != null && !claims.isEmpty()) {
-            return enforcementOrderRepository.findByClaimId(claims.getFirst().getId());
-        }
-        return Optional.empty();
-    }
-
-    private String formatDate(String input) {
-        DateTimeFormatter inputFormatter =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssX");
-
-        DateTimeFormatter outputFormatter =
-            DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.UK);
-
-        OffsetDateTime dateTime = OffsetDateTime.parse(input, inputFormatter);
-
-        return dateTime.format(outputFormatter);
-    }
-
-    private String formatDate(Instant instant) {
-        DateTimeFormatter outputFormatter =
-            DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.UK);
-        return instant.atZone(java.time.ZoneId.of("UTC"))
-            .format(outputFormatter);
-    }
-
-    private String minusGivenHoursFormatted(String input, int hours) {
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssX");
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
-
-        OffsetDateTime dateTime = OffsetDateTime.parse(input, inputFormatter)
-            .minusHours(hours);
-
-        return dateTime.format(outputFormatter);
-    }
-
-    private String minusGivenHoursFormatted(Instant instant, int hours) {
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
-
-        return instant.atZone(java.time.ZoneId.of("UTC"))
-            .minusHours(hours)
-            .format(outputFormatter);
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
@@ -320,59 +250,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                            .build())
                 .build())
             .collect(Collectors.toList());
-    }
-
-    private void hasBailiffDate(PCSCase pcsCase, Instant instant) {
-        pcsCase.setShowConfirmEvictionJourney(YesOrNo.YES);
-        pcsCase.setConfirmEvictionSummaryMarkup(String.format(
-            """
-            <h2 class="govuk-heading-m govuk-!-padding-top-1">Confirm the eviction date</h2>
-            <p class="govuk-body govuk-!-padding-bottom-2">
-             The bailiff has given you an eviction date of %s.
-             They need you to confirm if you are available on this date.
-            </p>
-            <p class="govuk-body govuk-!-padding-bottom-2">
-             You must confirm the eviction details before %s.
-             If you try to confirm the eviction after this
-             date, the bailiff will cancel your eviction.
-             They will also ask you to confirm if the defendants
-             (the person or people being evicted) pose any risk to the
-             bailiff.
-             The bailiff needs this information to carry out the eviction
-             safely.
-            </p>
-            <p class="govuk-body">
-             To confirm the eviction date, select ‘Confirm the eviction
-             date’ from the dropdown menu.
-            </p>
-            """,
-            formatDate(instant),
-            minusGivenHoursFormatted("2025-05-04 10:00:00+00",72)));
-    }
-
-    private static void noBailiffDate(PCSCase pcsCase) {
-        pcsCase.setShowConfirmEvictionJourney(YesOrNo.NO);
-        pcsCase.setConfirmEvictionSummaryMarkup("""
-            <h2 class="govuk-heading-m govuk-!-padding-top-1">You cannot enforce the order at the moment</h2>
-            <p class="govuk-body govuk-!-padding-bottom-2">
-             You cannot enforce the order at the moment (use a bailiff to evict someone).
-            </p>
-            <p class="govuk-body govuk-!-font-weight-bold govuk-!-padding-bottom-2"> How to find out why you cannot
-             enforce the order
-            </p>
-            <p class="govuk-body govuk-!-margin-bottom-0">To find out why you cannot enforce the order, you can:</p>
-            <ul class="govuk-list govuk-list--bullet">
-             <li class="govuk-!-font-size-19">check the tab: ‘Case file view’ (you should see an order from the court,
-             explaining why you cannot enforce), or</li>
-             <li class="govuk-!-font-size-19">
-             <a href="https://www.gov.uk/find-court-tribunal"
-                              rel="noreferrer noopener"
-                              target="_blank" class="govuk-link">
-             contact your local court.</a> You will need to tell them your case number
-             (you can find this at the top of this page). If you do not know the name of your local court, select the
-             ‘Money’ category and then the ‘Housing’ category to find it.</li>
-            </ul>
-            """);
     }
 
 }

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.confirmevictiondetails;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;

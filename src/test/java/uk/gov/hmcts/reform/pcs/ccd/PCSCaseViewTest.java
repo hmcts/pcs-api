@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
@@ -94,7 +93,7 @@ class PCSCaseViewTest {
     @Mock
     private ClaimEntity claimEntity;
     @Mock
-    private EnforcementOrderRepository enforcementOrderRepository;
+    private EnforcementOrderMediator enforcementOrderMediator;
 
     private PCSCaseView underTest;
 
@@ -107,7 +106,7 @@ class PCSCaseViewTest {
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
                                     alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView, statementOfTruthView,
-                                    enforcementOrderRepository
+                                    enforcementOrderMediator
         );
     }
 
@@ -331,6 +330,15 @@ class PCSCaseViewTest {
         verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
+    }
+
+    @Test
+    void shouldCallEnforcementOrderMediator() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(enforcementOrderMediator).handleEnforcementRequirements(CASE_REFERENCE, pcsCase);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
