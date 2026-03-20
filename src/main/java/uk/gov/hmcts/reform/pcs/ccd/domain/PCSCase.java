@@ -503,27 +503,7 @@ public class PCSCase {
     @JsonProperty("SearchCriteria")
     private SearchCriteria searchCriteria;
 
-//    @CCD(label = """
-//            <h2 class="govuk-heading-m govuk-!-padding-top-1">Confirm the eviction date</h2>
-//            <p class="govuk-body govuk-!-padding-bottom-2">
-//             The bailiff has given you an eviction date of ${[CASE_REFERENCE]}.
-//             They need you to confirm if you are available on this date.
-//            </p>
-//            <p class="govuk-body govuk-!-padding-bottom-2">
-//             You must confirm the eviction details before [placeholder]. If you try to confirm the eviction after this
-//             date, the bailiff will cancel your eviction.
-//             They will also ask you to confirm if the defendants
-//             (the person or people being evicted) pose any risk to the bailiff.
-//             The bailiff needs this information to carry out the eviction safely.
-//            </p>
-//            <p class="govuk-body">
-//             To confirm the eviction date, select ‘Confirm the eviction date’ from the dropdown menu.
-//            </p>
-//        """,typeOverride = FieldType.Label
-//    )
-//    private String confirmEvictionSummaryMarkup;
-
-    @CCD(searchable = false )
+    @CCD(searchable = false)
     private String confirmEvictionSummaryMarkup;
 
     @CCD(searchable = false, access = {ClaimantAccess.class})

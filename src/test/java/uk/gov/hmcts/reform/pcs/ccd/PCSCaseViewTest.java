@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
@@ -92,6 +93,8 @@ class PCSCaseViewTest {
     private PcsCaseEntity pcsCaseEntity;
     @Mock
     private ClaimEntity claimEntity;
+    @Mock
+    private EnforcementOrderRepository enforcementOrderRepository;
 
     private PCSCaseView underTest;
 
@@ -103,7 +106,8 @@ class PCSCaseViewTest {
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
                                     alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
-                                    rentArrearsView, noticeOfPossessionView, statementOfTruthView
+                                    rentArrearsView, noticeOfPossessionView, statementOfTruthView,
+                                    enforcementOrderRepository
         );
     }
 

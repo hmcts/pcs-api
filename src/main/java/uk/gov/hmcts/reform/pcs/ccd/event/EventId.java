@@ -8,5 +8,5 @@ public enum EventId {
     respondPossessionClaim,
     submitDefendantResponse,
     createTestCase,
-    confirmEvictionDetails
+    confirmEviction
 }

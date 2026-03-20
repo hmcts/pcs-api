@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 
 @Component
 @AllArgsConstructor
-public class ConfirmEvictionDetailsPageConfigurer implements PageConfigurer {
+public class ConfirmEvictionConfigurer implements PageConfigurer {
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
