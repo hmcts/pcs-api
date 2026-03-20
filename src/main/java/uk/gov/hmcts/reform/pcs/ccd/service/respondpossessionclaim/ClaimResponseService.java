@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
