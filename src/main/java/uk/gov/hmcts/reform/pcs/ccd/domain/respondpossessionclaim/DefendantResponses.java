@@ -74,6 +74,12 @@ public class DefendantResponses {
     @CCD
     private YesNoNotSure landlordRegistered;
 
+    @CCD
+    private uk.gov.hmcts.ccd.sdk.type.YesOrNo disputeClaim;
+
+    @CCD
+    private String disputeClaimDetails;
+
     @CCD(access = {CitizenAccess.class})
     private ReasonableAdjustments reasonableAdjustments;
 

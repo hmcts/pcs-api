@@ -345,6 +345,37 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
+    void shouldSaveDisputeClaimAndDisputeClaimDetailsInDraft() {
+        //Given
+        String disputeDetails = "I dispute the rent arrears amount because the landlord has "
+            + "not provided accurate records";
+        DefendantResponses responses = DefendantResponses.builder()
+            .disputeClaim(YesOrNo.YES)
+            .disputeClaimDetails(disputeDetails)
+            .freeLegalAdvice(YesNoPreferNotToSay.YES)
+            .build();
+
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantResponses(responses)
+                                             .build());
+
+        //When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        //Then
+        assertThat(response.getErrors()).isNull();
+        verifyNoInteractions(immutableFieldValidator);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        DefendantResponses savedResponses = savedDraft.getPossessionClaimResponse().getDefendantResponses();
+        assertThat(savedResponses.getDisputeClaim()).isEqualTo(YesOrNo.YES);
+        assertThat(savedResponses.getDisputeClaimDetails()).isEqualTo(disputeDetails);
+        assertThat(savedResponses.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
+    }
+
+    @Test
     void shouldReturnErrorWhenDraftSaveFails() {
         //Given
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()

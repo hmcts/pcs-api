@@ -588,4 +588,50 @@ class DefendantResponseServiceTest {
         );
 
     }
+
+    @ParameterizedTest(name = "disputeClaim={0}, disputeClaimDetails={1}")
+    @MethodSource("disputeClaimPersistenceScenarios")
+    void shouldPersistDisputeClaimAndDisputeClaimDetails(
+        YesOrNo disputeClaim,
+        String disputeClaimDetails
+    ) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .disputeClaim(disputeClaim)
+            .disputeClaimDetails(disputeClaimDetails)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getDisputeClaim()).isEqualTo(disputeClaim);
+        assertThat(savedResponse.getDisputeClaimDetails()).isEqualTo(disputeClaimDetails);
+    }
+
+    private static Stream<Arguments> disputeClaimPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(YesOrNo.YES,
+                "I dispute the rent arrears amount because the landlord has not provided accurate records"),
+            Arguments.of(YesOrNo.NO, null),
+            Arguments.of(YesOrNo.YES,
+                "The property has significant disrepair issues that have not been addressed"),
+            Arguments.of(null, null),
+            Arguments.of(YesOrNo.YES, null)
+        );
+    }
 }
