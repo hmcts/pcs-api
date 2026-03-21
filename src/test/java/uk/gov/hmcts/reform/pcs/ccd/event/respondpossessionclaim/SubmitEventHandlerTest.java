@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
@@ -273,6 +274,70 @@ class SubmitEventHandlerTest {
         )).hasMessage("No party found for IDAM ID");
 
         verify(claimResponseService).saveDraftData(response, CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldSubmitRegularIncomeFieldsWhenFinalSubmit() {
+        // Given - HDPI-3764: Regular income fields for final submit
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .incomeFromJobs(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .incomeFromJobsAmount(new java.math.BigDecimal("200000")) // £2000.00 in pence
+            .incomeFromJobsFrequency("MONTH")
+            .pension(uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO)
+            .universalCreditIncome(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .otherBenefits(uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO)
+            .moneyFromElsewhere(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .moneyFromElsewhereDetails("Receive child support payments")
+            .build();
+
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .householdCircumstances(householdCircumstances)
+            .contactByEmail(VerticalYesNo.YES)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .build();
+
+        stubDraft(caseData);
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(eventPayload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        // Verify the response object with household circumstances is passed to the service
+        ArgumentCaptor<PossessionClaimResponse> responseCaptor =
+            ArgumentCaptor.forClass(PossessionClaimResponse.class);
+        verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
+
+        PossessionClaimResponse capturedResponse = responseCaptor.getValue();
+        HouseholdCircumstances capturedHousehold = capturedResponse.getDefendantResponses()
+            .getHouseholdCircumstances();
+
+        // Assert all regular income fields are submitted correctly
+        assertThat(capturedHousehold.getIncomeFromJobs()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES);
+        assertThat(capturedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("200000");
+        assertThat(capturedHousehold.getIncomeFromJobsFrequency()).isEqualTo("MONTH");
+
+        assertThat(capturedHousehold.getPension()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO);
+        assertThat(capturedHousehold.getUniversalCreditIncome()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES);
+        assertThat(capturedHousehold.getOtherBenefits()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO);
+
+        assertThat(capturedHousehold.getMoneyFromElsewhere()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES);
+        assertThat(capturedHousehold.getMoneyFromElsewhereDetails())
+            .isEqualTo("Receive child support payments");
+
+        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, capturedResponse);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
     @Test

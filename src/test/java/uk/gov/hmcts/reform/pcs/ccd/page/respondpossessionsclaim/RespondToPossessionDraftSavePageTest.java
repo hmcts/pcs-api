@@ -345,6 +345,66 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
+    void shouldSaveRegularIncomeFieldsInDraft() {
+        // Given - HDPI-3764: Regular income fields
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .incomeFromJobs(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .incomeFromJobsAmount(new java.math.BigDecimal("150000")) // £1500.00 in pence
+            .incomeFromJobsFrequency("MONTH")
+            .pension(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .pensionAmount(new java.math.BigDecimal("50000")) // £500.00 in pence
+            .pensionFrequency("MONTH")
+            .universalCreditIncome(uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO)
+            .otherBenefits(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .otherBenefitsAmount(new java.math.BigDecimal("20000")) // £200.00 in pence
+            .otherBenefitsFrequency("WEEK")
+            .moneyFromElsewhere(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .moneyFromElsewhereDetails("Child maintenance payments of £100 per week")
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .householdCircumstances(householdCircumstances)
+            .build();
+
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantResponses(responses)
+                                             .build());
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        HouseholdCircumstances savedHousehold = savedDraft.getPossessionClaimResponse()
+            .getDefendantResponses()
+            .getHouseholdCircumstances();
+
+        // Assert all regular income fields are saved correctly
+        assertThat(savedHousehold.getIncomeFromJobs()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES);
+        assertThat(savedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("150000");
+        assertThat(savedHousehold.getIncomeFromJobsFrequency()).isEqualTo("MONTH");
+
+        assertThat(savedHousehold.getPension()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES);
+        assertThat(savedHousehold.getPensionAmount()).isEqualByComparingTo("50000");
+        assertThat(savedHousehold.getPensionFrequency()).isEqualTo("MONTH");
+
+        assertThat(savedHousehold.getUniversalCreditIncome()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO);
+
+        assertThat(savedHousehold.getOtherBenefits()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES);
+        assertThat(savedHousehold.getOtherBenefitsAmount()).isEqualByComparingTo("20000");
+        assertThat(savedHousehold.getOtherBenefitsFrequency()).isEqualTo("WEEK");
+
+        assertThat(savedHousehold.getMoneyFromElsewhere()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES);
+        assertThat(savedHousehold.getMoneyFromElsewhereDetails())
+            .isEqualTo("Child maintenance payments of £100 per week");
+    }
+
+    @Test
     void shouldReturnErrorWhenDraftSaveFails() {
         //Given
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()

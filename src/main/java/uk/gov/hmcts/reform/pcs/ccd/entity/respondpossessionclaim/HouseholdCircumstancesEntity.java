@@ -91,6 +91,42 @@ public class HouseholdCircumstancesEntity {
 
     private LocalDate ucApplicationDate;
 
+    // Regular Income Fields (HDPI-3764)
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo incomeFromJobs;
+
+    private BigDecimal incomeFromJobsAmount;
+
+    private String incomeFromJobsFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo pension;
+
+    private BigDecimal pensionAmount;
+
+    private String pensionFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo universalCreditIncome;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo otherBenefits;
+
+    private BigDecimal otherBenefitsAmount;
+
+    private String otherBenefitsFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo moneyFromElsewhere;
+
+    private String moneyFromElsewhereDetails;
+
+    // Priority Debts and Expenses
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo priorityDebts;
