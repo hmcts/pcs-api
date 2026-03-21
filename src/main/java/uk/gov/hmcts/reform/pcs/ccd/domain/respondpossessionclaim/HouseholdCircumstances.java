@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Builder
 @Data
@@ -44,6 +45,12 @@ public class HouseholdCircumstances {
 
     @CCD
     private YesOrNo universalCreditIncome;
+
+    @CCD
+    private YesOrNo universalCredit;
+
+    @CCD
+    private LocalDate ucApplicationDate;
 
     @CCD
     private YesOrNo otherBenefits;

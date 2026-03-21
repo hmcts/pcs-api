@@ -287,6 +287,8 @@ class SubmitEventHandlerTest {
             .incomeFromJobsFrequency("MONTH")
             .pension(YesOrNo.NO)
             .universalCreditIncome(YesOrNo.YES)
+            .universalCredit(YesOrNo.YES)
+            .ucApplicationDate(java.time.LocalDate.of(2024, 2, 10))
             .otherBenefits(YesOrNo.NO)
             .moneyFromElsewhere(YesOrNo.YES)
             .moneyFromElsewhereDetails("Receive child support payments")
@@ -334,6 +336,8 @@ class SubmitEventHandlerTest {
 
         assertThat(capturedHousehold.getPension()).isEqualTo(YesOrNo.NO);
         assertThat(capturedHousehold.getUniversalCreditIncome()).isEqualTo(YesOrNo.YES);
+        assertThat(capturedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
+        assertThat(capturedHousehold.getUcApplicationDate()).isEqualTo(java.time.LocalDate.of(2024, 2, 10));
         assertThat(capturedHousehold.getOtherBenefits()).isEqualTo(YesOrNo.NO);
 
         assertThat(capturedHousehold.getMoneyFromElsewhere()).isEqualTo(YesOrNo.YES);

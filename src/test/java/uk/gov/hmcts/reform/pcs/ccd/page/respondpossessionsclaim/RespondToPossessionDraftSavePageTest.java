@@ -356,6 +356,8 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .pensionAmount(new java.math.BigDecimal("50000")) // £500.00 in pence
             .pensionFrequency("MONTH")
             .universalCreditIncome(YesOrNo.NO)
+            .universalCredit(YesOrNo.YES)
+            .ucApplicationDate(java.time.LocalDate.of(2024, 1, 15))
             .otherBenefits(YesOrNo.YES)
             .otherBenefitsAmount(new java.math.BigDecimal("20000")) // £200.00 in pence
             .otherBenefitsFrequency("WEEK")
@@ -397,6 +399,8 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedHousehold.getPensionFrequency()).isEqualTo("MONTH");
 
         assertThat(savedHousehold.getUniversalCreditIncome()).isEqualTo(YesOrNo.NO);
+        assertThat(savedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
+        assertThat(savedHousehold.getUcApplicationDate()).isEqualTo(java.time.LocalDate.of(2024, 1, 15));
 
         assertThat(savedHousehold.getOtherBenefits()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getOtherBenefitsAmount()).isEqualByComparingTo("20000");
