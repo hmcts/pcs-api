@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -280,13 +281,14 @@ class SubmitEventHandlerTest {
     void shouldSubmitRegularIncomeFieldsWhenFinalSubmit() {
         // Given - HDPI-3764: Regular income fields for final submit
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .incomeFromJobs(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .shareIncomeExpenseDetails(YesOrNo.YES)
+            .incomeFromJobs(YesOrNo.YES)
             .incomeFromJobsAmount(new java.math.BigDecimal("200000")) // £2000.00 in pence
             .incomeFromJobsFrequency("MONTH")
-            .pension(uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO)
-            .universalCreditIncome(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
-            .otherBenefits(uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO)
-            .moneyFromElsewhere(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .pension(YesOrNo.NO)
+            .universalCreditIncome(YesOrNo.YES)
+            .otherBenefits(YesOrNo.NO)
+            .moneyFromElsewhere(YesOrNo.YES)
             .moneyFromElsewhereDetails("Receive child support payments")
             .build();
 
@@ -324,15 +326,17 @@ class SubmitEventHandlerTest {
             .getHouseholdCircumstances();
 
         // Assert all regular income fields are submitted correctly
-        assertThat(capturedHousehold.getIncomeFromJobs()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES);
+        assertThat(capturedHousehold.getShareIncomeExpenseDetails()).isEqualTo(YesOrNo.YES);
+
+        assertThat(capturedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
         assertThat(capturedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("200000");
         assertThat(capturedHousehold.getIncomeFromJobsFrequency()).isEqualTo("MONTH");
 
-        assertThat(capturedHousehold.getPension()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO);
-        assertThat(capturedHousehold.getUniversalCreditIncome()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES);
-        assertThat(capturedHousehold.getOtherBenefits()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO);
+        assertThat(capturedHousehold.getPension()).isEqualTo(YesOrNo.NO);
+        assertThat(capturedHousehold.getUniversalCreditIncome()).isEqualTo(YesOrNo.YES);
+        assertThat(capturedHousehold.getOtherBenefits()).isEqualTo(YesOrNo.NO);
 
-        assertThat(capturedHousehold.getMoneyFromElsewhere()).isEqualTo(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES);
+        assertThat(capturedHousehold.getMoneyFromElsewhere()).isEqualTo(YesOrNo.YES);
         assertThat(capturedHousehold.getMoneyFromElsewhereDetails())
             .isEqualTo("Receive child support payments");
 

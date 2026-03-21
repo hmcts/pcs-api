@@ -19,6 +19,10 @@ public class HouseholdCircumstances {
     @CCD
     private YesOrNo dependantChildren;
 
+    // Income & Expense Control Field (HDPI-3764)
+    @CCD
+    private YesOrNo shareIncomeExpenseDetails;
+
     // Regular Income Fields (HDPI-3764)
     @CCD
     private YesOrNo incomeFromJobs;
