@@ -5,8 +5,9 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
+
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW;
 
 public class DefendantAtPropertyPage implements CcdPageConfiguration {
 
@@ -50,7 +51,7 @@ public class DefendantAtPropertyPage implements CcdPageConfiguration {
         pageBuilder
             .page("defendantAtProperty")
             .pageLabel("Evidence that the defendants are at the property")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW)
+            .showCondition(WARRANT_OF_RESTITUTION_FLOW)
             .label("defendantAtProperty-line-separator", "---")
             .label("defendantAtProperty-notice", DEFENDANT_AT_PROPERTY_INFORMATION)
             .complex(PCSCase::getEnforcementOrder)
@@ -58,6 +59,6 @@ public class DefendantAtPropertyPage implements CcdPageConfiguration {
             .mandatory(WarrantOfRestitutionDetails::getAdditionalDocuments)
             .done()
             .done()
-            .label("defendantAtProperty-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("defendantAtProperty-saveAndReturn", SAVE_AND_RETURN);
     }
 }
