@@ -11,6 +11,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,9 +57,30 @@ public class RespondPossessionClaimEvents extends BaseApi {
         }
     }
 
-    @Title("respondToPossessionClaim start event callback test - returns 200")
+    @Title("respondToPossessionClaim start event callback test without access code - returns 403")
     @Test
     @Order(1)
+    void respondToPossessionClaimStartEventCallbackWithoutAccessCodeAuthTest() {
+        String respondClaimRequestBody = PayloadLoader.load(
+            "/payloads/repondPossessionClaim-startEventCallbackRequest.json",
+            Map.of("caseTypeId", caseType, "caseId", caseReference)
+        );
+
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        apiSteps.theRequestContainsTheQueryParameter("eventId", "respondPossessionClaim");
+        apiSteps.theRequestContainsBody(respondClaimRequestBody);
+        apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
+        apiSteps.checkStatusCode(403);
+        apiSteps.theResponseBodyMatchesTheExpectedResponse(
+            "/responses/respondPossessionClaim-UnAuthorisedStartEventCallbackResponse.json");
+    }
+
+
+    @Title("respondToPossessionClaim start event callback test - returns 200")
+    @Test
+    @Order(2)
     void respondToPossessionClaimStartEventCallbackTest() {
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
@@ -88,9 +110,9 @@ public class RespondPossessionClaimEvents extends BaseApi {
     }
 
     @Title("respondToPossessionClaim submit event callback test - returns 200")
-    // This test is currently disabled as the as request body test data for respondPossessionClaim is not 100% known.
-    // @Test
-    @Order(2)
+    @Test
+    @Disabled("This feature is currently in development and evolving rapidly, so the test is disabled for now. It will be enabled and assertions added once the implementation is more stable.")
+    @Order(3)
     void respondToPossessionClaimSubmitEventCallbackTest() {
         String respondClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-submitEventCallbackRequest.json",
