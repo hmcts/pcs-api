@@ -93,8 +93,7 @@ configurations {
   }
 }
 
-def runtimeIndexingOverride = System.getenv('CCD_SDK_RUNTIME_INDEXING')
-def runtimeIndexingEnabled = runtimeIndexingOverride != null ? runtimeIndexingOverride.toBoolean() : true
+def runtimeIndexingEnabled = System.getenv('CCD_ENABLED') != 'false'
 
 ccd {
   configDir = file('build/definitions')
