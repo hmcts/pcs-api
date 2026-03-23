@@ -10,11 +10,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PropertyAccessDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("propertyAccessDetails", this::midEvent)
                 .pageLabel("Access to the property")
-                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
+                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
                 .label("propertyAccessDetails-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
@@ -51,9 +52,9 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
         List<String> errors = getValidationErrors(data);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(data)
-                .errors(errors)
-                .build();
+            .data(data)
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
+            .build();
     }
 
     private List<String> getValidationErrors(PCSCase data) {

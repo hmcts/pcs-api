@@ -23,6 +23,7 @@ public class ClaimService {
     private final ClaimGroundService claimGroundService;
     private final PossessionAlternativesService possessionAlternativesService;
     private final HousingActWalesService housingActWalesService;
+    private final AsbProhibitedConductService asbProhibitedConductService;
     private final RentArrearsService rentArrearsService;
     private final NoticeOfPossessionService noticeOfPossessionService;
     private final StatementOfTruthService statementOfTruthService;
@@ -73,6 +74,8 @@ public class ClaimService {
 
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
             claimEntity.setHousingActWales(housingActWalesService.createHousingActWalesEntity(pcsCase));
+            claimEntity
+                .setAsbProhibitedConductEntity(asbProhibitedConductService.createAsbProhibitedConductEntity(pcsCase));
         }
 
         claimEntity.setRentArrears(rentArrearsService.createRentArrearsEntity(pcsCase));

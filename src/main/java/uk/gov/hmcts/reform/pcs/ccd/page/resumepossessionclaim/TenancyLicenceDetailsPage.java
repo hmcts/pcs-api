@@ -62,7 +62,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
                (Optional)</h3>
                <p class="govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1">
                 You can either upload this now or closer to the hearing date. Any documents you upload now will be
-                included in the pack of documents a judge will receive before hearing the hearing (the bundle)
+                included in the pack of documents a judge will receive before the hearing (the bundle)
                 </p>
                """)
             .complex(PCSCase::getTenancyLicenceDetails)
@@ -82,7 +82,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
         // Validate tenancy licence date
         if (tenancyLicenceDate != null && !tenancyLicenceDate.isBefore(currentDate)) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errors(List.of("Date the tenancy or licence began must be in the past"))
+            .errorMessageOverride("Date the tenancy or licence began must be in the past")
             .build();
         }
 

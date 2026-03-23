@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -162,6 +162,10 @@ public class ClaimEntity {
 
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
     @JsonManagedReference
+    private AsbProhibitedConductEntity asbProhibitedConductEntity;
+
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
     private PossessionAlternativesEntity possessionAlternativesEntity;
 
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
@@ -185,6 +189,18 @@ public class ClaimEntity {
 
         if (this.housingActWales != null) {
             this.housingActWales.setClaim(this);
+        }
+    }
+
+    public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
+        if (this.asbProhibitedConductEntity != null) {
+            this.asbProhibitedConductEntity.setClaim(null);
+        }
+
+        this.asbProhibitedConductEntity = asbProhibitedConductEntity;
+
+        if (this.asbProhibitedConductEntity != null) {
+            this.asbProhibitedConductEntity.setClaim(this);
         }
     }
 

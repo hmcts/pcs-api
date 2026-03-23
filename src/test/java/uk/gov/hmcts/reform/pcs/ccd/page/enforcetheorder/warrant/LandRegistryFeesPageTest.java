@@ -11,12 +11,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.MoneyOwedByDefendants;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import java.math.BigDecimal;
 import java.util.stream.Stream;
@@ -24,41 +25,41 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTemplate.WARRANT;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.LandRegistryFeesPage.WARRANT_FEE_AMOUNT;
 
 @ExtendWith(MockitoExtension.class)
 class LandRegistryFeesPageTest extends BasePageTest {
 
     @Mock
     private RepaymentTableRenderer repaymentTableRenderer;
+    @Mock
+    private MoneyFormatter moneyFormatter;
 
     @BeforeEach
     void setUp() {
-        MoneyConverter moneyConverter = new MoneyConverter();
-        setPageUnderTest(new LandRegistryFeesPage(moneyConverter, repaymentTableRenderer));
+        setPageUnderTest(new LandRegistryFeesPage(repaymentTableRenderer, moneyFormatter));
     }
 
     @ParameterizedTest
     @MethodSource("repaymentFeeScenarios")
-    void shouldFormatRepaymentFeesCorrectly(String landRegistryPence, String legalCostsPence, String rentArrearsPence,
-                                            String warrantFeeAmount, BigDecimal expectedLandRegistry,
-                                            BigDecimal expectedLegals, BigDecimal expectedArrears,
-                                            BigDecimal expectedTotalFees
-    ) {
+    void shouldFormatRepaymentFeesCorrectly(final EnforcementCosts enforcementCosts,
+                                            final String expectedFormattedFee) {
         // Given
-        LegalCosts legalCosts = LegalCosts.builder()
-            .amountOfLegalCosts(legalCostsPence)
+        final LegalCosts legalCosts = LegalCosts.builder()
+            .amountOfLegalCosts(enforcementCosts.getLegalFees())
             .build();
 
-        LandRegistryFees landRegistryFees = LandRegistryFees.builder()
-            .amountOfLandRegistryFees(landRegistryPence)
+        final LandRegistryFees landRegistryFees = LandRegistryFees.builder()
+            .amountOfLandRegistryFees(enforcementCosts.getLandRegistryFees())
             .build();
 
-        MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
-            .amountOwed(rentArrearsPence)
+        final MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
+            .amountOwed(enforcementCosts.getTotalArrears())
             .build();
 
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantFeeAmount(warrantFeeAmount)
+        final EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .warrantFeeAmount(expectedFormattedFee)
             .warrantDetails(WarrantDetails.builder()
                 .repaymentCosts(RepaymentCosts.builder().build())
                 .landRegistryFees(landRegistryFees)
@@ -67,24 +68,20 @@ class LandRegistryFeesPageTest extends BasePageTest {
                 .build())
             .build();
 
-        PCSCase caseData = PCSCase.builder()
+        final PCSCase caseData = PCSCase.builder()
             .enforcementOrder(enforcementOrder)
             .build();
 
+        when(moneyFormatter.deformatFee(caseData.getEnforcementOrder().getWarrantFeeAmount()))
+                .thenReturn(enforcementCosts.getFeeAmount());
         when(repaymentTableRenderer.render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-            warrantFeeAmount,
-            expectedTotalFees
+            enforcementCosts,
+            WARRANT
         )).thenReturn("<table>Mock Repayment Table</table>");
         when(repaymentTableRenderer.render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-            warrantFeeAmount,
-            expectedTotalFees,
-            "The payments due"
+            enforcementCosts,
+            "The payments due",
+            WARRANT
         )).thenReturn("<table>Mock SOT Repayment Table</table>");
 
         // When
@@ -92,19 +89,13 @@ class LandRegistryFeesPageTest extends BasePageTest {
 
         // Then
         verify(repaymentTableRenderer).render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-            warrantFeeAmount,
-            expectedTotalFees
+            enforcementCosts,
+            WARRANT
         );
         verify(repaymentTableRenderer).render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-            warrantFeeAmount,
-            expectedTotalFees,
-            "The payments due"
+            enforcementCosts,
+            "The payments due",
+            WARRANT
         );
 
         assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts().getRepaymentSummaryMarkdown())
@@ -117,21 +108,17 @@ class LandRegistryFeesPageTest extends BasePageTest {
     private static Stream<Arguments> repaymentFeeScenarios() {
         return Stream.of(
             Arguments.of(
-                "12300", "10000", "20000", "£404", new BigDecimal("123.00"),
-                new BigDecimal("100.00"), new BigDecimal("200.00"), new BigDecimal("827.00")
-            ),
+                new EnforcementCosts(new BigDecimal("123"), new BigDecimal("100"), new BigDecimal("200"),
+                        new BigDecimal("404"), WARRANT_FEE_AMOUNT), "£404"),
             Arguments.of(
-                "1500", "500", "999", "£50", new BigDecimal("15.00"), new BigDecimal("5.00"),
-                new BigDecimal("9.99"), new BigDecimal("79.99")
-            ),
+                new EnforcementCosts(new BigDecimal("15"), new BigDecimal("5"), new BigDecimal("9.99"),
+                        new BigDecimal(".50"), WARRANT_FEE_AMOUNT), "£0.50"),
             Arguments.of(
-                "0", "0", "0", "£0", new BigDecimal("0.00"), new BigDecimal("0.00"),
-                new BigDecimal("0.00"), new BigDecimal("0.00")
-            ),
+                new EnforcementCosts(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                        BigDecimal.ZERO, WARRANT_FEE_AMOUNT), "£0"),
             Arguments.of(
-                "10001", "1", "5000", "£0", new BigDecimal("100.01"), new BigDecimal("0.01"),
-                new BigDecimal("50.00"), new BigDecimal("150.02")
-            )
+                new EnforcementCosts(new BigDecimal("100.01"), new BigDecimal("0.01"), new BigDecimal("50.00"),
+                        BigDecimal.ZERO, WARRANT_FEE_AMOUNT), "£0")
         );
     }
 }

@@ -43,7 +43,7 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
                 .mandatory(PeriodicContractTermsWales::getDetailsOfTerms,
                     "periodicContractTermsWales.agreedTermsOfPeriodicContract=\"YES\"")
             .done()
-            .mandatory(PCSCase::getProhibitedConductWalesWhyMakingClaim, "prohibitedConductWalesClaim=\"YES\"")
+            .mandatory(PCSCase::getProhibitedConductWalesClaimDetails, "prohibitedConductWalesClaim=\"YES\"")
             .label("prohibitedConductWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -69,7 +69,7 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
 
         if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
-                caseData.getProhibitedConductWalesWhyMakingClaim(),
+                caseData.getProhibitedConductWalesClaimDetails(),
                 "Why are you making this claim?",
                 TextAreaValidationService.SHORT_TEXT_LIMIT,
                 validationErrors

@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -18,10 +17,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -30,7 +32,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class PartyService {
 
     private final PartyRepository partyRepository;
-    private final ModelMapper modelMapper;
+    private final AddressMapper addressMapper;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
         PartyEntity claimant = createClaimant(pcsCase);
@@ -54,6 +56,12 @@ public class PartyService {
         );
     }
 
+    public PartyEntity getPartyEntityByIdamId(UUID idamId, long caseReference) {
+        return partyRepository.queryPartyByIdamId(idamId, caseReference)
+            .orElseThrow(() -> new PartyNotFoundException(
+                "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
+    }
+
     private PartyEntity createClaimant(PCSCase pcsCase) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
@@ -61,14 +69,7 @@ public class PartyService {
 
         PartyEntity claimantParty = new PartyEntity();
 
-        VerticalYesNo claimantNameCorrect = claimantInformation.getIsClaimantNameCorrect();
-        if (claimantNameCorrect == VerticalYesNo.YES) {
-            claimantParty.setNameOverridden(YesOrNo.NO);
-            claimantParty.setOrgName(claimantInformation.getClaimantName());
-        } else {
-            claimantParty.setNameOverridden(YesOrNo.YES);
-            claimantParty.setOrgName(claimantInformation.getOverriddenClaimantName());
-        }
+        setClaimantOrgName(claimantInformation, claimantParty);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);
@@ -91,6 +92,19 @@ public class PartyService {
         partyRepository.save(claimantParty);
 
         return claimantParty;
+    }
+
+    private static void setClaimantOrgName(ClaimantInformation claimantInformation, PartyEntity claimantParty) {
+        if (claimantInformation.getOrgNameFound() == YesOrNo.NO) {
+            claimantParty.setNameOverridden(YesOrNo.YES);
+            claimantParty.setOrgName(claimantInformation.getFallbackClaimantName());
+        } else if (claimantInformation.getIsClaimantNameCorrect() == VerticalYesNo.NO) {
+            claimantParty.setNameOverridden(YesOrNo.YES);
+            claimantParty.setOrgName(claimantInformation.getOverriddenClaimantName());
+        } else {
+            claimantParty.setNameOverridden(YesOrNo.NO);
+            claimantParty.setOrgName(claimantInformation.getClaimantName());
+        }
     }
 
     private List<PartyEntity> createDefendants(PCSCase pcsCase) {
@@ -178,7 +192,7 @@ public class PartyService {
 
     private AddressEntity mapAddress(AddressUK address) {
         return address != null
-            ? modelMapper.map(address, AddressEntity.class) : null;
+            ? addressMapper.toAddressEntityAndNormalise(address) : null;
     }
 
     private AddressUK resolveContactAddress(ClaimantContactPreferences contactPreferences) {

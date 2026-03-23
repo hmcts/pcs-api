@@ -9,7 +9,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+
+import java.math.BigDecimal;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MAX_MONETARY_AMOUNT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MIN_MONETARY_AMOUNT;
 
 @Data
 @Builder
@@ -27,7 +33,9 @@ public class LegalCosts {
     @CCD(
             label = "How much do you want to reclaim?",
             typeOverride = FieldType.MoneyGBP,
-            min = 1
+            min = MIN_MONETARY_AMOUNT,
+            max = MAX_MONETARY_AMOUNT
     )
-    private String amountOfLegalCosts;
+    @JacksonMoneyGBP
+    private BigDecimal amountOfLegalCosts;
 }

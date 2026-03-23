@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
@@ -25,8 +26,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private static final String JURISDICTION_NAME = "Possessions";
     private static final String JURISDICTION_DESCRIPTION = "Possessions Jurisdiction";
 
+    @Value("${hmcts.hmctsOrgId}")
+    private String hmctsServiceId;
+
     public static String getCaseType() {
-        return withChangeId(CASE_TYPE_ID, "-");
+        return withSuffix(CASE_TYPE_ID, "-");
     }
 
     public static String getJurisdictionId() {
@@ -34,11 +38,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     public static String getCaseTypeName() {
-        return withChangeId(CASE_TYPE_NAME, " ");
+        return withSuffix(CASE_TYPE_NAME, " ");
     }
 
-    private static String withChangeId(String base, String separator) {
-        return ofNullable(getenv().get("CHANGE_ID"))
+    private static String withSuffix(String base, String separator) {
+        return ofNullable(getenv().get("CASE_TYPE_SUFFIX"))
             .map(changeId -> base + separator + changeId)
             .orElse(base);
     }
@@ -49,6 +53,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
+        builder.hmctsServiceId(hmctsServiceId);
 
         builder.searchInputFields()
             .caseReferenceField();

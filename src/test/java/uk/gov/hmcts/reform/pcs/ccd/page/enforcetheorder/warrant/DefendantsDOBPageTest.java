@@ -74,6 +74,6 @@ class DefendantsDOBPageTest extends BasePageTest {
             "What are the defendants’ dates of birth?",
             "6,800"
         );
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }

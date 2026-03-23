@@ -74,8 +74,12 @@ class CaseDefinitionIT extends AbstractPostgresContainerIT {
                 EventId.enforceTheOrder,
                 List.of(
                     "evictionDelayWarning",
+                    "warrantOfRestitutionEvictionDelayWarning",
+                    "warrantOfRestitutionAnyoneAtPropertyRiskIntro",
                     "checkYourAnswersPlaceHolder",
-                    "changeNameAddress"
+                    "changeNameAddress",
+                    "cannotApplyForWritInfo",
+                    "shareEvidenceWithJudge"
                 )
 
             )

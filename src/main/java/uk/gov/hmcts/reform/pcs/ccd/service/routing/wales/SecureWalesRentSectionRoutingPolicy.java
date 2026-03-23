@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroun
 
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.RENT_ARREARS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.RENT_ARREARS_S157;
 
 @Component
 public class SecureWalesRentSectionRoutingPolicy implements WalesRentSectionRoutingPolicy {
@@ -16,11 +16,11 @@ public class SecureWalesRentSectionRoutingPolicy implements WalesRentSectionRout
     @Override
     public YesOrNo shouldShowRentSection(PCSCase caseData) {
         Set<SecureContractDiscretionaryGroundsWales> discretionary =
-            caseData.getSecureContractGroundsForPossessionWales().getDiscretionaryGroundsWales();
+            caseData.getSecureContractGroundsForPossessionWales().getDiscretionaryGrounds();
         if (discretionary == null) {
             return YesOrNo.NO;
         }
-        return YesOrNo.from(discretionary.contains(RENT_ARREARS));
+        return YesOrNo.from(discretionary.contains(RENT_ARREARS_S157));
     }
 
     @Override

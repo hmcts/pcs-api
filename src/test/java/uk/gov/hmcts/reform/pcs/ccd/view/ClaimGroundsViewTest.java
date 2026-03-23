@@ -12,16 +12,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimGroundSummary;
-import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherNoGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -270,6 +275,54 @@ class ClaimGroundsViewTest {
                 IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS.name(),
                 "Reason for no grounds", // Reason
                 "No grounds", // Expected label
+                false // Is rent arrears ground
+            ),
+            argumentSet(
+                "Wales standard or other mandatory ground",
+                ClaimGroundCategory.WALES_STANDARD_OTHER_MANDATORY,
+                MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.name(),
+                "Reason for break clause ground", // Reason
+                "Notice given under a landlord’s break clause (section 199)", // Expected label
+                false // Is rent arrears ground
+            ),
+            argumentSet(
+                "Wales standard or other mandatory ground",
+                ClaimGroundCategory.WALES_STANDARD_OTHER_DISCRETIONARY,
+                DiscretionaryGroundWales.RENT_ARREARS_S157.name(),
+                "Reason for rent arrears ground", // Reason
+                "Rent arrears (breach of contract) (section 157)", // Expected label
+                true // Is rent arrears ground
+            ),
+            argumentSet(
+                "Wales standard or other estate management ground",
+                ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT,
+                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.name(),
+                "Reason for redevelopment schemes ground", // Reason
+                "Redevelopment schemes (ground B)", // Expected label
+                false // Is rent arrears ground
+            ),
+            argumentSet(
+                "Wales standard or other mandatory ground",
+                ClaimGroundCategory.WALES_SECURE_MANDATORY,
+                SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186.name(),
+                "Reason for landlord notice ground", // Reason
+                "Landlord’s notice in connection with end of fixed term given (section 186)", // Expected label
+                false // Is rent arrears ground
+            ),
+            argumentSet(
+                "Wales standard or other mandatory ground",
+                ClaimGroundCategory.WALES_SECURE_DISCRETIONARY,
+                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157.name(),
+                "Reason for antisocial behaviour ground", // Reason
+                "Antisocial behaviour (breach of contract) (section 157)", // Expected label
+                true // Is rent arrears ground
+            ),
+            argumentSet(
+                "Wales standard or other estate management ground",
+                ClaimGroundCategory.WALES_SECURE_ESTATE_MANAGEMENT,
+                EstateManagementGroundsWales.RESERVE_SUCCESSORS.name(),
+                "Reason for reserve successors ground", // Reason
+                "Reserve successors (ground G)", // Expected label
                 false // Is rent arrears ground
             )
         );

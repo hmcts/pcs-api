@@ -1,11 +1,15 @@
 package uk.gov.hmcts.reform.pcs.testingsupport;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -32,16 +36,6 @@ class EnforcementDMTest {
 
     private DomainDataModelSupportHelper domainDataModelSupportHelper;
 
-    @BeforeEach
-    void beforeEach() throws IOException {
-        domainDataModelSupportHelper = new DomainDataModelSupportHelper(EnforcementOrder.class);
-        File tempFile = File.createTempFile("ccd_fields_report_", ".txt");
-        try (PrintWriter writer = new PrintWriter(new FileWriter(tempFile))) {
-            domainDataModelSupportHelper.printCCDFields(writer);
-            System.out.println("Created : " + tempFile.getAbsolutePath());
-        }
-    }
-
     /**
      * Monitors the completeness of the EnforcementOrderEntity graph implementation.
      * This test tracks which CCD-annotated fields from the domain model are not yet
@@ -56,17 +50,49 @@ class EnforcementDMTest {
      */
     @Test
     void shouldCaptureAllMissingEntityFieldsFromTheEnforcementDomain() throws IOException {
-        domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class);
+        domainDataModelSupportHelper = new DomainDataModelSupportHelper(EnforcementOrder.class);
+        domainDataModelSupportHelper.addClassesToIgnore(ClaimEntity.class);
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
             domainDataModelSupportHelper.findMissingCCDFields(EnforcementOrderEntity.class);
 
         consoleOutput(missingFields);
 
-        // This assertion ensures the test mechanism works and produces a result
-        // The actual validation is done by reviewing the console output and generated report
-        // As the domain evolves, missing fields may be added or removed - this is expected
-        // The test is specifically in place so to no miss something that should otherwise be persisted and it is
-        // highlighted here within the builds.
+        assertThat(missingFields)
+            .as("Missing CCD field detection is working. "
+                    + "Review console output to track entity graph implementation progress.")
+            .isNotNull();
+    }
+
+    @Test
+    void shouldCaptureAllMissingEntityFieldsFromTheEnforcementWarrantDetailsDomain() throws IOException {
+        domainDataModelSupportHelper = new DomainDataModelSupportHelper(EnforcementOrder.class);
+        domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
+                                                        RiskDetails.class, WritDetails.class);
+        domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails",
+                                                       "enforcementLanguageUsed");
+        List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
+            domainDataModelSupportHelper.findMissingCCDFields(WarrantEntity.class);
+
+        consoleOutput(missingFields);
+
+        assertThat(missingFields)
+            .as("Missing CCD field detection is working. "
+                    + "Review console output to track entity graph implementation progress.")
+            .isNotNull();
+    }
+
+    @Test
+    void shouldCaptureAllMissingEntityFieldsFromTheEnforcementWritDetailsDomain() throws IOException {
+        domainDataModelSupportHelper = new DomainDataModelSupportHelper(WritDetails.class);
+        domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
+                                                        RiskDetails.class, WarrantDetails.class);
+        domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "warrantDetails",
+                                                       "enforcementLanguageUsed");
+        List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
+            domainDataModelSupportHelper.findMissingCCDFields(WritEntity.class);
+
+        consoleOutput(missingFields);
+
         assertThat(missingFields)
             .as("Missing CCD field detection is working. "
                     + "Review console output to track entity graph implementation progress.")

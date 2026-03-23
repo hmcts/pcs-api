@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -36,9 +36,9 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
-                                .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementVerbalOrWrittenThreatsDetails(riskDetails)
+                                .riskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
+                                .riskDetails(RiskDetails.builder()
+                                        .verbalThreatsDetails(riskDetails)
                                         .build())
                                 .build())
                         .build())
@@ -50,7 +50,7 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                       .getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails()).isEqualTo(riskDetails);
+                       .getRiskDetails().getVerbalThreatsDetails()).isEqualTo(riskDetails);
     }
 
     @Test
@@ -60,9 +60,9 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
-                                .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementVerbalOrWrittenThreatsDetails(longText)
+                                .riskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
+                                .riskDetails(RiskDetails.builder()
+                                        .verbalThreatsDetails(longText)
                                         .build())
                                 .build())
                         .build())
@@ -76,6 +76,6 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
                                              RiskCategory.VERBAL_OR_WRITTEN_THREATS.getText(),
                                              "6,800");
 
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }

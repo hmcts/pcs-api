@@ -1,0 +1,40 @@
+{
+  "case_details": {
+    "id": "[[IGNORE_VALUE]]",
+    "jurisdiction": "PCS",
+    "state": "AWAITING_SUBMISSION_TO_HMCTS",
+    "version": 1,
+    "case_type_id": "[[IGNORE_VALUE]]",
+    "created_date": "[[IGNORE_VALUE]]",
+    "last_modified": "[[IGNORE_VALUE]]",
+    "last_state_modified_date": "[[IGNORE_VALUE]]",
+    "security_classification": "PUBLIC",
+    "case_data": {
+      "propertyAddress": {
+        "AddressLine1": "1",
+        "AddressLine2": "Exton Gardens",
+        "AddressLine3": "70 Knyveton Road",
+        "PostTown": "Bournemouth",
+        "PostCode": "BH1 3BP",
+        "Country": "England"
+      },
+      "userPcqIdSet": "No",
+      "parties": [
+      ],
+      "caseTitleMarkdown": "<p class=\"govuk-!-font-size-24 govuk-!-margin-top-0 govuk-!-margin-bottom-1\">\n    Case number: ${[CASE_REFERENCE]}\n</p>\n<p class=\"govuk-!-font-size-24 govuk-!-margin-bottom-0\">\n    Property address: 1, Bournemouth, BH1 3BP\n</p>",
+      "legislativeCountry": "England",
+      "nextStepsMarkdown": "<h2 class=\"govuk-heading-m\">Provide more details about your claim</h2>\nYour answers will be saved from this point so you can return to your draft\nlater.\n<br>\n<br>\n<a href=\"/cases/case-details/${[CASE_REFERENCE]}/trigger/resumePossessionClaim\"\n   role=\"button\"\n   class=\"govuk-button govuk-link govuk-link--no-visited-state\">\n  Continue\n</a>\n<p class=\"govuk-body govuk-!-font-size-19\">\n<span><a class=\"govuk-link--no-visited-state\" href=\"/cases\">Cancel</a></span>\n</p>\n",
+      "allDocuments": [
+      ]
+    },
+    "data_classification": {
+    },
+    "supplementary_data": {
+    },
+    "after_submit_callback_response": {
+    },
+    "callback_response_status_code": 200,
+    "callback_response_status": "CALLBACK_COMPLETED"
+  },
+  "revision": 1
+}

@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 
+import java.time.LocalDate;
+
 @Builder
 @Data
 @NoArgsConstructor
@@ -29,5 +31,9 @@ public class Party {
     private VerticalYesNo addressSameAsProperty;
 
     private String phoneNumber;
+
+    private VerticalYesNo phoneNumberProvided;
+
+    private LocalDate dateOfBirth;
 
 }

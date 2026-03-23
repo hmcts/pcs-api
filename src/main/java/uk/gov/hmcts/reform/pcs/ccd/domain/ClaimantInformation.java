@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 @Builder
@@ -14,6 +15,9 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClaimantInformation {
+
+    @CCD
+    private YesOrNo orgNameFound;
 
     @CCD(
         label = "Your claimant name registered with My HMCTS is:",
@@ -40,4 +44,16 @@ public class ClaimantInformation {
         max = 60
     )
     private String overriddenClaimantName;
+
+    @CCD(
+        label = "What is the claimant name?",
+        hint = """
+            The claimant name you enter will only be used for this claim.
+            Your registered claimant name on My HMCTS will not be changed
+            """,
+        typeOverride = FieldType.Text,
+        max = 60
+    )
+    private String fallbackClaimantName;
+
 }

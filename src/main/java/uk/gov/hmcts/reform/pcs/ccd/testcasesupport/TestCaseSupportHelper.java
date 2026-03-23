@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 public class TestCaseSupportHelper {
 
-    public static final String LOCATION_PATTERN = "classpath*:testcasesupport/";
+    public static final String LOCATION_PATTERN = "classpath*:test-case-generation/";
     public static final String JSON = ".json";
 
     private final ResourcePatternResolver resourcePatternResolver;
@@ -27,6 +27,7 @@ public class TestCaseSupportHelper {
     public DynamicList getFileList() {
         try {
             Resource[] resources = resourcePatternResolver.getResources(LOCATION_PATTERN + "*");
+            log.info("Found {} resources from pattern: {}", resources.length, LOCATION_PATTERN + "*");
             List<DynamicListElement> listItems = Arrays.stream(resources)
                 .map(Resource::getFilename)
                 .filter(Objects::nonNull)
@@ -34,10 +35,13 @@ public class TestCaseSupportHelper {
                 .map(name -> DynamicListElement.builder().code(UUID.nameUUIDFromBytes(name.getBytes()))
                     .label(generateLabelFromFilename(name)).build())
                 .toList();
-            return DynamicList.builder()
+            log.info("ListItems {}", listItems);
+            DynamicList dynamicList = DynamicList.builder()
                 .listItems(listItems)
                 .value(DynamicListElement.builder().label("Please select ...").code(UUID.randomUUID()).build())
                 .build();
+            log.info("DynamicList {}", dynamicList);
+            return dynamicList;
         } catch (IOException e) {
             log.error("Error reading Test Case Support files", e);
             return DynamicList.builder().build();

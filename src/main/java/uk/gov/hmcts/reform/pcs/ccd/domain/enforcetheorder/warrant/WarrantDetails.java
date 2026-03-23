@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -14,8 +15,15 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
+
 import java.util.Set;
 
 @Builder
@@ -49,7 +57,8 @@ public class WarrantDetails {
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "RiskCategory"
     )
-    private Set<RiskCategory> enforcementRiskCategories;
+    @JsonProperty("EnforcementRiskCategories")
+    private Set<RiskCategory> riskCategories;
 
     @CCD(searchable = false)
     private YesOrNo showChangeNameAddressPage;
@@ -67,7 +76,7 @@ public class WarrantDetails {
     @CCD(
         label = "Risk details"
     )
-    private EnforcementRiskDetails riskDetails;
+    private RiskDetails riskDetails;
 
     @CCD(
         label = "Which language did you use to complete this service?",
@@ -75,7 +84,8 @@ public class WarrantDetails {
             + "ask them if they answered any questions in Welsh. We’ll use this to "
             + "make sure your claim is processed correctly"
     )
-    private LanguageUsed enforcementLanguageUsed;
+    @JsonProperty("EnforcementLanguageUsed")
+    private LanguageUsed languageUsed;
 
     @JsonUnwrapped
     @CCD
@@ -107,8 +117,8 @@ public class WarrantDetails {
 
     @JsonUnwrapped
     @CCD
-    private StatementOfTruthDetails statementOfTruth;
-    
+    private StatementOfTruthDetailsEnforcement statementOfTruth;
+
     @CCD
     @JsonUnwrapped
     private DefendantsDOB defendantsDOB;

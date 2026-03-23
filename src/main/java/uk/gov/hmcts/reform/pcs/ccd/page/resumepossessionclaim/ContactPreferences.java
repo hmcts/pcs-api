@@ -14,7 +14,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -24,6 +27,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class ContactPreferences implements CcdPageConfiguration {
 
     private final AddressValidator addressValidator;
+    private final TextAreaValidationService textAreaValidationService;
+    private static final String EMAIL_LABEL = "Enter email address";
 
     private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
     private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
@@ -138,25 +143,29 @@ public class ContactPreferences implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-
         PCSCase caseData = details.getData();
-
+        List<String> validationErrors = new ArrayList<>();
         ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
+
         if (contactPreferences != null) {
             VerticalYesNo isCorrectClaimantContactAddress = contactPreferences.getIsCorrectClaimantContactAddress();
             if (isCorrectClaimantContactAddress == VerticalYesNo.NO
                 || contactPreferences.getOrgAddressFound() == YesOrNo.NO) {
                 AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress();
-                List<String> validationErrors = addressValidator.validateAddressFields(contactAddress);
-                if (!validationErrors.isEmpty()) {
-                    return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                        .errors(validationErrors)
-                        .build();
-                }
+                validationErrors.addAll(addressValidator.validateAddressFields(contactAddress));
+
+            }
+            String overriddenEmail = contactPreferences.getOverriddenClaimantContactEmail();
+            VerticalYesNo isCorrectEmailAddress = contactPreferences.getIsCorrectClaimantContactEmail();
+            if (isCorrectEmailAddress == VerticalYesNo.NO && overriddenEmail != null) {
+                validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+                    overriddenEmail, EMAIL_LABEL, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
+                );
             }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
             .data(caseData)
             .build();
 

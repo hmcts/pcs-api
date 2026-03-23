@@ -43,7 +43,6 @@ class TestCaseSupportHelperTest {
         when(resource1.getFilename()).thenReturn("test-file-one.json");
         when(resource2.getFilename()).thenReturn("test-file-two.json");
         when(resource3.getFilename()).thenReturn("test-file-three.json");
-
         Resource[] resources = {resource1, resource2, resource3};
         when(resourcePatternResolver.getResources(LOCATION_PATTERN + "*")).thenReturn(resources);
 

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.party;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -77,6 +79,9 @@ public class PartyEntity {
     @OneToOne(cascade = ALL)
     private AddressEntity address;
 
+    @OneToOne(cascade = ALL)
+    private ContactPreferencesEntity contactPreferences;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo addressKnown;
@@ -94,5 +99,8 @@ public class PartyEntity {
     private String emailAddress;
 
     private String pcqId;
+
+    @Column(name = "dob")
+    private LocalDate dateOfBirth;
 
 }

@@ -1,7 +1,6 @@
 export const rePayments = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Repayments',
-  mainHeaderWrit: 'Repayments (placeholder)',
   rePaymentQuestion: 'How much do you want the defendants to repay?',
   rePaymentRadioOptions: {
     all: 'All of it',
@@ -9,7 +8,7 @@ export const rePayments = {
     none: 'None of it',
   },
   enterTheAmountTextLabel: 'Enter the amount that you want the defendants to repay',
-  enterTheAmountTextInput: '100.50',
+  enterTheAmountTextInput: ['755559.7','119999','1099.95','6320.00','890.10','111.01'],
   continueButton: 'Continue',
   totalAmt: 'Total',
   errorValidation: 'NO',//set it to 'NO' before raising a PR

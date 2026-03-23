@@ -1,0 +1,79 @@
+package uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class DefendantResponses {
+
+    @CCD
+    private YesNoNotSure tenancyTypeCorrect;
+
+    @CCD
+    private LocalDate tenancyStartDate;
+
+    @CCD
+    private YesNoNotSure tenancyStartDateConfirmation;
+
+    @CCD
+    private YesNoNotSure rentArrearsAmountConfirmation;
+
+    @CCD(typeOverride = FieldType.MoneyGBP)
+    @JacksonMoneyGBP
+    private BigDecimal rentArrearsAmount;
+
+    @CCD
+    private YesNoNotSure noticeReceived;
+
+    @CCD
+    private LocalDate noticeReceivedDate;
+
+    @CCD
+    private VerticalYesNo contactByEmail;
+
+    @CCD
+    private VerticalYesNo contactByText;
+
+    @CCD
+    private VerticalYesNo contactByPost;
+
+    @CCD
+    private VerticalYesNo contactByPhone;
+
+    @CCD
+    private YesNoPreferNotToSay freeLegalAdvice;
+
+    @CCD
+    private LocalDate dateOfBirth;
+
+    @CCD
+    private VerticalYesNo defendantNameConfirmation;
+
+    @CCD
+    private YesNoNotSure landlordRegistered;
+
+    @CCD(access = {CitizenAccess.class})
+    private ReasonableAdjustments reasonableAdjustments;
+
+    @CCD(access = {CitizenAccess.class})
+    private HouseholdCircumstances householdCircumstances;
+
+    @CCD(access = {CitizenAccess.class})
+    private PaymentAgreement paymentAgreement;
+
+}

@@ -1,15 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 
-@Slf4j
 @Component
 @AllArgsConstructor
-public class WarrantPageConfigurer implements EnforcementPageConfigurer {
+public class WarrantPageConfigurer implements PageConfigurer {
 
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
     private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
@@ -22,12 +20,10 @@ public class WarrantPageConfigurer implements EnforcementPageConfigurer {
     private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     private final AdditionalInformationPage additionalInformationPage;
     private final LandRegistryFeesPage landRegistryFeesPage;
-    private final StatementOfTruthPage statementOfTruthPage;
     private final DefendantsDOBPage defendantsDOBPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
-        configureInitialPages(pageBuilder);
         pageBuilder
             .add(new NameAndAddressForEvictionPage())
             .add(new ChangeNameAddressPage())
@@ -54,6 +50,6 @@ public class WarrantPageConfigurer implements EnforcementPageConfigurer {
             .add(new RepaymentsPage())
             .add(new LanguageUsedPage())
             .add(new SuspendedOrderPage())
-            .add(statementOfTruthPage);
+            .add(new StatementOfTruthPage());
     }
 }

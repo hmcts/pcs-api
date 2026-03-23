@@ -14,18 +14,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
@@ -46,6 +50,8 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
+import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,9 +68,13 @@ class EnforceTheOrderTest extends BaseEventTest {
     @Mock
     private EnforcementOrderService enforcementOrderService;
     @Mock
+    private EnforcementPageConfigurer enforcementPageConfigurer;
+    @Mock
     private WarrantPageConfigurer warrantPageConfigurer;
     @Mock
     private WritPageConfigurer writPageConfigurer;
+    @Mock
+    private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @InjectMocks
@@ -85,14 +95,16 @@ class EnforceTheOrderTest extends BaseEventTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
-                .build();
+            .build();
 
         // When
         callStartHandler(caseData);
 
         //Then
+        verify(enforcementPageConfigurer).configurePages(savingPageBuilder);
         verify(warrantPageConfigurer).configurePages(savingPageBuilder);
         verify(writPageConfigurer).configurePages(savingPageBuilder);
+        verify(warrantOfRestitutionPageConfigurer).configurePages(savingPageBuilder);
     }
 
     @Test
@@ -325,14 +337,57 @@ class EnforceTheOrderTest extends BaseEventTest {
         verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
     }
 
+    @Test
+    void shouldAlsoSetWarrantRestTypeIfWarrantExists() {
+        // Given
+        EnforcementOrder warrantEnforcementOrder = buildEnforcementOrderWithSpecifiedType(WARRANT);
+        when(enforcementOrderService.retrieveEnforcementOrder(TEST_CASE_REFERENCE, WARRANT))
+                .thenReturn(warrantEnforcementOrder);
+
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementOrder.builder().build())
+                .build();
+
+        // When
+        callStartHandler(caseData);
+
+        // Then
+        DynamicStringList enforcementTypes = caseData.getEnforcementOrder().getChooseEnforcementType();
+        boolean warrantOfRestitutionOptionExists = enforcementTypes.getListItems().stream()
+                .anyMatch(item ->
+                        item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
+        assertThat(warrantOfRestitutionOptionExists).isTrue();
+    }
+
+    @Test
+    void shouldNotSetWarrantRestTypeIfWarrantDoesntExist() {
+        // Given
+        when(enforcementOrderService.retrieveEnforcementOrder(TEST_CASE_REFERENCE, WARRANT))
+                .thenReturn(null);
+
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementOrder.builder().build())
+                .build();
+
+        // When
+        callStartHandler(caseData);
+
+        // Then
+        DynamicStringList enforcementTypes = caseData.getEnforcementOrder().getChooseEnforcementType();
+        boolean warrantOfRestitutionOptionExists = enforcementTypes.getListItems().stream()
+                .anyMatch(item ->
+                        item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
+        assertThat(warrantOfRestitutionOptionExists).isFalse();
+    }
+
     private static Stream<Arguments> enforcementFeeScenarios() {
         return Stream.of(
             argumentSet(
                 "Writ fee",
                 FeeType.ENFORCEMENT_WRIT_FEE,
                 (Function<EnforcementOrder, String>) EnforcementOrder::getWritFeeAmount
-            ),
-            argumentSet(
+        ),
+        argumentSet(
                 "Warrant fee",
                 FeeType.ENFORCEMENT_WARRANT_FEE,
                 (Function<EnforcementOrder, String>) EnforcementOrder::getWarrantFeeAmount

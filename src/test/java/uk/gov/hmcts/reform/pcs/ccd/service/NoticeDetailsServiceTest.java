@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
@@ -30,7 +30,7 @@ class NoticeDetailsServiceTest {
 
     @Nested
     class ConditionalValidationTests {
-        
+
         @Test
         void shouldReturnNoErrorsWhenNoticeNotServed() {
             PCSCase caseData = PCSCase.builder()
@@ -40,7 +40,7 @@ class NoticeDetailsServiceTest {
 
             assertThat(errors).isEmpty();
         }
-        
+
         @Test
         void shouldReturnNoErrorsWhenNoticeServedIsNull() {
             PCSCase caseData = PCSCase.builder()
@@ -54,7 +54,7 @@ class NoticeDetailsServiceTest {
 
             assertThat(errors).isEmpty();
         }
-        
+
         @Test
         void shouldValidateNoticeDetailsWhenNoticeServedIsYes() {
             PCSCase caseData = PCSCase.builder()
@@ -73,7 +73,7 @@ class NoticeDetailsServiceTest {
 
     @Nested
     class NoticeServiceMethodValidation {
-        
+
         @Test
         void shouldRequireNoticeServiceMethod() {
             // Given
@@ -95,7 +95,7 @@ class NoticeDetailsServiceTest {
 
     @Nested
     class DateFieldValidation {
-        
+
         @Test
         void shouldValidateFirstClassPostWithValidDate() {
             // Given
@@ -151,7 +151,7 @@ class NoticeDetailsServiceTest {
                 .isNotEmpty()
                 .contains("The date cannot be today or in the future");
         }
-        
+
         @Test
         void shouldValidateFirstClassPostWithTodayDate() {
             // Given
@@ -229,7 +229,7 @@ class NoticeDetailsServiceTest {
 
     @Nested
     class DateTimeFieldValidation {
-        
+
         @Test
         void shouldValidatePersonallyHandedWithValidDateTime() {
             // Given
@@ -248,7 +248,7 @@ class NoticeDetailsServiceTest {
             // Then
             assertThat(errors).isEmpty();
         }
-        
+
         @Test
         void shouldAcceptPartialTimeEntries() {
             // Given
@@ -290,7 +290,7 @@ class NoticeDetailsServiceTest {
                 .isNotEmpty()
                 .contains("The date and time cannot be today or in the future");
         }
-        
+
         @Test
         void shouldValidatePersonallyHandedWithTodayDateTime() {
             // Given
@@ -356,7 +356,7 @@ class NoticeDetailsServiceTest {
 
     @Nested
     class EmailValidation {
-        
+
         @Test
         void shouldValidateEmailWithValidExplanation() {
             // Given
@@ -381,10 +381,10 @@ class NoticeDetailsServiceTest {
         void shouldValidateEmailWithTooLongExplanation() {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
-            
+
             // Create a string that exceeds 250 characters
             String longText = "0123456789".repeat(26); // 10 chars x 26 = 260 chars
-            
+
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
@@ -429,7 +429,7 @@ class NoticeDetailsServiceTest {
 
     @Nested
     class OtherValidation {
-        
+
         @Test
         void shouldValidateOtherWithValidExplanation() {
             // Given
@@ -454,10 +454,10 @@ class NoticeDetailsServiceTest {
         void shouldValidateOtherWithTooLongExplanation() {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
-            
+
             // Create a string that exceeds 250 characters
             String longText = "0123456789".repeat(26); // 10 chars x 26 = 260 chars
-            
+
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
@@ -501,8 +501,58 @@ class NoticeDetailsServiceTest {
     }
 
     @Nested
+    class NameOfPersonalDocumentLeftWithValidation {
+
+        @Test
+        void shouldValidateCorrectNameLength() {
+            // Given
+            LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                                         .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
+                                         .noticeHandedOverDateTime(pastDateTime)
+                                         .noticePersonName("James Jackson") // Valid explanation
+                                         .build())
+                .build();
+
+            // When
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+
+            // Then
+            assertThat(errors).isEmpty();
+        }
+
+        @Test
+        void shouldValidateNameWithTooLongName() {
+            // Given
+            LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
+
+            // Create a name that exceeds 60 characters
+            String longName = "J".repeat(61);
+
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                                         .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
+                                         .noticeHandedOverDateTime(pastDateTime)
+                                         .noticePersonName(longName)
+                                         .build())
+                .build();
+
+            // When
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+
+            // Then
+            assertThat(errors)
+                .isNotEmpty()
+                .anyMatch(error -> error.contains("more than the maximum number of characters"));
+        }
+    }
+
+    @Nested
     class EdgeCases {
-        
+
         @Test
         void shouldHandleNullValuesGracefully() {
             // Given

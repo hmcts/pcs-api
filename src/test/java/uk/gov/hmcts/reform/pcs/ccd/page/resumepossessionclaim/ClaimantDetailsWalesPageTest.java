@@ -51,6 +51,7 @@ class ClaimantDetailsWalesPageTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getErrors()).containsExactly("The agent’s date of appointment must be in the past");
+        assertThat(response.getErrorMessageOverride())
+            .isEqualTo("The agent’s date of appointment must be in the past");
     }
 }

@@ -29,8 +29,7 @@ public class ClaimantContactPreferences {
 
     @CCD(
         label = "Enter email address",
-        typeOverride = FieldType.Email,
-        max = 60
+        typeOverride = FieldType.Email
     )
     private String overriddenClaimantContactEmail;
 

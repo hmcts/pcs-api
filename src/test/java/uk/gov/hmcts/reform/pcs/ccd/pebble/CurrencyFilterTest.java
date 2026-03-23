@@ -51,7 +51,7 @@ class CurrencyFilterTest {
             arguments(new BigDecimal("-45.00"), "-£45"),
             arguments(new BigDecimal("-00.45"), "-£0.45"),
             arguments(new BigDecimal("-00.40"), "-£0.40"),
-            arguments(null, null)
+            arguments(null, "£0")
         );
     }
 

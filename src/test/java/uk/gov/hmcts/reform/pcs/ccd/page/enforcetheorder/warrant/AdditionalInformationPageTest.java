@@ -85,8 +85,9 @@ class AdditionalInformationPageTest extends BasePageTest {
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
         // Then
-        assertThat(response.getErrors().getFirst()).contains(ADDITIONAL_INFORMATION_DETAILS_LABEL);
+        assertThat(response.getErrorMessageOverride()).contains(ADDITIONAL_INFORMATION_DETAILS_LABEL);
     }
 
 }

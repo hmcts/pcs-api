@@ -11,8 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
         pageBuilder
             .page("additionalInformation", this::midEvent)
             .pageLabel("Anything else that could help with the eviction ")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("additionalInformation-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
@@ -53,7 +54,7 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
         List<String> errors = getValidationErrors(data);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
-            .errors(errors)
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
             .build();
     }
 

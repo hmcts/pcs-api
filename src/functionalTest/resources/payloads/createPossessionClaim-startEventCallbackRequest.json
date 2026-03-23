@@ -1,0 +1,8 @@
+{
+  "event_id": "createPossessionClaim",
+  "case_details": {
+    "case_type_id": "${caseTypeId}",
+    "data": {
+    }
+  }
+}

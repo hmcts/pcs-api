@@ -13,6 +13,7 @@ import {InputErrorValidation} from "@utils/validations/element-validations/input
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
     ['text', new TextValidation()],
+    ['link', new TextValidation()],
     ['bannerAlert', new BannerAlertValidation()],
     ['formLabelValue', new FormLabelValueValidation()],
     ['optionList', new OptionListValidation()],

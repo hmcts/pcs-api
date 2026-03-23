@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -36,9 +36,9 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
-                                .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementProtestGroupMemberDetails(riskDetails)
+                                .riskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
+                                .riskDetails(RiskDetails.builder()
+                                        .protestGroupDetails(riskDetails)
                                         .build())
                                 .build())
                         .build())
@@ -50,7 +50,7 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                       .getRiskDetails().getEnforcementProtestGroupMemberDetails()).isEqualTo(riskDetails);
+                       .getRiskDetails().getProtestGroupDetails()).isEqualTo(riskDetails);
     }
 
     @Test
@@ -61,9 +61,9 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
-                                .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementProtestGroupMemberDetails(longText)
+                                .riskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
+                                .riskDetails(RiskDetails.builder()
+                                        .protestGroupDetails(longText)
                                         .build())
                                 .build())
                         .build())
@@ -77,6 +77,6 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
                                              RiskCategory.PROTEST_GROUP_MEMBER.getText(),
                                              "6,800");
 
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }

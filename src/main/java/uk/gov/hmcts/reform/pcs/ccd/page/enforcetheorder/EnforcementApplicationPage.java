@@ -1,23 +1,44 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 
+@Component
+@AllArgsConstructor
 public class EnforcementApplicationPage implements CcdPageConfiguration {
-    public static final String WRIT_OR_WARRANT_INFORMATION = """
+
+    private final EnforcementOrderService enforcementOrderService;
+    private final WarrantOfRestitutionMapper warrantOfRestitutionMapper;
+
+    private static final String STUB_GA_SUCCESSFUL_CONDITION =
+        WRIT_FLOW + " AND writHasClaimTransferredToHighCourt=\"Yes\"";
+    private static final String ERROR_GA_TRANSFER_UNSUCCESSFUL =
+        "You cannot continue with this application because your "
+            + "application to transfer to the High Court was unsuccessful";
+
+    public static final String ENFORCEMENT_TYPES_INFORMATION = """
                     <details class="govuk-details">
                         <summary class="govuk-details__summary">
                             <span class="govuk-details__summary-text">
@@ -76,7 +97,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             <p class="govuk-body">Contact a lawyer or a High Court Enforcement Officer (bailiff)
                             before you apply for a writ. They can help you to check if you have the evidence to apply
                             successfully.</p>
-                        </div>
+                            ${warrantOfRestitutionInfoText} </div>
                     </details>
                     """;
 
@@ -89,11 +110,22 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW, true)
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getSelectEnforcementType)
+            .mandatory(EnforcementOrder::getChooseEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getWarrantOfRestitutionInfoText, NEVER_SHOW, true)
+            .complex(EnforcementOrder::getWritDetails)
+            .mandatory(
+                WritDetails::getHasClaimTransferredToHighCourt,
+                claimTransferredShowCondition()
+            )
+            .mandatory(
+                WritDetails::getWasGeneralApplicationToTransferToHighCourtSuccessful,
+                gaSuccessfulShowCondition()
+            )
             .done()
-            .label("enforcementApplication-clarification", WRIT_OR_WARRANT_INFORMATION)
+            .done()
+            .label("enforcementApplication-clarification", ENFORCEMENT_TYPES_INFORMATION)
             .label("enforcementApplication-save-and-return", SAVE_AND_RETURN);
     }
 
@@ -101,8 +133,16 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
         setFormattedDefendantNames(data.getAllDefendants(), data);
+        List<String> errors = validateWritTransfer(data);
+        EnforcementOrder enforcementOrder = data.getEnforcementOrder();
+        if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
+                .equals(enforcementOrder.getChooseEnforcementType().getValueCode())) {
+            populateWarrantRestDetails(enforcementOrder, details.getId());
+        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(data).build();
+            .data(data)
+            .errors(errors.isEmpty() ? null : errors)
+            .build();
     }
 
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
@@ -115,4 +155,44 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         }
     }
 
+    private static boolean toBoolean(YesOrNo yesOrNo) {
+        return yesOrNo != null && yesOrNo.toBoolean();
+    }
+
+    private List<String> validateWritTransfer(PCSCase pcsCase) {
+        EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
+        if (SelectEnforcementType.getSelectEnforcementTypeFromName(
+                enforcementOrder.getChooseEnforcementType().getValueCode()) != SelectEnforcementType.WRIT) {
+            return List.of();
+        }
+
+        WritDetails writDetails = enforcementOrder.getWritDetails();
+        boolean claimTransferred = toBoolean(writDetails.getHasClaimTransferredToHighCourt());
+        boolean gaSuccessful = toBoolean(writDetails.getWasGeneralApplicationToTransferToHighCourtSuccessful());
+
+        if (claimTransferred && !gaSuccessful) {
+            return List.of(ERROR_GA_TRANSFER_UNSUCCESSFUL);
+        }
+
+        return List.of();
+    }
+
+    private String claimTransferredShowCondition() {
+        return TestSupportEnvironment.isNonProdTestSupportEnabled() ? WRIT_FLOW : NEVER_SHOW;
+    }
+
+    private String gaSuccessfulShowCondition() {
+        return TestSupportEnvironment.isNonProdTestSupportEnabled()
+            ? STUB_GA_SUCCESSFUL_CONDITION
+            : NEVER_SHOW;
+    }
+
+    private void populateWarrantRestDetails(EnforcementOrder currentEnforcementOrder, long caseReference) {
+        EnforcementOrder warrantEnforcementOrder =
+                enforcementOrderService.retrieveEnforcementOrder(caseReference, SelectEnforcementType.WARRANT);
+        if (warrantEnforcementOrder != null) {
+            warrantOfRestitutionMapper.prePopulateFieldsFromWarrantDetails(
+                    warrantEnforcementOrder, currentEnforcementOrder);
+        }
+    }
 }

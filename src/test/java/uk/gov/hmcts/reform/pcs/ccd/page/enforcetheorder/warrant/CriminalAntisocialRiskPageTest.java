@@ -7,8 +7,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -36,9 +36,9 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
-                                .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementCriminalDetails(riskDetails)
+                                .riskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                                .riskDetails(RiskDetails.builder()
+                                        .criminalDetails(riskDetails)
                                         .build())
                                 .build())
                         .build())
@@ -50,7 +50,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-            .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo(riskDetails);
+            .getRiskDetails().getCriminalDetails()).isEqualTo(riskDetails);
     }
 
 
@@ -62,9 +62,9 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
-                                .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementCriminalDetails(longText)
+                                .riskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                                .riskDetails(RiskDetails.builder()
+                                        .criminalDetails(longText)
                                         .build())
                                 .build())
                         .build())
@@ -78,6 +78,6 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
                                              RiskCategory.CRIMINAL_OR_ANTISOCIAL.getText(),
                                              "6,800");
 
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }

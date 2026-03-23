@@ -6,83 +6,74 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
 import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class SubmitEventHandler implements Submit<PCSCase, State> {
 
-    private final RespondPossessionClaimDraftService draftService;
+    private final DraftCaseDataService draftCaseDataService;
+    private final ClaimResponseService claimResponseService;
+    private final DefendantResponseService defendantResponseService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        PCSCase caseData = eventPayload.caseData();
+        log.info("RespondPossessionClaim submit callback invoked for Case Reference: {}", caseReference);
+        return processFinalSubmit(caseReference);
+    }
 
-        SubmitResponse<State> validationError = validate(caseData, caseReference);
+    private SubmitResponse<State> processFinalSubmit(long caseReference) {
+        log.info("Processing final submission for case {}", caseReference);
+
+        //load draft data
+        PCSCase draftData = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
+            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
+
+        //get only possession response from draft
+        PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
+
+        //validate draft data
+        SubmitResponse<State> validationError = validate(responseDraftData, caseReference);
         if (validationError != null) {
             return validationError;
         }
 
-        if (caseData.getSubmitDraftAnswers().toBoolean()) {
-            return processFinalSubmit(caseReference, caseData);
-        } else {
-            return processDraftSubmit(caseReference, caseData);
-        }
-    }
+        //call services to save to relevant tables
+        claimResponseService.saveDraftData(responseDraftData, caseReference);
 
-    private SubmitResponse<State> validate(PCSCase caseData, long caseReference) {
-        PossessionClaimResponse response = caseData.getPossessionClaimResponse();
-        YesOrNo submitFlag = caseData.getSubmitDraftAnswers();
+        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
 
-        if (response == null) {
-            log.error("Submit failed for case {}: possessionClaimResponse is null", caseReference);
-            return error("Invalid submission: missing response data");
-        }
+        //delete draft as it's no longer needed
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
 
-        if (submitFlag == null) {
-            log.error("Submit failed for case {}: submitDraftAnswers is null", caseReference);
-            return error("Invalid submission: missing submit flag");
-        }
-
-        return null;
-    }
-
-    private SubmitResponse<State> processFinalSubmit(long caseReference, PCSCase caseData) {
-        log.info("Processing final submission for case {}", caseReference);
-
-        //TODO: find draft data using idam user and case reference and event
-
-        //TODO: Store defendant response to database
-        //This will be implemented in a future ticket.
-        //Note that defendants will be stored in a list
-
+        log.info("Successfully saved defendant response for case: {}", caseReference);
         return success();
     }
 
-    private SubmitResponse<State> processDraftSubmit(long caseReference, PCSCase caseData) {
-        PossessionClaimResponse response = caseData.getPossessionClaimResponse();
-
-        if (response.getParty() == null) {
-            log.error("Draft submit rejected for case {}: party is null", caseReference);
-            return error("Invalid response structure. Please refresh the page and try again.");
+    private SubmitResponse<State> validate(PossessionClaimResponse possessionClaimResponse, long caseReference) {
+        if (possessionClaimResponse == null) {
+            log.error("Submit failed for case {}: possession claim response is null", caseReference);
+            return error("Invalid submission: missing response data");
         }
 
-        try {
-            draftService.save(caseReference, caseData);
-            log.debug("Draft saved successfully for case {}", caseReference);
-            return success();
-        } catch (Exception e) {
-            log.error("Failed to save draft for case {}", caseReference, e);
-            return error("We couldn't save your response. Please try again or contact support.");
+        // Only persist the defendant response and its related entities if there is actual defendant response draft data
+        if (possessionClaimResponse.getDefendantResponses() == null) {
+            log.error("Submit failed for case {}: defendant responses is null", caseReference);
+            return error("Invalid submission: missing defendant response data");
         }
+        return null;
     }
 
     private SubmitResponse<State> success() {

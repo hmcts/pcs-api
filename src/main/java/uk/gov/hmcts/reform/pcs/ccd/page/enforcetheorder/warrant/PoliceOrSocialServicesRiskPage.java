@@ -9,11 +9,11 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -29,14 +29,14 @@ public class PoliceOrSocialServicesRiskPage implements CcdPageConfiguration {
         pageBuilder
                 .page("policeOrSocialServicesRisk", this::midEvent)
                 .pageLabel("Their history of police or social services visits to the property")
-                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
                     + " AND warrantEnforcementRiskCategoriesCONTAINS\"AGENCY_VISITS\""
                     + " AND warrantAnyRiskToBailiff=\"YES\"")
                 .label("policeOrSocialServicesRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                 .complex(WarrantDetails::getRiskDetails)
-                .mandatory(EnforcementRiskDetails::getEnforcementPoliceOrSocialServicesDetails).done()
+                .mandatory(RiskDetails::getPoliceSocialServicesDetails).done()
                 .label("policeOrSocialServicesRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -51,7 +51,7 @@ public class PoliceOrSocialServicesRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementPoliceOrSocialServicesDetails();
+                .getWarrantDetails().getRiskDetails().getPoliceSocialServicesDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

@@ -16,6 +16,7 @@ def secrets = [
     secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
     secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
+    secret('idam-testing-support-url', 'IDAM_TESTING_SUPPORT_URL'),
     secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
     secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
     secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
@@ -51,13 +52,20 @@ withPipeline(type, product, component) {
     ])
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+      env.CCD_ENABLED = "true"
+      env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
       enableHighLevelDataSetup()
+    } else {
+      env.CCD_ENABLED = "false"
     }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
     }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
       env.E2E_SUITE = "regression"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_enforcement_test").size() > 0) {
+      env.E2E_SUITE = "enforcement"
     }
   }
 
@@ -68,7 +76,7 @@ withPipeline(type, product, component) {
     ])
     enableHighLevelDataSetup("", true)
     setAatEnvVars()
-//    enableE2eTest() TODO: Re-enable when the AAT environment pattern is configured
+    enableE2eTest()
   }
 
   onDemo {
@@ -92,8 +100,12 @@ withPipeline(type, product, component) {
     }
     onMaster{
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
-      env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
+      env.CASE_API_URL = "https://pcs-api-staging.aat.platform.hmcts.net"
+      env.CASE_TYPE_SUFFIX="staging"
+      generateDefinitions(builder)
+      env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
+      env.CASE_TYPE_SUFFIX=""
     }
     onPerftest{
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
@@ -101,6 +113,19 @@ withPipeline(type, product, component) {
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-perftest.service.core-compute-perftest.internal"
     }
     generateDefinitions(builder)
+  }
+
+  before('smoketest:aat') {
+    env.CASE_TYPE_SUFFIX="staging"
+    env.CCD_ENABLED = "true"
+  }
+
+  afterAlways('smoketest:preview') {
+    archiveSmokeTestReports()
+  }
+
+  afterAlways('smoketest:aat') {
+    archiveSmokeTestReports()
   }
 
   afterAlways('functionalTest:preview') {
@@ -111,8 +136,10 @@ withPipeline(type, product, component) {
     archiveFunctionalTestReports()
   }
 
-  afterAlways('e2eTest:aat') {
-    archiveE2eTestReports()
+  afterAlways('E2eTest:aat') {
+    if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
+      postAllureResultsToSlack('master')
+    }
   }
 }
 
@@ -141,7 +168,7 @@ def setPerftestEnvVars() {
 }
 
 def generateDefinitions(builder) {
-  builder.gradle('generateCCDConfig')
+  builder.gradle('--rerun-tasks generateCCDConfig')
   sh "./bin/create-xlsx.sh ${env.ENVIRONMENT}"
   steps.archiveArtifacts artifacts: "build/definitions/*.xlsx"
 }
@@ -159,6 +186,19 @@ def archiveFunctionalTestReports() {
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
 }
 
+def archiveSmokeTestReports() {
+  publishHTML([
+    allowMissing: true,
+    alwaysLinkToLastBuild: true,
+    keepAll: true,
+    reportDir: "report-for-smoke-tests",
+    reportFiles: 'index.html',
+    reportName: 'API Smoke Test Report'
+  ])
+
+  archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-smoke-tests/*'
+}
+
 def archiveE2eTestReports() {
   publishHTML([
     allowMissing: true,
@@ -170,6 +210,25 @@ def archiveE2eTestReports() {
   ])
 
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
+}
+
+// E2E stage notification to #hdp-qa-e2e-test-results
+def postAllureResultsToSlack(String pipelineType = 'master') {
+  env.E2E_SERVICE_NAME = 'pcs-api'
+  env.E2E_PIPELINE_TYPE = pipelineType
+  def msg = sh(
+    script: "cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=${pipelineType} ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true",
+    returnStdout: true
+  ).trim()
+  if (!msg) {
+    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
+  }
+  try {
+    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
+    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results"
+  } catch (Exception e) {
+    echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
+  }
 }
 
 

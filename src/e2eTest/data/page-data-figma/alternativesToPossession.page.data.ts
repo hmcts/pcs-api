@@ -1,8 +1,6 @@
 export const alternativesToPossession = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Alternatives to possession`,
-  caseNumberParagraph: `Case number: `,
-  PropertyAddressParagraph: `Property address: `,
   ifAJudgeDecidesThatParagraph: `If a judge decides that possession is not reasonable at this time, they may instead decide to order a demotion of tenancy (demotion order) or a suspension of the defendants’ right to buy (suspension order), if they’re not already in place.`,
   suspensionOfRightToBuySubHeader: `Suspension of right to buy`,
   demotionOfTenancySubHeader: `Demotion of tenancy`,
@@ -12,7 +10,7 @@ export const alternativesToPossession = {
   selectAllThatApplyHintText: `Select all that apply`,
   suspensionOfRightToBuyCheckBox: `Suspension of right to buy`,
   demotionOfTenancyCheckBox: `Demotion of tenancy`,
-  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  iWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
   ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
   chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
   onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,

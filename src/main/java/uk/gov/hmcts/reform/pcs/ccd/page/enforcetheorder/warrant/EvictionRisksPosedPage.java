@@ -7,9 +7,9 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -20,12 +20,12 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         pageBuilder
             .page("evictionRisksPosed", this::midEvent)
             .pageLabel("The risks posed by everyone at the property")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
                 + " AND warrantAnyRiskToBailiff=\"YES\"")
             .label("evictionRisksPosed-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
-            .mandatory(WarrantDetails::getEnforcementRiskCategories)
+            .mandatory(WarrantDetails::getRiskCategories)
             .done()
             .label("evictionRisksPosed-save-and-return", SAVE_AND_RETURN);
     }
@@ -37,16 +37,7 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
 
         // Initialize risk details if null
         if (warrantDetails.getRiskDetails() == null) {
-            warrantDetails.setRiskDetails(EnforcementRiskDetails.builder().build());
-        }
-
-        // Validate that at least one category is selected
-        if (warrantDetails.getEnforcementRiskCategories() == null
-            || warrantDetails.getEnforcementRiskCategories().isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(data)
-                .errors(java.util.List.of("Select at least one option"))
-                .build();
+            warrantDetails.setRiskDetails(RiskDetails.builder().build());
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

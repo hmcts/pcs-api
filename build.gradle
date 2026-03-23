@@ -21,7 +21,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.2.2.6593'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '6.6.2'
+  id 'hmcts.ccd.sdk' version '6.7.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2017'
   id 'io.freefair.lombok' version '9.2.0'
   id 'au.com.dius.pact' version '4.6.19'
@@ -60,15 +60,6 @@ sourceSets {
     resources.srcDir file('src/integrationTest/resources')
   }
 
-  smokeTest {
-    java {
-      compileClasspath += main.output
-      runtimeClasspath += main.output
-      srcDir file('src/smokeTest/java')
-    }
-    resources.srcDir file('src/smokeTest/resources')
-  }
-
   contractTest {
     java {
       compileClasspath += main.output
@@ -98,10 +89,12 @@ configurations {
   }
 }
 
+def integrationBuild = gradle.startParameter.taskNames.any { it.toLowerCase() in ['integration', 'build', 'check'] }
+
 ccd {
   configDir = file('build/definitions')
   decentralised = true
-  runtimeIndexing = true // brings the custom ES indexer in as an implementation dependency
+  runtimeIndexing = !integrationBuild
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -208,16 +201,38 @@ tasks.register('integration', Test) {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   failFast = true
-  ccd {
-    runtimeIndexing = false // To avoid issues when TestContainers DB is shutdown
-  }
 }
 
 tasks.register('smoke', Test) {
   description = "Runs Smoke Tests"
-  testClassesDirs = sourceSets.smokeTest.output.classesDirs
-  classpath = sourceSets.smokeTest.runtimeClasspath
+  group = "verification"
+  dependsOn assemble, testClasses
+  testClassesDirs = sourceSets.functionalTest.output.classesDirs
+  classpath = configurations.functionalTestRuntimeClasspath + sourceSets.functionalTest.output
+  useJUnitPlatform {
+    includeTags System.getProperty("tags", "Smoke")
+  }
+
+  doFirst {
+    delete "${rootDir}/target/site/serenity"
+    delete "${rootDir}/report-for-smoke-tests"
+    logger.quiet("Smoke test results directory cleaned before running smoke tests")
+  }
+
+  finalizedBy {
+    aggregate {
+      doLast {
+        new File("${rootDir}/report-for-smoke-tests").mkdirs()
+        file("${rootDir}/target/site/serenity").renameTo(file("${rootDir}/report-for-smoke-tests"))
+        logger.quiet("Smoke test report moved to ---> file://${rootDir}/report-for-smoke-tests/index.html")
+      }
+    }
+  }
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED"
+  }
 }
+smoke.finalizedBy(aggregate)
 
 tasks.register('yarnInstall', Exec) {
   workingDir = file("${project.projectDir}/src/e2eTest")
@@ -305,8 +320,9 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/page/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
-      "**/entities/**," + "**/model/**"
+      "**/entities/**," + "**/model/**," + "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java"
     property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java"
   }
 }
@@ -342,7 +358,7 @@ ext {
   springFrameworkBootVersion = "3.5.10"
   lombokVersion = "1.18.42"
   springSecurityVersion = "7.0.2"
-  pactVersion = "4.6.19"
+  pactVersion = "4.6.20"
   tomcatEmbedVersion = "11.0.18"
   nettyVersion = "4.1.130.Final"
 }
@@ -368,7 +384,7 @@ dependencies {
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
 
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '7.0.0'
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
   implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'
@@ -481,9 +497,6 @@ project.tasks.named("generateCCDConfig") {
 }
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
-project.tasks.named("processSmokeTestResources") {
-  duplicatesStrategy = 'include'
-}
 
 tasks.named('test') {
   doFirst {
@@ -499,7 +512,7 @@ tasks.named('integration') {
 
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
-  authMode = AuthMode.Local
+  authMode = AuthMode.AAT
 
   //Attach mockito agent for inline mocking to remove warning in logs
   classpath += configurations.mockitoAgentConfig
@@ -518,7 +531,8 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
-//  environment 'IDAM_S2S_URL', 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal'
+  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
+  environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {

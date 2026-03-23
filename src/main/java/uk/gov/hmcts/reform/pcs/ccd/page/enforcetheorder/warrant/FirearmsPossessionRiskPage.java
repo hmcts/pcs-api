@@ -11,9 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -29,14 +29,14 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("firearmsPossessionRisk", this::midEvent)
             .pageLabel("Their history of firearm possession")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
                 + " AND warrantEnforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\""
                 + " AND warrantAnyRiskToBailiff=\"YES\"")
             .label("firearmsPossessionRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .complex(WarrantDetails::getRiskDetails)
-            .mandatory(EnforcementRiskDetails::getEnforcementFirearmsDetails)
+            .mandatory(RiskDetails::getFirearmsDetails)
             .done()
             .label("firearmsPossessionRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -52,7 +52,7 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementFirearmsDetails();
+                .getWarrantDetails().getRiskDetails().getFirearmsDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

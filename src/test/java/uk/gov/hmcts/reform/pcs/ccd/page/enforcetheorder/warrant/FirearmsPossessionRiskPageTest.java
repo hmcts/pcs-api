@@ -7,8 +7,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -36,9 +36,9 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                                .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementFirearmsDetails(riskDetails)
+                                .riskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
+                                .riskDetails(RiskDetails.builder()
+                                        .firearmsDetails(riskDetails)
                                         .build())
                                 .build())
                         .build())
@@ -50,7 +50,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(riskDetails);
+                .getWarrantDetails().getRiskDetails().getFirearmsDetails()).isEqualTo(riskDetails);
     }
 
     @Test
@@ -60,9 +60,9 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                                .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementFirearmsDetails(longText)
+                                .riskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
+                                .riskDetails(RiskDetails.builder()
+                                        .firearmsDetails(longText)
                                         .build())
                                 .build())
                         .build())
@@ -76,6 +76,6 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
                                              RiskCategory.FIREARMS_POSSESSION.getText(),
                                              "6,800");
 
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }

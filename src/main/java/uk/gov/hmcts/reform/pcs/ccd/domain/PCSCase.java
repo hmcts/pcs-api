@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -10,13 +11,25 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundReason;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -46,11 +59,8 @@ public class PCSCase {
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
-
-    @CCD(
-        access = {DefendantAccess.class}
-    )
-    private YesOrNo submitDraftAnswers;
+    public static final int MIN_MONETARY_AMOUNT = 1;
+    public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
     @CCD(
         searchable = false
@@ -66,7 +76,7 @@ public class PCSCase {
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = {ClaimantAccess.class})
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
@@ -178,16 +188,18 @@ public class PCSCase {
     private String settlementAttemptedDetails;
 
     @CCD(
-        label = "Have you served notice to the defendants?"
+        label = "Have you served notice to the defendants?",
+        access = {CitizenAccess.class}
     )
     private YesOrNo noticeServed;
 
     @JsonUnwrapped(prefix = "notice_")
-    @CCD
+    @CCD(access = {ClaimantAccess.class})
     private NoticeServedDetails noticeServedDetails;
 
     private String caseTitleMarkdown;
 
+    @CCD(access = {CitizenAccess.class})
     private LegislativeCountry legislativeCountry;
 
     @CCD(
@@ -226,7 +238,7 @@ public class PCSCase {
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
-    private String prohibitedConductWalesWhyMakingClaim;
+    private String prohibitedConductWalesClaimDetails;
 
     @CCD
     private PeriodicContractTermsWales periodicContractTermsWales;
@@ -265,7 +277,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = {ClaimantAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
@@ -392,7 +404,7 @@ public class PCSCase {
     )
     private CompletionNextStep completionNextStep;
 
-    @JsonUnwrapped(prefix = "groundsForPossessionWales_")
+    @JsonUnwrapped(prefix = "possessionGroundsWales_")
     private GroundsForPossessionWales groundsForPossessionWales;
 
     @JsonUnwrapped
@@ -401,7 +413,7 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
 
-    @JsonUnwrapped(prefix = "secureContract_")
+    @JsonUnwrapped(prefix = "secureGroundsWales_")
     private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
 
     @CCD(
@@ -482,5 +494,13 @@ public class PCSCase {
 
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
+
+    @CCD(
+        label = "Search Criteria",
+        access = {GlobalSearchAccess.class}
+    )
+    @SuppressWarnings("MemberName") // Field name is case-sensitive in CCD
+    @JsonProperty("SearchCriteria")
+    private SearchCriteria searchCriteria;
 
 }

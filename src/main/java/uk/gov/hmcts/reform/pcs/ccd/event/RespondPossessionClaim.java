@@ -5,13 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
+import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -23,10 +26,12 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     private final StartEventHandler startEventHandler;
     private final SubmitEventHandler submitEventHandler;
 
+    private final RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
+
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        configBuilder
-            .decentralisedEvent(respondPossessionClaim.name(), submitEventHandler::submit, startEventHandler::start)
+        Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
+            .decentralisedEvent(respondPossessionClaim.name(), submitEventHandler, startEventHandler)
             // TODO: HDPI-3580 - Revert to .forState(State.CASE_ISSUED) once payments flow is implemented
             // Temporarily enabled for all states to allow testing before case submission/payment
             .forAllStates()
@@ -34,5 +39,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             .name("Defendant Response Submission")
             .description("Save defendants response as draft or to a case based on flag")
             .grant(Permission.CRU, UserRole.DEFENDANT);
+        new PageBuilder(eventBuilder)
+            .add(respondToPossessionDraftSavePage);
     }
 }

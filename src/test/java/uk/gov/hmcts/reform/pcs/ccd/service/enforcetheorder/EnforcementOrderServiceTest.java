@@ -10,80 +10,96 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
-import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategy;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.getSelectEnforcementTypeFromName;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderServiceTest {
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
-
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
-
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
-
+    private PcsCaseService pcsCaseService;
+    @Mock
+    private EnforcementTypeStrategyFactory strategyFactory;
     @InjectMocks
     private EnforcementOrderService enforcementOrderService;
 
     @Captor
     private ArgumentCaptor<EnforcementOrderEntity> enforcementOrderEntityCaptor;
 
-    private final UUID enforcementOrderId = UUID.fromString("f47ac10b-58cc-4372-a567-0e02b2c3d479");
-
     private final UUID claimId = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
-
     private final UUID pcsCaseId = UUID.fromString("7b9e0f1a-2b3c-4d5e-6f7a-8b9c0d1e2f3a");
 
     private static final long CASE_REFERENCE = 1234L;
 
     @Test
-    void shouldThrowExceptionWhenNoEnforcementOrder() {
+    void shouldReturnEnforcementOrderIfFoundInDatabase() {
         // Given
-        when(enforcementOrderRepository.findById(enforcementOrderId)).thenReturn(Optional.empty());
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        ClaimEntity claimEntity = new ClaimEntity();
+        pcsCaseEntity.setClaims(List.of(claimEntity));
+        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
+        enforcementOrderEntity.setClaim(claimEntity);
+        EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
+        enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
+        claimEntity.setEnforcementOrders(Set.of(enforcementOrderEntity));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        // When
+        EnforcementOrder retOrder = enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);
 
-        // When &
         // Then
-        assertThatThrownBy(() -> enforcementOrderService.loadEnforcementOrder(enforcementOrderId))
-                .isInstanceOf(EnforcementOrderNotFoundException.class)
-                .hasMessageContaining("No enforcement order found for case reference");
+        assertThat(retOrder).isNotNull();
     }
 
     @Test
-    void shouldReturnEnforcementOrderWhenFound() {
+    void shouldReturnNullIfNotFoundInDatabase() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
-        final ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
-        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
-        final EnforcementOrderEntity enforcementOrderEntity =
-                EnforcementDataUtil.buildEnforcementOrderEntity(enforcementOrderId, claimEntity, enforcementOrder);
-        when(enforcementOrderRepository.findById(enforcementOrderId)).thenReturn(Optional.of(enforcementOrderEntity));
+        ClaimEntity claimEntity = new ClaimEntity();
+        pcsCaseEntity.setClaims(List.of(claimEntity));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         // When
-        EnforcementOrderEntity retrievedEnforcementOrderEntity =
-                enforcementOrderService.loadEnforcementOrder(enforcementOrderId);
+        EnforcementOrder retOrder = enforcementOrderService.retrieveEnforcementOrder(CASE_REFERENCE, WARRANT);
 
         // Then
-        assertThat(retrievedEnforcementOrderEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
-        assertThat(retrievedEnforcementOrderEntity.getId()).isEqualTo(enforcementOrderId);
-        assertThat(retrievedEnforcementOrderEntity.getClaim().getId()).isEqualTo(claimId);
+        assertThat(retOrder).isNull();
+    }
+
+    @Test
+    void shouldReturnFirstClaimFromPcsCaseEntity() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        ClaimEntity firstClaim = new ClaimEntity();
+        ClaimEntity secondClaim = new ClaimEntity();
+        pcsCaseEntity.setClaims(List.of(firstClaim, secondClaim));
+
+        // When
+        ClaimEntity result = enforcementOrderService.retrieveClaimEntity(pcsCaseEntity);
+
+        // Then
+        assertThat(result).isSameAs(firstClaim);
     }
 
     @Test
@@ -92,8 +108,11 @@ class EnforcementOrderServiceTest {
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
 
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-                .thenReturn(Optional.of(pcsCaseEntity));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(enforcementOrderRepository.save(any())).thenReturn(new EnforcementOrderEntity());
+        when(strategyFactory.getStrategy(getSelectEnforcementTypeFromName(
+                enforcementOrder.getChooseEnforcementType().getValueCode())))
+                .thenReturn(mock(EnforcementTypeStrategy.class));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -102,40 +121,7 @@ class EnforcementOrderServiceTest {
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
         EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(anyLong(), any(EventId.class));
     }
 
-    @Test
-    void shouldThrowExceptionWhenNoClaimFound() {
-        // Given
-        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
-        pcsCaseEntity.setClaims(null);
-        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
-
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-                .thenReturn(Optional.of(pcsCaseEntity));
-
-        // When &
-        // Then
-        assertThatThrownBy(() ->
-                enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
-                .isInstanceOf(ClaimNotFoundException.class)
-                .hasMessageContaining("No claim found for case reference");
-        verifyNoInteractions(draftCaseDataService);
-    }
-
-    @Test
-    void shouldDeleteDraftEnforcementDataWhenSubmittedSuccessfully() {
-        // Given
-        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
-        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
-
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-                .thenReturn(Optional.of(pcsCaseEntity));
-
-        // When
-        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
-
-        // Then
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
-    }
 }

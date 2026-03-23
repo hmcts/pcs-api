@@ -1,9 +1,6 @@
-// Disabled content will be enabled once https://tools.hmcts.net/jira/browse/HDPI-3491 bug is fixed.
 export const tenancyLicenceDetails = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Tenancy or licence details`,
-  caseNumberParagraph: `Case number:`,
-  PropertyAddressParagraph: ' ',
   cancelLink: `Cancel`,
   continueButton: `Continue`,
   previousButton: `Previous`,
@@ -16,7 +13,7 @@ export const tenancyLicenceDetails = {
   demotedTenancyRadioOption: `Demoted tenancy`,
   otherRadioOption: `Other`,
   giveDetailsOfTheTypeHiddenTextLabel: `Give details of the type of tenancy or licence agreement that’s in place`,
-  detailsOfLicenceTextInput: 'This is the details of Licence or Tenancy agreement.',
+  detailsOfLicenceTextInput: `This is the details of Licence or Tenancy agreement.`,
   youCanEnterUpToHiddenHintText: `You can enter up to 500 characters`,
   tenancyOrLicenceStartDateSubHeader: `Tenancy or licence start date`,
   whatDateDidTheTenancyQuestion: `What date did the tenancy or licence begin? (Optional)`,
@@ -29,7 +26,7 @@ export const tenancyLicenceDetails = {
   monthTextInput: `04`,
   uploadTenancyOrLicenceAgreementSubHeader: `Upload tenancy or licence agreement`,
   doYouWantToUploadSubHeder: `Do you want to upload a copy of the tenancy or licence agreement? (Optional)`,
-  //youCanEitherUploadThisHintText: `You can either upload this now or closer to the hearing date. Any documents you upload now will be included in the pack of documents a judge will receive before the hearing (the bundle)`,
+  youCanEitherUploadThisParagraph: `You can either upload this now or closer to the hearing date. Any documents you upload now will be included in the pack of documents a judge will receive before the hearing (the bundle)`,
   addDocumentSubHeader: `Add document`,
   uploadADocumentParagraph: `Upload a document to the system`,
   addNewButton: `Add new`,
