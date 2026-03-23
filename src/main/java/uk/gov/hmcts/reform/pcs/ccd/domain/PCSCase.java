@@ -122,8 +122,8 @@ public class PCSCase {
     private List<ListValue<CaseLink>> caseLinks = new ArrayList<>();
 
     @CCD(
-        label = "Component Launcher (for displaying Linked Cases data",
-        access = {CaseLinkingAccess.class}
+        access = {CaseLinkingAccess.class},
+        label = "Component Launcher (for displaying Linked Cases data"
     )
     @JsonProperty("LinkedCasesComponentLauncher")
     private ComponentLauncher linkedCasesComponentLauncher;

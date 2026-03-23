@@ -48,8 +48,6 @@ class PcsCaseServiceTest {
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private AddressMapper addressMapper;
-    @Mock
-    private PcsCaseMergeService pcsCaseMergeService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -64,8 +62,7 @@ class PcsCaseServiceTest {
             partyService,
             documentService,
             tenancyLicenceService,
-            addressMapper,
-            pcsCaseMergeService
+            addressMapper
         );
     }
 
@@ -187,16 +184,17 @@ class PcsCaseServiceTest {
     }
 
     @Test
-    void shouldMergeCaseData() {
+    void shouldPatchCaseData() {
         // Given
-        final PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder().build();
+        PcsCaseEntity pcsCaseEntity =  mock(PcsCaseEntity.class);
         PCSCase caseData = PCSCase.builder().build();
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(java.util.Optional.of(pcsCaseEntity));
 
         // When
-        underTest.mergeCaseData(pcsCaseEntity, caseData);
+        underTest.patchCase(CASE_REFERENCE, caseData);
 
         // Then
-        verify(pcsCaseMergeService, atLeastOnce()).mergeCaseData(pcsCaseEntity, caseData);
+        verify(pcsCaseEntity, atLeastOnce()).mergeCaseLinks(caseData.getCaseLinks());
     }
 
     private PcsCaseEntity stubFindCase() {

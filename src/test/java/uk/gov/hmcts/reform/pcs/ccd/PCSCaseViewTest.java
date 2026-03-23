@@ -42,7 +42,6 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -338,14 +337,15 @@ class PCSCaseViewTest {
     void shouldMapAndWrapCaseLinks() {
         // Given
         CaseLinkReasonEntity caseLinkReasonEntity1 = createCaseLinkReasonEntity(UUID.randomUUID(),
-                                                                                "CLR003", "Same Party");
+                                                                                "CLR003",
+                                                                                "Same Party");
         CaseLinkReasonEntity caseLinkReasonEntity2 = createCaseLinkReasonEntity(UUID.randomUUID(),
                                                                                 "CLR010", "Bail");
 
         CaseLinkEntity caseLinkEntity1 = createCaseLinkEntity(UUID.randomUUID(), List.of(caseLinkReasonEntity1),
-                                                              1234L, "CCD1");
+                                                              "CCD1");
         CaseLinkEntity caseLinkEntity2 = createCaseLinkEntity(UUID.randomUUID(), List.of(caseLinkReasonEntity2),
-                                                              1234L, "CCD2");
+                                                              "CCD2");
 
         when(pcsCaseEntity.getCaseLinks()).thenReturn(List.of(caseLinkEntity1, caseLinkEntity2));
 
@@ -358,8 +358,8 @@ class PCSCaseViewTest {
                 .value(linkReason1)
                 .build());
 
-        LinkReason linkReason2 = createLinkReason(caseLinkReasonEntity1.getReasonCode(),
-                                                  caseLinkReasonEntity1.getReasonText());
+        LinkReason linkReason2 = createLinkReason(caseLinkReasonEntity2.getReasonCode(),
+                                                  caseLinkReasonEntity2.getReasonText());
         List<ListValue<LinkReason>> linkReasons2 = List.of(
             ListValue.<LinkReason>builder()
                 .id(caseLinkReasonEntity2.getId().toString())
@@ -367,9 +367,9 @@ class PCSCaseViewTest {
                 .build());
 
         CaseLink expectedCaseLink1 = creatCaseLink(String.valueOf(caseLinkEntity1.getLinkedCaseReference()),
-                                                   caseLinkEntity1.getCcdListId(), linkReasons1, null);
+                                                   caseLinkEntity1.getCcdListId(), linkReasons1);
         CaseLink expectedCaseLink2 = creatCaseLink(String.valueOf(caseLinkEntity2.getLinkedCaseReference()),
-                                                   caseLinkEntity2.getCcdListId(), linkReasons2, null);
+                                                   caseLinkEntity2.getCcdListId(), linkReasons2);
 
 
         // When
@@ -395,26 +395,23 @@ class PCSCaseViewTest {
             .build();
     }
 
-    private CaseLinkEntity createCaseLinkEntity(UUID id, List<CaseLinkReasonEntity> linkReasonEntities,
-                                                Long linkedCaseRef, String ccdId) {
+    private CaseLinkEntity createCaseLinkEntity(UUID id, List<CaseLinkReasonEntity> linkReasonEntities, String ccdId) {
 
         return CaseLinkEntity.builder()
             .id(id)
-            .linkedCaseReference(linkedCaseRef)
+            .linkedCaseReference(1234L)
             .ccdListId(ccdId)
             .reasons(linkReasonEntities)
             .pcsCase(pcsCaseEntity)
             .build();
     }
 
-    private CaseLink creatCaseLink(String ref, String caseType, List<ListValue<LinkReason>> reasons,
-                                   LocalDateTime time) {
+    private CaseLink creatCaseLink(String ref, String caseType, List<ListValue<LinkReason>> reasons) {
 
         return CaseLink.builder()
             .caseReference(ref)
             .caseType(caseType)
             .reasonForLink(reasons)
-            .createdDateTime(time)
             .build();
     }
 

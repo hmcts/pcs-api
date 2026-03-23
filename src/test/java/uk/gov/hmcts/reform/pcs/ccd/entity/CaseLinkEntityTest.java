@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Spy;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CaseLinkEntityTest {
 
-    @Spy
     private CaseLinkEntity underTest;
 
 

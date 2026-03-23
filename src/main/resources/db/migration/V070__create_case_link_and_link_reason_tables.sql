@@ -23,18 +23,11 @@ DROP TABLE IF EXISTS case_link CASCADE;
 
 -- Table: case_link
 CREATE TABLE case_link (
-                         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-  -- Source case
-                         case_id UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
-
-  -- Linked case number (BIGINT)
-                         linked_case_id BIGINT NOT NULL,
-
-  -- CCD ListValue ID
-                         ccd_list_id VARCHAR(50),
-
-                         created_at TIMESTAMP DEFAULT now()
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     case_id UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,   -- Source case
+     linked_case_id BIGINT NOT NULL,  -- Linked case number (BIGINT)
+     ccd_list_id VARCHAR(50),    -- CCD ListValue ID
+     created_at TIMESTAMP DEFAULT now()
 );
 
 -- Unique constraint on source + linked case
@@ -43,13 +36,10 @@ CREATE UNIQUE INDEX uk_case_link_unique
 
 -- Table: case_link_reason
 CREATE TABLE case_link_reason (
-                                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-  -- FK to case_link
-                                case_link_id UUID NOT NULL REFERENCES case_link(id) ON DELETE CASCADE,
-
-                                reason_code VARCHAR(100) NOT NULL,
-                                reason_text VARCHAR(255)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    case_link_id UUID NOT NULL REFERENCES case_link(id) ON DELETE CASCADE,  -- FK to case_link
+    reason_code VARCHAR(100) NOT NULL,
+    reason_text VARCHAR(255)
 );
 
 -- Optional index for performance
