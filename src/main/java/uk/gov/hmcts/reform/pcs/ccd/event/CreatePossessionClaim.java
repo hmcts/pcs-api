@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -41,6 +42,9 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final PropertyNotEligible propertyNotEligible;
     private final HmcHearingService hmcHearingService;
     private final HearingRequestMapper hearingRequestMapper;
+    @Value("${hmc.temp-case-ref:}")
+    private String tempCaseRef;
+
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -88,7 +92,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     private void requestHearing(long caseReference, PCSCase pcsCase) {
         try {
-            HearingRequest request = hearingRequestMapper.buildHearingRequest(caseReference, pcsCase);
+            HearingRequest request = hearingRequestMapper.buildHearingRequest(Long.parseLong(tempCaseRef), pcsCase);
             HearingResponse response = hmcHearingService.createHearing(request);
             pcsCaseService.saveHearingId(caseReference, String.valueOf(response.getHearingRequestId()));
             log.info("Hearing created for case {}: hearingId={}", caseReference, response.getHearingRequestId());
