@@ -17,4 +17,10 @@ public class HouseholdCircumstances {
     @CCD
     private YesOrNo dependantChildren;
 
+    @CCD
+    private YesOrNo shareAdditionalCircumstances;
+
+    @CCD
+    private String additionalCircumstancesDetails;
+
 }
