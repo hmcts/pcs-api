@@ -204,7 +204,7 @@ public class ApiSteps {
                 .baseUri(baseUrl)
                 .contentType(ContentType.JSON)
                 .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-                .pathParam("caseReferenc", caseReference)
+                .pathParam("caseReference", caseReference)
                 .when()
                 .get(Endpoints.GetPins.getResource())
                 .then()
