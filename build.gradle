@@ -87,6 +87,10 @@ configurations {
   mockitoAgent {
     transitive = false
   }
+
+  integrationTestRuntimeClasspath {
+    exclude group: 'com.github.hmcts', module: 'cftlib-dev-only'
+  }
 }
 
 def integrationBuild = gradle.startParameter.taskNames.any { it.toLowerCase() in ['integration', 'build', 'check'] }
