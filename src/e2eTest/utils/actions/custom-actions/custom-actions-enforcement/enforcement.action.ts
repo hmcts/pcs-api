@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionRecord } from '@utils/interfaces/action.interface';
@@ -27,8 +27,9 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
-import { propertyAccessDetails,
-         livingInTheProperty 
+import {
+  propertyAccessDetails,
+  livingInTheProperty
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export const addressInfo = {
@@ -75,7 +76,7 @@ export class EnforcementAction implements IAction {
       ['selectStatementOfTruthWrit', () => this.selectStatementOfTruthWrit(fieldName as actionRecord, page)],
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
-      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord, data as actionRecord)],
+      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -451,16 +452,36 @@ export class EnforcementAction implements IAction {
 
   }
 
-  private async validatePrePopulatedData(prePopulatedData: actionRecord, expectedVal: actionRecord) {
+  private async validatePrePopulatedData(prePopulatedData: actionRecord) {
 
-    switch (prePopulatedData.testPage) {
+    await test.step(`PrePopulated data validation`, async () => {
+      const page = prePopulatedData?.testPage ?? 'Unknown';
+      const count = Array.isArray(prePopulatedData?.inputData)
+        ? prePopulatedData.inputData.length
+        : prePopulatedData?.inputData ? 1 : 0;
+      expect(page, `Validation of prepopulated data started for page => [${page}] and the number of elements getting validated is : [${count}]`).not.toBe('Unknown');
+    });
+    const items = Array.isArray(prePopulatedData.inputData)
+      ? prePopulatedData.inputData
+      : [prePopulatedData.inputData];
 
-      case 'Everyone living at the property':
-        await performValidation('validateRadioButtonValues', { question: prePopulatedData.question }, { expected: expectedVal.expectedValue });
-        break;
+    for (const item of items) {
+      switch (item.type) {
+        case 'radio':
+          await performValidation('validateRadioButtonValues', { question: item.inputRadioQuestion }, { expected: item.expectedAnswer });
+          break;
 
-      default:
-        break;
+        case 'inputText':
+          await performValidation('validateInputTextValues', { textLabel: item.inputTextLabel }, { expected: item.expectedAnswer });
+          break;
+
+        case 'checkBox':
+          await performValidation('validateCheckBoxSelection', { question: item.inputCheckBoxQuestion }, { expected: item.expectedAnswer });
+          break;
+
+        default:
+          break;
+      }
     }
 
   }

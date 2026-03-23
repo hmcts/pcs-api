@@ -31,16 +31,22 @@ export const enforceWarrantApiData = {
     warrantEvictEveryone: "YES",
     warrantAnyRiskToBailiff: "YES",
     warrantEnforcementRiskCategories: [
-      "PROTEST_GROUP_MEMBER"
+      "VIOLENT_OR_AGGRESSIVE",
+      "FIREARMS_POSSESSION",
+      "CRIMINAL_OR_ANTISOCIAL",
+      "VERBAL_OR_WRITTEN_THREATS",
+      "PROTEST_GROUP_MEMBER",
+      "AGENCY_VISITS",
+      "AGGRESSIVE_ANIMALS"
     ],
     warrantEnforcementProtestGroupMemberDetails: "group",
     vulnerablePeoplePresent: "YES",
     vulnerableAdultsChildren: {
       vulnerableCategory: "VULNERABLE_ADULTS",
-      vulnerableReasonText: "adults"
+      vulnerableReasonText: "User input on vulnerable adults"
     },
     warrantIsDifficultToAccessProperty: "YES",
-    warrantClarificationOnAccessDifficultyText: "Explain why it’s difficult to access the property",
+    warrantClarificationOnAccessDifficultyText: "User input informing the difficulties accessing the property",
     warrantAdditionalInformationSelect: "YES",
     warrantAdditionalInformationDetails: "Tell us anything else that could help with the eviction",
     warrantAmountOwed: "1200",
@@ -96,11 +102,7 @@ export const enforceWarrantApiData = {
       "PROTEST_GROUP_MEMBER"
     ],
     warrantEnforcementProtestGroupMemberDetails: "group",
-    vulnerablePeoplePresent: "YES",
-    vulnerableAdultsChildren: {
-      vulnerableCategory: "VULNERABLE_ADULTS",
-      vulnerableReasonText: "adults"
-    },
+    vulnerablePeoplePresent: "NO",
     warrantIsDifficultToAccessProperty: "NO",
     warrantClarificationOnAccessDifficultyText: "Explain why it’s difficult to access the property",
     warrantAdditionalInformationSelect: "NO",
@@ -124,7 +126,6 @@ export const enforceWarrantApiData = {
     warrantPositionClaimant: "Position or office held"
 
   },
-    enforceCaseApiEndPoint: () =>
-      `/cases/${process.env.CASE_NUMBER}/events`,
-  
+  enforceCaseApiEndPoint: () =>
+    `/cases/${process.env.CASE_NUMBER}/events`,
 }
