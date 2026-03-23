@@ -76,4 +76,5 @@ public class DefendantResponses {
     @CCD(access = {CitizenAccess.class})
     private PaymentAgreement paymentAgreement;
 
+    // api
 }
