@@ -287,7 +287,11 @@ class DefendantResponseServiceTest {
             .build();
 
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
