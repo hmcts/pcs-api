@@ -21,11 +21,10 @@ import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
-import uk.gov.hmcts.reform.pcs.functional.testutils.RandomNumberUtil;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 
 @Slf4j
-@Tag("Functional_dev")
+@Tag("Functional")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -38,7 +37,6 @@ public class RespondPossessionClaimEvents extends BaseApi {
     private Long caseReference;
     private String accessCode;
 
-    private static final Long caseId = RandomNumberUtil.generateRandomNumber(16);
     private static final String caseType = CaseType.getCaseType();
 
     @BeforeAll
@@ -108,6 +106,6 @@ public class RespondPossessionClaimEvents extends BaseApi {
         apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "/responses/respondPossessionClaim-startEventCallbackResponse.json");
+            "/responses/respondPossessionClaim-submitEventCallbackResponse.json");
     }
 }
