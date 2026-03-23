@@ -19,6 +19,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
 import java.util.UUID;
 
@@ -38,6 +39,10 @@ public class StatementOfTruthEntity {
     @OneToOne
     @JsonBackReference
     private ClaimEntity claim;
+
+    @OneToOne(mappedBy = "statementOfTruth")
+    @JsonBackReference
+    private DefendantResponseEntity defendantResponse;
 
     @Enumerated(EnumType.STRING)
     private StatementOfTruthCompletedBy completedBy;

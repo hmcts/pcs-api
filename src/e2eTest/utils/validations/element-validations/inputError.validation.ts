@@ -18,12 +18,12 @@ export class InputErrorValidation implements IValidation {
 
   private async findFieldValueLocator(page: Page, fieldName: string, data: validationData): Promise<Locator> {
     const locators = [
-      page.locator(`//span[text()="${fieldName}"]/ancestor::div[contains(@class,'form-group form-group-error')]//child::span[contains(@class,'error-message')]`)
+      page.locator(`//span[text()="${fieldName}"]/ancestor::div[contains(@class,'form-group') and position() = 1]//child::span[contains(@class,'error-message')]`)
     ];
 
     for (const locator of locators) {
 
-      const count = await locator.count();  
+      const count = await locator.count();
 
       if (count === 0) {
         throw new Error(`The error message "${data}" is not triggered (no elements found).`);
