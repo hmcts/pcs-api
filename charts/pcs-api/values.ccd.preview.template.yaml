@@ -20,6 +20,7 @@ java:
     PCS_DB_USER_NAME: "{{ .Values.global.postgresUsername}}"
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
     CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
+    CCD_SDK_RUNTIME_INDEXING: "true"
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
