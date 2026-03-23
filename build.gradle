@@ -87,14 +87,18 @@ configurations {
   mockitoAgent {
     transitive = false
   }
+
+  integrationTestRuntimeClasspath {
+    exclude group: 'com.github.hmcts', module: 'cftlib-dev-only'
+  }
 }
 
-def integrationBuild = gradle.startParameter.taskNames.any { it.toLowerCase() in ['integration', 'build', 'check'] }
+def runtimeIndexingEnabled = System.getenv('CCD_ENABLED') != 'false'
 
 ccd {
   configDir = file('build/definitions')
   decentralised = true
-  runtimeIndexing = !integrationBuild
+  runtimeIndexing = runtimeIndexingEnabled
 }
 
 tasks.withType(JavaCompile).configureEach {
