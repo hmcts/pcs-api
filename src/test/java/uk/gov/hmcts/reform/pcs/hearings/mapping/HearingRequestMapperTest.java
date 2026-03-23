@@ -30,6 +30,7 @@ class HearingRequestMapperTest {
         setField(mapper, "hearingType", HEARING_TYPE);
         setField(mapper, "defaultDuration", DEFAULT_DURATION);
         setField(mapper, "exuiUrl", EXUI_URL);
+        setField(mapper, "tempCaseRef", String.valueOf(CASE_REFERENCE));
     }
 
     @Test

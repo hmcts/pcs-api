@@ -53,11 +53,14 @@ public class HearingRequestMapper {
     @Value("${exui.url}")
     private String exuiUrl;
 
+    @Value("${hmc.temp-case-ref:}")
+    private String tempCaseRef;
+
     public HearingRequest buildHearingRequest(long caseReference, PCSCase pcsCase) {
         List<PartyDetails> parties = buildPartyDetails(pcsCase);
 
         HearingRequest request = new HearingRequest();
-        request.setCaseDetails(buildCaseDetails(caseReference, pcsCase));
+        request.setCaseDetails(buildCaseDetails(Long.parseLong(tempCaseRef), pcsCase));
         request.setHearingDetails(buildHearingDetails(pcsCase, parties.size()));
         request.setPartyDetails(parties);
         return request;
@@ -66,7 +69,7 @@ public class HearingRequestMapper {
     private CaseDetails buildCaseDetails(long caseReference, PCSCase pcsCase) {
         CaseDetails caseDetails = new CaseDetails();
         caseDetails.setHmctsServiceCode(hmctsServiceCode);
-        caseDetails.setCaseRef(String.valueOf(caseReference));
+        caseDetails.setCaseRef(String.valueOf(tempCaseRef));
         caseDetails.setCaseDeepLink(CASE_DEEP_LINK_TEMPLATE.formatted(exuiUrl, caseReference));
         // TODO: replace with a meaningful case name once requirements are defined
         caseDetails.setHmctsInternalCaseName("Possession claim " + caseReference);
