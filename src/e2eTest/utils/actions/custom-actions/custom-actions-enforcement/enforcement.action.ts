@@ -454,7 +454,7 @@ export class EnforcementAction implements IAction {
 
   private async validatePrePopulatedData(prePopulatedData: actionRecord) {
 
-    await test.step(`PrePopulated data validation`, async () => {
+     await test.step(`PrePopulated data validation`, async () => {
       const page = prePopulatedData?.testPage ?? 'Unknown';
       const count = Array.isArray(prePopulatedData?.inputData)
         ? prePopulatedData.inputData.length
@@ -475,6 +475,10 @@ export class EnforcementAction implements IAction {
           await performValidation('validateInputTextValues', { textLabel: item.inputTextLabel }, { expected: item.expectedAnswer });
           break;
 
+        case 'checkBox':
+          await performValidation('validateCheckBoxSelection', { question: item.inputCheckBoxQuestion }, { expected: item.expectedAnswer });
+          break;
+
         default:
           break;
       }
@@ -484,7 +488,6 @@ export class EnforcementAction implements IAction {
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
-    if (validationArr.validationReq === 'YES') {
 
       if (Array.isArray(validationArr.inputArray)) {
         for (const item of validationArr.inputArray) {
@@ -590,7 +593,6 @@ export class EnforcementAction implements IAction {
           };
         }
       }
-    }
     if (validationArr.buttonRemove) {
       await performAction('removeFile');
       await page.waitForTimeout(6000);

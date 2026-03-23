@@ -68,9 +68,6 @@ public class EnforcementOrderService {
     ClaimEntity retrieveClaimEntity(PcsCaseEntity pcsCaseEntity) {
         List<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
 
-        if (CollectionUtils.isEmpty(claimEntities)) {
-            return null;
-        }
         // Assuming 1 claim per PcsCase
         return claimEntities.getFirst();
     }
