@@ -111,7 +111,7 @@ public class RespondPossessionClaimEvents extends BaseApi {
 
     @Title("respondToPossessionClaim submit event callback test - returns 200")
     @Test
-    @Disabled("This feature is currently in development and evolving rapidly, so the test is disabled for now. It will be enabled and assertions added once the implementation is more stable.")
+    @Disabled("This feature is currently in development and evolving rapidly, so the test is disabled for now.")
     @Order(3)
     void respondToPossessionClaimSubmitEventCallbackTest() {
         String respondClaimRequestBody = PayloadLoader.load(
