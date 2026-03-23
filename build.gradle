@@ -93,11 +93,8 @@ configurations {
   }
 }
 
-def integrationBuild = gradle.startParameter.taskNames.any { it.toLowerCase() in ['integration', 'build', 'check'] }
 def runtimeIndexingOverride = System.getenv('CCD_SDK_RUNTIME_INDEXING')
-def runtimeIndexingEnabled = integrationBuild
-  ? false
-  : (runtimeIndexingOverride != null ? runtimeIndexingOverride.toBoolean() : true)
+def runtimeIndexingEnabled = runtimeIndexingOverride != null ? runtimeIndexingOverride.toBoolean() : true
 
 ccd {
   configDir = file('build/definitions')
