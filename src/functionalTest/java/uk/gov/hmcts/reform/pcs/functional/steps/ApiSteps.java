@@ -114,7 +114,7 @@ public class ApiSteps {
         if (response == null) {
             throw new IllegalStateException("No response available. Did you call callIsSubmittedToTheEndpoint first?");
         }
-        response.then().assertThat().statusCode(10000);
+        response.then().assertThat().statusCode(statusCode);
     }
 
     @Step("the response body contains {0} as a string: {1}")
@@ -204,7 +204,7 @@ public class ApiSteps {
                 .baseUri(baseUrl)
                 .contentType(ContentType.JSON)
                 .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-                .pathParam("caseReference", caseReference)
+                .pathParam("caseReferenc", caseReference)
                 .when()
                 .get(Endpoints.GetPins.getResource())
                 .then()
