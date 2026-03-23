@@ -12,7 +12,7 @@ To build the project execute the following command:
 ```bash
   ./gradlew build
 ```
-
+ 
 ### Running pcs-api with local CCD
 
 ```bash
