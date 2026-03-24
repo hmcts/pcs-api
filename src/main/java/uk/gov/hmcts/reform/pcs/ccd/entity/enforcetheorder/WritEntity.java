@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,12 +13,15 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -39,11 +43,6 @@ public class WritEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo correctNameAndAddress;
-
-    // Direct fields
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo showPeopleWhoWillBeEvictedPage;
 
     // LandRegistryFees
     @Enumerated(EnumType.STRING)
@@ -73,5 +72,18 @@ public class WritEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo hasClaimTransferredToHighCourt;
+
+    @Enumerated(EnumType.STRING)
+    private LanguageUsed languageUsed;
+
+    @CreationTimestamp
+    @Column(updatable = false, nullable = false)
+    private Instant created;
+
+    private String repaymentChoice;
+
+    private BigDecimal amountOfRepaymentCosts;
+
+    private String repaymentSummaryMarkdown;
 
 }

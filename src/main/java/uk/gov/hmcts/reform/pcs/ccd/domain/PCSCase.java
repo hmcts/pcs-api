@@ -503,4 +503,22 @@ public class PCSCase {
     @JsonProperty("SearchCriteria")
     private SearchCriteria searchCriteria;
 
+    @CCD(
+        label = "CaseNameHmctsRestricted",
+        access = {GlobalSearchAccess.class}
+    )
+    private String caseNameHmctsRestricted;
+
+    @CCD(
+        label = "CaseNameHmctsInternal",
+        access = {GlobalSearchAccess.class}
+    )
+    private String caseNameHmctsInternal;
+
+    @CCD(
+        label = "CaseNamePublic",
+        access = {GlobalSearchAccess.class}
+    )
+    private String caseNamePublic;
+
 }
