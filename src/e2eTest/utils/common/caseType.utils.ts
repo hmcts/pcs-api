@@ -1,5 +1,5 @@
 const CASE_TYPE_BASE = 'PCS';
-const CASE_TYPE_NAME_BASE = 'Civil Possessions';
+const CASE_TYPE_NAME_BASE = 'Possession';
 
 /**
  * Case type ID for API paths and URLs (e.g. PCS, PCS-123, PCS-staging).
@@ -11,7 +11,7 @@ export function getCaseTypeId(): string {
 }
 
 /**
- * Case type display name for UI (e.g. Civil Possessions, Civil Possessions 123).
+ * Case type display name for UI (e.g. Possession, Possession 123).
  * Aligns with Java CaseType.getCaseTypeName() using CASE_TYPE_SUFFIX.
  */
 export function getCaseTypeName(): string {
