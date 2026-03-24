@@ -42,8 +42,6 @@ public class WarrantOfRestitutionStrategy implements EnforcementTypeStrategy {
                                          EnforcementOrderEntity enforcementOrderEntity) {
         statementOfTruthMapper.mapStatementOfTruthForWarrantRest(enforcementOrder, enforcementOrderEntity);
         StatementOfTruthEntity statementOfTruthEntity = enforcementOrderEntity.getStatementOfTruth();
-        if (statementOfTruthEntity != null) {
-            statementOfTruthRepository.save(statementOfTruthEntity);
-        }
+        statementOfTruthRepository.save(statementOfTruthEntity);
     }
 }

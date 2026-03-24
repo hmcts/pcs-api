@@ -26,13 +26,19 @@ public class RiskDetailsMapper {
         RiskProfileEntity riskProfileEntity = new RiskProfileEntity();
         riskProfileEntity.setEnforcementOrder(enforcementOrderEntity);
 
-        if (enforcementOrder.getChooseEnforcementType().getValueCode().equals(SelectEnforcementType.WARRANT.name())) {
-            applyWarrantDetails(enforcementOrder.getWarrantDetails(), riskProfileEntity);
-            applyRawWarrantDetails(enforcementOrder.getRawWarrantDetails(), riskProfileEntity);
-        } else if (enforcementOrder.getChooseEnforcementType().getValueCode()
-                .equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name())) {
-            applyWarrantOfRestitutionDetails(enforcementOrder.getWarrantOfRestitutionDetails(), riskProfileEntity);
-            applyRawWarrantRestDetails(enforcementOrder.getRawWarrantRestDetails(), riskProfileEntity);
+        SelectEnforcementType enforcementType =
+                SelectEnforcementType.getSelectEnforcementTypeFromName(
+                        enforcementOrder.getChooseEnforcementType().getValueCode());
+        switch (enforcementType) {
+            case WARRANT -> {
+                applyWarrantDetails(enforcementOrder.getWarrantDetails(), riskProfileEntity);
+                applyRawWarrantDetails(enforcementOrder.getRawWarrantDetails(), riskProfileEntity);
+            }
+            case WARRANT_OF_RESTITUTION -> {
+                applyWarrantOfRestitutionDetails(enforcementOrder.getWarrantOfRestitutionDetails(), riskProfileEntity);
+                applyRawWarrantRestDetails(enforcementOrder.getRawWarrantRestDetails(), riskProfileEntity);
+            }
+            default -> {} // Not needed for other enforcement types
         }
         return riskProfileEntity;
     }

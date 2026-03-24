@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfResti
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory.VULNERABLE_CHILDREN;
@@ -113,27 +112,6 @@ class WarrantOfRestitutionStrategyTest {
 
         // Then
         verify(statementOfTruthMapper).mapStatementOfTruthForWarrantRest(enforcementOrder, enforcementOrderEntity);
-    }
-
-    @Test
-    void shouldHandleNullStatementOfTruthAndSave() {
-        // Given
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .rawWarrantRestDetails(RawWarrantRestDetails.builder()
-                        .statementOfTruthWarrantRest(null)
-                        .build())
-                .build();
-        EnforcementOrderEntity enforcementOrderEntity = mock(EnforcementOrderEntity.class);
-        WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder().build();
-
-        when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
-                .thenReturn(warrantOfRestitutionEntity);
-        when(warrantOfRestitutionRepository.save(warrantOfRestitutionEntity)).thenReturn(warrantOfRestitutionEntity);
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(statementOfTruthRepository, never()).save(any());
+        verify(statementOfTruthRepository).save(any());
     }
 }
