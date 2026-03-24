@@ -15,6 +15,22 @@ public class HouseholdCircumstancesService {
 
         HouseholdCircumstancesEntity householdCircumstancesEntity = HouseholdCircumstancesEntity.builder()
             .dependantChildren(circumstances.getDependantChildren())
+            .shareIncomeExpenseDetails(circumstances.getShareIncomeExpenseDetails())
+            .incomeFromJobs(circumstances.getIncomeFromJobs())
+            .incomeFromJobsAmount(circumstances.getIncomeFromJobsAmount())
+            .incomeFromJobsFrequency(circumstances.getIncomeFromJobsFrequency())
+            .pension(circumstances.getPension())
+            .pensionAmount(circumstances.getPensionAmount())
+            .pensionFrequency(circumstances.getPensionFrequency())
+            .universalCredit(circumstances.getUniversalCredit())
+            .ucApplicationDate(circumstances.getUcApplicationDate())
+            .universalCreditAmount(circumstances.getUniversalCreditAmount())
+            .universalCreditFrequency(circumstances.getUniversalCreditFrequency())
+            .otherBenefits(circumstances.getOtherBenefits())
+            .otherBenefitsAmount(circumstances.getOtherBenefitsAmount())
+            .otherBenefitsFrequency(circumstances.getOtherBenefitsFrequency())
+            .moneyFromElsewhere(circumstances.getMoneyFromElsewhere())
+            .moneyFromElsewhereDetails(circumstances.getMoneyFromElsewhereDetails())
             .build();
 
         return householdCircumstancesEntity;
