@@ -16,6 +16,7 @@ public class HouseholdCircumstancesService {
         }
         YesOrNo otherTenants = circumstances.getOtherTenants();
         YesNoNotSure alternativeAccommodation = circumstances.getAlternativeAccommodation();
+
         return HouseholdCircumstancesEntity.builder()
             .dependantChildren(circumstances.getDependantChildren())
             .otherTenants(otherTenants)
