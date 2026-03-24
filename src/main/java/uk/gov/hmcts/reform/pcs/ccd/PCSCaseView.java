@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.globalsearch.CaseNameHmctsFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
@@ -67,6 +68,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final RentArrearsView rentArrearsView;
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
+    private final CaseNameHmctsFormatter caseNameHmctsFormatter;
 
 
     /**
@@ -80,6 +82,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = getSubmittedCase(caseReference);
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
+
+        caseNameHmctsFormatter.setCaseNameHmctsField(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
 
