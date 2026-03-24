@@ -1,11 +1,11 @@
 name: send-team-members.yml
 on:
   pull_request:
-    types: [labeled]
+    types: [opened, ready_for_review]
 jobs:
   send_reviewers:
     runs-on: ubuntu-latest
-    if: github.event.label.name == 'notify-reviewers'
+    if: github.event.pull_request.draft == false
     steps:
       - name: Send assigned reviewers to webhook
         env:
