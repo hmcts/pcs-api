@@ -10,18 +10,26 @@ jobs:
       - name: Send assigned reviewers to webhook
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-          REVIEWERS_JSON: ${{ toJson(github.event.pull_request.requested_reviewers) }}
-          TEAMS_JSON: ${{ toJson(github.event.pull_request.requested_teams) }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "Waiting for reviewer assignment..."
+          sleep 10
+
+          echo "Fetching reviewers from GitHub API..."
+          REVIEWERS_JSON=$(curl -s \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/requested_reviewers")
+          
           echo "Fetching GitHub-Slack user mappings..."
           MAPPINGS=$(curl -s https://raw.githubusercontent.com/hmcts/github-slack-user-mappings/master/slack.json)
 
           echo "$MAPPINGS" | jq -e '.users' > /dev/null || { echo "Failed to parse users array"; exit 1; }
 
-          GITHUB_REVIEWERS=$(echo "$REVIEWERS_JSON" | jq -r '.[].login')
+          GITHUB_REVIEWERS=$(echo "$REVIEWERS_JSON" | jq -r '.users[].login')
 
           echo "GitHub reviewers: $GITHUB_REVIEWERS"
 
@@ -38,7 +46,7 @@ jobs:
             fi
           done
 
-          TEAM_REVIEWERS=$(echo "$TEAMS_JSON" | jq -r '.[].name' | paste -sd "," -)
+          TEAM_REVIEWERS=$(echo "$REVIEWERS_JSON" | jq -r '.teams[].name' | paste -sd "," -)
 
           PAYLOAD=$(jq -n \
             --arg title "$PR_TITLE" \
