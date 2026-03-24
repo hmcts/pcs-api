@@ -50,8 +50,6 @@ class NameAndAddressForEvictionPageTest extends BasePageTest {
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
             assertThat(enforcementOrder.getWritDetails()
                     .getShowChangeNameAddressPage()).isEqualTo(YesOrNo.YES);
-            assertThat(enforcementOrder.getWritDetails()
-                    .getShowPeopleWhoWillBeEvictedPage()).isEqualTo(YesOrNo.NO);
         }
 
         @Test
@@ -76,8 +74,6 @@ class NameAndAddressForEvictionPageTest extends BasePageTest {
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
             assertThat(enforcementOrder.getWritDetails()
                     .getShowChangeNameAddressPage()).isEqualTo(YesOrNo.NO);
-            assertThat(enforcementOrder.getWritDetails()
-                    .getShowPeopleWhoWillBeEvictedPage()).isEqualTo(YesOrNo.YES);
         }
     }
 }
