@@ -12,12 +12,12 @@ export const nameAndAddressForEviction = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  thereIsAProblemErrorMessageHeader: 'There is a problem',
-  errorValidation: 'NO',//set it to 'NO' before raising a PR
-  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
+  thereIsAProblemErrorMessageHeader: `There is a problem`,
+  errorValidation: `NO`,//set it to `NO` before raising a PR
+  errorValidationType: { one: `moneyField`, two: `textField`, three: `radioOptions`, four: `checkBox`, five: `moneyFieldAndRadioOption` },
   errorValidationField: {
     errorRadioOption: [
-      { type: 'none', input: '', errMessage: 'Is this the correct name and address for the eviction? is required' },
+      { type: `none`, input: ``, errMessage: `Is this the correct name and address for the eviction? is required` },
     ],
   }
 }

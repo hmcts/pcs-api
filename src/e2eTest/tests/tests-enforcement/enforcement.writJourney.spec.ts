@@ -4,18 +4,9 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  //nameAndAddressForEviction,
-  //youNeedPermission,
-  //yourApplication,
   confirmHCEOHired,
   yourHCEO,
   theNICEWillChoose,
-  //landRegistryFees,
-  //legalCosts,
-  //moneyOwed,
-  //rePayments,
-  //statementOfTruthOne,
-  //languageUsed,
   youCannotApplyForWrit,
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -392,6 +383,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
       await performValidation('mainHeader', changeNameAddress.mainHeader);
       await performAction('clickButton', changeNameAddress.continueButton);
-      await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessage, message: changeNameAddress.errMessageDynamic });
+      await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: changeNameAddress.errMessageDynamic });
     });
 });

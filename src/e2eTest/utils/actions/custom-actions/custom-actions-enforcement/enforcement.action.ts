@@ -3,22 +3,6 @@ import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  //yourApplication,
-  //nameAndAddressForEviction,
-  //confirmDefendantsDOB,
-  //vulnerableAdultsAndChildren,
-  //riskPosedByEveryoneAtProperty,
-  //peopleWillBeEvicted,
-  //youNeedPermission,
-  //legalCosts,
-  //landRegistryFees,
-  //rePayments,
-  //peopleYouWantToEvict,
-  //moneyOwed,
-  //languageUsed,
-  //statementOfTruthOne,
-  //enterDefendantsDOB,
-  //suspendedOrder,
   confirmHCEOHired,
   yourHCEO,
   evidenceUpload

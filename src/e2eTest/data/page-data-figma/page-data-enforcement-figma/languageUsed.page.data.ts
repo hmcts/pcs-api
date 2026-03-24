@@ -10,11 +10,11 @@ export const languageUsed = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  errorValidation: 'NO',//set it to 'NO' before raising a PR
-  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox',five: 'moneyFieldAndRadioOption' },
+  errorValidation: `NO`,//set it to `NO` before raising a PR
+  errorValidationType: { one: `moneyField`, two: `textField`, three: `radioOptions`, four: `checkBox`,five: `moneyFieldAndRadioOption` },
   errorValidationField: {
     errorRadioOption: [
-      { type: 'none', input: '', errMessage: 'Which language did you use to complete this service? is required' }
+      { type: `none`, input: ``, errMessage: `Which language did you use to complete this service? is required` }
     ]
   },
 }

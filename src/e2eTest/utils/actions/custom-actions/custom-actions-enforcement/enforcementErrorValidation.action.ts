@@ -79,7 +79,7 @@ export class ErrorValidationAction implements IAction {
 
         validationType: knownDefendantsDOBInformation.errorValidationType.two,
         inputArray: knownDefendantsDOBInformation.errorValidationField.errorTextField,
-        header: knownDefendantsDOBInformation.eventCouldNotBeCreatedErrorMessage,
+        header: knownDefendantsDOBInformation.eventCouldNotBeCreatedErrorMessageHeader,
         label: knownDefendantsDOBInformation.defendantsDOBQuestion,
         button: knownDefendantsDOBInformation.continueButton
       });
@@ -105,7 +105,7 @@ export class ErrorValidationAction implements IAction {
 
         validationType: violentAggressiveRisk.errorValidationType.two,
         inputArray: violentAggressiveRisk.errorValidationField.errorTextField,
-        header: violentAggressiveRisk.eventCouldNotBeCreatedErrorMessage,
+        header: violentAggressiveRisk.eventCouldNotBeCreatedErrorMessageHeader,
         label: violentAggressiveRisk.howHaveTheyBeenViolentAndAggressiveQuestion,
         button: violentAggressiveRisk.continueButton
       });

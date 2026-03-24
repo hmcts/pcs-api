@@ -6,7 +6,7 @@ export const legalCosts = {
   noRadioOption: `No`,
   howMuchYouWantToReclaimTextLabelHidden: `How much do you want to reclaim?`,
   howMuchYouWantToReclaimTextInputHidden: [`755559.7`,`119999`,`1099.95`,`6320.00`,`890.10`,`111.01`],
-  legalCostsFeeDynamic: 'Legal costs',
+  legalCostsFeeDynamic: `Legal costs`,
   iDoNotKnowLink: `I do not know if I need to reclaim any legal costs`,
   legalCostsAreTheCostsParagraphHidden: `Legal costs are the costs you incur when a lawyer, legal representative, or someone working in a legal department applies for a writ or a warrant on your behalf.`,
   theyWillInvoiceParagraphHidden: `They will invoice these costs to you, and you can reclaim them from the defendant.`,

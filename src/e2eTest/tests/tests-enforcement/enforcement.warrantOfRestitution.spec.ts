@@ -4,16 +4,11 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  //yourApplication,
   evidenceUpload,
   explainHowDefendantsReturned,
   shareEvidenceWithJudge,
   provideEvidence,
-  //peopleYouWantToEvict,
   warrantOfRestitutionAnyoneAtPropertyRiskIntro,
-  //riskPosedByEveryoneAtProperty,
-  //peopleWillBeEvicted,
-  //vulnerableAdultsAndChildren,
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, enforceWarrantApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';

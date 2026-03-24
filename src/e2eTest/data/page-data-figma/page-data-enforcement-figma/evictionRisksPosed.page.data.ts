@@ -14,11 +14,11 @@ export const evictionRisksPosed = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  errorValidation: 'NO',//set it to 'NO' before raising a PR
-  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
+  errorValidation: `NO`,//set it to `NO` before raising a PR
+  errorValidationType: { one: `moneyField`, two: `textField`, three: `radioOptions`, four: `checkBox`, five: `moneyFieldAndRadioOption` },
   errorValidationField: {
     errorCheckBoxOption: [
-      { type: 'none', input: '', errMessage: 'What kind of risks do they pose to the bailiff? is required' }
+      { type: `none`, input: ``, errMessage: `What kind of risks do they pose to the bailiff? is required` }
     ]
   }
 }

@@ -4,26 +4,6 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  //nameAndAddressForEviction,
-  //policeOrSocialServiceVisit,
-  //riskPosedByEveryoneAtProperty,
-  //verbalOrWrittenThreats,
-  //violentOrAggressiveBehaviour,
-  //vulnerableAdultsAndChildren,
-  //yourApplication,
-  //moneyOwed,
-  //legalCosts,
-  //landRegistryFees,
-  //rePayments,
-  //peopleWillBeEvicted,
-  //youNeedPermission,
-  //languageUsed,
-  //peopleYouWantToEvict,
-  //confirmDefendantsDOB,
-  //enterDefendantsDOB,
-  //suspendedOrder,
-  //statementOfTruthOne,
-  //statementOfTruthTwo,
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -560,7 +540,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         nextPage: changeNameAddress.mainHeader
       });
       await performAction('clickButton', changeNameAddress.continueButton);
-      await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessage, message: changeNameAddress.errMessageDynamic });
+      await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: changeNameAddress.errMessageDynamic });
     });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @enforcement',

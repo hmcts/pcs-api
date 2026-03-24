@@ -7,10 +7,10 @@ export const enforcementApplication = {
   warrantOfRestitutionRadioOptionDynamic: `Warrant of restitution`,
   summaryWritOrWarrantLink: `I do not know if I need a writ or a warrant`,
    typeofFee: {
-    warrantOfPossessionFee: 'Warrant of possession fee',
-    writOfPossessionFee: 'Writ of possession fee'
+    warrantOfPossessionFee: `Warrant of possession fee`,
+    writOfPossessionFee: `Writ of possession fee`
   },
-  hceoPageTitleHidden: 'Choosing a HCEO',
+  hceoPageTitleHidden: `Choosing a HCEO`,
   youCanUseParagraphHiddenHidden: `You can use either a warrant or a writ to evict someone.`,
   ifYouChooseParagraphHidden: `If you choose a warrant of possession`,
   warrantFeeValidationLabelHidden: `If you apply for a warrant:`,
@@ -39,18 +39,18 @@ export const enforcementApplication = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  errorValidation: 'NO',//set it to 'NO' before raising a PR
-  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
+  errorValidation: `NO`,//set it to `NO` before raising a PR
+  errorValidationType: { one: `moneyField`, two: `textField`, three: `radioOptions`, four: `checkBox`, five: `moneyFieldAndRadioOption` },
   errorValidationField: {
     errorRadioOption: [
-        //updated the error message from 'What do you want to apply for? is required'  to Field is required as per current application behaviour and reported the mismatch in HDPI-5199 scenario 6
-      { type: 'none', input: '', errMessage: 'Field is required' }, 
+        //updated the error message from `What do you want to apply for? is required`  to Field is required as per current application behaviour and reported the mismatch in HDPI-5199 scenario 6
+      { type: `none`, input: ``, errMessage: `Field is required` }, 
     ],
   },
-  yesRadioOptionHidden: 'Yes',
-  noRadioOptionHidden: 'No',
-  errorErrorMessageHeader: 'Errors',
-  errMessageDynamic: 'You cannot continue with this application because your application to transfer to the High Court was unsuccessful',
-  claimTransferredToHighCourtQuestionHidden: 'TEMPORARY TEST ONLY – Has the claim been transferred to the High Court?',
-  genAppSuccessfulQuestionHidden: 'TEMPORARY TEST ONLY – was the general application to transfer to the High Court successful?'
+  yesRadioOptionHidden: `Yes`,
+  noRadioOptionHidden: `No`,
+  errorErrorMessageHeader: `Errors`,
+  errMessageDynamic: `You cannot continue with this application because your application to transfer to the High Court was unsuccessful`,
+  claimTransferredToHighCourtQuestionHidden: `TEMPORARY TEST ONLY – Has the claim been transferred to the High Court?`,
+  genAppSuccessfulQuestionHidden: `TEMPORARY TEST ONLY – was the general application to transfer to the High Court successful?`
 }

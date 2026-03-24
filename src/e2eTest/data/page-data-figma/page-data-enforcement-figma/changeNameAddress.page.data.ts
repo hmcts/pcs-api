@@ -1,5 +1,5 @@
 export const changeNameAddress = {
-  titleDynamic: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
+  titleDynamic: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: `You need permission from a judge to change the name and address for the eviction`,
   youNeedToAskPermissionParagraph: `You need to ask permission from the judge before you can change the name or address for the eviction. `,
@@ -16,6 +16,6 @@ export const changeNameAddress = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  eventCouldNotBeCreatedErrorMessage: 'The event could not be created',
-  errMessageDynamic: 'You cannot continue with this application until you ask the judge for permission to change the name and address.'
+  eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
+  errMessageDynamic: `You cannot continue with this application until you ask the judge for permission to change the name and address.`
 }
