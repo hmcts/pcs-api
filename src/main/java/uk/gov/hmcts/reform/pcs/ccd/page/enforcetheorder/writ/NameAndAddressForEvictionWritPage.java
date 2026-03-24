@@ -70,11 +70,9 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
         if (correctNameAndAddress == VerticalYesNo.NO) {
             // Navigate to ChangeNameAddressPage
             writDetails.setShowChangeNameAddressPage(YesOrNo.YES);
-            writDetails.setShowPeopleWhoWillBeEvictedPage(YesOrNo.NO);
         } else if (correctNameAndAddress == VerticalYesNo.YES) {
             // Navigate to PeopleWhoWillBeEvictedPage
             writDetails.setShowChangeNameAddressPage(YesOrNo.NO);
-            writDetails.setShowPeopleWhoWillBeEvictedPage(YesOrNo.YES);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
