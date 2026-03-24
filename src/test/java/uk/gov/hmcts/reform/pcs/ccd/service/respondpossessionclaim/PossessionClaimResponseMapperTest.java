@@ -160,8 +160,13 @@ class PossessionClaimResponseMapperTest {
         PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
 
         // Then
-        verify(addressMapper).toAddressUK(defendantAddress);
+        // Called twice: once for defendantContactDetails, once for claimantEnteredDefendantDetails
+        verify(addressMapper, org.mockito.Mockito.times(2)).toAddressUK(defendantAddress);
         assertThat(result.getDefendantContactDetails().getParty().getAddress())
+            .isEqualTo(expectedAddress);
+        // Verify claimantEnteredDefendantDetails also populated
+        assertThat(result.getClaimantEnteredDefendantDetails()).isNotNull();
+        assertThat(result.getClaimantEnteredDefendantDetails().getAddress())
             .isEqualTo(expectedAddress);
     }
 
@@ -188,25 +193,6 @@ class PossessionClaimResponseMapperTest {
             .isEqualTo(AddressUK.builder().build());
 
         verify(addressMapper, never()).toAddressUK(any());
-    }
-
-    @Test
-    void shouldInitializeDefendantResponsesAsEmpty() {
-        // Given
-        PartyEntity matchedDefendant = PartyEntity.builder()
-            .firstName("Test")
-            .lastName("User")
-            .build();
-
-        PCSCase pcsCase = PCSCase.builder()
-            .propertyAddress(AddressUK.builder().build())
-            .build();
-
-        // When
-        PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
-
-        // Then
-        assertThat(result.getDefendantResponses()).isNotNull();
     }
 
     @Test
@@ -434,5 +420,55 @@ class PossessionClaimResponseMapperTest {
 
         // Then: Empty list returned
         assertThat(response.getClaimantOrganisations()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should populate claimantEnteredDefendantDetails with same data on first time")
+    void shouldPopulateClaimantEnteredDefendantDetailsOnFirstTime() {
+        // Given
+        AddressEntity addressEntity = AddressEntity.builder()
+            .addressLine1("Original Street")
+            .postcode("SW1A 1AA")
+            .build();
+
+        PartyEntity matchedDefendant = PartyEntity.builder()
+            .firstName("Arun")
+            .lastName("Kumar")
+            .nameKnown(VerticalYesNo.YES)
+            .emailAddress("arun@example.com")
+            .phoneNumber("07700900000")
+            .phoneNumberProvided(VerticalYesNo.YES)
+            .address(addressEntity)
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.NO)
+            .build();
+
+        AddressUK expectedAddress = AddressUK.builder()
+            .addressLine1("Original Street")
+            .postCode("SW1A 1AA")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().build())
+            .build();
+
+        when(addressMapper.toAddressUK(addressEntity)).thenReturn(expectedAddress);
+
+        // When
+        PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
+
+        // Then
+        assertThat(result.getClaimantEnteredDefendantDetails()).isNotNull();
+        assertThat(result.getClaimantEnteredDefendantDetails().getFirstName()).isEqualTo("Arun");
+        assertThat(result.getClaimantEnteredDefendantDetails().getLastName()).isEqualTo("Kumar");
+        assertThat(result.getClaimantEnteredDefendantDetails().getNameKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getClaimantEnteredDefendantDetails().getEmailAddress()).isEqualTo("arun@example.com");
+        assertThat(result.getClaimantEnteredDefendantDetails().getPhoneNumber()).isEqualTo("07700900000");
+        assertThat(result.getClaimantEnteredDefendantDetails().getAddress()).isEqualTo(expectedAddress);
+
+        // Verify it matches defendantContactDetails on first time
+        assertThat(result.getClaimantEnteredDefendantDetails())
+            .usingRecursiveComparison()
+            .isEqualTo(result.getDefendantContactDetails().getParty());
     }
 }

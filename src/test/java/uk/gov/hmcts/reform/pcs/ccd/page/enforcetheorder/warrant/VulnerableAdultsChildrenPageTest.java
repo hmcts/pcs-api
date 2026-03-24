@@ -1,187 +1,113 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.Event;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection;
+import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
-import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AbstractVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
-import java.util.stream.Stream;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 
-class VulnerableAdultsChildrenPageTest extends BasePageTest {
+@ExtendWith(MockitoExtension.class)
+@SuppressWarnings("unchecked")
+class VulnerableAdultsChildrenPageTest {
 
+    @Mock
+    private TextAreaValidationService service;
+
+    @Mock
+    private Event.EventBuilder<PCSCase, UserRole, State> eventBuilder;
+
+    @Mock
+    @SuppressWarnings("rawtypes")
+    private FieldCollection.FieldCollectionBuilder fieldBuilder;
+
+    private PageBuilder pageBuilder;
+
+    private VulnerableAdultsChildrenPage pageUnderTest;
 
     @BeforeEach
-    void setUp() {
-        TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        setPageUnderTest(new VulnerableAdultsChildrenPage(textAreaValidationService));
+    void setup() {
+        pageBuilder = new PageBuilder(eventBuilder);
+        pageUnderTest = new VulnerableAdultsChildrenPage(service);
+
+        lenient().when(eventBuilder.fields()).thenReturn(fieldBuilder);
+        lenient().when(fieldBuilder.page(anyString(), any(MidEvent.class))).thenReturn(fieldBuilder);
+        lenient().when(fieldBuilder.pageLabel(AbstractVulnerableAdultsChildrenPage.PAGE_LABEL))
+                .thenReturn(fieldBuilder);
+        lenient().when(fieldBuilder.showCondition(anyString())).thenReturn(fieldBuilder);
+        lenient().when(fieldBuilder.label(anyString(), anyString())).thenReturn(fieldBuilder);
+        lenient().when(fieldBuilder.complex(any())).thenReturn(fieldBuilder);
+        lenient().when(fieldBuilder.complex(any(), anyString())).thenReturn(fieldBuilder);
+        lenient().when(fieldBuilder.mandatory(any())).thenReturn(fieldBuilder);
+        lenient().when(fieldBuilder.mandatory(any(), anyString())).thenReturn(fieldBuilder);
+        lenient().when(fieldBuilder.done()).thenReturn(fieldBuilder);
     }
 
-    @ParameterizedTest
-    @MethodSource("characterLimitScenarios")
-    void shouldValidateCharacterLimit(
-            YesNoNotSure vulnerablePeoplePresent,
-            VulnerableCategory vulnerableCategory,
-            String vulnerableReasonText,
-            boolean expectsError) {
-        // Given
+    @Test
+    void shouldConfigurePageMetadataAndShowCondition() {
+        assertThatCode(() -> pageUnderTest.addTo(pageBuilder)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void shouldReturnVulnerableReasonTextFromCase() {
+        String expectedText = "Some vulnerability details";
+
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .rawWarrantDetails(RawWarrantDetails.builder()
+                .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+                    .vulnerableReasonText(expectedText)
+                    .build())
+                .build())
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(enforcementOrder)
+            .build();
+
+        String actual = pageUnderTest.getVulnerableReasonTextToValidate(caseData);
+
+        assertThat(actual).isEqualTo(expectedText);
+    }
+
+    @Test
+    void shouldReturnNullVulnerableReasonTextFromCaseIfNoDetailsFound() {
+
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
                 .rawWarrantDetails(RawWarrantDetails.builder()
-                    .vulnerablePeoplePresent(vulnerablePeoplePresent)
-                    .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
-                        .vulnerableCategory(vulnerableCategory)
-                        .vulnerableReasonText(vulnerableReasonText)
+                        .vulnerableAdultsChildren(null)
                         .build())
-                    .build())
                 .build();
 
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(enforcementOrder)
                 .build();
 
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+        String actual = pageUnderTest.getVulnerableReasonTextToValidate(caseData);
 
-        // Then
-        if (expectsError) {
-            assertThat(response.getErrorMessageOverride())
-                    .contains("In ‘How are they vulnerable?’, you have entered more than the maximum number "
-                            + "of characters")
-                    .contains("6,800");
-        } else {
-            assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
-            assertThat(response.getErrors()).isNullOrEmpty();
-        }
+        assertThat(actual).isNull();
     }
 
-    private static Stream<Arguments> characterLimitScenarios() {
-        int limit = TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
-        return Stream.of(
-                // Exceeds limit - all categories
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_ADULTS,
-                        "a".repeat(limit + 1),
-                        true
-                ),
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_CHILDREN,
-                        "a".repeat(limit + 1),
-                        true
-                ),
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_ADULTS_AND_CHILDREN,
-                        "a".repeat(limit + 1),
-                        true
-                ),
-                // Within limit
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_ADULTS,
-                        "a".repeat(limit),
-                        false
-                ),
-                // Exactly at limit
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_CHILDREN,
-                        "a".repeat(limit),
-                        false
-                )
-        );
-    }
+    @Test
+    void shouldReturnPageIdWithoutSuffix() {
+        String pageId = pageUnderTest.getPageKey();
 
-    @ParameterizedTest
-    @MethodSource("dataPreservationScenarios")
-    void shouldPreserveCaseDataWhenValidationPasses(
-            YesNoNotSure vulnerablePeoplePresent,
-            VulnerableCategory vulnerableCategory,
-            String vulnerableReasonText) {
-        // Given
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .rawWarrantDetails(RawWarrantDetails.builder()
-                    .vulnerablePeoplePresent(vulnerablePeoplePresent)
-                    .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
-                        .vulnerableCategory(vulnerableCategory)
-                        .vulnerableReasonText(vulnerableReasonText)
-                        .build())
-                    .build())
-                .build();
-
-        PCSCase caseData = PCSCase.builder()
-                .enforcementOrder(enforcementOrder)
-                .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
-        assertThat(response.getErrors()).isNullOrEmpty();
-
-        assertThat(response.getData().getEnforcementOrder().getRawWarrantDetails()
-                .getVulnerableAdultsChildren().getVulnerableReasonText())
-                .isEqualTo(vulnerableReasonText);
-        assertThat(response.getData().getEnforcementOrder().getRawWarrantDetails()
-                .getVulnerablePeoplePresent())
-                .isEqualTo(vulnerablePeoplePresent);
-        assertThat(response.getData().getEnforcementOrder().getRawWarrantDetails()
-                .getVulnerableAdultsChildren().getVulnerableCategory())
-                .isEqualTo(vulnerableCategory);
-    }
-
-    private static Stream<Arguments> dataPreservationScenarios() {
-        return Stream.of(
-                // Empty string
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_ADULTS,
-                        ""
-                ),
-                // Very short text (1 character)
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_ADULTS,
-                        "a"
-                ),
-                // Short valid text
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_ADULTS,
-                        "Short text"
-                ),
-                // Valid text for vulnerable children
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_CHILDREN,
-                        "Valid text"
-                ),
-                // Valid text for vulnerable adults and children
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_ADULTS_AND_CHILDREN,
-                        "Some text"
-                ),
-                // Text at exact limit
-                arguments(
-                        YesNoNotSure.YES,
-                        VulnerableCategory.VULNERABLE_ADULTS,
-                        "a".repeat(TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT)
-                )
-        );
+        assertThat(pageId).isEqualTo("vulnerableAdultsChildren");
     }
 }

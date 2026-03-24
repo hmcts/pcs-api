@@ -1,4 +1,4 @@
-* @hmcts/possession-claim-service-admins
+* @hmcts/possession-claim-service-admins @hmcts/possession-claim-backend
 
 # Ignore files updated by Renovate
 gradle/wrapper/gradle-wrapper.properties
@@ -6,5 +6,8 @@ Dockerfile
 build.gradle
 charts/**/Chart.yaml
 .github/workflows/*.yaml
+infrastructure/.terraform-version
+src/e2eTest/.nvmrc
+src/e2eTest/yarn.lock
 
 src/e2eTest @hmcts/possession-claim-service-qa-admins @hmcts/possession-claim-service-admins
