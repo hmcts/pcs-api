@@ -42,7 +42,7 @@ public class DraftCaseJsonMerger {
         JsonNode base = objectMapper.readValue(baseJson, JsonNode.class);
         JsonNode patch = objectMapper.readValue(patchJson, JsonNode.class);
 
-        clearAddressFieldsInBase(base, patch);
+        clearAddressFieldsRecursively(base, patch);
 
         JsonNode merged = objectMapper.readerForUpdating(base)
             .readValue(patchJson);
@@ -54,16 +54,12 @@ public class DraftCaseJsonMerger {
      * Clears address fields in the base JSON where the patch contains an address object.
      * Fully replaces the old address rather than merging individual fields.
      */
-    private void clearAddressFieldsInBase(JsonNode base, JsonNode patch) {
-        clearAddressFieldsRecursively(base, patch);
-    }
-
     private void clearAddressFieldsRecursively(JsonNode base, JsonNode patch) {
         if (!patch.isObject() || !base.isObject()) {
             return;
         }
 
-        Iterator<Map.Entry<String, JsonNode>> fields = patch.fields();
+        Iterator<Map.Entry<String, JsonNode>> fields = patch.properties().iterator();
         while (fields.hasNext()) {
             Map.Entry<String, JsonNode> field = fields.next();
             String fieldName = field.getKey();
@@ -72,7 +68,7 @@ public class DraftCaseJsonMerger {
             if (base.has(fieldName)) {
                 JsonNode baseChild = base.get(fieldName);
 
-                if ("address".equalsIgnoreCase(fieldName) && patchChild.isObject() && baseChild.isObject()) {
+                if ("address".equalsIgnoreCase(fieldName) && patchChild.isObject() && baseChild instanceof ObjectNode) {
                     clearAddressFields((ObjectNode) baseChild);
                 } else {
                     clearAddressFieldsRecursively(baseChild, patchChild);

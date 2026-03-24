@@ -15,9 +15,10 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 class DraftCaseJsonMergerTest {
@@ -116,10 +117,9 @@ class DraftCaseJsonMergerTest {
         return DynamicStringListElement.builder().code(value.name()).label(value.getLabel()).build();
     }
 
-
-
     @Test
     void shouldClearAddressFieldsWhenPatchContainsAddress() throws Exception {
+        //Given
         String baseJson = """
         {
           "party": {
@@ -165,6 +165,7 @@ class DraftCaseJsonMergerTest {
 
     @Test
     void shouldNotClearAddressIfPatchDoesNotContainAddress() throws Exception {
+        //Given
         String baseJson = """
         {
           "party": {
