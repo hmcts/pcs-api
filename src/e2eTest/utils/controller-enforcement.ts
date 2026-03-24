@@ -94,6 +94,10 @@ export async function performAction(action: string, fieldName?: actionData | act
   }
   let errorValidationRequired = false;
 
+  if (action.includes('errorValidation') && fieldName === 'NO') {
+    errorValidationRequired = true;
+  }
+
   if (typeof displayFieldName === "object" && displayFieldName !== null) {
     errorValidationRequired = (
       readValuesFromInputObjects(displayFieldName as actionRecord)
