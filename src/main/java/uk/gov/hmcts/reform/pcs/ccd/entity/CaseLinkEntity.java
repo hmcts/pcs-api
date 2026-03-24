@@ -11,7 +11,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,11 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "case_link",
-    uniqueConstraints = @UniqueConstraint(
-        name = "uk_case_link_unique",
-        columnNames = {"pcs_case_id", "linked_case_reference"}
-    ))
+@Table(name = "case_link")
 @Setter
 @Getter
 @NoArgsConstructor
@@ -40,7 +35,7 @@ public class CaseLinkEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id")
+    @JoinColumn(name = "case_link_reference")
     private PcsCaseEntity pcsCase;
 
     @Column(name = "linked_case_id", nullable = false)
@@ -54,13 +49,4 @@ public class CaseLinkEntity {
         orphanRemoval = true)
     @Builder.Default
     private List<CaseLinkReasonEntity> reasons = new ArrayList<>();
-
-    public void addReason(String code, String text) {
-        CaseLinkReasonEntity caseLinkReasonEntity = new CaseLinkReasonEntity();
-        caseLinkReasonEntity.setCaseLink(this);
-        caseLinkReasonEntity.setReasonCode(code);
-        caseLinkReasonEntity.setReasonText(text);
-        reasons.add(caseLinkReasonEntity);
-
-    }
 }

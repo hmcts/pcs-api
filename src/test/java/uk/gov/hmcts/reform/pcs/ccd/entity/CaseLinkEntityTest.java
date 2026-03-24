@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -23,9 +25,16 @@ class CaseLinkEntityTest {
         // Given
         String reasonCode = "CLR003";
         String reasonText = "Same Party";
+        CaseLinkEntity caseLinkEntity = CaseLinkEntity.builder().build();
+        CaseLinkReasonEntity caseLinkReasonEntity = CaseLinkReasonEntity.builder()
+            .caseLink(caseLinkEntity)
+            .reasonCode(reasonCode)
+            .reasonText(reasonText)
+            .build();
+
 
         // When
-        underTest.addReason(reasonCode, reasonText);
+        underTest.setReasons(List.of(caseLinkReasonEntity));
 
         // Then
         assertThat(underTest.getReasons()).hasSize(1);

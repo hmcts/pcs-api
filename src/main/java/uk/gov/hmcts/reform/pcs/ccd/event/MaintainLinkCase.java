@@ -29,6 +29,7 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
                             .forAllStates()
                             .name("Manage case links")
                             .description("To Manage link related cases")
+                            .grant(Permission.R, UserRole.PCS_CASE_WORKER)
                             .grant(Permission.CRUD, UserRole.PCS_SOLICITOR))
             .page("maintainCaseLink")
             .pageLabel("Case Link")

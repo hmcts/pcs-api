@@ -29,6 +29,7 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
                             .forAllStates()
                             .name("Link cases")
                             .description("To link related cases")
+                            .grant(Permission.R, UserRole.PCS_CASE_WORKER)
                             .grant(Permission.CRUD,UserRole.PCS_SOLICITOR))
             .page("createCaseLink")
             .pageLabel("Case Link")

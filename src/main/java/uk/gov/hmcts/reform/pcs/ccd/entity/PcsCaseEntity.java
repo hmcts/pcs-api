@@ -161,12 +161,17 @@ public class PcsCaseEntity {
             caseLinkEntity.getReasons().clear();
 
             if (dto.getReasonForLink() != null) {
+                List<CaseLinkReasonEntity> caseLinkReasonEntities = new ArrayList<>();
                 for (ListValue<LinkReason> incomingLinkReason : dto.getReasonForLink()) {
-                    caseLinkEntity.addReason(
-                        incomingLinkReason.getValue().getReason(),
-                        incomingLinkReason.getValue().getDescription()
-                    );
+                    CaseLinkReasonEntity caseLinkReasonEntity = CaseLinkReasonEntity.builder()
+                            .caseLink(caseLinkEntity)
+                            .reasonCode(incomingLinkReason.getValue().getReason())
+                            .reasonText(incomingLinkReason.getValue().getDescription())
+                            .build();
+                    caseLinkReasonEntities.add(caseLinkReasonEntity);
                 }
+                caseLinkEntity.getReasons().clear();
+                caseLinkEntity.getReasons().addAll(caseLinkReasonEntities);
             }
 
             result.add(caseLinkEntity);

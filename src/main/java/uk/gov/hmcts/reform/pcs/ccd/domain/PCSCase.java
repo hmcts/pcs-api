@@ -123,7 +123,7 @@ public class PCSCase {
 
     @CCD(
         access = {CaseLinkingAccess.class},
-        label = "Component Launcher (for displaying Linked Cases data"
+        label = "Component Launcher (for displaying Linked Cases data)"
     )
     @JsonProperty("LinkedCasesComponentLauncher")
     private ComponentLauncher linkedCasesComponentLauncher;
