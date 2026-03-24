@@ -27,6 +27,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPos
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -350,16 +352,17 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .shareIncomeExpenseDetails(YesOrNo.YES)
             .incomeFromJobs(YesOrNo.YES)
-            .incomeFromJobsAmount(new java.math.BigDecimal("150000")) // £1500.00 in pence
+            .incomeFromJobsAmount(new BigDecimal("150000")) // £1500.00 in pence
             .incomeFromJobsFrequency("MONTH")
             .pension(YesOrNo.YES)
-            .pensionAmount(new java.math.BigDecimal("50000")) // £500.00 in pence
+            .pensionAmount(new BigDecimal("50000")) // £500.00 in pence
             .pensionFrequency("MONTH")
-            .universalCreditIncome(YesOrNo.NO)
             .universalCredit(YesOrNo.YES)
-            .ucApplicationDate(java.time.LocalDate.of(2024, 1, 15))
+            .ucApplicationDate(LocalDate.of(2024, 1, 15))
+            .universalCreditAmount(new BigDecimal("80000")) // £800.00 in pence
+            .universalCreditFrequency("MONTH")
             .otherBenefits(YesOrNo.YES)
-            .otherBenefitsAmount(new java.math.BigDecimal("20000")) // £200.00 in pence
+            .otherBenefitsAmount(new BigDecimal("20000")) // £200.00 in pence
             .otherBenefitsFrequency("WEEK")
             .moneyFromElsewhere(YesOrNo.YES)
             .moneyFromElsewhereDetails("Child maintenance payments of £100 per week")
@@ -398,9 +401,10 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedHousehold.getPensionAmount()).isEqualByComparingTo("50000");
         assertThat(savedHousehold.getPensionFrequency()).isEqualTo("MONTH");
 
-        assertThat(savedHousehold.getUniversalCreditIncome()).isEqualTo(YesOrNo.NO);
         assertThat(savedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
-        assertThat(savedHousehold.getUcApplicationDate()).isEqualTo(java.time.LocalDate.of(2024, 1, 15));
+        assertThat(savedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 1, 15));
+        assertThat(savedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("80000");
+        assertThat(savedHousehold.getUniversalCreditFrequency()).isEqualTo("MONTH");
 
         assertThat(savedHousehold.getOtherBenefits()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getOtherBenefitsAmount()).isEqualByComparingTo("20000");

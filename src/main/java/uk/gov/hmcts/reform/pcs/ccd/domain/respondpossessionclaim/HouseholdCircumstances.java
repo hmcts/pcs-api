@@ -6,7 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,7 +30,8 @@ public class HouseholdCircumstances {
     @CCD
     private YesOrNo incomeFromJobs;
 
-    @CCD
+    @CCD(typeOverride = FieldType.MoneyGBP)
+    @JacksonMoneyGBP
     private BigDecimal incomeFromJobsAmount;
 
     @CCD
@@ -37,14 +40,12 @@ public class HouseholdCircumstances {
     @CCD
     private YesOrNo pension;
 
-    @CCD
+    @CCD(typeOverride = FieldType.MoneyGBP)
+    @JacksonMoneyGBP
     private BigDecimal pensionAmount;
 
     @CCD
     private String pensionFrequency;
-
-    @CCD
-    private YesOrNo universalCreditIncome;
 
     @CCD
     private YesOrNo universalCredit;
@@ -52,10 +53,18 @@ public class HouseholdCircumstances {
     @CCD
     private LocalDate ucApplicationDate;
 
+    @CCD(typeOverride = FieldType.MoneyGBP)
+    @JacksonMoneyGBP
+    private BigDecimal universalCreditAmount;
+
+    @CCD
+    private String universalCreditFrequency;
+
     @CCD
     private YesOrNo otherBenefits;
 
-    @CCD
+    @CCD(typeOverride = FieldType.MoneyGBP)
+    @JacksonMoneyGBP
     private BigDecimal otherBenefitsAmount;
 
     @CCD

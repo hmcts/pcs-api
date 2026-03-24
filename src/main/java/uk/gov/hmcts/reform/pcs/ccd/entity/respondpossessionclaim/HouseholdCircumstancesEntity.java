@@ -108,9 +108,9 @@ public class HouseholdCircumstancesEntity {
 
     private String pensionFrequency;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo universalCreditIncome;
+    private BigDecimal universalCreditAmount;
+
+    private String universalCreditFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
