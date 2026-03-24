@@ -23,4 +23,10 @@ public class HouseholdCircumstances {
     @CCD
     private String additionalCircumstancesDetails;
 
+    @CCD
+    private YesOrNo exceptionalHardship;
+
+    @CCD
+    private String exceptionalHardshipDetails;
+
 }

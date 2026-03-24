@@ -17,6 +17,8 @@ public class HouseholdCircumstancesService {
             .dependantChildren(circumstances.getDependantChildren())
             .shareAdditionalCircumstances(circumstances.getShareAdditionalCircumstances())
             .additionalCircumstancesDetails(circumstances.getAdditionalCircumstancesDetails())
+            .exceptionalHardship(circumstances.getExceptionalHardship())
+            .exceptionalHardshipDetails(circumstances.getExceptionalHardshipDetails())
             .build();
 
         return householdCircumstancesEntity;
