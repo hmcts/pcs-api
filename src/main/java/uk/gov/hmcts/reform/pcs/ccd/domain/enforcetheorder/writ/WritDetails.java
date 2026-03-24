@@ -34,9 +34,6 @@ public class WritDetails {
     @CCD(searchable = false)
     private YesOrNo showChangeNameAddressPage;
 
-    @CCD(searchable = false)
-    private YesOrNo showPeopleWhoWillBeEvictedPage;
-
     @CCD(
         label = "Have you hired a High Court enforcement officer?"
     )
@@ -71,9 +68,9 @@ public class WritDetails {
             + "ask them if they answered any questions in Welsh. We’ll use this to "
             + "make sure your claim is processed correctly"
     )
-
     @JsonProperty("EnforcementLanguageUsed")
     private LanguageUsed languageUsed;
+
     @CCD(
         searchable = false,
         label = "TEMPORARY TEST ONLY – Has the claim been transferred to the High Court?"
@@ -85,7 +82,7 @@ public class WritDetails {
         label = "TEMPORARY TEST ONLY – Was the general application to transfer to the High Court successful?"
     )
     private YesOrNo wasGeneralApplicationToTransferToHighCourtSuccessful;
-    
+
     @JsonUnwrapped
     @CCD
     private StatementOfTruthDetailsEnforcement statementOfTruth;
