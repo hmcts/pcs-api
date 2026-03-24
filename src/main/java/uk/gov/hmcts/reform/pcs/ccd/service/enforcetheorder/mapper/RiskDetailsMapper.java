@@ -38,7 +38,8 @@ public class RiskDetailsMapper {
                 applyWarrantOfRestitutionDetails(enforcementOrder.getWarrantOfRestitutionDetails(), riskProfileEntity);
                 applyRawWarrantRestDetails(enforcementOrder.getRawWarrantRestDetails(), riskProfileEntity);
             }
-            default -> {} // Not needed for other enforcement types
+            default -> {
+            } // Not needed for other enforcement types
         }
         return riskProfileEntity;
     }

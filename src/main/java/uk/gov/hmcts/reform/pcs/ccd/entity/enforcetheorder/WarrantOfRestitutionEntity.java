@@ -43,7 +43,6 @@ public class WarrantOfRestitutionEntity {
     @JsonBackReference
     private EnforcementOrderEntity enforcementOrder;
 
-
     // UI Control Flags
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -74,6 +73,7 @@ public class WarrantOfRestitutionEntity {
     private VerticalYesNo isDifficultToAccessProperty;
 
     private String clarificationOnAccessDifficultyText;
+
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
 
