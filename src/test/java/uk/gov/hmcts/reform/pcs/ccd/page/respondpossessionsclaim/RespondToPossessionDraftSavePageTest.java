@@ -348,7 +348,6 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
     @Test
     void shouldSaveRegularIncomeFieldsInDraft() {
-        // Given - HDPI-3764: Regular income fields
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .shareIncomeExpenseDetails(YesOrNo.YES)
             .incomeFromJobs(YesOrNo.YES)

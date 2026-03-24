@@ -91,7 +91,6 @@ public class HouseholdCircumstancesEntity {
 
     private LocalDate ucApplicationDate;
 
-    // Regular Income Fields (HDPI-3764)
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo incomeFromJobs;
@@ -126,7 +125,6 @@ public class HouseholdCircumstancesEntity {
 
     private String moneyFromElsewhereDetails;
 
-    // Priority Debts and Expenses
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo priorityDebts;

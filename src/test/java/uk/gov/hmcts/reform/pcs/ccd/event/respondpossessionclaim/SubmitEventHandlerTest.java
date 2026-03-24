@@ -58,8 +58,6 @@ class SubmitEventHandlerTest {
         underTest = new SubmitEventHandler(draftCaseDataService, claimResponseService, defendantResponseService);
     }
 
-    // ========== VALIDATION ERROR CASES ==========
-
     @Test
     void shouldReturnErrorWhenPossessionClaimResponseIsNull() {
         // Given
@@ -116,8 +114,6 @@ class SubmitEventHandlerTest {
         verify(defendantResponseService, never()).saveDefendantResponse(anyLong(), any());
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), eq(respondPossessionClaim));
     }
-
-    // ========== INDEPENDENT FIELD SUBMISSION TESTS ==========
 
     @Test
     void shouldAllowSubmitWithOnlyDefendantResponses() {
@@ -281,7 +277,6 @@ class SubmitEventHandlerTest {
 
     @Test
     void shouldSubmitRegularIncomeFieldsWhenFinalSubmit() {
-        // Given - HDPI-3764: Regular income fields for final submit
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .shareIncomeExpenseDetails(YesOrNo.YES)
             .incomeFromJobs(YesOrNo.YES)
