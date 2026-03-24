@@ -204,6 +204,7 @@ payments:
 core_case_data:
   api:
     url: ${CCD_DATA_STORE_URL:localhost:4452}
+    external-url: ${CCD_DATA_STORE_URL_EXTERNAL:https://ccd-data-store-api-pcs-api-pr-1520.preview.platform.hmcts.net/}
 
 role-assignment:
   api:

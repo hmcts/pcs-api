@@ -23,7 +23,7 @@ public class HmcHearingService {
     private final IdamService idamService;
     @Value("${hmc.deployment-id}")
     private String hmctsDeploymentId;
-    @Value("${core_case_data.api.url}")
+    @Value("${core_case_data.api.external-url}")
     private String dataStoreUrl;
     @Value("${role-assignment.api.url}")
     private String roleAssignmentUrl;
