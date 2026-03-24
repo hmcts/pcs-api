@@ -158,7 +158,7 @@ There are also several custom test scripts available:
 - `yarn test:chrome` - runs the full E2E suite in Chrome
 - `yarn test:firefox` - runs the full E2E suite in Firefox
 
-To open generated Allure report
+To open generated Allure  report
 
 ```bash
 yarn test:openAllureReport
