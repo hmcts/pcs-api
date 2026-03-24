@@ -4,11 +4,17 @@ export const enforcementApplication = {
   typeOfApplicationQuestion: `What do you want to apply for?`,
   warrantOfPossessionRadioOption: `Warrant of possession`,
   writOfPossessionRadioOption: `Writ of possession`,
+  warrantOfRestitutionRadioOptionDynamic: `Warrant of restitution`,
   summaryWritOrWarrantLink: `I do not know if I need a writ or a warrant`,
+   typeofFee: {
+    warrantOfPossessionFee: 'Warrant of possession fee',
+    writOfPossessionFee: 'Writ of possession fee'
+  },
+  hceoPageTitleHidden: 'Choosing a HCEO',
   youCanUseParagraphHiddenHidden: `You can use either a warrant or a writ to evict someone.`,
   ifYouChooseParagraphHidden: `If you choose a warrant of possession`,
-  ifYouApplyForWarrantParagraphHidden: `If you apply for a warrant:`,
-  itCosts148ListHidden: `it costs £148 to apply;`,
+  warrantFeeValidationLabelHidden: `If you apply for a warrant:`,
+  warrantFeeValidationTextHidden: `it costs £148 to apply`,
   itsFreeListHidden: `it's free to hire a County Court bailiff`,
   youMayHaveToWaitListHidden: `you may have to wait longer for the eviction (this depends on the court you apply to)`,
   ifyouAskJudgeForAWritParagraphHidden: `If you ask the judge for a writ of possession`,
@@ -18,9 +24,9 @@ export const enforcementApplication = {
   youNeedToParagraphHidden: `You'll need to:`,
   askJudgeForWritListHidden: `ask the judge for a writ (you’ll need additional evidence for this and the judge could still refuse your request)`,
   hireAPrivateListHidden: `hire a private High Court Enforcement Officer (bailiff) to carry out the eviction`,
-  ifYouApplyForWritParagraphHidden: `If you apply for a writ:`,
-  itCosts80ListHidden: `it costs £80 to apply`,
-  youCanGetAQuoteListHidden: `you can get a quote from a bailiff to find out how much it will cost (they usually charge by the hour)`,
+  writFeeValidationLabelHidden: `If you apply for a writ:`,
+  writFeeValidationTextHidden: `it costs £80 to apply`,
+  quoteFromBailiffLinkHidden: `you can get a quote from a bailiff to find out how much it will cost`,
   itsUsuallyFasterListHidden: `it’s usually faster (6 to 12 weeks, depending on the court you apply to)`,
   theAdditionalEvidenceParagraphHidden: `The additional evidence you’ll need to apply for a writ`,
   youllNeedToShowParagraphHidden: `You’ll need to show that either:`,
@@ -32,5 +38,19 @@ export const enforcementApplication = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`
+  cancelLink: `Cancel`,
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
+  errorValidationField: {
+    errorRadioOption: [
+        //updated the error message from 'What do you want to apply for? is required'  to Field is required as per current application behaviour and reported the mismatch in HDPI-5199 scenario 6
+      { type: 'none', input: '', errMessage: 'Field is required' }, 
+    ],
+  },
+  yesRadioOptionHidden: 'Yes',
+  noRadioOptionHidden: 'No',
+  errorErrorMessageHeader: 'Errors',
+  errMessageDynamic: 'You cannot continue with this application because your application to transfer to the High Court was unsuccessful',
+  claimTransferredToHighCourtQuestionHidden: 'TEMPORARY TEST ONLY – Has the claim been transferred to the High Court?',
+  genAppSuccessfulQuestionHidden: 'TEMPORARY TEST ONLY – was the general application to transfer to the High Court successful?'
 }

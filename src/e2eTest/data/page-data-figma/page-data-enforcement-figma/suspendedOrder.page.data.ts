@@ -9,5 +9,12 @@ export const suspendedOrder = {
   summarySaveApplicationLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   continueButton: `Continue`,
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox',five: 'moneyFieldAndRadioOption' },
+  errorValidationField: {
+    errorRadioOption: [
+      { type: 'none', input: '', errMessage: 'Is your order a suspended order? is required' }
+    ]
+  },
   cancelLink: `Cancel`
 }
