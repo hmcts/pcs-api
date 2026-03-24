@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.NO;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -51,6 +53,7 @@ class CaseNameHmctsViewTest {
         when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
         when(claimantListValue.getValue()).thenReturn(claimantParty);
         when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
+        when(defendantParty.getNameKnown()).thenReturn(YES);
         when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
 
         underTest.setCaseNameHmctsField(pcsCase);
@@ -68,6 +71,7 @@ class CaseNameHmctsViewTest {
         when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
         when(claimantListValue.getValue()).thenReturn(claimantParty);
         when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
+        when(defendantParty.getNameKnown()).thenReturn(YES);
         when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
 
         underTest.setCaseNameHmctsField(pcsCase);
@@ -85,6 +89,7 @@ class CaseNameHmctsViewTest {
         when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
         when(claimantListValue.getValue()).thenReturn(claimantParty);
         when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
+        when(defendantParty.getNameKnown()).thenReturn(YES);
         when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
 
         underTest.setCaseNameHmctsField(pcsCase);
@@ -98,9 +103,11 @@ class CaseNameHmctsViewTest {
     @Test
     void shouldSetCaseNameWhenClaimantIsCitizenAndDefendantUnkown() {
         when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
-        when(pcsCase.getAllDefendants()).thenReturn(null);
+        when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
         when(claimantListValue.getValue()).thenReturn(claimantParty);
+        when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
         when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
+        when(defendantParty.getNameKnown()).thenReturn(NO);
 
         underTest.setCaseNameHmctsField(pcsCase);
 

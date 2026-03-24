@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class CaseNameHmctsView {
 
     private String getFormattedDefendantName(final List<ListValue<Party>> defendants) {
         StringBuilder formattedDefendantName = new StringBuilder();
-        if (defendants != null && !defendants.isEmpty()) {
+        if (defendants != null && !defendants.isEmpty() && isDefendantNameKnown(defendants)) {
             formattedDefendantName.append(defendants.stream()
                     .findFirst()
                     .map(ListValue<Party>::getValue)
@@ -62,5 +63,9 @@ public class CaseNameHmctsView {
             formattedDefendantName.append("persons unknown");
         }
         return formattedDefendantName.toString();
+    }
+
+    private boolean isDefendantNameKnown(final List<ListValue<Party>> defendants) {
+        return defendants.getFirst().getValue().getNameKnown() == VerticalYesNo.YES;
     }
 }
