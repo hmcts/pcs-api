@@ -1,22 +1,21 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.globalsearch;
+package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @AllArgsConstructor
-public class CaseNameHmctsFormatter {
+public class CaseNameHmctsView {
 
     /**
      * Builds a formatted string for the case name hmcts field based on
-     * certain rules and set's the internal, restricted and public field accordingly.
+     * certain rules and sets the internal, restricted and public field accordingly.
      *
      * @param pcsCase The current case data
      */
@@ -37,22 +36,24 @@ public class CaseNameHmctsFormatter {
         StringBuilder formattedClaimantName = new StringBuilder();
         if (claimants != null && !claimants.isEmpty()) {
             formattedClaimantName.append(claimants.stream()
-                                             .findFirst()
-                                             .map(claimant ->
-                                                      claimant.getValue().getOrgName() != null
-                                                          ? claimant.getValue().getOrgName() :
-                                                          claimant.getValue().getLastName())
-                                             .orElse(null));
+                    .findFirst()
+                    .map(ListValue<Party>::getValue)
+                    .map(claimant ->
+                            claimant.getOrgName() != null
+                                    ? claimant.getOrgName() :
+                                    claimant.getLastName())
+                    .orElse(null));
         }
         return formattedClaimantName.toString();
     }
 
     private String getFormattedDefendantName(final List<ListValue<Party>> defendants) {
         StringBuilder formattedDefendantName = new StringBuilder();
-        if (defendants != null && !defendants.isEmpty() && isDefendantNameKnown(defendants)) {
+        if (defendants != null && !defendants.isEmpty()) {
             formattedDefendantName.append(defendants.stream()
                     .findFirst()
-                    .map(defendant -> defendant.getValue().getLastName())
+                    .map(ListValue<Party>::getValue)
+                    .map(Party::getLastName)
                     .orElse(null));
             if (defendants.size() > 1) {
                 formattedDefendantName.append(" and Others");
@@ -61,9 +62,5 @@ public class CaseNameHmctsFormatter {
             formattedDefendantName.append("persons unknown");
         }
         return formattedDefendantName.toString();
-    }
-
-    private boolean isDefendantNameKnown(final List<ListValue<Party>> defendants) {
-        return defendants.getFirst().getValue().getNameKnown() == VerticalYesNo.YES;
     }
 }
