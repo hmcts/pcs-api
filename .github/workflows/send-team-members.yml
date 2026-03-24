@@ -10,7 +10,6 @@ jobs:
       - name: Send assigned reviewers to webhook
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-          TEAMS_JSON: ${{ toJson(github.event.pull_request.requested_teams) }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
@@ -29,7 +28,7 @@ jobs:
 
           echo "$MAPPINGS" | jq -e '.users' > /dev/null || { echo "Failed to parse users array"; exit 1; }
 
-          GITHUB_REVIEWERS=$(echo "$REVIEWERS_JSON" | jq -r '.[].login')
+          GITHUB_REVIEWERS=$(echo "$REVIEWERS_JSON" | jq -r '.users[].login')
 
           echo "GitHub reviewers: $GITHUB_REVIEWERS"
 
@@ -46,7 +45,7 @@ jobs:
             fi
           done
 
-          TEAM_REVIEWERS=$(echo "$TEAMS_JSON" | jq -r '.[].name' | paste -sd "," -)
+          TEAM_REVIEWERS=$(echo "$REVIEWERS_JSON" | jq -r '.teams[].name' | paste -sd "," -)
 
           PAYLOAD=$(jq -n \
             --arg title "$PR_TITLE" \
