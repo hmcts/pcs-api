@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.NO;
@@ -126,7 +128,7 @@ class CaseFieldsViewTest {
     }
 
     @Test
-    void shouldSetCaseManagementLocation() {
+    void shouldSetCaseManagementLocationFormatted() {
 
         //Given
         when(pcsCase.getCaseManagementLocation()).thenReturn(29096);
@@ -137,5 +139,47 @@ class CaseFieldsViewTest {
 
         // Then
         verify(pcsCase).setCaseManagementLocationFormatted("{region:1,baseLocation:29096}");
+    }
+
+    @Test
+    void shouldSetCaseManagementLocationFormattedNullIfEpimsIdIsNull() {
+
+        //Given
+        when(pcsCase.getCaseManagementLocation()).thenReturn(null);
+        when(pcsCase.getRegionId()).thenReturn(1);
+
+        //When
+        underTest.setCaseFields(pcsCase);
+
+        // Then
+        verify(pcsCase, atLeast(0)).setCaseManagementLocationFormatted(anyString());
+    }
+
+    @Test
+    void shouldSetCaseManagementLocationFormattedNullIfRegionIdIsNull() {
+
+        //Given
+        when(pcsCase.getCaseManagementLocation()).thenReturn(2906);
+        when(pcsCase.getRegionId()).thenReturn(null);
+
+        //When
+        underTest.setCaseFields(pcsCase);
+
+        // Then
+        verify(pcsCase, atLeast(0)).setCaseManagementLocationFormatted(anyString());
+    }
+
+    @Test
+    void shouldSetCaseManagementLocationFormattedNullIfBothIdsAreNull() {
+
+        //Given
+        when(pcsCase.getCaseManagementLocation()).thenReturn(null);
+        when(pcsCase.getRegionId()).thenReturn(null);
+
+        //When
+        underTest.setCaseFields(pcsCase);
+
+        // Then
+        verify(pcsCase, atLeast(0)).setCaseManagementLocationFormatted(anyString());
     }
 }
