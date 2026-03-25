@@ -119,12 +119,7 @@ public class EnforcementOrderService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
         Set<EnforcementOrderEntity> enforcementOrders = claimEntity.getEnforcementOrders();
-        return enforcementOrders.stream()
-            .filter(order -> order.getClaim().getId().equals(claimEntity.getId()))
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException(
-                "No enforcement order found for claim id=" + claimEntity.getId()
-            ));
+        return !enforcementOrders.isEmpty() ? enforcementOrders.stream().findFirst().get() : null;
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {

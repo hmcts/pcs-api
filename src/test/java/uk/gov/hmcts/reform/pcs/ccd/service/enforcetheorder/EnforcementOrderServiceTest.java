@@ -20,13 +20,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategy;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -174,119 +172,19 @@ class EnforcementOrderServiceTest {
     @Test
     void confirmEviction() {
         // Given
-        UUID id = UUID.randomUUID();
-        EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(anyLong())).thenReturn(pcsCaseEntity);
         ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimEntity.getId()).thenReturn(id);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         EnforcementOrderEntity enforcementOrderEntity = mock(EnforcementOrderEntity.class);
-        when(enforcementOrderEntity.getClaim()).thenReturn(claimEntity);
         when(claimEntity.getEnforcementOrders()).thenReturn(Set.of(enforcementOrderEntity));
+        EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
 
         // When
         underTest.confirmEviction(CASE_REFERENCE, enforcementOrder);
 
         // Then
         verify(confirmEvictionRepository).save(any(ConfirmEvictionEntity.class));
-    }
-
-    @Test
-    void shouldReturnEnforcementOrderEntityMatchingClaimId() {
-        // Given
-        UUID claimId = UUID.randomUUID();
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimEntity.getId()).thenReturn(claimId);
-        EnforcementOrderEntity matchingOrder = mock(EnforcementOrderEntity.class);
-        ClaimEntity matchingClaim = mock(ClaimEntity.class);
-        when(matchingClaim.getId()).thenReturn(claimId);
-        when(matchingOrder.getClaim()).thenReturn(matchingClaim);
-        when(claimEntity.getEnforcementOrders()).thenReturn(Set.of(matchingOrder));
-        stubLoadCaseWithClaim(claimEntity);
-
-        // When
-        EnforcementOrderEntity result = underTest.retrieveEnforcementOrderEntity(CASE_REFERENCE);
-
-        // Then
-        assertThat(result).isSameAs(matchingOrder);
-    }
-
-    @Test
-    void shouldReturnFirstMatchingEnforcementOrderWhenMultipleOrdersExist() {
-        // Given
-        UUID claimId = UUID.randomUUID();
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimEntity.getId()).thenReturn(claimId);
-        EnforcementOrderEntity matchingOrder = getEnforcementOrderEntity();
-        matchingOrder.getClaim().setId(claimId);
-
-        Set<EnforcementOrderEntity> orders = new LinkedHashSet<>();
-        orders.add(matchingOrder);
-        for (int i = 0; i < 6; i++) {
-            EnforcementOrderEntity nonMatchingOrder = getEnforcementOrderEntity();
-            orders.add(nonMatchingOrder);
-        }
-        when(claimEntity.getEnforcementOrders()).thenReturn(orders);
-
-        stubLoadCaseWithClaim(claimEntity);
-
-        // When
-        EnforcementOrderEntity result = underTest.retrieveEnforcementOrderEntity(CASE_REFERENCE);
-
-        // Then
-        assertThat(result).isSameAs(matchingOrder);
-    }
-
-    private EnforcementOrderEntity getEnforcementOrderEntity() {
-        ClaimEntity otherClaim = new ClaimEntity();
-        otherClaim.setId(UUID.randomUUID());
-        EnforcementOrderEntity nonMatchingOrder = new EnforcementOrderEntity();
-        nonMatchingOrder.setClaim(otherClaim);
-        return nonMatchingOrder;
-    }
-
-    @Test
-    void shouldThrowIllegalStateExceptionWhenNoEnforcementOrderMatchesClaimId() {
-        // Given
-        UUID claimId = UUID.randomUUID();
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimEntity.getId()).thenReturn(claimId);
-        EnforcementOrderEntity nonMatchingOrder = getEnforcementOrderEntity();
-        when(claimEntity.getEnforcementOrders()).thenReturn(Set.of(nonMatchingOrder));
-        stubLoadCaseWithClaim(claimEntity);
-
-        // When
-        Throwable throwable = catchThrowable(() -> underTest.retrieveEnforcementOrderEntity(CASE_REFERENCE));
-
-        // Then
-        assertThat(throwable)
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("No enforcement order found for claim id=" + claimId);
-    }
-
-    @Test
-    void shouldThrowIllegalStateExceptionWhenEnforcementOrdersSetIsEmpty() {
-        // Given
-        UUID claimId = UUID.randomUUID();
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimEntity.getId()).thenReturn(claimId);
-        when(claimEntity.getEnforcementOrders()).thenReturn(Set.of());
-        stubLoadCaseWithClaim(claimEntity);
-
-        // When
-        Throwable throwable = catchThrowable(() -> underTest.retrieveEnforcementOrderEntity(CASE_REFERENCE));
-
-        // Then
-        assertThat(throwable)
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("No enforcement order found for claim id=" + claimId);
-    }
-
-    private void stubLoadCaseWithClaim(ClaimEntity claimEntity) {
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
     }
 
 }

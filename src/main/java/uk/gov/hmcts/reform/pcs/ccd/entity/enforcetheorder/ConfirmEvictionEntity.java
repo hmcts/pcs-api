@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -40,7 +43,6 @@ public class ConfirmEvictionEntity {
 
     @OneToOne
     @JoinColumn(name = "enf_case_id", nullable = false)
-    @JsonBackReference
     private EnforcementOrderEntity enforcementOrder;
 
     @Enumerated(EnumType.STRING)
@@ -49,7 +51,11 @@ public class ConfirmEvictionEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo hasUnavaliableDates;
+    private VerticalYesNo hasUnavailableDates;
+
+    @OneToMany(mappedBy = "confirmEviction", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<UnavailableDateEntity> unavailableDates = new ArrayList<>();
 
     private String beforeEvictionNameOrDepartment;
 

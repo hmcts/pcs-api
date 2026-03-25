@@ -1,14 +1,14 @@
 CREATE TABLE enf_confirm_eviction(
-id                                                        UUID PRIMARY KEY,
+  id                                                      UUID PRIMARY KEY,
   enf_case_id                                             UUID NOT NULL REFERENCES enf_case (id) ON DELETE CASCADE,
 
   -- The eviction date
   eviction_date_confirmed                                 YES_NO NOT NULL,
 
   -- Dates when you can not attend an eviction
-  has_unavaliable_dates                                    YES_NO NOT NULL,
+  has_unavailable_dates                                    YES_NO NOT NULL,
 
-  -- seperate table for dates avaliable table
+  -- separate table for dates unavailable table
 
   -- Contact for Bailiff
   before_eviction_name_or_department                        VARCHAR(100),
@@ -42,4 +42,8 @@ ALTER TABLE enf_risk_profile
 ALTER TABLE enf_risk_profile
   ADD COLUMN physical_description_of_risk_defendant_details VARCHAR(6800);
 
-
+CREATE TABLE enf_unavailable_date (
+  id                                                           UUID PRIMARY KEY,
+  enf_confirm_eviction_id                                      UUID NOT NULL REFERENCES enf_confirm_eviction (id) ON DELETE CASCADE,
+  unavailable_date                                             DATE NOT NULL
+);
