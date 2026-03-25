@@ -12,7 +12,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizen.CitizenGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -82,6 +83,26 @@ class CitizenCreateGenAppTest extends BaseEventTest {
             verify(genAppRepository).save(genAppEntityCaptor.capture());
 
             assertThat(genAppEntityCaptor.getValue().getType()).isEqualTo(genAppType);
+        }
+
+        @Test
+        void shouldSetInitialState() {
+            // Given
+            CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .citizenGenAppRequest(genAppRequest)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            ArgumentCaptor<GenAppEntity> genAppEntityCaptor = ArgumentCaptor.forClass(GenAppEntity.class);
+            verify(genAppRepository).save(genAppEntityCaptor.capture());
+
+            assertThat(genAppEntityCaptor.getValue().getState()).isEqualTo(GenAppState.SUBMITTED);
         }
 
         @Test

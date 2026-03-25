@@ -12,7 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.citizen.CitizenGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -60,6 +61,7 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .type(citizenCreateGenApp.getApplicationType())
             .party(applicantParty)
+            .state(GenAppState.SUBMITTED)
             .build();
 
         genAppRepository.save(genAppEntity);

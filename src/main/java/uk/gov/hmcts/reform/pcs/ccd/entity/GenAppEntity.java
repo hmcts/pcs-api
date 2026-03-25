@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.UUID;
@@ -43,6 +44,9 @@ public class GenAppEntity {
 
     @Enumerated(EnumType.STRING)
     private GenAppType type;
+
+    @Enumerated(EnumType.STRING)
+    private GenAppState state;
 
     @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "party_id")
