@@ -33,8 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
-import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseManagementLocationView;
-import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseNameHmctsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -69,8 +68,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final RentArrearsView rentArrearsView;
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
-    private final CaseNameHmctsView caseNameHmctsView;
-    private final CaseManagementLocationView caseManagementLocationView;
+    private final CaseFieldsView caseFieldsView;
 
 
     /**
@@ -85,8 +83,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
-        caseNameHmctsView.setCaseNameHmctsField(pcsCase);
-        caseManagementLocationView.setCaseManagementLocationField(pcsCase);
+        caseFieldsView.setCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
 

@@ -18,7 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class CaseNameHmctsViewTest {
+class CaseFieldsViewTest {
 
     private static final String CLAIMANT_NAME = "Freeman";
     private static final String DEFENDANT_LAST_NAME = "Jackson";
@@ -26,7 +26,7 @@ class CaseNameHmctsViewTest {
 
     @Mock
     private PCSCase pcsCase;
-    private CaseNameHmctsView underTest;
+    private CaseFieldsView underTest;
 
     @Mock
     private ListValue<Party> defendantPartyListValue;
@@ -42,12 +42,13 @@ class CaseNameHmctsViewTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseNameHmctsView();
+        underTest = new CaseFieldsView();
     }
 
 
     @Test
     void shouldSetCaseNameWhenClaimantIsOrgAndDefendantIsKnown() {
+        //Given
         when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
         when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
         when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
@@ -56,7 +57,8 @@ class CaseNameHmctsViewTest {
         when(defendantParty.getNameKnown()).thenReturn(YES);
         when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
 
-        underTest.setCaseNameHmctsField(pcsCase);
+        //When
+        underTest.setCaseFields(pcsCase);
 
         // Then
         verify(pcsCase).setCaseNameHmctsRestricted("Treetops Housing vs Jackson");
@@ -66,6 +68,7 @@ class CaseNameHmctsViewTest {
 
     @Test
     void shouldSetCaseNameWhenClaimantIsCitizenAndDefendantIsKnown() {
+        //Given
         when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
         when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
         when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
@@ -74,7 +77,8 @@ class CaseNameHmctsViewTest {
         when(defendantParty.getNameKnown()).thenReturn(YES);
         when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
 
-        underTest.setCaseNameHmctsField(pcsCase);
+        //When
+        underTest.setCaseFields(pcsCase);
 
         // Then
         verify(pcsCase).setCaseNameHmctsRestricted("Freeman vs Jackson");
@@ -84,6 +88,7 @@ class CaseNameHmctsViewTest {
 
     @Test
     void shouldSetCaseNameWhenClaimantIsOrgAndMultipleDefendants() {
+        //Given
         when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
         when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue, defendantPartyListValue));
         when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
@@ -92,7 +97,8 @@ class CaseNameHmctsViewTest {
         when(defendantParty.getNameKnown()).thenReturn(YES);
         when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
 
-        underTest.setCaseNameHmctsField(pcsCase);
+        //When
+        underTest.setCaseFields(pcsCase);
 
         // Then
         verify(pcsCase).setCaseNameHmctsRestricted("Treetops Housing vs Jackson and Others");
@@ -102,6 +108,7 @@ class CaseNameHmctsViewTest {
 
     @Test
     void shouldSetCaseNameWhenClaimantIsCitizenAndDefendantUnkown() {
+        //Given
         when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
         when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
         when(claimantListValue.getValue()).thenReturn(claimantParty);
@@ -109,11 +116,26 @@ class CaseNameHmctsViewTest {
         when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
         when(defendantParty.getNameKnown()).thenReturn(NO);
 
-        underTest.setCaseNameHmctsField(pcsCase);
+        //When
+        underTest.setCaseFields(pcsCase);
 
         // Then
         verify(pcsCase).setCaseNameHmctsRestricted("Freeman vs persons unknown");
         verify(pcsCase).setCaseNameHmctsInternal("Freeman vs persons unknown");
         verify(pcsCase).setCaseNamePublic("Freeman vs persons unknown");
+    }
+
+    @Test
+    void shouldSetCaseManagementLocation() {
+
+        //Given
+        when(pcsCase.getCaseManagementLocation()).thenReturn(29096);
+        when(pcsCase.getRegionId()).thenReturn(1);
+
+        //When
+        underTest.setCaseFields(pcsCase);
+
+        // Then
+        verify(pcsCase).setCaseManagementLocationFormatted("{region:1,baseLocation:29096}");
     }
 }

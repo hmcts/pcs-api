@@ -34,8 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
-import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseManagementLocationView;
-import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseNameHmctsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -96,9 +95,7 @@ class PCSCaseViewTest {
     @Mock
     private ClaimEntity claimEntity;
     @Mock
-    private CaseNameHmctsView caseNameHmctsView;
-    @Mock
-    CaseManagementLocationView caseManagementLocationView;
+    private CaseFieldsView caseFieldsView;
 
     private PCSCaseView underTest;
 
@@ -111,7 +108,7 @@ class PCSCaseViewTest {
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
                                     alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
-                                    statementOfTruthView, caseNameHmctsView, caseManagementLocationView
+                                    statementOfTruthView, caseFieldsView
         );
     }
 
@@ -338,25 +335,14 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldSetCaseNameHmctsField() {
+    void shouldSetCaseFields() {
         // When
-        doNothing().when(caseNameHmctsView).setCaseNameHmctsField(any(PCSCase.class));
+        doNothing().when(caseFieldsView).setCaseFields(any(PCSCase.class));
 
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(caseNameHmctsView).setCaseNameHmctsField(pcsCase);
-    }
-
-    @Test
-    void shouldSetCaseManagementLocationField() {
-        // When
-        doNothing().when(caseManagementLocationView).setCaseManagementLocationField(any(PCSCase.class));
-
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        verify(caseManagementLocationView).setCaseManagementLocationField(pcsCase);
+        verify(caseFieldsView).setCaseFields(pcsCase);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
