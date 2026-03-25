@@ -10,29 +10,21 @@
     },
     "legislativeCountry": "England",
     "possessionClaimResponse": {
-      "claimantOrganisations": [
-
-      ],
-      "claimantEnteredDefendantDetails": {
-        "firstName": "Jane",
-        "lastName": "Doe",
-        "nameKnown": "YES",
-        "address": {
-
-        },
-        "addressKnown": "NO"
-      },
-      "defendantContactDetails": {
-        "party": {
-          "firstName": "Jane",
-          "lastName": "Doe",
-          "nameKnown": "YES",
-          "address": {
-
-          },
-          "addressKnown": "NO"
+      "defendantResponses": {
+        "tenancyTypeCorrect": "YES",
+        "tenancyType": "Assured Shorthold Tenancy",
+        "tenancyStartDate": "2020-01-01",
+        "defendantContactDetails": {
+          "party": {
+            "address": {},
+            "lastName": "Doe",
+            "firstName": "Jane",
+            "nameKnown": "YES",
+            "addressKnown": "NO"
+          }
         }
       }
+
     }
   }
 }

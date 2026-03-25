@@ -25,7 +25,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 
 @Slf4j
-@Tag("Functional")
+@Tag("Functional_dev")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -77,7 +77,6 @@ public class RespondPossessionClaimEvents extends BaseApi {
             "/responses/respondPossessionClaim-UnAuthorisedStartEventCallbackResponse.json");
     }
 
-
     @Title("respondToPossessionClaim start event callback test - returns 200")
     @Test
     @Order(2)
@@ -88,15 +87,7 @@ public class RespondPossessionClaimEvents extends BaseApi {
             "/payloads/repondPossessionClaim-startEventCallbackRequest.json",
             Map.of("caseTypeId", caseType, "caseId", caseReference)
         );
-
-        apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
-        apiSteps.theRequestContainsIdempotencyKeyHeader();
-        apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
-        apiSteps.theRequestContainsBody(requestBody);
-        apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
-        apiSteps.checkStatusCode(200);
+        apiSteps.validateAccessCode(caseReference.toString(), accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
@@ -111,7 +102,7 @@ public class RespondPossessionClaimEvents extends BaseApi {
 
     @Title("respondToPossessionClaim submit event callback test - returns 200")
     @Test
-    @Disabled("This feature is currently in development and evolving rapidly, so the test is disabled for now.")
+    @Disabled("This feature is currently in development and evolving, disabled to avoid false negatives.")
     @Order(3)
     void respondToPossessionClaimSubmitEventCallbackTest() {
         String respondClaimRequestBody = PayloadLoader.load(
