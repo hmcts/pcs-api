@@ -67,7 +67,9 @@ public class EnforcementOrderService {
 
     ClaimEntity retrieveClaimEntity(PcsCaseEntity pcsCaseEntity) {
         List<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
-
+        if (CollectionUtils.isEmpty(claimEntities)) {
+            return null;
+        }
         // Assuming 1 claim per PcsCase
         return claimEntities.getFirst();
     }
@@ -105,24 +107,24 @@ public class EnforcementOrderService {
 
     private ConfirmEvictionEntity mapToConfirmEvictionEntity(long caseReference, EnforcementOrder enforcementOrder) {
         ConfirmEvictionEntity confirmEviction = new ConfirmEvictionEntity();
+        EnforcementOrderEntity enforcementOrderEntity = retrieveEnforcementOrderEntity(caseReference);
+        confirmEviction.setEnforcementOrder(enforcementOrderEntity);
 
-        // ...
-        // confirmEviction.setEnforcementOrder();
-
+        // ... Carry out mapping ...
 
         return confirmEviction;
     }
 
-    /**
-     * Currently this is an assumption that it is the latest EnforcementOrder that is the one we are interested in.
-     * @return
-     */
-    private EnforcementOrderEntity retrieveMostRecentEnforcementOrderForClaim(long caseReference) {
+    EnforcementOrderEntity retrieveEnforcementOrderEntity(long caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
-
-        claimEntity.getEnforcementOrders();
-
+        Set<EnforcementOrderEntity> enforcementOrders = claimEntity.getEnforcementOrders();
+        return enforcementOrders.stream()
+            .filter(order -> order.getClaim().getId().equals(claimEntity.getId()))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                "No enforcement order found for claim id=" + claimEntity.getId()
+            ));
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
