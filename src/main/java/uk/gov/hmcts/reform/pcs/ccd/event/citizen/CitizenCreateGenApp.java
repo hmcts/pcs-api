@@ -39,7 +39,7 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(citizenCreateGenApp.name(), this::submit)
-            .forStates() // TODO: Adjust once target states are known and available
+            .forAllStates() // TODO: Adjust once target states are known and available
             .name("Create a General Application")
             .showCondition(ShowConditions.NEVER_SHOW)
             .grant(Permission.CRUD, UserRole.DEFENDANT)
