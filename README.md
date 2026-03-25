@@ -1,4 +1,4 @@
-# pcs-api - SDM Comment
+# pcs-api
 
 ## Building and deploying the application
 

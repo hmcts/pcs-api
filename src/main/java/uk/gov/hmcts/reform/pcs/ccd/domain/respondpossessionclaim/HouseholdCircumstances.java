@@ -20,13 +20,13 @@ public class HouseholdCircumstances {
     @CCD
     private YesOrNo shareAdditionalCircumstances;
 
-    @CCD
+    @CCD(max = 500)
     private String additionalCircumstancesDetails;
 
     @CCD
     private YesOrNo exceptionalHardship;
 
-    @CCD
+    @CCD(max = 500)
     private String exceptionalHardshipDetails;
 
 }
