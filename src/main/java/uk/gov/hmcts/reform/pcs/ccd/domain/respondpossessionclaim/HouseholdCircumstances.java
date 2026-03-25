@@ -23,7 +23,7 @@ public class HouseholdCircumstances {
     @CCD
     private YesOrNo otherTenants;
 
-    @CCD
+    @CCD(max = 500)
     private String otherTenantsDetails;
 
     @CCD
