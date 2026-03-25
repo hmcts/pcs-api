@@ -81,7 +81,7 @@ test.describe('[Create Case - England]', async () => {
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
     await performAction('submitAddressCheckYourAnswers');
-    await performValidation('bannerAlert', 'Case #.* has been xxxx created.');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
