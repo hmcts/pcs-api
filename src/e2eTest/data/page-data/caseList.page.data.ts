@@ -7,7 +7,7 @@ export const caseList = {
   caseTypeLabel: 'Case type',
   eventLabel: 'Event',
   caseNumberLabel: 'Case Number',
-  possessionsJurisdiction: 'Possessions',
+  possessionsJurisdiction: 'Civil Possession',
   caseType:
     {
       civilPossessions: getCaseTypeName()
