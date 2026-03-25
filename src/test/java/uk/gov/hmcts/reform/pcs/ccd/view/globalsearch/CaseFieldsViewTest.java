@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.NO;
@@ -16,6 +16,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -141,45 +143,22 @@ class CaseFieldsViewTest {
         verify(pcsCase).setCaseManagementLocationFormatted("{region:1,baseLocation:29096}");
     }
 
-    @Test
-    void shouldSetCaseManagementLocationFormattedNullIfEpimsIdIsNull() {
+    @ParameterizedTest
+    @CsvSource(value = {
+        "2096,null",
+        "null,1",
+        "null,null"
+    }, nullValues = {"null"})
+    void shouldNotCallSetCaseManagementLocationFormattedWhenIDsAreNull(Integer epimsId, Integer regionId) {
 
         //Given
-        when(pcsCase.getCaseManagementLocation()).thenReturn(null);
-        when(pcsCase.getRegionId()).thenReturn(1);
+        when(pcsCase.getCaseManagementLocation()).thenReturn(epimsId);
+        when(pcsCase.getRegionId()).thenReturn(regionId);
 
         //When
         underTest.setCaseFields(pcsCase);
 
         // Then
-        verify(pcsCase, atLeast(0)).setCaseManagementLocationFormatted(anyString());
-    }
-
-    @Test
-    void shouldSetCaseManagementLocationFormattedNullIfRegionIdIsNull() {
-
-        //Given
-        when(pcsCase.getCaseManagementLocation()).thenReturn(2906);
-        when(pcsCase.getRegionId()).thenReturn(null);
-
-        //When
-        underTest.setCaseFields(pcsCase);
-
-        // Then
-        verify(pcsCase, atLeast(0)).setCaseManagementLocationFormatted(anyString());
-    }
-
-    @Test
-    void shouldSetCaseManagementLocationFormattedNullIfBothIdsAreNull() {
-
-        //Given
-        when(pcsCase.getCaseManagementLocation()).thenReturn(null);
-        when(pcsCase.getRegionId()).thenReturn(null);
-
-        //When
-        underTest.setCaseFields(pcsCase);
-
-        // Then
-        verify(pcsCase, atLeast(0)).setCaseManagementLocationFormatted(anyString());
+        verify(pcsCase, never()).setCaseManagementLocationFormatted(anyString());
     }
 }

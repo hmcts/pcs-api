@@ -46,7 +46,7 @@ public class CaseFieldsView {
      *
      * @param pcsCase The current case data
      */
-    public void setCaseManagementLocationField(final PCSCase pcsCase) {
+    private void setCaseManagementLocationField(final PCSCase pcsCase) {
         Integer epimsId = pcsCase.getCaseManagementLocation();
         Integer region = pcsCase.getRegionId();
 
@@ -92,6 +92,13 @@ public class CaseFieldsView {
     }
 
     private String getFormattedValue(int region, int epimsId) {
-        return String.format("{region:%s,baseLocation:%s}", region, epimsId);
+        var builder = new StringBuilder();
+        return builder
+                .append("{region:")
+                .append(region)
+                .append(",baseLocation:")
+                .append(epimsId).append("}")
+                .toString();
+
     }
 }
