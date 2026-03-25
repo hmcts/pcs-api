@@ -119,6 +119,7 @@ public class DefendantResponseService {
             .freeLegalAdvice(responses.getFreeLegalAdvice())
             .possessionNoticeReceived(responses.getNoticeReceived())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
+            .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
