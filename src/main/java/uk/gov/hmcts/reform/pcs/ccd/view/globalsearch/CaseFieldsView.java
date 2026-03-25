@@ -56,28 +56,20 @@ public class CaseFieldsView {
     }
 
     private String getFormattedClaimantName(final List<ListValue<Party>> claimants) {
-        StringBuilder formattedClaimantName = new StringBuilder();
+        String  formattedClaimantName = null;
         if (claimants != null && !claimants.isEmpty()) {
-            formattedClaimantName.append(claimants.stream()
-                                             .findFirst()
-                                             .map(ListValue<Party>::getValue)
-                                             .map(claimant ->
-                                                      claimant.getOrgName() != null
-                                                          ? claimant.getOrgName() :
-                                                          claimant.getLastName())
-                                             .orElse(null));
+            var claimant = claimants.getFirst().getValue();
+            formattedClaimantName = claimant.getOrgName() != null
+                                             ? claimant.getOrgName() :
+                                             claimant.getLastName();
         }
-        return formattedClaimantName.toString();
+        return formattedClaimantName;
     }
 
     private String getFormattedDefendantName(final List<ListValue<Party>> defendants) {
         StringBuilder formattedDefendantName = new StringBuilder();
         if (defendants != null && !defendants.isEmpty() && isDefendantNameKnown(defendants)) {
-            formattedDefendantName.append(defendants.stream()
-                                              .findFirst()
-                                              .map(ListValue<Party>::getValue)
-                                              .map(Party::getLastName)
-                                              .orElse(null));
+            formattedDefendantName.append(defendants.getFirst().getValue().getLastName());
             if (defendants.size() > 1) {
                 formattedDefendantName.append(" and Others");
             }
