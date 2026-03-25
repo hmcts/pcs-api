@@ -7,7 +7,8 @@ id                                                        UUID PRIMARY KEY,
 
   -- Dates when you can not attend an eviction
   has_unavaliable_dates                                    YES_NO NOT NULL,
-  -- create dates avaliable table !!!
+
+  -- seperate table for dates avaliable table
 
   -- Contact for Bailiff
   before_eviction_name_or_department                        VARCHAR(100),
