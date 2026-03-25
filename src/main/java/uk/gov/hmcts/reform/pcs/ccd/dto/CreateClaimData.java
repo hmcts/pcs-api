@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateClaimData {
+    @CCD(ignore = true)
     private AddressUK propertyAddress;
     private LegislativeCountry legislativeCountry;
     private String feeAmount;
