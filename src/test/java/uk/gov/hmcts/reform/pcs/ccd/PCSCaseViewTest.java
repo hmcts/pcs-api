@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.globalsearch.CaseNameHmctsFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -47,6 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -92,6 +94,8 @@ class PCSCaseViewTest {
     private PcsCaseEntity pcsCaseEntity;
     @Mock
     private ClaimEntity claimEntity;
+    @Mock
+    private CaseNameHmctsFormatter caseNameHmctsFormatter;
 
     private PCSCaseView underTest;
 
@@ -103,7 +107,8 @@ class PCSCaseViewTest {
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
                                     alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
-                                    rentArrearsView, noticeOfPossessionView, statementOfTruthView
+                                    rentArrearsView, noticeOfPossessionView,
+                                    statementOfTruthView, caseNameHmctsFormatter
         );
     }
 
@@ -327,6 +332,17 @@ class PCSCaseViewTest {
         verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
+    }
+
+    @Test
+    void shouldSetCaseNameHmctsField() {
+        // When
+        doNothing().when(caseNameHmctsFormatter).setCaseNameHmctsField(any(PCSCase.class));
+
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(caseNameHmctsFormatter).setCaseNameHmctsField(pcsCase);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
