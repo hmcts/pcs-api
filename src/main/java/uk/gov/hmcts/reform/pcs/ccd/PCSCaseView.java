@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseView;
@@ -23,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.globalsearch.CaseNameHmctsFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
@@ -51,7 +51,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
  */
 @Component
 @AllArgsConstructor
-@Slf4j
 public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private final PcsCaseRepository pcsCaseRepository;
@@ -69,6 +68,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final RentArrearsView rentArrearsView;
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
+    private final CaseNameHmctsFormatter caseNameHmctsFormatter;
     private final EnforcementOrderMediator enforcementOrderMediator;
 
     /**
@@ -81,6 +81,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         State state = request.state();
         PCSCase pcsCase = getSubmittedCase(caseReference);
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
+
+        caseNameHmctsFormatter.setCaseNameHmctsField(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
