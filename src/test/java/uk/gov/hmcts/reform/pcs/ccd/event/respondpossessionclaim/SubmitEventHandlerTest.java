@@ -282,12 +282,12 @@ class SubmitEventHandlerTest {
             .shareIncomeExpenseDetails(YesOrNo.YES)
             .incomeFromJobs(YesOrNo.YES)
             .incomeFromJobsAmount(new BigDecimal("200000")) // £2000.00 in pence
-            .incomeFromJobsFrequency(IncomeFrequency.MONTH)
+            .incomeFromJobsFrequency(IncomeFrequency.MONTHLY)
             .pension(YesOrNo.NO)
             .universalCredit(YesOrNo.YES)
             .ucApplicationDate(LocalDate.of(2024, 2, 10))
             .universalCreditAmount(new BigDecimal("100000")) // £1000.00 in pence
-            .universalCreditFrequency(IncomeFrequency.MONTH)
+            .universalCreditFrequency(IncomeFrequency.MONTHLY)
             .otherBenefits(YesOrNo.NO)
             .moneyFromElsewhere(YesOrNo.YES)
             .moneyFromElsewhereDetails("Receive child support payments")
@@ -331,14 +331,14 @@ class SubmitEventHandlerTest {
 
         assertThat(capturedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
         assertThat(capturedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("200000");
-        assertThat(capturedHousehold.getIncomeFromJobsFrequency()).isEqualTo(IncomeFrequency.MONTH);
+        assertThat(capturedHousehold.getIncomeFromJobsFrequency()).isEqualTo(IncomeFrequency.MONTHLY);
 
         assertThat(capturedHousehold.getPension()).isEqualTo(YesOrNo.NO);
 
         assertThat(capturedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
         assertThat(capturedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 2, 10));
         assertThat(capturedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("100000");
-        assertThat(capturedHousehold.getUniversalCreditFrequency()).isEqualTo(IncomeFrequency.MONTH);
+        assertThat(capturedHousehold.getUniversalCreditFrequency()).isEqualTo(IncomeFrequency.MONTHLY);
 
         assertThat(capturedHousehold.getOtherBenefits()).isEqualTo(YesOrNo.NO);
 

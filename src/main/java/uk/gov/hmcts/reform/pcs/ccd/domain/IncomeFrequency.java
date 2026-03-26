@@ -6,8 +6,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
  * Enum representing the frequency of income and benefit payments.
  */
 public enum IncomeFrequency implements HasLabel {
-    WEEK("Weekly"),
-    MONTH("Monthly");
+    WEEKLY("Weekly"),
+    MONTHLY("Monthly");
 
     private final String label;
 
