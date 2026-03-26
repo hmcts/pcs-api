@@ -86,38 +86,38 @@ public class WarrantOfRestitutionMapper {
                 .enforcementOrder(enforcementOrderEntity).build();
         if (enforcementOrder.getWarrantOfRestitutionDetails() != null) {
             WarrantOfRestitutionDetails warrantOfRestitutionDetails = enforcementOrder.getWarrantOfRestitutionDetails();
-            controlFlags(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
-            peopleToEvict(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
-            defendantReturned(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
-            additionalInformation(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
-            propertyAccessDetails(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
+            mapControlFlags(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
+            mapPeopleToEvict(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
+            mapDefendantReturned(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
+            mapAdditionalInformation(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
+            mapPropertyAccessDetails(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
         }
         return warrantOfRestitutionEntity;
     }
 
-    private void controlFlags(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
-                              WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
+    private void mapControlFlags(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
+                                 WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
         warrantOfRestitutionEntity.setShowPeopleWhoWillBeEvictedPage(
                 convertYesOrNoToVerticalYesNo(warrantOfRestitutionDetails.getShowPeopleWhoWillBeEvictedPage()));
         warrantOfRestitutionEntity.setShowPeopleYouWantToEvictPage(
                 convertYesOrNoToVerticalYesNo(warrantOfRestitutionDetails.getShowPeopleYouWantToEvictPage()));
     }
 
-    private void peopleToEvict(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
-                               WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
+    private void mapPeopleToEvict(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
+                                  WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
         if (warrantOfRestitutionDetails.getPeopleToEvict() != null) {
             warrantOfRestitutionEntity.setEvictEveryone(warrantOfRestitutionDetails.getPeopleToEvict()
                     .getEvictEveryone());
         }
     }
 
-    private void defendantReturned(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
-                                   WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
+    private void mapDefendantReturned(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
+                                      WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
         warrantOfRestitutionEntity.setHowDefendantsReturned(warrantOfRestitutionDetails.getHowDefendantsReturned());
     }
 
-    private void additionalInformation(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
-                                       WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
+    private void mapAdditionalInformation(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
+                                          WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
         if (warrantOfRestitutionDetails.getAdditionalInformation() != null) {
             warrantOfRestitutionEntity.setAdditionalInformationSelect(
                     warrantOfRestitutionDetails.getAdditionalInformation().getAdditionalInformationSelect());
@@ -126,8 +126,8 @@ public class WarrantOfRestitutionMapper {
         }
     }
 
-    private void propertyAccessDetails(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
-                                       WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
+    private void mapPropertyAccessDetails(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
+                                          WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
         if (warrantOfRestitutionDetails.getPropertyAccessDetails() != null) {
             warrantOfRestitutionEntity.setIsDifficultToAccessProperty(
                     warrantOfRestitutionDetails.getPropertyAccessDetails().getIsDifficultToAccessProperty());

@@ -33,7 +33,6 @@ public class WarrantOfRestitutionStrategy implements EnforcementTypeStrategy {
                                              EnforcementOrderEntity enforcementOrderEntity) {
         WarrantOfRestitutionEntity warrantOfRestitutionEntity = warrantOfRestitutionMapper.toEntity(enforcementOrder,
                 enforcementOrderEntity);
-        warrantOfRestitutionEntity.setEnforcementOrder(enforcementOrderEntity);
         WarrantOfRestitutionEntity saved = warrantOfRestitutionRepository.save(warrantOfRestitutionEntity);
         enforcementOrderEntity.setWarrantOfRestitutionDetails(saved);
     }

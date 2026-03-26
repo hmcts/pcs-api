@@ -146,7 +146,7 @@ class WarrantOfRestitutionMapperTest {
     }
 
     @Test
-    void shouldMapControlFlags() {
+    void shouldMapMapControlFlags() {
         // Given
         WarrantOfRestitutionDetails warrantOfRestitutionDetails = WarrantOfRestitutionDetails.builder()
                 .showPeopleWhoWillBeEvictedPage(YesOrNo.NO)
@@ -164,7 +164,7 @@ class WarrantOfRestitutionMapperTest {
     }
 
     @Test
-    void shouldMapControlFlagsWithNullValues() {
+    void shouldMapMapControlFlagsWithNullValues() {
         // Given
         WarrantOfRestitutionDetails warrantOfRestitutionDetails = WarrantOfRestitutionDetails.builder()
                 .showPeopleWhoWillBeEvictedPage(null)
@@ -183,7 +183,7 @@ class WarrantOfRestitutionMapperTest {
     }
 
     @Test
-    void shouldMapAdditionalInformation() {
+    void shouldMapMapAdditionalInformation() {
         // Given
         AdditionalInformation additionalInfo = AdditionalInformation.builder()
                 .additionalInformationSelect(VerticalYesNo.YES)
@@ -204,7 +204,7 @@ class WarrantOfRestitutionMapperTest {
     }
 
     @Test
-    void shouldHandleNullAdditionalInformation() {
+    void shouldHandleNullMapAdditionalInformation() {
         // Given
         WarrantOfRestitutionDetails warrantOfRestitutionDetails = WarrantOfRestitutionDetails.builder()
                 .additionalInformation(null)
@@ -223,7 +223,7 @@ class WarrantOfRestitutionMapperTest {
     }
 
     @Test
-    void shouldMapPeopleToEvict() {
+    void shouldMapMapPeopleToEvict() {
         // Given
         PeopleToEvict peopleToEvict = PeopleToEvict.builder().evictEveryone(VerticalYesNo.YES).build();
         WarrantOfRestitutionDetails warrantOfRestitutionDetails = WarrantOfRestitutionDetails.builder()
@@ -239,7 +239,22 @@ class WarrantOfRestitutionMapperTest {
     }
 
     @Test
-    void shouldMapPropertyAccessDetails() {
+    void shouldMapDefendantReturned() {
+        // Given
+        WarrantOfRestitutionDetails warrantOfRestitutionDetails = WarrantOfRestitutionDetails.builder()
+                .howDefendantsReturned("defendants returned test").build();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(warrantOfRestitutionDetails).build();
+
+        // When
+        WarrantOfRestitutionEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
+
+        // Then
+        assertThat(result.getHowDefendantsReturned()).isEqualTo("defendants returned test");
+    }
+
+    @Test
+    void shouldMapMapPropertyAccessDetails() {
         // Given
         PropertyAccessDetails accessDetails = PropertyAccessDetails.builder()
                 .isDifficultToAccessProperty(VerticalYesNo.YES)

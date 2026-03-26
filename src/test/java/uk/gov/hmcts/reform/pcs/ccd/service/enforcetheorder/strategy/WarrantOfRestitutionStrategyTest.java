@@ -62,7 +62,9 @@ class WarrantOfRestitutionStrategyTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
                 .warrantOfRestitutionDetails(warrantOfRestitutionDetails)
                 .rawWarrantRestDetails(rawWarrantRestDetails).build();
-        WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder().build();
+        WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder()
+                .enforcementOrder(enforcementOrderEntity)
+                .build();
         when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
                 .thenReturn(warrantOfRestitutionEntity);
         when(warrantOfRestitutionRepository.save(warrantOfRestitutionEntity)).thenReturn(warrantOfRestitutionEntity);
