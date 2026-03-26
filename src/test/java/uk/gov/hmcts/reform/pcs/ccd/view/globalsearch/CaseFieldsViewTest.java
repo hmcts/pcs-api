@@ -149,7 +149,7 @@ class CaseFieldsViewTest {
         "null,1",
         "null,null"
     }, nullValues = {"null"})
-    void shouldNotCallSetCaseManagementLocationFormattedWhenIDsAreNull(Integer epimsId, Integer regionId) {
+    void shouldNotCallSetCaseManagementLocationFormattedWhenEitherIdIsNull(Integer epimsId, Integer regionId) {
 
         //Given
         when(pcsCase.getCaseManagementLocation()).thenReturn(epimsId);

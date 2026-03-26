@@ -84,13 +84,6 @@ public class CaseFieldsView {
     }
 
     private String getFormattedValue(int region, int epimsId) {
-        var builder = new StringBuilder();
-        return builder
-                .append("{region:")
-                .append(region)
-                .append(",baseLocation:")
-                .append(epimsId).append("}")
-                .toString();
-
+        return "{region:%s,baseLocation:%s}".formatted(region, epimsId);
     }
 }
