@@ -94,6 +94,8 @@ class RiskDetailsMapperTest {
                     .warrantDetails(WarrantDetails.builder()
                             .anyRiskToBailiff(YesNoNotSure.NO)
                             .build())
+                    .rawWarrantDetails(RawWarrantDetails.builder()
+                            .build())
                     .build();
 
             RiskProfileEntity result = mapper.toEntity(orderEntity, order);
@@ -165,6 +167,8 @@ class RiskDetailsMapperTest {
                     .chooseEnforcementType(buildEnforcementTypes(SelectEnforcementType.WARRANT_OF_RESTITUTION))
                     .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
                             .anyRiskToBailiff(YesNoNotSure.NO)
+                            .build())
+                    .rawWarrantRestDetails(RawWarrantRestDetails.builder()
                             .build())
                     .build();
 

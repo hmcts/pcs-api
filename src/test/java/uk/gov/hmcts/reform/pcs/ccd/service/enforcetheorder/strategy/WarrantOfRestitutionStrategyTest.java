@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.StatementOfTru
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -75,7 +74,7 @@ class WarrantOfRestitutionStrategyTest {
         // Then
         verify(riskProfileService).processRisk(enforcementOrder, enforcementOrderEntity);
         verify(warrantOfRestitutionRepository).save(captor.capture());
-        verify(statementOfTruthMapper).mapStatementOfTruthForWarrantRest(enforcementOrder, enforcementOrderEntity);
+        verify(statementOfTruthMapper).mapStatementOfTruthForWarrantRest(enforcementOrder);
         WarrantOfRestitutionEntity saved = captor.getValue();
         assertThat(saved).isNotNull();
         assertThat(saved.getEnforcementOrder()).isSameAs(enforcementOrderEntity);
@@ -106,12 +105,14 @@ class WarrantOfRestitutionStrategyTest {
         when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
                 .thenReturn(warrantOfRestitutionEntity);
         when(warrantOfRestitutionRepository.save(warrantOfRestitutionEntity)).thenReturn(warrantOfRestitutionEntity);
+        when(statementOfTruthMapper.mapStatementOfTruthForWarrantRest(enforcementOrder))
+                .thenReturn(statementOfTruthEntity);
 
         // When
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
-        verify(statementOfTruthMapper).mapStatementOfTruthForWarrantRest(enforcementOrder, enforcementOrderEntity);
-        verify(statementOfTruthRepository).save(any());
+        verify(statementOfTruthMapper).mapStatementOfTruthForWarrantRest(enforcementOrder);
+        verify(statementOfTruthRepository).save(statementOfTruthEntity);
     }
 }

@@ -40,8 +40,9 @@ public class WarrantOfRestitutionStrategy implements EnforcementTypeStrategy {
 
     private void processStatementOfTruth(EnforcementOrder enforcementOrder,
                                          EnforcementOrderEntity enforcementOrderEntity) {
-        statementOfTruthMapper.mapStatementOfTruthForWarrantRest(enforcementOrder, enforcementOrderEntity);
-        StatementOfTruthEntity statementOfTruthEntity = enforcementOrderEntity.getStatementOfTruth();
+        StatementOfTruthEntity statementOfTruthEntity =
+                statementOfTruthMapper.mapStatementOfTruthForWarrantRest(enforcementOrder);
+        enforcementOrderEntity.setStatementOfTruth(statementOfTruthEntity);
         statementOfTruthRepository.save(statementOfTruthEntity);
     }
 }

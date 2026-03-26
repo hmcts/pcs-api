@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.R
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.StatementOfTruthService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,12 +27,10 @@ class StatementOfTruthMapperTest {
     @InjectMocks
     private StatementOfTruthMapper underTest;
 
-    private EnforcementOrderEntity enforcementOrderEntity;
     private StatementOfTruthEntity statementOfTruthEntity;
 
     @BeforeEach
     void setUp() {
-        enforcementOrderEntity = new EnforcementOrderEntity();
         statementOfTruthEntity = new StatementOfTruthEntity();
         statementOfTruthEntity.setCompletedBy(StatementOfTruthCompletedBy.CLAIMANT);
         statementOfTruthEntity.setFullName("John Doe");
@@ -56,8 +53,7 @@ class StatementOfTruthMapperTest {
                 .thenReturn(statementOfTruthEntity);
 
         // When
-        underTest.mapStatementOfTruthForWarrantRest(enforcementOrder, enforcementOrderEntity);
-        StatementOfTruthEntity result = enforcementOrderEntity.getStatementOfTruth();
+        StatementOfTruthEntity result = underTest.mapStatementOfTruthForWarrantRest(enforcementOrder);
 
         // Then
         assertThat(result.getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.CLAIMANT);
@@ -72,7 +68,7 @@ class StatementOfTruthMapperTest {
                 .rawWarrantRestDetails(rawWarrantRestDetails).build();
 
         // When
-        underTest.mapStatementOfTruthForWarrantRest(enforcementOrder, enforcementOrderEntity);
+        underTest.mapStatementOfTruthForWarrantRest(enforcementOrder);
 
         // Then
         verify(statementOfTruthService, never()).createStatementOfTruth(any());
@@ -83,7 +79,7 @@ class StatementOfTruthMapperTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
 
         // When
-        underTest.mapStatementOfTruthForWarrantRest(enforcementOrder, enforcementOrderEntity);
+        underTest.mapStatementOfTruthForWarrantRest(enforcementOrder);
 
         // Then
         verify(statementOfTruthService, never()).createStatementOfTruth(any());
