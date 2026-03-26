@@ -52,11 +52,6 @@ public class WarrantOfRestitutionEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
-    // PeopleToEvict
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo evictEveryone;
-
     // Defendants Returned
     private String howDefendantsReturned;
 

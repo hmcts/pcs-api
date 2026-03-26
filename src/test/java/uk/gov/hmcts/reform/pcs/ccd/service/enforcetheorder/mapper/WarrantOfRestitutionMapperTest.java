@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTrut
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
@@ -220,22 +219,6 @@ class WarrantOfRestitutionMapperTest {
         // Then
         assertThat(result.getAdditionalInformationSelect()).isNull();
         assertThat(result.getAdditionalInformationDetails()).isNull();
-    }
-
-    @Test
-    void shouldMapMapPeopleToEvict() {
-        // Given
-        PeopleToEvict peopleToEvict = PeopleToEvict.builder().evictEveryone(VerticalYesNo.YES).build();
-        WarrantOfRestitutionDetails warrantOfRestitutionDetails = WarrantOfRestitutionDetails.builder()
-                .peopleToEvict(peopleToEvict).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .warrantOfRestitutionDetails(warrantOfRestitutionDetails).build();
-
-        // When
-        WarrantOfRestitutionEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getEvictEveryone()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test

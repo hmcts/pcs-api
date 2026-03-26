@@ -87,7 +87,6 @@ public class WarrantOfRestitutionMapper {
         if (enforcementOrder.getWarrantOfRestitutionDetails() != null) {
             WarrantOfRestitutionDetails warrantOfRestitutionDetails = enforcementOrder.getWarrantOfRestitutionDetails();
             mapControlFlags(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
-            mapPeopleToEvict(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
             mapDefendantReturned(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
             mapAdditionalInformation(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
             mapPropertyAccessDetails(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
@@ -101,14 +100,6 @@ public class WarrantOfRestitutionMapper {
                 convertYesOrNoToVerticalYesNo(warrantOfRestitutionDetails.getShowPeopleWhoWillBeEvictedPage()));
         warrantOfRestitutionEntity.setShowPeopleYouWantToEvictPage(
                 convertYesOrNoToVerticalYesNo(warrantOfRestitutionDetails.getShowPeopleYouWantToEvictPage()));
-    }
-
-    private void mapPeopleToEvict(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
-                                  WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
-        if (warrantOfRestitutionDetails.getPeopleToEvict() != null) {
-            warrantOfRestitutionEntity.setEvictEveryone(warrantOfRestitutionDetails.getPeopleToEvict()
-                    .getEvictEveryone());
-        }
     }
 
     private void mapDefendantReturned(WarrantOfRestitutionEntity warrantOfRestitutionEntity,

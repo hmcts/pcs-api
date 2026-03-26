@@ -11,9 +11,6 @@ ALTER TABLE public.enf_warrant_of_restitution
 ADD COLUMN show_people_who_will_be_evicted_page     YES_NO,
 ADD COLUMN show_people_you_want_to_evict_page       YES_NO,
 
--- PeopleToEvict
-ADD COLUMN evict_everyone                           YES_NO,
-
 -- How the defendants returned to the property
 ADD COLUMN how_defendants_returned                  VARCHAR(6800),
 
