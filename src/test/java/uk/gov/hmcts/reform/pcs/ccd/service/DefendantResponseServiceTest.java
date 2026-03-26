@@ -237,7 +237,7 @@ class DefendantResponseServiceTest {
 
     @ParameterizedTest(name = "landlordRegistered={0}")
     @MethodSource("landlordRegisteredPersistenceScenarios")
-    void shouldPersistlandlordRegistered(YesNoNotSure landlordRegistered) {
+    void shouldPersistLandlordRegistered(YesNoNotSure landlordRegistered) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
@@ -301,6 +301,42 @@ class DefendantResponseServiceTest {
     }
 
     private static Stream<Arguments> writtenTermsPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of(YesNoNotSure.NOT_SURE),
+            Arguments.of((YesNoNotSure) null)
+        );
+    }
+
+    @ParameterizedTest(name = "landlordLicensed={0}")
+    @MethodSource("landlordLicensedScenarios")
+    void shouldPersistLandlordLicensed(YesNoNotSure landlordLicensed) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .landlordLicensed(landlordLicensed)
+            .build();
+
+        // When
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getLandlordLicensed()).isEqualTo(landlordLicensed);
+    }
+
+    private static Stream<Arguments> landlordLicensedScenarios() {
         return Stream.of(
             Arguments.of(YesNoNotSure.YES),
             Arguments.of(YesNoNotSure.NO),

@@ -127,6 +127,7 @@ public class DefendantResponseService {
                     ? responses.getTenancyStartDate()
                     : null
             )
+            .landlordLicensed(responses.getLandlordLicensed())
             .noticeReceivedDate(responses.getNoticeReceivedDate())
             .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
             .build();
