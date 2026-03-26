@@ -1,5 +1,7 @@
 java:
   applicationPort: 3206
+  memoryRequests: '1.5Gi'
+  memoryLimits: '2Gi'
   image: 'hmctsprod.azurecr.io/pcs/api:latest'
   ingressHost: pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: pcs
