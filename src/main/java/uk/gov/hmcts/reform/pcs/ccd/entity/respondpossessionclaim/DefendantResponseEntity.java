@@ -126,6 +126,9 @@ public class DefendantResponseEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesNoNotSure writtenTerms;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesNoNotSure landlordLicensed;
 
     @Enumerated(EnumType.STRING)
