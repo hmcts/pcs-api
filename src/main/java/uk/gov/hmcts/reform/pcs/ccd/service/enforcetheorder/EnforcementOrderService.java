@@ -111,7 +111,10 @@ public class EnforcementOrderService {
 
     private EnforcementOrderEntity retrieveEnforcementOrderEntity(long caseReference) {
         Set<EnforcementOrderEntity> enforcementOrders = getEnforcementOrderEntities(caseReference);
-        return !enforcementOrders.isEmpty() ? enforcementOrders.stream().findFirst().get() : null;
+        if (enforcementOrders.isEmpty()) {
+            return null;
+        }
+        return enforcementOrders.stream().findFirst().orElse(null);
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
