@@ -8,21 +8,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class DraftCaseJsonMerger {
 
-    private static final List<String> ADDRESS_FIELDS = List.of(
-        "AddressLine1",
-        "AddressLine2",
-        "AddressLine3",
-        "PostTown",
-        "County",
-        "PostCode",
-        "Country"
-    );
+    private static final Set<String> REPLACE_FIELDS = Set.of("address");
+
 
     private final ObjectMapper objectMapper;
 
@@ -42,7 +35,7 @@ public class DraftCaseJsonMerger {
         JsonNode base = objectMapper.readValue(baseJson, JsonNode.class);
         JsonNode patch = objectMapper.readValue(patchJson, JsonNode.class);
 
-        clearAddressFieldsRecursively(base, patch);
+        applyReplaceRulesRecursively(base, patch);
 
         JsonNode merged = objectMapper.readerForUpdating(base)
             .readValue(patchJson);
@@ -51,10 +44,10 @@ public class DraftCaseJsonMerger {
     }
 
     /**
-     * Clears address fields in the base JSON where the patch contains an address object.
-     * Fully replaces the old address rather than merging individual fields.
+     * Clears fields in the base JSON where the patch contains an address object.
+     * Fully replaces the old fields rather than merging individual fields.
      */
-    private void clearAddressFieldsRecursively(JsonNode base, JsonNode patch) {
+    private void applyReplaceRulesRecursively(JsonNode base, JsonNode patch) {
         if (!patch.isObject() || !base.isObject()) {
             return;
         }
@@ -68,18 +61,17 @@ public class DraftCaseJsonMerger {
             if (base.has(fieldName)) {
                 JsonNode baseChild = base.get(fieldName);
 
-                if ("address".equalsIgnoreCase(fieldName) && patchChild.isObject() && baseChild instanceof ObjectNode) {
-                    clearAddressFields((ObjectNode) baseChild);
+                if (REPLACE_FIELDS.contains(fieldName.toLowerCase())
+                    && patchChild.isObject()
+                    && base instanceof ObjectNode) {
+
+                    ((ObjectNode) base).set(fieldName, objectMapper.createObjectNode());
+
                 } else {
-                    clearAddressFieldsRecursively(baseChild, patchChild);
+                    applyReplaceRulesRecursively(baseChild, patchChild);
                 }
             }
         }
     }
 
-    private void clearAddressFields(ObjectNode addressNode) {
-        for (String addressField : ADDRESS_FIELDS) {
-            addressNode.remove(addressField);
-        }
-    }
 }
