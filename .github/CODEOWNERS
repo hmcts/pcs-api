@@ -4,7 +4,7 @@
 gradle/wrapper/gradle-wrapper.properties
 Dockerfile
 build.gradle
-charts/**/Chart.yaml
+charts/pcs-api/Chart.yaml
 .github/workflows/*.yaml
 infrastructure/.terraform-version
 src/e2eTest/.nvmrc
