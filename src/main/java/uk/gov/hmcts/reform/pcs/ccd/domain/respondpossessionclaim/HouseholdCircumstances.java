@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Size;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -72,6 +73,7 @@ public class HouseholdCircumstances {
     private YesOrNo moneyFromElsewhere;
 
     @CCD
+    @Size(max = 500)
     private String moneyFromElsewhereDetails;
 
 }
