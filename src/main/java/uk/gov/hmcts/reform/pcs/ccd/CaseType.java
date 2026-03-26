@@ -88,5 +88,9 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("serviceRequest", "Service Request")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
+
+        builder.tab("claimantSolicitor", "Claimant Solicitor")
+            .showCondition(ShowConditions.userRoleEquals(UserRole.CLAIMANT_SOLICITOR.getRole()))
+            .field(PCSCase::getPropertyAddress);
     }
 }

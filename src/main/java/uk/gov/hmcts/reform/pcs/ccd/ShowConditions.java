@@ -25,4 +25,8 @@ public class ShowConditions {
         return "%sCONTAINS\"%s\"".formatted(fieldId, value.name());
     }
 
+    public static String userRoleEquals(String ccdRole) {
+        return "[USER_ROLE]=\"%s\"".formatted(ccdRole);
+    }
+
 }
