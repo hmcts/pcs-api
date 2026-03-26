@@ -64,9 +64,15 @@ public class EnforcementOrderEntity {
     @JsonBackReference
     private StatementOfTruthEntity statementOfTruth;
 
-    @OneToMany(mappedBy = "enforcementOrder", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "enfCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @Builder.Default
     @JsonManagedReference
     private List<DocumentEntity> documents = new ArrayList<>();
 
+    public void addDocuments(List<DocumentEntity> documents) {
+        for (DocumentEntity document : documents) {
+            document.setEnfCase(this);
+            this.documents.add(document);
+        }
+    }
 }

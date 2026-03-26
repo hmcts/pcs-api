@@ -63,5 +63,5 @@ public class DocumentEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "enf_case_id")
     @JsonBackReference
-    private EnforcementOrderEntity enforcementOrder;
+    private EnforcementOrderEntity enfCase;
 }

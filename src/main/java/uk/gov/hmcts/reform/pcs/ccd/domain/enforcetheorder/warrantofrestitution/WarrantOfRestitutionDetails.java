@@ -82,7 +82,7 @@ public class WarrantOfRestitutionDetails {
             label = "Add document",
             hint = "Upload a document to the system"
     )
-    private List<ListValue<EvidenceOfDefendants>> additionalDocuments;
+    private List<ListValue<EvidenceOfDefendantsDocuments>> additionalDocuments;
 
     @JsonUnwrapped
     @CCD
