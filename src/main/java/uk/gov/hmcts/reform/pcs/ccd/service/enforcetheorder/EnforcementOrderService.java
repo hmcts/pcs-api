@@ -49,20 +49,16 @@ public class EnforcementOrderService {
                 .orElse(null);
     }
 
-    private Set<EnforcementOrderEntity> getEnforcementOrderEntities(long caseReference) {
+    Set<EnforcementOrderEntity> getEnforcementOrderEntities(long caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
         if (claimEntity == null) {
             log.debug("No claim entities found for PCS case when retrieving enforcement order for caseReference={}",
                       caseReference
             );
-            return null;
+            return Set.of();
         }
-        Set<EnforcementOrderEntity> enforcementEntitySet = claimEntity.getEnforcementOrders();
-        if (CollectionUtils.isEmpty(enforcementEntitySet)) {
-            return null;
-        }
-        return enforcementEntitySet;
+        return claimEntity.getEnforcementOrders();
     }
 
     ClaimEntity retrieveClaimEntity(PcsCaseEntity pcsCaseEntity) {
@@ -100,25 +96,21 @@ public class EnforcementOrderService {
         return claimEntities.getFirst();
     }
 
-    public void confirmEviction(long caseReference, EnforcementOrder enforcementOrder) {
-        ConfirmEvictionEntity confirmEviction = mapToConfirmEvictionEntity(caseReference, enforcementOrder);
+    public void confirmEviction(long caseReference) {
+        ConfirmEvictionEntity confirmEviction = mapToConfirmEvictionEntity(caseReference);
         confirmEvictionRepository.save(confirmEviction);
     }
 
-    private ConfirmEvictionEntity mapToConfirmEvictionEntity(long caseReference, EnforcementOrder enforcementOrder) {
+    private ConfirmEvictionEntity mapToConfirmEvictionEntity(long caseReference) {
         ConfirmEvictionEntity confirmEviction = new ConfirmEvictionEntity();
         EnforcementOrderEntity enforcementOrderEntity = retrieveEnforcementOrderEntity(caseReference);
         confirmEviction.setEnforcementOrder(enforcementOrderEntity);
 
-        // ... Carry out mapping ...
-
         return confirmEviction;
     }
 
-    EnforcementOrderEntity retrieveEnforcementOrderEntity(long caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
-        Set<EnforcementOrderEntity> enforcementOrders = claimEntity.getEnforcementOrders();
+    private EnforcementOrderEntity retrieveEnforcementOrderEntity(long caseReference) {
+        Set<EnforcementOrderEntity> enforcementOrders = getEnforcementOrderEntities(caseReference);
         return !enforcementOrders.isEmpty() ? enforcementOrders.stream().findFirst().get() : null;
     }
 

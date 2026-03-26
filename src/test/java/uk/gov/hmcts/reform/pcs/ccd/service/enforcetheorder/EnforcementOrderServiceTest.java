@@ -170,7 +170,7 @@ class EnforcementOrderServiceTest {
     }
 
     @Test
-    void confirmEviction() {
+    void shouldConfirmEviction() {
         // Given
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(anyLong())).thenReturn(pcsCaseEntity);
@@ -178,13 +178,45 @@ class EnforcementOrderServiceTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         EnforcementOrderEntity enforcementOrderEntity = mock(EnforcementOrderEntity.class);
         when(claimEntity.getEnforcementOrders()).thenReturn(Set.of(enforcementOrderEntity));
-        EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
 
         // When
-        underTest.confirmEviction(CASE_REFERENCE, enforcementOrder);
+        underTest.confirmEviction(CASE_REFERENCE);
 
         // Then
         verify(confirmEvictionRepository).save(any(ConfirmEvictionEntity.class));
+    }
+
+    @Test
+    void shouldReturnEmptySetWhenNoClaimEntityFound() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setClaims(List.of());
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        Set<EnforcementOrderEntity> result = underTest.getEnforcementOrderEntities(CASE_REFERENCE);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEnforcementOrdersFromClaimEntity() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        ClaimEntity claimEntity = new ClaimEntity();
+        EnforcementOrderEntity enforcementOrderEntity1 = new EnforcementOrderEntity();
+        EnforcementOrderEntity enforcementOrderEntity2 = new EnforcementOrderEntity();
+        Set<EnforcementOrderEntity> enforcementOrders = Set.of(enforcementOrderEntity1, enforcementOrderEntity2);
+        claimEntity.setEnforcementOrders(enforcementOrders);
+        pcsCaseEntity.setClaims(List.of(claimEntity));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        Set<EnforcementOrderEntity> result = underTest.getEnforcementOrderEntities(CASE_REFERENCE);
+
+        // Then
+        assertThat(result).containsExactlyInAnyOrder(enforcementOrderEntity1, enforcementOrderEntity2);
     }
 
 }
