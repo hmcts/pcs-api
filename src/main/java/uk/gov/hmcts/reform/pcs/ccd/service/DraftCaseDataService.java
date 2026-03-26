@@ -1,7 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -15,8 +18,14 @@ import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -85,8 +94,9 @@ public class DraftCaseDataService {
         UUID userId = getCurrentUserId();
         log.info("Patching draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
 
+        List<String> clearFields = extractClearFields(eventData);
         String patchEventDataJson = writeCaseDataJson(eventData);
-        patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson);
+        patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson, clearFields);
     }
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
@@ -106,6 +116,25 @@ public class DraftCaseDataService {
         DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
         log.debug("Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
             saved.getId(), saved.getCaseReference(), saved.getEventId(), saved.getIdamUserId());
+    }
+
+    public void patchUnsubmittedCaseData(long caseReference, EventId eventId,
+                                          String patchEventDataJson, List<String> clearFields) {
+        UUID userId = getCurrentUserId();
+        DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
+            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
+            .map(existingDraft -> {
+                String mergedJson = mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson);
+
+                if (clearFields != null && !clearFields.isEmpty()) {
+                    mergedJson = applyClearFieldsAndSerialize(mergedJson, clearFields);
+                }
+
+                existingDraft.setCaseData(mergedJson);
+                return existingDraft;
+            }).orElseGet(() -> createNewDraft(caseReference, eventId, userId, patchEventDataJson));
+
+        draftCaseDataRepository.save(draftCaseDataEntity);
     }
 
     private String mergeCaseDataJson(String baseCaseDataJson, String patchCaseDataJson) {
@@ -156,6 +185,85 @@ public class DraftCaseDataService {
         newDraft.setEventId(eventId);
         newDraft.setIdamUserId(userId);
         return newDraft;
+    }
+
+    private <T> List<String> extractClearFields(T eventData) {
+        if (eventData instanceof PCSCase) {
+            PCSCase pcsCase = (PCSCase) eventData;
+            if (pcsCase.getPossessionClaimResponse() != null) {
+                List<String> clearFields = pcsCase.getPossessionClaimResponse().getClearFields();
+                return clearFields != null ? clearFields : List.of();
+            }
+        }
+        return List.of();
+    }
+
+    private String applyClearFieldsAndSerialize(String mergedJson, List<String> clearFields) {
+        try {
+            ObjectNode root = (ObjectNode) objectMapper.readTree(mergedJson);
+
+            JsonNode pcrNode = root.at("/possessionClaimResponse");
+            if (pcrNode.isObject()) {
+                ObjectNode pcr = (ObjectNode) pcrNode;
+
+                for (String fieldPath : clearFields) {
+                    setFieldToNull(pcr, fieldPath);
+                }
+
+                pcr.remove("clearFields");
+            }
+
+            Set<String> clearFieldsSet = new HashSet<>(clearFields);
+            removeNullFieldsExcept(root, "possessionClaimResponse", clearFieldsSet);
+
+            ObjectMapper nullIncludingMapper = objectMapper.copy()
+                .setSerializationInclusion(JsonInclude.Include.ALWAYS);
+
+            return nullIncludingMapper.writeValueAsString(root);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to apply clearFields", e);
+            throw new UnsubmittedDataException("Failed to clear fields", e);
+        }
+    }
+
+    private void setFieldToNull(ObjectNode root, String fieldPath) {
+        String[] pathSegments = fieldPath.split("\\.");
+        ObjectNode current = root;
+
+        for (int i = 0; i < pathSegments.length - 1; i++) {
+            JsonNode next = current.get(pathSegments[i]);
+            if (next == null || !next.isObject()) {
+                return;
+            }
+            current = (ObjectNode) next;
+        }
+
+        String fieldName = pathSegments[pathSegments.length - 1];
+        current.set(fieldName, current.nullNode());
+    }
+
+    private void removeNullFieldsExcept(ObjectNode node, String currentPath, Set<String> keepNulls) {
+        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+        List<String> toRemove = new ArrayList<>();
+
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            String fieldName = field.getKey();
+            JsonNode value = field.getValue();
+            String fullPath = currentPath.isEmpty() ? fieldName : currentPath + "." + fieldName;
+
+            if (value.isNull()) {
+                if (!keepNulls.contains(fullPath)) {
+                    toRemove.add(fieldName);
+                }
+            } else if (value.isObject()) {
+                removeNullFieldsExcept((ObjectNode) value, fullPath, keepNulls);
+            }
+        }
+
+        for (String fieldName : toRemove) {
+            node.remove(fieldName);
+        }
     }
 
 }
