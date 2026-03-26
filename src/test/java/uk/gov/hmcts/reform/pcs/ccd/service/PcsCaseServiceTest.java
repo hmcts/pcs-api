@@ -191,7 +191,7 @@ class PcsCaseServiceTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(java.util.Optional.of(pcsCaseEntity));
 
         // When
-        underTest.patchCase(CASE_REFERENCE, caseData);
+        underTest.patchCaseLinks(CASE_REFERENCE, caseData);
 
         // Then
         verify(pcsCaseEntity, atLeastOnce()).mergeCaseLinks(caseData.getCaseLinks());

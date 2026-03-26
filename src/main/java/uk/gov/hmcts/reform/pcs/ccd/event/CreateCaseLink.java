@@ -45,7 +45,7 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
 
         log.info("Caseworker created case link for {}", caseReference);
 
-        pcsCaseService.patchCase(caseReference, pcsCase);
+        pcsCaseService.patchCaseLinks(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }

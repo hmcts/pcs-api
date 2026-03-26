@@ -63,15 +63,12 @@ public class PcsCaseService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
-    public void patchCase(long caseReference, PCSCase pcsCase) {
+    public void patchCaseLinks(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
         log.info("Patching linked cases for {}", caseReference);
         if (pcsCase.getCaseLinks() != null) {
             pcsCaseEntity.mergeCaseLinks(pcsCase.getCaseLinks());
         }
-
-        pcsCaseRepository.save(pcsCaseEntity);
     }
-
 }

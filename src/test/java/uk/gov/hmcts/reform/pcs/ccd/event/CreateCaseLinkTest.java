@@ -46,12 +46,12 @@ class CreateCaseLinkTest extends BaseEventTest {
                 .build());
 
         PCSCase pcsCase = PCSCase.builder().caseLinks(caseLists).build();
-        doNothing().when(pcsCaseService).patchCase(TEST_CASE_REFERENCE, pcsCase);
+        doNothing().when(pcsCaseService).patchCaseLinks(TEST_CASE_REFERENCE, pcsCase);
 
         // When
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseService).patchCase(TEST_CASE_REFERENCE, pcsCase);
+        verify(pcsCaseService).patchCaseLinks(TEST_CASE_REFERENCE, pcsCase);
     }
 }

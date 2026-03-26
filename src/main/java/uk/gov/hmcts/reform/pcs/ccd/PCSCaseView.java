@@ -6,9 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.LinkReason;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
@@ -36,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -71,6 +70,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
     private final CaseNameHmctsFormatter caseNameHmctsFormatter;
+    private final CaseLinkView caseLinkView;
 
 
     /**
@@ -116,7 +116,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
             .allDocuments(mapAndWrapDocuments(pcsCaseEntity))
-            .caseLinks(mapAndWrapCaseLinks(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -132,6 +131,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
+        caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
@@ -256,41 +256,4 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .build())
             .collect(Collectors.toList());
     }
-
-    private List<ListValue<CaseLink>> mapAndWrapCaseLinks(PcsCaseEntity pcsCaseEntity) {
-
-        if (pcsCaseEntity.getCaseLinks().isEmpty()) {
-            return List.of();
-        }
-
-        return pcsCaseEntity.getCaseLinks().stream()
-            .map(linkEntity -> ListValue.<CaseLink>builder()
-                .id(linkEntity.getLinkedCaseReference().toString())
-                .value(
-                        CaseLink.builder()
-                            // BIGINT linked case reference -> CCD expects String
-                            .caseReference(linkEntity.getLinkedCaseReference().toString())
-                            .caseType(linkEntity.getCcdListId())
-                            // map reasons
-                            .reasonForLink(
-                                linkEntity.getReasons().stream()
-                                    .map(reasonEntity -> ListValue.<LinkReason>builder()
-                                        .id(reasonEntity.getId().toString())
-                                        .value(
-                                            LinkReason.builder()
-                                                .reason(reasonEntity.getReasonCode())
-                                                .description(reasonEntity.getReasonText())
-                                                .build()
-                                        )
-                                        .build()
-                                    )
-                                    .toList()
-                            )
-                            .build()
-                        )
-                        .build()
-                )
-            .toList();
-    }
-
 }

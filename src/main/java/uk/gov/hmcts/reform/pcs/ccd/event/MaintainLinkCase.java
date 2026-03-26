@@ -28,7 +28,7 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
                             .decentralisedEvent(EventId.maintainCaseLink.name(), this::submit)
                             .forAllStates()
                             .name("Manage case links")
-                            .description("To Manage link related cases")
+                            .description("To manage link related cases")
                             .grant(Permission.R, UserRole.PCS_CASE_WORKER)
                             .grant(Permission.CRUD, UserRole.PCS_SOLICITOR))
             .page("maintainCaseLink")
@@ -45,7 +45,7 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
 
         log.info("Caseworker updated case link for {}", caseReference);
 
-        pcsCaseService.patchCase(caseReference, pcsCase);
+        pcsCaseService.patchCaseLinks(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }

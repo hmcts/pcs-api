@@ -1,0 +1,24 @@
+-- ============================================
+-- PCS CASE LINK + LINK REASONS
+-- ============================================
+CREATE TABLE case_link (
+     id UUID PRIMARY KEY,
+     case_link_reference UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
+     linked_case_id BIGINT NOT NULL,
+     ccd_list_id VARCHAR(50),
+     created_at TIMESTAMP DEFAULT now()
+);
+
+CREATE UNIQUE INDEX ux_case_link_unique
+  ON case_link(case_link_reference, linked_case_id);
+
+
+CREATE TABLE case_link_reason (
+    id UUID PRIMARY KEY,
+    case_link_id UUID NOT NULL REFERENCES case_link(id) ON DELETE CASCADE,
+    reason_code VARCHAR(100) NOT NULL,
+    reason_text VARCHAR(255)
+);
+
+CREATE INDEX idx_case_link_reason_link
+  ON case_link_reason(case_link_id);
