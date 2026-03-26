@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -281,12 +282,12 @@ class SubmitEventHandlerTest {
             .shareIncomeExpenseDetails(YesOrNo.YES)
             .incomeFromJobs(YesOrNo.YES)
             .incomeFromJobsAmount(new BigDecimal("200000")) // £2000.00 in pence
-            .incomeFromJobsFrequency("MONTH")
+            .incomeFromJobsFrequency(IncomeFrequency.MONTH)
             .pension(YesOrNo.NO)
             .universalCredit(YesOrNo.YES)
             .ucApplicationDate(LocalDate.of(2024, 2, 10))
             .universalCreditAmount(new BigDecimal("100000")) // £1000.00 in pence
-            .universalCreditFrequency("MONTH")
+            .universalCreditFrequency(IncomeFrequency.MONTH)
             .otherBenefits(YesOrNo.NO)
             .moneyFromElsewhere(YesOrNo.YES)
             .moneyFromElsewhereDetails("Receive child support payments")
@@ -330,14 +331,14 @@ class SubmitEventHandlerTest {
 
         assertThat(capturedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
         assertThat(capturedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("200000");
-        assertThat(capturedHousehold.getIncomeFromJobsFrequency()).isEqualTo("MONTH");
+        assertThat(capturedHousehold.getIncomeFromJobsFrequency()).isEqualTo(IncomeFrequency.MONTH);
 
         assertThat(capturedHousehold.getPension()).isEqualTo(YesOrNo.NO);
 
         assertThat(capturedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
         assertThat(capturedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 2, 10));
         assertThat(capturedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("100000");
-        assertThat(capturedHousehold.getUniversalCreditFrequency()).isEqualTo("MONTH");
+        assertThat(capturedHousehold.getUniversalCreditFrequency()).isEqualTo(IncomeFrequency.MONTH);
 
         assertThat(capturedHousehold.getOtherBenefits()).isEqualTo(YesOrNo.NO);
 

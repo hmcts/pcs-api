@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeFrequency;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -34,7 +35,7 @@ public class HouseholdCircumstances {
     private BigDecimal incomeFromJobsAmount;
 
     @CCD
-    private String incomeFromJobsFrequency;
+    private IncomeFrequency incomeFromJobsFrequency;
 
     @CCD
     private YesOrNo pension;
@@ -44,7 +45,7 @@ public class HouseholdCircumstances {
     private BigDecimal pensionAmount;
 
     @CCD
-    private String pensionFrequency;
+    private IncomeFrequency pensionFrequency;
 
     @CCD
     private YesOrNo universalCredit;
@@ -57,7 +58,7 @@ public class HouseholdCircumstances {
     private BigDecimal universalCreditAmount;
 
     @CCD
-    private String universalCreditFrequency;
+    private IncomeFrequency universalCreditFrequency;
 
     @CCD
     private YesOrNo otherBenefits;
@@ -67,7 +68,7 @@ public class HouseholdCircumstances {
     private BigDecimal otherBenefitsAmount;
 
     @CCD
-    private String otherBenefitsFrequency;
+    private IncomeFrequency otherBenefitsFrequency;
 
     @CCD
     private YesOrNo moneyFromElsewhere;

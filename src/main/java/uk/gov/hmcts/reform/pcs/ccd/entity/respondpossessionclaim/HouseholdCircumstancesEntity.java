@@ -19,6 +19,7 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
@@ -97,7 +98,9 @@ public class HouseholdCircumstancesEntity {
 
     private BigDecimal incomeFromJobsAmount;
 
-    private String incomeFromJobsFrequency;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    private IncomeFrequency incomeFromJobsFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -105,11 +108,15 @@ public class HouseholdCircumstancesEntity {
 
     private BigDecimal pensionAmount;
 
-    private String pensionFrequency;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    private IncomeFrequency pensionFrequency;
 
     private BigDecimal universalCreditAmount;
 
-    private String universalCreditFrequency;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    private IncomeFrequency universalCreditFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -117,7 +124,9 @@ public class HouseholdCircumstancesEntity {
 
     private BigDecimal otherBenefitsAmount;
 
-    private String otherBenefitsFrequency;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    private IncomeFrequency otherBenefitsFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
