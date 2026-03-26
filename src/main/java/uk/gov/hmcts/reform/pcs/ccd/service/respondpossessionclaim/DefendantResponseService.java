@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,9 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
@@ -40,27 +41,33 @@ public class DefendantResponseService {
     private final ClaimRepository claimRepository;
     private final DefendantResponseRepository defendantResponseRepository;
     private final SecurityContextService securityContextService;
+    private final ReasonableAdjustmentsService reasonableAdjustmentsService;
+    private final HouseholdCircumstancesService householdCircumstancesService;
+    private final PaymentAgreementService paymentAgreementService;
 
     /**
-     * Saves defendant's responses to the defendant_response table.
+     * Saves a defendant's response to the defendant_response table
+     * and its related details to the linked child tables.
      *
      * <p>Uses optimized approach with minimal locking:
      * <ol>
      *   <li>Check duplicate first (fail fast)</li>
      *   <li>Get IDs only (minimal lock time)</li>
      *   <li>Use getReferenceById() for proxies (no query)</li>
-     *   <li>Save - only locks new row being inserted</li>
+     *   <li>Build the DefendantResponseEntity and link it to the owning PcsCaseEntity</li>
+     *   <li>Attach one-to-one child entities (household circumstances, payment agreement, reasonable adjustments)</li>
+     *   <li>Persist the entities in a single save, only locks new row being inserted</li></li>
      * </ol>
      *
      * <p>This approach ensures concurrent defendants can submit simultaneously
      * without blocking each other or other case operations.
      *
      * @param caseReference The case reference number
-     * @param responses Defendant's responses from draft data
+     * @param possessionClaimResponse the possession claim response from draft data
      * @throws IllegalStateException if user ID is null, response already exists,
      *         party not found, or claim not found
      */
-    public void saveDefendantResponse(long caseReference, DefendantResponses responses) {
+    public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse) {
         UUID userId = securityContextService.getCurrentUserId();
 
         if (userId == null) {
@@ -75,12 +82,6 @@ public class DefendantResponseService {
             throw new IllegalStateException("A response has already been submitted for this case.");
         }
 
-        // Early return if no responses to save
-        if (responses == null) {
-            log.debug("No defendant responses to save for case {}", caseReference);
-            return;
-        }
-
         UUID partyId = partyService.getPartyEntityByIdamId(userId, caseReference).getId();
 
         UUID claimId = claimRepository.findIdByCaseReference(caseReference)
@@ -93,11 +94,30 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
+        DefendantResponseEntity responseEntity =
+            buildDefendantResponseEntity(
+                claimRef,
+                partyRef,
+                possessionClaimResponse.getDefendantResponses()
+            );
+
+        buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
+
+        defendantResponseRepository.save(responseEntity);
+
+        log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
+    }
+
+    private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
+                                                                PartyEntity partyRef,
+                                                                DefendantResponses responses) {
+
         YesNoNotSure tenancyStartDateConfirmation = responses.getTenancyStartDateConfirmation();
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
-            .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
+            .freeLegalAdvice(responses.getFreeLegalAdvice())
+            .possessionNoticeReceived(responses.getNoticeReceived())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
@@ -106,11 +126,36 @@ public class DefendantResponseService {
                     ? responses.getTenancyStartDate()
                     : null
             )
-            .tenancyTypeCorrect(responses.getTenancyTypeCorrect())
+            .noticeReceivedDate(responses.getNoticeReceivedDate())
+            .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
             .build();
 
-        defendantResponseRepository.save(defendantResponse);
+        //set bidirectional relationship with the pcs case
+        claimRef.getPcsCase().addDefendantResponse(defendantResponse);
 
-        log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
+        return defendantResponse;
+    }
+
+    private void buildAndLinkChildEntities(
+        DefendantResponseEntity defendantResponseEntity,
+        DefendantResponses response) {
+
+        defendantResponseEntity.setReasonableAdjustment(
+            reasonableAdjustmentsService.createReasonableAdjustmentEntity(
+                response.getReasonableAdjustments()
+            )
+        );
+
+        defendantResponseEntity.setHouseholdCircumstances(
+            householdCircumstancesService.createHouseholdCircumstancesEntity(
+                response.getHouseholdCircumstances()
+            )
+        );
+
+        defendantResponseEntity.setPaymentAgreement(
+            paymentAgreementService.createPaymentAgreementEntity(
+                response.getPaymentAgreement()
+            )
+        );
     }
 }
