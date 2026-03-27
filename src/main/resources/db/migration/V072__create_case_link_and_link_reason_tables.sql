@@ -3,14 +3,14 @@
 -- ============================================
 CREATE TABLE case_link (
      id UUID PRIMARY KEY,
-     case_link_reference UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
-     linked_case_id BIGINT NOT NULL,
+     case_id UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
+     linked_case_reference BIGINT NOT NULL,
      ccd_list_id VARCHAR(50),
      created_at TIMESTAMP DEFAULT now()
 );
 
 CREATE UNIQUE INDEX ux_case_link_unique
-  ON case_link(case_link_reference, linked_case_id);
+  ON case_link(case_id, linked_case_reference);
 
 
 CREATE TABLE case_link_reason (

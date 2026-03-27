@@ -35,10 +35,10 @@ public class CaseLinkEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_link_reference")
+    @JoinColumn(name = "case_id")
     private PcsCaseEntity pcsCase;
 
-    @Column(name = "linked_case_id", nullable = false)
+    @Column(name = "linked_case_reference", nullable = false)
     private Long linkedCaseReference;
 
     @Column(name = "ccd_list_id")

@@ -131,18 +131,13 @@ public class PcsCaseEntity {
 
     public void mergeCaseLinks(List<ListValue<CaseLink>> incomingLinkedCases) {
 
-        if (incomingLinkedCases == null) {
-            this.caseLinks.clear();
-            return;
-        }
-
         Map<Long, CaseLinkEntity> existingLinkedCases =
             this.caseLinks.stream()
                 .collect(Collectors.toMap(CaseLinkEntity::getLinkedCaseReference,
                                           Function.identity()
                 ));
 
-        List<CaseLinkEntity> result = new ArrayList<>();
+        List<CaseLinkEntity> mergedCaseLinkEntities = new ArrayList<>();
 
         for (ListValue<CaseLink> caseLinkListValue : incomingLinkedCases) {
             CaseLink dto = caseLinkListValue.getValue();
@@ -174,11 +169,10 @@ public class PcsCaseEntity {
                 caseLinkEntity.getReasons().addAll(caseLinkReasonEntities);
             }
 
-            result.add(caseLinkEntity);
+            mergedCaseLinkEntities.add(caseLinkEntity);
         }
 
         this.caseLinks.clear();
-        this.caseLinks.addAll(result);
-
+        this.caseLinks.addAll(mergedCaseLinkEntities);
     }
 }
