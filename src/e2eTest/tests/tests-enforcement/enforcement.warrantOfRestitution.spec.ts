@@ -4,22 +4,17 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  yourApplication,
   evidenceUpload,
   explainHowDefendantsReturned,
   shareEvidenceWithJudge,
   provideEvidence,
-  peopleYouWantToEvict,
   warrantOfRestitutionAnyoneAtPropertyRiskIntro,
-  riskPosedByEveryoneAtProperty,
-  peopleWillBeEvicted,
-  vulnerableAdultsAndChildren,
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, enforceWarrantApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { additionalInformation, livingInTheProperty, propertyAccessDetails } from '@data/page-data-figma/page-data-enforcement-figma';
+import { additionalInformation, enforcementApplication, evictionRisksPosed, livingInTheProperty, peopleWhoWillBeEvicted, peopleYouWantToEvict, propertyAccessDetails, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -82,26 +77,26 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', yourApplication.mainHeader);
+      await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
-        journey: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
-        type: yourApplication.summaryWritOrWarrant,
-        label1: yourApplication.warrantFeeValidationLabel,
-        text1: yourApplication.warrantFeeValidationText,
-        label2: yourApplication.writFeeValidationLabel,
-        text2: yourApplication.writFeeValidationText
+        journey: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        text1: enforcementApplication.warrantFeeValidationTextHidden,
+        label2: enforcementApplication.writFeeValidationLabelHidden,
+        text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('validateGetQuoteFromBailiffLink', {
-        type: yourApplication.summaryWritOrWarrant,
-        link: yourApplication.quoteFromBailiffLink,
-        newPage: yourApplication.hceoPageTitle
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        link: enforcementApplication.quoteFromBailiffLinkHidden,
+        newPage: enforcementApplication.hceoPageTitleHidden
       });
-      await performAction('expandSummary', yourApplication.summarySaveApplication);
-      await performAction('errorValidationYourApplicationPage', yourApplication.errorValidation);
+      await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
+      await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
-        nextPage: peopleWillBeEvicted.mainHeaderWarrantOfRestitution
+        question: enforcementApplication.typeOfApplicationQuestion,
+        option: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,
+        nextPage: peopleWhoWillBeEvicted.mainHeaderWarrantOfRestitutionDynamic
       });
       await performAction('reTryOnCallBackError', peopleYouWantToEvict.continueButton, shareEvidenceWithJudge.mainHeader);
       await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
@@ -129,33 +124,33 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
             { type: 'radio', inputRadioQuestion: livingInTheProperty.riskToBailiffQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.warrantAnyRiskToBailiff },
           ]
       });
-      await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, riskPosedByEveryoneAtProperty.mainHeader);
+      await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, evictionRisksPosed.mainHeader);
       await performAction('validatePrePopulatedData', {
-        testPage: riskPosedByEveryoneAtProperty.mainHeader,
+        testPage: evictionRisksPosed.mainHeader,
         inputData:
           [
             {
-              type: 'checkBox', inputCheckBoxQuestion: riskPosedByEveryoneAtProperty.kindOfRiskQuestion, expectedAnswer: EnforcementCommonUtils.mapRiskPosedPayLoadWithUI(enforceWarrantApiData.enforceCasePayloadYesJourney.warrantEnforcementRiskCategories)
+              type: 'checkBox', inputCheckBoxQuestion: evictionRisksPosed.kindOfRiskQuestion, expectedAnswer: EnforcementCommonUtils.mapRiskPosedPayLoadWithUI(enforceWarrantApiData.enforceCasePayloadYesJourney.warrantEnforcementRiskCategories)
             },
           ]
       });
-      await performAction('reTryOnCallBackError', riskPosedByEveryoneAtProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
+      await performAction('reTryOnCallBackError', evictionRisksPosed.continueButton, vulnerableAdultsChildren.mainHeader);
       await performAction('validatePrePopulatedData', {
-        testPage: vulnerableAdultsAndChildren.mainHeader,
+        testPage: vulnerableAdultsChildren.mainHeader,
         inputData:
           [
             {
-              type: 'radio', inputRadioQuestion: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.vulnerablePeoplePresent
+              type: 'radio', inputRadioQuestion: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.vulnerablePeoplePresent
             },
             {
-              type: 'radio', inputRadioQuestion: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion, expectedAnswer: EnforcementCommonUtils.formatPayLoadData(enforceWarrantApiData.enforceCasePayloadYesJourney.vulnerableAdultsChildren.vulnerableCategory)
+              type: 'radio', inputRadioQuestion: vulnerableAdultsChildren.confirmVulnerablePeopleHiddenQuestion, expectedAnswer: EnforcementCommonUtils.formatPayLoadData(enforceWarrantApiData.enforceCasePayloadYesJourney.vulnerableAdultsChildren.vulnerableCategory)
             },
             {
-              type: 'inputText', inputTextLabel: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.vulnerableAdultsChildren.vulnerableReasonText
+              type: 'inputText', inputTextLabel: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextLabel, expectedAnswer: enforceWarrantApiData.enforceCasePayloadYesJourney.vulnerableAdultsChildren.vulnerableReasonText
             }
           ]
       });
-      await performAction('reTryOnCallBackError', vulnerableAdultsAndChildren.continueButton, propertyAccessDetails.mainHeader);
+      await performAction('reTryOnCallBackError', vulnerableAdultsChildren.continueButton, propertyAccessDetails.mainHeader);
       await performAction('validatePrePopulatedData', {
         testPage: propertyAccessDetails.mainHeader,
         inputData:
@@ -176,25 +171,25 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', yourApplication.mainHeader);
+      await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
-        journey: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
-        type: yourApplication.summaryWritOrWarrant,
-        label1: yourApplication.warrantFeeValidationLabel,
-        text1: yourApplication.warrantFeeValidationText,
-        label2: yourApplication.writFeeValidationLabel,
-        text2: yourApplication.writFeeValidationText
+        journey: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        text1: enforcementApplication.warrantFeeValidationTextHidden,
+        label2: enforcementApplication.writFeeValidationLabelHidden,
+        text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('validateGetQuoteFromBailiffLink', {
-        type: yourApplication.summaryWritOrWarrant,
-        link: yourApplication.quoteFromBailiffLink,
-        newPage: yourApplication.hceoPageTitle
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        link: enforcementApplication.quoteFromBailiffLinkHidden,
+        newPage: enforcementApplication.hceoPageTitleHidden
       });
-      await performAction('expandSummary', yourApplication.summarySaveApplication);
+      await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('selectApplicationType', {
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
-        nextPage: peopleWillBeEvicted.mainHeaderWarrantOfRestitution
+        question: enforcementApplication.typeOfApplicationQuestion,
+        option: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,
+        nextPage: peopleWhoWillBeEvicted.mainHeaderWarrantOfRestitutionDynamic
       });
       await performAction('reTryOnCallBackError', peopleYouWantToEvict.continueButton, shareEvidenceWithJudge.mainHeader);
       await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
@@ -217,17 +212,17 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
             { type: 'radio', inputRadioQuestion: livingInTheProperty.riskToBailiffQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadNoJourney.warrantAnyRiskToBailiff },
           ]
       });
-      await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, vulnerableAdultsAndChildren.mainHeader);
+      await performAction('reTryOnCallBackError', livingInTheProperty.continueButton, vulnerableAdultsChildren.mainHeader);
       await performAction('validatePrePopulatedData', {
-        testPage: vulnerableAdultsAndChildren.mainHeader,
+        testPage: vulnerableAdultsChildren.mainHeader,
         inputData:
           [
             {
-              type: 'radio', inputRadioQuestion: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadNoJourney.vulnerablePeoplePresent
+              type: 'radio', inputRadioQuestion: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion, expectedAnswer: enforceWarrantApiData.enforceCasePayloadNoJourney.vulnerablePeoplePresent
             },
           ]
       });
-      await performAction('reTryOnCallBackError', vulnerableAdultsAndChildren.continueButton, propertyAccessDetails.mainHeader);
+      await performAction('reTryOnCallBackError', vulnerableAdultsChildren.continueButton, propertyAccessDetails.mainHeader);
       await performAction('validatePrePopulatedData', {
         testPage: propertyAccessDetails.mainHeader,
         inputData:
