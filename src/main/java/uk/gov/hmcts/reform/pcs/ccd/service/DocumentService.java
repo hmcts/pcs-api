@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
@@ -12,6 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
@@ -31,37 +35,56 @@ public class DocumentService {
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
+        List<Pair<Document, DocumentType>> allDocuments = getPcsCaseDocuments(pcsCase);
+
+        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+    }
+
+    public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
+
+        List<Pair<Document, DocumentType>> allDocuments = getWarrantOfRestitutionDocuments(enforcementOrder);
+
+        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+    }
+
+    private List<Pair<Document, DocumentType>> getPcsCaseDocuments(PCSCase pcsCase) {
         List<Pair<Document, DocumentType>> allDocuments = new ArrayList<>();
 
         allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getRentArrears())
-                .map(RentArrearsSection::getStatementDocuments)
-                .orElse(null), DocumentType.RENT_STATEMENT));
+                    .map(RentArrearsSection::getStatementDocuments)
+                    .orElse(null), DocumentType.RENT_STATEMENT));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
-                .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
-                .orElse(null), DocumentType.TENANCY_LICENCE));
+                    .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
+                    .orElse(null), DocumentType.TENANCY_LICENCE));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
-                .map(OccupationLicenceDetailsWales::getLicenceDocuments)
-                .orElse(null), DocumentType.OCCUPATION_LICENCE));
+                    .map(OccupationLicenceDetailsWales::getLicenceDocuments)
+                    .orElse(null), DocumentType.OCCUPATION_LICENCE));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getNoticeServedDetails())
-                .map(NoticeServedDetails::getNoticeDocuments)
-                .orElse(null), DocumentType.NOTICE_SERVED));
+                    .map(NoticeServedDetails::getNoticeDocuments)
+                    .orElse(null), DocumentType.NOTICE_SERVED));
 
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        return allDocuments;
+    }
+
+    private List<Pair<Document, DocumentType>> getWarrantOfRestitutionDocuments(EnforcementOrder enforcementOrder) {
+
+        return new ArrayList<>(mapEvidenceOfDefendantsDocumentsWithType(
+                enforcementOrder.getWarrantOfRestitutionDetails().getAdditionalDocuments()));
     }
 
     private List<Pair<Document, DocumentType>> mapDocumentsWithType(
         List<ListValue<Document>> docs, DocumentType type) {
 
-        if (docs == null || docs.isEmpty()) {
+        if (CollectionUtils.isEmpty(docs)) {
             return Collections.emptyList();
         }
 
@@ -75,7 +98,7 @@ public class DocumentService {
     private List<Pair<Document, DocumentType>> mapAdditionalDocumentsWithType(
         List<ListValue<AdditionalDocument>> documents) {
 
-        if (documents == null || documents.isEmpty()) {
+        if (CollectionUtils.isEmpty(documents)) {
             return Collections.emptyList();
         }
 
@@ -87,10 +110,25 @@ public class DocumentService {
             .toList();
     }
 
+    private List<Pair<Document, DocumentType>> mapEvidenceOfDefendantsDocumentsWithType(
+            List<ListValue<EvidenceOfDefendants>> documents) {
+
+        if (CollectionUtils.isEmpty(documents)) {
+            return Collections.emptyList();
+        }
+
+        return ListValueUtils.unwrapListItems(documents).stream()
+            .map(doc -> Pair.of(
+                    doc.getDocument(),
+                    mapEvidenceDocumentTypeToDocumentType(doc.getDocumentType())
+            ))
+            .toList();
+    }
+
     private List<DocumentEntity> createDocumentEntities(
         List<Pair<Document, DocumentType>> documents) {
 
-        if (documents == null || documents.isEmpty()) {
+        if (CollectionUtils.isEmpty(documents)) {
             return List.of();
         }
 
@@ -119,6 +157,15 @@ public class DocumentService {
             case INSPECTION_OR_REPORT -> DocumentType.INSPECTION_OR_REPORT;
             case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
             case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
+            case OTHER -> DocumentType.OTHER;
+        };
+    }
+
+    private DocumentType mapEvidenceDocumentTypeToDocumentType(EvidenceDocumentType evidenceDocumentType) {
+        return switch (evidenceDocumentType) {
+            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
+            case POLICE_REPORT -> DocumentType.POLICE_REPORT;
+            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
             case OTHER -> DocumentType.OTHER;
         };
     }

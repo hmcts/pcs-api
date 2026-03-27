@@ -64,11 +64,11 @@ public class EnforcementOrderService {
 
         ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
 
-        EnforcementOrderEntity orderEntity = enforcementOrderRepository
+        EnforcementOrderEntity savedEntity = enforcementOrderRepository
             .save(mapToEntity(enforcementOrder, claimEntity));
         strategyFactory.getStrategy(SelectEnforcementType.getSelectEnforcementTypeFromName(
                         enforcementOrder.getChooseEnforcementType().getValueCode()))
-                .process(orderEntity, enforcementOrder);
+                .process(savedEntity, enforcementOrder);
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
@@ -77,5 +77,4 @@ public class EnforcementOrderService {
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
         return enforcementOrderEntity;
     }
-
 }
