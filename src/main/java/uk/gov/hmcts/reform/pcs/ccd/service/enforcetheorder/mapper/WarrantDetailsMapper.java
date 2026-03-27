@@ -2,23 +2,23 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static uk.gov.hmcts.reform.pcs.ccd.util.EnforcementTypeUtil.convertYesOrNoToVerticalYesNo;
 
 @Component
 @AllArgsConstructor
@@ -27,7 +27,7 @@ public class WarrantDetailsMapper {
     public WarrantEntity toEntity(EnforcementOrder enforcementOrder,
                                   EnforcementOrderEntity enforcementOrderEntity) {
         WarrantEntity warrantEntity = WarrantEntity.builder()
-            .enforcementOrder(enforcementOrderEntity).build();
+                .enforcementOrder(enforcementOrderEntity).build();
         if (enforcementOrder.getWarrantDetails() != null) {
             WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
             warrantEntity.setLanguageUsed(warrantDetails.getLanguageUsed());
@@ -49,9 +49,9 @@ public class WarrantDetailsMapper {
 
     private void controlFlags(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
         warrantEntity.setShowPeopleWhoWillBeEvictedPage(
-            convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleWhoWillBeEvictedPage()));
+                convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleWhoWillBeEvictedPage()));
         warrantEntity.setShowPeopleYouWantToEvictPage(
-            convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleYouWantToEvictPage()));
+                convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleYouWantToEvictPage()));
     }
 
     private void statementOfTruth(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
@@ -75,9 +75,9 @@ public class WarrantDetailsMapper {
         List<StatementOfTruthAgreement> certification = statementOfTruth.getCertification();
         if (certification != null && !certification.isEmpty()) {
             warrantEntity.setCertification(
-                certification.stream()
-                    .map(Enum::name)
-                    .collect(Collectors.joining(","))
+                    certification.stream()
+                            .map(Enum::name)
+                            .collect(Collectors.joining(","))
             );
         }
     }
@@ -98,9 +98,9 @@ public class WarrantDetailsMapper {
         List<StatementOfTruthAgreementClaimant> agreementClaimant = statementOfTruth.getAgreementClaimant();
         if (agreementClaimant != null && !agreementClaimant.isEmpty()) {
             warrantEntity.setAgreementClaimant(
-                agreementClaimant.stream()
-                    .map(Enum::name)
-                    .collect(Collectors.joining(","))
+                    agreementClaimant.stream()
+                            .map(Enum::name)
+                            .collect(Collectors.joining(","))
             );
         }
     }
@@ -118,25 +118,25 @@ public class WarrantDetailsMapper {
     private void nameAndAddressForEviction(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         if (warrantDetails.getNameAndAddressForEviction() != null) {
             warrantEntity.setCorrectNameAndAddress(
-                warrantDetails.getNameAndAddressForEviction().getCorrectNameAndAddress());
+                    warrantDetails.getNameAndAddressForEviction().getCorrectNameAndAddress());
         }
     }
 
     private void additionalInformation(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         if (warrantDetails.getAdditionalInformation() != null) {
             warrantEntity.setAdditionalInformationSelect(
-                warrantDetails.getAdditionalInformation().getAdditionalInformationSelect());
+                    warrantDetails.getAdditionalInformation().getAdditionalInformationSelect());
             warrantEntity.setAdditionalInformationDetails(
-                warrantDetails.getAdditionalInformation().getAdditionalInformationDetails());
+                    warrantDetails.getAdditionalInformation().getAdditionalInformationDetails());
         }
     }
 
     private void propertyAccessDetails(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         if (warrantDetails.getPropertyAccessDetails() != null) {
             warrantEntity.setIsDifficultToAccessProperty(
-                warrantDetails.getPropertyAccessDetails().getIsDifficultToAccessProperty());
+                    warrantDetails.getPropertyAccessDetails().getIsDifficultToAccessProperty());
             warrantEntity.setClarificationOnAccessDifficultyText(
-                warrantDetails.getPropertyAccessDetails().getClarificationOnAccessDifficultyText());
+                    warrantDetails.getPropertyAccessDetails().getClarificationOnAccessDifficultyText());
         }
     }
 
@@ -170,7 +170,7 @@ public class WarrantDetailsMapper {
         warrantEntity.setDefendantsDOBKnown(warrantDetails.getDefendantsDOBKnown());
         if (warrantDetails.getDefendantsDOB() != null) {
             warrantEntity.setDefendantsDOBDetails(
-                warrantDetails.getDefendantsDOB().getDefendantsDOBDetails());
+                    warrantDetails.getDefendantsDOB().getDefendantsDOBDetails());
         }
     }
 
@@ -178,5 +178,9 @@ public class WarrantDetailsMapper {
         if (warrantDetails.getMoneyOwedByDefendants() != null) {
             warrantEntity.setAmountOwed(warrantDetails.getMoneyOwedByDefendants().getAmountOwed());
         }
+    }
+
+    private VerticalYesNo convertYesOrNoToVerticalYesNo(YesOrNo yesOrNo) {
+        return yesOrNo == YesOrNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
     }
 }

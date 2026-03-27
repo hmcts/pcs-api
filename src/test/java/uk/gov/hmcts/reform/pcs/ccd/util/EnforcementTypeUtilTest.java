@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -55,23 +53,5 @@ class EnforcementTypeUtilTest {
 
         assertThat(list).isNotNull();
         assertThat(list.getListItems()).isNotNull().isEmpty();
-    }
-
-    @Test
-    void shouldconvertYesOrNoToVerticalYesNoForYes() {
-        YesOrNo val = YesOrNo.YES;
-
-        VerticalYesNo result = EnforcementTypeUtil.convertYesOrNoToVerticalYesNo(val);
-
-        assertThat(result).isEqualTo(VerticalYesNo.YES);
-    }
-
-    @Test
-    void shouldconvertYesOrNoToVerticalYesNoForNo() {
-        YesOrNo val = YesOrNo.NO;
-
-        VerticalYesNo result = EnforcementTypeUtil.convertYesOrNoToVerticalYesNo(val);
-
-        assertThat(result).isEqualTo(VerticalYesNo.NO);
     }
 }
