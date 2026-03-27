@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,13 +18,11 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -200,68 +197,88 @@ public class DraftCaseDataService {
 
     private String applyClearFieldsAndSerialize(String mergedJson, List<String> clearFields) {
         try {
-            ObjectNode root = (ObjectNode) objectMapper.readTree(mergedJson);
+            ObjectNode root = parseJsonToTree(mergedJson);
 
-            JsonNode pcrNode = root.at("/possessionClaimResponse");
-            if (pcrNode.isObject()) {
-                ObjectNode pcr = (ObjectNode) pcrNode;
-
-                for (String fieldPath : clearFields) {
-                    setFieldToNull(pcr, fieldPath);
-                }
-
-                pcr.remove("clearFields");
-            }
-
-            Set<String> clearFieldsSet = new HashSet<>(clearFields);
-            removeNullFieldsExcept(root, "possessionClaimResponse", clearFieldsSet);
-
-            ObjectMapper nullIncludingMapper = objectMapper.copy()
-                .setSerializationInclusion(JsonInclude.Include.ALWAYS);
-
-            return nullIncludingMapper.writeValueAsString(root);
+            clearFieldsFromPossessionClaimResponse(root, clearFields);
+            return serializeJsonTree(root);
         } catch (JsonProcessingException e) {
             log.error("Failed to apply clearFields", e);
             throw new UnsubmittedDataException("Failed to clear fields", e);
         }
     }
 
-    private void setFieldToNull(ObjectNode root, String fieldPath) {
+    private ObjectNode parseJsonToTree(String json) throws JsonProcessingException {
+        return (ObjectNode) objectMapper.readTree(json);
+    }
+
+    private void clearFieldsFromPossessionClaimResponse(ObjectNode root, List<String> clearFields) {
+        JsonNode pcrNode = root.at("/possessionClaimResponse");
+        if (!pcrNode.isObject()) {
+            return;
+        }
+
+        ObjectNode possessionClaimResponse = (ObjectNode) pcrNode;
+
+        for (String fieldPath : clearFields) {
+            removeField(possessionClaimResponse, fieldPath);
+        }
+
+        possessionClaimResponse.remove("clearFields");
+
+        removeAllNullFields(possessionClaimResponse);
+    }
+
+    private String serializeJsonTree(ObjectNode root) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(root);
+    }
+
+    private void removeField(ObjectNode root, String fieldPath) {
         String[] pathSegments = fieldPath.split("\\.");
+        ObjectNode parentNode = navigateToParentNode(root, pathSegments);
+
+        if (parentNode == null) {
+            return;
+        }
+
+        String fieldName = getFieldName(pathSegments);
+        parentNode.remove(fieldName);
+    }
+
+    private ObjectNode navigateToParentNode(ObjectNode root, String[] pathSegments) {
         ObjectNode current = root;
 
         for (int i = 0; i < pathSegments.length - 1; i++) {
             JsonNode next = current.get(pathSegments[i]);
             if (next == null || !next.isObject()) {
-                return;
+                return null;
             }
             current = (ObjectNode) next;
         }
 
-        String fieldName = pathSegments[pathSegments.length - 1];
-        current.set(fieldName, current.nullNode());
+        return current;
     }
 
-    private void removeNullFieldsExcept(ObjectNode node, String currentPath, Set<String> keepNulls) {
+    private String getFieldName(String[] pathSegments) {
+        return pathSegments[pathSegments.length - 1];
+    }
+
+    private void removeAllNullFields(ObjectNode node) {
+        List<String> fieldsToRemove = new ArrayList<>();
         Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-        List<String> toRemove = new ArrayList<>();
 
         while (fields.hasNext()) {
             Map.Entry<String, JsonNode> field = fields.next();
             String fieldName = field.getKey();
-            JsonNode value = field.getValue();
-            String fullPath = currentPath.isEmpty() ? fieldName : currentPath + "." + fieldName;
+            JsonNode fieldValue = field.getValue();
 
-            if (value.isNull()) {
-                if (!keepNulls.contains(fullPath)) {
-                    toRemove.add(fieldName);
-                }
-            } else if (value.isObject()) {
-                removeNullFieldsExcept((ObjectNode) value, fullPath, keepNulls);
+            if (fieldValue.isNull()) {
+                fieldsToRemove.add(fieldName);
+            } else if (fieldValue.isObject()) {
+                removeAllNullFields((ObjectNode) fieldValue);
             }
         }
 
-        for (String fieldName : toRemove) {
+        for (String fieldName : fieldsToRemove) {
             node.remove(fieldName);
         }
     }
