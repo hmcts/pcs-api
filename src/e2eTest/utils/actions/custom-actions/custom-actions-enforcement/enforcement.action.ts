@@ -3,22 +3,6 @@ import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  yourApplication,
-  nameAndAddressForEviction,
-  confirmDefendantsDOB,
-  vulnerableAdultsAndChildren,
-  riskPosedByEveryoneAtProperty,
-  peopleWillBeEvicted,
-  youNeedPermission,
-  legalCosts,
-  landRegistryFees,
-  rePayments,
-  peopleYouWantToEvict,
-  moneyOwed,
-  languageUsed,
-  statementOfTruthOne,
-  enterDefendantsDOB,
-  suspendedOrder,
   confirmHCEOHired,
   yourHCEO,
   evidenceUpload
@@ -29,7 +13,23 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 import {
   propertyAccessDetails,
-  livingInTheProperty
+  livingInTheProperty,
+  nameAndAddressForEviction,
+  evictionRisksPosed,
+  vulnerableAdultsChildren,
+  enforcementApplication,
+  moneyOwed,
+  legalCosts,
+  landRegistryFees,
+  repayments,
+  peopleWhoWillBeEvicted,
+  changeNameAddress,
+  languageUsed,
+  peopleYouWantToEvict,
+  confirmDefendantsDOB,
+  knownDefendantsDOBInformation,
+  suspendedOrder,
+  statementOfTruth
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export const addressInfo = {
@@ -90,8 +90,8 @@ export class EnforcementAction implements IAction {
     await performAction('expandSummary', summaryOption.type);
     const warrantJourney = summaryOption.journey === 'Warrant of possession';
     const feeType = warrantJourney
-      ? yourApplication.typeofFee.warrantOfPossessionFee
-      : yourApplication.typeofFee.writOfPossessionFee;
+      ? enforcementApplication.typeofFee.warrantOfPossessionFee
+      : enforcementApplication.typeofFee.writOfPossessionFee;
 
     const writOrWarrantFeeAmt = warrantJourney ? EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text1 as string) : EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text2 as string);
 
@@ -111,21 +111,21 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
     if (applicationType.option === 'Writ of possession' && applicationType.option1 !== 'No') {
       await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
-      await performAction('reTryOnCallBackError', yourApplication.continueButton, applicationType.nextPage as string);
+      await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
     } else if (applicationType.option === 'Warrant of possession' || applicationType.option === 'Warrant of restitution') {
-      await performAction('reTryOnCallBackError', yourApplication.continueButton, applicationType.nextPage as string);
+      await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
     }
 
   }
 
   private async checkClaimTransferredToHighCourt(question1: string, question2: string) {
-    await performAction('clickRadioButton', { question: question1, option: yourApplication.yesRadioOption });
-    await performAction('clickRadioButton', { question: question2, option: yourApplication.noRadioOption });
-    await performAction('clickButton', yourApplication.continueButton);
-    await performValidation('errorMessage', { header: yourApplication.errorMessageHeader, message: yourApplication.errMessage });
-    await performAction('clickButton', yourApplication.continueButton);
-    await performAction('clickRadioButton', { question: question1, option: yourApplication.yesRadioOption });
-    await performAction('clickRadioButton', { question: question2, option: yourApplication.yesRadioOption });
+    await performAction('clickRadioButton', { question: question1, option: enforcementApplication.yesRadioOptionHidden });
+    await performAction('clickRadioButton', { question: question2, option: enforcementApplication.noRadioOptionHidden });
+    await performAction('clickButton', enforcementApplication.continueButton);
+    await performValidation('errorMessage', { header: enforcementApplication.errorErrorMessageHeader, message: enforcementApplication.errMessageDynamic });
+    await performAction('clickButton', enforcementApplication.continueButton);
+    await performAction('clickRadioButton', { question: question1, option: enforcementApplication.yesRadioOptionHidden });
+    await performAction('clickRadioButton', { question: question2, option: enforcementApplication.yesRadioOptionHidden });
   }
 
   private async confirmClaimTransferredToHighCourt(transfer: actionRecord, page: Page) {
@@ -133,7 +133,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: transfer.question, option: transfer.option });
-    await performAction('reTryOnCallBackError', yourApplication.continueButton, transfer.nextPage as string);
+    await performAction('reTryOnCallBackError', enforcementApplication.continueButton, transfer.nextPage as string);
   }
 
   private async getDefendantDetails(defendantsDetails: actionRecord) {
@@ -189,14 +189,14 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
-      await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.join(' '));
+      await performValidation('formLabelValue', nameAndAddressForEviction.defendantsTableHeader, defendantDetails.join(' '));
     }
 
     defendantDetails = defendantDetails.map(fullName =>
       fullName?.trim().toLowerCase() === 'null null' ? 'Name not known' : fullName
     );
 
-    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
+    await performValidation('formLabelValue', nameAndAddressForEviction.addressTableHeader, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('reTryOnCallBackError', nameAndAddressForEviction.continueButton, nameAndAddress.nextPage as string);
   }
@@ -214,8 +214,8 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', defendantsDOB.label, EnforcementCommonUtils.inputDOB(defendantsDOB.input as Array<string>));
-    fieldsMap.set(defendantsDOB.label as string, await page.getByLabel(enterDefendantsDOB.defendantsDOBTextLabel).inputValue());
-    await performAction('reTryOnCallBackError', enterDefendantsDOB.continueButton, defendantsDOB.nextPage as string);
+    fieldsMap.set(defendantsDOB.label as string, await page.getByLabel(knownDefendantsDOBInformation.defendantsDOBQuestion).inputValue());
+    await performAction('reTryOnCallBackError', knownDefendantsDOBInformation.continueButton, defendantsDOB.nextPage as string);
   }
 
   private async selectPeopleWhoWillBeEvicted(evictPeople: actionRecord, page: Page) {
@@ -223,7 +223,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: evictPeople.question, option: evictPeople.option });
-    await performAction('reTryOnCallBackError', peopleWillBeEvicted.continueButton, evictPeople.nextPage as string);
+    await performAction('reTryOnCallBackError', peopleWhoWillBeEvicted.continueButton, evictPeople.nextPage as string);
   }
 
   private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord, page: Page) {
@@ -239,12 +239,12 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     const [generalApplicationPage] = await Promise.all([
       page.waitForEvent('popup'),
-      await performAction('clickButton', youNeedPermission.askTheJudgeLink)
+      await performAction('clickButton', changeNameAddress.askTheJudgeParagraph)
     ]);
     await generalApplicationPage.waitForLoadState();
-    await expect(generalApplicationPage).toHaveTitle(youNeedPermission.title);
+    await expect(generalApplicationPage).toHaveTitle(changeNameAddress.titleDynamic);
     await performValidation('text', {
-      'text': youNeedPermission.mainHeader,
+      'text': changeNameAddress.mainHeader,
       'elementType': 'heading'
     });
     await generalApplicationPage.close();
@@ -263,7 +263,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('check', { question: riskCategory.question, option: riskCategory.option });
-    await performAction('reTryOnCallBackError', riskPosedByEveryoneAtProperty.continueButton, riskCategory.nextPage as string);
+    await performAction('reTryOnCallBackError', evictionRisksPosed.continueButton, riskCategory.nextPage as string);
   }
 
   private async provideRiskPosedByEveryoneAtProperty(provideRiskPosed: actionRecord, page: Page) {
@@ -281,13 +281,13 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: vulnerablePeople.question, option: vulnerablePeople.option });
-    if (vulnerablePeople.option === vulnerableAdultsAndChildren.yesRadioOption) {
+    if (vulnerablePeople.option === vulnerableAdultsChildren.yesRadioOption) {
       const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, vulnerablePeople.label as string, vulnerablePeople.input as number);
       await performAction('clickRadioButton', { question: vulnerablePeople.confirm, option: vulnerablePeople.peopleOption });
       await performAction('inputText', vulnerablePeople.label, testInput);
       fieldsMap.set(vulnerablePeople.label as string, testInput);
     }
-    await performAction('reTryOnCallBackError', yourApplication.continueButton, vulnerablePeople.nextPage as string);
+    await performAction('reTryOnCallBackError', enforcementApplication.continueButton, vulnerablePeople.nextPage as string);
   }
 
   private async provideDetailsBasedOnRadioOptionSelection(userInput: actionRecord, page: Page) {
@@ -310,7 +310,7 @@ export class EnforcementAction implements IAction {
     const moneyOwedEntered = EnforcementCommonUtils.getRandomElementForAnArray(totalMoneyOwed.input as Array<string>)
     await performAction('inputText', totalMoneyOwed.label, moneyOwedEntered);
     const moneyOwedAmt = EnforcementCommonUtils.retrieveAmountFromString(moneyOwedEntered as string);
-    moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
+    moneyMap.set(moneyOwed.arrearsAndOtherCostsDynamic, moneyOwedAmt);
     fieldsMap.set(totalMoneyOwed.label as string, moneyOwedEntered as string);
     await performAction('reTryOnCallBackError', moneyOwed.continueButton, totalMoneyOwed.nextPage as string);
   }
@@ -324,10 +324,10 @@ export class EnforcementAction implements IAction {
       const legalCostEntered = EnforcementCommonUtils.getRandomElementForAnArray(legalCost.input as Array<string>)
       await performAction('inputText', legalCost.label, legalCostEntered);
       const legalCostAmt = EnforcementCommonUtils.retrieveAmountFromString(legalCostEntered as string);
-      moneyMap.set(legalCosts.legalCostsFee, legalCostAmt);
+      moneyMap.set(legalCosts.legalCostsFeeDynamic, legalCostAmt);
       fieldsMap.set(legalCost.label as string, legalCostEntered as string);
     } else {
-      moneyMap.set(legalCosts.legalCostsFee, 0);
+      moneyMap.set(legalCosts.legalCostsFeeDynamic, 0);
     }
     await performAction('reTryOnCallBackError', legalCosts.continueButton, legalCost.nextPage as string);
   }
@@ -341,19 +341,19 @@ export class EnforcementAction implements IAction {
       const langRegistryAmtEntered = EnforcementCommonUtils.getRandomElementForAnArray(landRegistry.input as Array<string>)
       await performAction('inputText', landRegistry.label, langRegistryAmtEntered);
       const landRegistryFeeAmt = EnforcementCommonUtils.retrieveAmountFromString(langRegistryAmtEntered as string);
-      moneyMap.set(landRegistryFees.landRegistryFee, landRegistryFeeAmt);
+      moneyMap.set(landRegistryFees.landRegistryFeeDynamic, landRegistryFeeAmt);
       fieldsMap.set(landRegistry.label as string, langRegistryAmtEntered as string);
     } else {
-      moneyMap.set(landRegistryFees.landRegistryFee, 0);
+      moneyMap.set(landRegistryFees.landRegistryFeeDynamic, 0);
     }
     await performAction('reTryOnCallBackError', landRegistryFees.continueButton, landRegistry.nextPage as string);
   }
 
   private async validateAmountToRePayTable(header: actionRecord) {
 
-    if (header.headerName === rePayments.mainHeader) {
+    if (header.headerName === repayments.mainHeader) {
       const totalAmt = Array.from(moneyMap.values()).reduce((a, b) => a + b, 0);
-      moneyMap.set(rePayments.totalAmt, totalAmt);
+      moneyMap.set(repayments.totalTableHeader, totalAmt);
     };
     for (const [moneyField, amount] of moneyMap) {
       await performValidation('formLabelValue', moneyField, `${EnforcementCommonUtils.convertCurrencyToString(amount)}`);
@@ -364,12 +364,12 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: amtToPay.question, option: amtToPay.option });
-    if (amtToPay.option === rePayments.rePaymentRadioOptions.some) {
+    if (amtToPay.option === repayments.someRadioOptions) {
       const amtToRepayEntered = EnforcementCommonUtils.getRandomElementForAnArray(amtToPay.input as Array<string>)
       await performAction('inputText', amtToPay.label, amtToRepayEntered);
       fieldsMap.set(amtToPay.label as string, amtToRepayEntered as string);
     };
-    await performAction('reTryOnCallBackError', rePayments.continueButton, amtToPay.nextPage as string);
+    await performAction('reTryOnCallBackError', repayments.continueButton, amtToPay.nextPage as string);
   }
 
   private async provideHowDefendantReturnToProperty(provideEvidence: actionRecord, page: Page) {
@@ -402,35 +402,35 @@ export class EnforcementAction implements IAction {
     await this.addFieldsToMap(claimantDetails);
     await performAction('check', claimantDetails.selectCheckbox);
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
-    if (claimantDetails.option === statementOfTruthOne.claimantRadioOption) {
+    if (claimantDetails.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
-    if (claimantDetails.option === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
+    if (claimantDetails.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
       await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
       await performAction('inputText', claimantDetails.label2, claimantDetails.input2);
     }
-    await performAction('reTryOnCallBackError', statementOfTruthOne.continueButton, claimantDetails.nextPage as string);
+    await performAction('reTryOnCallBackError', statementOfTruth.continueButton, claimantDetails.nextPage as string);
   }
 
   private async selectStatementOfTruthWrit(claimantSOT: actionRecord, page: Page) {
     await this.addFieldsToMap(claimantSOT);
     await performAction('clickRadioButton', { question: claimantSOT.question, option: claimantSOT.option });
-    if (claimantSOT.option === statementOfTruthOne.claimantRadioOption) {
+    if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantSOT.option1);
       await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload.claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
     }
-    if (claimantSOT.option === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
+    if (claimantSOT.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
       await performAction('check', claimantSOT.option1);
       await performAction('inputText', claimantSOT.label, claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
       await performAction('inputText', claimantSOT.label2, claimantSOT.input2);
     }
-    await performAction('reTryOnCallBackError', statementOfTruthOne.continueButton, claimantSOT.nextPage as string);
+    await performAction('reTryOnCallBackError', statementOfTruth.continueButton, claimantSOT.nextPage as string);
   }
 
   private async uploadEvidenceThatDefendantsAreAtProperty(uploadEvidence: actionRecord, page: Page) {
@@ -494,7 +494,7 @@ export class EnforcementAction implements IAction {
           switch (validationArr.validationType) {
             case 'moneyFieldAndRadioOption':
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
-              await performAction('inputText', validationArr.label, item.type === 'moreThanTotal' ? String((moneyMap.get(rePayments.totalAmt) as number) + 10) : item.input);
+              await performAction('inputText', validationArr.label, item.type === 'moreThanTotal' ? String((moneyMap.get(repayments.totalTableHeader) as number) + 10) : item.input);
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);
                 // await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
