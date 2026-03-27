@@ -13,6 +13,7 @@ import { CreateCaseAPIAction } from '@utils/actions/custom-actions/createCaseAPI
 import { ExpandSummaryAction, UploadFileAction } from '@utils/actions/element-actions';
 import { ClickLinkAndVerifyNewTabTitleAction } from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import { RetryOnCallBackError } from '@utils/actions/element-actions/reTryOnCallBackError.action';
+import { ErrorValidationAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcementErrorValidation.action';
 import { RemoveFileAction } from '@utils/actions/element-actions/removeFile.action';
 
 export class ActionEnforcementRegistry {
@@ -67,6 +68,28 @@ export class ActionEnforcementRegistry {
     ['uploadEvidenceThatDefendantsAreAtProperty', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
     ['generateRandomString', new EnforcementAction()],
+    ['errorValidationYourApplicationPage', new ErrorValidationAction()],
+    ['errorValidationNameAndAddressForEvictionPage', new ErrorValidationAction()],
+    ['errorValidationConfirmDefendantsDOBPage', new ErrorValidationAction()],
+    ['errorValidationEnterDefendantsDOBPage', new ErrorValidationAction()],
+    ['errorValidationRiskPosedByEveryonePage', new ErrorValidationAction()],
+    ['errorValidationViolentOrAggressiveBehaviourPage', new ErrorValidationAction()],
+    ['errorValidationVulnerablePeoplePage', new ErrorValidationAction()],
+    ['errorValidationMoneyOwedPage', new ErrorValidationAction()],
+    ['errorValidationLegalCostsPage', new ErrorValidationAction()],
+    ['errorValidationLandRegistryFeePage', new ErrorValidationAction()],
+    ['errorValidationRepaymentsPage', new ErrorValidationAction()],
+    ['errorValidationLanguageUsedPage', new ErrorValidationAction()],
+    ['errorValidationSuspendOrderPage', new ErrorValidationAction()],
+    ['errorValidationSOT1Page', new ErrorValidationAction()],
+    ['errorValidationSOT2Page', new ErrorValidationAction()],
+    ['errorValidationSOTWritPage', new ErrorValidationAction()],
+    ['errorValidationConfirmHCEOHiredPage', new ErrorValidationAction()],
+    ['errorValidationYourHCEOPage', new ErrorValidationAction()],
+    ['errorValidationHowDefendantsEnteredPage', new ErrorValidationAction()],
+    ['errorValidationExplainHowDefendantsEnteredPage', new ErrorValidationAction()],
+    ['errorValidationPeopleYouWantToEvictPage', new ErrorValidationAction()],
+    ['errorValidationPeopleWhoWillBeEvictedPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
   ]);
