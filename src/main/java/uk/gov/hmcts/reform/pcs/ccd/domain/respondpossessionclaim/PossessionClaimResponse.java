@@ -12,12 +12,22 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 import java.util.List;
 
+/**
+ * Defendant's response to a possession claim.
+ *
+ * <p><b>IMPORTANT:</b> {@code @Builder(toBuilder = true)} is REQUIRED.
+ */
 @Builder(toBuilder = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class PossessionClaimResponse {
 
+    /**
+     * Claimant organisation names visible to defendants.
+     * Extracted from allClaimants (filtered to PartyRole.CLAIMANT by PCSCaseView).
+     * Supports multiple claimants (e.g., joint landlords).
+     */
     @CCD(
         access = {CitizenAccess.class},
         typeOverride = FieldType.Collection,
