@@ -17,10 +17,7 @@ import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -96,13 +93,20 @@ public class DraftCaseDataService {
         patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson, clearFields);
     }
 
-    public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
+    public void patchUnsubmittedCaseData(long caseReference, EventId eventId,
+                                          String patchEventDataJson, List<String> clearFields) {
         UUID userId = getCurrentUserId();
         DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
             .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
             .map(existingDraft -> {
                 log.debug("Updating existing draft for userId={}", userId);
-                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson));
+                String mergedJson = mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson);
+
+                if (clearFields != null && !clearFields.isEmpty()) {
+                    mergedJson = applyClearFieldsAndSerialize(mergedJson, clearFields);
+                }
+
+                existingDraft.setCaseData(mergedJson);
                 return existingDraft;
             }).orElseGet(() -> {
                 log.debug("Creating new draft for caseReference={}, eventId={}, userId={}",
@@ -113,25 +117,6 @@ public class DraftCaseDataService {
         DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
         log.debug("Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
             saved.getId(), saved.getCaseReference(), saved.getEventId(), saved.getIdamUserId());
-    }
-
-    public void patchUnsubmittedCaseData(long caseReference, EventId eventId,
-                                          String patchEventDataJson, List<String> clearFields) {
-        UUID userId = getCurrentUserId();
-        DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
-            .map(existingDraft -> {
-                String mergedJson = mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson);
-
-                if (clearFields != null && !clearFields.isEmpty()) {
-                    mergedJson = applyClearFieldsAndSerialize(mergedJson, clearFields);
-                }
-
-                existingDraft.setCaseData(mergedJson);
-                return existingDraft;
-            }).orElseGet(() -> createNewDraft(caseReference, eventId, userId, patchEventDataJson));
-
-        draftCaseDataRepository.save(draftCaseDataEntity);
     }
 
     private String mergeCaseDataJson(String baseCaseDataJson, String patchCaseDataJson) {
@@ -224,8 +209,6 @@ public class DraftCaseDataService {
         }
 
         possessionClaimResponse.remove("clearFields");
-
-        removeAllNullFields(possessionClaimResponse);
     }
 
     private String serializeJsonTree(ObjectNode root) throws JsonProcessingException {
@@ -260,27 +243,6 @@ public class DraftCaseDataService {
 
     private String getFieldName(String[] pathSegments) {
         return pathSegments[pathSegments.length - 1];
-    }
-
-    private void removeAllNullFields(ObjectNode node) {
-        List<String> fieldsToRemove = new ArrayList<>();
-        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> field = fields.next();
-            String fieldName = field.getKey();
-            JsonNode fieldValue = field.getValue();
-
-            if (fieldValue.isNull()) {
-                fieldsToRemove.add(fieldName);
-            } else if (fieldValue.isObject()) {
-                removeAllNullFields((ObjectNode) fieldValue);
-            }
-        }
-
-        for (String fieldName : fieldsToRemove) {
-            node.remove(fieldName);
-        }
     }
 
 }
