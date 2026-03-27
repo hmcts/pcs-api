@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,21 +12,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantOfRestitutionEntity;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -234,8 +228,6 @@ class WarrantOfRestitutionMapperTest {
     }
 
     private EnforcementOrder createCompleteEnforcementOrder() {
-        StatementOfTruthDetailsEnforcement statementOfTruth = getStatementOfTruthDetailsEnforcement();
-
         WarrantDetails warrantDetails = WarrantDetails.builder()
                 .showChangeNameAddressPage(YesOrNo.YES)
                 .isSuspendedOrder(VerticalYesNo.NO)
@@ -247,20 +239,8 @@ class WarrantOfRestitutionMapperTest {
                         .areLegalCostsToBeClaimed(VerticalYesNo.YES)
                         .amountOfLegalCosts(new BigDecimal("1000.00"))
                         .build())
-                .statementOfTruth(statementOfTruth)
                 .build();
 
         return EnforcementOrder.builder().warrantDetails(warrantDetails).build();
-    }
-
-    private static @NotNull StatementOfTruthDetailsEnforcement getStatementOfTruthDetailsEnforcement() {
-        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
-        statementOfTruth.setCompletedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
-        statementOfTruth.setFullNameLegalRep("Legal Rep Name");
-        statementOfTruth.setFirmNameLegalRep("Law Firm");
-        statementOfTruth.setPositionLegalRep("Senior Partner");
-        statementOfTruth.setAgreementLegalRep(List.of(StatementOfTruthAgreementLegalRep.AGREED));
-        statementOfTruth.setCertification(List.of(StatementOfTruthAgreement.CERTIFY));
-        return statementOfTruth;
     }
 }
