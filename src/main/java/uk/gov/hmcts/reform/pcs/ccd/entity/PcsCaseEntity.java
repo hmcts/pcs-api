@@ -16,9 +16,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.ccd.sdk.type.CaseLink;
-import uk.gov.hmcts.ccd.sdk.type.LinkReason;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -27,11 +24,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
@@ -127,52 +121,5 @@ public class PcsCaseEntity {
     public void addDefendantResponse(DefendantResponseEntity defendantResponse) {
         defendantResponses.add(defendantResponse);
         defendantResponse.setPcsCase(this);
-    }
-
-    public void mergeCaseLinks(List<ListValue<CaseLink>> incomingLinkedCases) {
-
-        Map<Long, CaseLinkEntity> existingLinkedCases =
-            this.caseLinks.stream()
-                .collect(Collectors.toMap(CaseLinkEntity::getLinkedCaseReference,
-                                          Function.identity()
-                ));
-
-        List<CaseLinkEntity> mergedCaseLinkEntities = new ArrayList<>();
-
-        for (ListValue<CaseLink> caseLinkListValue : incomingLinkedCases) {
-            CaseLink dto = caseLinkListValue.getValue();
-            Long incomingCaseRef = Long.valueOf(dto.getCaseReference());
-
-            CaseLinkEntity caseLinkEntity = existingLinkedCases.remove(incomingCaseRef);
-
-            if (caseLinkEntity == null) {
-                caseLinkEntity = new CaseLinkEntity();
-                caseLinkEntity.setPcsCase(this);
-                caseLinkEntity.setLinkedCaseReference(incomingCaseRef);
-            }
-
-            caseLinkEntity.setCcdListId(dto.getCaseType());
-
-            caseLinkEntity.getReasons().clear();
-
-            if (dto.getReasonForLink() != null) {
-                List<CaseLinkReasonEntity> caseLinkReasonEntities = new ArrayList<>();
-                for (ListValue<LinkReason> incomingLinkReason : dto.getReasonForLink()) {
-                    CaseLinkReasonEntity caseLinkReasonEntity = CaseLinkReasonEntity.builder()
-                            .caseLink(caseLinkEntity)
-                            .reasonCode(incomingLinkReason.getValue().getReason())
-                            .reasonText(incomingLinkReason.getValue().getDescription())
-                            .build();
-                    caseLinkReasonEntities.add(caseLinkReasonEntity);
-                }
-                caseLinkEntity.getReasons().clear();
-                caseLinkEntity.getReasons().addAll(caseLinkReasonEntities);
-            }
-
-            mergedCaseLinkEntities.add(caseLinkEntity);
-        }
-
-        this.caseLinks.clear();
-        this.caseLinks.addAll(mergedCaseLinkEntities);
     }
 }

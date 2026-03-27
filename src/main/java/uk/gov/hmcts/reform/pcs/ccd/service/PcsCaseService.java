@@ -28,6 +28,7 @@ public class PcsCaseService {
     private final DocumentService documentService;
     private final TenancyLicenceService tenancyLicenceService;
     private final AddressMapper addressMapper;
+    private final CaseLinkService caseLinkService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -68,7 +69,7 @@ public class PcsCaseService {
 
         log.info("Patching linked cases for {}", caseReference);
         if (pcsCase.getCaseLinks() != null) {
-            pcsCaseEntity.mergeCaseLinks(pcsCase.getCaseLinks());
+            caseLinkService.mergeCaseLinks(pcsCase.getCaseLinks(), pcsCaseEntity);
         }
     }
 }

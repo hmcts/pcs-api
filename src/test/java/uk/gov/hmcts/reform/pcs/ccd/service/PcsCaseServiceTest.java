@@ -48,6 +48,8 @@ class PcsCaseServiceTest {
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private AddressMapper addressMapper;
+    @Mock
+    private CaseLinkService caseLinkService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -62,7 +64,8 @@ class PcsCaseServiceTest {
             partyService,
             documentService,
             tenancyLicenceService,
-            addressMapper
+            addressMapper,
+            caseLinkService
         );
     }
 
@@ -194,7 +197,7 @@ class PcsCaseServiceTest {
         underTest.patchCaseLinks(CASE_REFERENCE, caseData);
 
         // Then
-        verify(pcsCaseEntity, atLeastOnce()).mergeCaseLinks(caseData.getCaseLinks());
+        verify(caseLinkService, atLeastOnce()).mergeCaseLinks(caseData.getCaseLinks(), pcsCaseEntity);
     }
 
     private PcsCaseEntity stubFindCase() {
