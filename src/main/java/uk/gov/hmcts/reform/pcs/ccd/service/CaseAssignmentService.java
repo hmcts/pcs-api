@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.util.ArrayList;
@@ -30,6 +31,28 @@ public class CaseAssignmentService {
             = CaseAssignmentUserRoleWithOrganisation.builder()
             .caseDataId(String.valueOf(caseReference))
             .caseRole("[DEFENDANT]")
+            .userId(userId)
+            .build();
+
+        ArrayList<CaseAssignmentUserRoleWithOrganisation> caseAssignmentList = new ArrayList<>();
+        caseAssignmentList.add(caseAssignmentUserRoleWithOrganisation);
+
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
+            CaseAssignmentUserRolesRequest.builder()
+                    .caseAssignmentUserRolesWithOrganisation(caseAssignmentList)
+                        .build();
+
+        return caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
+    }
+
+    public CaseAssignmentUserRolesResponse assignClaimantSolicitorRole(long caseReference, String userId) {
+        String s2s = authTokenGenerator.generate();
+        String userToken = idamService.getSystemUserAuthorisation();
+
+        CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
+            = CaseAssignmentUserRoleWithOrganisation.builder()
+            .caseDataId(String.valueOf(caseReference))
+            .caseRole(UserRole.CLAIMANT_SOLICITOR.getRole())
             .userId(userId)
             .build();
 

@@ -79,6 +79,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -155,6 +156,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
     private final RentDetailsPage rentDetailsPage;
+    private final CaseAssignmentService caseAssignmentService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -322,6 +324,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
+
+        caseAssignmentService.assignClaimantSolicitorRole(caseReference,
+            securityContextService.getCurrentUserDetails().getUid());
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
