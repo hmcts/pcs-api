@@ -4,18 +4,9 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  nameAndAddressForEviction,
-  youNeedPermission,
-  yourApplication,
   confirmHCEOHired,
   yourHCEO,
   theNICEWillChoose,
-  landRegistryFees,
-  legalCosts,
-  moneyOwed,
-  rePayments,
-  statementOfTruthOne,
-  languageUsed,
   youCannotApplyForWrit,
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
@@ -24,12 +15,15 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { changeNameAddress, enforcementApplication, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, repayments, statementOfTruth } from '@data/page-data-figma/page-data-enforcement-figma';
+
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
+  
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
@@ -79,224 +73,100 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', yourApplication.mainHeader);
+      await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
-        journey: yourApplication.typeOfApplicationOptions.writOfPossession,
-        type: yourApplication.summaryWritOrWarrant,
-        label1: yourApplication.warrantFeeValidationLabel,
-        text1: yourApplication.warrantFeeValidationText,
-        label2: yourApplication.writFeeValidationLabel,
-        text2: yourApplication.writFeeValidationText
+        journey: enforcementApplication.writOfPossessionRadioOption,
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        text1: enforcementApplication.warrantFeeValidationTextHidden,
+        label2: enforcementApplication.writFeeValidationLabelHidden,
+        text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('validateGetQuoteFromBailiffLink', {
-        type: yourApplication.summaryWritOrWarrant,
-        link: yourApplication.quoteFromBailiffLink,
-        newPage: yourApplication.hceoPageTitle
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        link: enforcementApplication.quoteFromBailiffLinkHidden,
+        newPage: enforcementApplication.hceoPageTitleHidden
       });
-      await performAction('expandSummary', yourApplication.summarySaveApplication);
-      await performAction('inputErrorValidation', {
-        validationReq: yourApplication.errorValidation,
-        validationType: yourApplication.errorValidationType.three,
-        inputArray: yourApplication.errorValidationField.errorRadioOption,
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.writOfPossession,
-        button: yourApplication.continueButton
-      });
+      await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
+      await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.writOfPossession,
-        question1: yourApplication.claimTransferredToHighCourtQuestion,
-        question2: yourApplication.genAppSuccessfulQuestion,
-        option1: yourApplication.yesRadioOption,
+        question: enforcementApplication.typeOfApplicationQuestion,
+        option: enforcementApplication.writOfPossessionRadioOption,
+        question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+        question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+        option1: enforcementApplication.yesRadioOptionHidden,
         nextPage: nameAndAddressForEviction.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: nameAndAddressForEviction.errorValidation,
-        validationType: nameAndAddressForEviction.errorValidationType.three,
-        inputArray: nameAndAddressForEviction.errorValidationField.errorRadioOption,
-        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-        option: nameAndAddressForEviction.yesRadioOption,
-        button: nameAndAddressForEviction.continueButton
-      });
+      await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
         nextPage: confirmHCEOHired.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: confirmHCEOHired.errorValidation,
-        validationType: confirmHCEOHired.errorValidationType.three,
-        inputArray: confirmHCEOHired.errorValidationField.errorRadioOption,
-        question: confirmHCEOHired.haveYouHiredHCEOQuestion,
-        option: confirmHCEOHired.yesRadioOption,
-        button: confirmHCEOHired.continueButton
-      });
+      await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOHired.errorValidation);
       await performAction('selectHaveHiredHCEO', {
         question: confirmHCEOHired.haveYouHiredHCEOQuestion,
         option: confirmHCEOHired.yesRadioOption,
         nextPage: yourHCEO.mainHeader
       });
       await performValidation('mainHeader', yourHCEO.mainHeader);
-      await performAction('inputErrorValidation', {
-        validationReq: yourHCEO.errorValidation,
-        validationType: yourHCEO.errorValidationType.two,
-        inputArray: yourHCEO.errorValidationField.errorTextField,
-        header: yourHCEO.thereIsAProblemErrorMessageHeader,
-        label: yourHCEO.nameOfYourHCEOTextLabel,
-        button: yourHCEO.continueButton
-      });
+      await performAction('errorValidationYourHCEOPage', yourHCEO.errorValidation);
       await performAction('nameYourHCEO', {
         label: yourHCEO.nameOfYourHCEOTextLabel,
         input: yourHCEO.nameOfYourHCEOTextInput,
         nextPage: moneyOwed.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: moneyOwed.errorValidation,
-        validationType: moneyOwed.errorValidationType.one,
-        inputArray: moneyOwed.errorValidationField.errorMoneyField,
-        label: moneyOwed.totalAmountOwedTextLabel,
-        button: moneyOwed.continueButton
-      });
+      await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
       await performAction('provideMoneyOwed', {
         label: moneyOwed.totalAmountOwedTextLabel,
         input: moneyOwed.totalAmountOwedTextInput,
         nextPage: legalCosts.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: legalCosts.errorValidation,
-        validationType: legalCosts.errorValidationType.three,
-        inputArray: legalCosts.errorValidationField.errorRadioOption,
-        question: legalCosts.reclaimLegalCostsQuestion,
-        option: legalCosts.yesRadioOption,
-        button: legalCosts.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: legalCosts.errorValidation,
-        validationType: legalCosts.errorValidationType.five,
-        inputArray: legalCosts.errorValidationField.errorMoneyField,
-        question: legalCosts.reclaimLegalCostsQuestion,
-        option: legalCosts.yesRadioOption,
-        option2: legalCosts.noRadioOption,
-        label: legalCosts.howMuchYouWantToReclaimTextLabel,
-        button: legalCosts.continueButton
-      });
+      await performAction('errorValidationLegalCostsPage', legalCosts.errorValidation);
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.yesRadioOption,
-        label: legalCosts.howMuchYouWantToReclaimTextLabel,
-        input: legalCosts.howMuchYouWantToReclaimTextInput,
+        label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
+        input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
         nextPage: landRegistryFees.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: landRegistryFees.errorValidation,
-        validationType: landRegistryFees.errorValidationType.three,
-        inputArray: landRegistryFees.errorValidationField.errorRadioOption,
-        question: landRegistryFees.landRegistryFeeQuestion,
-        option: landRegistryFees.yesRadioOption,
-        button: landRegistryFees.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: landRegistryFees.errorValidation,
-        validationType: landRegistryFees.errorValidationType.five,
-        inputArray: landRegistryFees.errorValidationField.errorMoneyField,
-        question: landRegistryFees.landRegistryFeeQuestion,
-        option: landRegistryFees.yesRadioOption,
-        option2: landRegistryFees.noRadioOption,
-        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
-        button: landRegistryFees.continueButton
-      });
+      await performAction('errorValidationLandRegistryFeePage', landRegistryFees.errorValidation);
       await performAction('provideLandRegistryFees', {
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.yesRadioOption,
-        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
         input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-        nextPage: rePayments.mainHeader
+        nextPage: repayments.mainHeader
       });
-      await performValidation('mainHeader', rePayments.mainHeader);
-      await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
-      await performAction('inputErrorValidation', {
-        validationReq: rePayments.errorValidation,
-        validationType: rePayments.errorValidationType.three,
-        inputArray: rePayments.errorValidationField.errorRadioOption,
-        question: rePayments.rePaymentQuestion,
-        option: rePayments.rePaymentRadioOptions.some,
-        button: rePayments.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: rePayments.errorValidation,
-        validationType: rePayments.errorValidationType.five,
-        inputArray: rePayments.errorValidationField.errorMoneyField,
-        question: rePayments.rePaymentQuestion,
-        option: rePayments.rePaymentRadioOptions.some,
-        option2: rePayments.rePaymentRadioOptions.none,
-        label: rePayments.enterTheAmountTextLabel,
-        button: rePayments.continueButton
-      });
+      await performValidation('mainHeader', repayments.mainHeader);
+      await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
+      await performAction('errorValidationRepaymentsPage', repayments.errorValidation);
       await performAction('provideAmountToRePay', {
-        question: rePayments.rePaymentQuestion,
-        option: rePayments.rePaymentRadioOptions.some,
-        label: rePayments.enterTheAmountTextLabel,
-        input: rePayments.enterTheAmountTextInput,
+        question: repayments.rePaymentQuestion,
+        option: repayments.someRadioOptions,
+        label: repayments.enterTheAmountTextLabelHidden,
+        input: repayments.enterTheAmountTextInputHidden,
         nextPage: languageUsed.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: languageUsed.errorValidation,
-        validationType: languageUsed.errorValidationType.three,
-        inputArray: languageUsed.errorValidationField.errorRadioOption,
-        question: languageUsed.whichLanguageUsedQuestion,
-        option: languageUsed.languageUsedRadioOptions.englishRadioOption,
-        button: languageUsed.continueButton
-      });
+      await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
-        option: languageUsed.languageUsedRadioOptions.englishRadioOption,
-        nextPage: statementOfTruthOne.mainHeader
+        option: languageUsed.englishRadioOption,
+        nextPage: statementOfTruth.mainHeader
       });
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.three,
-        inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
-        question: statementOfTruthOne.completedByLabel,
-        option: statementOfTruthOne.claimantRadioOption,
-        button: statementOfTruthOne.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.four,
-        inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
-        label: statementOfTruthOne.checkBoxGenericErrorLabel,
-        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-        checkBox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        button: statementOfTruthOne.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.two,
-        inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
-        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthOne.fullNameHiddenTextLabel,
-        button: statementOfTruthOne.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.two,
-        inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
-        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-        button: statementOfTruthOne.continueButton
-      });
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
+      await performAction('errorValidationSOTWritPage', statementOfTruth.errorValidation);
+      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruthWrit', {
-        question: statementOfTruthOne.completedByLabel,
-        option: statementOfTruthOne.claimantRadioOption,
-        option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        label: statementOfTruthOne.fullNameHiddenTextLabel,
-        input: statementOfTruthOne.fullNameHiddenTextInput,
-        label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-        input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
-        label2: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-        input2: statementOfTruthOne.nameOfFirmHiddenTextInput,
+        question: statementOfTruth.completedByLabel,
+        option: statementOfTruth.claimantRadioOption,
+        option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+        label: statementOfTruth.fullNameHiddenTextLabel,
+        input: statementOfTruth.fullNameHiddenTextInput,
+        label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+        input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+        label2: statementOfTruth.nameOfFirmHiddenTextLabel,
+        input2: statementOfTruth.nameOfFirmHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader
       });
     });
@@ -304,21 +174,21 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [ALL] @enforcement @PR @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', yourApplication.mainHeader);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
-      journey: yourApplication.typeOfApplicationOptions.writOfPossession,
-      type: yourApplication.summaryWritOrWarrant,
-      label1: yourApplication.warrantFeeValidationLabel,
-      text1: yourApplication.warrantFeeValidationText,
-      label2: yourApplication.writFeeValidationLabel,
-      text2: yourApplication.writFeeValidationText
+      journey: enforcementApplication.writOfPossessionRadioOption,
+      type: enforcementApplication.summaryWritOrWarrantLink,
+      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      text1: enforcementApplication.warrantFeeValidationTextHidden,
+      label2: enforcementApplication.writFeeValidationLabelHidden,
+      text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {
-      question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.writOfPossession,
-      question1: yourApplication.claimTransferredToHighCourtQuestion,
-      question2: yourApplication.genAppSuccessfulQuestion,
-      option1: yourApplication.yesRadioOption,
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.writOfPossessionRadioOption,
+      question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+      question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+      option1: enforcementApplication.yesRadioOptionHidden,
       nextPage: nameAndAddressForEviction.mainHeader
     });
     await performAction('selectNameAndAddressForEviction', {
@@ -334,13 +204,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
     await performAction('clickButton', theNICEWillChoose.continueButton);
     await performValidation('mainHeader', moneyOwed.mainHeader);
-    await performAction('inputErrorValidation', {
-      validationReq: moneyOwed.errorValidation,
-      validationType: moneyOwed.errorValidationType.one,
-      inputArray: moneyOwed.errorValidationField.errorMoneyField,
-      label: moneyOwed.totalAmountOwedTextLabel,
-      button: moneyOwed.continueButton
-    });
+    await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
     await performAction('provideMoneyOwed', {
       label: moneyOwed.totalAmountOwedTextLabel,
       input: moneyOwed.totalAmountOwedTextInput,
@@ -349,83 +213,42 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
       option: legalCosts.noRadioOption,
-      label: legalCosts.howMuchYouWantToReclaimTextLabel,
-      input: legalCosts.howMuchYouWantToReclaimTextInput,
+      label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
+      input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
       nextPage: landRegistryFees.mainHeader
     });
     await performAction('provideLandRegistryFees', {
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.noRadioOption,
-      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-      nextPage: rePayments.mainHeader
+      nextPage: repayments.mainHeader
     });
-    await performValidation('mainHeader', rePayments.mainHeader);
-    await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
+    await performValidation('mainHeader', repayments.mainHeader);
+    await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
     await performAction('provideAmountToRePay', {
-      question: rePayments.rePaymentQuestion,
-      option: rePayments.rePaymentRadioOptions.all,
-      label: rePayments.enterTheAmountTextLabel,
-      input: rePayments.enterTheAmountTextInput,
+      question: repayments.rePaymentQuestion,
+      option: repayments.allRadioOptions,
+      label: repayments.enterTheAmountTextLabelHidden,
+      input: repayments.enterTheAmountTextInputHidden,
       nextPage: languageUsed.mainHeader
     });
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.languageUsedRadioOptions.welshRadioOption,
-      nextPage: statementOfTruthOne.mainHeader
+      option: languageUsed.welshRadioOption,
+      nextPage: statementOfTruth.mainHeader
     });
-    await performAction('inputErrorValidation', {
-      validationReq: statementOfTruthOne.errorValidation,
-      validationType: statementOfTruthOne.errorValidationType.three,
-      inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
-      question: statementOfTruthOne.completedByLabel,
-      option: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
-      button: statementOfTruthOne.continueButton
-    });
-    await performAction('inputErrorValidation', {
-      validationReq: statementOfTruthOne.errorValidation,
-      validationType: statementOfTruthOne.errorValidationType.four,
-      inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
-      label: statementOfTruthOne.checkBoxGenericErrorLabel,
-      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-      checkBox: statementOfTruthOne.signThisStatementHiddenCheckbox,
-      button: statementOfTruthOne.continueButton
-    });
-    await performAction('inputErrorValidation', {
-      validationReq: statementOfTruthOne.errorValidation,
-      validationType: statementOfTruthOne.errorValidationType.two,
-      inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
-      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-      label: statementOfTruthOne.fullNameHiddenTextLabel,
-      button: statementOfTruthOne.continueButton
-    });
-    await performAction('inputErrorValidation', {
-      validationReq: statementOfTruthOne.errorValidation,
-      validationType: statementOfTruthOne.errorValidationType.two,
-      inputArray: statementOfTruthOne.errorValidationField.errorTextField2,
-      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-      label: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-      button: statementOfTruthOne.continueButton
-    });
-    await performAction('inputErrorValidation', {
-      validationReq: statementOfTruthOne.errorValidation,
-      validationType: statementOfTruthOne.errorValidationType.two,
-      inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
-      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-      label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-      button: statementOfTruthOne.continueButton
-    });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
     await performAction('selectStatementOfTruthWrit', {
-      question: statementOfTruthOne.completedByLabel,
-      option: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
-      option1: statementOfTruthOne.signThisStatementHiddenCheckbox,
-      label: statementOfTruthOne.fullNameHiddenTextLabel,
-      input: statementOfTruthOne.fullNameHiddenTextInput,
-      label1: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-      input1: statementOfTruthOne.nameOfFirmHiddenTextInput,
-      label2: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-      input2: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
+      question: statementOfTruth.completedByLabel,
+      option: statementOfTruth.claimantLegalRepresentativeRadioOption,
+      option1: statementOfTruth.signThisStatementHiddenCheckbox,
+      label: statementOfTruth.fullNameHiddenTextLabel,
+      input: statementOfTruth.fullNameHiddenTextInput,
+      label1: statementOfTruth.nameOfFirmHiddenTextLabel,
+      input1: statementOfTruth.nameOfFirmHiddenTextInput,
+      label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+      input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader
     });
   });
@@ -433,21 +256,21 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [None] @enforcement ', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', yourApplication.mainHeader);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
-      journey: yourApplication.typeOfApplicationOptions.writOfPossession,
-      type: yourApplication.summaryWritOrWarrant,
-      label1: yourApplication.warrantFeeValidationLabel,
-      text1: yourApplication.warrantFeeValidationText,
-      label2: yourApplication.writFeeValidationLabel,
-      text2: yourApplication.writFeeValidationText
+      journey: enforcementApplication.writOfPossessionRadioOption,
+      type: enforcementApplication.summaryWritOrWarrantLink,
+      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      text1: enforcementApplication.warrantFeeValidationTextHidden,
+      label2: enforcementApplication.writFeeValidationLabelHidden,
+      text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {
-      question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.writOfPossession,
-      question1: yourApplication.claimTransferredToHighCourtQuestion,
-      question2: yourApplication.genAppSuccessfulQuestion,
-      option1: yourApplication.yesRadioOption,
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.writOfPossessionRadioOption,
+      question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+      question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+      option1: enforcementApplication.yesRadioOptionHidden,
       nextPage: nameAndAddressForEviction.mainHeader
     });
     await performAction('selectNameAndAddressForEviction', {
@@ -472,43 +295,43 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
       option: legalCosts.yesRadioOption,
-      label: legalCosts.howMuchYouWantToReclaimTextLabel,
-      input: legalCosts.howMuchYouWantToReclaimTextInput,
+      label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
+      input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
       nextPage: landRegistryFees.mainHeader
     });
     await performAction('provideLandRegistryFees', {
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.noRadioOption,
-      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-      nextPage: rePayments.mainHeader
+      nextPage: repayments.mainHeader
     });
-    await performValidation('mainHeader', rePayments.mainHeader);
-    await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
+    await performValidation('mainHeader', repayments.mainHeader);
+    await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
     await performAction('provideAmountToRePay', {
-      question: rePayments.rePaymentQuestion,
-      option: rePayments.rePaymentRadioOptions.none,
-      label: rePayments.enterTheAmountTextLabel,
-      input: rePayments.enterTheAmountTextInput,
+      question: repayments.rePaymentQuestion,
+      option: repayments.noneRadioOptions,
+      label: repayments.enterTheAmountTextLabelHidden,
+      input: repayments.enterTheAmountTextInputHidden,
       nextPage: languageUsed.mainHeader
     });
     await performValidation('mainHeader', languageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.languageUsedRadioOptions.englishAndWelshRadioOption,
-      nextPage: statementOfTruthOne.mainHeader
+      option: languageUsed.englishAndWelshRadioOption,
+      nextPage: statementOfTruth.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
     await performAction('selectStatementOfTruthWrit', {
-      question: statementOfTruthOne.completedByLabel,
-      option: statementOfTruthOne.claimantRadioOption,
-      option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-      label: statementOfTruthOne.fullNameHiddenTextLabel,
-      input: statementOfTruthOne.fullNameHiddenTextInput,
-      label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-      input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
-      label2: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-      input2: statementOfTruthOne.nameOfFirmHiddenTextInput,
+      question: statementOfTruth.completedByLabel,
+      option: statementOfTruth.claimantRadioOption,
+      option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      label: statementOfTruth.fullNameHiddenTextLabel,
+      input: statementOfTruth.fullNameHiddenTextInput,
+      label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+      input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+      label2: statementOfTruth.nameOfFirmHiddenTextLabel,
+      input2: statementOfTruth.nameOfFirmHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader
     });
   });
@@ -516,18 +339,18 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
   test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', yourApplication.mainHeader);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('selectApplicationType', {
-      question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.writOfPossession,
-      question1: yourApplication.claimTransferredToHighCourtQuestion,
-      question2: yourApplication.genAppSuccessfulQuestion,
-      option1: yourApplication.noRadioOption,
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.writOfPossessionRadioOption,
+      question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+      question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+      option1: enforcementApplication.noRadioOptionHidden,
       nextPage: youCannotApplyForWrit.mainHeader
     });
     await performAction('confirmClaimTransferredToHighCourt', {
-      question: yourApplication.claimTransferredToHighCourtQuestion,
-      option: yourApplication.noRadioOption,
+      question: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+      option: enforcementApplication.noRadioOptionHidden,
       nextPage: youCannotApplyForWrit.mainHeader
     });
     await performAction('clickButton', youCannotApplyForWrit.continueButton);
@@ -543,23 +366,23 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', yourApplication.mainHeader);
+      await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('selectApplicationType', {
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.writOfPossession,
-        question1: yourApplication.claimTransferredToHighCourtQuestion,
-        question2: yourApplication.genAppSuccessfulQuestion,
-        option1: yourApplication.yesRadioOption,
+        question: enforcementApplication.typeOfApplicationQuestion,
+        option: enforcementApplication.writOfPossessionRadioOption,
+        question1: enforcementApplication.claimTransferredToHighCourtQuestionHidden,
+        question2: enforcementApplication.genAppSuccessfulQuestionHidden,
+        option1: enforcementApplication.yesRadioOptionHidden,
         nextPage: nameAndAddressForEviction.mainHeader
       });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.noRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-        nextPage: youNeedPermission.mainHeader
+        nextPage: changeNameAddress.mainHeader
       });
-      await performValidation('mainHeader', youNeedPermission.mainHeader);
-      await performAction('clickButton', youNeedPermission.continueButton);
-      await performValidation('errorMessage', { header: youNeedPermission.eventCouldNotBeCreatedErrorMessage, message: youNeedPermission.errMessage });
+      await performValidation('mainHeader', changeNameAddress.mainHeader);
+      await performAction('clickButton', changeNameAddress.continueButton);
+      await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: changeNameAddress.errMessageDynamic });
     });
 });
