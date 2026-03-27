@@ -31,7 +31,7 @@ class CaseLinkServiceTest {
         //Given
         CaseLinkReasonEntity caseLinkReasonEntity = createCaseLinkReasonEntity();
 
-        CaseLinkEntity caseLinkEntity = createCaseLinkEntity( List.of(caseLinkReasonEntity));
+        CaseLinkEntity caseLinkEntity = createCaseLinkEntity(List.of(caseLinkReasonEntity));
 
         LinkReason linkReason = createLinkReason(caseLinkReasonEntity.getReasonCode(),
                                                   caseLinkReasonEntity.getReasonText());
