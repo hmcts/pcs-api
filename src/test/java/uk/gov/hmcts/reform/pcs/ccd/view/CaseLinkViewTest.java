@@ -17,7 +17,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -65,7 +64,6 @@ class CaseLinkViewTest {
     }
 
     private CaseLinkReasonEntity createCaseLinkReasonEntity(UUID id, String reasonCode, String reasonText) {
-        CaseLinkEntity caseLinkEntity = mock(CaseLinkEntity.class);
 
         return CaseLinkReasonEntity.builder()
             .id(id)
