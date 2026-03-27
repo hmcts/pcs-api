@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.util.DateUtil;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.time.Instant;
@@ -31,7 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,6 +48,8 @@ class EnforcementOrderMediatorTest {
     private PcsCaseRepository pcsCaseRepository;
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
+    @Mock
+    private DateUtil dateUtil;
 
     @InjectMocks
     private EnforcementOrderMediator underTest;
@@ -56,6 +61,8 @@ class EnforcementOrderMediatorTest {
         pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
+        lenient().when(dateUtil.formatDate(any(Instant.class))).thenCallRealMethod();
+        lenient().when(dateUtil.minusHoursFormatted(any(Instant.class), anyInt())).thenCallRealMethod();
     }
 
     @Test
