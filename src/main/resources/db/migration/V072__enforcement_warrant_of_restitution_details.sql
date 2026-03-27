@@ -7,9 +7,6 @@ ALTER TABLE enf_case
 ADD COLUMN sot_id uuid REFERENCES statement_of_truth(id);
 
 ALTER TABLE public.enf_warrant_of_restitution
--- UI Control Flags
-ADD COLUMN show_people_who_will_be_evicted_page     YES_NO,
-ADD COLUMN show_people_you_want_to_evict_page       YES_NO,
 
 -- How the defendants returned to the property
 ADD COLUMN how_defendants_returned                  VARCHAR(6800),

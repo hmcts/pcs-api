@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendantsDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
@@ -111,7 +111,7 @@ public class DocumentService {
     }
 
     private List<Pair<Document, DocumentType>> mapEvidenceOfDefendantsDocumentsWithType(
-            List<ListValue<EvidenceOfDefendantsDocuments>> documents) {
+            List<ListValue<EvidenceOfDefendants>> documents) {
 
         if (CollectionUtils.isEmpty(documents)) {
             return Collections.emptyList();

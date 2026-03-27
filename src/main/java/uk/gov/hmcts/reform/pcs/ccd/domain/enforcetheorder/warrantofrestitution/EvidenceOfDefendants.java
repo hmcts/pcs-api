@@ -12,7 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EvidenceOfDefendantsDocuments {
+public class EvidenceOfDefendants {
 
     @CCD(
         label = "Type of document",

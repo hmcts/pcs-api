@@ -17,8 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantOfRestitutionEn
 import java.util.HashSet;
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.util.EnforcementTypeUtil.convertYesOrNoToVerticalYesNo;
-
 @Component
 public class WarrantOfRestitutionMapper {
 
@@ -86,20 +84,11 @@ public class WarrantOfRestitutionMapper {
                 .enforcementOrder(enforcementOrderEntity).build();
         if (enforcementOrder.getWarrantOfRestitutionDetails() != null) {
             WarrantOfRestitutionDetails warrantOfRestitutionDetails = enforcementOrder.getWarrantOfRestitutionDetails();
-            mapControlFlags(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
             mapDefendantReturned(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
             mapAdditionalInformation(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
             mapPropertyAccessDetails(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
         }
         return warrantOfRestitutionEntity;
-    }
-
-    private void mapControlFlags(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
-                                 WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
-        warrantOfRestitutionEntity.setShowPeopleWhoWillBeEvictedPage(
-                convertYesOrNoToVerticalYesNo(warrantOfRestitutionDetails.getShowPeopleWhoWillBeEvictedPage()));
-        warrantOfRestitutionEntity.setShowPeopleYouWantToEvictPage(
-                convertYesOrNoToVerticalYesNo(warrantOfRestitutionDetails.getShowPeopleYouWantToEvictPage()));
     }
 
     private void mapDefendantReturned(WarrantOfRestitutionEntity warrantOfRestitutionEntity,

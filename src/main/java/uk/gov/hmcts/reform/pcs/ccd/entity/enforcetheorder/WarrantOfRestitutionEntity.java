@@ -43,15 +43,6 @@ public class WarrantOfRestitutionEntity {
     @JsonBackReference
     private EnforcementOrderEntity enforcementOrder;
 
-    // UI Control Flags
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo showPeopleWhoWillBeEvictedPage;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo showPeopleYouWantToEvictPage;
-
     // Defendants Returned
     private String howDefendantsReturned;
 

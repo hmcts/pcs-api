@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendantsDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -270,7 +270,7 @@ class DocumentServiceTest {
     @EnumSource(EvidenceDocumentType.class)
     void shouldMapAllEvidenceDocumentTypes(EvidenceDocumentType evidenceDocumentType) {
         // Given
-        EvidenceOfDefendantsDocuments evidenceDocument = EvidenceOfDefendantsDocuments.builder()
+        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
                 .document(Document.builder()
                         .url("url-WITNESS_STATEMENT")
                         .filename("file-WITNESS_STATEMENT")
@@ -280,8 +280,8 @@ class DocumentServiceTest {
                 .documentType(evidenceDocumentType)
                 .build();
 
-        List<ListValue<EvidenceOfDefendantsDocuments>> evidenceDocuments =
-                List.of(ListValue.<EvidenceOfDefendantsDocuments>builder()
+        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
+                List.of(ListValue.<EvidenceOfDefendants>builder()
                         .id("1").value(evidenceDocument).build());
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
@@ -306,7 +306,7 @@ class DocumentServiceTest {
 
     @Test
     void shouldHandleEmptyEvidenceDocument() {
-        List<ListValue<EvidenceOfDefendantsDocuments>> evidenceDocuments =
+        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
                 new ArrayList<>();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
                 .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()

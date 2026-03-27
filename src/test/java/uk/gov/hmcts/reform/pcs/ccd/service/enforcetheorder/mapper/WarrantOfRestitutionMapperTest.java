@@ -145,43 +145,6 @@ class WarrantOfRestitutionMapperTest {
     }
 
     @Test
-    void shouldMapMapControlFlags() {
-        // Given
-        WarrantOfRestitutionDetails warrantOfRestitutionDetails = WarrantOfRestitutionDetails.builder()
-                .showPeopleWhoWillBeEvictedPage(YesOrNo.NO)
-                .showPeopleYouWantToEvictPage(YesOrNo.YES)
-                .build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .warrantOfRestitutionDetails(warrantOfRestitutionDetails).build();
-
-        // When
-        WarrantOfRestitutionEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.NO);
-        assertThat(result.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.YES);
-    }
-
-    @Test
-    void shouldMapMapControlFlagsWithNullValues() {
-        // Given
-        WarrantOfRestitutionDetails warrantOfRestitutionDetails = WarrantOfRestitutionDetails.builder()
-                .showPeopleWhoWillBeEvictedPage(null)
-                .showPeopleYouWantToEvictPage(null)
-                .build();
-
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .warrantOfRestitutionDetails(warrantOfRestitutionDetails).build();
-
-        // When
-        WarrantOfRestitutionEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.NO);
-        assertThat(result.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.NO);
-    }
-
-    @Test
     void shouldMapMapAdditionalInformation() {
         // Given
         AdditionalInformation additionalInfo = AdditionalInformation.builder()

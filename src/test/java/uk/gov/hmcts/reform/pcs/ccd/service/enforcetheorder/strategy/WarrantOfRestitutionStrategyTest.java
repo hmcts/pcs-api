@@ -12,21 +12,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendantsDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantOfRestitutionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.StatementOfTruthRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WarrantOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.RiskProfileService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.StatementOfTruthMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 
 import java.util.List;
@@ -48,10 +43,6 @@ class WarrantOfRestitutionStrategyTest {
     private WarrantOfRestitutionMapper warrantOfRestitutionMapper;
     @Mock
     private WarrantOfRestitutionRepository warrantOfRestitutionRepository;
-    @Mock
-    private StatementOfTruthMapper statementOfTruthMapper;
-    @Mock
-    private StatementOfTruthRepository statementOfTruthRepository;
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
     @Mock
@@ -89,52 +80,15 @@ class WarrantOfRestitutionStrategyTest {
         // Then
         verify(riskProfileService).processRisk(enforcementOrder, enforcementOrderEntity);
         verify(warrantOfRestitutionRepository).save(captor.capture());
-        verify(statementOfTruthMapper).mapStatementOfTruthForWarrantRest(enforcementOrder);
         WarrantOfRestitutionEntity saved = captor.getValue();
         assertThat(saved).isNotNull();
         assertThat(saved.getEnforcementOrder()).isSameAs(enforcementOrderEntity);
     }
 
     @Test
-    void shouldProcessStatementOfTruthAndSaveToRepository() {
-        // Given
-        StatementOfTruthDetails statementOfTruthDetails = StatementOfTruthDetails.builder()
-                .completedBy(StatementOfTruthCompletedBy.CLAIMANT)
-                .fullNameClaimant("Claimant name")
-                .positionClaimant("Claimant position")
-                .build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .rawWarrantRestDetails(RawWarrantRestDetails.builder()
-                        .statementOfTruthWarrantRest(statementOfTruthDetails)
-                        .build())
-                .build();
-        EnforcementOrderEntity enforcementOrderEntity = EnforcementOrderEntity.builder().build();
-        StatementOfTruthEntity statementOfTruthEntity = StatementOfTruthEntity.builder()
-                        .completedBy(StatementOfTruthCompletedBy.CLAIMANT)
-                        .fullName("Claimant name")
-                        .positionHeld("Claimant position")
-                .build();
-        enforcementOrderEntity.setStatementOfTruth(statementOfTruthEntity);
-        WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder().build();
-
-        when(warrantOfRestitutionMapper.toEntity(enforcementOrder, enforcementOrderEntity))
-                .thenReturn(warrantOfRestitutionEntity);
-        when(warrantOfRestitutionRepository.save(warrantOfRestitutionEntity)).thenReturn(warrantOfRestitutionEntity);
-        when(statementOfTruthMapper.mapStatementOfTruthForWarrantRest(enforcementOrder))
-                .thenReturn(statementOfTruthEntity);
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(statementOfTruthMapper).mapStatementOfTruthForWarrantRest(enforcementOrder);
-        verify(statementOfTruthRepository).save(statementOfTruthEntity);
-    }
-
-    @Test
     void shouldProcessDocumentsAndSaveToRepository() {
         // Given
-        EvidenceOfDefendantsDocuments evidenceDocument = EvidenceOfDefendantsDocuments.builder()
+        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
                 .document(Document.builder()
                         .url("url-WITNESS_STATEMENT")
                         .filename("file-WITNESS_STATEMENT")
@@ -144,8 +98,8 @@ class WarrantOfRestitutionStrategyTest {
                 .documentType(EvidenceDocumentType.WITNESS_STATEMENT)
                 .build();
 
-        List<ListValue<EvidenceOfDefendantsDocuments>> evidenceDocuments =
-                List.of(ListValue.<EvidenceOfDefendantsDocuments>builder()
+        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
+                List.of(ListValue.<EvidenceOfDefendants>builder()
                 .id("1").value(evidenceDocument).build());
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()

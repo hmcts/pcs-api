@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 
 @Builder
 @Data
@@ -23,7 +22,4 @@ public class RawWarrantRestDetails {
     private YesNoNotSure vulnerablePeoplePresentWarrantRest;
 
     private VulnerableAdultsChildren vulnerableAdultsChildrenWarrantRest;
-
-    @CCD
-    private StatementOfTruthDetails statementOfTruthWarrantRest;
 }
