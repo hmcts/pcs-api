@@ -123,7 +123,7 @@ class DefendantResponseServiceTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .freeLegalAdvice(YesNoPreferNotToSay.YES)
-            .noticeReceived(YesNoNotSure.YES)
+            .possessionNoticeReceived(YesNoNotSure.YES)
             .noticeReceivedDate(LocalDate.of(2024, 1, 15))
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .landlordRegistered(YesNoNotSure.YES)
