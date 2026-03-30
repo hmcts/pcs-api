@@ -49,7 +49,6 @@ public class CaseLinkService {
                     CaseLinkReasonEntity caseLinkReasonEntity = CaseLinkReasonEntity.builder()
                         .caseLink(caseLinkEntity)
                         .reasonCode(incomingLinkReason.getValue().getReason())
-                        .reasonText(incomingLinkReason.getValue().getDescription())
                         .build();
                     caseLinkReasonEntities.add(caseLinkReasonEntity);
                 }

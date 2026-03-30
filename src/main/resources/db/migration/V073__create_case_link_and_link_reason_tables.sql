@@ -16,8 +16,7 @@ CREATE UNIQUE INDEX ux_case_link_unique
 CREATE TABLE case_link_reason (
     id UUID PRIMARY KEY,
     case_link_id UUID NOT NULL REFERENCES case_link(id) ON DELETE CASCADE,
-    reason_code VARCHAR(100) NOT NULL,
-    reason_text VARCHAR(255)
+    reason_code VARCHAR(100) NOT NULL
 );
 
 CREATE INDEX idx_case_link_reason_link

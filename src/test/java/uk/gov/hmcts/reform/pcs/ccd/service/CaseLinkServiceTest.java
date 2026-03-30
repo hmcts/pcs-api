@@ -33,8 +33,7 @@ class CaseLinkServiceTest {
 
         CaseLinkEntity caseLinkEntity = createCaseLinkEntity(List.of(caseLinkReasonEntity));
 
-        LinkReason linkReason = createLinkReason(caseLinkReasonEntity.getReasonCode(),
-                                                  caseLinkReasonEntity.getReasonText());
+        LinkReason linkReason = createLinkReason(caseLinkReasonEntity.getReasonCode());
         List<ListValue<LinkReason>> linkReasons = List.of(
             ListValue.<LinkReason>builder()
                 .id(caseLinkReasonEntity.getId().toString())
@@ -65,7 +64,6 @@ class CaseLinkServiceTest {
         return CaseLinkReasonEntity.builder()
             .id(UUID.randomUUID())
             .reasonCode("CLR003")
-            .reasonText("Same Party")
             .caseLink(caseLinkEntity)
             .build();
     }
@@ -89,11 +87,10 @@ class CaseLinkServiceTest {
             .build();
     }
 
-    private LinkReason createLinkReason(String reason, String description) {
+    private LinkReason createLinkReason(String reason) {
 
         return LinkReason.builder()
             .reason(reason)
-            .description(description)
             .build();
     }
 

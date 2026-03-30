@@ -37,7 +37,6 @@ public class CaseLinkView {
                                         .value(
                                             LinkReason.builder()
                                                 .reason(reasonEntity.getReasonCode())
-                                                .description(reasonEntity.getReasonText())
                                                 .build()
                                         )
                                         .build()

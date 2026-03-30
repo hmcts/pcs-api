@@ -37,8 +37,4 @@ public class CaseLinkReasonEntity {
 
     @Column(name = "reason_code", nullable = false)
     private String reasonCode;
-
-    @Column(name = "reason_text")
-    private String reasonText;
-
 }

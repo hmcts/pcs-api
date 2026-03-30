@@ -40,10 +40,8 @@ class CaseLinkViewTest {
     @Test
     void shouldMapAndWrapCaseLinks() {
         // Given
-        CaseLinkReasonEntity caseLinkReasonEntity1 = createCaseLinkReasonEntity(UUID.randomUUID(), "CLR003",
-                                                                                              "Same Party");
-        CaseLinkReasonEntity caseLinkReasonEntity2 = createCaseLinkReasonEntity(UUID.randomUUID(),
-                                                                                "CLR010", "Bail");
+        CaseLinkReasonEntity caseLinkReasonEntity1 = createCaseLinkReasonEntity(UUID.randomUUID(), "CLR003");
+        CaseLinkReasonEntity caseLinkReasonEntity2 = createCaseLinkReasonEntity(UUID.randomUUID(), "CLR010");
         when(pcsCaseEntity.getCaseLinks()).thenReturn(List.of(caseLinkEntity));
         when(caseLinkEntity.getLinkedCaseReference()).thenReturn(1234L);
         when(caseLinkEntity.getReasons()).thenReturn(List.of(caseLinkReasonEntity1, caseLinkReasonEntity2));
@@ -59,16 +57,13 @@ class CaseLinkViewTest {
         assertThat(mappedCaseLinks.getFirst().getValue().getCaseType()).isEqualTo("PCS");
         assertThat(mappedCaseLinks.getFirst().getValue().getReasonForLink().getFirst().getValue().getReason())
                         .isEqualTo("CLR003");
-        assertThat(mappedCaseLinks.getFirst().getValue().getReasonForLink().getFirst().getValue().getDescription())
-                        .isEqualTo("Same Party");
     }
 
-    private CaseLinkReasonEntity createCaseLinkReasonEntity(UUID id, String reasonCode, String reasonText) {
+    private CaseLinkReasonEntity createCaseLinkReasonEntity(UUID id, String reasonCode) {
 
         return CaseLinkReasonEntity.builder()
             .id(id)
             .reasonCode(reasonCode)
-            .reasonText(reasonText)
             .caseLink(caseLinkEntity)
             .build();
     }

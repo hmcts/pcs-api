@@ -24,12 +24,10 @@ class CaseLinkEntityTest {
     void shouldAddCaseLinkReason() {
         // Given
         String reasonCode = "CLR003";
-        String reasonText = "Same Party";
         CaseLinkEntity caseLinkEntity = CaseLinkEntity.builder().build();
         CaseLinkReasonEntity caseLinkReasonEntity = CaseLinkReasonEntity.builder()
             .caseLink(caseLinkEntity)
             .reasonCode(reasonCode)
-            .reasonText(reasonText)
             .build();
 
 
@@ -39,6 +37,5 @@ class CaseLinkEntityTest {
         // Then
         assertThat(underTest.getReasons()).hasSize(1);
         assertThat(underTest.getReasons().getFirst().getReasonCode()).isEqualTo("CLR003");
-        assertThat(underTest.getReasons().getFirst().getReasonText()).isEqualTo("Same Party");
     }
 }
