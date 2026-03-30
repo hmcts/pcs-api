@@ -75,6 +75,9 @@ public class DefendantResponses {
     private YesNoNotSure landlordRegistered;
 
     @CCD
+    private YesNoNotSure writtenTerms;
+
+    @CCD
     private YesOrNo disputeClaim;
 
     @CCD
