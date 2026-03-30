@@ -1,4 +1,3 @@
-
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +52,6 @@ class WritStrategyTest {
                                            .correctNameAndAddress(VerticalYesNo.YES)
                                            .build())
             .showChangeNameAddressPage(YesOrNo.NO)
-            .showPeopleWhoWillBeEvictedPage(YesOrNo.YES)
             .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.YES)
             .hceoDetails("Enforcement")
             .hasClaimTransferredToHighCourt(YesOrNo.YES)
@@ -165,7 +163,6 @@ class WritStrategyTest {
                                            .correctNameAndAddress(VerticalYesNo.YES)
                                            .build())
             .showChangeNameAddressPage(YesOrNo.NO)
-            .showPeopleWhoWillBeEvictedPage(YesOrNo.YES)
             .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.YES)
             .hceoDetails("Complete HCEO Details")
             .hasClaimTransferredToHighCourt(YesOrNo.YES)

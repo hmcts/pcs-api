@@ -1,0 +1,35 @@
+{
+  "event_id": "respondPossessionClaim",
+  "case_details": {
+    "id": "${caseId}",
+    "case_type_id": "${caseTypeId}",
+    "data": {
+      "propertyAddress": {
+        "AddressLine1": "1",
+        "AddressLine2": "Exton Gardens",
+        "AddressLine3": "70 Knyveton Road",
+        "PostTown": "Bournemouth",
+        "PostCode": "BH1 3BP",
+        "Country": "United Kingdom"
+      },
+      "legislativeCountry": "England",
+      "possessionClaimResponse": {
+        "defendantResponses": {
+          "tenancyTypeCorrect": "YES",
+          "tenancyType": "Assured Shorthold Tenancy",
+          "tenancyStartDate": "2020-01-01",
+          "defendantContactDetails": {
+            "party": {
+              "address": {},
+              "lastName": "Doe",
+              "firstName": "Jane",
+              "nameKnown": "YES",
+              "addressKnown": "NO"
+            }
+          }
+        }
+
+      }
+    }
+  }
+}
