@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.ccd.entity.confirmeviction.EvictionEntity;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -33,7 +34,7 @@ public class UnavailableDateEntity {
     @ManyToOne
     @JoinColumn(name = "enf_confirm_eviction_id", nullable = false)
     @JsonBackReference
-    private ConfirmEvictionEntity confirmEviction;
+    private EvictionEntity confirmEviction;
 
     private LocalDate unavailableDate;
 

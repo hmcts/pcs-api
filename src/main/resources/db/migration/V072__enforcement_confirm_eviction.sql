@@ -1,4 +1,4 @@
-CREATE TABLE enf_confirm_eviction(
+CREATE TABLE enf_eviction(
   id                                                      UUID PRIMARY KEY,
   enf_case_id                                             UUID NOT NULL REFERENCES enf_case (id) ON DELETE CASCADE,
 
@@ -44,6 +44,6 @@ ALTER TABLE enf_risk_profile
 
 CREATE TABLE enf_unavailable_date (
   id                                                           UUID PRIMARY KEY,
-  enf_confirm_eviction_id                                      UUID NOT NULL REFERENCES enf_confirm_eviction (id) ON DELETE CASCADE,
+  enf_confirm_eviction_id                                      UUID NOT NULL REFERENCES enf_eviction (id) ON DELETE CASCADE,
   unavailable_date                                             DATE NOT NULL
 );

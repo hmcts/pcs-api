@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.entity.confirmeviction;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -22,6 +22,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.UnavailableDateEntity;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -34,8 +36,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "enf_confirm_eviction")
-public class ConfirmEvictionEntity {
+@Table(name = "enf_eviction")
+public class EvictionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -53,7 +55,7 @@ public class ConfirmEvictionEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo hasUnavailableDates;
 
-    @OneToMany(mappedBy = "confirmEviction", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "eviction", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<UnavailableDateEntity> unavailableDates = new ArrayList<>();
 

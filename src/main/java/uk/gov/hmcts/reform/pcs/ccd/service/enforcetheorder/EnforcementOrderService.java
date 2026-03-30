@@ -9,10 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.ConfirmEvictionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.confirmeviction.EvictionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.ConfirmEvictionRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EvictionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -32,7 +32,7 @@ public class EnforcementOrderService {
     private final PcsCaseService pcsCaseService;
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementTypeStrategyFactory strategyFactory;
-    private final ConfirmEvictionRepository confirmEvictionRepository;
+    private final EvictionRepository evictionRepository;
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         Set<EnforcementOrderEntity> enforcementEntitySet = getEnforcementOrderEntities(caseReference);
@@ -97,12 +97,12 @@ public class EnforcementOrderService {
     }
 
     public void confirmEviction(long caseReference) {
-        ConfirmEvictionEntity confirmEviction = mapToConfirmEvictionEntity(caseReference);
-        confirmEvictionRepository.save(confirmEviction);
+        EvictionEntity confirmEviction = mapToConfirmEvictionEntity(caseReference);
+        evictionRepository.save(confirmEviction);
     }
 
-    private ConfirmEvictionEntity mapToConfirmEvictionEntity(long caseReference) {
-        ConfirmEvictionEntity confirmEviction = new ConfirmEvictionEntity();
+    private EvictionEntity mapToConfirmEvictionEntity(long caseReference) {
+        EvictionEntity confirmEviction = new EvictionEntity();
         EnforcementOrderEntity enforcementOrderEntity = retrieveEnforcementOrderEntity(caseReference);
         confirmEviction.setEnforcementOrder(enforcementOrderEntity);
 
