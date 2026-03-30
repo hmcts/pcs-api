@@ -25,6 +25,12 @@ public class DefendantResponses {
     private YesNoNotSure tenancyTypeCorrect;
 
     @CCD
+    private String tenancyType;
+
+    @CCD
+    private YesNoNotSure tenancyStartDateCorrect;
+  
+    @CCD
     private LocalDate tenancyStartDate;
 
     @CCD
@@ -66,6 +72,9 @@ public class DefendantResponses {
 
     @CCD
     private YesNoNotSure landlordRegistered;
+
+    @CCD
+    private YesNoNotSure landlordLicensed;
 
     @CCD(access = {CitizenAccess.class})
     private ReasonableAdjustments reasonableAdjustments;
