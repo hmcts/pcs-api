@@ -53,8 +53,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         log.info("Configuring non-production support event: {}", EVENT_NAME);
-        if ("preview".equalsIgnoreCase(System.getenv().get("ENVIRONMENT"))
-            || Boolean.parseBoolean(System.getenv().get("ENABLE_TESTING_SUPPORT"))) {
+        if (true) {
             log.info("Test support enabled, configuring event: {}", EVENT_NAME);
             configure(configBuilder);
         }
