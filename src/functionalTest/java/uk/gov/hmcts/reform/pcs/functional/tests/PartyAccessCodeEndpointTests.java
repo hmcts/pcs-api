@@ -41,6 +41,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
                                         "[CREATOR]");
     }
 
+
     @Title("Party Access Code Endpoint Tests - should return 200 when successfully link user with valid access code")
     @Test
     void partyAccessCodeTest200Scenario() {
