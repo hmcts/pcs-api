@@ -27,7 +27,7 @@ public class PaymentAgreement {
     @CCD
     private YesOrNo paidMoneyToHousingOrg;
 
-    @CCD
+    @CCD(searchable = false)
     private YesNoNotSure repaymentPlanAgreed;
 
     @CCD

@@ -74,6 +74,8 @@ public class DefendantResponses {
     private YesNoNotSure landlordRegistered;
 
     @CCD
+    private YesNoNotSure writtenTerms;
+    
     private YesNoNotSure landlordLicensed;
 
     @CCD(access = {CitizenAccess.class})
