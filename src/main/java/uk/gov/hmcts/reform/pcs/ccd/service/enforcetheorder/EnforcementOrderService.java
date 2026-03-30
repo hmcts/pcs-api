@@ -36,10 +36,6 @@ public class EnforcementOrderService {
 
     public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
         Set<EnforcementOrderEntity> enforcementEntitySet = getEnforcementOrderEntities(caseReference);
-        if (enforcementEntitySet == null) {
-            return null;
-        }
-
         return enforcementEntitySet
                 .stream()
                 .map(EnforcementOrderEntity::getEnforcementOrder)

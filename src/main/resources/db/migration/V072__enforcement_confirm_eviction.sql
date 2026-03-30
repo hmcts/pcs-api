@@ -43,7 +43,7 @@ ALTER TABLE enf_risk_profile
   ADD COLUMN physical_description_of_risk_defendant_details VARCHAR(6800);
 
 CREATE TABLE enf_unavailable_date (
-  id                                                           UUID PRIMARY KEY,
-  enf_confirm_eviction_id                                      UUID NOT NULL REFERENCES enf_eviction (id) ON DELETE CASCADE,
-  unavailable_date                                             DATE NOT NULL
+  id                                                   UUID PRIMARY KEY,
+  enf_eviction_id                                      UUID NOT NULL REFERENCES enf_eviction (id) ON DELETE CASCADE,
+  unavailable_date                                     DATE NOT NULL
 );

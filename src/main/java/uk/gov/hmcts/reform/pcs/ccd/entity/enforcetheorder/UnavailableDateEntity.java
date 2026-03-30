@@ -32,9 +32,9 @@ public class UnavailableDateEntity {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "enf_confirm_eviction_id", nullable = false)
+    @JoinColumn(name = "enf_eviction_id", nullable = false)
     @JsonBackReference
-    private EvictionEntity confirmEviction;
+    private EvictionEntity eviction;
 
     private LocalDate unavailableDate;
 
