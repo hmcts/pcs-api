@@ -80,6 +80,8 @@ public class DefendantResponses {
     private String disputeClaimDetails;
 
     @CCD
+    private YesNoNotSure writtenTerms;
+    
     private YesNoNotSure landlordLicensed;
 
     @CCD(access = {CitizenAccess.class})
