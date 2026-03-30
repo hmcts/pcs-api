@@ -27,10 +27,10 @@ public class DummyPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        pageBuilder.page("DummyPage", this::midEvent)
-            .pageLabel("DummyPage")
-            .label("DummyPage",
-                   "DummyPage");
+        pageBuilder.page("DummyPageId", this::midEvent)
+            .pageLabel("DummyPageLabel")
+            .label("DummyPageLabelId",
+                   "DummyPageLabelValue");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
