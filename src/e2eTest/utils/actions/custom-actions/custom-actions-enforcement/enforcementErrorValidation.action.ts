@@ -3,8 +3,7 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import { defendantDetails } from './enforcement.action';
-import { confirmDefendantsDOB, confirmHCEOfficer, enforcementApplication, evictionRisksPosed, knownDefendantsDOBInformation, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, peopleWhoWillBeEvicted, peopleYouWantToEvict, repayments, statementOfTruth, suspendedOrder, violentAggressiveRisk, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
-import { explainHowDefendantsReturned } from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefendantsReturned.page.data';
+import { confirmDefendantsDOB, confirmHCEOfficer, enforcementApplication, evictionRisksPosed, explainHowDefendantsReturned, knownDefendantsDOBInformation, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, peopleWhoWillBeEvicted, peopleYouWantToEvict, repayments, statementOfTruth, suspendedOrder, violentAggressiveRisk, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
