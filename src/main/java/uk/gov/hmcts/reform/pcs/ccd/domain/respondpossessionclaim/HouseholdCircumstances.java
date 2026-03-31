@@ -72,14 +72,14 @@ public class HouseholdCircumstances {
     private Frequency groceryShoppingFrequency;
 
     @CCD
-    private YesOrNo fuelTransport;
+    private YesOrNo fuelParkingTransport;
 
     @CCD(typeOverride = FieldType.MoneyGBP)
     @JacksonMoneyGBP
-    private BigDecimal fuelTransportAmount;
+    private BigDecimal fuelParkingTransportAmount;
 
     @CCD
-    private Frequency fuelTransportFrequency;
+    private Frequency fuelParkingTransportFrequency;
 
     @CCD
     private YesOrNo schoolCosts;

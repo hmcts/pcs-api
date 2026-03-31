@@ -5,12 +5,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.Frequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,6 +60,92 @@ class HouseholdCircumstancesServiceTest {
 
         // Then
         assertThat(entity).isNull();
+    }
+
+    @Test
+    void shouldMapExpenseAmountsAndFrequenciesWhenAnswerIsYes() {
+        HouseholdCircumstances householdCircumstances = buildExpenseFields(YesOrNo.YES);
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        assertThat(entity.getHouseholdBillsAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
+        assertThat(entity.getHouseholdBillsFrequency()).isEqualTo(Frequency.MONTHLY);
+        assertThat(entity.getLoanPaymentsAmount()).isEqualByComparingTo(new BigDecimal("200.00"));
+        assertThat(entity.getLoanPaymentsFrequency()).isEqualTo(Frequency.WEEKLY);
+        assertThat(entity.getChildSpousalMaintenanceAmount()).isEqualByComparingTo(new BigDecimal("300.00"));
+        assertThat(entity.getChildSpousalMaintenanceFrequency()).isEqualTo(Frequency.MONTHLY);
+        assertThat(entity.getMobilePhoneAmount()).isEqualByComparingTo(new BigDecimal("400.00"));
+        assertThat(entity.getMobilePhoneFrequency()).isEqualTo(Frequency.WEEKLY);
+        assertThat(entity.getGroceryShoppingAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
+        assertThat(entity.getGroceryShoppingFrequency()).isEqualTo(Frequency.MONTHLY);
+        assertThat(entity.getFuelParkingTransportAmount()).isEqualByComparingTo(new BigDecimal("600.00"));
+        assertThat(entity.getFuelParkingTransportFrequency()).isEqualTo(Frequency.WEEKLY);
+        assertThat(entity.getSchoolCostsAmount()).isEqualByComparingTo(new BigDecimal("700.00"));
+        assertThat(entity.getSchoolCostsFrequency()).isEqualTo(Frequency.MONTHLY);
+        assertThat(entity.getClothingAmount()).isEqualByComparingTo(new BigDecimal("800.00"));
+        assertThat(entity.getClothingFrequency()).isEqualTo(Frequency.WEEKLY);
+        assertThat(entity.getOtherExpensesAmount()).isEqualByComparingTo(new BigDecimal("900.00"));
+        assertThat(entity.getOtherExpensesFrequency()).isEqualTo(Frequency.MONTHLY);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EnumSource(value = YesOrNo.class, names = "NO")
+    void shouldNotMapExpenseAmountsAndFrequenciesWhenAnswerIsNotYes(YesOrNo answer) {
+        HouseholdCircumstances householdCircumstances = buildExpenseFields(answer);
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        assertThat(entity.getHouseholdBillsAmount()).isNull();
+        assertThat(entity.getHouseholdBillsFrequency()).isNull();
+        assertThat(entity.getLoanPaymentsAmount()).isNull();
+        assertThat(entity.getLoanPaymentsFrequency()).isNull();
+        assertThat(entity.getChildSpousalMaintenanceAmount()).isNull();
+        assertThat(entity.getChildSpousalMaintenanceFrequency()).isNull();
+        assertThat(entity.getMobilePhoneAmount()).isNull();
+        assertThat(entity.getMobilePhoneFrequency()).isNull();
+        assertThat(entity.getGroceryShoppingAmount()).isNull();
+        assertThat(entity.getGroceryShoppingFrequency()).isNull();
+        assertThat(entity.getFuelParkingTransportAmount()).isNull();
+        assertThat(entity.getFuelParkingTransportFrequency()).isNull();
+        assertThat(entity.getSchoolCostsAmount()).isNull();
+        assertThat(entity.getSchoolCostsFrequency()).isNull();
+        assertThat(entity.getClothingAmount()).isNull();
+        assertThat(entity.getClothingFrequency()).isNull();
+        assertThat(entity.getOtherExpensesAmount()).isNull();
+        assertThat(entity.getOtherExpensesFrequency()).isNull();
+    }
+
+    private static HouseholdCircumstances buildExpenseFields(YesOrNo answer) {
+        return HouseholdCircumstances.builder()
+            .householdBills(answer)
+            .householdBillsAmount(new BigDecimal("100.00"))
+            .householdBillsFrequency(Frequency.MONTHLY)
+            .loanPayments(answer)
+            .loanPaymentsAmount(new BigDecimal("200.00"))
+            .loanPaymentsFrequency(Frequency.WEEKLY)
+            .childSpousalMaintenance(answer)
+            .childSpousalMaintenanceAmount(new BigDecimal("300.00"))
+            .childSpousalMaintenanceFrequency(Frequency.MONTHLY)
+            .mobilePhone(answer)
+            .mobilePhoneAmount(new BigDecimal("400.00"))
+            .mobilePhoneFrequency(Frequency.WEEKLY)
+            .groceryShopping(answer)
+            .groceryShoppingAmount(new BigDecimal("500.00"))
+            .groceryShoppingFrequency(Frequency.MONTHLY)
+            .fuelParkingTransport(answer)
+            .fuelParkingTransportAmount(new BigDecimal("600.00"))
+            .fuelParkingTransportFrequency(Frequency.WEEKLY)
+            .schoolCosts(answer)
+            .schoolCostsAmount(new BigDecimal("700.00"))
+            .schoolCostsFrequency(Frequency.MONTHLY)
+            .clothing(answer)
+            .clothingAmount(new BigDecimal("800.00"))
+            .clothingFrequency(Frequency.WEEKLY)
+            .otherExpenses(answer)
+            .otherExpensesAmount(new BigDecimal("900.00"))
+            .otherExpensesFrequency(Frequency.MONTHLY)
+            .build();
     }
 
 }

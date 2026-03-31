@@ -19,9 +19,9 @@ ALTER TABLE household_circumstances
     ADD COLUMN grocery_shopping_amount DECIMAL(18,2),
     ADD COLUMN grocery_shopping_frequency VARCHAR(10),
 
-    ADD COLUMN fuel_transport YES_NO,
-    ADD COLUMN fuel_transport_amount DECIMAL(18,2),
-    ADD COLUMN fuel_transport_frequency VARCHAR(10),
+    ADD COLUMN fuel_parking_transport YES_NO,
+    ADD COLUMN fuel_parking_transport_amount DECIMAL(18,2),
+    ADD COLUMN fuel_parking_transport_frequency VARCHAR(10),
 
     ADD COLUMN school_costs YES_NO,
     ADD COLUMN school_costs_amount DECIMAL(18,2),

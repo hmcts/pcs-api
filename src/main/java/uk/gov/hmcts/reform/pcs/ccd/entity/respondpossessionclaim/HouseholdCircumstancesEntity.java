@@ -155,12 +155,12 @@ public class HouseholdCircumstancesEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo fuelTransport;
+    private YesOrNo fuelParkingTransport;
 
-    private BigDecimal fuelTransportAmount;
+    private BigDecimal fuelParkingTransportAmount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency fuelTransportFrequency;
+    private Frequency fuelParkingTransportFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
