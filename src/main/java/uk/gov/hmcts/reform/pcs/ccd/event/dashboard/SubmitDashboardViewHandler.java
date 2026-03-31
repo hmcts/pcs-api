@@ -16,6 +16,8 @@ public class SubmitDashboardViewHandler implements Submit<PCSCase, State> {
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
+        log.info("DashboardView SUBMIT invoked for caseReference={} (no-op submit, read-only event)", caseReference);
         // READ-ONLY: the dashboard view event should not persist changes.
         return SubmitResponse.defaultResponse();
     }

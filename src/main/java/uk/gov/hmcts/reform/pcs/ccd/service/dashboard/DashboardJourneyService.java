@@ -28,6 +28,9 @@ public class DashboardJourneyService {
 
         boolean hasDraft = draftCaseData.isPresent();
 
+        log.info("DashboardJourneyService.computeNotifications called for caseReference={}, state={}, hasDraft={}",
+                 caseReference, state, hasDraft);
+
         if (state == State.CASE_ISSUED) {
             DashboardNotification journeyNotification = DashboardNotification.builder()
                 .templateId("Notice.PCS.Dashboard.CaseIssued")
@@ -37,6 +40,8 @@ public class DashboardJourneyService {
                 ))
                 .build();
 
+            log.info("DashboardJourneyService selected templateId={} for caseReference={}, state={}",
+                     journeyNotification.getTemplateId(), caseReference, state);
             return List.of(journeyNotification);
         }
 
@@ -47,9 +52,13 @@ public class DashboardJourneyService {
                     "caseReference", caseReference
                 ))
                 .build();
+            log.info("DashboardJourneyService selected templateId={} for caseReference={}, state={}",
+                     resumeNotification.getTemplateId(), caseReference, state);
             return List.of(resumeNotification);
         }
 
+        log.info("DashboardJourneyService found no matching dashboard notification rules for caseReference={}, state={}",
+                 caseReference, state);
         return List.of();
     }
 }

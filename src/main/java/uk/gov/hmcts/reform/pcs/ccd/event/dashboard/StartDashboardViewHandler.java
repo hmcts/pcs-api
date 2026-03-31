@@ -33,9 +33,15 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
         long caseReference = eventPayload.caseReference();
         State state = State.CASE_ISSUED;
 
+        log.info("DashboardView START invoked for caseReference={}, assumedState={}", caseReference, state);
+
         PCSCase submittedCaseData = eventPayload.caseData();
 
         Optional<PCSCase> draftForRespondPossession = getDraft(caseReference, respondPossessionClaim);
+
+        boolean hasDraft = draftForRespondPossession.isPresent();
+        log.info("DashboardView START loaded data for caseReference={}, hasRespondPossessionDraft={}",
+                 caseReference, hasDraft);
 
         List<DashboardNotification> notifications = dashboardJourneyService.computeNotifications(
             caseReference,
@@ -44,7 +50,13 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
             draftForRespondPossession
         );
 
+        log.info("DashboardView START computed {} dashboard notification(s) for caseReference={}",
+                 notifications.size(), caseReference);
+
         String payloadJson = toPayloadJson(caseReference, notifications);
+
+        log.info("DashboardView START serialised dashboard payload for caseReference={} (length={} chars)",
+                 caseReference, payloadJson.length());
 
         submittedCaseData.setCaseTitleMarkdown(payloadJson);
         return submittedCaseData;
@@ -52,6 +64,8 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
 
     private Optional<PCSCase> getDraft(long caseReference, EventId eventId) {
         try {
+            log.info("DashboardView START attempting to load draft for caseReference={}, eventId={}",
+                     caseReference, eventId);
             return draftCaseDataService.getUnsubmittedCaseData(caseReference, eventId);
         } catch (Exception e) {
             log.warn("Failed to load draft case data for caseReference={} eventId={}", caseReference, eventId, e);
