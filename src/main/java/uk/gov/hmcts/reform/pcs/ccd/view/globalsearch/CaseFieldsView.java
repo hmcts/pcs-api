@@ -7,11 +7,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CaseFieldsView {
 
+    @Value("${globalsearch.caseManagementCategory}")
+    private String caseManagementCategory;
 
     /**
      * Sets case fields for the pcsCase.
@@ -20,6 +23,7 @@ public class CaseFieldsView {
     public void setCaseFields(final PCSCase pcsCase) {
         setCaseNameHmctsField(pcsCase);
         setCaseManagementLocationField(pcsCase);
+        setCaseManagementCategory(pcsCase);
     }
 
     /**
@@ -53,6 +57,10 @@ public class CaseFieldsView {
         if (epimsId != null && region != null) {
             pcsCase.setCaseManagementLocationFormatted(getFormattedValue(region, epimsId));
         }
+    }
+
+    private void setCaseManagementCategory(PCSCase pcsCase) {
+        pcsCase.setCaseManagementCategory(caseManagementCategory);
     }
 
     private String getFormattedClaimantName(final List<ListValue<Party>> claimants) {

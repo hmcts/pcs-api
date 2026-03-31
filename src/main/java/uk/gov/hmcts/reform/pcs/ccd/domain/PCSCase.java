@@ -532,4 +532,11 @@ public class PCSCase {
     )
     private String caseManagementLocationFormatted;
 
+    @CCD(
+        label = "CaseManagementCategory",
+        access = {GlobalSearchAccess.class}
+    )
+    private String caseManagementCategory;
+
+
 }

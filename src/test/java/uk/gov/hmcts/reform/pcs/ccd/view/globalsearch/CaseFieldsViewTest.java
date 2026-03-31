@@ -20,6 +20,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFieldsViewTest {
@@ -47,6 +48,7 @@ class CaseFieldsViewTest {
     @BeforeEach
     void setUp() {
         underTest = new CaseFieldsView();
+        ReflectionTestUtils.setField(underTest, "caseManagementCategory", "Property Possession Claims");
     }
 
 
@@ -160,5 +162,15 @@ class CaseFieldsViewTest {
 
         // Then
         verify(pcsCase, never()).setCaseManagementLocationFormatted(anyString());
+    }
+
+    @Test
+    void shouldSetCaseManagementCategory() {
+
+        //When
+        underTest.setCaseFields(pcsCase);
+
+        // Then
+        verify(pcsCase).setCaseManagementCategory("Property Possession Claims");
     }
 }
