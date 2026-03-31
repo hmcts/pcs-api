@@ -16,7 +16,7 @@ plugins {
   id 'application'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
-  id 'org.springframework.boot' version '3.5.10'
+  id 'org.springframework.boot' version '3.5.13'
   id 'com.github.ben-manes.versions' version '0.53.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.2.3.7755'
@@ -359,7 +359,7 @@ ext {
   logbackVersion = "1.5.32"
   testcontainersVersion = "2.0.4"
   testcontainersAdditionsVersion = "1.21.4"
-  springFrameworkBootVersion = "3.5.10"
+  springFrameworkBootVersion = "3.5.13"
   lombokVersion = "1.18.44"
   springSecurityVersion = "7.0.4"
   pactVersion = "4.6.20"
@@ -395,7 +395,7 @@ dependencies {
   implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
-  implementation (group: 'com.github.hmcts', name: 'payments-java-client', version: '1.6.8') {
+  implementation (group: 'com.github.hmcts', name: 'payments-java-client', version: '1.7.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'service-auth-provider-client'
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
