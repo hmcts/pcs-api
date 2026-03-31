@@ -20,6 +20,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.Frequency;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -103,7 +104,88 @@ public class HouseholdCircumstancesEntity {
 
     private String regularExpenses;
 
+    //Columns to drop
     private BigDecimal expenseAmount;
-
     private String expenseFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo householdBills;
+
+    private BigDecimal householdBillsAmount;
+
+    @Enumerated(EnumType.STRING)
+    private Frequency householdBillsFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo loanPayments;
+
+    private BigDecimal loanPaymentsAmount;
+
+    @Enumerated(EnumType.STRING)
+    private Frequency loanPaymentsFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo childSpousalMaintenance;
+
+    private BigDecimal childSpousalMaintenanceAmount;
+
+    @Enumerated(EnumType.STRING)
+    private Frequency childSpousalMaintenanceFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo mobilePhone;
+
+    private BigDecimal mobilePhoneAmount;
+
+    @Enumerated(EnumType.STRING)
+    private Frequency mobilePhoneFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo groceryShopping;
+
+    private BigDecimal groceryShoppingAmount;
+
+    @Enumerated(EnumType.STRING)
+    private Frequency groceryShoppingFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo fuelTransport;
+
+    private BigDecimal fuelTransportAmount;
+
+    @Enumerated(EnumType.STRING)
+    private Frequency fuelTransportFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo schoolCosts;
+
+    private BigDecimal schoolCostsAmount;
+
+    @Enumerated(EnumType.STRING)
+    private Frequency schoolCostsFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo clothing;
+
+    private BigDecimal clothingAmount;
+
+    @Enumerated(EnumType.STRING)
+    private Frequency clothingFrequency;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo otherExpenses;
+
+    private BigDecimal otherExpensesAmount;
+
+    @Enumerated(EnumType.STRING)
+    private Frequency otherExpensesFrequency;
 }
