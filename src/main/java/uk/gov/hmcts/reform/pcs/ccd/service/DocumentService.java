@@ -1,7 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -31,7 +32,7 @@ public class DocumentService {
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
-        List<Pair<Document, DocumentType>> allDocuments = new ArrayList<>();
+        List<Triple<Document, DocumentType, String>> allDocuments = new ArrayList<>();
 
         allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
 
@@ -58,7 +59,7 @@ public class DocumentService {
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
 
-    private List<Pair<Document, DocumentType>> mapDocumentsWithType(
+    private List<Triple<Document, DocumentType, String>> mapDocumentsWithType(
         List<ListValue<Document>> docs, DocumentType type) {
 
         if (docs == null || docs.isEmpty()) {
@@ -68,11 +69,11 @@ public class DocumentService {
         return docs.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(doc -> Pair.of(doc, type))
+            .map(doc -> Triple.of(doc, type, ""))
             .toList();
     }
 
-    private List<Pair<Document, DocumentType>> mapAdditionalDocumentsWithType(
+    private List<Triple<Document, DocumentType, String>> mapAdditionalDocumentsWithType(
         List<ListValue<AdditionalDocument>> documents) {
 
         if (documents == null || documents.isEmpty()) {
@@ -80,27 +81,29 @@ public class DocumentService {
         }
 
         return ListValueUtils.unwrapListItems(documents).stream()
-            .map(doc -> Pair.of(
+            .map(doc -> Triple.of(
                 doc.getDocument(),
-                mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType())
+                mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType()),
+                doc.getDescription()
             ))
             .toList();
     }
 
     private List<DocumentEntity> createDocumentEntities(
-        List<Pair<Document, DocumentType>> documents) {
+        List<Triple<Document, DocumentType, String>> documents) {
 
         if (documents == null || documents.isEmpty()) {
             return List.of();
         }
 
         return documents.stream()
-            .map(pair -> DocumentEntity.builder()
-                .url(pair.getKey().getUrl())
-                .fileName(pair.getKey().getFilename())
-                .binaryUrl(pair.getKey().getBinaryUrl())
-                .categoryId(pair.getKey().getCategoryId())
-                .type(pair.getValue())
+            .map(triplet -> DocumentEntity.builder()
+                .url(triplet.getLeft().getUrl())
+                .fileName(triplet.getLeft().getFilename())
+                .binaryUrl(triplet.getLeft().getBinaryUrl())
+                .categoryId(triplet.getLeft().getCategoryId())
+                .type(triplet.getMiddle())
+                .description(StringUtils.isEmpty(triplet.getRight()) ? null : triplet.getRight())
                 .build())
             .toList();
     }
