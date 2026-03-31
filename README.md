@@ -1,4 +1,4 @@
-# pcs-api - SDM Comment to delete
+# pcs-api
 
 ## Building and deploying the application
 
