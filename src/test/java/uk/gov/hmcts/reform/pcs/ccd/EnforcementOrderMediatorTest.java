@@ -70,7 +70,7 @@ class EnforcementOrderMediatorTest {
         when(pcsCaseRepository.findByCaseReference(caseReference))
             .thenReturn(Optional.of(pcsCaseEntity));
         when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(Optional.of(enforcementOrderEntity));
+            .thenReturn(List.of(enforcementOrderEntity));
 
         // When
         underTest.handleEnforcementRequirements(caseReference, pcsCase);
@@ -93,7 +93,7 @@ class EnforcementOrderMediatorTest {
         when(pcsCaseRepository.findByCaseReference(caseReference))
             .thenReturn(Optional.of(pcsCaseEntity));
         when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(Optional.of(enforcementOrderEntity));
+            .thenReturn(List.of(enforcementOrderEntity));
 
         // When
         underTest.handleEnforcementRequirements(caseReference, pcsCase);
@@ -115,10 +115,8 @@ class EnforcementOrderMediatorTest {
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
         EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(bailiffDate);
 
-        when(pcsCaseRepository.findByCaseReference(caseReference))
-            .thenReturn(Optional.of(pcsCaseEntity));
-        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(Optional.of(enforcementOrderEntity));
+        when(pcsCaseRepository.findByCaseReference(caseReference)).thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of(enforcementOrderEntity));
 
         // When
         underTest.handleEnforcementRequirements(caseReference, pcsCase);
@@ -141,7 +139,7 @@ class EnforcementOrderMediatorTest {
         when(pcsCaseRepository.findByCaseReference(caseReference))
             .thenReturn(Optional.of(pcsCaseEntity));
         when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(Optional.of(enforcementOrderEntity));
+            .thenReturn(List.of(enforcementOrderEntity));
 
         // When
         underTest.handleEnforcementRequirements(caseReference, pcsCase);
@@ -255,7 +253,7 @@ class EnforcementOrderMediatorTest {
         when(pcsCaseRepository.findByCaseReference(caseReference))
             .thenReturn(Optional.of(pcsCaseEntity));
         when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(Optional.of(enforcementOrderEntity));
+            .thenReturn(List.of(enforcementOrderEntity));
 
         // When
         Optional<EnforcementOrderEntity> result = underTest.getEnforcementOrder(caseReference);
@@ -272,10 +270,8 @@ class EnforcementOrderMediatorTest {
         // Given
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
 
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-            .thenReturn(Optional.of(pcsCaseEntity));
-        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(Optional.empty());
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of());
 
         // When
         Optional<EnforcementOrderEntity> result = underTest.getEnforcementOrder(CASE_REFERENCE);
@@ -294,8 +290,7 @@ class EnforcementOrderMediatorTest {
 
         when(pcsCaseRepository.findByCaseReference(caseReference))
             .thenReturn(Optional.of(pcsCaseEntity));
-        when(enforcementOrderRepository.findByClaimId(any(UUID.class)))
-            .thenReturn(Optional.empty());
+        when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of());
 
         // When
         underTest.handleEnforcementRequirements(caseReference, pcsCase);

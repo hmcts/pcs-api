@@ -47,7 +47,13 @@ public class EnforcementOrderMediator {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
         List<ClaimEntity> claims = pcsCaseEntity.getClaims();
         if (claims != null && !claims.isEmpty()) {
-            return enforcementOrderRepository.findByClaimId(claims.getFirst().getId());
+            // At this point we do not know which Enforcement Order the Confirm Eviction is placed against.
+            // To be confirmed.
+            List<EnforcementOrderEntity> byClaimId = enforcementOrderRepository
+                .findByClaimId(claims.getFirst().getId());
+            if (!byClaimId.isEmpty()) {
+                return Optional.of(byClaimId.getFirst());
+            }
         }
         return Optional.empty();
     }
