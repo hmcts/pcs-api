@@ -56,5 +56,7 @@ export default {
     'enforceTheOrdercannotApplyForWritInfo': 'cannotApplyForWritInfo',
     'enforceTheOrderconfirmHCEOfficer': 'confirmHCEOfficer',
     'enforceTheOrderenforcementOfficerSelection': 'enforcementOfficerSelection',
-    'enforceTheOrderhCEOfficerDetails': 'hCEOfficerDetails'
+    'enforceTheOrderhCEOfficerDetails': 'hCEOfficerDetails',
+    'enforceTheOrderexplainHowDefendantsReturned': 'explainHowDefendantsReturned',
+    'enforceTheOrdershareEvidenceWithJudge': 'shareEvidenceWithJudge'
 };
