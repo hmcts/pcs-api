@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.globalsearch.CaseNameHmctsFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -35,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -95,7 +95,7 @@ class PCSCaseViewTest {
     @Mock
     private ClaimEntity claimEntity;
     @Mock
-    private CaseNameHmctsFormatter caseNameHmctsFormatter;
+    private CaseFieldsView caseFieldsView;
     @Mock
     private EnforcementOrderMediator enforcementOrderMediator;
 
@@ -109,8 +109,8 @@ class PCSCaseViewTest {
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
                                     alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
-                                    rentArrearsView, noticeOfPossessionView, statementOfTruthView,
-                                    caseNameHmctsFormatter, enforcementOrderMediator
+                                    rentArrearsView, noticeOfPossessionView,
+                                    statementOfTruthView, caseFieldsView, enforcementOrderMediator
         );
     }
 
@@ -337,14 +337,14 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldSetCaseNameHmctsField() {
+    void shouldSetCaseFields() {
         // When
-        doNothing().when(caseNameHmctsFormatter).setCaseNameHmctsField(any(PCSCase.class));
+        doNothing().when(caseFieldsView).setCaseFields(any(PCSCase.class));
 
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(caseNameHmctsFormatter).setCaseNameHmctsField(pcsCase);
+        verify(caseFieldsView).setCaseFields(pcsCase);
     }
 
     @Test

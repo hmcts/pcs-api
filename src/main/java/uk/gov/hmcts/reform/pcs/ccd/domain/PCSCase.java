@@ -128,6 +128,11 @@ public class PCSCase {
     )
     private Integer caseManagementLocation;
 
+    @CCD(
+        label = "Region Id"
+    )
+    private Integer regionId;
+
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
 
@@ -520,6 +525,12 @@ public class PCSCase {
         access = {GlobalSearchAccess.class}
     )
     private String caseNamePublic;
+
+    @CCD(
+        label = "CaseManagementLocation",
+        access = {GlobalSearchAccess.class}
+    )
+    private String caseManagementLocationFormatted;
 
     @CCD(searchable = false)
     private String confirmEvictionSummaryMarkup;
