@@ -14,10 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.util.DateUtil;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -32,9 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,14 +39,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderMediatorTest {
 
-    public static final long CASE_REFERENCE = 1234567890L;
+    private static final long CASE_REFERENCE = 1234567890L;
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
-    @Mock
-    private DateUtil dateUtil;
 
     @InjectMocks
     private EnforcementOrderMediator underTest;
@@ -61,15 +56,13 @@ class EnforcementOrderMediatorTest {
         pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
-        lenient().when(dateUtil.formatDate(any(Instant.class))).thenCallRealMethod();
-        lenient().when(dateUtil.minusHoursFormatted(any(Instant.class), anyInt())).thenCallRealMethod();
     }
 
     @Test
     void shouldSetShowConfirmEvictionJourneyToYesWhenBailiffDateExists() {
         // Given
         long caseReference = 1234567890L;
-        Instant bailiffDate = Instant.parse("2026-04-15T10:00:00Z");
+        LocalDateTime bailiffDate = LocalDateTime.parse("2026-04-15T10:00:00");
 
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
         EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(bailiffDate);
@@ -117,7 +110,7 @@ class EnforcementOrderMediatorTest {
     void shouldFormatBailiffDateCorrectlyInMarkup() {
         // Given
         long caseReference = 1234567890L;
-        Instant bailiffDate = Instant.parse("2026-05-20T14:30:00Z");
+        LocalDateTime bailiffDate = LocalDateTime.parse("2026-05-20T14:30:00");
 
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
         EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(bailiffDate);
@@ -140,7 +133,7 @@ class EnforcementOrderMediatorTest {
     void shouldCalculateDeadlineDateAsMinus72HoursFromBailiffDate() {
         // Given
         long caseReference = 1234567890L;
-        Instant bailiffDate = Instant.parse("2026-05-20T14:30:00Z");
+        LocalDateTime bailiffDate = LocalDateTime.parse("2026-05-20T14:30:00");
 
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
         EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(bailiffDate);
@@ -257,7 +250,7 @@ class EnforcementOrderMediatorTest {
         // Given
         long caseReference = 1234567890L;
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
-        EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(Instant.now());
+        EnforcementOrderEntity enforcementOrderEntity = createEnforcementOrderEntity(LocalDateTime.now());
 
         when(pcsCaseRepository.findByCaseReference(caseReference))
             .thenReturn(Optional.of(pcsCaseEntity));
@@ -323,7 +316,7 @@ class EnforcementOrderMediatorTest {
         return entity;
     }
 
-    private EnforcementOrderEntity createEnforcementOrderEntity(Instant bailiffDate) {
+    private EnforcementOrderEntity createEnforcementOrderEntity(LocalDateTime bailiffDate) {
         EnforcementOrderEntity entity = new EnforcementOrderEntity();
         entity.setId(UUID.randomUUID());
         entity.setBailiffDate(bailiffDate);

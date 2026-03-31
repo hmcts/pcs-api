@@ -10,11 +10,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.util.DateUtil;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_NO_DATES;
@@ -27,19 +28,17 @@ public class EnforcementOrderMediator {
 
     private final PcsCaseRepository pcsCaseRepository;
     private final EnforcementOrderRepository enforcementOrderRepository;
-    private final DateUtil dateUtil;
 
     public void handleEnforcementRequirements(long caseReference, PCSCase pcsCase) {
         if (caseReference > 0 && pcsCase != null) {
             Optional<EnforcementOrderEntity> optionalEnforcementOrder = getEnforcementOrder(caseReference);
-            if (optionalEnforcementOrder.isPresent()) {
-                EnforcementOrderEntity enforcementOrderEntity = optionalEnforcementOrder.get();
+            optionalEnforcementOrder.ifPresent(enforcementOrderEntity -> {
                 if (enforcementOrderEntity.getBailiffDate() != null) {
                     hasBailiffDate(pcsCase, enforcementOrderEntity.getBailiffDate());
                 } else {
                     noBailiffDate(pcsCase);
                 }
-            }
+            });
         }
     }
 
@@ -53,12 +52,12 @@ public class EnforcementOrderMediator {
         return Optional.empty();
     }
 
-    private void hasBailiffDate(PCSCase pcsCase, Instant instant) {
+    private void hasBailiffDate(PCSCase pcsCase, LocalDateTime localDateTime) {
         pcsCase.setShowConfirmEvictionJourney(YesOrNo.YES);
         pcsCase.setConfirmEvictionSummaryMarkup(String.format(
             CONFIRM_EVICTION_SUMMARY_WITH_DATES,
-            dateUtil.formatDate(instant),
-            dateUtil.minusHoursFormatted(instant, 72)));
+            formatDate(localDateTime),
+            getEvictionCancellationDeadline(localDateTime)));
     }
 
     private static void noBailiffDate(PCSCase pcsCase) {
@@ -66,4 +65,13 @@ public class EnforcementOrderMediator {
         pcsCase.setConfirmEvictionSummaryMarkup(CONFIRM_EVICTION_SUMMARY_NO_DATES);
     }
 
+    public String formatDate(LocalDateTime localDateTime) {
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.UK);
+        return localDateTime.format(outputFormatter);
+    }
+
+    public String getEvictionCancellationDeadline(LocalDateTime localDateTime) {
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
+        return localDateTime.minusHours(72).format(outputFormatter);
+    }
 }

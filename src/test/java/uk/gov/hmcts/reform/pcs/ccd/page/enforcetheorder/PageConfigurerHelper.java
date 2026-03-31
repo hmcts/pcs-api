@@ -25,5 +25,4 @@ public final class PageConfigurerHelper {
         counter.incrementAndGet();
     }
 
-
 }
