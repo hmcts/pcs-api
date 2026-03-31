@@ -57,8 +57,9 @@ public class DashboardJourneyService {
             return List.of(resumeNotification);
         }
 
-        log.info("DashboardJourneyService found no matching dashboard notification rules for caseReference={}, state={}",
-                 caseReference, state);
+        log.info(
+            "DashboardJourneyService no matching dashboard notification rules for caseReference={}, state={}",
+            caseReference, state);
         return List.of();
     }
 }
