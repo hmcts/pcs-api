@@ -235,6 +235,43 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getFreeLegalAdvice()).isNull();
     }
 
+    @ParameterizedTest(name = "possessionNoticeReceived={0}")
+    @MethodSource("possessionNoticeReceivedScenarios")
+    void shouldPersistPossessionNoticeReceived(YesNoNotSure possessionNoticeReceived) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .possessionNoticeReceived(possessionNoticeReceived)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getPossessionNoticeReceived()).isEqualTo(possessionNoticeReceived);
+    }
+
+    private static Stream<Arguments> possessionNoticeReceivedScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of(YesNoNotSure.NOT_SURE),
+            Arguments.of((YesNoNotSure) null)
+        );
+    }
+
     @ParameterizedTest(name = "landlordRegistered={0}")
     @MethodSource("landlordRegisteredPersistenceScenarios")
     void shouldPersistLandlordRegistered(YesNoNotSure landlordRegistered) {
