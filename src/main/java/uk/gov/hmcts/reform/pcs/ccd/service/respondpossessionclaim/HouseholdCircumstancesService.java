@@ -14,7 +14,7 @@ public class HouseholdCircumstancesService {
             return null;
         }
 
-       return HouseholdCircumstancesEntity.builder()
+        return HouseholdCircumstancesEntity.builder()
                 .dependantChildren(circumstances.getDependantChildren())
 
                 .householdBills(circumstances.getHouseholdBills())
