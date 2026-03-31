@@ -9,8 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -206,7 +207,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .tenancyTypeCorrect(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .freeLegalAdvice(YesNoPreferNotToSay.YES)
-            .contactByEmail(VerticalYesNo.YES)
+            .preferenceType(ContactPreferenceType.EMAIL)
             .contactByPhone(VerticalYesNo.NO)
             .build();
 
@@ -226,7 +227,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedResponses.getTenancyTypeCorrect()).isEqualTo(YesNoNotSure.YES);
         assertThat(savedResponses.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponses.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
-        assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponses.getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
         assertThat(savedResponses.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
     }
 
@@ -259,7 +260,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
+            .preferenceType(ContactPreferenceType.EMAIL)
             .contactByText(VerticalYesNo.NO)
             .reasonableAdjustments(reasonableAdjustments)
             .householdCircumstances(householdCircumstances)
@@ -290,7 +291,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedParty.getPhoneNumber()).isEqualTo("07123456789");
         assertThat(savedParty.getAddress().getAddressLine1()).isEqualTo("456 Another Road");
 
-        assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponses.getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
         assertThat(savedResponses.getContactByText()).isEqualTo(VerticalYesNo.NO);
 
         DefendantResponses savedResponse = savedDraft.getPossessionClaimResponse().getDefendantResponses();
@@ -328,7 +329,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Given
         DefendantResponses responses = DefendantResponses.builder()
             .freeLegalAdvice(YesNoPreferNotToSay.NO)
-            .contactByPost(VerticalYesNo.YES)
+            .preferenceType(ContactPreferenceType.POST)
             .build();
 
         PCSCase caseData = buildCaseData(PossessionClaimResponse.builder().defendantResponses(responses).build());
@@ -353,17 +354,17 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .shareIncomeExpenseDetails(YesOrNo.YES)
             .incomeFromJobs(YesOrNo.YES)
             .incomeFromJobsAmount(new BigDecimal("150000")) // £1500.00 in pence
-            .incomeFromJobsFrequency(IncomeFrequency.MONTHLY)
+            .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
             .pension(YesOrNo.YES)
             .pensionAmount(new BigDecimal("50000")) // £500.00 in pence
-            .pensionFrequency(IncomeFrequency.MONTHLY)
+            .pensionFrequency(RecurrenceFrequency.MONTHLY)
             .universalCredit(YesOrNo.YES)
             .ucApplicationDate(LocalDate.of(2024, 1, 15))
             .universalCreditAmount(new BigDecimal("80000")) // £800.00 in pence
-            .universalCreditFrequency(IncomeFrequency.MONTHLY)
+            .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
             .otherBenefits(YesOrNo.YES)
             .otherBenefitsAmount(new BigDecimal("20000")) // £200.00 in pence
-            .otherBenefitsFrequency(IncomeFrequency.WEEKLY)
+            .otherBenefitsFrequency(RecurrenceFrequency.WEEKLY)
             .moneyFromElsewhere(YesOrNo.YES)
             .moneyFromElsewhereDetails("Child maintenance payments of £100 per week")
             .build();
@@ -395,20 +396,20 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         assertThat(savedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("150000");
-        assertThat(savedHousehold.getIncomeFromJobsFrequency()).isEqualTo(IncomeFrequency.MONTHLY);
+        assertThat(savedHousehold.getIncomeFromJobsFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
 
         assertThat(savedHousehold.getPension()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getPensionAmount()).isEqualByComparingTo("50000");
-        assertThat(savedHousehold.getPensionFrequency()).isEqualTo(IncomeFrequency.MONTHLY);
+        assertThat(savedHousehold.getPensionFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
 
         assertThat(savedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 1, 15));
         assertThat(savedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("80000");
-        assertThat(savedHousehold.getUniversalCreditFrequency()).isEqualTo(IncomeFrequency.MONTHLY);
+        assertThat(savedHousehold.getUniversalCreditFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
 
         assertThat(savedHousehold.getOtherBenefits()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getOtherBenefitsAmount()).isEqualByComparingTo("20000");
-        assertThat(savedHousehold.getOtherBenefitsFrequency()).isEqualTo(IncomeFrequency.WEEKLY);
+        assertThat(savedHousehold.getOtherBenefitsFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
 
         assertThat(savedHousehold.getMoneyFromElsewhere()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getMoneyFromElsewhereDetails())
