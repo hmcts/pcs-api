@@ -13,10 +13,19 @@ public class HouseholdCircumstancesService {
             return null;
         }
 
-        HouseholdCircumstancesEntity householdCircumstancesEntity = HouseholdCircumstancesEntity.builder()
+        return HouseholdCircumstancesEntity.builder()
             .dependantChildren(circumstances.getDependantChildren())
+            .shareIncomeExpenseDetails(circumstances.getShareIncomeExpenseDetails())
+            .regularIncome(circumstances.getRegularIncome())
+            .universalCredit(circumstances.getUniversalCredit())
+            .ucApplicationDate(circumstances.getUcApplicationDate())
+            .priorityDebts(circumstances.getPriorityDebts())
+            .debtTotal(circumstances.getDebtTotal())
+            .debtContribution(circumstances.getDebtContribution())
+            .debtContributionFrequency(circumstances.getDebtContributionFrequency())
+            .regularExpenses(circumstances.getRegularExpenses())
+            .expenseAmount(circumstances.getExpenseAmount())
+            .expenseFrequency(circumstances.getExpenseFrequency())
             .build();
-
-        return householdCircumstancesEntity;
     }
 }
