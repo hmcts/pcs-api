@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 
@@ -57,6 +58,56 @@ class PaymentAgreementServiceTest {
         // Then
         assertThat(entity).isNull();
     }
+
+    @ParameterizedTest
+    @MethodSource("repaymentPlanAgreedScenarios")
+    void shouldMapRepaymentPlanAgreedField(YesNoNotSure expected) {
+        // Given
+        PaymentAgreement model = PaymentAgreement.builder()
+                .repaymentPlanAgreed(expected)
+                .build();
+
+        // When
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
+
+        // Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getRepaymentPlanAgreed()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> repaymentPlanAgreedScenarios() {
+        return Stream.of(
+                Arguments.of(YesNoNotSure.YES),
+                Arguments.of(YesNoNotSure.NO),
+                Arguments.of(YesNoNotSure.NOT_SURE),
+                Arguments.of((YesNoNotSure) null)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("repaymentAgreedDetailsScenarios")
+    void shouldMapRepaymentAgreedDetailsField(String expected) {
+        // Given
+        PaymentAgreement model = PaymentAgreement.builder()
+                .repaymentAgreedDetails(expected)
+                .build();
+
+        // When
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
+
+        // Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getRepaymentAgreedDetails()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> repaymentAgreedDetailsScenarios() {
+        return Stream.of(
+                Arguments.of("Monthly installments"),
+                Arguments.of(""),
+                Arguments.of((String) null)
+        );
+    }
+
 
 }
 
