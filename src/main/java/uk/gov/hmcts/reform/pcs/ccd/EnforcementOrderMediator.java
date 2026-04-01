@@ -34,8 +34,8 @@ public class EnforcementOrderMediator {
             getEnforcementOrder(caseReference).ifPresent(enforcementOrderEntity ->
                 Optional.ofNullable(enforcementOrderEntity.getBailiffDate())
                     .ifPresentOrElse(
-                        date -> prepareConfirmEvictionWithDates(pcsCase, date),
-                        () -> prepareConfirmEvictionWithNoDates(pcsCase)
+                        date -> prepareEvictionWithDates(pcsCase, date),
+                        () -> prepareEvictionWithNoDates(pcsCase)
                     ));
         }
     }
@@ -47,16 +47,16 @@ public class EnforcementOrderMediator {
         if (claims != null && !claims.isEmpty()) {
             // At this point we do not know which Enforcement Order the Confirm Eviction is placed against.
             // this to be confirmed beyond this ticket scope (HDPI-4312)
-            List<EnforcementOrderEntity> byClaimId = enforcementOrderRepository
+            List<EnforcementOrderEntity> enforcementOrderEntities = enforcementOrderRepository
                 .findByClaimId(claims.getFirst().getId());
-            if (!byClaimId.isEmpty()) {
-                return Optional.of(byClaimId.getFirst());
+            if (!enforcementOrderEntities.isEmpty()) {
+                return Optional.of(enforcementOrderEntities.getFirst());
             }
         }
         return Optional.empty();
     }
 
-    private void prepareConfirmEvictionWithDates(PCSCase pcsCase, LocalDateTime localDateTime) {
+    private void prepareEvictionWithDates(PCSCase pcsCase, LocalDateTime localDateTime) {
         pcsCase.setShowConfirmEvictionJourney(YesOrNo.YES);
         pcsCase.setConfirmEvictionSummaryMarkup(String.format(
             CONFIRM_EVICTION_SUMMARY_WITH_DATES,
@@ -64,7 +64,7 @@ public class EnforcementOrderMediator {
             getEvictionCancellationDeadline(localDateTime)));
     }
 
-    private static void prepareConfirmEvictionWithNoDates(PCSCase pcsCase) {
+    private static void prepareEvictionWithNoDates(PCSCase pcsCase) {
         pcsCase.setShowConfirmEvictionJourney(YesOrNo.NO);
         pcsCase.setConfirmEvictionSummaryMarkup(CONFIRM_EVICTION_SUMMARY_NO_DATES);
     }
