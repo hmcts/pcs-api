@@ -27,7 +27,8 @@ public class DashboardView implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(dashboardView.name(), submitDashboardViewHandler, startDashboardViewHandler)
-            .forState(State.CASE_ISSUED)
+            // TODO: HDPI-5421 - Revist this once we have clarification on the states we need
+            .forAllStates()
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Dashboard view")
             .description("Compute dashboard notifications for case journey")
