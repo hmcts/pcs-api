@@ -29,7 +29,7 @@ public class HouseholdCircumstances {
     private BigDecimal householdBillsAmount;
 
     @CCD
-    private Frequency householdBillsFrequency;
+    private RecurrenceFrequency householdBillsFrequency;
 
     @CCD
     private YesOrNo loanPayments;
@@ -39,7 +39,7 @@ public class HouseholdCircumstances {
     private BigDecimal loanPaymentsAmount;
 
     @CCD
-    private Frequency loanPaymentsFrequency;
+    private RecurrenceFrequency loanPaymentsFrequency;
 
     @CCD
     private YesOrNo childSpousalMaintenance;
@@ -49,7 +49,7 @@ public class HouseholdCircumstances {
     private BigDecimal childSpousalMaintenanceAmount;
 
     @CCD
-    private Frequency childSpousalMaintenanceFrequency;
+    private RecurrenceFrequency childSpousalMaintenanceFrequency;
 
     @CCD
     private YesOrNo mobilePhone;
@@ -59,7 +59,7 @@ public class HouseholdCircumstances {
     private BigDecimal mobilePhoneAmount;
 
     @CCD
-    private Frequency mobilePhoneFrequency;
+    private RecurrenceFrequency mobilePhoneFrequency;
 
     @CCD
     private YesOrNo groceryShopping;
@@ -69,7 +69,7 @@ public class HouseholdCircumstances {
     private BigDecimal groceryShoppingAmount;
 
     @CCD
-    private Frequency groceryShoppingFrequency;
+    private RecurrenceFrequency groceryShoppingFrequency;
 
     @CCD
     private YesOrNo fuelParkingTransport;
@@ -79,7 +79,7 @@ public class HouseholdCircumstances {
     private BigDecimal fuelParkingTransportAmount;
 
     @CCD
-    private Frequency fuelParkingTransportFrequency;
+    private RecurrenceFrequency fuelParkingTransportFrequency;
 
     @CCD
     private YesOrNo schoolCosts;
@@ -89,7 +89,7 @@ public class HouseholdCircumstances {
     private BigDecimal schoolCostsAmount;
 
     @CCD
-    private Frequency schoolCostsFrequency;
+    private RecurrenceFrequency schoolCostsFrequency;
 
     @CCD
     private YesOrNo clothing;
@@ -99,7 +99,7 @@ public class HouseholdCircumstances {
     private BigDecimal clothingAmount;
 
     @CCD
-    private Frequency clothingFrequency;
+    private RecurrenceFrequency clothingFrequency;
 
     @CCD
     private YesOrNo otherExpenses;
@@ -109,6 +109,6 @@ public class HouseholdCircumstances {
     private BigDecimal otherExpensesAmount;
 
     @CCD
-    private Frequency otherExpensesFrequency;
+    private RecurrenceFrequency otherExpensesFrequency;
 
 }

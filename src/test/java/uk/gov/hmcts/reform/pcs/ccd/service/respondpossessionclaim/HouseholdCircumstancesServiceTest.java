@@ -10,8 +10,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.Frequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 
 import java.math.BigDecimal;
@@ -69,23 +69,23 @@ class HouseholdCircumstancesServiceTest {
         HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
 
         assertThat(entity.getHouseholdBillsAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
-        assertThat(entity.getHouseholdBillsFrequency()).isEqualTo(Frequency.MONTHLY);
+        assertThat(entity.getHouseholdBillsFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
         assertThat(entity.getLoanPaymentsAmount()).isEqualByComparingTo(new BigDecimal("200.00"));
-        assertThat(entity.getLoanPaymentsFrequency()).isEqualTo(Frequency.WEEKLY);
+        assertThat(entity.getLoanPaymentsFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
         assertThat(entity.getChildSpousalMaintenanceAmount()).isEqualByComparingTo(new BigDecimal("300.00"));
-        assertThat(entity.getChildSpousalMaintenanceFrequency()).isEqualTo(Frequency.MONTHLY);
+        assertThat(entity.getChildSpousalMaintenanceFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
         assertThat(entity.getMobilePhoneAmount()).isEqualByComparingTo(new BigDecimal("400.00"));
-        assertThat(entity.getMobilePhoneFrequency()).isEqualTo(Frequency.WEEKLY);
+        assertThat(entity.getMobilePhoneFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
         assertThat(entity.getGroceryShoppingAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
-        assertThat(entity.getGroceryShoppingFrequency()).isEqualTo(Frequency.MONTHLY);
+        assertThat(entity.getGroceryShoppingFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
         assertThat(entity.getFuelParkingTransportAmount()).isEqualByComparingTo(new BigDecimal("600.00"));
-        assertThat(entity.getFuelParkingTransportFrequency()).isEqualTo(Frequency.WEEKLY);
+        assertThat(entity.getFuelParkingTransportFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
         assertThat(entity.getSchoolCostsAmount()).isEqualByComparingTo(new BigDecimal("700.00"));
-        assertThat(entity.getSchoolCostsFrequency()).isEqualTo(Frequency.MONTHLY);
+        assertThat(entity.getSchoolCostsFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
         assertThat(entity.getClothingAmount()).isEqualByComparingTo(new BigDecimal("800.00"));
-        assertThat(entity.getClothingFrequency()).isEqualTo(Frequency.WEEKLY);
+        assertThat(entity.getClothingFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
         assertThat(entity.getOtherExpensesAmount()).isEqualByComparingTo(new BigDecimal("900.00"));
-        assertThat(entity.getOtherExpensesFrequency()).isEqualTo(Frequency.MONTHLY);
+        assertThat(entity.getOtherExpensesFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
     }
 
     @ParameterizedTest
@@ -120,31 +120,31 @@ class HouseholdCircumstancesServiceTest {
         return HouseholdCircumstances.builder()
             .householdBills(answer)
             .householdBillsAmount(new BigDecimal("100.00"))
-            .householdBillsFrequency(Frequency.MONTHLY)
+            .householdBillsFrequency(RecurrenceFrequency.MONTHLY)
             .loanPayments(answer)
             .loanPaymentsAmount(new BigDecimal("200.00"))
-            .loanPaymentsFrequency(Frequency.WEEKLY)
+            .loanPaymentsFrequency(RecurrenceFrequency.WEEKLY)
             .childSpousalMaintenance(answer)
             .childSpousalMaintenanceAmount(new BigDecimal("300.00"))
-            .childSpousalMaintenanceFrequency(Frequency.MONTHLY)
+            .childSpousalMaintenanceFrequency(RecurrenceFrequency.MONTHLY)
             .mobilePhone(answer)
             .mobilePhoneAmount(new BigDecimal("400.00"))
-            .mobilePhoneFrequency(Frequency.WEEKLY)
+            .mobilePhoneFrequency(RecurrenceFrequency.WEEKLY)
             .groceryShopping(answer)
             .groceryShoppingAmount(new BigDecimal("500.00"))
-            .groceryShoppingFrequency(Frequency.MONTHLY)
+            .groceryShoppingFrequency(RecurrenceFrequency.MONTHLY)
             .fuelParkingTransport(answer)
             .fuelParkingTransportAmount(new BigDecimal("600.00"))
-            .fuelParkingTransportFrequency(Frequency.WEEKLY)
+            .fuelParkingTransportFrequency(RecurrenceFrequency.WEEKLY)
             .schoolCosts(answer)
             .schoolCostsAmount(new BigDecimal("700.00"))
-            .schoolCostsFrequency(Frequency.MONTHLY)
+            .schoolCostsFrequency(RecurrenceFrequency.MONTHLY)
             .clothing(answer)
             .clothingAmount(new BigDecimal("800.00"))
-            .clothingFrequency(Frequency.WEEKLY)
+            .clothingFrequency(RecurrenceFrequency.WEEKLY)
             .otherExpenses(answer)
             .otherExpensesAmount(new BigDecimal("900.00"))
-            .otherExpensesFrequency(Frequency.MONTHLY)
+            .otherExpensesFrequency(RecurrenceFrequency.MONTHLY)
             .build();
     }
 

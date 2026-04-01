@@ -8,78 +8,46 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircum
 @Service
 public class HouseholdCircumstancesService {
 
-    public HouseholdCircumstancesEntity createHouseholdCircumstancesEntity(HouseholdCircumstances circumstances) {
+    public HouseholdCircumstancesEntity createHouseholdCircumstancesEntity(HouseholdCircumstances hc) {
 
-        if (circumstances == null) {
+        if (hc == null) {
             return null;
         }
-
         return HouseholdCircumstancesEntity.builder()
-                .dependantChildren(circumstances.getDependantChildren())
+            .dependantChildren(hc.getDependantChildren())
+            .householdBills(hc.getHouseholdBills())
+            .householdBillsAmount(mapIfYes(hc.getHouseholdBills(), hc.getHouseholdBillsAmount()))
+            .householdBillsFrequency(mapIfYes(hc.getHouseholdBills(), hc.getHouseholdBillsFrequency()))
+            .loanPayments(hc.getLoanPayments())
+            .loanPaymentsAmount(mapIfYes(hc.getLoanPayments(), hc.getLoanPaymentsAmount()))
+            .loanPaymentsFrequency(mapIfYes(hc.getLoanPayments(), hc.getLoanPaymentsFrequency()))
+            .childSpousalMaintenance(hc.getChildSpousalMaintenance())
+            .childSpousalMaintenanceAmount(mapIfYes(hc.getChildSpousalMaintenance(),
+                                                    hc.getChildSpousalMaintenanceAmount()))
+            .childSpousalMaintenanceFrequency(mapIfYes(hc.getChildSpousalMaintenance(),
+                                                       hc.getChildSpousalMaintenanceFrequency()))
+            .mobilePhone(hc.getMobilePhone())
+            .mobilePhoneAmount(mapIfYes(hc.getMobilePhone(), hc.getMobilePhoneAmount()))
+            .mobilePhoneFrequency(mapIfYes(hc.getMobilePhone(), hc.getMobilePhoneFrequency()))
+            .groceryShopping(hc.getGroceryShopping())
+            .groceryShoppingAmount(mapIfYes(hc.getGroceryShopping(), hc.getGroceryShoppingAmount()))
+            .groceryShoppingFrequency(mapIfYes(hc.getGroceryShopping(), hc.getGroceryShoppingFrequency()))
+            .fuelParkingTransport(hc.getFuelParkingTransport())
+            .fuelParkingTransportAmount(mapIfYes(hc.getFuelParkingTransport(), hc.getFuelParkingTransportAmount()))
+            .fuelParkingTransportFrequency(mapIfYes(hc.getFuelParkingTransport(),hc.getFuelParkingTransportFrequency()))
+            .schoolCosts(hc.getSchoolCosts())
+            .schoolCostsAmount(mapIfYes(hc.getSchoolCosts(), hc.getSchoolCostsAmount()))
+            .schoolCostsFrequency(mapIfYes(hc.getSchoolCosts(), hc.getSchoolCostsFrequency()))
+            .clothing(hc.getClothing())
+            .clothingAmount(mapIfYes(hc.getClothing(), hc.getClothingAmount()))
+            .clothingFrequency(mapIfYes(hc.getClothing(), hc.getClothingFrequency()))
+            .otherExpenses(hc.getOtherExpenses())
+            .otherExpensesAmount(mapIfYes(hc.getOtherExpenses(), hc.getOtherExpensesAmount()))
+            .otherExpensesFrequency(mapIfYes(hc.getOtherExpenses(), hc.getOtherExpensesFrequency()))
+            .build();
+    }
 
-                .householdBills(circumstances.getHouseholdBills())
-                .householdBillsAmount(YesOrNo.YES.equals(circumstances.getHouseholdBills())
-                                          ? circumstances.getHouseholdBillsAmount()
-                                          : null)
-                .householdBillsFrequency(YesOrNo.YES.equals(circumstances.getHouseholdBills())
-                                             ? circumstances.getHouseholdBillsFrequency()
-                                             : null)
-                .loanPayments(circumstances.getLoanPayments())
-                .loanPaymentsAmount(YesOrNo.YES.equals(circumstances.getLoanPayments())
-                                        ? circumstances.getLoanPaymentsAmount()
-                                        : null)
-                .loanPaymentsFrequency(YesOrNo.YES.equals(circumstances.getLoanPayments())
-                                           ? circumstances.getLoanPaymentsFrequency()
-                                           : null)
-                .childSpousalMaintenance(circumstances.getChildSpousalMaintenance())
-                .childSpousalMaintenanceAmount(YesOrNo.YES.equals(circumstances.getChildSpousalMaintenance())
-                                                   ? circumstances.getChildSpousalMaintenanceAmount()
-                                                   : null)
-                .childSpousalMaintenanceFrequency(YesOrNo.YES.equals(circumstances.getChildSpousalMaintenance())
-                                                      ? circumstances.getChildSpousalMaintenanceFrequency()
-                                                      : null)
-                .mobilePhone(circumstances.getMobilePhone())
-                .mobilePhoneAmount(YesOrNo.YES.equals(circumstances.getMobilePhone())
-                                       ? circumstances.getMobilePhoneAmount()
-                                       : null)
-                .mobilePhoneFrequency(YesOrNo.YES.equals(circumstances.getMobilePhone())
-                                          ? circumstances.getMobilePhoneFrequency()
-                                          : null)
-                .groceryShopping(circumstances.getGroceryShopping())
-                .groceryShoppingAmount(YesOrNo.YES.equals(circumstances.getGroceryShopping())
-                                           ? circumstances.getGroceryShoppingAmount()
-                                           : null)
-                .groceryShoppingFrequency(YesOrNo.YES.equals(circumstances.getGroceryShopping())
-                                              ? circumstances.getGroceryShoppingFrequency()
-                                              : null)
-                .fuelParkingTransport(circumstances.getFuelParkingTransport())
-                .fuelParkingTransportAmount(YesOrNo.YES.equals(circumstances.getFuelParkingTransport())
-                                         ? circumstances.getFuelParkingTransportAmount()
-                                         : null)
-                .fuelParkingTransportFrequency(YesOrNo.YES.equals(circumstances.getFuelParkingTransport())
-                                            ? circumstances.getFuelParkingTransportFrequency()
-                                            : null)
-                .schoolCosts(circumstances.getSchoolCosts())
-                .schoolCostsAmount(YesOrNo.YES.equals(circumstances.getSchoolCosts())
-                                       ? circumstances.getSchoolCostsAmount()
-                                       : null)
-                .schoolCostsFrequency(YesOrNo.YES.equals(circumstances.getSchoolCosts())
-                                          ? circumstances.getSchoolCostsFrequency()
-                                          : null)
-                .clothing(circumstances.getClothing())
-                .clothingAmount(YesOrNo.YES.equals(circumstances.getClothing())
-                                    ? circumstances.getClothingAmount()
-                                    : null)
-                .clothingFrequency(YesOrNo.YES.equals(circumstances.getClothing())
-                                       ? circumstances.getClothingFrequency()
-                                       : null)
-                .otherExpenses(circumstances.getOtherExpenses())
-                .otherExpensesAmount(YesOrNo.YES.equals(circumstances.getOtherExpenses())
-                                         ? circumstances.getOtherExpensesAmount()
-                                         : null)
-                .otherExpensesFrequency(YesOrNo.YES.equals(circumstances.getOtherExpenses())
-                                            ? circumstances.getOtherExpensesFrequency()
-                                            : null).build();
-
+    private <T> T mapIfYes(YesOrNo condition, T value) {
+        return YesOrNo.YES.equals(condition) ? value : null;
     }
 }

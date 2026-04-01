@@ -5,11 +5,11 @@ import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 /**
- * Enum representing the frequency of income and expenses.
+ * Enum representing the recurrence frequency of income, benefits, and expenses.
  */
 @AllArgsConstructor
 @Getter
-public enum Frequency implements HasLabel {
+public enum RecurrenceFrequency implements HasLabel {
     WEEKLY("Weekly"),
     MONTHLY("Monthly");
 

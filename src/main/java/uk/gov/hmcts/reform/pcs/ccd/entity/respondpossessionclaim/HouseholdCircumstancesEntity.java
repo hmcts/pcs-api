@@ -20,7 +20,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.Frequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -115,7 +115,7 @@ public class HouseholdCircumstancesEntity {
     private BigDecimal householdBillsAmount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency householdBillsFrequency;
+    private RecurrenceFrequency householdBillsFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -124,7 +124,7 @@ public class HouseholdCircumstancesEntity {
     private BigDecimal loanPaymentsAmount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency loanPaymentsFrequency;
+    private RecurrenceFrequency loanPaymentsFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -133,7 +133,7 @@ public class HouseholdCircumstancesEntity {
     private BigDecimal childSpousalMaintenanceAmount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency childSpousalMaintenanceFrequency;
+    private RecurrenceFrequency childSpousalMaintenanceFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -142,7 +142,7 @@ public class HouseholdCircumstancesEntity {
     private BigDecimal mobilePhoneAmount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency mobilePhoneFrequency;
+    private RecurrenceFrequency mobilePhoneFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -151,7 +151,7 @@ public class HouseholdCircumstancesEntity {
     private BigDecimal groceryShoppingAmount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency groceryShoppingFrequency;
+    private RecurrenceFrequency groceryShoppingFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -160,7 +160,7 @@ public class HouseholdCircumstancesEntity {
     private BigDecimal fuelParkingTransportAmount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency fuelParkingTransportFrequency;
+    private RecurrenceFrequency fuelParkingTransportFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -169,7 +169,7 @@ public class HouseholdCircumstancesEntity {
     private BigDecimal schoolCostsAmount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency schoolCostsFrequency;
+    private RecurrenceFrequency schoolCostsFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -178,7 +178,7 @@ public class HouseholdCircumstancesEntity {
     private BigDecimal clothingAmount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency clothingFrequency;
+    private RecurrenceFrequency clothingFrequency;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -187,5 +187,5 @@ public class HouseholdCircumstancesEntity {
     private BigDecimal otherExpensesAmount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency otherExpensesFrequency;
+    private RecurrenceFrequency otherExpensesFrequency;
 }
