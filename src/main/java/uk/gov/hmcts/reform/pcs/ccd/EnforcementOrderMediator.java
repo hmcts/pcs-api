@@ -31,14 +31,12 @@ public class EnforcementOrderMediator {
 
     public void handleEnforcementRequirements(long caseReference, PCSCase pcsCase) {
         if (caseReference > 0 && pcsCase != null) {
-            Optional<EnforcementOrderEntity> optionalEnforcementOrder = getEnforcementOrder(caseReference);
-            optionalEnforcementOrder.ifPresent(enforcementOrderEntity -> {
-                if (enforcementOrderEntity.getBailiffDate() != null) {
-                    hasBailiffDate(pcsCase, enforcementOrderEntity.getBailiffDate());
-                } else {
-                    noBailiffDate(pcsCase);
-                }
-            });
+            getEnforcementOrder(caseReference).ifPresent(enforcementOrderEntity ->
+                Optional.ofNullable(enforcementOrderEntity.getBailiffDate())
+                    .ifPresentOrElse(
+                        date -> prepareConfirmEvictionWithDates(pcsCase, date),
+                        () -> prepareConfirmEvictionWithNoDates(pcsCase)
+                    ));
         }
     }
 
@@ -48,7 +46,7 @@ public class EnforcementOrderMediator {
         List<ClaimEntity> claims = pcsCaseEntity.getClaims();
         if (claims != null && !claims.isEmpty()) {
             // At this point we do not know which Enforcement Order the Confirm Eviction is placed against.
-            // To be confirmed.
+            // this to be confirmed beyond this ticket scope (HDPI-4312)
             List<EnforcementOrderEntity> byClaimId = enforcementOrderRepository
                 .findByClaimId(claims.getFirst().getId());
             if (!byClaimId.isEmpty()) {
@@ -58,7 +56,7 @@ public class EnforcementOrderMediator {
         return Optional.empty();
     }
 
-    private void hasBailiffDate(PCSCase pcsCase, LocalDateTime localDateTime) {
+    private void prepareConfirmEvictionWithDates(PCSCase pcsCase, LocalDateTime localDateTime) {
         pcsCase.setShowConfirmEvictionJourney(YesOrNo.YES);
         pcsCase.setConfirmEvictionSummaryMarkup(String.format(
             CONFIRM_EVICTION_SUMMARY_WITH_DATES,
@@ -66,7 +64,7 @@ public class EnforcementOrderMediator {
             getEvictionCancellationDeadline(localDateTime)));
     }
 
-    private static void noBailiffDate(PCSCase pcsCase) {
+    private static void prepareConfirmEvictionWithNoDates(PCSCase pcsCase) {
         pcsCase.setShowConfirmEvictionJourney(YesOrNo.NO);
         pcsCase.setConfirmEvictionSummaryMarkup(CONFIRM_EVICTION_SUMMARY_NO_DATES);
     }
