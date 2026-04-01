@@ -3,7 +3,6 @@ import path from 'path';
 import { performAction, performActions, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  confirmHCEOHired,
   yourHCEO,
   evidenceUpload
 } from '@data/page-data/page-data-enforcement';
@@ -29,7 +28,8 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth
+  statementOfTruth,
+  confirmHCEOfficer
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export const addressInfo = {
@@ -173,7 +173,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: haveYouHired.question, option: haveYouHired.option });
-    await performAction('reTryOnCallBackError', confirmHCEOHired.continueButton, haveYouHired.nextPage as string);
+    await performAction('reTryOnCallBackError', confirmHCEOfficer.continueButton, haveYouHired.nextPage as string);
   }
 
   private async nameYourHCEO(nameHCEO: actionRecord, page: Page) {
