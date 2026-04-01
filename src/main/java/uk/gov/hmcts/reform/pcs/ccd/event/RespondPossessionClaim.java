@@ -42,4 +42,5 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
         new PageBuilder(eventBuilder)
             .add(respondToPossessionDraftSavePage);
     }
+    
 }
