@@ -13,11 +13,17 @@ import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,8 +44,11 @@ class PaymentServiceTest {
     @Mock
     private IdamService idamService;
 
+    @Mock
+    private FeePaymentRepository feePaymentRepository;
+
     @InjectMocks
-    private PaymentService paymentService;
+    private PaymentService underTest;
 
     @Captor
     private ArgumentCaptor<CreateServiceRequestDTO> createServiceRequestCaptor;
@@ -48,11 +57,11 @@ class PaymentServiceTest {
     void setUp() throws Exception {
         var callbackUrlField = PaymentService.class.getDeclaredField("callbackUrl");
         callbackUrlField.setAccessible(true);
-        callbackUrlField.set(paymentService, "https://callback");
+        callbackUrlField.set(underTest, "https://callback");
 
         var hmctsOrgIdField = PaymentService.class.getDeclaredField("hmctsOrgId");
         hmctsOrgIdField.setAccessible(true);
-        hmctsOrgIdField.set(paymentService, "TEST_ORG");
+        hmctsOrgIdField.set(underTest, "TEST_ORG");
     }
 
     @Test
@@ -87,7 +96,7 @@ class PaymentServiceTest {
         when(paymentsClient.createServiceRequest(eq(systemToken), any(CreateServiceRequestDTO.class)))
             .thenReturn(paymentResponse);
 
-        PaymentServiceResponse result = paymentService.createServiceRequest(
+        PaymentServiceResponse result = underTest.createServiceRequest(
             caseReference,
             ccdCaseNumber,
             feeDetails,
@@ -109,4 +118,25 @@ class PaymentServiceTest {
         assertThat(sent.getFees()[0]).isEqualTo(mappedFee);
         assertThat(sent.getCasePaymentRequest()).isEqualTo(casePaymentRequestDto);
     }
+
+    @Test
+    void shouldProcessPaymentResponse() {
+        // Given
+        String requestReference = UUID.randomUUID().toString();
+        ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
+            .serviceRequestReference(requestReference)
+            .serviceRequestStatus(PaymentStatus.SUCCESS.name())
+            .build();
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().build();
+        when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
+
+        // When
+        underTest.processPaymentResponse(serviceRequestUpdate);
+
+        // Then
+        verify(feePaymentRepository).findByRequestReference(requestReference);
+        verify(feePaymentRepository).save(any(FeePaymentEntity.class));
+    }
+
+
 }
