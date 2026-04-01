@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
+import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -49,17 +50,16 @@ public class CaseFieldsView {
         pcsCase.setCaseNamePublic(formattedCaseName);
     }
 
-    /**
-     * Builds a formatted string for the case management location field based on epimsId and regionId.
-     *
-     * @param pcsCase The current case data
-     */
+
     private void setCaseManagementLocationField(final PCSCase pcsCase) {
-        Integer epimsId = pcsCase.getCaseManagementLocation();
+        Integer epimsId = pcsCase.getCaseManagementLocationNumber();
         Integer region = pcsCase.getRegionId();
 
         if (epimsId != null && region != null) {
-            pcsCase.setCaseManagementLocationFormatted(getFormattedValue(region, epimsId));
+            pcsCase.setCaseManagementLocation(CaseLocation.builder()
+                .baseLocation(String.valueOf(epimsId))
+                .region(String.valueOf(region))
+                .build());
         }
     }
 
@@ -104,9 +104,5 @@ public class CaseFieldsView {
 
     private boolean isDefendantNameKnown(final List<ListValue<Party>> defendants) {
         return defendants.getFirst().getValue().getNameKnown() == VerticalYesNo.YES;
-    }
-
-    private String getFormattedValue(int region, int epimsId) {
-        return "{region:%s,baseLocation:%s}".formatted(region, epimsId);
     }
 }

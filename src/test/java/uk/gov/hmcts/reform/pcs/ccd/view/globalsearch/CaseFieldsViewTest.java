@@ -1,12 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.NO;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
+import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -132,17 +134,20 @@ class CaseFieldsViewTest {
     }
 
     @Test
-    void shouldSetCaseManagementLocationFormatted() {
+    void shouldSetCaseManagementLocation() {
 
         //Given
-        when(pcsCase.getCaseManagementLocation()).thenReturn(29096);
+        when(pcsCase.getCaseManagementLocationNumber()).thenReturn(29096);
         when(pcsCase.getRegionId()).thenReturn(1);
 
         //When
         underTest.setCaseFields(pcsCase);
 
         // Then
-        verify(pcsCase).setCaseManagementLocationFormatted("{region:1,baseLocation:29096}");
+        verify(pcsCase).setCaseManagementLocation(CaseLocation.builder()
+            .baseLocation("29096")
+            .region("1")
+            .build());
     }
 
     @ParameterizedTest
@@ -151,17 +156,17 @@ class CaseFieldsViewTest {
         "null,1",
         "null,null"
     }, nullValues = {"null"})
-    void shouldNotCallSetCaseManagementLocationFormattedWhenEitherIdIsNull(Integer epimsId, Integer regionId) {
+    void shouldNotCallSetCaseManagementLocationWhenEitherIdIsNull(Integer epimsId, Integer regionId) {
 
         //Given
-        when(pcsCase.getCaseManagementLocation()).thenReturn(epimsId);
+        when(pcsCase.getCaseManagementLocationNumber()).thenReturn(epimsId);
         when(pcsCase.getRegionId()).thenReturn(regionId);
 
         //When
         underTest.setCaseFields(pcsCase);
 
         // Then
-        verify(pcsCase, never()).setCaseManagementLocationFormatted(anyString());
+        verify(pcsCase, never()).setCaseManagementLocation(any(CaseLocation.class));
     }
 
     @Test
@@ -171,6 +176,6 @@ class CaseFieldsViewTest {
         underTest.setCaseFields(pcsCase);
 
         // Then
-        verify(pcsCase).setCaseManagementCategory("Property Possession Claims");
+        verify(pcsCase).setCaseManagementCategory(any(DynamicList.class));
     }
 }
