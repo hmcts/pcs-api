@@ -536,7 +536,6 @@ public class PCSCase {
         label = "CaseManagementCategory",
         access = {GlobalSearchAccess.class}
     )
-    private String caseManagementCategory;
-
+    private DynamicList caseManagementCategory;
 
 }

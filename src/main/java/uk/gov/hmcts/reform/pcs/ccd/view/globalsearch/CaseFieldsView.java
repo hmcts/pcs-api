@@ -1,11 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -60,7 +64,18 @@ public class CaseFieldsView {
     }
 
     private void setCaseManagementCategory(PCSCase pcsCase) {
-        pcsCase.setCaseManagementCategory(caseManagementCategory);
+        final UUID uuid = UUID.randomUUID();
+        final DynamicListElement listElement = DynamicListElement.builder()
+            .code(uuid)
+            .label(caseManagementCategory)
+            .build();
+        final List<DynamicListElement> caseManagementCategoryList = new ArrayList<>();
+        caseManagementCategoryList.add(listElement);
+
+        pcsCase.setCaseManagementCategory(DynamicList.builder()
+            .value(listElement)
+            .listItems(caseManagementCategoryList)
+            .build());
     }
 
     private String getFormattedClaimantName(final List<ListValue<Party>> claimants) {
