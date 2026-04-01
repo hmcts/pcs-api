@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd;
+package uk.gov.hmcts.reform.pcs.ccd.enforcementorder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

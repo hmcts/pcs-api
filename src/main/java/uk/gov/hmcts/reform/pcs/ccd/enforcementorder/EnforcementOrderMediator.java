@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd;
+package uk.gov.hmcts.reform.pcs.ccd.enforcementorder;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
