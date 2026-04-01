@@ -59,17 +59,12 @@ public class PaymentService {
      * @param responsibleParty the party responsible for the payment
      * @return {@link PaymentServiceResponse} containing the service request reference
      */
-    public PaymentServiceResponse createServiceRequest(
-        String caseReference,
-        String ccdCaseNumber,
-        FeeDetails feeDetails,
-        int volume,
-        String responsibleParty
-    ) {
+    public PaymentServiceResponse createServiceRequest(String caseReference, String ccdCaseNumber,
+                                                       FeeDetails feeDetails, int volume, String responsibleParty) {
+        ClaimEntity claimEntity = retrieveClaimEntity(caseReference);
+        ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(claimEntity, responsibleParty);
         FeeDto feeDto = paymentRequestMapper.toFeeDto(feeDetails, volume);
-
-        CasePaymentRequestDto casePaymentRequest =
-            paymentRequestMapper.toCasePaymentRequest(responsibleParty);
+        CasePaymentRequestDto casePaymentRequest = paymentRequestMapper.toCasePaymentRequest(responsibleParty);
 
         CreateServiceRequestDTO requestDto = CreateServiceRequestDTO.builder()
             .callBackUrl(callbackUrl)
@@ -81,40 +76,11 @@ public class PaymentService {
             .build();
 
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
-            idamService.getSystemUserAuthorisation(),
-            requestDto
-        );
+            idamService.getSystemUserAuthorisation(), requestDto);
 
-        saveNewFeePayment(caseReference, feeDto, paymentServiceResponse.getServiceRequestReference(), responsibleParty);
+        saveNewFeePayment(claimEntity, claimPartyEntity, feeDto, paymentServiceResponse.getServiceRequestReference());
 
         return paymentServiceResponse;
-    }
-
-    public void saveNewFeePayment(String caseReference, FeeDto feeDto, String serviceRequestReference,
-                                  String responsibleParty) {
-        ClaimEntity claimEntity = retrieveClaimEntity(caseReference);
-        ClaimPartyEntity claimParty = claimEntity.getClaimParties()
-            .stream()
-            .filter(party -> party.getParty().getOrgName().equals(responsibleParty))
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("Matching PartyEntity not found"));
-
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-            .claim(claimEntity)
-            .requestDate(LocalDateTime.now())
-            .requestReference(serviceRequestReference)
-            .amount(feeDto.getCalculatedAmount())
-            .paymentStatus(PENDING)
-            .party(claimParty.getParty())
-            .build();
-
-        feePaymentRepository.save(feePaymentEntity);
-    }
-
-    private ClaimEntity retrieveClaimEntity(String caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(Long.parseLong(caseReference));
-        // Assuming 1 claim per PcsCase
-        return  pcsCaseEntity.getClaims().getFirst();
     }
 
     public void processPaymentResponse(ServiceRequestUpdate serviceRequestUpdate) {
@@ -126,6 +92,33 @@ public class PaymentService {
             feePaymentEntity.setPaymentStatus(PaymentStatus.valueOf(serviceRequestUpdate.getServiceRequestStatus()));
             feePaymentRepository.save(feePaymentEntity);
         }
+    }
+
+    private ClaimPartyEntity retrieveClaimPartyEntity(ClaimEntity claimEntity, String responsibleParty) {
+        return claimEntity.getClaimParties()
+            .stream()
+            .filter(party -> party.getParty().getOrgName().equals(responsibleParty))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("Matching PartyEntity not found"));
+    }
+
+    private void saveNewFeePayment(ClaimEntity claimEntity, ClaimPartyEntity claimParty, FeeDto feeDto,
+                                   String serviceRequestReference) {
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .claim(claimEntity)
+            .requestDate(LocalDateTime.now())
+            .requestReference(serviceRequestReference)
+            .amount(feeDto.getCalculatedAmount())
+            .paymentStatus(PENDING)
+            .party(claimParty.getParty())
+            .build();
+        feePaymentRepository.save(feePaymentEntity);
+    }
+
+    private ClaimEntity retrieveClaimEntity(String caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(Long.parseLong(caseReference));
+        // Assuming 1 claim per PcsCase
+        return  pcsCaseEntity.getClaims().getFirst();
     }
 
 }
