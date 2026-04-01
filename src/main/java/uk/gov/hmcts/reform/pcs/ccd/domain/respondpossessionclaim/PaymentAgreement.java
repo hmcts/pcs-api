@@ -17,7 +17,7 @@ public class PaymentAgreement {
     @CCD
     private YesOrNo anyPaymentsMade;
     
-    @CCD
+    @CCD(max = 500)
     private String paymentDetails;
 
     @CCD(searchable = false)
