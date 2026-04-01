@@ -102,12 +102,6 @@ public class HouseholdCircumstancesEntity {
 
     private String debtContributionFrequency;
 
-    private String regularExpenses;
-
-    //Columns to drop
-    private BigDecimal expenseAmount;
-    private String expenseFrequency;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo householdBills;

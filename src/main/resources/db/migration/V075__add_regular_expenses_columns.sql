@@ -33,4 +33,9 @@ ALTER TABLE household_circumstances
 
     ADD COLUMN other_expenses YES_NO,
     ADD COLUMN other_expenses_amount DECIMAL(18,2),
-    ADD COLUMN other_expenses_frequency VARCHAR(10);
+    ADD COLUMN other_expenses_frequency VARCHAR(10),
+
+    DROP COLUMN regular_expenses,
+    DROP COLUMN expense_amount,
+    DROP COLUMN expense_frequency;
+
