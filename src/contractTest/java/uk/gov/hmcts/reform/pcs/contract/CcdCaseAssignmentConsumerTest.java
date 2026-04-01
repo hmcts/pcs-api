@@ -40,8 +40,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "ccdDataStoreAPI_caseAssignedUserRoles", port = "4452")
 
-//Test is disabled until provider test is enabled - CCD-7001
-@Disabled
 public class CcdCaseAssignmentConsumerTest {
 
     private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
