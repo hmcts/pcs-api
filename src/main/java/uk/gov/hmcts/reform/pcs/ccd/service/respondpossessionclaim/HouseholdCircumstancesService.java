@@ -3,7 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.IncomeExpenseDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
+
+import java.math.BigDecimal;
 
 @Service
 public class HouseholdCircumstancesService {
@@ -15,53 +19,45 @@ public class HouseholdCircumstancesService {
         }
         return HouseholdCircumstancesEntity.builder()
             .dependantChildren(hc.getDependantChildren())
-
-            .householdBills(hc.getHouseholdBills().getApplies())
-            .householdBillsAmount(mapIfYes(hc.getHouseholdBills().getApplies(), hc.getHouseholdBills().getAmount()))
-            .householdBillsFrequency(mapIfYes(hc.getHouseholdBills().getApplies(),
-                                              hc.getHouseholdBills().getFrequency()))
-            .loanPayments(hc.getLoanPayments().getApplies())
-            .loanPaymentsAmount(mapIfYes(hc.getLoanPayments().getApplies(), hc.getLoanPayments().getAmount()))
-            .loanPaymentsFrequency(mapIfYes(hc.getLoanPayments().getApplies(), hc.getLoanPayments().getFrequency()))
-            .childSpousalMaintenance(hc.getChildSpousalMaintenance().getApplies())
-            .childSpousalMaintenanceAmount(mapIfYes(hc.getChildSpousalMaintenance().getApplies(),
-                                                    hc.getChildSpousalMaintenance().getAmount()))
-            .childSpousalMaintenanceFrequency(mapIfYes(hc.getChildSpousalMaintenance().getApplies(),
-                                                       hc.getChildSpousalMaintenance().getFrequency()))
-            .mobilePhone(hc.getMobilePhone().getApplies())
-            .mobilePhoneAmount(mapIfYes(hc.getMobilePhone().getApplies(),
-                                        hc.getMobilePhone().getAmount()))
-            .mobilePhoneFrequency(mapIfYes(hc.getMobilePhone().getApplies(),
-                                           hc.getMobilePhone().getFrequency()))
-            .groceryShopping(hc.getGroceryShopping().getApplies())
-            .groceryShoppingAmount(mapIfYes(hc.getGroceryShopping().getApplies(),
-                                            hc.getGroceryShopping().getAmount()))
-            .groceryShoppingFrequency(mapIfYes(hc.getGroceryShopping().getApplies(),
-                                               hc.getGroceryShopping().getFrequency()))
-            .fuelParkingTransport(hc.getFuelParkingTransport().getApplies())
-            .fuelParkingTransportAmount(mapIfYes(hc.getFuelParkingTransport().getApplies(),
-                                                 hc.getFuelParkingTransport().getAmount()))
-            .fuelParkingTransportFrequency(mapIfYes(hc.getFuelParkingTransport().getApplies(),
-                                                    hc.getFuelParkingTransport().getFrequency()))
-            .schoolCosts(hc.getSchoolCosts().getApplies())
-            .schoolCostsAmount(mapIfYes(hc.getSchoolCosts().getApplies(),
-                                        hc.getSchoolCosts().getAmount()))
-            .schoolCostsFrequency(mapIfYes(hc.getSchoolCosts().getApplies(),
-                                           hc.getSchoolCosts().getFrequency()))
-            .clothing(hc.getClothing().getApplies())
-            .clothingAmount(mapIfYes(hc.getClothing().getApplies(),
-                                     hc.getClothing().getAmount()))
-            .clothingFrequency(mapIfYes(hc.getClothing().getApplies(),
-                                        hc.getClothing().getFrequency()))
-            .otherExpenses(hc.getOtherExpenses().getApplies())
-            .otherExpensesAmount(mapIfYes(hc.getOtherExpenses().getApplies(),
-                                          hc.getOtherExpenses().getAmount()))
-            .otherExpensesFrequency(mapIfYes(hc.getOtherExpenses().getApplies(),
-                                             hc.getOtherExpenses().getFrequency()))
-
+            .householdBills(getApplies(hc.getHouseholdBills()))
+            .householdBillsAmount(getAmountIfYes(hc.getHouseholdBills()))
+            .householdBillsFrequency(getFrequencyIfYes(hc.getHouseholdBills()))
+            .loanPayments(getApplies(hc.getLoanPayments()))
+            .loanPaymentsAmount(getAmountIfYes(hc.getLoanPayments()))
+            .loanPaymentsFrequency(getFrequencyIfYes(hc.getLoanPayments()))
+            .childSpousalMaintenance(getApplies(hc.getChildSpousalMaintenance()))
+            .childSpousalMaintenanceAmount(getAmountIfYes(hc.getChildSpousalMaintenance()))
+            .childSpousalMaintenanceFrequency(getFrequencyIfYes(hc.getChildSpousalMaintenance()))
+            .mobilePhone(getApplies(hc.getMobilePhone()))
+            .mobilePhoneAmount(getAmountIfYes(hc.getMobilePhone()))
+            .mobilePhoneFrequency(getFrequencyIfYes(hc.getMobilePhone()))
+            .groceryShopping(getApplies(hc.getGroceryShopping()))
+            .groceryShoppingAmount(getAmountIfYes(hc.getGroceryShopping()))
+            .groceryShoppingFrequency(getFrequencyIfYes(hc.getGroceryShopping()))
+            .fuelParkingTransport(getApplies(hc.getFuelParkingTransport()))
+            .fuelParkingTransportAmount(getAmountIfYes(hc.getFuelParkingTransport()))
+            .fuelParkingTransportFrequency(getFrequencyIfYes(hc.getFuelParkingTransport()))
+            .schoolCosts(getApplies(hc.getSchoolCosts()))
+            .schoolCostsAmount(getAmountIfYes(hc.getSchoolCosts()))
+            .schoolCostsFrequency(getFrequencyIfYes(hc.getSchoolCosts()))
+            .clothing(getApplies(hc.getClothing()))
+            .clothingAmount(getAmountIfYes(hc.getClothing()))
+            .clothingFrequency(getFrequencyIfYes(hc.getClothing()))
+            .otherExpenses(getApplies(hc.getOtherExpenses()))
+            .otherExpensesAmount(getAmountIfYes(hc.getOtherExpenses()))
+            .otherExpensesFrequency(getFrequencyIfYes(hc.getOtherExpenses()))
             .build();
     }
-    private <T> T mapIfYes(YesOrNo condition, T value) {
-        return YesOrNo.YES.equals(condition) ? value : null;
+
+    private YesOrNo getApplies(IncomeExpenseDetails details) {
+        return details != null ? details.getApplies() : null;
+    }
+
+    private BigDecimal getAmountIfYes(IncomeExpenseDetails details) {
+        return details != null && YesOrNo.YES.equals(details.getApplies()) ? details.getAmount() : null;
+    }
+
+    private RecurrenceFrequency getFrequencyIfYes(IncomeExpenseDetails details) {
+        return details != null && YesOrNo.YES.equals(details.getApplies()) ? details.getFrequency() : null;
     }
 }
