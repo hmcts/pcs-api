@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -44,6 +45,7 @@ public class DefendantResponseService {
     private final ReasonableAdjustmentsService reasonableAdjustmentsService;
     private final HouseholdCircumstancesService householdCircumstancesService;
     private final PaymentAgreementService paymentAgreementService;
+    private final DocumentService documentService;
 
     /**
      * Saves a defendant's response to the defendant_response table
@@ -102,6 +104,18 @@ public class DefendantResponseService {
             );
 
         buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
+
+        // Save uploaded documents from draft to permanent document table (HDPI-3928)
+        DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
+        if (responses != null && responses.getUploadedDocuments() != null) {
+            documentService.createDefendantEvidenceDocuments(
+                responses.getUploadedDocuments(),
+                claimRef.getPcsCase()
+            );
+
+            log.info("Saved {} defendant evidence documents for case {} user {}",
+                responses.getUploadedDocuments().size(), caseReference, userId);
+        }
 
         defendantResponseRepository.save(responseEntity);
 

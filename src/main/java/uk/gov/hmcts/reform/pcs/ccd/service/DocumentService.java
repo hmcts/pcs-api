@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -14,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
@@ -23,11 +27,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 public class DocumentService {
 
-    private DocumentRepository documentRepository;
+    private final DocumentRepository documentRepository;
+    private final ObjectMapper objectMapper;
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
@@ -121,5 +127,96 @@ public class DocumentService {
             case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
             case OTHER -> DocumentType.OTHER;
         };
+    }
+
+    /**
+     * Creates defendant evidence documents from uploaded documents in draft.
+     * Extracts mimeType and size from categoryId JSON (AC07 requirement).
+     * Called during final submit to persist document metadata to database.
+     *
+     * @param uploadedDocuments List of documents from DefendantResponses.uploadedDocuments
+     * @param pcsCase The PCS case to link documents to
+     * @return List of saved DocumentEntity objects
+     */
+    public List<DocumentEntity> createDefendantEvidenceDocuments(
+        List<ListValue<Document>> uploadedDocuments,
+        PcsCaseEntity pcsCase
+    ) {
+        if (uploadedDocuments == null || uploadedDocuments.isEmpty()) {
+            log.info("No defendant evidence documents to save");
+            return Collections.emptyList();
+        }
+
+        List<DocumentEntity> documentEntities = uploadedDocuments.stream()
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .map(doc -> DocumentEntity.builder()
+                .pcsCase(pcsCase)
+                .url(doc.getUrl())
+                .fileName(doc.getFilename())
+                .binaryUrl(doc.getBinaryUrl())
+                .categoryId(doc.getCategoryId())
+                .type(DocumentType.DEFENDANT_EVIDENCE)
+                .contentType(extractContentType(doc))
+                .size(extractSize(doc))
+                .build())
+            .toList();
+
+        List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
+
+        log.info("Saved {} defendant evidence documents for case {}",
+            saved.size(), pcsCase.getCaseReference());
+
+        return saved;
+    }
+
+    /**
+     * Extract content type (MIME type) from Document categoryId.
+     * Frontend stores CDAM metadata as JSON: {"mimeType":"application/pdf","size":2048576}
+     *
+     * @param doc Document from CCD
+     * @return MIME type string, or null if not available
+     */
+    private String extractContentType(Document doc) {
+        if (doc.getCategoryId() == null || doc.getCategoryId().isBlank()) {
+            return null;
+        }
+
+        try {
+            JsonNode metadata = objectMapper.readTree(doc.getCategoryId());
+            if (metadata.has("mimeType")) {
+                return metadata.get("mimeType").asText();
+            }
+        } catch (Exception e) {
+            log.warn("Failed to extract mimeType from categoryId for document: {}",
+                doc.getFilename(), e);
+        }
+
+        return null;
+    }
+
+    /**
+     * Extract file size from Document categoryId.
+     * Frontend stores CDAM metadata as JSON: {"mimeType":"application/pdf","size":2048576}
+     *
+     * @param doc Document from CCD
+     * @return File size in bytes, or null if not available
+     */
+    private Long extractSize(Document doc) {
+        if (doc.getCategoryId() == null || doc.getCategoryId().isBlank()) {
+            return null;
+        }
+
+        try {
+            JsonNode metadata = objectMapper.readTree(doc.getCategoryId());
+            if (metadata.has("size")) {
+                return metadata.get("size").asLong();
+            }
+        } catch (Exception e) {
+            log.warn("Failed to extract size from categoryId for document: {}",
+                doc.getFilename(), e);
+        }
+
+        return null;
     }
 }

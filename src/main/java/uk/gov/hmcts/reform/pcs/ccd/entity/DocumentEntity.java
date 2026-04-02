@@ -54,6 +54,10 @@ public class DocumentEntity {
     @Enumerated(EnumType.STRING)
     private DocumentType type;
 
+    private String contentType;
+
+    private Long size;
+
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "document")
     @Builder.Default
     @JsonManagedReference

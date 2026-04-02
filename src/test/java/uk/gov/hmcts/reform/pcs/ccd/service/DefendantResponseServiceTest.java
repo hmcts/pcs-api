@@ -74,6 +74,8 @@ class DefendantResponseServiceTest {
     @Mock
     private PaymentAgreementService paymentAgreementService;
     @Mock
+    private DocumentService documentService;
+    @Mock
     private PartyEntity partyEntity;
     @Mock
     private ClaimEntity claimEntity;
@@ -95,7 +97,8 @@ class DefendantResponseServiceTest {
             securityContextService,
             reasonableAdjustmentsService,
             householdCircumstancesService,
-            paymentAgreementService
+            paymentAgreementService,
+            documentService
         );
     }
 
