@@ -21,7 +21,6 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
 
-
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
@@ -30,7 +29,7 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
                             .name("Link cases")
                             .description("To link related cases")
                             .grant(Permission.R, UserRole.PCS_CASE_WORKER)
-                            .grant(Permission.CRU,UserRole.PCS_SOLICITOR))
+                            .grant(Permission.CRU, UserRole.PCS_SOLICITOR))
             .page("createCaseLink")
             .pageLabel("Case Link")
             .optional(PCSCase::getCaseLinks,"LinkedCasesComponentLauncher = \"DONOTSHOW\"",null,true)

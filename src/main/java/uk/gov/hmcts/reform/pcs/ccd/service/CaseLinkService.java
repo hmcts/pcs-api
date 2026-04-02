@@ -44,16 +44,13 @@ public class CaseLinkService {
             caseLinkEntity.getReasons().clear();
 
             if (dto.getReasonForLink() != null) {
-                List<CaseLinkReasonEntity> caseLinkReasonEntities = new ArrayList<>();
                 for (ListValue<LinkReason> incomingLinkReason : dto.getReasonForLink()) {
                     CaseLinkReasonEntity caseLinkReasonEntity = CaseLinkReasonEntity.builder()
                         .caseLink(caseLinkEntity)
                         .reasonCode(incomingLinkReason.getValue().getReason())
                         .build();
-                    caseLinkReasonEntities.add(caseLinkReasonEntity);
+                    caseLinkEntity.getReasons().add(caseLinkReasonEntity);
                 }
-                caseLinkEntity.getReasons().clear();
-                caseLinkEntity.getReasons().addAll(caseLinkReasonEntities);
             }
 
             mergedCaseLinkEntities.add(caseLinkEntity);

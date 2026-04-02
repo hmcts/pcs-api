@@ -14,9 +14,8 @@ import java.util.List;
 public class CaseLinkView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        if (!pcsCaseEntity.getCaseLinks().isEmpty()) {
-            setCaseLinks(pcsCase, pcsCaseEntity);
-        }
+        setCaseLinks(pcsCase, pcsCaseEntity);
+
     }
 
     private void setCaseLinks(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {

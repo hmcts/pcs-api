@@ -52,10 +52,11 @@ class CaseLinkViewTest {
 
         // Then
         List<ListValue<CaseLink>> mappedCaseLinks = pcsCase.getCaseLinks();
+        CaseLink firstMappedCaseLink  = mappedCaseLinks.getFirst().getValue();
         assertThat(mappedCaseLinks).hasSize(1);
-        assertThat(mappedCaseLinks.getFirst().getValue().getCaseReference()).isEqualTo("1234");
-        assertThat(mappedCaseLinks.getFirst().getValue().getCaseType()).isEqualTo("PCS");
-        assertThat(mappedCaseLinks.getFirst().getValue().getReasonForLink().getFirst().getValue().getReason())
+        assertThat(firstMappedCaseLink.getCaseReference()).isEqualTo("1234");
+        assertThat(firstMappedCaseLink.getCaseType()).isEqualTo("PCS");
+        assertThat(firstMappedCaseLink.getReasonForLink().getFirst().getValue().getReason())
                         .isEqualTo("CLR003");
     }
 
