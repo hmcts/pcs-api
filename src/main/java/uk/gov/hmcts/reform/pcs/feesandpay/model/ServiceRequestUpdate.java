@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
+
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -18,10 +19,10 @@ public class ServiceRequestUpdate {
     @JsonProperty("ccd_case_number")
     private String ccdCaseNumber;
     @JsonProperty("service_request_amount")
-    private String serviceRequestAmount;
+    private BigDecimal serviceRequestAmount;
     @JsonProperty("service_request_status")
     private String serviceRequestStatus;
     @JsonProperty("payment")
-    private PaymentDto payment;
+    private Payment payment;
 
 }

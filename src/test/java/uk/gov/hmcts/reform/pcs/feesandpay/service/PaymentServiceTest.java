@@ -135,7 +135,7 @@ class PaymentServiceTest {
         // Given
         String requestReference = UUID.randomUUID().toString();
         ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
-            .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.SUCCESS.name())
+            .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
             .build();
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().build();
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));

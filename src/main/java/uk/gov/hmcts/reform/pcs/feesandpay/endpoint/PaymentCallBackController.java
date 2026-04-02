@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.endpoint;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,8 +21,8 @@ public class PaymentCallBackController {
     @PostMapping(path = "/service-request-update", consumes = APPLICATION_JSON)
     @Operation(description = "Callback to create Fee and Pay service request")
     public void ccdSubmitted(
-        @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String authorisation,
-        @RequestHeader("ServiceAuthorization") String s2sToken,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorisation,
+        @RequestHeader(value = "ServiceAuthorization", required = false) String s2sToken,
         @RequestBody ServiceRequestUpdate serviceRequestUpdate) {
 
         paymentService.processPaymentResponse(serviceRequestUpdate);

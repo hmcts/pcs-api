@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,8 +24,6 @@ import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus.PENDING;
 
 @Slf4j
 @Service
@@ -59,10 +58,10 @@ public class PaymentService {
      * @param responsibleParty the party responsible for the payment
      * @return {@link PaymentServiceResponse} containing the service request reference
      */
+    @Transactional
     public PaymentServiceResponse createServiceRequest(String caseReference, String ccdCaseNumber,
                                                        FeeDetails feeDetails, int volume, String responsibleParty) {
-        ClaimEntity claimEntity = retrieveClaimEntity(caseReference);
-        ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(claimEntity, responsibleParty);
+
         FeeDto feeDto = paymentRequestMapper.toFeeDto(feeDetails, volume);
         CasePaymentRequestDto casePaymentRequest = paymentRequestMapper.toCasePaymentRequest(responsibleParty);
 
@@ -78,6 +77,8 @@ public class PaymentService {
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
             idamService.getSystemUserAuthorisation(), requestDto);
 
+        ClaimEntity claimEntity = retrieveClaimEntity(caseReference);
+        ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(claimEntity, responsibleParty);
         saveNewFeePayment(claimEntity, claimPartyEntity, feeDto, paymentServiceResponse.getServiceRequestReference());
 
         return paymentServiceResponse;
@@ -89,7 +90,7 @@ public class PaymentService {
             .findByRequestReference(serviceRequestUpdate.getServiceRequestReference());
         if (byCaseReference.isPresent()) {
             FeePaymentEntity feePaymentEntity = byCaseReference.get();
-            feePaymentEntity.setPaymentStatus(PaymentStatus.valueOf(serviceRequestUpdate.getServiceRequestStatus()));
+            feePaymentEntity.setPaymentStatus(serviceRequestUpdate.getServiceRequestStatus());
             feePaymentRepository.save(feePaymentEntity);
         }
     }
@@ -109,7 +110,6 @@ public class PaymentService {
             .requestDate(LocalDateTime.now())
             .requestReference(serviceRequestReference)
             .amount(feeDto.getCalculatedAmount())
-            .paymentStatus(PENDING)
             .party(claimParty.getParty())
             .build();
         feePaymentRepository.save(feePaymentEntity);

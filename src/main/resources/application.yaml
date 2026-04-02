@@ -188,8 +188,8 @@ access-code:
 
 payments:
   api:
-    url: ${PAYMENT_API_URL:http://localhost:8083}
-    callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:8096/service-request-update}
+    url: ${PAYMENT_API_URL:http://localhost:8083/payments}
+    callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:3206/service-request-update}
   params:
     organisationUrn: Mortgage and Landlord Possession Claims
     hmctsOrgId: ${hmcts.hmctsOrgId}
