@@ -35,7 +35,8 @@ public class OccupationLicenceDetailsWales {
         typeOverride = TextArea,
         label = "Give details about what type of occupation contract or licence is in place",
         hint = "You can enter up to 500 characters",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class},
+        max = 500
     )
     private String otherLicenceTypeDetails;
 
