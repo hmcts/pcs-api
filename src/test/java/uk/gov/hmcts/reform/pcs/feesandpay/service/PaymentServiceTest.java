@@ -112,7 +112,7 @@ class PaymentServiceTest {
     }
 
     @Test
-    void shouldCreateServiceRequest_NoClaim() {
+    void shouldCreateServiceRequest_NoClaimPartyEntityFound() {
         // Given
         FeeDetails feeDetails = mock(FeeDetails.class);
         ClaimPartyEntity claimPartyEntity = mock(ClaimPartyEntity.class);

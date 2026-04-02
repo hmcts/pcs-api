@@ -84,7 +84,7 @@ public class PaymentService {
     }
 
     public void processPaymentResponse(ServiceRequestUpdate serviceRequestUpdate) {
-        log.info("ServiceRequestUpdate: {}", serviceRequestUpdate);
+        log.info("ServiceRequestUpdate status: {}", serviceRequestUpdate.getServiceRequestStatus());
         Optional<FeePaymentEntity> byCaseReference = feePaymentRepository
             .findByRequestReference(serviceRequestUpdate.getServiceRequestReference());
         if (byCaseReference.isPresent()) {
