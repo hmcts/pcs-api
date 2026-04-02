@@ -83,9 +83,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
-        caseFieldsView.setCaseFields(pcsCase);
-
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
+
+        caseFieldsView.setCaseFields(pcsCase);
 
         //allows indexing for Global Search
         pcsCase.setSearchCriteria(new SearchCriteria());
@@ -109,7 +109,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
-            .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+            .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
             .allClaimants(partyMap.get(PartyRole.CLAIMANT))
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
