@@ -15,38 +15,52 @@ public class HouseholdCircumstancesService {
         }
         return HouseholdCircumstancesEntity.builder()
             .dependantChildren(hc.getDependantChildren())
-            .householdBills(hc.getHouseholdBills())
-            .householdBillsAmount(mapIfYes(hc.getHouseholdBills(), hc.getHouseholdBillsAmount()))
-            .householdBillsFrequency(mapIfYes(hc.getHouseholdBills(), hc.getHouseholdBillsFrequency()))
-            .loanPayments(hc.getLoanPayments())
-            .loanPaymentsAmount(mapIfYes(hc.getLoanPayments(), hc.getLoanPaymentsAmount()))
-            .loanPaymentsFrequency(mapIfYes(hc.getLoanPayments(), hc.getLoanPaymentsFrequency()))
-            .childSpousalMaintenance(hc.getChildSpousalMaintenance())
-            .childSpousalMaintenanceAmount(mapIfYes(hc.getChildSpousalMaintenance(),
-                                                    hc.getChildSpousalMaintenanceAmount()))
-            .childSpousalMaintenanceFrequency(mapIfYes(hc.getChildSpousalMaintenance(),
-                                                       hc.getChildSpousalMaintenanceFrequency()))
-            .mobilePhone(hc.getMobilePhone())
-            .mobilePhoneAmount(mapIfYes(hc.getMobilePhone(), hc.getMobilePhoneAmount()))
-            .mobilePhoneFrequency(mapIfYes(hc.getMobilePhone(), hc.getMobilePhoneFrequency()))
-            .groceryShopping(hc.getGroceryShopping())
-            .groceryShoppingAmount(mapIfYes(hc.getGroceryShopping(), hc.getGroceryShoppingAmount()))
-            .groceryShoppingFrequency(mapIfYes(hc.getGroceryShopping(), hc.getGroceryShoppingFrequency()))
-            .fuelParkingTransport(hc.getFuelParkingTransport())
-            .fuelParkingTransportAmount(mapIfYes(hc.getFuelParkingTransport(), hc.getFuelParkingTransportAmount()))
-            .fuelParkingTransportFrequency(mapIfYes(hc.getFuelParkingTransport(),hc.getFuelParkingTransportFrequency()))
-            .schoolCosts(hc.getSchoolCosts())
-            .schoolCostsAmount(mapIfYes(hc.getSchoolCosts(), hc.getSchoolCostsAmount()))
-            .schoolCostsFrequency(mapIfYes(hc.getSchoolCosts(), hc.getSchoolCostsFrequency()))
-            .clothing(hc.getClothing())
-            .clothingAmount(mapIfYes(hc.getClothing(), hc.getClothingAmount()))
-            .clothingFrequency(mapIfYes(hc.getClothing(), hc.getClothingFrequency()))
-            .otherExpenses(hc.getOtherExpenses())
-            .otherExpensesAmount(mapIfYes(hc.getOtherExpenses(), hc.getOtherExpensesAmount()))
-            .otherExpensesFrequency(mapIfYes(hc.getOtherExpenses(), hc.getOtherExpensesFrequency()))
+
+            .householdBills(hc.getHouseholdBills().getApplies())
+            .householdBillsAmount(mapIfYes(hc.getHouseholdBills().getApplies(), hc.getHouseholdBills().getAmount()))
+            .householdBillsFrequency(mapIfYes(hc.getHouseholdBills().getApplies(),
+                                              hc.getHouseholdBills().getFrequency()))
+            .loanPayments(hc.getLoanPayments().getApplies())
+            .loanPaymentsAmount(mapIfYes(hc.getLoanPayments().getApplies(), hc.getLoanPayments().getAmount()))
+            .loanPaymentsFrequency(mapIfYes(hc.getLoanPayments().getApplies(), hc.getLoanPayments().getFrequency()))
+            .childSpousalMaintenance(hc.getChildSpousalMaintenance().getApplies())
+            .childSpousalMaintenanceAmount(mapIfYes(hc.getChildSpousalMaintenance().getApplies(),
+                                                    hc.getChildSpousalMaintenance().getAmount()))
+            .childSpousalMaintenanceFrequency(mapIfYes(hc.getChildSpousalMaintenance().getApplies(),
+                                                       hc.getChildSpousalMaintenance().getFrequency()))
+            .mobilePhone(hc.getMobilePhone().getApplies())
+            .mobilePhoneAmount(mapIfYes(hc.getMobilePhone().getApplies(),
+                                        hc.getMobilePhone().getAmount()))
+            .mobilePhoneFrequency(mapIfYes(hc.getMobilePhone().getApplies(),
+                                           hc.getMobilePhone().getFrequency()))
+            .groceryShopping(hc.getGroceryShopping().getApplies())
+            .groceryShoppingAmount(mapIfYes(hc.getGroceryShopping().getApplies(),
+                                            hc.getGroceryShopping().getAmount()))
+            .groceryShoppingFrequency(mapIfYes(hc.getGroceryShopping().getApplies(),
+                                               hc.getGroceryShopping().getFrequency()))
+            .fuelParkingTransport(hc.getFuelParkingTransport().getApplies())
+            .fuelParkingTransportAmount(mapIfYes(hc.getFuelParkingTransport().getApplies(),
+                                                 hc.getFuelParkingTransport().getAmount()))
+            .fuelParkingTransportFrequency(mapIfYes(hc.getFuelParkingTransport().getApplies(),
+                                                    hc.getFuelParkingTransport().getFrequency()))
+            .schoolCosts(hc.getSchoolCosts().getApplies())
+            .schoolCostsAmount(mapIfYes(hc.getSchoolCosts().getApplies(),
+                                        hc.getSchoolCosts().getAmount()))
+            .schoolCostsFrequency(mapIfYes(hc.getSchoolCosts().getApplies(),
+                                           hc.getSchoolCosts().getFrequency()))
+            .clothing(hc.getClothing().getApplies())
+            .clothingAmount(mapIfYes(hc.getClothing().getApplies(),
+                                     hc.getClothing().getAmount()))
+            .clothingFrequency(mapIfYes(hc.getClothing().getApplies(),
+                                        hc.getClothing().getFrequency()))
+            .otherExpenses(hc.getOtherExpenses().getApplies())
+            .otherExpensesAmount(mapIfYes(hc.getOtherExpenses().getApplies(),
+                                          hc.getOtherExpenses().getAmount()))
+            .otherExpensesFrequency(mapIfYes(hc.getOtherExpenses().getApplies(),
+                                             hc.getOtherExpenses().getFrequency()))
+
             .build();
     }
-
     private <T> T mapIfYes(YesOrNo condition, T value) {
         return YesOrNo.YES.equals(condition) ? value : null;
     }

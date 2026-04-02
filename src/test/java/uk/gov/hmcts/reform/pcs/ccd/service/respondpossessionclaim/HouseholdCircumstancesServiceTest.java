@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.IncomeExpenseDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 
@@ -66,7 +67,8 @@ class HouseholdCircumstancesServiceTest {
     void shouldMapExpenseAmountsAndFrequenciesWhenAnswerIsYes() {
         HouseholdCircumstances householdCircumstances = buildExpenseFields(YesOrNo.YES);
 
-        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+        HouseholdCircumstancesEntity entity =
+            underTest.createHouseholdCircumstancesEntity(householdCircumstances);
 
         assertThat(entity.getHouseholdBillsAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
         assertThat(entity.getHouseholdBillsFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
@@ -94,7 +96,8 @@ class HouseholdCircumstancesServiceTest {
     void shouldNotMapExpenseAmountsAndFrequenciesWhenAnswerIsNotYes(YesOrNo answer) {
         HouseholdCircumstances householdCircumstances = buildExpenseFields(answer);
 
-        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+        HouseholdCircumstancesEntity entity =
+            underTest.createHouseholdCircumstancesEntity(householdCircumstances);
 
         assertThat(entity.getHouseholdBillsAmount()).isNull();
         assertThat(entity.getHouseholdBillsFrequency()).isNull();
@@ -118,35 +121,24 @@ class HouseholdCircumstancesServiceTest {
 
     private static HouseholdCircumstances buildExpenseFields(YesOrNo answer) {
         return HouseholdCircumstances.builder()
-            .householdBills(answer)
-            .householdBillsAmount(new BigDecimal("100.00"))
-            .householdBillsFrequency(RecurrenceFrequency.MONTHLY)
-            .loanPayments(answer)
-            .loanPaymentsAmount(new BigDecimal("200.00"))
-            .loanPaymentsFrequency(RecurrenceFrequency.WEEKLY)
-            .childSpousalMaintenance(answer)
-            .childSpousalMaintenanceAmount(new BigDecimal("300.00"))
-            .childSpousalMaintenanceFrequency(RecurrenceFrequency.MONTHLY)
-            .mobilePhone(answer)
-            .mobilePhoneAmount(new BigDecimal("400.00"))
-            .mobilePhoneFrequency(RecurrenceFrequency.WEEKLY)
-            .groceryShopping(answer)
-            .groceryShoppingAmount(new BigDecimal("500.00"))
-            .groceryShoppingFrequency(RecurrenceFrequency.MONTHLY)
-            .fuelParkingTransport(answer)
-            .fuelParkingTransportAmount(new BigDecimal("600.00"))
-            .fuelParkingTransportFrequency(RecurrenceFrequency.WEEKLY)
-            .schoolCosts(answer)
-            .schoolCostsAmount(new BigDecimal("700.00"))
-            .schoolCostsFrequency(RecurrenceFrequency.MONTHLY)
-            .clothing(answer)
-            .clothingAmount(new BigDecimal("800.00"))
-            .clothingFrequency(RecurrenceFrequency.WEEKLY)
-            .otherExpenses(answer)
-            .otherExpensesAmount(new BigDecimal("900.00"))
-            .otherExpensesFrequency(RecurrenceFrequency.MONTHLY)
+            .householdBills(buildExpense(answer, "100.00", RecurrenceFrequency.MONTHLY))
+            .loanPayments(buildExpense(answer, "200.00", RecurrenceFrequency.WEEKLY))
+            .childSpousalMaintenance(buildExpense(answer, "300.00", RecurrenceFrequency.MONTHLY))
+            .mobilePhone(buildExpense(answer, "400.00", RecurrenceFrequency.WEEKLY))
+            .groceryShopping(buildExpense(answer, "500.00", RecurrenceFrequency.MONTHLY))
+            .fuelParkingTransport(buildExpense(answer, "600.00", RecurrenceFrequency.WEEKLY))
+            .schoolCosts(buildExpense(answer, "700.00", RecurrenceFrequency.MONTHLY))
+            .clothing(buildExpense(answer, "800.00", RecurrenceFrequency.WEEKLY))
+            .otherExpenses(buildExpense(answer, "900.00", RecurrenceFrequency.MONTHLY))
             .build();
     }
 
+    private static IncomeExpenseDetails buildExpense(YesOrNo applies, String amount, RecurrenceFrequency frequency) {
+        return IncomeExpenseDetails.builder()
+            .applies(applies)
+            .amount(new BigDecimal(amount))
+            .frequency(frequency)
+            .build();
+    }
 }
 

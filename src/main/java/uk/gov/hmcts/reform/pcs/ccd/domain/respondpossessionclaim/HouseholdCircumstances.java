@@ -6,11 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
-
-import java.math.BigDecimal;
 
 @Builder
 @Data
@@ -22,93 +18,30 @@ public class HouseholdCircumstances {
     private YesOrNo dependantChildren;
 
     @CCD
-    private YesOrNo householdBills;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal householdBillsAmount;
+    private IncomeExpenseDetails householdBills;
 
     @CCD
-    private RecurrenceFrequency householdBillsFrequency;
+    private IncomeExpenseDetails loanPayments;
 
     @CCD
-    private YesOrNo loanPayments;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal loanPaymentsAmount;
+    private IncomeExpenseDetails childSpousalMaintenance;
 
     @CCD
-    private RecurrenceFrequency loanPaymentsFrequency;
+    private IncomeExpenseDetails mobilePhone;
 
     @CCD
-    private YesOrNo childSpousalMaintenance;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal childSpousalMaintenanceAmount;
+    private IncomeExpenseDetails groceryShopping;
 
     @CCD
-    private RecurrenceFrequency childSpousalMaintenanceFrequency;
+    private IncomeExpenseDetails fuelParkingTransport;
 
     @CCD
-    private YesOrNo mobilePhone;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal mobilePhoneAmount;
+    private IncomeExpenseDetails schoolCosts;
 
     @CCD
-    private RecurrenceFrequency mobilePhoneFrequency;
+    private IncomeExpenseDetails clothing;
 
     @CCD
-    private YesOrNo groceryShopping;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal groceryShoppingAmount;
-
-    @CCD
-    private RecurrenceFrequency groceryShoppingFrequency;
-
-    @CCD
-    private YesOrNo fuelParkingTransport;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal fuelParkingTransportAmount;
-
-    @CCD
-    private RecurrenceFrequency fuelParkingTransportFrequency;
-
-    @CCD
-    private YesOrNo schoolCosts;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal schoolCostsAmount;
-
-    @CCD
-    private RecurrenceFrequency schoolCostsFrequency;
-
-    @CCD
-    private YesOrNo clothing;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal clothingAmount;
-
-    @CCD
-    private RecurrenceFrequency clothingFrequency;
-
-    @CCD
-    private YesOrNo otherExpenses;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal otherExpensesAmount;
-
-    @CCD
-    private RecurrenceFrequency otherExpensesFrequency;
+    private IncomeExpenseDetails otherExpenses;
 
 }
