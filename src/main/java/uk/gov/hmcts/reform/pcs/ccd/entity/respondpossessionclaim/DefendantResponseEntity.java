@@ -105,7 +105,7 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo correspondenceAddressConfirmation;
+    private YesOrNo correspondenceAddressConfirmation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

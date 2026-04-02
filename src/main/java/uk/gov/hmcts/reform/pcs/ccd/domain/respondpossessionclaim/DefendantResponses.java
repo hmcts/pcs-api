@@ -31,7 +31,7 @@ public class DefendantResponses {
 
     @CCD
     private YesNoNotSure tenancyStartDateCorrect;
-  
+
     @CCD
     private LocalDate tenancyStartDate;
 
@@ -70,7 +70,7 @@ public class DefendantResponses {
     private VerticalYesNo defendantNameConfirmation;
 
     @CCD
-    private VerticalYesNo correspondenceAddressConfirmation;
+    private YesOrNo correspondenceAddressConfirmation;
 
     @CCD
     private YesNoNotSure landlordRegistered;
