@@ -1,9 +1,9 @@
-import { confirmHCEOHired, evidenceUpload, explainHowDefendantsReturned, yourHCEO } from '@data/page-data/page-data-enforcement';
+import { evidenceUpload, yourHCEO } from '@data/page-data/page-data-enforcement';
 import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import { defendantDetails } from './enforcement.action';
-import { confirmDefendantsDOB, enforcementApplication, evictionRisksPosed, knownDefendantsDOBInformation, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, peopleWhoWillBeEvicted, peopleYouWantToEvict, repayments, statementOfTruth, suspendedOrder, violentAggressiveRisk, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
+import { confirmDefendantsDOB, confirmHCEOfficer, enforcementApplication, evictionRisksPosed, explainHowDefendantsReturned, knownDefendantsDOBInformation, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, peopleWhoWillBeEvicted, peopleYouWantToEvict, repayments, statementOfTruth, suspendedOrder, violentAggressiveRisk, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
@@ -391,11 +391,11 @@ export class ErrorValidationAction implements IAction {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
 
-        validationType: confirmHCEOHired.errorValidationType.three,
-        inputArray: confirmHCEOHired.errorValidationField.errorRadioOption,
-        question: confirmHCEOHired.haveYouHiredHCEOQuestion,
-        option: confirmHCEOHired.yesRadioOption,
-        button: confirmHCEOHired.continueButton
+        validationType: confirmHCEOfficer.errorValidationType.three,
+        inputArray: confirmHCEOfficer.errorValidationField.errorRadioOption,
+        question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
+        option: confirmHCEOfficer.yesRadioOption,
+        button: confirmHCEOfficer.continueButton
       });
     }
   }
@@ -417,7 +417,7 @@ export class ErrorValidationAction implements IAction {
       await performAction('inputErrorValidation', {
         validationType: explainHowDefendantsReturned.errorValidationType.two,
         inputArray: explainHowDefendantsReturned.errorValidationField.errorTextField,
-        header: explainHowDefendantsReturned.eventCouldNotBeCreatedErrorMessage,
+        header: explainHowDefendantsReturned.eventCouldNotBeCreatedErrorMessageHeader,
         label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
         button: explainHowDefendantsReturned.continueButton
       });

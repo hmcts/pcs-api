@@ -122,6 +122,8 @@ public class DefendantResponseService {
             .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
             .writtenTerms(responses.getWrittenTerms())
+            .disputeClaim(responses.getDisputeClaim())
+            .disputeClaimDetails(responses.getDisputeClaimDetails())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
                 responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
