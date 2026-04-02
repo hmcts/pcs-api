@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.globalsearch.CaseNameHmctsFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
@@ -35,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -69,7 +69,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final RentArrearsView rentArrearsView;
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
-    private final CaseNameHmctsFormatter caseNameHmctsFormatter;
+    private final CaseFieldsView caseFieldsView;
     private final CaseLinkView caseLinkView;
 
 
@@ -85,7 +85,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
-        caseNameHmctsFormatter.setCaseNameHmctsField(pcsCase);
+        caseFieldsView.setCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
 
