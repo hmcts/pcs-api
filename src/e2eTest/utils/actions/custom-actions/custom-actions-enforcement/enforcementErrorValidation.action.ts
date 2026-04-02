@@ -1,8 +1,9 @@
-import { confirmDefendantsDOB, confirmHCEOHired, enterDefendantsDOB, evidenceUpload, explainHowDefendantsReturned, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, peopleWillBeEvicted, peopleYouWantToEvict, rePayments, riskPosedByEveryoneAtProperty, statementOfTruthOne, statementOfTruthTwo, suspendedOrder, violentOrAggressiveBehaviour, vulnerableAdultsAndChildren, yourApplication, yourHCEO } from '@data/page-data/page-data-enforcement';
+import { evidenceUpload, yourHCEO } from '@data/page-data/page-data-enforcement';
 import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import { defendantDetails } from './enforcement.action';
+import { confirmDefendantsDOB, confirmHCEOfficer, enforcementApplication, evictionRisksPosed, explainHowDefendantsReturned, knownDefendantsDOBInformation, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, peopleWhoWillBeEvicted, peopleYouWantToEvict, repayments, statementOfTruth, suspendedOrder, violentAggressiveRisk, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
@@ -38,11 +39,11 @@ export class ErrorValidationAction implements IAction {
   private async errorValidationYourApplicationPage(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
-        validationType: yourApplication.errorValidationType.three,
-        inputArray: yourApplication.errorValidationField.errorRadioOption,
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-        button: yourApplication.continueButton
+        validationType: enforcementApplication.errorValidationType.three,
+        inputArray: enforcementApplication.errorValidationField.errorRadioOption,
+        question: enforcementApplication.typeOfApplicationQuestion,
+        option: enforcementApplication.warrantOfPossessionRadioOption,
+        button: enforcementApplication.continueButton
       });
     }
   }
@@ -76,11 +77,11 @@ export class ErrorValidationAction implements IAction {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
 
-        validationType: enterDefendantsDOB.errorValidationType.two,
-        inputArray: enterDefendantsDOB.errorValidationField.errorTextField,
-        header: enterDefendantsDOB.eventCouldNotBeCreatedErrorMessage,
-        label: enterDefendantsDOB.defendantsDOBTextLabel,
-        button: enterDefendantsDOB.continueButton
+        validationType: knownDefendantsDOBInformation.errorValidationType.two,
+        inputArray: knownDefendantsDOBInformation.errorValidationField.errorTextField,
+        header: knownDefendantsDOBInformation.eventCouldNotBeCreatedErrorMessageHeader,
+        label: knownDefendantsDOBInformation.defendantsDOBQuestion,
+        button: knownDefendantsDOBInformation.continueButton
       });
     }
   }
@@ -89,11 +90,11 @@ export class ErrorValidationAction implements IAction {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
 
-        validationType: riskPosedByEveryoneAtProperty.errorValidationType.four,
-        inputArray: riskPosedByEveryoneAtProperty.errorValidationField.errorCheckBoxOption,
-        label: riskPosedByEveryoneAtProperty.kindOfRiskQuestion,
-        checkBox: riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckbox,
-        button: riskPosedByEveryoneAtProperty.continueButton
+        validationType: evictionRisksPosed.errorValidationType.four,
+        inputArray: evictionRisksPosed.errorValidationField.errorCheckBoxOption,
+        label: evictionRisksPosed.kindOfRiskQuestion,
+        checkBox: evictionRisksPosed.violentOrAggressiveBehaviourCheckbox,
+        button: evictionRisksPosed.continueButton
       });
     }
   }
@@ -102,11 +103,11 @@ export class ErrorValidationAction implements IAction {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
 
-        validationType: violentOrAggressiveBehaviour.errorValidationType.two,
-        inputArray: violentOrAggressiveBehaviour.errorValidationField.errorTextField,
-        header: violentOrAggressiveBehaviour.eventCouldNotBeCreatedErrorMessage,
-        label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveTextLabel,
-        button: violentOrAggressiveBehaviour.continueButton
+        validationType: violentAggressiveRisk.errorValidationType.two,
+        inputArray: violentAggressiveRisk.errorValidationField.errorTextField,
+        header: violentAggressiveRisk.eventCouldNotBeCreatedErrorMessageHeader,
+        label: violentAggressiveRisk.howHaveTheyBeenViolentAndAggressiveQuestion,
+        button: violentAggressiveRisk.continueButton
       });
     }
   }
@@ -115,27 +116,27 @@ export class ErrorValidationAction implements IAction {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
 
-        validationType: vulnerableAdultsAndChildren.errorValidationType.three,
-        inputArray: vulnerableAdultsAndChildren.errorValidationField.errorRadioOption1,
-        question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
-        option: vulnerableAdultsAndChildren.yesRadioOption,
-        button: vulnerableAdultsAndChildren.continueButton
+        validationType: vulnerableAdultsChildren.errorValidationType.three,
+        inputArray: vulnerableAdultsChildren.errorValidationField.errorRadioOption1,
+        question: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion,
+        option: vulnerableAdultsChildren.yesRadioOption,
+        button: vulnerableAdultsChildren.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: vulnerableAdultsAndChildren.errorValidationType.three,
-        inputArray: vulnerableAdultsAndChildren.errorValidationField.errorRadioOption2,
-        question: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
-        option: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
-        button: vulnerableAdultsAndChildren.continueButton
+        validationType: vulnerableAdultsChildren.errorValidationType.three,
+        inputArray: vulnerableAdultsChildren.errorValidationField.errorRadioOption2,
+        question: vulnerableAdultsChildren.confirmVulnerablePeopleHiddenQuestion,
+        option: vulnerableAdultsChildren.vulnerableAdultsHiddenRadioOption,
+        button: vulnerableAdultsChildren.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: vulnerableAdultsAndChildren.errorValidationType.two,
-        inputArray: vulnerableAdultsAndChildren.errorValidationField.errorTextField,
-        header: vulnerableAdultsAndChildren.eventCouldNotBeCreatedErrorMessage,
-        label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
-        button: vulnerableAdultsAndChildren.continueButton
+        validationType: vulnerableAdultsChildren.errorValidationType.two,
+        inputArray: vulnerableAdultsChildren.errorValidationField.errorTextField,
+        header: vulnerableAdultsChildren.eventCouldNotBeCreatedErrorMessageHeader,
+        label: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextLabel,
+        button: vulnerableAdultsChildren.continueButton
       });
     }
   }
@@ -169,7 +170,7 @@ export class ErrorValidationAction implements IAction {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.yesRadioOption,
         option2: legalCosts.noRadioOption,
-        label: legalCosts.howMuchYouWantToReclaimTextLabel,
+        label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
         button: legalCosts.continueButton
       });
     }
@@ -192,7 +193,7 @@ export class ErrorValidationAction implements IAction {
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.yesRadioOption,
         option2: landRegistryFees.noRadioOption,
-        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
         button: landRegistryFees.continueButton
       });
     }
@@ -202,21 +203,21 @@ export class ErrorValidationAction implements IAction {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
 
-        validationType: rePayments.errorValidationType.three,
-        inputArray: rePayments.errorValidationField.errorRadioOption,
-        question: rePayments.rePaymentQuestion,
-        option: rePayments.rePaymentRadioOptions.some,
-        button: rePayments.continueButton
+        validationType: repayments.errorValidationType.three,
+        inputArray: repayments.errorValidationField.errorRadioOption,
+        question: repayments.rePaymentQuestion,
+        option: repayments.someRadioOptions,
+        button: repayments.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: rePayments.errorValidationType.five,
-        inputArray: rePayments.errorValidationField.errorMoneyField,
-        question: rePayments.rePaymentQuestion,
-        option: rePayments.rePaymentRadioOptions.some,
-        option2: rePayments.rePaymentRadioOptions.none,
-        label: rePayments.enterTheAmountTextLabel,
-        button: rePayments.continueButton
+        validationType: repayments.errorValidationType.five,
+        inputArray: repayments.errorValidationField.errorMoneyField,
+        question: repayments.rePaymentQuestion,
+        option: repayments.someRadioOptions,
+        option2: repayments.noneRadioOptions,
+        label: repayments.enterTheAmountTextLabelHidden,
+        button: repayments.continueButton
       });
 
     }
@@ -229,7 +230,7 @@ export class ErrorValidationAction implements IAction {
         validationType: languageUsed.errorValidationType.three,
         inputArray: languageUsed.errorValidationField.errorRadioOption,
         question: languageUsed.whichLanguageUsedQuestion,
-        option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+        option: languageUsed.englishRadioOption,
         button: languageUsed.continueButton
       });
 
@@ -253,43 +254,43 @@ export class ErrorValidationAction implements IAction {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthOne.errorValidationType.four,
-        inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
-        label: statementOfTruthOne.checkBoxGenericErrorLabel,
-        checkBox: statementOfTruthOne.iCertifyCheckbox,
-        button: statementOfTruthOne.continueButton
+        validationType: statementOfTruth.errorValidationType.four,
+        inputArray: statementOfTruth.errorValidationField.errorCheckBoxOption,
+        label: statementOfTruth.checkBoxGenericErrorMessageHeader,
+        checkBox: statementOfTruth.iCertifyCheckboxDynamic,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthOne.errorValidationType.three,
-        inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
-        question: statementOfTruthOne.completedByLabel,
-        option: statementOfTruthOne.claimantRadioOption,
-        button: statementOfTruthOne.continueButton
+        validationType: statementOfTruth.errorValidationType.three,
+        inputArray: statementOfTruth.errorValidationField.errorRadioOption,
+        question: statementOfTruth.completedByLabel,
+        option: statementOfTruth.claimantRadioOption,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthOne.errorValidationType.four,
-        inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
-        label: statementOfTruthOne.checkBoxGenericErrorLabel,
-        checkBox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        button: statementOfTruthOne.continueButton
+        validationType: statementOfTruth.errorValidationType.four,
+        inputArray: statementOfTruth.errorValidationField.errorCheckBoxOption,
+        label: statementOfTruth.checkBoxGenericErrorMessageHeader,
+        checkBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthOne.errorValidationType.two,
-        inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
-        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthOne.fullNameHiddenTextLabel,
-        button: statementOfTruthOne.continueButton
+        validationType: statementOfTruth.errorValidationType.two,
+        inputArray: statementOfTruth.errorValidationField.errorTextField1,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruth.fullNameHiddenTextLabel,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthOne.errorValidationType.two,
-        inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
-        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-        button: statementOfTruthOne.continueButton
+        validationType: statementOfTruth.errorValidationType.two,
+        inputArray: statementOfTruth.errorValidationField.errorTextField3,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+        button: statementOfTruth.continueButton
       });
     }
   }
@@ -298,53 +299,53 @@ export class ErrorValidationAction implements IAction {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthTwo.errorValidationType.four,
-        inputArray: statementOfTruthTwo.errorValidationField.errorCheckBoxOption,
-        label: statementOfTruthTwo.checkBoxGenericErrorLabel,
-        header: statementOfTruthTwo.thereIsAProblemErrorMessageHeader,
-        checkBox: statementOfTruthTwo.iCertifyCheckbox,
-        button: statementOfTruthTwo.continueButton
+        validationType: statementOfTruth.errorValidationType.four,
+        inputArray: statementOfTruth.errorValidationField.errorCheckBoxOption,
+        label: statementOfTruth.checkBoxGenericErrorMessageHeader,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        checkBox: statementOfTruth.iCertifyCheckboxDynamic,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthTwo.errorValidationType.three,
-        inputArray: statementOfTruthTwo.errorValidationField.errorRadioOption,
-        question: statementOfTruthTwo.completedByLabel,
-        option: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
-        button: statementOfTruthTwo.continueButton
+        validationType: statementOfTruth.errorValidationType.three,
+        inputArray: statementOfTruth.errorValidationField.errorRadioOption,
+        question: statementOfTruth.completedByLabel,
+        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthTwo.errorValidationType.four,
-        inputArray: statementOfTruthTwo.errorValidationField.errorCheckBoxOption,
-        label: statementOfTruthTwo.checkBoxGenericErrorLabel,
-        header: statementOfTruthTwo.thereIsAProblemErrorMessageHeader,
-        checkBox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
-        button: statementOfTruthTwo.continueButton
+        validationType: statementOfTruth.errorValidationType.four,
+        inputArray: statementOfTruth.errorValidationField.errorCheckBoxOption,
+        label: statementOfTruth.checkBoxGenericErrorMessageHeader,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        checkBox: statementOfTruth.signThisStatementHiddenCheckbox,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthTwo.errorValidationType.two,
-        inputArray: statementOfTruthTwo.errorValidationField.errorTextField1,
-        header: statementOfTruthTwo.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthTwo.fullNameHiddenTextLabel,
-        button: statementOfTruthTwo.continueButton
+        validationType: statementOfTruth.errorValidationType.two,
+        inputArray: statementOfTruth.errorValidationField.errorTextField1,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruth.fullNameHiddenTextLabel,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthTwo.errorValidationType.two,
-        inputArray: statementOfTruthTwo.errorValidationField.errorTextField2,
-        header: statementOfTruthTwo.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
-        button: statementOfTruthTwo.continueButton
+        validationType: statementOfTruth.errorValidationType.two,
+        inputArray: statementOfTruth.errorValidationField.errorTextField2,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruth.nameOfFirmHiddenTextLabel,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthTwo.errorValidationType.two,
-        inputArray: statementOfTruthTwo.errorValidationField.errorTextField3,
-        header: statementOfTruthTwo.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel,
-        button: statementOfTruthTwo.continueButton
+        validationType: statementOfTruth.errorValidationType.two,
+        inputArray: statementOfTruth.errorValidationField.errorTextField3,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+        button: statementOfTruth.continueButton
       });
     }
   }
@@ -353,35 +354,35 @@ export class ErrorValidationAction implements IAction {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthOne.errorValidationType.three,
-        inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
-        question: statementOfTruthOne.completedByLabel,
-        option: statementOfTruthOne.claimantRadioOption,
-        button: statementOfTruthOne.continueButton
+        validationType: statementOfTruth.errorValidationType.three,
+        inputArray: statementOfTruth.errorValidationField.errorRadioOption,
+        question: statementOfTruth.completedByLabel,
+        option: statementOfTruth.claimantRadioOption,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthOne.errorValidationType.four,
-        inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
-        label: statementOfTruthOne.checkBoxGenericErrorLabel,
-        checkBox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        button: statementOfTruthOne.continueButton
+        validationType: statementOfTruth.errorValidationType.four,
+        inputArray: statementOfTruth.errorValidationField.errorCheckBoxOption,
+        label: statementOfTruth.checkBoxGenericErrorMessageHeader,
+        checkBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthOne.errorValidationType.two,
-        inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
-        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthOne.fullNameHiddenTextLabel,
-        button: statementOfTruthOne.continueButton
+        validationType: statementOfTruth.errorValidationType.two,
+        inputArray: statementOfTruth.errorValidationField.errorTextField1,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruth.fullNameHiddenTextLabel,
+        button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruthOne.errorValidationType.two,
-        inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
-        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-        button: statementOfTruthOne.continueButton
+        validationType: statementOfTruth.errorValidationType.two,
+        inputArray: statementOfTruth.errorValidationField.errorTextField3,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+        button: statementOfTruth.continueButton
       });
     }
   }
@@ -390,11 +391,11 @@ export class ErrorValidationAction implements IAction {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
 
-        validationType: confirmHCEOHired.errorValidationType.three,
-        inputArray: confirmHCEOHired.errorValidationField.errorRadioOption,
-        question: confirmHCEOHired.haveYouHiredHCEOQuestion,
-        option: confirmHCEOHired.yesRadioOption,
-        button: confirmHCEOHired.continueButton
+        validationType: confirmHCEOfficer.errorValidationType.three,
+        inputArray: confirmHCEOfficer.errorValidationField.errorRadioOption,
+        question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
+        option: confirmHCEOfficer.yesRadioOption,
+        button: confirmHCEOfficer.continueButton
       });
     }
   }
@@ -416,7 +417,7 @@ export class ErrorValidationAction implements IAction {
       await performAction('inputErrorValidation', {
         validationType: explainHowDefendantsReturned.errorValidationType.two,
         inputArray: explainHowDefendantsReturned.errorValidationField.errorTextField,
-        header: explainHowDefendantsReturned.eventCouldNotBeCreatedErrorMessage,
+        header: explainHowDefendantsReturned.eventCouldNotBeCreatedErrorMessageHeader,
         label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
         button: explainHowDefendantsReturned.continueButton
       });
@@ -473,11 +474,11 @@ export class ErrorValidationAction implements IAction {
   private async errorValidationPeopleWhoWillBeEvictedPage(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
-        validationType: peopleWillBeEvicted.errorValidationType.three,
-        inputArray: peopleWillBeEvicted.errorValidationField.errorRadioOption,
-        question: peopleWillBeEvicted.evictEveryOneQuestion,
-        option: peopleWillBeEvicted.yesRadioOption,
-        button: peopleWillBeEvicted.continueButton
+        validationType: peopleWhoWillBeEvicted.errorValidationType.three,
+        inputArray: peopleWhoWillBeEvicted.errorValidationField.errorRadioOption,
+        question: peopleWhoWillBeEvicted.evictEveryOneQuestion,
+        option: peopleWhoWillBeEvicted.yesRadioOption,
+        button: peopleWhoWillBeEvicted.continueButton
       });
     }
   }
