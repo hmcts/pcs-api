@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.enforcementorder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -24,7 +27,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -300,6 +305,32 @@ class EnforcementOrderMediatorTest {
         assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
         verify(pcsCaseRepository).findByCaseReference(caseReference);
         verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("formatDateArguments")
+    void formatDate(String testName, LocalDateTime input, String expected) {
+        assertThat(underTest.formatDate(input)).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> formatDateArguments() {
+        return Stream.of(
+            Arguments.of("morning time",
+                         LocalDateTime.of(2025, 6, 9,  9, 30),
+                         "Monday, 9 June 2025 at 9:30 am"),
+            Arguments.of("afternoon time",
+                         LocalDateTime.of(2025, 6, 9, 14,  0),
+                         "Monday, 9 June 2025 at 2:00 pm"),
+            Arguments.of("midnight",
+                         LocalDateTime.of(2025, 6, 9,  0,  0),
+                         "Monday, 9 June 2025 at 12:00 am"),
+            Arguments.of("noon",
+                         LocalDateTime.of(2025, 6, 9, 12,  0),
+                         "Monday, 9 June 2025 at 12:00 pm"),
+            Arguments.of("single digit day",
+                         LocalDateTime.of(2025, 1, 3,  8, 15),
+                         "Friday, 3 January 2025 at 8:15 am")
+        );
     }
 
     // Helper methods

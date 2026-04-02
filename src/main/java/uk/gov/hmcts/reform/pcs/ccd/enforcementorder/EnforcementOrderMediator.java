@@ -70,7 +70,8 @@ public class EnforcementOrderMediator {
     }
 
     public String formatDate(LocalDateTime localDateTime) {
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.UK);
+        DateTimeFormatter outputFormatter = DateTimeFormatter
+            .ofPattern("EEEE, d MMMM yyyy 'at' h:mm a", Locale.UK);
         return localDateTime.format(outputFormatter);
     }
 
