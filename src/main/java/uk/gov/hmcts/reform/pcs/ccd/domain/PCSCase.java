@@ -532,4 +532,7 @@ public class PCSCase {
     )
     private String caseManagementLocationFormatted;
 
+    @CCD(ignore = true)
+    private List<String> clearFields;
+
 }

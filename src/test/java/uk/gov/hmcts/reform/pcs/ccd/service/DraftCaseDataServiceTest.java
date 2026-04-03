@@ -47,6 +47,8 @@ class DraftCaseDataServiceTest {
     private DraftCaseJsonMerger draftCaseJsonMerger;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private DraftClearFieldsProcessor clearFieldsProcessor;
     @Captor
     private ArgumentCaptor<DraftCaseDataEntity> unsubmittedCaseDataEntityCaptor;
 
@@ -60,7 +62,8 @@ class DraftCaseDataServiceTest {
             draftCaseDataRepository,
             objectMapper,
             draftCaseJsonMerger,
-            securityContextService
+            securityContextService,
+            clearFieldsProcessor
         );
 
         UserInfo userInfo = UserInfo.builder()
@@ -149,7 +152,7 @@ class DraftCaseDataServiceTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, caseDataJson, List.of());
+        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, caseDataJson, Optional.empty());
 
         // Then
         verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
@@ -249,11 +252,13 @@ class DraftCaseDataServiceTest {
         void setUpIntegration() {
             realObjectMapper = new ObjectMapper();
             realMerger = new DraftCaseJsonMerger(realObjectMapper);
+            DraftClearFieldsProcessor realClearFieldsProcessor = new DraftClearFieldsProcessor(realObjectMapper);
             serviceWithRealDependencies = new DraftCaseDataService(
                 draftCaseDataRepository,
                 realObjectMapper,
                 realMerger,
-                securityContextService
+                securityContextService,
+                realClearFieldsProcessor
             );
 
             UserInfo userInfo = UserInfo.builder()
@@ -307,13 +312,16 @@ class DraftCaseDataServiceTest {
                 }
                 """;
 
-            List<String> clearFields = List.of(
-                "defendantResponses.householdCircumstances.pensionAmount",
-                "defendantResponses.householdCircumstances.pensionFrequency"
+            ClearFieldsContext clearFieldsContext = new ClearFieldsContext(
+                "possessionClaimResponse",
+                List.of(
+                    "defendantResponses.householdCircumstances.pensionAmount",
+                    "defendantResponses.householdCircumstances.pensionFrequency"
+                )
             );
 
             serviceWithRealDependencies.patchUnsubmittedCaseData(
-                CASE_REFERENCE, EventId.respondPossessionClaim, updateJson, clearFields);
+                CASE_REFERENCE, EventId.respondPossessionClaim, updateJson, Optional.of(clearFieldsContext));
 
             // THEN: Verify specified fields removed, other fields preserved
             ArgumentCaptor<DraftCaseDataEntity> captor = ArgumentCaptor.forClass(DraftCaseDataEntity.class);
@@ -381,13 +389,16 @@ class DraftCaseDataServiceTest {
                 }
                 """;
 
-            List<String> clearFields = List.of(
-                "defendantResponses.householdCircumstances.pensionAmount",
-                "defendantResponses.householdCircumstances.pensionFrequency"
+            ClearFieldsContext clearFieldsContext = new ClearFieldsContext(
+                "possessionClaimResponse",
+                List.of(
+                    "defendantResponses.householdCircumstances.pensionAmount",
+                    "defendantResponses.householdCircumstances.pensionFrequency"
+                )
             );
 
             serviceWithRealDependencies.patchUnsubmittedCaseData(
-                CASE_REFERENCE, EventId.respondPossessionClaim, updateJson, clearFields);
+                CASE_REFERENCE, EventId.respondPossessionClaim, updateJson, Optional.of(clearFieldsContext));
 
             // THEN: Verify only specified paths cleared, sibling field groups unaffected
             ArgumentCaptor<DraftCaseDataEntity> captor = ArgumentCaptor.forClass(DraftCaseDataEntity.class);
@@ -476,19 +487,22 @@ class DraftCaseDataServiceTest {
                 }
                 """;
 
-            List<String> clearFields = List.of(
-                "defendantResponses.householdCircumstances.pensionAmount",
-                "defendantResponses.householdCircumstances.pensionFrequency",
-                "defendantResponses.householdCircumstances.incomeFromJobsAmount",
-                "defendantResponses.householdCircumstances.incomeFromJobsFrequency",
-                "defendantResponses.householdCircumstances.universalCreditAmount",
-                "defendantResponses.householdCircumstances.universalCreditFrequency",
-                "defendantResponses.householdCircumstances.otherBenefitsAmount",
-                "defendantResponses.householdCircumstances.otherBenefitsFrequency"
+            ClearFieldsContext clearFieldsContext = new ClearFieldsContext(
+                "possessionClaimResponse",
+                List.of(
+                    "defendantResponses.householdCircumstances.pensionAmount",
+                    "defendantResponses.householdCircumstances.pensionFrequency",
+                    "defendantResponses.householdCircumstances.incomeFromJobsAmount",
+                    "defendantResponses.householdCircumstances.incomeFromJobsFrequency",
+                    "defendantResponses.householdCircumstances.universalCreditAmount",
+                    "defendantResponses.householdCircumstances.universalCreditFrequency",
+                    "defendantResponses.householdCircumstances.otherBenefitsAmount",
+                    "defendantResponses.householdCircumstances.otherBenefitsFrequency"
+                )
             );
 
             serviceWithRealDependencies.patchUnsubmittedCaseData(
-                CASE_REFERENCE, EventId.respondPossessionClaim, updateJson, clearFields);
+                CASE_REFERENCE, EventId.respondPossessionClaim, updateJson, Optional.of(clearFieldsContext));
 
             // THEN: Verify all 8 paths cleared, nested structure preserved, sibling nodes unaffected
             ArgumentCaptor<DraftCaseDataEntity> captor = ArgumentCaptor.forClass(DraftCaseDataEntity.class);
@@ -566,7 +580,7 @@ class DraftCaseDataServiceTest {
                 """;
 
             serviceWithRealDependencies.patchUnsubmittedCaseData(
-                CASE_REFERENCE, EventId.respondPossessionClaim, call1Json, List.of());
+                CASE_REFERENCE, EventId.respondPossessionClaim, call1Json, Optional.empty());
 
             ArgumentCaptor<DraftCaseDataEntity> captor1 = ArgumentCaptor.forClass(DraftCaseDataEntity.class);
             verify(draftCaseDataRepository).save(captor1.capture());
@@ -592,13 +606,16 @@ class DraftCaseDataServiceTest {
                 }
                 """;
 
-            List<String> clearFields = List.of(
-                "defendantResponses.householdCircumstances.pensionAmount",
-                "defendantResponses.householdCircumstances.pensionFrequency"
+            ClearFieldsContext call2ClearContext = new ClearFieldsContext(
+                "possessionClaimResponse",
+                List.of(
+                    "defendantResponses.householdCircumstances.pensionAmount",
+                    "defendantResponses.householdCircumstances.pensionFrequency"
+                )
             );
 
             serviceWithRealDependencies.patchUnsubmittedCaseData(
-                CASE_REFERENCE, EventId.respondPossessionClaim, call2Json, clearFields);
+                CASE_REFERENCE, EventId.respondPossessionClaim, call2Json, Optional.of(call2ClearContext));
 
             ArgumentCaptor<DraftCaseDataEntity> captor2 = ArgumentCaptor.forClass(DraftCaseDataEntity.class);
             verify(draftCaseDataRepository, org.mockito.Mockito.times(2)).save(captor2.capture());
@@ -627,7 +644,7 @@ class DraftCaseDataServiceTest {
                 """;
 
             serviceWithRealDependencies.patchUnsubmittedCaseData(
-                CASE_REFERENCE, EventId.respondPossessionClaim, call3Json, List.of());
+                CASE_REFERENCE, EventId.respondPossessionClaim, call3Json, Optional.empty());
 
             // THEN: Verify cleared fields can be re-added with new values via merge
             ArgumentCaptor<DraftCaseDataEntity> captor3 = ArgumentCaptor.forClass(DraftCaseDataEntity.class);
@@ -683,7 +700,7 @@ class DraftCaseDataServiceTest {
                 """;
 
             serviceWithRealDependencies.patchUnsubmittedCaseData(
-                CASE_REFERENCE, EventId.respondPossessionClaim, updateJson, List.of());
+                CASE_REFERENCE, EventId.respondPossessionClaim, updateJson, Optional.empty());
 
             // THEN: Verify sent fields merged, unsent fields preserved
             ArgumentCaptor<DraftCaseDataEntity> captor = ArgumentCaptor.forClass(DraftCaseDataEntity.class);
@@ -745,7 +762,7 @@ class DraftCaseDataServiceTest {
                 """;
 
             serviceWithRealDependencies.patchUnsubmittedCaseData(
-                CASE_REFERENCE, EventId.respondPossessionClaim, updateJson, List.of());
+                CASE_REFERENCE, EventId.respondPossessionClaim, updateJson, Optional.empty());
 
             // THEN: Verify update merged without field removal
             ArgumentCaptor<DraftCaseDataEntity> captor = ArgumentCaptor.forClass(DraftCaseDataEntity.class);

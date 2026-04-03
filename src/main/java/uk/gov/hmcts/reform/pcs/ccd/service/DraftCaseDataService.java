@@ -1,9 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -17,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,15 +27,18 @@ public class DraftCaseDataService {
     private final ObjectMapper objectMapper;
     private final DraftCaseJsonMerger draftCaseJsonMerger;
     private final SecurityContextService securityContextService;
+    private final DraftClearFieldsProcessor clearFieldsProcessor;
 
     public DraftCaseDataService(DraftCaseDataRepository draftCaseDataRepository,
                                 @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                 DraftCaseJsonMerger draftCaseJsonMerger,
-                                SecurityContextService securityContextService) {
+                                SecurityContextService securityContextService,
+                                DraftClearFieldsProcessor clearFieldsProcessor) {
         this.draftCaseDataRepository = draftCaseDataRepository;
         this.objectMapper = objectMapper;
         this.draftCaseJsonMerger = draftCaseJsonMerger;
         this.securityContextService = securityContextService;
+        this.clearFieldsProcessor = clearFieldsProcessor;
     }
 
     private UUID getCurrentUserId() {
@@ -88,13 +88,13 @@ public class DraftCaseDataService {
         UUID userId = getCurrentUserId();
         log.info("Patching draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
 
-        List<String> clearFields = extractClearFields(eventData);
+        Optional<ClearFieldsContext> clearFieldsContext = clearFieldsProcessor.extractClearFieldsContext(eventData);
         String patchEventDataJson = writeCaseDataJson(eventData);
-        patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson, clearFields);
+        patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson, clearFieldsContext);
     }
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId,
-                                          String patchEventDataJson, List<String> clearFields) {
+                                          String patchEventDataJson, Optional<ClearFieldsContext> clearFieldsContext) {
         UUID userId = getCurrentUserId();
         DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
             .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
@@ -102,8 +102,9 @@ public class DraftCaseDataService {
                 log.debug("Updating existing draft for userId={}", userId);
                 String mergedJson = mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson);
 
-                if (clearFields != null && !clearFields.isEmpty()) {
-                    mergedJson = applyClearFieldsAndSerialize(mergedJson, clearFields);
+                // Apply clearFields to merged data (clears fields AND removes clearFields from JSON)
+                if (clearFieldsContext.isPresent()) {
+                    mergedJson = applyClearFieldsAndSerialize(mergedJson, clearFieldsContext.get());
                 }
 
                 existingDraft.setCaseData(mergedJson);
@@ -111,7 +112,15 @@ public class DraftCaseDataService {
             }).orElseGet(() -> {
                 log.debug("Creating new draft for caseReference={}, eventId={}, userId={}",
                     caseReference, eventId, userId);
-                return createNewDraft(caseReference, eventId, userId, patchEventDataJson);
+
+                // On new draft creation, if clearFields is present, remove it from JSON
+                // (but don't try to clear any fields since there's no existing data)
+                String newDraftData = patchEventDataJson;
+                if (clearFieldsContext.isPresent()) {
+                    newDraftData = removeClearFieldsOnly(patchEventDataJson, clearFieldsContext.get());
+                }
+
+                return createNewDraft(caseReference, eventId, userId, newDraftData);
             });
 
         DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
@@ -169,80 +178,22 @@ public class DraftCaseDataService {
         return newDraft;
     }
 
-    private <T> List<String> extractClearFields(T eventData) {
-        if (eventData instanceof PCSCase) {
-            PCSCase pcsCase = (PCSCase) eventData;
-            if (pcsCase.getPossessionClaimResponse() != null) {
-                List<String> clearFields = pcsCase.getPossessionClaimResponse().getClearFields();
-                return clearFields != null ? clearFields : List.of();
-            }
-        }
-        return List.of();
-    }
-
-    private String applyClearFieldsAndSerialize(String mergedJson, List<String> clearFields) {
+    private String applyClearFieldsAndSerialize(String mergedJson, ClearFieldsContext context) {
         try {
-            ObjectNode root = parseJsonToTree(mergedJson);
-
-            clearFieldsFromPossessionClaimResponse(root, clearFields);
-            return serializeJsonTree(root);
+            return clearFieldsProcessor.applyClearFields(mergedJson, context);
         } catch (JsonProcessingException e) {
             log.error("Failed to apply clearFields", e);
             throw new UnsubmittedDataException("Failed to clear fields", e);
         }
     }
 
-    private ObjectNode parseJsonToTree(String json) throws JsonProcessingException {
-        return (ObjectNode) objectMapper.readTree(json);
-    }
-
-    private void clearFieldsFromPossessionClaimResponse(ObjectNode root, List<String> clearFields) {
-        JsonNode pcrNode = root.at("/possessionClaimResponse");
-        if (!pcrNode.isObject()) {
-            return;
+    private String removeClearFieldsOnly(String json, ClearFieldsContext context) {
+        try {
+            return clearFieldsProcessor.removeClearFieldsFromJson(json, context);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to remove clearFields from JSON", e);
+            throw new UnsubmittedDataException("Failed to remove clearFields", e);
         }
-
-        ObjectNode possessionClaimResponse = (ObjectNode) pcrNode;
-
-        for (String fieldPath : clearFields) {
-            removeField(possessionClaimResponse, fieldPath);
-        }
-
-        possessionClaimResponse.remove("clearFields");
-    }
-
-    private String serializeJsonTree(ObjectNode root) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(root);
-    }
-
-    private void removeField(ObjectNode root, String fieldPath) {
-        String[] pathSegments = fieldPath.split("\\.");
-        ObjectNode parentNode = navigateToParentNode(root, pathSegments);
-
-        if (parentNode == null) {
-            return;
-        }
-
-        String fieldName = getFieldName(pathSegments);
-        parentNode.remove(fieldName);
-    }
-
-    private ObjectNode navigateToParentNode(ObjectNode root, String[] pathSegments) {
-        ObjectNode current = root;
-
-        for (int i = 0; i < pathSegments.length - 1; i++) {
-            JsonNode next = current.get(pathSegments[i]);
-            if (next == null || !next.isObject()) {
-                return null;
-            }
-            current = (ObjectNode) next;
-        }
-
-        return current;
-    }
-
-    private String getFieldName(String[] pathSegments) {
-        return pathSegments[pathSegments.length - 1];
     }
 
 }

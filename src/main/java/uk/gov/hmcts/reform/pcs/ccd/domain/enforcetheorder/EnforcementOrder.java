@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.W
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
+import java.util.List;
+
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 
 /**
@@ -70,5 +72,8 @@ public class EnforcementOrder {
     private String writFeeAmount;
 
     private String warrantOfRestitutionInfoText;
+
+    @CCD(ignore = true)
+    private List<String> clearFields;
 
 }
