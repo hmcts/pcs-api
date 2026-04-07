@@ -21,9 +21,12 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 @RequiredArgsConstructor
 public class StartDashboardViewHandler implements Start<PCSCase, State> {
 
-    /** TEMP (HDPI-5421): delete this constant and appliedCaseState/stateResolution on DashboardData when CCD exposes state */
+    /**
+     * TEMP (HDPI-5421): remove temporary state fields on DashboardData when CCD exposes case state.
+     */
     private static final String TEMP_STATE_RESOLUTION_NOTE =
-        "CCD state is not on EventPayload; dashboardView uses forAllStates(); logic uses appliedCaseState below until wired.";
+        "CCD state is not on EventPayload; dashboardView uses forAllStates(); "
+            + "logic uses appliedCaseState below until wired.";
 
     private final PcsCaseService pcsCaseService;
     private final DefendantAccessValidator accessValidator;
@@ -57,7 +60,8 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
         );
 
         log.info(
-            "DashboardView START caseReference={} appliedCaseState={} stateResolution={} notifications={} taskGroups={}",
+            "DashboardView START caseReference={} appliedCaseState={} stateResolution={} "
+                + "notifications={} taskGroups={}",
             caseReference,
             dashboardData.appliedCaseState(),
             dashboardData.stateResolution(),

@@ -6,7 +6,7 @@ import uk.gov.hmcts.reform.pcs.dashboard.model.TaskGroup;
 import java.util.List;
 
 /**
- * TEMP (HDPI-5421): debugging
+ * TEMP (HDPI-5421): debugging.
  */
 public record DashboardData(
     String claimantName,
