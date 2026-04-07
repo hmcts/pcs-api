@@ -88,5 +88,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("serviceRequest", "Service Request")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
+
+        builder.tab("caseFlags", "Case flags")
+            .forRoles(UserRole.PCS_SOLICITOR)
+            .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
+            .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)")
+            .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
     }
 }

@@ -26,6 +26,7 @@ public class PcsCaseService {
     private final DocumentService documentService;
     private final TenancyLicenceService tenancyLicenceService;
     private final AddressMapper addressMapper;
+    private final CaseFlagService caseFlagService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -61,4 +62,23 @@ public class PcsCaseService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
+    public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
+        // Validate input
+        if (pcsCase == null) {
+            throw new IllegalArgumentException("PCSCase cannot be null");
+        }
+        // Load case
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+
+        //log.info("Patching linked cases for {}", caseReference);
+        // Merge case flags
+        if (pcsCase.getCaseFlags() != null) {
+            caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(), pcsCaseEntity);
+
+        }
+        // Merge party flags
+        if (pcsCase.getParties() != null) {
+            caseFlagService.mergePartyFlags(pcsCase.getParties(), pcsCaseEntity);
+        }
+    }
 }

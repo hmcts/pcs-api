@@ -47,6 +47,8 @@ class PcsCaseServiceTest {
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private AddressMapper addressMapper;
+    @Mock
+    private CaseFlagService caseFlagService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -61,7 +63,8 @@ class PcsCaseServiceTest {
             partyService,
             documentService,
             tenancyLicenceService,
-            addressMapper
+            addressMapper,
+            caseFlagService
         );
     }
 
