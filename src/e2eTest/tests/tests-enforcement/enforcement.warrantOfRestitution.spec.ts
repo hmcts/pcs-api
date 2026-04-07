@@ -5,8 +5,6 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { caseSummary } from '@data/page-data';
 import {
   evidenceUpload,
-  explainHowDefendantsReturned,
-  shareEvidenceWithJudge,
   provideEvidence,
   warrantOfRestitutionAnyoneAtPropertyRiskIntro,
 } from '@data/page-data/page-data-enforcement';
@@ -14,8 +12,10 @@ import { createCaseApiData, enforceWarrantApiData, submitCaseApiData } from '@da
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { additionalInformation, enforcementApplication, evictionRisksPosed, livingInTheProperty, peopleWhoWillBeEvicted, peopleYouWantToEvict, propertyAccessDetails, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
+import { additionalInformation, enforcementApplication, evictionRisksPosed, livingInTheProperty, peopleWhoWillBeEvicted, peopleYouWantToEvict, propertyAccessDetails, shareEvidenceWithJudge, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
+import { explainHowDefendantsReturned } from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefendantsReturned.page.data';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -70,6 +70,7 @@ test.afterEach(async () => {
   if (caseInfo.id) {
     await performAction('deleteCaseRole', '[CREATOR]');
   }
+    PageContentValidation.finaliseTest();
 });
 
 test.describe('[Enforcement - Warrant of Restitution]', async () => {
