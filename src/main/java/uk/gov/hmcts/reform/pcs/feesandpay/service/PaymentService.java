@@ -18,11 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Slf4j
@@ -107,7 +105,6 @@ public class PaymentService {
                                    String serviceRequestReference) {
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
-            .requestDate(LocalDateTime.now())
             .requestReference(serviceRequestReference)
             .amount(feeDto.getCalculatedAmount())
             .party(claimParty.getParty())
@@ -118,7 +115,7 @@ public class PaymentService {
     private ClaimEntity retrieveClaimEntity(String caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(Long.parseLong(caseReference));
         // Assuming 1 claim per PcsCase
-        return  pcsCaseEntity.getClaims().getFirst();
+        return pcsCaseEntity.getClaims().getFirst();
     }
 
 }
