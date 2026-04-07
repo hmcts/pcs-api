@@ -58,4 +58,13 @@ public class HouseholdCircumstances {
     @CCD
     private String expenseFrequency;
 
+    @CCD(max = 500)
+    private String dependantChildrenDetails;
+
+    @CCD
+    private YesOrNo otherDependants;
+
+    @CCD(max = 500)
+    private String otherDependantDetails;
+
 }

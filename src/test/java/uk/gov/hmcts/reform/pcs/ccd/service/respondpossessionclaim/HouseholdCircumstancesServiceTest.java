@@ -52,6 +52,60 @@ class HouseholdCircumstancesServiceTest {
     }
 
     @Test
+    void shouldMapDependantChildrenDetailsField() {
+        //Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .dependantChildrenDetails("Two children aged 4 and 7")
+            .build();
+
+        //When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        //Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getDependantChildrenDetails()).isEqualTo("Two children aged 4 and 7");
+    }
+
+    @ParameterizedTest
+    @MethodSource("otherDependantsScenarios")
+    void shouldMapOtherDependantsField(YesOrNo expected) {
+        //Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .otherDependants(expected)
+            .build();
+
+        //When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        //Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getOtherDependants()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> otherDependantsScenarios() {
+        return Stream.of(
+            Arguments.of(YesOrNo.YES),
+            Arguments.of(YesOrNo.NO),
+            Arguments.of((YesOrNo) null)
+        );
+    }
+
+    @Test
+    void shouldMapOtherDependantDetailsField() {
+        //Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .otherDependantDetails("Elderly parent requiring full-time care")
+            .build();
+
+        //When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        //Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getOtherDependantDetails()).isEqualTo("Elderly parent requiring full-time care");
+    }
+
+    @Test
     void shouldReturnNullWhenHouseholdCircumstancesIsNull() {
         // When
         HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(null);

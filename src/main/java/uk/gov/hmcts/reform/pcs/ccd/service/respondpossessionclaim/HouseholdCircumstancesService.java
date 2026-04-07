@@ -26,6 +26,9 @@ public class HouseholdCircumstancesService {
             .regularExpenses(circumstances.getRegularExpenses())
             .expenseAmount(circumstances.getExpenseAmount())
             .expenseFrequency(circumstances.getExpenseFrequency())
+            .dependantChildrenDetails(circumstances.getDependantChildrenDetails())
+            .otherDependants(circumstances.getOtherDependants())
+            .otherDependantDetails(circumstances.getOtherDependantDetails())
             .build();
     }
 }
