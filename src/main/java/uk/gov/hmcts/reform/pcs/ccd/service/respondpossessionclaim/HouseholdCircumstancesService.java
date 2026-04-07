@@ -19,6 +19,9 @@ public class HouseholdCircumstancesService {
 
         return HouseholdCircumstancesEntity.builder()
             .dependantChildren(circumstances.getDependantChildren())
+            .dependantChildrenDetails(circumstances.getDependantChildrenDetails())
+            .otherDependants(circumstances.getOtherDependants())
+            .otherDependantDetails(circumstances.getOtherDependantDetails())
             .otherTenants(otherTenants)
             .otherTenantsDetails(otherTenants == YesOrNo.YES ? circumstances.getOtherTenantsDetails() : null)
             .alternativeAccommodation(alternativeAccommodation)

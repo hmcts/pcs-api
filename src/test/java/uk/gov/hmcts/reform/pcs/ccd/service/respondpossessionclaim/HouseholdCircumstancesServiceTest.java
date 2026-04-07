@@ -2,11 +2,13 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
@@ -17,6 +19,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(MockitoExtension.class)
 class HouseholdCircumstancesServiceTest {
 
     private HouseholdCircumstancesService underTest;
@@ -43,7 +46,61 @@ class HouseholdCircumstancesServiceTest {
     }
 
     @Test
-    void shouldReturnNullWhenPaymentAgreementIsNull() {
+    void shouldMapDependantChildrenDetailsField() {
+        //Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .dependantChildrenDetails("Two children aged 4 and 7")
+            .build();
+
+        //When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        //Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getDependantChildrenDetails()).isEqualTo("Two children aged 4 and 7");
+    }
+
+    @ParameterizedTest
+    @MethodSource("otherDependantsScenarios")
+    void shouldMapOtherDependantsField(YesOrNo expected) {
+        //Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .otherDependants(expected)
+            .build();
+
+        //When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        //Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getOtherDependants()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> otherDependantsScenarios() {
+        return Stream.of(
+            Arguments.of(YesOrNo.YES),
+            Arguments.of(YesOrNo.NO),
+            Arguments.of((YesOrNo) null)
+        );
+    }
+
+    @Test
+    void shouldMapOtherDependantDetailsField() {
+        //Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .otherDependantDetails("Elderly parent requiring full-time care")
+            .build();
+
+        //When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        //Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getOtherDependantDetails()).isEqualTo("Elderly parent requiring full-time care");
+    }
+
+    @Test
+    void shouldReturnNullWhenHouseholdCircumstancesIsNull() {
         // When
         HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(null);
 
