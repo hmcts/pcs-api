@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -160,5 +161,124 @@ class ContactPreferencesTest extends BasePageTest {
         assertThat(response.getErrorMessageOverride())
             .contains("more than the maximum number of characters");
 
+    }
+
+    @Nested
+    class ClearFieldsLogicTests {
+
+        @Test
+        void shouldClearPhoneNumberWhenUserAnswersNo() {
+            // Given - Pattern 1: Simple conditional
+            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantContactPhoneNumber("07700900000")
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .claimantContactPreferences(contactPreferences)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).contains("claimantContactPhoneNumber");
+        }
+
+        @Test
+        void shouldClearEmailOverrideWhenUserConfirmsEmailCorrect() {
+            // Given - Pattern 2: Simple conditional
+            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+                .isCorrectClaimantContactEmail(VerticalYesNo.YES)
+                .overriddenClaimantContactEmail("old@example.com")
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .claimantContactPreferences(contactPreferences)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).contains("overriddenClaimantContactEmail");
+        }
+
+        @Test
+        void shouldClearAddressOverrideWhenUserConfirmsAddressCorrectAndOrgAddressFound() {
+            // Given - Pattern 2: Nested conditionals (AND logic)
+            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+                .orgAddressFound(YesOrNo.YES)
+                .isCorrectClaimantContactAddress(VerticalYesNo.YES)
+                .overriddenClaimantContactAddress(AddressUK.builder()
+                    .addressLine1("123 Old Street")
+                    .postCode("SW1A 1AA")
+                    .build())
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .claimantContactPreferences(contactPreferences)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).contains("overriddenClaimantContactAddress");
+        }
+
+        @Test
+        void shouldNotClearAddressOverrideWhenOrgAddressNotFound() {
+            // Given - Pattern 2: Nested conditionals - negative test
+            // Even if user says address is correct, don't clear if org address wasn't found
+            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+                .orgAddressFound(YesOrNo.NO)
+                .isCorrectClaimantContactAddress(VerticalYesNo.YES)
+                .overriddenClaimantContactAddress(AddressUK.builder()
+                    .addressLine1("123 Old Street")
+                    .postCode("SW1A 1AA")
+                    .build())
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .claimantContactPreferences(contactPreferences)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            if (response.getData().getClearFields() != null) {
+                assertThat(response.getData().getClearFields()).doesNotContain("overriddenClaimantContactAddress");
+            }
+        }
+
+        @Test
+        void shouldNotSetClearFieldsWhenNoFieldsNeedClearing() {
+            // Given - User provides phone, changes email, address not found
+            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+                .claimantProvidePhoneNumber(VerticalYesNo.YES)
+                .claimantContactPhoneNumber("07700900000")
+                .isCorrectClaimantContactEmail(VerticalYesNo.NO)
+                .overriddenClaimantContactEmail("new@example.com")
+                .orgAddressFound(YesOrNo.NO)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .claimantContactPreferences(contactPreferences)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            // clearFields should be null or empty when no fields need clearing
+            if (response.getData().getClearFields() != null) {
+                assertThat(response.getData().getClearFields()).isEmpty();
+            }
+        }
     }
 }

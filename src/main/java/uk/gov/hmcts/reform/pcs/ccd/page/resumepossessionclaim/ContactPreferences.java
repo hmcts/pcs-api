@@ -33,6 +33,13 @@ public class ContactPreferences implements CcdPageConfiguration {
     private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
     private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
 
+    // ClearFields path constants - used only by this page
+    private static final class ClearFieldsPaths {
+        private static final String OVERRIDDEN_CONTACT_EMAIL = "overriddenClaimantContactEmail";
+        private static final String OVERRIDDEN_CONTACT_ADDRESS = "overriddenClaimantContactAddress";
+        private static final String CONTACT_PHONE_NUMBER = "claimantContactPhoneNumber";
+    }
+
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
@@ -164,11 +171,42 @@ public class ContactPreferences implements CcdPageConfiguration {
             }
         }
 
+        populateClearFields(caseData);
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
             .data(caseData)
             .build();
 
+    }
+
+    private void populateClearFields(PCSCase caseData) {
+        ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
+        if (contactPreferences == null) {
+            return;
+        }
+
+        List<String> clearFields = new ArrayList<>();
+
+        // Clear phone number when user answers NO
+        if (contactPreferences.getClaimantProvidePhoneNumber() == VerticalYesNo.NO) {
+            clearFields.add(ClearFieldsPaths.CONTACT_PHONE_NUMBER);
+        }
+
+        // Clear email override when user confirms email is correct
+        if (contactPreferences.getIsCorrectClaimantContactEmail() == VerticalYesNo.YES) {
+            clearFields.add(ClearFieldsPaths.OVERRIDDEN_CONTACT_EMAIL);
+        }
+
+        // Clear address override when user confirms address is correct AND org address was found
+        if (contactPreferences.getIsCorrectClaimantContactAddress() == VerticalYesNo.YES
+            && contactPreferences.getOrgAddressFound() == YesOrNo.YES) {
+            clearFields.add(ClearFieldsPaths.OVERRIDDEN_CONTACT_ADDRESS);
+        }
+
+        if (!clearFields.isEmpty()) {
+            caseData.setClearFields(clearFields);
+        }
     }
 
 }

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -127,9 +128,275 @@ class DefendantsDetailsTest extends BasePageTest {
 
     private static Stream<Arguments> defendantTermScenarios() {
         return Stream.of(
-            argumentSet("No additional defendants", VerticalYesNo.NO, "defendant’s"),
-            argumentSet("Additional defendants", VerticalYesNo.YES, "defendants’")
+            argumentSet("No additional defendants", VerticalYesNo.NO, "defendant's"),
+            argumentSet("Additional defendants", VerticalYesNo.YES, "defendants'")
         );
+    }
+
+    @Nested
+    class ClearFieldsLogicTests {
+
+        @Test
+        void shouldClearPrimaryDefendantNameFieldsWhenNameUnknown() {
+            // Given
+            DefendantDetails defendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.NO)
+                .firstName("John")
+                .lastName("Doe")
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .defendant1(defendant1)
+                .defendantCircumstances(new DefendantCircumstances())
+                .addAnotherDefendant(VerticalYesNo.NO)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).contains(
+                "defendant1.firstName",
+                "defendant1.lastName"
+            );
+        }
+
+        @Test
+        void shouldClearPrimaryDefendantAddressFieldsWhenAddressUnknown() {
+            // Given
+            DefendantDetails defendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .firstName("John")
+                .lastName("Doe")
+                .addressKnown(VerticalYesNo.NO)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .defendant1(defendant1)
+                .defendantCircumstances(new DefendantCircumstances())
+                .addAnotherDefendant(VerticalYesNo.NO)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).contains(
+                "defendant1.addressSameAsPossession",
+                "defendant1.correspondenceAddress"
+            );
+        }
+
+        @Test
+        void shouldClearPrimaryDefendantCorrespondenceAddressWhenSameAsPossession() {
+            // Given
+            DefendantDetails defendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .firstName("John")
+                .lastName("Doe")
+                .addressKnown(VerticalYesNo.YES)
+                .addressSameAsPossession(VerticalYesNo.YES)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .defendant1(defendant1)
+                .defendantCircumstances(new DefendantCircumstances())
+                .addAnotherDefendant(VerticalYesNo.NO)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).contains(
+                "defendant1.correspondenceAddress"
+            );
+            assertThat(response.getData().getClearFields()).doesNotContain(
+                "defendant1.addressSameAsPossession"
+            );
+        }
+
+        @Test
+        void shouldClearAdditionalDefendantsArrayWhenNotNeeded() {
+            // Given
+            DefendantDetails defendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .firstName("John")
+                .lastName("Doe")
+                .build();
+
+            DefendantDetails additionalDefendant = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .firstName("Jane")
+                .lastName("Smith")
+                .build();
+
+            List<ListValue<DefendantDetails>> additionalDefendants = wrapListItems(List.of(additionalDefendant));
+
+            PCSCase caseData = PCSCase.builder()
+                .defendant1(defendant1)
+                .defendantCircumstances(new DefendantCircumstances())
+                .addAnotherDefendant(VerticalYesNo.NO)
+                .additionalDefendants(additionalDefendants)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).contains("additionalDefendants");
+        }
+
+        @Test
+        void shouldClearAdditionalDefendantNameFieldsDirectly() {
+            // Given
+            DefendantDetails defendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .firstName("John")
+                .lastName("Doe")
+                .build();
+
+            DefendantDetails additionalDefendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.NO)
+                .firstName("ShouldBeCleared")
+                .lastName("ShouldBeCleared")
+                .build();
+
+            DefendantDetails additionalDefendant2 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .firstName("Jane")
+                .lastName("Smith")
+                .build();
+
+            List<ListValue<DefendantDetails>> additionalDefendants = wrapListItems(List.of(
+                additionalDefendant1,
+                additionalDefendant2
+            ));
+
+            PCSCase caseData = PCSCase.builder()
+                .defendant1(defendant1)
+                .defendantCircumstances(new DefendantCircumstances())
+                .addAnotherDefendant(VerticalYesNo.YES)
+                .additionalDefendants(additionalDefendants)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then - First additional defendant should have names cleared
+            assertThat(response.getData().getAdditionalDefendants().get(0).getValue().getFirstName()).isNull();
+            assertThat(response.getData().getAdditionalDefendants().get(0).getValue().getLastName()).isNull();
+
+            // Second additional defendant should keep names
+            assertThat(response.getData().getAdditionalDefendants().get(1).getValue().getFirstName()).isEqualTo("Jane");
+            assertThat(response.getData().getAdditionalDefendants().get(1).getValue().getLastName()).isEqualTo("Smith");
+        }
+
+        @Test
+        void shouldClearAdditionalDefendantAddressFieldsDirectly() {
+            // Given
+            DefendantDetails defendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .firstName("John")
+                .lastName("Doe")
+                .build();
+
+            DefendantDetails additionalDefendant = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .firstName("Jane")
+                .lastName("Smith")
+                .addressKnown(VerticalYesNo.NO)
+                .addressSameAsPossession(VerticalYesNo.YES)
+                .build();
+
+            List<ListValue<DefendantDetails>> additionalDefendants = wrapListItems(List.of(additionalDefendant));
+
+            PCSCase caseData = PCSCase.builder()
+                .defendant1(defendant1)
+                .defendantCircumstances(new DefendantCircumstances())
+                .addAnotherDefendant(VerticalYesNo.YES)
+                .additionalDefendants(additionalDefendants)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData().getAdditionalDefendants().get(0).getValue()
+                .getAddressSameAsPossession()).isNull();
+            assertThat(response.getData().getAdditionalDefendants().get(0).getValue()
+                .getCorrespondenceAddress()).isNull();
+        }
+
+        @Test
+        void shouldHandleMixAndMatchScenarios() {
+            // Given - Primary defendant: name unknown, address unknown
+            //        Additional defendant 1: name known, address same as possession
+            //        Additional defendant 2: name unknown, address known but different
+            DefendantDetails defendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.NO)
+                .firstName("ShouldClear")
+                .lastName("ShouldClear")
+                .addressKnown(VerticalYesNo.NO)
+                .build();
+
+            DefendantDetails additionalDefendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .firstName("Jane")
+                .lastName("Smith")
+                .addressKnown(VerticalYesNo.YES)
+                .addressSameAsPossession(VerticalYesNo.YES)
+                .build();
+
+            DefendantDetails additionalDefendant2 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.NO)
+                .firstName("ClearMe")
+                .lastName("ClearMe")
+                .addressKnown(VerticalYesNo.YES)
+                .addressSameAsPossession(VerticalYesNo.NO)
+                .build();
+
+            List<ListValue<DefendantDetails>> additionalDefendants = wrapListItems(List.of(
+                additionalDefendant1,
+                additionalDefendant2
+            ));
+
+            PCSCase caseData = PCSCase.builder()
+                .defendant1(defendant1)
+                .defendantCircumstances(new DefendantCircumstances())
+                .addAnotherDefendant(VerticalYesNo.YES)
+                .additionalDefendants(additionalDefendants)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then - Primary defendant clearFields
+            assertThat(response.getData().getClearFields()).contains(
+                "defendant1.firstName",
+                "defendant1.lastName",
+                "defendant1.addressSameAsPossession",
+                "defendant1.correspondenceAddress"
+            );
+
+            // Additional defendant 1 - keep names, clear correspondence address
+            assertThat(response.getData().getAdditionalDefendants().get(0).getValue()
+                .getFirstName()).isEqualTo("Jane");
+            assertThat(response.getData().getAdditionalDefendants().get(0).getValue()
+                .getLastName()).isEqualTo("Smith");
+            assertThat(response.getData().getAdditionalDefendants().get(0).getValue()
+                .getCorrespondenceAddress()).isNull();
+
+            // Additional defendant 2 - clear names, keep address fields
+            assertThat(response.getData().getAdditionalDefendants().get(1).getValue().getFirstName()).isNull();
+            assertThat(response.getData().getAdditionalDefendants().get(1).getValue().getLastName()).isNull();
+            assertThat(response.getData().getAdditionalDefendants().get(1).getValue().getAddressSameAsPossession())
+                .isEqualTo(VerticalYesNo.NO);
+        }
     }
 
 }

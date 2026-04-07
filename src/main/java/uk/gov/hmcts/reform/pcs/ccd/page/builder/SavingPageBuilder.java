@@ -67,6 +67,10 @@ public class SavingPageBuilder extends PageBuilder {
 
             patchUnsubmittedData(details);
 
+            // Clear clearFields after draft save to prevent CCD validation failure
+            // (clearFields is marked @CCD(ignore = true) so CCD doesn't recognize it)
+            clearClearFieldsFromResponse(details, wrappedMidEventResponse);
+
             return Optional.ofNullable(wrappedMidEventResponse)
                 .orElseGet(() -> AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                     .data(details.getData())
@@ -78,6 +82,28 @@ public class SavingPageBuilder extends PageBuilder {
             PCSCase caseData = details.getData();
 
             draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId);
+        }
+
+        private void clearClearFieldsFromResponse(CaseDetails<PCSCase, State> details,
+                                                   AboutToStartOrSubmitResponse<PCSCase, State> response) {
+            // Clear from details (used if response is null)
+            if (details.getData() != null) {
+                details.getData().setClearFields(null);
+            }
+
+            // Clear from response data (used if response is not null)
+            if (response != null && response.getData() != null) {
+                response.getData().setClearFields(null);
+            }
+
+            // Clear from enforcementOrder if present
+            if (details.getData() != null && details.getData().getEnforcementOrder() != null) {
+                details.getData().getEnforcementOrder().setClearFields(null);
+            }
+            if (response != null && response.getData() != null
+                && response.getData().getEnforcementOrder() != null) {
+                response.getData().getEnforcementOrder().setClearFields(null);
+            }
         }
 
     }
