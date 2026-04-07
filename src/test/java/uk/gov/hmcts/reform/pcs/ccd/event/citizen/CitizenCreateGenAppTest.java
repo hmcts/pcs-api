@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -130,6 +131,28 @@ class CitizenCreateGenAppTest extends BaseEventTest {
             verify(genAppRepository).save(genAppEntityCaptor.capture());
 
             assertThat(genAppEntityCaptor.getValue().getParty()).isEqualTo(applicantParty);
+        }
+
+        @ParameterizedTest
+        @EnumSource(YesOrNo.class)
+        void shouldSetWith14DaysFlag(YesOrNo within14Days) {
+            // Given
+            CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+                .within14Days(within14Days)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .citizenGenAppRequest(genAppRequest)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            ArgumentCaptor<GenAppEntity> genAppEntityCaptor = ArgumentCaptor.forClass(GenAppEntity.class);
+            verify(genAppRepository).save(genAppEntityCaptor.capture());
+
+            assertThat(genAppEntityCaptor.getValue().getWithin14Days()).isEqualTo(within14Days);
         }
 
         @Test

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 @Builder
 @Data
@@ -12,5 +13,7 @@ import lombok.NoArgsConstructor;
 public class CitizenGenAppRequest {
 
     private GenAppType applicationType;
+
+    private YesOrNo within14Days;
 
 }
