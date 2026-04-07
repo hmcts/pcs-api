@@ -90,17 +90,15 @@ class CaseFlagsViewTest {
         caseFlagsView.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Assert
-        //assertNull(pcsCase.getParties());
         assertEquals(0, pcsCase.getParties().size());
     }
 
     private FlagDetailsEntity createMockFlagsEntity() {
-        FlagDetailsEntity flagDetailsEntity = FlagDetailsEntity.builder()
+
+        return FlagDetailsEntity.builder()
             .id(UUID.randomUUID())
             .flagCode("FLAG_CODE")
             .flagComment("FLAG_COMMENT")
             .build();
-
-        return flagDetailsEntity;
     }
 }

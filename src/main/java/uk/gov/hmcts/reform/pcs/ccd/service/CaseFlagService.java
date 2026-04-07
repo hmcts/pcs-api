@@ -38,12 +38,12 @@ public class CaseFlagService {
     private FlagsEntity mergeFlags(Flags incomingCaseFlags, Map<UUID, FlagsEntity> existingCaseFlags,
                                    PcsCaseEntity pcsCaseEntity) {
 
-        FlagsEntity flagsEntity = existingCaseFlags.get(incomingCaseFlags.getGroupId());
+        FlagsEntity flagsEntity = new FlagsEntity(); //existingCaseFlags.get(incomingCaseFlags.getGroupId());
 
-        if (flagsEntity == null) {
+        /*if (flagsEntity == null) {
             flagsEntity = new FlagsEntity();
             flagsEntity.setPcsCase(pcsCaseEntity);
-        }
+        }*/
 
         flagsEntity.setVisibility(incomingCaseFlags.getVisibility().getValue());
 
@@ -100,7 +100,6 @@ public class CaseFlagService {
             mergedPartyEntities.add(partyEntity);
         }
 
-        //pcsCaseEntity.getParties().clear();
         pcsCaseEntity.getParties().addAll(mergedPartyEntities);
     }
 

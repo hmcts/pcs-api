@@ -27,13 +27,97 @@ class CaseFlagServiceTest {
     private final CaseFlagService caseFlagService = new CaseFlagService();
 
     @Test
+    void testMergeCaseFlags_NewCaseFlags() {
+        FlagDetailsEntity existingFlagDetail = FlagDetailsEntity.builder()
+            .flagCode("EXISTING_FLAG")
+            .flagComment("Existing Case Flag Comment")
+            .build();
+
+        FlagsEntity existingFlagsEntity = FlagsEntity.builder()
+            .id(UUID.randomUUID())
+            .visibility(FlagVisibility.INTERNAL.getValue())
+            .caseFlags(new ArrayList<>(List.of(existingFlagDetail)))
+            .build();
+
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(new ArrayList<>()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .caseFlags(existingFlagsEntity).build();
+
+        caseFlagService.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+
+        assertNotNull(pcsCaseEntity.getCaseFlags());
+        FlagsEntity savedFlags = pcsCaseEntity.getCaseFlags();
+        assertEquals("Internal", savedFlags.getVisibility());
+        assertEquals(0, savedFlags.getCaseFlags().size());
+    }
+
+    @Test
+    void testMergeCaseFlags_UpdateExistingCaseFlags() {
+        FlagDetailsEntity existingFlagDetail = FlagDetailsEntity.builder()
+            .flagCode("EXISTING_FLAG")
+            .flagComment("Existing Case Flag Comment")
+            .build();
+
+        FlagsEntity existingFlagsEntity = FlagsEntity.builder()
+            .id(UUID.randomUUID())
+            .visibility(FlagVisibility.INTERNAL.getValue())
+            .caseFlags(new ArrayList<>(List.of(existingFlagDetail)))
+            .build();
+
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(new ArrayList<>()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .caseFlags(existingFlagsEntity).build();
+
+        caseFlagService.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+
+        assertNotNull(pcsCaseEntity.getCaseFlags());
+        FlagsEntity updatedFlags = pcsCaseEntity.getCaseFlags();
+        assertEquals("Internal", updatedFlags.getVisibility());
+        assertEquals(0, updatedFlags.getCaseFlags().size());
+    }
+
+    @Test
+    void testMergeCaseFlags_NoIncomingCaseFlags() {
+        FlagDetailsEntity existingFlagDetail = FlagDetailsEntity.builder()
+            .flagCode("EXISTING_FLAG")
+            .flagComment("Existing Case Flag Comment")
+            .build();
+
+        FlagsEntity existingFlagsEntity = FlagsEntity.builder()
+            .id(UUID.randomUUID())
+            .visibility(FlagVisibility.INTERNAL.getValue())
+            .caseFlags(new ArrayList<>(List.of(existingFlagDetail)))
+            .build();
+
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(new ArrayList<>()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .caseFlags(existingFlagsEntity).build();
+
+        caseFlagService.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+
+        assertNotNull(pcsCaseEntity.getCaseFlags());
+        FlagsEntity unchangedFlags = pcsCaseEntity.getCaseFlags();
+        assertEquals("Internal", unchangedFlags.getVisibility());
+        assertEquals(0, unchangedFlags.getCaseFlags().size());
+    }
+
+    @Test
     void testMergePartyFlags_NewPartyWithFlags() {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().parties(new HashSet<>()).build();
 
         Flags incomingFlags = Flags.builder()
-                .visibility(FlagVisibility.INTERNAL)
-                .details(List.of(createFlagDetail("FLAG_CODE_1", "Test Flag Comment 1")))
-                .build();
+            .visibility(FlagVisibility.INTERNAL)
+            .details(List.of(createFlagDetail("FLAG_CODE_1", "Test Flag Comment 1")))
+            .build();
 
         Party incomingParty = Party.builder().appellantFlags(incomingFlags).build();
         List<ListValue<Party>> parties = List.of(createPartyListValue(UUID.randomUUID().toString(), incomingParty));
@@ -60,32 +144,34 @@ class CaseFlagServiceTest {
         UUID existingPartyId = UUID.randomUUID();
 
         FlagDetailsEntity existingFlagDetail = FlagDetailsEntity.builder()
-                .flagCode("OLD_FLAG")
-                .flagComment("Old Flag Comment")
-                .build();
+            .flagCode("OLD_FLAG")
+            .flagComment("Old Flag Comment")
+            .build();
 
         FlagsEntity existingFlagsEntity = FlagsEntity.builder()
-                .visibility("Hidden")
-                .caseFlags(new ArrayList<>(List.of(existingFlagDetail)))
-                .build();
+            .visibility("Hidden")
+            .caseFlags(new ArrayList<>(List.of(existingFlagDetail)))
+            .build();
 
         PartyEntity existingParty = PartyEntity.builder()
-                .id(existingPartyId)
-                .appellantFlags(new ArrayList<>(List.of(existingFlagsEntity)))
-                .build();
+            .id(existingPartyId)
+            .appellantFlags(new ArrayList<>(List.of(existingFlagsEntity)))
+            .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-                .parties(new HashSet<>(List.of(existingParty)))
-                .build();
+            .parties(new HashSet<>(List.of(existingParty)))
+            .build();
 
         Flags updatedFlags = Flags.builder()
-                .visibility(FlagVisibility.INTERNAL)
-                .details(List.of(createFlagDetail("NEW_FLAG", "Updated Flag Comment")))
-                .build();
+            .visibility(FlagVisibility.INTERNAL)
+            .details(List.of(createFlagDetail("NEW_FLAG", "Updated Flag Comment")))
+            .build();
 
         Party incomingParty = Party.builder().appellantFlags(updatedFlags).build();
-        List<ListValue<Party>> incomingParties = List.of(createPartyListValue(existingPartyId.toString(),
-                                                                              incomingParty));
+        List<ListValue<Party>> incomingParties = List.of(createPartyListValue(
+            existingPartyId.toString(),
+            incomingParty
+        ));
 
         caseFlagService.mergePartyFlags(incomingParties, pcsCaseEntity);
 

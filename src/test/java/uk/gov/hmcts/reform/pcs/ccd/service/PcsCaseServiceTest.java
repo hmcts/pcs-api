@@ -8,6 +8,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -183,6 +184,27 @@ class PcsCaseServiceTest {
 
         // Then
         verify(pcsCaseEntity).setTenancyLicence(tenancyLicenceEntity);
+    }
+
+    @Test
+    void shouldPatchCaseFlags() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = stubFindCase();
+        stubClaimCreation();
+
+        PCSCase caseData = PCSCase.builder().build();
+
+        Flags flags = Flags.builder()
+            .build();
+
+        caseData.setCaseFlags(flags);
+
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
+
+        // Then
+        assertThat(pcsCaseEntity.getCaseFlags()).isNull();
     }
 
     private PcsCaseEntity stubFindCase() {
