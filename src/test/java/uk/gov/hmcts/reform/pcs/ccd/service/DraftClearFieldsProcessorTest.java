@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 
 import java.util.List;
@@ -45,27 +44,6 @@ class DraftClearFieldsProcessorTest {
     }
 
     @Test
-    void extractClearFieldsContext_fromEnforcementOrder() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .clearFields(List.of("writApplicantAddress", "warrantDetails.someField"))
-                .build())
-            .build();
-
-        // When
-        Optional<ClearFieldsContext> result = processor.extractClearFieldsContext(pcsCase);
-
-        // Then - rootNodeName is "" because EnforcementOrder is @JsonUnwrapped in PCSCase
-        assertThat(result).isPresent();
-        assertThat(result.get().getRootNodeName()).isEmpty();
-        assertThat(result.get().getClearFields()).containsExactly(
-            "writApplicantAddress",
-            "warrantDetails.someField"
-        );
-    }
-
-    @Test
     void extractClearFieldsContext_fromRootPCSCase() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
@@ -85,15 +63,13 @@ class DraftClearFieldsProcessorTest {
     }
 
     @Test
-    void extractClearFieldsContext_prioritizesPossessionClaimResponseOverEnforcementOrder() {
+    void extractClearFieldsContext_prioritizesPossessionClaimResponseOverRoot() {
         // Given - both have clearFields, possessionClaimResponse should win
         PCSCase pcsCase = PCSCase.builder()
             .possessionClaimResponse(PossessionClaimResponse.builder()
                 .clearFields(List.of("field1"))
                 .build())
-            .enforcementOrder(EnforcementOrder.builder()
-                .clearFields(List.of("field2"))
-                .build())
+            .clearFields(List.of("field2"))
             .build();
 
         // When
@@ -103,25 +79,6 @@ class DraftClearFieldsProcessorTest {
         assertThat(result).isPresent();
         assertThat(result.get().getRootNodeName()).isEqualTo("possessionClaimResponse");
         assertThat(result.get().getClearFields()).containsExactly("field1");
-    }
-
-    @Test
-    void extractClearFieldsContext_fromEnforcementOrder_whenRootClearFieldsAlsoSet() {
-        // @JsonUnwrapped collision: Jackson sets clearFields on both PCSCase and EnforcementOrder
-        PCSCase pcsCase = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .clearFields(List.of("mediationAttemptedDetails"))
-                .build())
-            .clearFields(List.of("mediationAttemptedDetails"))
-            .build();
-
-        // When
-        Optional<ClearFieldsContext> result = processor.extractClearFieldsContext(pcsCase);
-
-        // Then
-        assertThat(result).isPresent();
-        assertThat(result.get().getRootNodeName()).isEmpty();
-        assertThat(result.get().getClearFields()).containsExactly("mediationAttemptedDetails");
     }
 
     @Test

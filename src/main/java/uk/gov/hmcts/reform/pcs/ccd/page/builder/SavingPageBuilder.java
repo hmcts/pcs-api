@@ -67,9 +67,8 @@ public class SavingPageBuilder extends PageBuilder {
 
             patchUnsubmittedData(details);
 
-            // Clear clearFields after draft save to prevent CCD validation failure
-            // (clearFields is marked @CCD(ignore = true) so CCD doesn't recognize it)
-            clearClearFieldsFromResponse(details, wrappedMidEventResponse);
+            // Remove clearFields after draft processing (transient field not part of CCD schema)
+            removeTransientFieldsFromResponse(details, wrappedMidEventResponse);
 
             return Optional.ofNullable(wrappedMidEventResponse)
                 .orElseGet(() -> AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -84,25 +83,22 @@ public class SavingPageBuilder extends PageBuilder {
             draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId);
         }
 
-        private void clearClearFieldsFromResponse(CaseDetails<PCSCase, State> details,
-                                                   AboutToStartOrSubmitResponse<PCSCase, State> response) {
-            // Clear from details (used if response is null)
-            if (details.getData() != null) {
-                details.getData().setClearFields(null);
-            }
+        /**
+         * Removes transient clearFields from response objects after draft processing.
+         * clearFields is a processing instruction, not CCD case data, so must be removed
+         * before returning to CCD framework to avoid validation errors.
+         */
+        private void removeTransientFieldsFromResponse(CaseDetails<PCSCase, State> details,
+                                                       AboutToStartOrSubmitResponse<PCSCase, State> response) {
+            PCSCase detailsData = details.getData();
+            PCSCase responseData = response != null ? response.getData() : null;
 
-            // Clear from response data (used if response is not null)
-            if (response != null && response.getData() != null) {
-                response.getData().setClearFields(null);
+            // Remove clearFields from root level
+            if (detailsData != null) {
+                detailsData.setClearFields(null);
             }
-
-            // Clear from enforcementOrder if present
-            if (details.getData() != null && details.getData().getEnforcementOrder() != null) {
-                details.getData().getEnforcementOrder().setClearFields(null);
-            }
-            if (response != null && response.getData() != null
-                && response.getData().getEnforcementOrder() != null) {
-                response.getData().getEnforcementOrder().setClearFields(null);
+            if (responseData != null) {
+                responseData.setClearFields(null);
             }
         }
 

@@ -32,7 +32,6 @@ public class DraftClearFieldsProcessor {
         }
 
         return findClearFieldsInResponse(pcsCase)
-            .or(() -> findClearFieldsInEnforcementOrder(pcsCase))
             .or(() -> findClearFieldsAtRoot(pcsCase));
     }
 
@@ -42,18 +41,6 @@ public class DraftClearFieldsProcessor {
             return Optional.of(new ClearFieldsContext(
                 "possessionClaimResponse",
                 pcsCase.getPossessionClaimResponse().getClearFields()
-            ));
-        }
-        return Optional.empty();
-    }
-
-    private Optional<ClearFieldsContext> findClearFieldsInEnforcementOrder(PCSCase pcsCase) {
-        // EnforcementOrder is @JsonUnwrapped in PCSCase, so rootNodeName is "" (JSON root)
-        if (pcsCase.getEnforcementOrder() != null
-            && hasEntries(pcsCase.getEnforcementOrder().getClearFields())) {
-            return Optional.of(new ClearFieldsContext(
-                "",
-                pcsCase.getEnforcementOrder().getClearFields()
             ));
         }
         return Optional.empty();
