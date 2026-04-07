@@ -28,8 +28,7 @@ public class AdditionalDocument {
 
     @CCD(label = "Short description",
         typeOverride = FieldType.TextArea,
-        access = {CitizenAccess.class},
-        max = 60
+        access = {CitizenAccess.class}
     )
     private String description;
 }
