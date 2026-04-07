@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -14,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 import java.util.List;
+
+import org.mockito.ArgumentCaptor;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -171,11 +174,16 @@ class CaseFieldsViewTest {
 
     @Test
     void shouldSetCaseManagementCategory() {
+        ArgumentCaptor<DynamicList> captor = ArgumentCaptor.forClass(DynamicList.class);
 
         //When
         underTest.setCaseFields(pcsCase);
 
         // Then
-        verify(pcsCase).setCaseManagementCategory(any(DynamicList.class));
+        verify(pcsCase).setCaseManagementCategory(captor.capture());
+        DynamicList result = captor.getValue();
+        assertThat(result.getValue().getLabel()).isEqualTo("Property Possession Claims");
+        assertThat(result.getListItems()).hasSize(1);
+        assertThat(result.getListItems().getFirst().getLabel()).isEqualTo("Property Possession Claims");
     }
 }

@@ -64,13 +64,11 @@ public class CaseFieldsView {
     }
 
     private void setCaseManagementCategory(PCSCase pcsCase) {
-        final UUID uuid = UUID.randomUUID();
-        final DynamicListElement listElement = DynamicListElement.builder()
-            .code(uuid)
+        DynamicListElement listElement = DynamicListElement.builder()
+            .code(UUID.randomUUID())
             .label(caseManagementCategory)
             .build();
-        final List<DynamicListElement> caseManagementCategoryList = new ArrayList<>();
-        caseManagementCategoryList.add(listElement);
+        List<DynamicListElement> caseManagementCategoryList = List.of(listElement);
 
         pcsCase.setCaseManagementCategory(DynamicList.builder()
             .value(listElement)
