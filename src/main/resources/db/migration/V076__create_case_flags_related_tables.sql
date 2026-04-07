@@ -24,6 +24,8 @@ CREATE TABLE flag_details (
                             flag_comment VARCHAR(100),
                             flag_comment_cy VARCHAR(100),
                             flag_update_comment VARCHAR(100),
+                            date_time_created TIMESTAMP NOT NULL,
+                            date_time_modified TIMESTAMP,
                             path VARCHAR(100) NOT NULL,
                             status VARCHAR(50) NOT NULL,
                             available_externally BOOLEAN

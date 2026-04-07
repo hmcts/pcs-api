@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -67,6 +68,13 @@ public class FlagDetailsEntity {
 
     @Column(name = "flag_update_comment")
     private String flagUpdateComment;
+
+    @Column(name = "date_time_created")
+    private LocalDateTime dateTimeCreated;
+
+    @Column(name = "date_time_modified")
+    private LocalDateTime dateTimeModified;
+
 
     @Column(name = "path")
     private String path;
