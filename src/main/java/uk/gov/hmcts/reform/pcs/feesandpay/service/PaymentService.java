@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
@@ -59,7 +60,7 @@ public class PaymentService {
     @Transactional
     public PaymentServiceResponse createServiceRequest(String caseReference, String ccdCaseNumber,
                                                        FeeDetails feeDetails, int volume, String responsibleParty) {
-
+        log.info("Building payload for caseReference: {}", caseReference);
         FeeDto feeDto = paymentRequestMapper.toFeeDto(feeDetails, volume);
         CasePaymentRequestDto casePaymentRequest = paymentRequestMapper.toCasePaymentRequest(responsibleParty);
 
@@ -72,12 +73,15 @@ public class PaymentService {
             .hmctsOrgId(hmctsOrgId)
             .build();
 
+        log.info("Calling ServiceCreateRequest end point for caseReference: {}", caseReference);
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
             idamService.getSystemUserAuthorisation(), requestDto);
 
-        ClaimEntity claimEntity = retrieveClaimEntity(caseReference);
+        ClaimEntity claimEntity = retrieveClaimEntity(Long.parseLong(caseReference));
         ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(claimEntity, responsibleParty);
-        saveNewFeePayment(claimEntity, claimPartyEntity, feeDto, paymentServiceResponse.getServiceRequestReference());
+        log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
+        saveNewFeePayment(caseReference, claimEntity, claimPartyEntity, feeDto,
+                          paymentServiceResponse.getServiceRequestReference());
 
         return paymentServiceResponse;
     }
@@ -88,7 +92,8 @@ public class PaymentService {
             .findByRequestReference(serviceRequestUpdate.getServiceRequestReference());
         if (byCaseReference.isPresent()) {
             FeePaymentEntity feePaymentEntity = byCaseReference.get();
-            feePaymentEntity.setPaymentStatus(serviceRequestUpdate.getServiceRequestStatus());
+            feePaymentEntity.setExternalReference(serviceRequestUpdate.getPayment().getPaymentReference());
+            feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(serviceRequestUpdate.getServiceRequestStatus()));
             feePaymentRepository.save(feePaymentEntity);
         }
     }
@@ -101,8 +106,10 @@ public class PaymentService {
             .orElseThrow(() -> new IllegalStateException("Matching PartyEntity not found"));
     }
 
-    private void saveNewFeePayment(ClaimEntity claimEntity, ClaimPartyEntity claimParty, FeeDto feeDto,
-                                   String serviceRequestReference) {
+    private void saveNewFeePayment(String caseReference, ClaimEntity claimEntity, ClaimPartyEntity claimParty,
+                                   FeeDto feeDto, String serviceRequestReference) {
+        log.info("Saving New Fee Payment for the case: {} with serviceRequestReference: {}", caseReference,
+                 serviceRequestReference);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
             .requestReference(serviceRequestReference)
@@ -112,8 +119,8 @@ public class PaymentService {
         feePaymentRepository.save(feePaymentEntity);
     }
 
-    private ClaimEntity retrieveClaimEntity(String caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(Long.parseLong(caseReference));
+    private ClaimEntity retrieveClaimEntity(Long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         // Assuming 1 claim per PcsCase
         return pcsCaseEntity.getClaims().getFirst();
     }

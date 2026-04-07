@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
@@ -134,10 +135,17 @@ class PaymentServiceTest {
     void shouldProcessPaymentResponse() {
         // Given
         String requestReference = UUID.randomUUID().toString();
+        String paymentReference = UUID.randomUUID().toString();
+        Payment payment = Payment.builder().paymentReference(paymentReference).build();
         ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
             .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(payment)
             .build();
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().build();
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .paymentStatus(PaymentStatus.PAID)
+            .requestReference(requestReference)
+            .externalReference(paymentReference)
+            .build();
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
 
         // When
@@ -145,7 +153,13 @@ class PaymentServiceTest {
 
         // Then
         verify(feePaymentRepository).findByRequestReference(requestReference);
-        verify(feePaymentRepository).save(any(FeePaymentEntity.class));
+        ArgumentCaptor<FeePaymentEntity> feePaymentCaptor = ArgumentCaptor.forClass(FeePaymentEntity.class);
+        verify(feePaymentRepository).save(feePaymentCaptor.capture());
+        FeePaymentEntity paymentEntity = feePaymentCaptor.getValue();
+
+        assertThat(paymentEntity.getRequestReference()).isEqualTo(requestReference);
+        assertThat(paymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+        assertThat(paymentEntity.getExternalReference()).isEqualTo(paymentReference);
     }
 
     private void paymentsClientDependencies(FeeDetails feeDetails) {

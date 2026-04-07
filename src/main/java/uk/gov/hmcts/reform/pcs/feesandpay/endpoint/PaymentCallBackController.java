@@ -15,16 +15,16 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @AllArgsConstructor
 public class PaymentCallBackController {
 
+    public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
+
     private final PaymentService paymentService;
 
     @PostMapping(path = "/service-request-update", consumes = APPLICATION_JSON_VALUE)
     public void processPaymentCallback(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorisation,
-        @RequestHeader(value = "ServiceAuthorization", required = false) String s2sToken,
+        @RequestHeader(value = SERVICE_AUTHORIZATION, required = false) String s2sToken,
         @RequestBody ServiceRequestUpdate serviceRequestUpdate) {
-
         paymentService.processPaymentResponse(serviceRequestUpdate);
-
     }
 
 }

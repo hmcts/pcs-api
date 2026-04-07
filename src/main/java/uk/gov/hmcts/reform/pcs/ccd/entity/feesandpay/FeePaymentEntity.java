@@ -62,6 +62,7 @@ public class FeePaymentEntity {
 
     private BigDecimal amount;
 
-    private String paymentStatus;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
 
 }

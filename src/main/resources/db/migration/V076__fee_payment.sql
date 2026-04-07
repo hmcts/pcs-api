@@ -12,3 +12,5 @@ CREATE TABLE fee_payment (
   CONSTRAINT fk_fee_payment_claim  FOREIGN KEY (claim_id)  REFERENCES claim (id),
   CONSTRAINT fk_fee_payment_party  FOREIGN KEY (party_id)  REFERENCES party (id)
 );
+
+CREATE INDEX idx_fee_payment_request_reference ON fee_payment (request_reference);

@@ -9,7 +9,7 @@ public enum PaymentStatus {
     NOT_PAID("Not paid"),
     PARTIALLY_PAID("Partially paid");
 
-    private String value;
+    private final String value;
 
     public static PaymentStatus fromValue(String value) {
         for (PaymentStatus status : values()) {
