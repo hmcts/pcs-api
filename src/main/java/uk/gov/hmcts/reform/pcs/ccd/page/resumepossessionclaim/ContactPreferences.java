@@ -33,7 +33,6 @@ public class ContactPreferences implements CcdPageConfiguration {
     private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
     private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
 
-    // ClearFields path constants - used only by this page
     private static final class ClearFieldsPaths {
         private static final String OVERRIDDEN_CONTACT_EMAIL = "overriddenClaimantContactEmail";
         private static final String OVERRIDDEN_CONTACT_ADDRESS = "overriddenClaimantContactAddress";

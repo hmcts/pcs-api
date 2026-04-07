@@ -24,7 +24,6 @@ public class DefendantsDetails implements CcdPageConfiguration {
 
     private final DefendantValidator defendantValidator;
 
-    // ClearFields path constants - used only by this page
     private static final class ClearFieldsPaths {
         private static final String DEFENDANT1_PREFIX = "defendant1.";
         private static final String FIRST_NAME = "firstName";

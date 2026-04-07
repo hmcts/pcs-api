@@ -30,7 +30,6 @@ public class NoticeDetails implements CcdPageConfiguration {
 
     private static final String NOTICE_SERVICE_METHOD_CONDITION = "notice_NoticeServiceMethod=\"";
 
-    // ClearFields path constants - used only by this page
     private static final class ClearFieldsPaths {
         private static final String JSON_PREFIX = "notice_";
         private static final String POSTED_DATE = JSON_PREFIX + "NoticePostedDate";
