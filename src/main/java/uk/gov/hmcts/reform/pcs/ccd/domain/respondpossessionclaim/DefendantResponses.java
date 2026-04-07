@@ -100,4 +100,5 @@ public class DefendantResponses {
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
 
+    private String equalityAndDiversityQuestionsChoice;
 }
