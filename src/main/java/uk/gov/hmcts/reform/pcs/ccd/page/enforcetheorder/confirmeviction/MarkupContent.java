@@ -11,21 +11,18 @@ public class MarkupContent {
             <h2 class="govuk-heading-m govuk-!-padding-top-1">Confirm the eviction date</h2>
             <p class="govuk-body govuk-!-padding-bottom-2">
              The bailiff has given you an eviction date of %s.
-            </p>
-            <p class="govuk-body govuk-!-padding-bottom-2">
+            <br/>
              They need you to confirm if you are available on this date.
             </p>
             <p class="govuk-body govuk-!-padding-bottom-2">
              You must confirm the eviction details before %s.
              If you try to confirm the eviction after this
              date, the bailiff will cancel your eviction.
-            </p>
-            <p class="govuk-body govuk-!-padding-bottom-2">
+            <br />
              They will also ask you to confirm if the defendants
              (the person or people being evicted) pose any risk to the
              bailiff.
-            </p>
-            <p class="govuk-body govuk-!-padding-bottom-2">
+            <br />
              The bailiff needs this information to carry out the eviction
              safely.
             </p>

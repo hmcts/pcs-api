@@ -317,19 +317,19 @@ class EnforcementOrderMediatorTest {
         return Stream.of(
             Arguments.of("morning time",
                          LocalDateTime.of(2025, 6, 9,  9, 30),
-                         "Monday, 9 June 2025 at 9:30 am"),
+                         "Monday, 9 June 2025 at 9:30am"),
             Arguments.of("afternoon time",
                          LocalDateTime.of(2025, 6, 9, 14,  0),
-                         "Monday, 9 June 2025 at 2:00 pm"),
+                         "Monday, 9 June 2025 at 2:00pm"),
             Arguments.of("midnight",
                          LocalDateTime.of(2025, 6, 9,  0,  0),
-                         "Monday, 9 June 2025 at 12:00 am"),
+                         "Monday, 9 June 2025 at 12:00am"),
             Arguments.of("noon",
                          LocalDateTime.of(2025, 6, 9, 12,  0),
-                         "Monday, 9 June 2025 at 12:00 pm"),
+                         "Monday, 9 June 2025 at 12:00pm"),
             Arguments.of("single digit day",
                          LocalDateTime.of(2025, 1, 3,  8, 15),
-                         "Friday, 3 January 2025 at 8:15 am")
+                         "Friday, 3 January 2025 at 8:15am")
         );
     }
 
