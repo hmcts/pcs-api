@@ -29,12 +29,12 @@ public class StatementOfTruthDetails {
 
     @CCD(
         label = "Full name",
-        max = 60)
+        max = 100)
     protected String fullNameClaimant;
 
     @CCD(
         label = "Position or office held",
-        max = 60
+        max = 100
     )
     protected String positionClaimant;
 
@@ -46,19 +46,19 @@ public class StatementOfTruthDetails {
 
     @CCD(
         label = "Full name",
-        max = 60
+        max = 100
     )
     protected String fullNameLegalRep;
 
     @CCD(
         label = "Name of firm",
-        max = 60
+        max = 100
     )
     protected String firmNameLegalRep;
 
     @CCD(
         label = "Position or office held",
-        max = 60
+        max = 100
     )
     protected String positionLegalRep;
 
