@@ -9,24 +9,27 @@ public class MarkupContent {
     public static String CONFIRM_EVICTION_SUMMARY_WITH_DATES =
             """
             <h2 class="govuk-heading-m govuk-!-padding-top-1">Confirm the eviction date</h2>
-            <p class="govuk-body govuk-!-padding-bottom-2">
+            <p class="govuk-body govuk-!-font-size-19">
              The bailiff has given you an eviction date of %s.
-            <br/>
+            </p>
+            <p class="govuk-body govuk-!-font-size-19 govuk-!-padding-bottom-6">
              They need you to confirm if you are available on this date.
             </p>
-            <p class="govuk-body govuk-!-padding-bottom-2">
+            <p class="govuk-body govuk-!-font-size-19">
              You must confirm the eviction details before %s.
              If you try to confirm the eviction after this
              date, the bailiff will cancel your eviction.
-            <br />
+            </p>
+            <p class="govuk-body govuk-!-font-size-19">
              They will also ask you to confirm if the defendants
              (the person or people being evicted) pose any risk to the
              bailiff.
-            <br />
+            </p>
+            <p class="govuk-body govuk-!-font-size-19 govuk-!-padding-bottom-6">
              The bailiff needs this information to carry out the eviction
              safely.
             </p>
-            <p class="govuk-body">
+            <p class="govuk-body govuk-!-font-size-19">
              To confirm the eviction date, select ‘Confirm the eviction
              date’ from the dropdown menu.
             </p>

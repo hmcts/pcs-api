@@ -64,7 +64,7 @@ public class EnforcementOrderMediator {
             getEvictionCancellationDeadline(localDateTime)));
     }
 
-    private static void prepareEvictionWithNoDates(PCSCase pcsCase) {
+    private void prepareEvictionWithNoDates(PCSCase pcsCase) {
         pcsCase.setShowConfirmEvictionJourney(YesOrNo.NO);
         pcsCase.setConfirmEvictionSummaryMarkup(CONFIRM_EVICTION_SUMMARY_NO_DATES);
     }
