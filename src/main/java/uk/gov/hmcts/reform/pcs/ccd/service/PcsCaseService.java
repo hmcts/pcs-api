@@ -63,20 +63,15 @@ public class PcsCaseService {
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
-        // Validate input
         if (pcsCase == null) {
             throw new IllegalArgumentException("PCSCase cannot be null");
         }
-        // Load case
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
-        //log.info("Patching linked cases for {}", caseReference);
-        // Merge case flags
         if (pcsCase.getCaseFlags() != null) {
             caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(), pcsCaseEntity);
-
         }
-        // Merge party flags
+
         if (pcsCase.getParties() != null) {
             caseFlagService.mergePartyFlags(pcsCase.getParties(), pcsCaseEntity);
         }

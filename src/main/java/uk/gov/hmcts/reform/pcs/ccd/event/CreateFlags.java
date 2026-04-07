@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 @AllArgsConstructor
 public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
+    private  static final String ALWAYS_HIDE = "flagLauncherInternal = \"ALWAYS_HIDE\"";
     private  final PcsCaseService pcsCaseService;
 
     @Override
@@ -39,22 +40,22 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(eventBuilder)
             .page("caseFlags")
             .pageLabel("Case Flags")
-            .optional(PCSCase::getCaseFlags,"flagLauncherInternal = \"ALWAYS_HIDE\"",true,true)
-            .optional(PCSCase::getParties,"flagLauncherInternal = \"ALWAYS_HIDE\"",true,true)
-            .list(PCSCase::getParties, "flagLauncherInternal = \"ALWAYS_HIDE\"")
-                .optional(Party::getFirstName, "flagLauncherInternal = \"ALWAYS_HIDE\"")
-                .optional(Party::getLastName, "flagLauncherInternal = \"ALWAYS_HIDE\"")
-                .optional(Party::getOrgName, "flagLauncherInternal = \"ALWAYS_HIDE\"")
-                .optional(Party::getNameKnown, "flagLauncherInternal = \"ALWAYS_HIDE\"")
-                .optional(Party::getEmailAddress, "flagLauncherInternal = \"ALWAYS_HIDE\"")
-                .complex(Party::getAddress, "flagLauncherInternal = \"ALWAYS_HIDE\"")
+            .optional(PCSCase::getCaseFlags,ALWAYS_HIDE,true,true)
+            .optional(PCSCase::getParties,ALWAYS_HIDE,true,true)
+            .list(PCSCase::getParties, ALWAYS_HIDE)
+                .optional(Party::getFirstName, ALWAYS_HIDE)
+                .optional(Party::getLastName, ALWAYS_HIDE)
+                .optional(Party::getOrgName, ALWAYS_HIDE)
+                .optional(Party::getNameKnown, ALWAYS_HIDE)
+                .optional(Party::getEmailAddress, ALWAYS_HIDE)
+                .complex(Party::getAddress, ALWAYS_HIDE)
                 .done()
-                .optional(Party::getAppellantFlags, "flagLauncherInternal = \"ALWAYS_HIDE\"",  true)
+                .optional(Party::getAppellantFlags, ALWAYS_HIDE,  true)
                 .done()
-            .list(PCSCase::getParties, "flagLauncherInternal = \"ALWAYS_HIDE\"")
-                .optional(Party::getFirstName, "flagLauncherInternal = \"ALWAYS_HIDE\"")
-                .optional(Party::getLastName, "flagLauncherInternal = \"ALWAYS_HIDE\"")
-                .optional(Party::getRespondentFlags, "flagLauncherInternal = \"ALWAYS_HIDE\"",  true)
+            .list(PCSCase::getParties, ALWAYS_HIDE)
+                .optional(Party::getFirstName, ALWAYS_HIDE)
+                .optional(Party::getLastName, ALWAYS_HIDE)
+                .optional(Party::getRespondentFlags, ALWAYS_HIDE,  true)
             .done()
             .optional(PCSCase::getFlagLauncherInternal,
                  null,null,null,null,"#ARGUMENT(CREATE)")
@@ -68,7 +69,6 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
         log.info("Caseworker created case link for {}", caseReference);
 
-        // Set flags for parties
         pcsCaseService.patchCaseFlags(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();

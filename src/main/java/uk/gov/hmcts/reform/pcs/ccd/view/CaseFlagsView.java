@@ -11,16 +11,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.List;
-import java.util.Set;
+
 
 @Component
 public class CaseFlagsView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (pcsCaseEntity.getCaseFlags() != null) {
-            FlagsEntity flags = pcsCaseEntity.getCaseFlags();
-            Set<PartyEntity> parties = pcsCaseEntity.getParties();
             mapBasicCaseFlagFields(pcsCase, pcsCaseEntity);
+        }
+        if (pcsCaseEntity.getParties() != null) {
             mapComplexPartyFlagFields(pcsCase, pcsCaseEntity);
         }
     }
@@ -29,41 +29,51 @@ public class CaseFlagsView {
         Flags caseFlags = pcsCaseEntity.getCaseFlags() == null
             ? Flags.builder().build()
             : Flags.builder()
-                .details(mapFlagDetails(pcsCaseEntity.getCaseFlags()))
-                .build();
+            .details(mapFlagDetails(pcsCaseEntity.getCaseFlags()))
+            .build();
         pcsCase.setCaseFlags(caseFlags);
     }
 
-
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        List<ListValue<Party>> mappedParties = pcsCaseEntity.getCaseFlags() == null
-            ? List.of()
-            : pcsCaseEntity.getParties().stream()
+        List<ListValue<Party>> mappedParties = pcsCaseEntity.getParties().stream()
             .map(this::mapPartyWithAppellantFlags)
-                .reduce((party1, party2) -> party1)
-                .orElse(List.of());
+            .toList();
 
         pcsCase.setParties(mappedParties);
     }
 
-    private List<ListValue<Party>> mapPartyWithAppellantFlags(PartyEntity partyEntity) {
-        return List.of(ListValue.<Party>builder()
+    private ListValue<Party> mapPartyWithAppellantFlags(PartyEntity partyEntity) {
+        return ListValue.<Party>builder()
             .id(partyEntity.getId().toString())
-            .value(Party.builder()
-                        .appellantFlags((Flags) partyEntity.getAppellantFlags().stream()
-                           .map(caseFlagEntity -> Flags.builder()
-                               .roleOnCase(caseFlagEntity.getRoleOnCase())
-                               .partyName(caseFlagEntity.getPartyName())
-                               .details(mapFlagDetails(caseFlagEntity))
-                               .build())
-                           .toList()
-                       )
-                       .build()
-            ).build()
-        );
+            .value(
+                Party.builder()
+                    .firstName(partyEntity.getFirstName())
+                    .lastName(partyEntity.getLastName())
+                    .appellantFlags(mapAppellantFlags(partyEntity))
+                    .build()
+            )
+            .build();
+    }
+
+    private Flags mapAppellantFlags(PartyEntity partyEntity) {
+        if (partyEntity.getAppellantFlags() == null || partyEntity.getAppellantFlags().isEmpty()) {
+            return Flags.builder().details(List.of()).build();
+        }
+
+        FlagsEntity firstAppellantFlag = partyEntity.getAppellantFlags().getFirst();
+
+        return Flags.builder()
+            .partyName(firstAppellantFlag.getPartyName())
+            .roleOnCase(firstAppellantFlag.getRoleOnCase())
+            .details(mapFlagDetails(firstAppellantFlag))
+            .build();
     }
 
     private List<ListValue<FlagDetail>> mapFlagDetails(FlagsEntity flagsEntity) {
+        if (flagsEntity.getCaseFlags() == null || flagsEntity.getCaseFlags().isEmpty()) {
+            return List.of();
+        }
+
         return flagsEntity.getCaseFlags().stream()
             .map(flagDetailsEntity -> ListValue.<FlagDetail>builder()
                 .id(flagDetailsEntity.getId().toString())
@@ -72,7 +82,6 @@ public class CaseFlagsView {
                            .flagComment(flagDetailsEntity.getFlagComment())
                            .nameCy(flagDetailsEntity.getName())
                            .name(flagDetailsEntity.getNameWelsh())
-                           .flagComment(flagDetailsEntity.getFlagComment())
                            .flagCommentCy(flagDetailsEntity.getFlagCommentWelsh())
                            .status(flagDetailsEntity.getDefaultStatus())
                            .subTypeKey(flagDetailsEntity.getSubTypeKey())
