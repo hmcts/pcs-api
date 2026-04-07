@@ -32,7 +32,7 @@ public class FlagDetailsEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_flag_id")
+    @JoinColumn(name = "flags_id")
     private FlagsEntity caseFlag;
 
     @Column(name = "flag_code")

@@ -12,6 +12,7 @@ CREATE TABLE flags (
 
 CREATE TABLE flag_details (
                             id UUID PRIMARY KEY,
+                            flags_id UUID NOT NULL REFERENCES flags(id) ON DELETE CASCADE,
                             flag_code VARCHAR(6) NOT NULL,
                             name VARCHAR(50),
                             name_cy VARCHAR(50),
