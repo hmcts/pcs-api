@@ -96,34 +96,37 @@ public class DraftCaseDataService {
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId,
                                           String patchEventDataJson, Optional<ClearFieldsContext> clearFieldsContext) {
         UUID userId = getCurrentUserId();
-        DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
+
+        // Step 1: Load existing draft JSON or use empty object as base
+        String baseDraftJson = draftCaseDataRepository
             .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
             .map(existingDraft -> {
-                log.debug("Updating existing draft for userId={}", userId);
-                String mergedJson = mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson);
-
-                // Apply clearFields to merged data (clears fields AND removes clearFields from JSON)
-                if (clearFieldsContext.isPresent()) {
-                    mergedJson = applyClearFieldsAndSerialize(mergedJson, clearFieldsContext.get());
-                }
-
-                existingDraft.setCaseData(mergedJson);
-                return existingDraft;
-            }).orElseGet(() -> {
-                log.debug("Creating new draft for caseReference={}, eventId={}, userId={}",
-                    caseReference, eventId, userId);
-
-                // On new draft creation, if clearFields is present, remove it from JSON
-                // (but don't try to clear any fields since there's no existing data)
-                String newDraftData = patchEventDataJson;
-                if (clearFieldsContext.isPresent()) {
-                    newDraftData = removeClearFieldsOnly(patchEventDataJson, clearFieldsContext.get());
-                }
-
-                return createNewDraft(caseReference, eventId, userId, newDraftData);
+                log.debug("Found existing draft for userId={}", userId);
+                return existingDraft.getCaseData();
+            })
+            .orElseGet(() -> {
+                log.debug("No existing draft found, using empty base for userId={}", userId);
+                return "{}";
             });
 
-        DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
+        // Step 2: Merge patch into base
+        String mergedJson = mergeCaseDataJson(baseDraftJson, patchEventDataJson);
+
+        // Step 3: Apply clearFields if present (removes fields + strips clearFields property)
+        final String finalJson = clearFieldsContext.isPresent()
+            ? applyClearFieldsAndSerialize(mergedJson, clearFieldsContext.get())
+            : mergedJson;
+
+        // Step 4: Save final JSON
+        DraftCaseDataEntity entityToSave = draftCaseDataRepository
+            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
+            .map(existingDraft -> {
+                existingDraft.setCaseData(finalJson);
+                return existingDraft;
+            })
+            .orElseGet(() -> createNewDraft(caseReference, eventId, userId, finalJson));
+
+        DraftCaseDataEntity saved = draftCaseDataRepository.save(entityToSave);
         log.debug("Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
             saved.getId(), saved.getCaseReference(), saved.getEventId(), saved.getIdamUserId());
     }
@@ -184,15 +187,6 @@ public class DraftCaseDataService {
         } catch (JsonProcessingException e) {
             log.error("Failed to apply clearFields", e);
             throw new UnsubmittedDataException("Failed to clear fields", e);
-        }
-    }
-
-    private String removeClearFieldsOnly(String json, ClearFieldsContext context) {
-        try {
-            return clearFieldsProcessor.removeClearFieldsFromJson(json, context);
-        } catch (JsonProcessingException e) {
-            log.error("Failed to remove clearFields from JSON", e);
-            throw new UnsubmittedDataException("Failed to remove clearFields", e);
         }
     }
 
