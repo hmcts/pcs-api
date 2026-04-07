@@ -19,6 +19,10 @@ public class HouseholdCircumstancesService {
         }
         return HouseholdCircumstancesEntity.builder()
             .dependantChildren(hc.getDependantChildren())
+            .dependantChildren(hc.getDependantChildren())
+            .dependantChildrenDetails(hc.getDependantChildrenDetails())
+            .otherDependants(hc.getOtherDependants())
+            .otherDependantDetails(hc.getOtherDependantDetails())
             .householdBills(getApplies(hc.getHouseholdBills()))
             .householdBillsAmount(getAmountIfYes(hc.getHouseholdBills()))
             .householdBillsFrequency(getFrequencyIfYes(hc.getHouseholdBills()))

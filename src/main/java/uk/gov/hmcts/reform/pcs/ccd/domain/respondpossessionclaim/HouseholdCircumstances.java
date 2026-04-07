@@ -17,6 +17,15 @@ public class HouseholdCircumstances {
     @CCD
     private YesOrNo dependantChildren;
 
+    @CCD(max = 500)
+    private String dependantChildrenDetails;
+
+    @CCD
+    private YesOrNo otherDependants;
+
+    @CCD(max = 500)
+    private String otherDependantDetails;
+
     @CCD
     private IncomeExpenseDetails householdBills;
 
