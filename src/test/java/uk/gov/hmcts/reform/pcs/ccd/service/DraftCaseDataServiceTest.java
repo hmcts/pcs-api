@@ -250,8 +250,8 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldClearOverriddenClaimantNameWhenClaimantNameIsCorrect() throws Exception {
         // Given: User initially said claimant name is incorrect and provided override
-        ObjectMapper realMapper = new ObjectMapper();
-        DraftCaseDataService realService = new DraftCaseDataService(
+        final ObjectMapper realMapper = new ObjectMapper();
+        final DraftCaseDataService realService = new DraftCaseDataService(
             draftCaseDataRepository,
             realMapper,
             new DraftCaseJsonMerger(realMapper),
@@ -309,8 +309,8 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldClearTrespasserDetailsWhenClaimAgainstTrespassersIsNo() throws Exception {
         // Given: Resume possession claim with trespasser details
-        ObjectMapper realMapper = new ObjectMapper();
-        DraftCaseDataService realService = new DraftCaseDataService(
+        final ObjectMapper realMapper = new ObjectMapper();
+        final DraftCaseDataService realService = new DraftCaseDataService(
             draftCaseDataRepository,
             realMapper,
             new DraftCaseJsonMerger(realMapper),
@@ -380,8 +380,8 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldCreateNewDraftWhenNoDraftExists() throws Exception {
         // Given: No existing draft
-        ObjectMapper realMapper = new ObjectMapper();
-        DraftCaseDataService realService = new DraftCaseDataService(
+        final ObjectMapper realMapper = new ObjectMapper();
+        final DraftCaseDataService realService = new DraftCaseDataService(
             draftCaseDataRepository,
             realMapper,
             new DraftCaseJsonMerger(realMapper),
@@ -436,8 +436,8 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldPreserveNestedStructuresWhenClearingFields() throws Exception {
         // Given: Draft with complex nested structures
-        ObjectMapper realMapper = new ObjectMapper();
-        DraftCaseDataService realService = new DraftCaseDataService(
+        final ObjectMapper realMapper = new ObjectMapper();
+        final DraftCaseDataService realService = new DraftCaseDataService(
             draftCaseDataRepository,
             realMapper,
             new DraftCaseJsonMerger(realMapper),
@@ -514,8 +514,8 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldIgnoreClearFieldsForNonExistentFields() throws Exception {
         // Given: Attempting to clear a field that doesn't exist
-        ObjectMapper realMapper = new ObjectMapper();
-        DraftCaseDataService realService = new DraftCaseDataService(
+        final ObjectMapper realMapper = new ObjectMapper();
+        final DraftCaseDataService realService = new DraftCaseDataService(
             draftCaseDataRepository,
             realMapper,
             new DraftCaseJsonMerger(realMapper),
