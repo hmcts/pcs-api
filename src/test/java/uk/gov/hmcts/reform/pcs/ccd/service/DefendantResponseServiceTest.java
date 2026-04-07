@@ -698,4 +698,75 @@ class DefendantResponseServiceTest {
         );
 
     }
+
+    @ParameterizedTest(name = "disputeClaim={0}")
+    @MethodSource("disputeClaimPersistenceScenarios")
+    void shouldPersistDisputeClaim(YesOrNo disputeClaim) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .disputeClaim(disputeClaim)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getDisputeClaim()).isEqualTo(disputeClaim);
+    }
+
+    private static Stream<Arguments> disputeClaimPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(YesOrNo.YES),
+            Arguments.of(YesOrNo.NO),
+            Arguments.of((YesOrNo) null)
+        );
+    }
+
+    @ParameterizedTest(name = "disputeClaimDetails={0}")
+    @MethodSource("disputeClaimDetailsPersistenceScenarios")
+    void shouldPersistDisputeClaimDetails(String disputeClaimDetails) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .disputeClaimDetails(disputeClaimDetails)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getDisputeClaimDetails()).isEqualTo(disputeClaimDetails);
+    }
+
+    private static Stream<Arguments> disputeClaimDetailsPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of("I dispute this claim because the rent has been paid in full"),
+            Arguments.of((String) null)
+        );
+    }
 }

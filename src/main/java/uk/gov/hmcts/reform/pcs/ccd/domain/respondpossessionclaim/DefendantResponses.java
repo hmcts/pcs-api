@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -73,7 +74,14 @@ public class DefendantResponses {
 
     @CCD
     private YesNoNotSure writtenTerms;
-    
+
+    @CCD
+    private YesOrNo disputeClaim;
+
+    @CCD
+    private String disputeClaimDetails;
+
+    @CCD
     private YesNoNotSure landlordLicensed;
 
     @CCD(access = {CitizenAccess.class})
