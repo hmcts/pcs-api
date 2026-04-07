@@ -204,6 +204,9 @@ public class PCSCase {
 
     private String caseTitleMarkdown;
 
+    @CCD(access = {DefendantAccess.class})
+    private String dashboardData;
+
     @CCD(access = {CitizenAccess.class})
     private LegislativeCountry legislativeCountry;
 

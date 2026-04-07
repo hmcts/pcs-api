@@ -9,81 +9,72 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
-import uk.gov.hmcts.reform.pcs.dashboard.model.DashboardNotification;
-
-import java.util.List;
-import java.util.Optional;
-
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class StartDashboardViewHandler implements Start<PCSCase, State> {
 
-    private final DraftCaseDataService draftCaseDataService;
+    /** TEMP (HDPI-5421): delete this constant and appliedCaseState/stateResolution on DashboardData when CCD exposes state */
+    private static final String TEMP_STATE_RESOLUTION_NOTE =
+        "CCD state is not on EventPayload; dashboardView uses forAllStates(); logic uses appliedCaseState below until wired.";
+
+    private final PcsCaseService pcsCaseService;
+    private final DefendantAccessValidator accessValidator;
+    private final SecurityContextService securityContextService;
     private final DashboardJourneyService dashboardJourneyService;
     private final ObjectMapper objectMapper;
 
     @Override
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        State state = State.CASE_ISSUED;
+        log.info("DashboardView START invoked for caseReference={}", caseReference);
 
-        log.info("DashboardView START invoked for caseReference={}, assumedState={}", caseReference, state);
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+        accessValidator.validateAndGetDefendant(caseEntity, securityContextService.getCurrentUserId());
 
         PCSCase submittedCaseData = eventPayload.caseData();
 
-        Optional<PCSCase> draftForRespondPossession = getDraft(caseReference, respondPossessionClaim);
+        // TODO: HDPI-5421 - CCD state is not available in EventPayload; default to CASE_ISSUED for now
+        State state = State.CASE_ISSUED;
 
-        boolean hasDraft = draftForRespondPossession.isPresent();
-        log.info("DashboardView START loaded data for caseReference={}, hasRespondPossessionDraft={}",
-                 caseReference, hasDraft);
+        // DashboardData dashboardData = dashboardJourneyService.computeDashboardData(submittedCaseData, state);
+        //
+        // log.info("DashboardView START computed {} notification(s), {} taskGroup(s) for caseReference={}",
+        //          dashboardData.notifications().size(), dashboardData.taskGroups().size(), caseReference);
 
-        List<DashboardNotification> notifications = dashboardJourneyService.computeNotifications(
-            caseReference,
-            state,
+        DashboardData dashboardData = dashboardJourneyService.computeDashboardData(
             submittedCaseData,
-            draftForRespondPossession
+            state,
+            state.name(),
+            TEMP_STATE_RESOLUTION_NOTE
         );
 
-        log.info("DashboardView START computed {} dashboard notification(s) for caseReference={}",
-                 notifications.size(), caseReference);
+        log.info(
+            "DashboardView START caseReference={} appliedCaseState={} stateResolution={} notifications={} taskGroups={}",
+            caseReference,
+            dashboardData.appliedCaseState(),
+            dashboardData.stateResolution(),
+            dashboardData.notifications().size(),
+            dashboardData.taskGroups().size()
+        );
 
-        String payloadJson = toPayloadJson(caseReference, notifications);
-
-        log.info("DashboardView START serialised dashboard payload for caseReference={} (length={} chars)",
-                 caseReference, payloadJson.length());
-
-        submittedCaseData.setCaseTitleMarkdown(payloadJson);
+        submittedCaseData.setDashboardData(serializeDashboardData(caseReference, dashboardData));
         return submittedCaseData;
     }
 
-    private Optional<PCSCase> getDraft(long caseReference, EventId eventId) {
+    private String serializeDashboardData(long caseReference, DashboardData dashboardData) {
         try {
-            log.info("DashboardView START attempting to load draft for caseReference={}, eventId={}",
-                     caseReference, eventId);
-            return draftCaseDataService.getUnsubmittedCaseData(caseReference, eventId);
-        } catch (Exception e) {
-            log.warn("Failed to load draft case data for caseReference={} eventId={}", caseReference, eventId, e);
-            return Optional.empty();
-        }
-    }
-
-    private String toPayloadJson(long caseReference, List<DashboardNotification> notifications) {
-        DashboardPayload payload = new DashboardPayload(notifications);
-        try {
-            return objectMapper.writeValueAsString(payload);
+            return objectMapper.writeValueAsString(dashboardData);
         } catch (JsonProcessingException e) {
-            log.error("Failed to serialise dashboard payload for caseReference={}", caseReference, e);
-            return "{\"notifications\":[]}";
+            log.error("Failed to serialise dashboard data for caseReference={}", caseReference, e);
+            return "{}";
         }
-    }
-
-    private record DashboardPayload(List<DashboardNotification> notifications) {
     }
 }
-
