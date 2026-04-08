@@ -33,6 +33,7 @@ class CaseFieldsViewTest {
     private static final String CLAIMANT_NAME = "Freeman";
     private static final String DEFENDANT_LAST_NAME = "Jackson";
     private static final String CLAIMANT_ORGANISATION_NAME = "Treetops Housing";
+    private static final int CASE_MANAGEMENT_LOCATION_NUMBER = 29096;
 
     @Mock
     private PCSCase pcsCase;
@@ -140,7 +141,7 @@ class CaseFieldsViewTest {
     void shouldSetCaseManagementLocation() {
 
         //Given
-        when(pcsCase.getCaseManagementLocationNumber()).thenReturn(29096);
+        when(pcsCase.getCaseManagementLocationNumber()).thenReturn(CASE_MANAGEMENT_LOCATION_NUMBER);
         when(pcsCase.getRegionId()).thenReturn(1);
 
         //When
@@ -148,7 +149,7 @@ class CaseFieldsViewTest {
 
         // Then
         verify(pcsCase).setCaseManagementLocation(CaseLocation.builder()
-            .baseLocation("29096")
+            .baseLocation(String.valueOf(CASE_MANAGEMENT_LOCATION_NUMBER))
             .region("1")
             .build());
     }
