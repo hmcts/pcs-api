@@ -391,8 +391,7 @@ class DraftCaseDataServiceTest {
 
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
             eq(CASE_REFERENCE), eq(eventId), eq(USER_ID)))
-            .thenReturn(Optional.empty())
-            .thenReturn(Optional.empty()); // Called twice in unified flow
+            .thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         // When: User starts new resume possession claim

@@ -97,32 +97,31 @@ public class DraftCaseDataService {
                                           String patchEventDataJson, Optional<ClearFieldsContext> clearFieldsContext) {
         UUID userId = getCurrentUserId();
 
-        // Step 1: Load existing draft JSON or use empty object as base
-        String baseDraftJson = draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
-            .map(existingDraft -> {
-                log.debug("Found existing draft for userId={}", userId);
-                return existingDraft.getCaseData();
-            })
-            .orElseGet(() -> {
-                log.debug("No existing draft found, using empty base for userId={}", userId);
-                return "{}";
-            });
+        Optional<DraftCaseDataEntity> existingDraft = findExistingDraft(caseReference, eventId, userId);
+        String finalJson = buildFinalJson(existingDraft, patchEventDataJson, clearFieldsContext);
+        saveDraft(existingDraft, caseReference, eventId, userId, finalJson);
+    }
 
-        // Step 2: Merge patch into base
+    private Optional<DraftCaseDataEntity> findExistingDraft(long caseReference, EventId eventId, UUID userId) {
+        return draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId);
+    }
+
+    private String buildFinalJson(Optional<DraftCaseDataEntity> existingDraft,
+                                  String patchEventDataJson, Optional<ClearFieldsContext> clearFieldsContext) {
+        String baseDraftJson = existingDraft.map(DraftCaseDataEntity::getCaseData).orElse("{}");
         String mergedJson = mergeCaseDataJson(baseDraftJson, patchEventDataJson);
 
-        // Step 3: Apply clearFields if present (removes fields + strips clearFields property)
-        final String finalJson = clearFieldsContext.isPresent()
-            ? applyClearFieldsAndSerialize(mergedJson, clearFieldsContext.get())
-            : mergedJson;
+        return clearFieldsContext
+            .map(context -> applyClearFieldsAndSerialize(mergedJson, context))
+            .orElse(mergedJson);
+    }
 
-        // Step 4: Save final JSON
-        DraftCaseDataEntity entityToSave = draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
-            .map(existingDraft -> {
-                existingDraft.setCaseData(finalJson);
-                return existingDraft;
+    private void saveDraft(Optional<DraftCaseDataEntity> existingDraft,
+                           long caseReference, EventId eventId, UUID userId, String finalJson) {
+        DraftCaseDataEntity entityToSave = existingDraft
+            .map(draft -> {
+                draft.setCaseData(finalJson);
+                return draft;
             })
             .orElseGet(() -> createNewDraft(caseReference, eventId, userId, finalJson));
 

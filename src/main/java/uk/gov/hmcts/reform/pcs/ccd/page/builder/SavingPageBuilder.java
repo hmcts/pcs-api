@@ -67,7 +67,6 @@ public class SavingPageBuilder extends PageBuilder {
 
             patchUnsubmittedData(details);
 
-            // Remove clearFields after draft processing (transient field not part of CCD schema)
             removeTransientFieldsFromResponse(details, wrappedMidEventResponse);
 
             return Optional.ofNullable(wrappedMidEventResponse)
@@ -84,16 +83,18 @@ public class SavingPageBuilder extends PageBuilder {
         }
 
         /**
-         * Removes transient clearFields from response objects after draft processing.
-         * clearFields is a processing instruction, not CCD case data, so must be removed
-         * before returning to CCD framework to avoid validation errors.
+         * Nulls clearFields on the in-memory PCSCase before the response is serialised back to CCD.
+         *
+         * <p>DraftClearFieldsProcessor already strips clearFields from the persisted draft JSON,
+         * but the in-memory Java object still holds the value. {@code @CCD(ignore = true)} only
+         * excludes the field from CCD's schema definition — Jackson still serialises it in the
+         * callback response. CCD rejects unknown fields not in its schema, so we must null it here.
          */
         private void removeTransientFieldsFromResponse(CaseDetails<PCSCase, State> details,
                                                        AboutToStartOrSubmitResponse<PCSCase, State> response) {
             PCSCase detailsData = details.getData();
             PCSCase responseData = response != null ? response.getData() : null;
 
-            // Remove clearFields from root level
             if (detailsData != null) {
                 detailsData.setClearFields(null);
             }

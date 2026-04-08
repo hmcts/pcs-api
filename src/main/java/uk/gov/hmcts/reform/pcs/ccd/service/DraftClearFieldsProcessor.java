@@ -77,16 +77,6 @@ public class DraftClearFieldsProcessor {
         return serializeJsonTree(root);
     }
 
-    /**
-     * Strips the clearFields property from JSON without actually clearing any fields.
-     * Used for new drafts where there are no existing fields to clear.
-     */
-    public String removeClearFieldsFromJson(String json, ClearFieldsContext context) throws JsonProcessingException {
-        ObjectNode root = parseJsonToTree(json);
-        removeClearFieldsProperty(root, context.getRootNodeName());
-        return serializeJsonTree(root);
-    }
-
     private ObjectNode navigateToRootNode(ObjectNode root, String rootNodeName) {
         if (rootNodeName == null || rootNodeName.isEmpty()) {
             return root;

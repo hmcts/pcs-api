@@ -307,57 +307,6 @@ class DraftClearFieldsProcessorTest {
     }
 
     @Test
-    void removeClearFieldsFromJson_removesClearFieldsWithoutClearingFields() throws Exception {
-        // Given
-        String json = """
-            {
-                "possessionClaimResponse": {
-                    "defendantResponses": {
-                        "disputeClaimDetails": "This should stay"
-                    },
-                    "clearFields": ["defendantResponses.disputeClaimDetails"]
-                }
-            }
-            """;
-
-        ClearFieldsContext context = new ClearFieldsContext(
-            "possessionClaimResponse",
-            List.of("defendantResponses.disputeClaimDetails")
-        );
-
-        // When
-        String result = processor.removeClearFieldsFromJson(json, context);
-
-        // Then - field should still be there, only clearFields removed
-        assertThat(result).contains("disputeClaimDetails");
-        assertThat(result).contains("This should stay");
-        assertThat(result).doesNotContain("clearFields");
-    }
-
-    @Test
-    void removeClearFieldsFromJson_handlesRootLevel() throws Exception {
-        // Given
-        String json = """
-            {
-                "someField": "value",
-                "clearFields": ["someField"]
-            }
-            """;
-
-        ClearFieldsContext context = new ClearFieldsContext(
-            "",
-            List.of("someField")
-        );
-
-        // When
-        String result = processor.removeClearFieldsFromJson(json, context);
-
-        // Then
-        assertThat(result).contains("someField");
-        assertThat(result).doesNotContain("clearFields");
-    }
-
-    @Test
     void applyClearFields_handlesDeeplyNestedPaths() throws Exception {
         // Given
         String json = """
