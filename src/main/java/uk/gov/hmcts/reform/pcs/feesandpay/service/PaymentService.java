@@ -107,7 +107,7 @@ public class PaymentService {
     private ClaimPartyEntity retrieveClaimPartyEntity(ClaimEntity claimEntity, String responsibleParty) {
         return claimEntity.getClaimParties()
             .stream()
-            .filter(party -> party.getParty().getOrgName().equals(responsibleParty))
+            .filter(party -> responsibleParty.equals(party.getParty().getOrgName()))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException(MATCHING_PARTY_ENTITY_NOT_FOUND));
     }
