@@ -16,14 +16,14 @@ test.beforeEach(async ({ page }, testInfo) => {
   defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
-  
-    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-    await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayload
-    });
+
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('getDefendantDetails', {
+    defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayload
+  });
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
@@ -50,5 +50,5 @@ test.describe('[Enforcement - Confirm Eviction]', async () => {
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', confirmEvictionDetails.mainHeader);
       await performAction('reTryOnCallBackError', confirmEvictionDetails.continueButton, evictionDate.mainHeader);
-  });  
+    });
 });
