@@ -532,4 +532,10 @@ public class PCSCase {
     )
     private String caseManagementLocationFormatted;
 
+    @CCD(searchable = false)
+    private String confirmEvictionSummaryMarkup;
+
+    @CCD(searchable = false, access = {ClaimantAccess.class})
+    private YesOrNo showConfirmEvictionJourney;
+
 }

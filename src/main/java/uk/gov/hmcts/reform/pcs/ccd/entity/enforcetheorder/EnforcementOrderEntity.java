@@ -10,13 +10,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -25,6 +28,8 @@ import static jakarta.persistence.FetchType.LAZY;
 @Table(name = "enf_case")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class EnforcementOrderEntity {
 
     @Id
@@ -42,5 +47,8 @@ public class EnforcementOrderEntity {
 
     @OneToOne(mappedBy = "enforcementOrder", fetch = LAZY)
     private WarrantEntity warrantDetails;
+
+    @Column(name = "bailiff_date")
+    private LocalDateTime bailiffDate;
 
 }
