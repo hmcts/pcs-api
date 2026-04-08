@@ -41,7 +41,9 @@ class CaseFlagServiceTest {
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(new ArrayList<>()).build();
+            .details(List.of(createFlagDetail("FLAG_CODE_1", "Test Flag Comment 1")))
+            .build();
+
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .id(UUID.randomUUID())
             .caseFlags(existingFlagsEntity).build();
@@ -51,7 +53,7 @@ class CaseFlagServiceTest {
         assertNotNull(pcsCaseEntity.getCaseFlags());
         FlagsEntity savedFlags = pcsCaseEntity.getCaseFlags();
         assertEquals("Internal", savedFlags.getVisibility());
-        assertEquals(0, savedFlags.getCaseFlags().size());
+        assertEquals(1, savedFlags.getCaseFlags().size());
     }
 
     @Test

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
@@ -38,12 +39,7 @@ public class CaseFlagService {
     private FlagsEntity mergeFlags(Flags incomingCaseFlags, Map<UUID, FlagsEntity> existingCaseFlags,
                                    PcsCaseEntity pcsCaseEntity) {
 
-        FlagsEntity flagsEntity = new FlagsEntity(); //existingCaseFlags.get(incomingCaseFlags.getGroupId());
-
-        /*if (flagsEntity == null) {
-            flagsEntity = new FlagsEntity();
-            flagsEntity.setPcsCase(pcsCaseEntity);
-        }*/
+        FlagsEntity flagsEntity = new FlagsEntity();
 
         flagsEntity.setVisibility(incomingCaseFlags.getVisibility().getValue());
 
@@ -55,10 +51,10 @@ public class CaseFlagService {
                     .nameWelsh(incomingFlagDetail.getValue().getNameCy())
                     .flagComment(incomingFlagDetail.getValue().getFlagComment())
                     .flagCommentWelsh(incomingFlagDetail.getValue().getFlagCommentCy())
-                    .availableExternally(incomingFlagDetail.getValue().getAvailableExternally().toBoolean())
+                    .availableExternally(convertYesOrNoToBoolean(incomingFlagDetail.getValue().getAvailableExternally()))
                     .dateTimeCreated(LocalDateTime.now())
                     .defaultStatus(incomingFlagDetail.getValue().getStatus())
-                    .hearingRelevant(incomingFlagDetail.getValue().getHearingRelevant().toBoolean())
+                    .hearingRelevant(convertYesOrNoToBoolean(incomingFlagDetail.getValue().getHearingRelevant()))
                     .subTypeKey(incomingFlagDetail.getValue().getSubTypeKey())
                     .subTypeValue(incomingFlagDetail.getValue().getSubTypeValue())
                     .subTypeValueWelsh(incomingFlagDetail.getValue().getSubTypeValueCy())
@@ -69,6 +65,10 @@ public class CaseFlagService {
         }
 
         return flagsEntity;
+    }
+    
+    private Boolean convertYesOrNoToBoolean(YesOrNo yesOrNo) {
+        return yesOrNo == YesOrNo.YES;
     }
 
     public void mergePartyFlags(List<ListValue<Party>> incomingParties, PcsCaseEntity pcsCaseEntity) {
