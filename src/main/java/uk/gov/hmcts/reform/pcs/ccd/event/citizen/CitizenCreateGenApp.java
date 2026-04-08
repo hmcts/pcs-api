@@ -64,9 +64,10 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
             .state(GenAppState.SUBMITTED)
             .build();
 
+        pcsCaseEntity.addGenApp(genAppEntity);
+
         genAppRepository.save(genAppEntity);
 
-        pcsCaseEntity.addGenApp(genAppEntity);
 
         return SubmitResponse.<State>builder()
             .build();
