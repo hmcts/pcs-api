@@ -61,9 +61,13 @@ public class PaymentService {
     @Transactional
     public PaymentServiceResponse createServiceRequest(String caseReference, String ccdCaseNumber,
                                                        FeeDetails feeDetails, int volume, String responsibleParty) {
-        log.info("Building payload for caseReference: {}", caseReference);
+        log.info("""
+                Building payload for caseReference: {}, ccdCaseNumber: {} \
+                feeDetails: {}, volume: {}, responsibleParty: {}""",
+                caseReference, ccdCaseNumber, feeDetails, volume, responsibleParty);
         FeeDto feeDto = paymentRequestMapper.toFeeDto(feeDetails, volume);
         CasePaymentRequestDto casePaymentRequest = paymentRequestMapper.toCasePaymentRequest(responsibleParty);
+        log.info("casePaymentRequest: {}", casePaymentRequest);
 
         CreateServiceRequestDTO requestDto = CreateServiceRequestDTO.builder()
             .callBackUrl(callbackUrl)
