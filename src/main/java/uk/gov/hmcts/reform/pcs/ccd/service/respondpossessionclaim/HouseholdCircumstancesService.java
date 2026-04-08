@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.IncomeExpenseDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
@@ -17,12 +18,21 @@ public class HouseholdCircumstancesService {
         if (hc == null) {
             return null;
         }
+
+        YesOrNo otherTenants = hc.getOtherTenants();
+        YesNoNotSure alternativeAccommodation = hc.getAlternativeAccommodation();
+
         return HouseholdCircumstancesEntity.builder()
             .dependantChildren(hc.getDependantChildren())
             .dependantChildren(hc.getDependantChildren())
             .dependantChildrenDetails(hc.getDependantChildrenDetails())
             .otherDependants(hc.getOtherDependants())
             .otherDependantDetails(hc.getOtherDependantDetails())
+            .otherTenants(otherTenants)
+            .otherTenantsDetails(otherTenants == YesOrNo.YES ? hc.getOtherTenantsDetails() : null)
+            .alternativeAccommodation(alternativeAccommodation)
+            .alternativeAccommodationTransferDate(alternativeAccommodation == YesNoNotSure.YES
+                                                      ? hc.getAlternativeAccommodationTransferDate() : null)
             .householdBills(getApplies(hc.getHouseholdBills()))
             .householdBillsAmount(getAmountIfYes(hc.getHouseholdBills()))
             .householdBillsFrequency(getFrequencyIfYes(hc.getHouseholdBills()))
