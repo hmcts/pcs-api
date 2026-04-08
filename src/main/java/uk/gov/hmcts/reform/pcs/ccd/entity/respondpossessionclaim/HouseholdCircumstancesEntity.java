@@ -19,6 +19,7 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
@@ -99,11 +100,13 @@ public class HouseholdCircumstancesEntity {
 
     private BigDecimal debtContribution;
 
-    private String debtContributionFrequency;
+    @Enumerated(EnumType.STRING)
+    private RentPaymentFrequency debtContributionFrequency;
 
     private String regularExpenses;
 
     private BigDecimal expenseAmount;
 
-    private String expenseFrequency;
+    @Enumerated(EnumType.STRING)
+    private RentPaymentFrequency expenseFrequency;
 }
