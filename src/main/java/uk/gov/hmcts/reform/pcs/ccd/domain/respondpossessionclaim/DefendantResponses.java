@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim;
 
-import jakarta.persistence.EnumType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import jakarta.persistence.Enumerated;
 
 @Builder
 @Data
@@ -97,8 +95,7 @@ public class DefendantResponses {
     @CCD(access = {CitizenAccess.class})
     private PaymentAgreement paymentAgreement;
 
-    @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
 
-    private String equalityAndDiversityQuestionsChoice;
+    private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
 }
