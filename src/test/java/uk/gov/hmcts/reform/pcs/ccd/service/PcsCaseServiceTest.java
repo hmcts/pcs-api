@@ -9,6 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
+import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -23,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -30,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseServiceTest {
@@ -187,24 +192,63 @@ class PcsCaseServiceTest {
     }
 
     @Test
-    void shouldPatchCaseFlags() {
+    void shouldPatchCaseFlagsWithCaseData() {
         // Given
-        final PcsCaseEntity pcsCaseEntity = stubFindCase();
-        stubClaimCreation();
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
 
-        PCSCase caseData = PCSCase.builder().build();
+        List<ListValue<FlagDetail>> flagDetails = List.of(createFlagDetail());
+        Flags flags = createFlags(flagDetails);
 
-        Flags flags = Flags.builder()
+        PCSCase caseData = PCSCase.builder()
+            .caseFlags(flags)
             .build();
-
         caseData.setCaseFlags(flags);
-
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
 
         // Then
         assertThat(pcsCaseEntity.getCaseFlags()).isNull();
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
+    }
+
+    @Test
+    void shouldGracefullyThrowErrorWhenNoCaseFlags() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        Flags flags = Flags.builder().build();
+
+        PCSCase caseData = PCSCase.builder()
+                .caseFlags(flags)
+                .build();
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
+
+        // Then
+        verify(pcsCaseRepository, never()).save(any());
+    }
+
+    private Flags createFlags(List<ListValue<FlagDetail>> flagDetails) {
+
+        return Flags.builder()
+            .details(flagDetails)
+            .visibility(FlagVisibility.INTERNAL)
+            .build();
+    }
+
+    private ListValue<FlagDetail> createFlagDetail() {
+
+        return ListValue.<FlagDetail>builder()
+            .id(UUID.randomUUID().toString())
+            .value(FlagDetail.builder()
+                .flagCode("RA0012")
+                .flagComment("Test Comment")
+                .name("Test Flag")
+                .build())
+            .build();
     }
 
     private PcsCaseEntity stubFindCase() {

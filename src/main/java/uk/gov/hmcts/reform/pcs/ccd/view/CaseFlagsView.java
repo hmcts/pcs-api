@@ -26,9 +26,7 @@ public class CaseFlagsView {
     }
 
     private void mapBasicCaseFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        Flags caseFlags = pcsCaseEntity.getCaseFlags() == null
-            ? Flags.builder().build()
-            : Flags.builder()
+        Flags caseFlags = Flags.builder()
             .details(mapFlagDetails(pcsCaseEntity.getCaseFlags()))
             .build();
         pcsCase.setCaseFlags(caseFlags);

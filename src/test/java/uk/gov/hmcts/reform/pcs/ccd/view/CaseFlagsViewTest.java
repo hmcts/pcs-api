@@ -82,14 +82,14 @@ class CaseFlagsViewTest {
 
     @Test
     void shouldHandleNullPartiesGracefully() {
-        // Arrange
+        // Given
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();
 
-        // Act
+        // When
         caseFlagsView.setCaseFields(pcsCase, pcsCaseEntity);
 
-        // Assert
+        // Then
         assertEquals(0, pcsCase.getParties().size());
     }
 
