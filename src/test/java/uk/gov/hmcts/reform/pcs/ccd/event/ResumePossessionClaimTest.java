@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
@@ -87,6 +88,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -104,6 +106,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final BigDecimal CLAIM_FEE_AMOUNT = new BigDecimal("123.40");
+    public static final String RESPONSIBLE_PARTY_LTD = "Responsible Party Ltd";
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -204,6 +207,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
         when(userDetails.getUid()).thenReturn(USER_ID.toString());
+
+        PartyEntity claimant = mock(PartyEntity.class);
+        lenient().when(claimant.getOrgName()).thenReturn(RESPONSIBLE_PARTY_LTD);
+        lenient().when(pcsCaseService.createMainClaimOnCase(anyLong(), any())).thenReturn(claimant);
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, securityContextService,
@@ -525,7 +532,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .claimantInformation(ClaimantInformation.builder().claimantName("Responsible Party Ltd").build())
+                .claimantInformation(ClaimantInformation.builder().claimantName(RESPONSIBLE_PARTY_LTD).build())
                 .build();
 
             // When
@@ -533,25 +540,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
-            assertThat(taskData.getResponsibleParty()).isEqualTo("Responsible Party Ltd");
-        }
-
-        @Test
-        void shouldSchedulePaymentTaskWithResponsiblePartyEmptyWhenClaimantInfoNull() {
-            // Given
-            stubFeeService();
-
-            PCSCase caseData = PCSCase.builder()
-                .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .claimantInformation(null) // important
-                .build();
-
-            // When
-            callSubmitHandler(caseData);
-
-            // Then
-            FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
-            assertThat(taskData.getResponsibleParty()).isNull();
+            assertThat(taskData.getResponsibleParty()).isEqualTo(RESPONSIBLE_PARTY_LTD);
         }
 
         @Test
