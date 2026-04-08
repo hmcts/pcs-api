@@ -1,13 +1,12 @@
 {
   "parties": [],
   "defendant1": {
-    "lastName": "HN",
-    "firstName": "TVR",
+    "lastName": "asdfasdf",
+    "firstName": "sertert",
     "nameKnown": "YES",
     "addressKnown": "NO"
   },
   "allDocuments": [],
-  "claimantName": "pcs-solicitor1@test.com",
   "claimantType": {
     "value": {
       "code": "PROVIDER_OF_SOCIAL_HOUSING",
@@ -35,7 +34,10 @@
   },
   "languageUsed": "ENGLISH",
   "noticeServed": "No",
+  "orgNameFound": "No",
   "userPcqIdSet": "No",
+  "SearchCriteria": {},
+  "caseNamePublic": "null vs persons unknown",
   "orgAddressFound": "No",
   "propertyAddress": {
     "County": "",
@@ -48,8 +50,8 @@
   },
   "statementOfTruth": {
     "completedBy": "CLAIMANT",
-    "fullNameClaimant": "wert",
-    "positionClaimant": "ewrt",
+    "fullNameClaimant": "dfgsdfg",
+    "positionClaimant": "sdfgsdfgdsfg",
     "agreementClaimant": [
       "BELIEVE_TRUE"
     ]
@@ -57,36 +59,27 @@
   "completionNextStep": "SUBMIT_AND_PAY_NOW",
   "legislativeCountry": "England",
   "mediationAttempted": "NO",
-  "addAnotherDefendant": "YES",
+  "addAnotherDefendant": "NO",
   "claimingCostsWanted": "NO",
   "settlementAttempted": "NO",
   "showRentSectionPage": "No",
-  "additionalDefendants": [
-    {
-      "id": "48f21da0-c44f-40fe-bd78-00d57b3001aa",
-      "value": {
-        "lastName": "Testing1",
-        "firstName": "Test1",
-        "nameKnown": "YES",
-        "addressKnown": "NO"
-      }
-    }
-  ],
   "applicationWithClaim": "NO",
   "claimantContactEmail": "pcs-solicitor1@test.com",
-  "isClaimantNameCorrect": "YES",
+  "fallbackClaimantName": "TVR",
+  "caseNameHmctsInternal": "null vs persons unknown",
   "wantToUploadDocuments": "NO",
-  "suspensionOfRTB_Reason": "asdfasdf",
+  "suspensionOfRTB_Reason": "fdgsdfgsdfg",
+  "caseNameHmctsRestricted": "null vs persons unknown",
   "claimAgainstTrespassers": "NO",
-  "defendantTermPossessive": "defendants’",
+  "defendantTermPossessive": "defendant’s",
   "alternativesToPossession": [
     "SUSPENSION_OF_RIGHT_TO_BUY"
   ],
   "hasUnderlesseeOrMortgagee": "NO",
   "showReasonsForGroundsPage": "Yes",
-  "claimantNamePossessiveForm": "pcs-solicitor1@test.com’s",
+  "claimantNamePossessiveForm": "TVR’s",
   "claimantProvidePhoneNumber": "NO",
-  "nuisanceOrImmoralUseGround": "sfgsdfgsdfg",
+  "nuisanceOrImmoralUseGround": "fgdsdfgdfg",
   "preActionProtocolCompleted": "NO",
   "suspensionOfRTB_HousingAct": "SECTION_6A_2",
   "claimantCircumstancesSelect": "NO",
