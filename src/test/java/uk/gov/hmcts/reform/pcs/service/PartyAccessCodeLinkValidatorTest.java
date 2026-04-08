@@ -28,6 +28,8 @@ class PartyAccessCodeLinkValidatorTest {
 
     @Mock
     private PartyAccessCodeRepository pacRepository;
+    @Mock
+    private PartyAccessCodeHashingService hashingService;
 
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final String ACCESS_CODE = "ABCD1234";
@@ -42,32 +44,61 @@ class PartyAccessCodeLinkValidatorTest {
     }
 
     @Test
-    void shouldReturnPac_WhenAccessCodeExists() {
-        // GIVEN
+    void shouldReturnPac_WhenHashingEnabledAndHashMatches() {
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(PARTY_ID)
+            .code("$2a$10$hashedCode")
+            .build();
+
+        when(hashingService.isHashPinsEnabled()).thenReturn(true);
+        when(pacRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(pac));
+        when(hashingService.matches(ACCESS_CODE, "$2a$10$hashedCode")).thenReturn(true);
+
+        PartyAccessCodeEntity result = validator.validateAccessCode(CASE_ID, ACCESS_CODE);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getPartyId()).isEqualTo(PARTY_ID);
+        assertThat(result.getCode()).isEqualTo("$2a$10$hashedCode");
+    }
+
+    @Test
+    void shouldThrowInvalidAccessCodeException_WhenHashingEnabledAndNoHashesMatch() {
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(PARTY_ID)
+            .code("$2a$10$hashedCode")
+            .build();
+
+        when(hashingService.isHashPinsEnabled()).thenReturn(true);
+        when(pacRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(pac));
+        when(hashingService.matches(ACCESS_CODE, "$2a$10$hashedCode")).thenReturn(false);
+
+        assertThatThrownBy(() -> validator.validateAccessCode(CASE_ID, ACCESS_CODE))
+            .isInstanceOf(InvalidAccessCodeException.class)
+            .hasMessageContaining("Invalid data");
+    }
+
+    @Test
+    void shouldReturnPac_WhenHashingDisabledAndPlainTextCodeExists() {
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
             .partyId(PARTY_ID)
             .code(ACCESS_CODE)
             .build();
 
-        when(pacRepository.findByPcsCase_IdAndCode(CASE_ID, ACCESS_CODE))
-            .thenReturn(Optional.of(pac));
+        when(hashingService.isHashPinsEnabled()).thenReturn(false);
+        when(pacRepository.findByPcsCase_IdAndCode(CASE_ID, ACCESS_CODE)).thenReturn(Optional.of(pac));
 
-        // WHEN
         PartyAccessCodeEntity result = validator.validateAccessCode(CASE_ID, ACCESS_CODE);
 
-        // THEN
         assertThat(result).isNotNull();
         assertThat(result.getPartyId()).isEqualTo(PARTY_ID);
-        assertThat(result.getCode()).isEqualTo(ACCESS_CODE);
     }
 
     @Test
-    void shouldThrowInvalidAccessCodeException_WhenAccessCodeNotFound() {
-        // GIVEN
+    void shouldThrowInvalidAccessCodeException_WhenHashingDisabledAndCodeNotFound() {
+        when(hashingService.isHashPinsEnabled()).thenReturn(false);
         when(pacRepository.findByPcsCase_IdAndCode(CASE_ID, ACCESS_CODE))
             .thenReturn(Optional.empty());
 
-        // WHEN + THEN
         assertThatThrownBy(() -> validator.validateAccessCode(CASE_ID, ACCESS_CODE))
             .isInstanceOf(InvalidAccessCodeException.class)
             .hasMessageContaining("Invalid data");
