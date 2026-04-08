@@ -1,7 +1,7 @@
 CREATE TABLE fee_payment (
   id                            UUID NOT NULL,
   claim_id                      UUID NOT NULL,
-  party_id                      UUID NOT NULL,
+  party_id                      UUID,
   request_date                  TIMESTAMP NOT NULL,
   request_reference             VARCHAR(255),
   external_reference            VARCHAR(255),
@@ -9,8 +9,8 @@ CREATE TABLE fee_payment (
   payment_status                VARCHAR(50),
 
   CONSTRAINT pk_fee_payment PRIMARY KEY (id),
-  CONSTRAINT fk_fee_payment_claim  FOREIGN KEY (claim_id)  REFERENCES claim (id),
-  CONSTRAINT fk_fee_payment_party  FOREIGN KEY (party_id)  REFERENCES party (id)
+  CONSTRAINT fk_fee_payment_claim  FOREIGN KEY (claim_id)  REFERENCES claim (id)
+  --CONSTRAINT fk_fee_payment_party  FOREIGN KEY (party_id)  REFERENCES party (id)
 );
 
 CREATE INDEX idx_fee_payment_request_reference ON fee_payment (request_reference);

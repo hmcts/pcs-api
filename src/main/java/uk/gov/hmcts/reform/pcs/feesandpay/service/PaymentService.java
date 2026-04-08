@@ -83,7 +83,7 @@ public class PaymentService {
             idamService.getSystemUserAuthorisation(), requestDto);
 
         ClaimEntity claimEntity = retrieveClaimEntity(Long.parseLong(caseReference));
-        ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(claimEntity, responsibleParty);
+        ClaimPartyEntity claimPartyEntity = null; // retrieveClaimPartyEntity(claimEntity, responsibleParty);
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
         saveNewFeePayment(caseReference, claimEntity, claimPartyEntity, feeDto,
                           paymentServiceResponse.getServiceRequestReference());
@@ -120,7 +120,7 @@ public class PaymentService {
             .claim(claimEntity)
             .requestReference(serviceRequestReference)
             .amount(feeDto.getCalculatedAmount())
-            .party(claimParty.getParty())
+            //.party(claimParty.getParty())
             .build();
         feePaymentRepository.save(feePaymentEntity);
     }
