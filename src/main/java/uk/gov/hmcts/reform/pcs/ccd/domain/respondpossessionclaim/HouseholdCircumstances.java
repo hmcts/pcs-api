@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -66,5 +67,17 @@ public class HouseholdCircumstances {
 
     @CCD(max = 500)
     private String otherDependantDetails;
+
+    @CCD
+    private YesOrNo otherTenants;
+
+    @CCD(max = 500)
+    private String otherTenantsDetails;
+
+    @CCD
+    private YesNoNotSure alternativeAccommodation;
+
+    @CCD
+    private LocalDate alternativeAccommodationTransferDate;
 
 }
