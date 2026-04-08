@@ -29,6 +29,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaymentService {
 
+    public static final String MATCHING_PARTY_ENTITY_NOT_FOUND = "Matching PartyEntity not found";
     private final PaymentsClient paymentsClient;
     private final PaymentRequestMapper paymentRequestMapper;
     private final IdamService idamService;
@@ -86,6 +87,7 @@ public class PaymentService {
         return paymentServiceResponse;
     }
 
+    @Transactional
     public void processPaymentResponse(ServiceRequestUpdate serviceRequestUpdate) {
         log.info("ServiceRequestUpdate status: {}", serviceRequestUpdate.getServiceRequestStatus());
         Optional<FeePaymentEntity> byCaseReference = feePaymentRepository
@@ -103,7 +105,7 @@ public class PaymentService {
             .stream()
             .filter(party -> party.getParty().getOrgName().equals(responsibleParty))
             .findFirst()
-            .orElseThrow(() -> new IllegalStateException("Matching PartyEntity not found"));
+            .orElseThrow(() -> new IllegalStateException(MATCHING_PARTY_ENTITY_NOT_FOUND));
     }
 
     private void saveNewFeePayment(String caseReference, ClaimEntity claimEntity, ClaimPartyEntity claimParty,
