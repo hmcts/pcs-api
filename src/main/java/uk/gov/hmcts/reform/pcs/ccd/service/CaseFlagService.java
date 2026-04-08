@@ -51,7 +51,8 @@ public class CaseFlagService {
                     .nameWelsh(incomingFlagDetail.getValue().getNameCy())
                     .flagComment(incomingFlagDetail.getValue().getFlagComment())
                     .flagCommentWelsh(incomingFlagDetail.getValue().getFlagCommentCy())
-                    .availableExternally(convertYesOrNoToBoolean(incomingFlagDetail.getValue().getAvailableExternally()))
+                    .availableExternally(convertYesOrNoToBoolean(
+                        incomingFlagDetail.getValue().getAvailableExternally()))
                     .dateTimeCreated(LocalDateTime.now())
                     .defaultStatus(incomingFlagDetail.getValue().getStatus())
                     .hearingRelevant(convertYesOrNoToBoolean(incomingFlagDetail.getValue().getHearingRelevant()))
@@ -66,7 +67,7 @@ public class CaseFlagService {
 
         return flagsEntity;
     }
-    
+
     private Boolean convertYesOrNoToBoolean(YesOrNo yesOrNo) {
         return yesOrNo == YesOrNo.YES;
     }
