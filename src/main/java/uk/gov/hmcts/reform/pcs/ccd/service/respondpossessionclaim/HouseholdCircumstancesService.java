@@ -15,6 +15,9 @@ public class HouseholdCircumstancesService {
 
         HouseholdCircumstancesEntity householdCircumstancesEntity = HouseholdCircumstancesEntity.builder()
             .dependantChildren(circumstances.getDependantChildren())
+            .dependantChildrenDetails(circumstances.getDependantChildrenDetails())
+            .otherDependants(circumstances.getOtherDependants())
+            .otherDependantDetails(circumstances.getOtherDependantDetails())
             .build();
 
         return householdCircumstancesEntity;
