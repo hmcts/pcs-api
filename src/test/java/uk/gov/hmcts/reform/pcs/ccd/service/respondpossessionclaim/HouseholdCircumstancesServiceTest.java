@@ -115,17 +115,12 @@ class HouseholdCircumstancesServiceTest {
         // Given
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .dependantChildren(YesOrNo.NO)
-            .shareIncomeExpenseDetails(YesOrNo.YES)
-            .regularIncome("INCOME_FROM_JOBS")
             .universalCredit(YesOrNo.YES)
             .ucApplicationDate(LocalDate.of(2024, 5, 12))
             .priorityDebts(YesOrNo.YES)
             .debtTotal(new BigDecimal("1500.00"))
             .debtContribution(new BigDecimal("200.00"))
             .debtContributionFrequency(RentPaymentFrequency.MONTHLY)
-            .regularExpenses("FOOD")
-            .expenseAmount(new BigDecimal("300.00"))
-            .expenseFrequency(RentPaymentFrequency.WEEKLY)
             .build();
 
         // When
@@ -134,17 +129,12 @@ class HouseholdCircumstancesServiceTest {
         // Then
         assertThat(entity).isNotNull();
         assertThat(entity.getDependantChildren()).isEqualTo(YesOrNo.NO);
-        assertThat(entity.getShareIncomeExpenseDetails()).isEqualTo(YesOrNo.YES);
-        assertThat(entity.getRegularIncome()).isEqualTo("INCOME_FROM_JOBS");
         assertThat(entity.getUniversalCredit()).isEqualTo(YesOrNo.YES);
         assertThat(entity.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 5, 12));
         assertThat(entity.getPriorityDebts()).isEqualTo(YesOrNo.YES);
         assertThat(entity.getDebtTotal()).isEqualByComparingTo("1500.00");
         assertThat(entity.getDebtContribution()).isEqualByComparingTo("200.00");
         assertThat(entity.getDebtContributionFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY);
-        assertThat(entity.getRegularExpenses()).isEqualTo("FOOD");
-        assertThat(entity.getExpenseAmount()).isEqualByComparingTo("300.00");
-        assertThat(entity.getExpenseFrequency()).isEqualTo(RentPaymentFrequency.WEEKLY);
     }
 
     @ParameterizedTest

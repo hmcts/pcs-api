@@ -25,12 +25,6 @@ public class HouseholdCircumstances {
     private YesOrNo dependantChildren;
 
     @CCD
-    private YesOrNo shareIncomeExpenseDetails;
-
-    @CCD
-    private String regularIncome;
-
-    @CCD
     private YesOrNo universalCredit;
 
     @CCD
@@ -49,16 +43,6 @@ public class HouseholdCircumstances {
 
     @CCD
     private RentPaymentFrequency debtContributionFrequency;
-
-    @CCD
-    private String regularExpenses;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal expenseAmount;
-
-    @CCD
-    private RentPaymentFrequency expenseFrequency;
 
     @CCD
     private YesOrNo shareAdditionalCircumstances;
