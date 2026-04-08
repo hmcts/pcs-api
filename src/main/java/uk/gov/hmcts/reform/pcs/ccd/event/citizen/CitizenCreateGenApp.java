@@ -65,9 +65,10 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
             .within14Days(citizenCreateGenApp.getWithin14Days())
             .build();
 
+        pcsCaseEntity.addGenApp(genAppEntity);
+
         genAppRepository.save(genAppEntity);
 
-        pcsCaseEntity.addGenApp(genAppEntity);
 
         return SubmitResponse.<State>builder()
             .build();
