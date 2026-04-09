@@ -91,7 +91,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             // Address not found
             .label("contactPreferences-address-info-no", """
                 ----
-                <h2 class="govuk-heading-m">Correspondence address</h2>
+                <h2 class="govuk-heading-m">Service address</h2>
                 <p class="govuk-body-m">
                     Court documents like orders and notices will be sent by post to the address registered with
                     My HMCTS.
@@ -99,11 +99,11 @@ public class ContactPreferences implements CcdPageConfiguration {
                 """, ORG_ADDRESS_NOT_FOUND)
             .label("contactPreferences-address-missing", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
-                        We could not retrieve your organisation’s correspondence address that’s linked to your My
+                        We could not retrieve your organisation’s service address that’s linked to your My
                         HMCTS account
                     </h3>
                     <p class="govuk-hint govuk-!-margin-top-1">
-                        You must enter the correspondence address you’d like to receive documents to
+                        You must enter the service address you’d like to receive documents to
                     </p>
                     """, ORG_ADDRESS_NOT_FOUND)
 
