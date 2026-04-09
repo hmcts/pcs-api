@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.ClearFields;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
@@ -185,27 +186,15 @@ public class ContactPreferences implements CcdPageConfiguration {
             return;
         }
 
-        List<String> clearFields = new ArrayList<>();
-
-        // Clear phone number when user answers NO
-        if (contactPreferences.getClaimantProvidePhoneNumber() == VerticalYesNo.NO) {
-            clearFields.add(ClearFieldsPaths.CONTACT_PHONE_NUMBER);
-        }
-
-        // Clear email override when user confirms email is correct
-        if (contactPreferences.getIsCorrectClaimantContactEmail() == VerticalYesNo.YES) {
-            clearFields.add(ClearFieldsPaths.OVERRIDDEN_CONTACT_EMAIL);
-        }
-
-        // Clear address override when user confirms address is correct AND org address was found
-        if (contactPreferences.getIsCorrectClaimantContactAddress() == VerticalYesNo.YES
-            && contactPreferences.getOrgAddressFound() == YesOrNo.YES) {
-            clearFields.add(ClearFieldsPaths.OVERRIDDEN_CONTACT_ADDRESS);
-        }
-
-        if (!clearFields.isEmpty()) {
-            caseData.setClearFields(clearFields);
-        }
+        ClearFields.on(caseData)
+            .clearWhen(contactPreferences.getClaimantProvidePhoneNumber() == VerticalYesNo.NO,
+                ClearFieldsPaths.CONTACT_PHONE_NUMBER)
+            .clearWhen(contactPreferences.getIsCorrectClaimantContactEmail() == VerticalYesNo.YES,
+                ClearFieldsPaths.OVERRIDDEN_CONTACT_EMAIL)
+            .clearWhen(contactPreferences.getIsCorrectClaimantContactAddress() == VerticalYesNo.YES
+                && contactPreferences.getOrgAddressFound() == YesOrNo.YES,
+                ClearFieldsPaths.OVERRIDDEN_CONTACT_ADDRESS)
+            .apply();
     }
 
 }

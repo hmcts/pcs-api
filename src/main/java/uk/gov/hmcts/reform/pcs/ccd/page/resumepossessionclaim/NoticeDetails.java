@@ -11,10 +11,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.ClearFields;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -151,35 +151,21 @@ public class NoticeDetails implements CcdPageConfiguration {
             return;
         }
 
-        List<String> clearFields = new ArrayList<>();
-        NoticeServiceMethod selectedMethod = notice.getNoticeServiceMethod();
+        NoticeServiceMethod selected = notice.getNoticeServiceMethod();
 
-        // Clear fields from ALL non-selected enum branches (negative logic)
-        // When user changes service method, old method's fields become stale
-        if (selectedMethod != NoticeServiceMethod.FIRST_CLASS_POST) {
-            clearFields.add(ClearFieldsPaths.POSTED_DATE);
-        }
-        if (selectedMethod != NoticeServiceMethod.DELIVERED_PERMITTED_PLACE) {
-            clearFields.add(ClearFieldsPaths.DELIVERED_DATE);
-        }
-        if (selectedMethod != NoticeServiceMethod.PERSONALLY_HANDED) {
-            clearFields.add(ClearFieldsPaths.PERSON_NAME);
-            clearFields.add(ClearFieldsPaths.HANDED_OVER_DATE_TIME);
-        }
-        if (selectedMethod != NoticeServiceMethod.EMAIL) {
-            clearFields.add(ClearFieldsPaths.EMAIL_EXPLANATION);
-            clearFields.add(ClearFieldsPaths.EMAIL_SENT_DATE_TIME);
-        }
-        if (selectedMethod != NoticeServiceMethod.OTHER_ELECTRONIC) {
-            clearFields.add(ClearFieldsPaths.OTHER_ELECTRONIC_DATE_TIME);
-        }
-        if (selectedMethod != NoticeServiceMethod.OTHER) {
-            clearFields.add(ClearFieldsPaths.OTHER_EXPLANATION);
-            clearFields.add(ClearFieldsPaths.OTHER_DATE_TIME);
-        }
-
-        if (!clearFields.isEmpty()) {
-            caseData.setClearFields(clearFields);
-        }
+        ClearFields.on(caseData)
+            .clearWhen(selected != NoticeServiceMethod.FIRST_CLASS_POST,
+                ClearFieldsPaths.POSTED_DATE)
+            .clearWhen(selected != NoticeServiceMethod.DELIVERED_PERMITTED_PLACE,
+                ClearFieldsPaths.DELIVERED_DATE)
+            .clearWhen(selected != NoticeServiceMethod.PERSONALLY_HANDED,
+                ClearFieldsPaths.PERSON_NAME, ClearFieldsPaths.HANDED_OVER_DATE_TIME)
+            .clearWhen(selected != NoticeServiceMethod.EMAIL,
+                ClearFieldsPaths.EMAIL_EXPLANATION, ClearFieldsPaths.EMAIL_SENT_DATE_TIME)
+            .clearWhen(selected != NoticeServiceMethod.OTHER_ELECTRONIC,
+                ClearFieldsPaths.OTHER_ELECTRONIC_DATE_TIME)
+            .clearWhen(selected != NoticeServiceMethod.OTHER,
+                ClearFieldsPaths.OTHER_EXPLANATION, ClearFieldsPaths.OTHER_DATE_TIME)
+            .apply();
     }
 }

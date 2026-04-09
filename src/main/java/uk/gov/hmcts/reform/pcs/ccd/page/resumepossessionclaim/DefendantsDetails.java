@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.ClearFields;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
@@ -133,16 +134,17 @@ public class DefendantsDetails implements CcdPageConfiguration {
             return;
         }
 
-        List<String> clearFields = new ArrayList<>();
-
-        clearNameFieldsWhenNameUnknown(defendant1, clearFields);
-        clearAddressFieldsWhenAddressUnknown(defendant1, clearFields);
-        clearCorrespondenceAddressWhenSameAsPossession(defendant1, clearFields);
-        clearAdditionalDefendantsWhenNotNeeded(caseData, clearFields);
-
-        if (!clearFields.isEmpty()) {
-            caseData.setClearFields(clearFields);
-        }
+        ClearFields.on(caseData)
+            .clearWhen(defendant1.getNameKnown() == VerticalYesNo.NO,
+                ClearFieldsPaths.DEFENDANT1_FIRST_NAME, ClearFieldsPaths.DEFENDANT1_LAST_NAME)
+            .clearWhen(defendant1.getAddressKnown() == VerticalYesNo.NO,
+                ClearFieldsPaths.DEFENDANT1_ADDRESS_SAME_AS_POSSESSION,
+                ClearFieldsPaths.DEFENDANT1_CORRESPONDENCE_ADDRESS)
+            .clearWhen(defendant1.getAddressSameAsPossession() == VerticalYesNo.YES,
+                ClearFieldsPaths.DEFENDANT1_CORRESPONDENCE_ADDRESS)
+            .clearWhen(caseData.getAddAnotherDefendant() == VerticalYesNo.NO,
+                ClearFieldsPaths.ADDITIONAL_DEFENDANTS)
+            .apply();
     }
 
     private void clearStaleFieldsInAdditionalDefendants(PCSCase caseData) {
@@ -177,32 +179,6 @@ public class DefendantsDetails implements CcdPageConfiguration {
     private void clearCorrespondenceAddressDirectly(DefendantDetails defendant) {
         if (defendant.getAddressSameAsPossession() == VerticalYesNo.YES) {
             defendant.setCorrespondenceAddress(null);
-        }
-    }
-
-    private void clearNameFieldsWhenNameUnknown(DefendantDetails defendant1, List<String> clearFields) {
-        if (defendant1.getNameKnown() == VerticalYesNo.NO) {
-            clearFields.add(ClearFieldsPaths.DEFENDANT1_FIRST_NAME);
-            clearFields.add(ClearFieldsPaths.DEFENDANT1_LAST_NAME);
-        }
-    }
-
-    private void clearAddressFieldsWhenAddressUnknown(DefendantDetails defendant1, List<String> clearFields) {
-        if (defendant1.getAddressKnown() == VerticalYesNo.NO) {
-            clearFields.add(ClearFieldsPaths.DEFENDANT1_ADDRESS_SAME_AS_POSSESSION);
-            clearFields.add(ClearFieldsPaths.DEFENDANT1_CORRESPONDENCE_ADDRESS);
-        }
-    }
-
-    private void clearCorrespondenceAddressWhenSameAsPossession(DefendantDetails defendant1, List<String> clearFields) {
-        if (defendant1.getAddressSameAsPossession() == VerticalYesNo.YES) {
-            clearFields.add(ClearFieldsPaths.DEFENDANT1_CORRESPONDENCE_ADDRESS);
-        }
-    }
-
-    private void clearAdditionalDefendantsWhenNotNeeded(PCSCase caseData, List<String> clearFields) {
-        if (caseData.getAddAnotherDefendant() == VerticalYesNo.NO) {
-            clearFields.add(ClearFieldsPaths.ADDITIONAL_DEFENDANTS);
         }
     }
 
