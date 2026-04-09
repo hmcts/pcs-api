@@ -1,6 +1,3 @@
--- ============================================
--- PCS CASE LINK + LINK REASONS
--- ============================================
 CREATE TABLE case_link (
      id UUID PRIMARY KEY,
      case_id UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
@@ -11,7 +8,6 @@ CREATE TABLE case_link (
 
 CREATE UNIQUE INDEX ux_case_link_unique
   ON case_link(case_id, linked_case_reference);
-
 
 CREATE TABLE case_link_reason (
     id UUID PRIMARY KEY,
