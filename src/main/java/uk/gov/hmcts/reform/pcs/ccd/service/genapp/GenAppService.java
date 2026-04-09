@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,9 +39,7 @@ public class GenAppService {
 
         pcsCaseEntity.addGenApp(genAppEntity);
 
-        genAppRepository.save(genAppEntity);
-
-        return genAppEntity;
+        return genAppRepository.save(genAppEntity);
     }
 
 }

@@ -1,10 +1,12 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -18,7 +20,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GenAppServiceTest {
@@ -29,6 +35,8 @@ class GenAppServiceTest {
     private PcsCaseEntity pcsCaseEntity;
     @Mock
     private PartyEntity applicantParty;
+    @Captor
+    private ArgumentCaptor<GenAppEntity> genAppEntityCaptor;
 
     private GenAppService underTest;
 
@@ -38,7 +46,7 @@ class GenAppServiceTest {
     }
 
     @Test
-    void shouldSaveCreatedEntityAndAddToPcsCaseEntity() {
+    void shouldReturnSavedEntity() {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
             .applicationType(GenAppType.SOMETHING_ELSE)
@@ -48,12 +56,15 @@ class GenAppServiceTest {
             .citizenGenAppRequest(genAppRequest)
             .build();
 
+        GenAppEntity savedGenAppEntity = mock(GenAppEntity.class);
+        when(genAppRepository.save(isA(GenAppEntity.class))).thenReturn(savedGenAppEntity);
+
         // When
-        GenAppEntity genAppEntity = underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        GenAppEntity returnedGenAppEntity = underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
 
         // Then
-        verify(genAppRepository).save(genAppEntity);
-        verify(pcsCaseEntity).addGenApp(genAppEntity);
+        verify(genAppRepository).save(any(GenAppEntity.class));
+        assertThat(returnedGenAppEntity).isSameAs(savedGenAppEntity);
     }
 
     @ParameterizedTest
@@ -69,10 +80,11 @@ class GenAppServiceTest {
             .build();
 
         // When
-        GenAppEntity genAppEntity = underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
 
         // Then
-        assertThat(genAppEntity.getType()).isEqualTo(genAppType);
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        assertThat(genAppEntityCaptor.getValue().getType()).isEqualTo(genAppType);
     }
 
     @Test
@@ -86,10 +98,11 @@ class GenAppServiceTest {
             .build();
 
         // When
-        GenAppEntity genAppEntity = underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
 
         // Then
-        assertThat(genAppEntity.getState()).isEqualTo(GenAppState.SUBMITTED);
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        assertThat(genAppEntityCaptor.getValue().getState()).isEqualTo(GenAppState.SUBMITTED);
     }
 
     @Test
@@ -104,10 +117,11 @@ class GenAppServiceTest {
             .build();
 
         // When
-        GenAppEntity genAppEntity = underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
 
         // Then
-        assertThat(genAppEntity.getParty()).isEqualTo(applicantParty);
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        assertThat(genAppEntityCaptor.getValue().getParty()).isEqualTo(applicantParty);
     }
 
     @ParameterizedTest
@@ -123,10 +137,11 @@ class GenAppServiceTest {
             .build();
 
         // When
-        GenAppEntity genAppEntity = underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
 
         // Then
-        assertThat(genAppEntity.getWithin14Days()).isEqualTo(within14Days);
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        assertThat(genAppEntityCaptor.getValue().getWithin14Days()).isEqualTo(within14Days);
     }
 
     @Test
@@ -144,9 +159,12 @@ class GenAppServiceTest {
             .build();
 
         // When
-        GenAppEntity genAppEntity = underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
 
         // Then
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
+
         assertThat(genAppEntity.getNeedHwf()).isEqualTo(YesOrNo.YES);
         assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(YesOrNo.YES);
         assertThat(genAppEntity.getHelpWithFeesEntity().getHwfReference()).isEqualTo(expectedHwfReference);
@@ -166,9 +184,12 @@ class GenAppServiceTest {
             .build();
 
         // When
-        GenAppEntity genAppEntity = underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
 
         // Then
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
+
         assertThat(genAppEntity.getNeedHwf()).isEqualTo(YesOrNo.YES);
         assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(YesOrNo.NO);
         assertThat(genAppEntity.getHelpWithFeesEntity()).isNull();

@@ -27,7 +27,7 @@ public class HelpWithFeesEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "hwf_reference")
+    @Column(name = "hwf_reference", nullable = false)
     private String hwfReference;
 
 }
