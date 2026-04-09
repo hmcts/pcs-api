@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.service;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 public class PartyAccessCodeHashingService {
 
     private final PasswordEncoder encoder;
+    @Getter
     private final boolean hashPinsEnabled;
 
     public PartyAccessCodeHashingService(
@@ -29,7 +31,7 @@ public class PartyAccessCodeHashingService {
             return accessCode;
         }
         //TODO:For testing if raw code is matched to the stored hash. This will be removed before merging
-        log.warn("Access code to be hashed:{}" , accessCode);
+        log.warn("Access code to be hashed:{}", accessCode);
         return encoder.encode(accessCode);
     }
 
@@ -43,7 +45,4 @@ public class PartyAccessCodeHashingService {
         return encoder.matches(accessCode, storedAccessCode);
     }
 
-    public boolean isHashPinsEnabled() {
-        return hashPinsEnabled;
-    }
 }
