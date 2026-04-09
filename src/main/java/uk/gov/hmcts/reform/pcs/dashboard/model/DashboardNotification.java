@@ -3,8 +3,11 @@ package uk.gov.hmcts.reform.pcs.dashboard.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
 
 import java.util.Map;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Builder
 @Data
@@ -23,6 +26,7 @@ public class DashboardNotification {
                         "dueDate": "2025-05-14"
                      }
                 """})
+    @CCD(typeOverride = TextArea)
     private final Map<String, Object> templateValues;
 
 }
