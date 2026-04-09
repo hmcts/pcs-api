@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 
 /**
  * Use this class to annotate fields that exist in {@link PCSCase} that
@@ -17,7 +18,7 @@ public abstract class DraftCaseDataMixIn {
     @JsonIgnore
     private String caseTitleMarkdown;
     @JsonIgnore
-    private String dashboardData;
+    private DashboardData dashboardData;
     @JsonIgnore
     private String nextStepsMarkdown;
 
