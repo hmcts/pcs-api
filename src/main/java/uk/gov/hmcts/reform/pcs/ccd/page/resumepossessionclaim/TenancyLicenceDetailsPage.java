@@ -61,8 +61,14 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
                """)
             .complex(PCSCase::getTenancyLicenceDetails)
                 .mandatory(TenancyLicenceDetails::getIsTenancyLicenseDocumentsUploaded)
-                .mandatory(TenancyLicenceDetails::getTenancyLicenceDocuments, "tenancy_IsTenancyLicenseDocumentsUploaded=\"YES\"")
-                .mandatory(TenancyLicenceDetails::getReasonsForNoTenancyLicenseDocuments, "tenancy_IsTenancyLicenseDocumentsUploaded=\"NO\"")
+                .mandatory(
+                    TenancyLicenceDetails::getTenancyLicenceDocuments,
+                    "tenancy_IsTenancyLicenseDocumentsUploaded=\"YES\""
+                )
+                .mandatory(
+                    TenancyLicenceDetails::getReasonsForNoTenancyLicenseDocuments,
+                    "tenancy_IsTenancyLicenseDocumentsUploaded=\"NO\""
+                )
             .done()
             .label("lineSeparator", "---")
             .label("tenancyLicenceDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
