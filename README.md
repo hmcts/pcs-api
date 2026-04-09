@@ -1,4 +1,4 @@
-# pcs-api - SDM Delete
+# pcs-api
 
 ## Building and deploying the application
 
