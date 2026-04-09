@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.ClearFields;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
@@ -23,6 +24,22 @@ import java.util.List;
 public class DefendantsDetails implements CcdPageConfiguration {
 
     private final DefendantValidator defendantValidator;
+
+    private static final class ClearFieldsPaths {
+        private static final String DEFENDANT1_PREFIX = "defendant1.";
+        private static final String FIRST_NAME = "firstName";
+        private static final String LAST_NAME = "lastName";
+        private static final String ADDRESS_SAME_AS_POSSESSION = "addressSameAsPossession";
+        private static final String CORRESPONDENCE_ADDRESS = "correspondenceAddress";
+
+        private static final String DEFENDANT1_FIRST_NAME = DEFENDANT1_PREFIX + FIRST_NAME;
+        private static final String DEFENDANT1_LAST_NAME = DEFENDANT1_PREFIX + LAST_NAME;
+        private static final String DEFENDANT1_ADDRESS_SAME_AS_POSSESSION =
+            DEFENDANT1_PREFIX + ADDRESS_SAME_AS_POSSESSION;
+        private static final String DEFENDANT1_CORRESPONDENCE_ADDRESS =
+            DEFENDANT1_PREFIX + CORRESPONDENCE_ADDRESS;
+        private static final String ADDITIONAL_DEFENDANTS = "additionalDefendants";
+    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -96,12 +113,73 @@ public class DefendantsDetails implements CcdPageConfiguration {
         }
 
         caseData.getDefendantCircumstances()
-            .setDefendantTermPossessive(additionalDefendantsProvided ? "defendants’" : "defendant’s");
+            .setDefendantTermPossessive(additionalDefendantsProvided ? "defendants'" : "defendant's");
+
+        clearStaleDefendantFields(caseData);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
 
+    }
+
+    private void clearStaleDefendantFields(PCSCase caseData) {
+        clearStaleFieldsInPrimaryDefendant(caseData);
+        clearStaleFieldsInAdditionalDefendants(caseData);
+    }
+
+    private void clearStaleFieldsInPrimaryDefendant(PCSCase caseData) {
+        DefendantDetails defendant1 = caseData.getDefendant1();
+        if (defendant1 == null) {
+            return;
+        }
+
+        ClearFields.on(caseData)
+            .clearWhen(defendant1.getNameKnown() == VerticalYesNo.NO,
+                ClearFieldsPaths.DEFENDANT1_FIRST_NAME, ClearFieldsPaths.DEFENDANT1_LAST_NAME)
+            .clearWhen(defendant1.getAddressKnown() == VerticalYesNo.NO,
+                ClearFieldsPaths.DEFENDANT1_ADDRESS_SAME_AS_POSSESSION,
+                ClearFieldsPaths.DEFENDANT1_CORRESPONDENCE_ADDRESS)
+            .clearWhen(defendant1.getAddressSameAsPossession() == VerticalYesNo.YES,
+                ClearFieldsPaths.DEFENDANT1_CORRESPONDENCE_ADDRESS)
+            .clearWhen(caseData.getAddAnotherDefendant() == VerticalYesNo.NO,
+                ClearFieldsPaths.ADDITIONAL_DEFENDANTS)
+            .apply();
+    }
+
+    private void clearStaleFieldsInAdditionalDefendants(PCSCase caseData) {
+        if (caseData.getAdditionalDefendants() == null) {
+            return;
+        }
+
+        caseData.getAdditionalDefendants().forEach(listValue -> {
+            DefendantDetails defendant = listValue.getValue();
+            if (defendant != null) {
+                clearNameFieldsDirectly(defendant);
+                clearAddressFieldsDirectly(defendant);
+                clearCorrespondenceAddressDirectly(defendant);
+            }
+        });
+    }
+
+    private void clearNameFieldsDirectly(DefendantDetails defendant) {
+        if (defendant.getNameKnown() == VerticalYesNo.NO) {
+            defendant.setFirstName(null);
+            defendant.setLastName(null);
+        }
+    }
+
+    private void clearAddressFieldsDirectly(DefendantDetails defendant) {
+        if (defendant.getAddressKnown() == VerticalYesNo.NO) {
+            defendant.setAddressSameAsPossession(null);
+            defendant.setCorrespondenceAddress(null);
+        }
+    }
+
+    private void clearCorrespondenceAddressDirectly(DefendantDetails defendant) {
+        if (defendant.getAddressSameAsPossession() == VerticalYesNo.YES) {
+            defendant.setCorrespondenceAddress(null);
+        }
     }
 
 }

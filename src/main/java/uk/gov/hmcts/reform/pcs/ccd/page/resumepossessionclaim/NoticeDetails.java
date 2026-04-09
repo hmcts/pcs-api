@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.ClearFields;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -28,6 +29,19 @@ public class NoticeDetails implements CcdPageConfiguration {
     private final TextAreaValidationService textAreaValidationService;
 
     private static final String NOTICE_SERVICE_METHOD_CONDITION = "notice_NoticeServiceMethod=\"";
+
+    private static final class ClearFieldsPaths {
+        private static final String JSON_PREFIX = "notice_";
+        private static final String POSTED_DATE = JSON_PREFIX + "NoticePostedDate";
+        private static final String DELIVERED_DATE = JSON_PREFIX + "NoticeDeliveredDate";
+        private static final String PERSON_NAME = JSON_PREFIX + "NoticePersonName";
+        private static final String HANDED_OVER_DATE_TIME = JSON_PREFIX + "NoticeHandedOverDateTime";
+        private static final String EMAIL_EXPLANATION = JSON_PREFIX + "NoticeEmailExplanation";
+        private static final String EMAIL_SENT_DATE_TIME = JSON_PREFIX + "NoticeEmailSentDateTime";
+        private static final String OTHER_ELECTRONIC_DATE_TIME = JSON_PREFIX + "NoticeOtherElectronicDateTime";
+        private static final String OTHER_EXPLANATION = JSON_PREFIX + "NoticeOtherExplanation";
+        private static final String OTHER_DATE_TIME = JSON_PREFIX + "NoticeOtherDateTime";
+    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -126,6 +140,32 @@ public class NoticeDetails implements CcdPageConfiguration {
 
         List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
 
+        populateClearFields(caseData);
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+    }
+
+    private void populateClearFields(PCSCase caseData) {
+        NoticeServedDetails notice = caseData.getNoticeServedDetails();
+        if (notice == null || notice.getNoticeServiceMethod() == null) {
+            return;
+        }
+
+        NoticeServiceMethod selected = notice.getNoticeServiceMethod();
+
+        ClearFields.on(caseData)
+            .clearWhen(selected != NoticeServiceMethod.FIRST_CLASS_POST,
+                ClearFieldsPaths.POSTED_DATE)
+            .clearWhen(selected != NoticeServiceMethod.DELIVERED_PERMITTED_PLACE,
+                ClearFieldsPaths.DELIVERED_DATE)
+            .clearWhen(selected != NoticeServiceMethod.PERSONALLY_HANDED,
+                ClearFieldsPaths.PERSON_NAME, ClearFieldsPaths.HANDED_OVER_DATE_TIME)
+            .clearWhen(selected != NoticeServiceMethod.EMAIL,
+                ClearFieldsPaths.EMAIL_EXPLANATION, ClearFieldsPaths.EMAIL_SENT_DATE_TIME)
+            .clearWhen(selected != NoticeServiceMethod.OTHER_ELECTRONIC,
+                ClearFieldsPaths.OTHER_ELECTRONIC_DATE_TIME)
+            .clearWhen(selected != NoticeServiceMethod.OTHER,
+                ClearFieldsPaths.OTHER_EXPLANATION, ClearFieldsPaths.OTHER_DATE_TIME)
+            .apply();
     }
 }

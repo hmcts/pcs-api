@@ -67,6 +67,8 @@ public class SavingPageBuilder extends PageBuilder {
 
             patchUnsubmittedData(details);
 
+            removeTransientFieldsFromResponse(details, wrappedMidEventResponse);
+
             return Optional.ofNullable(wrappedMidEventResponse)
                 .orElseGet(() -> AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                     .data(details.getData())
@@ -78,6 +80,27 @@ public class SavingPageBuilder extends PageBuilder {
             PCSCase caseData = details.getData();
 
             draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId);
+        }
+
+        /**
+         * Nulls clearFields on the in-memory PCSCase before the response is serialised back to CCD.
+         *
+         * <p>DraftClearFieldsProcessor already strips clearFields from the persisted draft JSON,
+         * but the in-memory Java object still holds the value. {@code @CCD(ignore = true)} only
+         * excludes the field from CCD's schema definition — Jackson still serialises it in the
+         * callback response. CCD rejects unknown fields not in its schema, so we must null it here.
+         */
+        private void removeTransientFieldsFromResponse(CaseDetails<PCSCase, State> details,
+                                                       AboutToStartOrSubmitResponse<PCSCase, State> response) {
+            PCSCase detailsData = details.getData();
+            PCSCase responseData = response != null ? response.getData() : null;
+
+            if (detailsData != null) {
+                detailsData.setClearFields(null);
+            }
+            if (responseData != null) {
+                responseData.setClearFields(null);
+            }
         }
 
     }

@@ -27,15 +27,18 @@ public class DraftCaseDataService {
     private final ObjectMapper objectMapper;
     private final DraftCaseJsonMerger draftCaseJsonMerger;
     private final SecurityContextService securityContextService;
+    private final DraftClearFieldsProcessor clearFieldsProcessor;
 
     public DraftCaseDataService(DraftCaseDataRepository draftCaseDataRepository,
                                 @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                 DraftCaseJsonMerger draftCaseJsonMerger,
-                                SecurityContextService securityContextService) {
+                                SecurityContextService securityContextService,
+                                DraftClearFieldsProcessor clearFieldsProcessor) {
         this.draftCaseDataRepository = draftCaseDataRepository;
         this.objectMapper = objectMapper;
         this.draftCaseJsonMerger = draftCaseJsonMerger;
         this.securityContextService = securityContextService;
+        this.clearFieldsProcessor = clearFieldsProcessor;
     }
 
     private UUID getCurrentUserId() {
@@ -85,25 +88,44 @@ public class DraftCaseDataService {
         UUID userId = getCurrentUserId();
         log.info("Patching draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
 
+        Optional<ClearFieldsContext> clearFieldsContext = clearFieldsProcessor.extractClearFieldsContext(eventData);
         String patchEventDataJson = writeCaseDataJson(eventData);
-        patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson);
+        patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson, clearFieldsContext);
     }
 
-    public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
+    public void patchUnsubmittedCaseData(long caseReference, EventId eventId,
+                                          String patchEventDataJson, Optional<ClearFieldsContext> clearFieldsContext) {
         UUID userId = getCurrentUserId();
-        DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
-            .map(existingDraft -> {
-                log.debug("Updating existing draft for userId={}", userId);
-                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson));
-                return existingDraft;
-            }).orElseGet(() -> {
-                log.debug("Creating new draft for caseReference={}, eventId={}, userId={}",
-                    caseReference, eventId, userId);
-                return createNewDraft(caseReference, eventId, userId, patchEventDataJson);
-            });
 
-        DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
+        Optional<DraftCaseDataEntity> existingDraft = findExistingDraft(caseReference, eventId, userId);
+        String finalJson = buildFinalJson(existingDraft, patchEventDataJson, clearFieldsContext);
+        saveDraft(existingDraft, caseReference, eventId, userId, finalJson);
+    }
+
+    private Optional<DraftCaseDataEntity> findExistingDraft(long caseReference, EventId eventId, UUID userId) {
+        return draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId);
+    }
+
+    private String buildFinalJson(Optional<DraftCaseDataEntity> existingDraft,
+                                  String patchEventDataJson, Optional<ClearFieldsContext> clearFieldsContext) {
+        String baseDraftJson = existingDraft.map(DraftCaseDataEntity::getCaseData).orElse("{}");
+        String mergedJson = mergeCaseDataJson(baseDraftJson, patchEventDataJson);
+
+        return clearFieldsContext
+            .map(context -> applyClearFieldsAndSerialize(mergedJson, context))
+            .orElse(mergedJson);
+    }
+
+    private void saveDraft(Optional<DraftCaseDataEntity> existingDraft,
+                           long caseReference, EventId eventId, UUID userId, String finalJson) {
+        DraftCaseDataEntity entityToSave = existingDraft
+            .map(draft -> {
+                draft.setCaseData(finalJson);
+                return draft;
+            })
+            .orElseGet(() -> createNewDraft(caseReference, eventId, userId, finalJson));
+
+        DraftCaseDataEntity saved = draftCaseDataRepository.save(entityToSave);
         log.debug("Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
             saved.getId(), saved.getCaseReference(), saved.getEventId(), saved.getIdamUserId());
     }
@@ -156,6 +178,15 @@ public class DraftCaseDataService {
         newDraft.setEventId(eventId);
         newDraft.setIdamUserId(userId);
         return newDraft;
+    }
+
+    private String applyClearFieldsAndSerialize(String mergedJson, ClearFieldsContext context) {
+        try {
+            return clearFieldsProcessor.applyClearFields(mergedJson, context);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to apply clearFields", e);
+            throw new UnsubmittedDataException("Failed to clear fields", e);
+        }
     }
 
 }
