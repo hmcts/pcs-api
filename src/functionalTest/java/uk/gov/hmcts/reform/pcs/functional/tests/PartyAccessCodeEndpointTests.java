@@ -90,8 +90,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return 401 when S2S is missing")
     @Test
     void partyAccessCodeTest401MissingServiceToken() {
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
-        Map<String, String> requestBody = Map.of("accessCode", accessCode);
+        Map<String, String> requestBody = Map.of("accessCode", "DUMMYACCESS01");
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
@@ -104,8 +103,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return 401 when S2S is invalid")
     @Test
     void partyAccessCodeTest401InvalidServiceToken() {
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
-        Map<String, String> requestBody = Map.of("accessCode", accessCode);
+        Map<String, String> requestBody = Map.of("accessCode", "DUMMYACCESS01");
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsExpiredServiceToken();
@@ -119,8 +117,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - return 403 Forbidden when the request uses an unauthorised S2S token")
     @Test
     void partyAccessCodeTest403Scenario() {
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
-        Map<String, String> requestBody = Map.of("accessCode", accessCode);
+        Map<String, String> requestBody = Map.of("accessCode", "DUMMYACCESS01");
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
