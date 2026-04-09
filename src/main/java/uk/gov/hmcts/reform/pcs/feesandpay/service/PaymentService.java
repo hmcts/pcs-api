@@ -78,7 +78,7 @@ public class PaymentService {
             .hmctsOrgId(hmctsOrgId)
             .build();
 
-        log.info("Calling ServiceCreateRequest end point {} using hmctsOrgId {} for caseReference: {}",
+        log.info("Calling ServiceCreateRequest with callback url: {} using hmctsOrgId: {} for caseReference: {}",
                  callbackUrl, hmctsOrgId, caseReference);
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
             idamService.getSystemUserAuthorisation(), requestDto);
