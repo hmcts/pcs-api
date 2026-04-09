@@ -22,7 +22,7 @@ public class AssuredNoArrearsPossessionGrounds {
 
     @CCD(
         label = "Mandatory grounds",
-        hint = "Select all that apply",
+        hint = "Select all that you allege apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "AssuredMandatoryGround"
     )
@@ -30,7 +30,7 @@ public class AssuredNoArrearsPossessionGrounds {
 
     @CCD(
         label = "Discretionary grounds",
-        hint = "Select all that apply",
+        hint = "Select all that you allege apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "AssuredDiscretionaryGround"
     )

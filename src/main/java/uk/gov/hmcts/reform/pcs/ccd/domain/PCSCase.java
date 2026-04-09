@@ -170,7 +170,7 @@ public class PCSCase {
     private VerticalYesNo preActionProtocolCompleted;
 
     @CCD(
-        label = "Are you claiming possession because of rent arrears?",
+        label = "Do your grounds for possession include rent arrears?",
         hint = "You’ll be able to add additional grounds later if you select yes"
     )
     private YesOrNo claimDueToRentArrears;
