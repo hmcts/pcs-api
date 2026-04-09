@@ -332,8 +332,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/event/DashboardView.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/service/dashboard/DashboardJourneyService.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/event/dashboard/StartDashboardViewHandler.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/event/dashboard/SubmitDashboardViewHandler.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/service/dashboard/DashboardData.java"
+      "**/uk/gov/hmcts/reform/pcs/ccd/event/dashboard/SubmitDashboardViewHandler.java"
     property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java"
   }
 }

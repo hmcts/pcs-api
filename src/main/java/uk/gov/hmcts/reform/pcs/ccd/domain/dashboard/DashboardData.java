@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.dashboard.model.DashboardNotification;
+import uk.gov.hmcts.reform.pcs.dashboard.model.TaskGroup;
 
 import java.util.List;
 
@@ -17,8 +19,8 @@ import java.util.List;
 public class DashboardData {
     private String claimantName;
     private String possessionPropertyAddress;
-    private List<ListValue<DashboardNotificationData>> notifications;
-    private List<ListValue<TaskGroupData>> taskGroups;
+    private List<ListValue<DashboardNotification>> notifications;
+    private List<ListValue<TaskGroup>> taskGroups;
     private String appliedCaseState;
     private String stateResolution;
 }
