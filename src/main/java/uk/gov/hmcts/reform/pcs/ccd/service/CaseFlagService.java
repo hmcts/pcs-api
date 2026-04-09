@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class CaseFlagService {
@@ -22,7 +23,12 @@ public class CaseFlagService {
             mergedFlagsEntity = mergeFlags(incomingCaseFlags);
         }
 
-        pcsCaseEntity.getCaseFlags().add(mergedFlagsEntity);
+        if (pcsCaseEntity != null && pcsCaseEntity.getCaseFlags() != null) {
+            pcsCaseEntity.getCaseFlags().add(mergedFlagsEntity);
+        } else {
+            pcsCaseEntity.setCaseFlags(List.of(mergedFlagsEntity));
+        }
+
     }
 
     private FlagsEntity mergeFlags(Flags incomingCaseFlags) {

@@ -63,7 +63,7 @@ public class PcsCaseService {
         }
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
-        if (pcsCase.getCaseFlags() != null && pcsCase.getCaseFlags() != null) {
+        if (pcsCase.getCaseFlags() != null) {
             caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(), pcsCaseEntity);
         }
     }
@@ -72,5 +72,4 @@ public class PcsCaseService {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
-
 }

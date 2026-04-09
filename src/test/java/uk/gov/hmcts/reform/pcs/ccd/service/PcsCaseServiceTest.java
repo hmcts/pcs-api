@@ -8,6 +8,10 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -16,20 +20,26 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseServiceTest {
@@ -184,6 +194,76 @@ class PcsCaseServiceTest {
 
         // Then
         verify(pcsCaseEntity).setTenancyLicence(tenancyLicenceEntity);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCaseDataIsNull() {
+        // Given
+        PCSCase caseData = null;
+
+        // When
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData));
+
+        // Then
+        assertEquals("PCSCase cannot be null", exception.getMessage());
+    }
+
+    @Test
+    void shouldPatchCaseDataWithCaseFlags() {
+        // Given
+        FlagDetailsEntity flagDetailsEntity = createFlagDetailsEntity();
+        FlagsEntity flagsEntity = createFlagsEntity(List.of(flagDetailsEntity));
+
+        PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .build();
+
+        List<ListValue<FlagDetail>> details = List.of(createFlagDetails());
+
+        Flags flags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(details)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .caseFlags(flags)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
+
+        // Then
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
+        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity);
+    }
+
+    private ListValue<FlagDetail> createFlagDetails() {
+        return ListValue.<FlagDetail>builder()
+            .id(UUID.randomUUID().toString())
+            .value(FlagDetail.builder()
+                .flagCode("CF005")
+                .flagComment("Comment")
+                .name("Name")
+                .build())
+            .build();
+    }
+
+    private FlagDetailsEntity createFlagDetailsEntity() {
+        return FlagDetailsEntity.builder()
+            .flagCode("CF005")
+            .flagComment("Comment")
+            .name("Name")
+            .build();
+    }
+
+    private FlagsEntity createFlagsEntity(List<FlagDetailsEntity> flagDetailsEntities) {
+        return FlagsEntity.builder()
+            .visibility("INTERNAL")
+            .flagDetails(flagDetailsEntities)
+            .build();
     }
 
     private PcsCaseEntity stubFindCase() {

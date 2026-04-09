@@ -3,14 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,7 +47,7 @@ class CaseFlagsViewTest {
         caseFlagsView.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        Assertions.assertNull(pcsCase.getCaseFlags());
+        Assertions.assertNull(pcsCase.getCaseFlags().getDetails());
     }
 
     private FlagDetailsEntity createMockFlagsEntity() {
