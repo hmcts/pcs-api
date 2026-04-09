@@ -14,6 +14,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.FlagLauncher;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
@@ -531,5 +533,18 @@ public class PCSCase {
         access = {GlobalSearchAccess.class}
     )
     private String caseManagementLocationFormatted;
+
+    @CCD(
+        label = "Case Flags",
+        access = DefendantAccess.class
+    )
+    private Flags caseFlags;
+
+    @CCD(
+        label = "Launch the flags screen",
+        access = DefendantAccess.class
+    )
+    @JsonProperty("flagLauncherInternal")
+    private FlagLauncher flagLauncherInternal;
 
 }
