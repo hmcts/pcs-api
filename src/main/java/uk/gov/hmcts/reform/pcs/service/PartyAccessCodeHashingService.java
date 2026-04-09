@@ -33,10 +33,10 @@ public class PartyAccessCodeHashingService {
         if (accessCode == null || storedAccessCode == null) {
             return false;
         }
-        if (hashPinsEnabled) {
-            return encoder.matches(accessCode, storedAccessCode);
+        if (!hashPinsEnabled) {
+            return accessCode.equals(storedAccessCode);
         }
-        return accessCode.equals(storedAccessCode);
+        return encoder.matches(accessCode, storedAccessCode);
     }
 
     public boolean isHashPinsEnabled() {
