@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.dashboard;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +25,6 @@ import java.util.Map;
 public class DashboardJourneyService {
 
     private final AddressFormatter addressFormatter;
-    private final ObjectMapper objectMapper;
 
     public DashboardData computeDashboardData(PCSCase submittedCaseData,
                                               State state,
@@ -48,8 +45,8 @@ public class DashboardJourneyService {
         return DashboardData.builder()
             .claimantName(claimantName)
             .possessionPropertyAddress(propertyAddress)
-            .notifications(toJson(notifications))
-            .taskGroups(toJson(taskGroups))
+            .notifications(notifications)
+            .taskGroups(taskGroups)
             .appliedCaseState(appliedCaseState)
             .stateResolution(stateResolution)
             .build();
@@ -145,11 +142,4 @@ public class DashboardJourneyService {
         return List.of();
     }
 
-    private String toJson(Object value) {
-        try {
-            return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Failed to serialise dashboard data to JSON", e);
-        }
-    }
 }
