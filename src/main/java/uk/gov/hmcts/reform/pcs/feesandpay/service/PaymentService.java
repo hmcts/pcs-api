@@ -78,12 +78,13 @@ public class PaymentService {
             .hmctsOrgId(hmctsOrgId)
             .build();
 
-        log.info("Calling ServiceCreateRequest end point for caseReference: {}", caseReference);
+        log.info("Calling ServiceCreateRequest end point {} using hmctsOrgId {} for caseReference: {}",
+                 callbackUrl, hmctsOrgId, caseReference);
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
             idamService.getSystemUserAuthorisation(), requestDto);
 
         ClaimEntity claimEntity = retrieveClaimEntity(Long.parseLong(caseReference));
-        ClaimPartyEntity claimPartyEntity = null; // retrieveClaimPartyEntity(claimEntity, responsibleParty);
+        ClaimPartyEntity claimPartyEntity = null; //retrieveClaimPartyEntity(claimEntity, responsibleParty);
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
         saveNewFeePayment(caseReference, claimEntity, claimPartyEntity, feeDto,
                           paymentServiceResponse.getServiceRequestReference());
