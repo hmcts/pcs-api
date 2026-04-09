@@ -1,21 +1,18 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.dashboard;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.dashboard.model.DashboardNotification;
 import uk.gov.hmcts.reform.pcs.dashboard.model.Task;
 import uk.gov.hmcts.reform.pcs.dashboard.model.TaskGroup;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +27,7 @@ import java.util.Map;
 public class DashboardJourneyService {
 
     private final AddressFormatter addressFormatter;
+    private final ObjectMapper objectMapper;
 
     public DashboardData computeDashboardData(PCSCase submittedCaseData,
                                               State state,
@@ -41,8 +39,8 @@ public class DashboardJourneyService {
             AddressFormatter.COMMA_DELIMITER
         );
 
-        List<ListValue<DashboardNotification>> notifications = computeNotifications(state);
-        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(state);
+        List<DashboardNotification> notifications = computeNotifications(state);
+        List<TaskGroup> taskGroups = computeTaskGroups(state);
 
         log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for state={}",
                  notifications.size(), taskGroups.size(), state);
@@ -50,8 +48,8 @@ public class DashboardJourneyService {
         return DashboardData.builder()
             .claimantName(claimantName)
             .possessionPropertyAddress(propertyAddress)
-            .notifications(notifications)
-            .taskGroups(taskGroups)
+            .notifications(toJson(notifications))
+            .taskGroups(toJson(taskGroups))
             .appliedCaseState(appliedCaseState)
             .stateResolution(stateResolution)
             .build();
@@ -71,79 +69,87 @@ public class DashboardJourneyService {
         return info.getFallbackClaimantName();
     }
 
-    private List<ListValue<DashboardNotification>> computeNotifications(State state) {
+    private List<DashboardNotification> computeNotifications(State state) {
         if (state == State.CASE_ISSUED) {
-            return ListValueUtils.wrapListItems(List.of(
+            return List.of(
                 DashboardNotification.builder()
                     .templateId("Notice.PCS.Dashboard.CaseIssued")
                     .templateValues(Map.of(
-                        "hearingDateTime", TextNode.valueOf("2026-06-15T10:30:00Z"),
-                        "responseEndDate", TextNode.valueOf("2026-05-15")
+                        "hearingDateTime", "2026-06-15T10:30:00Z",
+                        "responseEndDate", "2026-05-15"
                     ))
                     .build()
-            ));
+            );
         }
 
         if (state == State.PENDING_CASE_ISSUED) {
-            return ListValueUtils.wrapListItems(List.of(
+            return List.of(
                 DashboardNotification.builder()
                     .templateId("Notice.PCS.Dashboard.PendingCaseIssued")
                     .templateValues(Map.of(
-                        "submittedDate", TextNode.valueOf("2026-04-01")
+                        "submittedDate", "2026-04-01"
                     ))
                     .build()
-            ));
+            );
         }
 
         return List.of();
     }
 
-    private List<ListValue<TaskGroup>> computeTaskGroups(State state) {
+    private List<TaskGroup> computeTaskGroups(State state) {
         if (state == State.CASE_ISSUED) {
-            return ListValueUtils.wrapListItems(List.of(
+            return List.of(
                 TaskGroup.builder()
                     .groupId("CLAIM")
-                    .tasks(ListValueUtils.wrapListItems(List.of(
+                    .tasks(List.of(
                         Task.builder()
                             .templateId("Task.PCS.Claim.ViewClaim")
-                            .templateValues(Map.<String, JsonNode>of())
+                            .templateValues(Map.of())
                             .status("AVAILABLE")
                             .build(),
                         Task.builder()
                             .templateId("Task.PCS.Claim.ViewDocuments")
-                            .templateValues(Map.<String, JsonNode>of())
+                            .templateValues(Map.of())
                             .status("NOT_AVAILABLE")
                             .build()
-                    )))
+                    ))
                     .build(),
                 TaskGroup.builder()
                     .groupId("RESPONSE")
-                    .tasks(ListValueUtils.wrapListItems(List.of(
+                    .tasks(List.of(
                         Task.builder()
                             .templateId("Task.PCS.Response.RespondToClaim")
-                            .templateValues(Map.<String, JsonNode>of())
+                            .templateValues(Map.of())
                             .status("ACTION_NEEDED")
                             .build()
-                    )))
+                    ))
                     .build()
-            ));
+            );
         }
 
         if (state == State.PENDING_CASE_ISSUED) {
-            return ListValueUtils.wrapListItems(List.of(
+            return List.of(
                 TaskGroup.builder()
                     .groupId("CLAIM")
-                    .tasks(ListValueUtils.wrapListItems(List.of(
+                    .tasks(List.of(
                         Task.builder()
                             .templateId("Task.PCS.Claim.ViewClaim")
-                            .templateValues(Map.<String, JsonNode>of())
+                            .templateValues(Map.of())
                             .status("NOT_AVAILABLE")
                             .build()
-                    )))
+                    ))
                     .build()
-            ));
+            );
         }
 
         return List.of();
+    }
+
+    private String toJson(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialise dashboard data to JSON", e);
+        }
     }
 }

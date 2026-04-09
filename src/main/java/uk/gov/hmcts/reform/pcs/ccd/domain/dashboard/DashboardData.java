@@ -4,12 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.api.ComplexType;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.dashboard.model.DashboardNotification;
-import uk.gov.hmcts.reform.pcs.dashboard.model.TaskGroup;
 
-import java.util.List;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Data
 @Builder
@@ -19,8 +17,10 @@ import java.util.List;
 public class DashboardData {
     private String claimantName;
     private String possessionPropertyAddress;
-    private List<ListValue<DashboardNotification>> notifications;
-    private List<ListValue<TaskGroup>> taskGroups;
+    @CCD(typeOverride = TextArea)
+    private String notifications;
+    @CCD(typeOverride = TextArea)
+    private String taskGroups;
     private String appliedCaseState;
     private String stateResolution;
 }

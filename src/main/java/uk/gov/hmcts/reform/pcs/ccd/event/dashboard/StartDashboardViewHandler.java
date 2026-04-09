@@ -52,13 +52,10 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
         );
 
         log.info(
-            "DashboardView START caseReference={} appliedCaseState={} stateResolution={} "
-                + "notifications={} taskGroups={}",
+            "DashboardView START caseReference={} appliedCaseState={} stateResolution={}",
             caseReference,
             dashboardData.getAppliedCaseState(),
-            dashboardData.getStateResolution(),
-            dashboardData.getNotifications().size(),
-            dashboardData.getTaskGroups().size()
+            dashboardData.getStateResolution()
         );
 
         submittedCaseData.setDashboardData(dashboardData);
