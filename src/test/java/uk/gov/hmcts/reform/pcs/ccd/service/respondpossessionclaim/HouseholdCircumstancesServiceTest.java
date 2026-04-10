@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
@@ -200,5 +201,18 @@ class HouseholdCircumstancesServiceTest {
             Arguments.of(YesNoNotSure.NOT_SURE, transferDate, null),
             Arguments.of(null, transferDate, null)
         );
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EnumSource(RentPaymentFrequency.class)
+    void shouldMapDebtContributionFrequencyField(RentPaymentFrequency expected) {
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .debtContributionFrequency(expected)
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        assertThat(entity.getDebtContributionFrequency()).isEqualTo(expected);
     }
 }

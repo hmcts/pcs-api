@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.time.LocalDate;
@@ -52,5 +53,8 @@ public class HouseholdCircumstances {
 
     @CCD
     private LocalDate alternativeAccommodationTransferDate;
+
+    @CCD
+    private RentPaymentFrequency debtContributionFrequency;
 
 }

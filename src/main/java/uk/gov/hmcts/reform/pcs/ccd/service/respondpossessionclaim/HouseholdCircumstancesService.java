@@ -31,6 +31,7 @@ public class HouseholdCircumstancesService {
             .alternativeAccommodation(alternativeAccommodation)
             .alternativeAccommodationTransferDate(alternativeAccommodation == YesNoNotSure.YES
                                                       ? circumstances.getAlternativeAccommodationTransferDate() : null)
+            .debtContributionFrequency(circumstances.getDebtContributionFrequency())
             .build();
     }
 }
