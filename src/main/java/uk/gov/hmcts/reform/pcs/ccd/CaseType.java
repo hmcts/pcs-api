@@ -90,8 +90,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field("waysToPay");
 
         builder.tab("caseFlags", "Case flags")
-            .forRoles(UserRole.PCS_CASE_WORKER)
+            .forRoles(UserRole.PCS_SOLICITOR)
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
-            .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
+            .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"");
     }
 }

@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
@@ -535,14 +536,14 @@ public class PCSCase {
     private String caseManagementLocationFormatted;
 
     @CCD(
-        label = "Case Flags",
-        access = DefendantAccess.class
+        access = {InternalCaseFlagAccess.class},
+        label = "Case Flags"
     )
     private Flags caseFlags;
 
     @CCD(
-        label = "Launch the flags screen",
-        access = DefendantAccess.class
+        access = {InternalCaseFlagAccess.class},
+        label = "Launch the flags screen"
     )
     @JsonProperty("flagLauncherInternal")
     private FlagLauncher flagLauncherInternal;

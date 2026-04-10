@@ -23,7 +23,7 @@ public class CaseFlagService {
             mergedFlagsEntity = mergeFlags(incomingCaseFlags);
         }
 
-        if (pcsCaseEntity != null && pcsCaseEntity.getCaseFlags() != null) {
+        if (pcsCaseEntity.getCaseFlags() != null) {
             pcsCaseEntity.getCaseFlags().add(mergedFlagsEntity);
         } else {
             pcsCaseEntity.setCaseFlags(List.of(mergedFlagsEntity));
@@ -62,10 +62,8 @@ public class CaseFlagService {
     }
 
     private Boolean convertYesOrNoToBoolean(YesOrNo yesOrNo) {
-        if (yesOrNo != null) {
-            return yesOrNo == YesOrNo.YES;
-        }
-        return false;
+
+        return yesOrNo == YesOrNo.YES;
     }
 }
 

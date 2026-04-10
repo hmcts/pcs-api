@@ -50,7 +50,8 @@ class CaseFlagServiceTest {
             .value(FlagDetail.builder()
                        .flagCode("RA005")
                        .flagComment("Communication")
-                       .availableExternally(YesOrNo.YES)
+                       .availableExternally(YesOrNo.NO)
+                       .hearingRelevant(YesOrNo.YES)
                        .build())
             .build();
     }
