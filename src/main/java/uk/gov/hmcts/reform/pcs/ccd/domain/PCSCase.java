@@ -550,4 +550,7 @@ public class PCSCase {
     )
     private String caseManagementLocationFormatted;
 
+    @CCD( label = "Enter case number")
+    private String enterCaseNumber;
+
 }

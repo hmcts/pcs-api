@@ -9,5 +9,6 @@ public enum EventId {
     submitDefendantResponse,
     createTestCase,
     createCaseLink,
-    maintainCaseLink
+    maintainCaseLink,
+    noticeOfChange,
 }
