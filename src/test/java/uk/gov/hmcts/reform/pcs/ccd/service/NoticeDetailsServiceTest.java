@@ -358,7 +358,7 @@ class NoticeDetailsServiceTest {
     class EmailValidation {
 
         @Test
-        void shouldValidateEmailWithValidExplanation() {
+        void shouldValidateEmailWithValidEmailAddress() {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             PCSCase caseData = PCSCase.builder()
@@ -366,7 +366,7 @@ class NoticeDetailsServiceTest {
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .noticeEmailSentDateTime(pastDateTime)
-                    .noticeEmailAddress("tenant@example.com") // Valid explanation
+                    .noticeEmailAddress("tenant@example.com") // Valid email address length
                     .build())
                 .build();
 
@@ -378,19 +378,19 @@ class NoticeDetailsServiceTest {
         }
 
         @Test
-        void shouldValidateEmailWithTooLongExplanation() {
+        void shouldValidateEmailWithTooLongEmailAddress() {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
 
-            // Create a string that exceeds 250 characters
-            String longText = "0123456789".repeat(26); // 10 chars x 26 = 260 chars
+            // Create a string that exceeds 60 characters
+            String longText = "0123456789".repeat(7); // 10 chars x 7 = 70 chars
 
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .noticeEmailSentDateTime(pastDateTime)
-                    .noticeEmailAddress(longText) // Too long explanation
+                    .noticeEmailAddress(longText) // Too long email address
                     .build())
                 .build();
 
