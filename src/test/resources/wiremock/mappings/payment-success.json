@@ -20,7 +20,7 @@
     {
       "name": "webhook",
       "parameters": {
-        "method": "POST",
+        "method": "PUT",
         "url": "{{{jsonPath originalRequest.body '$.call_back_url'}}}",
         "headers": {
           "Content-Type": "application/json",
