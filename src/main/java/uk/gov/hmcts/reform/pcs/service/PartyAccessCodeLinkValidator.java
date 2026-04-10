@@ -18,23 +18,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PartyAccessCodeLinkValidator {
 
-    private static final String INVALID_ACCESS_CODE_LOG_MESSAGE =
-        "Invalid access code - caseId: {}, accessCodeProvided: {}";
     private final PartyAccessCodeRepository pacRepository;
     private final PartyAccessCodeHashingService hashingService;
 
     public PartyAccessCodeEntity validateAccessCode(UUID caseId, String accessCode) {
-        if (!hashingService.isHashPinsEnabled()) {
-            return pacRepository
-                .findByPcsCase_IdAndCode(caseId, accessCode)
-                .orElseThrow(() -> invalidAccessCode(caseId,accessCode));
-        }
-
-        return pacRepository.findAllByPcsCase_Id(caseId)
-            .stream()
-            .filter(entity -> hashingService.matches(accessCode, entity.getCode()))
-            .findFirst()
-            .orElseThrow(() -> invalidAccessCode(caseId,accessCode));
+        return hashingService.findMatchingAccessCode(pacRepository, caseId, accessCode)
+            .orElseThrow(() -> {
+                log.error("Invalid access code - caseId: {}, accessCodeProvided: {}", caseId, accessCode != null);
+                return new InvalidAccessCodeException("Invalid data");
+            });
     }
 
     public PartyEntity validatePartyIsADefendant(
@@ -80,10 +72,5 @@ public class PartyAccessCodeLinkValidator {
                 currentPartyId, idamUserId, conflictingPartyId);
             throw new AccessCodeAlreadyUsedException("This user is already linked to another party in this case.");
         }
-    }
-
-    private InvalidAccessCodeException invalidAccessCode(UUID caseId, String accessCode) {
-        log.error(INVALID_ACCESS_CODE_LOG_MESSAGE, caseId, accessCode != null);
-        return new InvalidAccessCodeException("Invalid data");
     }
 }

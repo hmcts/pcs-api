@@ -62,7 +62,7 @@ class AccessCodeGenerationServiceTest {
             hashingService
         );
         when(accessCodeGenerator.generateAccessCode()).thenCallRealMethod();
-        lenient().when(hashingService.hash(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        lenient().when(hashingService.encodeForStorage(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -86,7 +86,7 @@ class AccessCodeGenerationServiceTest {
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
         when(accessCodeGenerator.generateAccessCode()).thenReturn("ABCD1234");
-        when(hashingService.hash("ABCD1234")).thenReturn("hashed-value");
+        when(hashingService.encodeForStorage("ABCD1234")).thenReturn("hashed-value");
 
         PartyAccessCodeEntity createdEntity = underTest.createPartyAccessCodeEntity(caseEntity, partyId);
 

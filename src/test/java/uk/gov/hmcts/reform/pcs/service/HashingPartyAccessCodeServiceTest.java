@@ -6,12 +6,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PartyAccessCodeHashingServiceTest {
+class HashingPartyAccessCodeServiceTest {
 
     private PartyAccessCodeHashingService underTest;
     private PasswordEncoder encoder;
@@ -19,46 +27,38 @@ class PartyAccessCodeHashingServiceTest {
     @BeforeEach
     void setUp() {
         encoder = new BCryptPasswordEncoder();
-        underTest = new PartyAccessCodeHashingService(encoder, true);
+        underTest = new HashingPartyAccessCodeService(encoder);
     }
 
     @Test
     void shouldHashAndMatch() {
         String accessCode = "ABCD1234";
-
-        String hash = underTest.hash(accessCode);
+        String hash = underTest.encodeForStorage(accessCode);
+        PartyAccessCodeRepository repository = mock(PartyAccessCodeRepository.class);
+        UUID caseId = UUID.randomUUID();
+        PartyAccessCodeEntity entity = PartyAccessCodeEntity.builder()
+            .partyId(UUID.randomUUID())
+            .code(hash)
+            .build();
+        when(repository.findAllByPcsCase_Id(caseId)).thenReturn(List.of(entity));
 
         assertThat(hash).isNotEqualTo(accessCode);
-        assertThat(underTest.matches(accessCode, hash)).isTrue();
-        assertThat(underTest.matches("WRONG", hash)).isFalse();
+        assertThat(underTest.findMatchingAccessCode(repository, caseId, accessCode)).isEqualTo(Optional.of(entity));
+        assertThat(underTest.findMatchingAccessCode(repository, caseId, "WRONG")).isEmpty();
     }
 
     @Test
     void shouldThrowWhenAccessCodeBlankOrNull() {
-        assertThatThrownBy(() -> underTest.hash(" "))
+        assertThatThrownBy(() -> underTest.encodeForStorage(" "))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Access Code cannot be null or empty");
 
-        assertThatThrownBy(() -> underTest.hash(""))
+        assertThatThrownBy(() -> underTest.encodeForStorage(""))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Access Code cannot be null or empty");
 
-        assertThatThrownBy(() -> underTest.hash(null))
+        assertThatThrownBy(() -> underTest.encodeForStorage(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Access Code cannot be null or empty");
     }
-
-    @Test
-    void shouldReturnPlainTextWhenHashingDisabled() {
-        PartyAccessCodeHashingService disabledService =
-            new PartyAccessCodeHashingService(encoder, false);
-
-        String accessCode = "ABCD1234";
-        String stored = disabledService.hash(accessCode);
-
-        assertThat(stored).isEqualTo(accessCode); // plain text
-        assertThat(disabledService.matches(accessCode, stored)).isTrue();
-        assertThat(disabledService.matches("WRONG", stored)).isFalse();
-    }
-
 }

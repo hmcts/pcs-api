@@ -1,48 +1,18 @@
 package uk.gov.hmcts.reform.pcs.service;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 
-@Service
-@Slf4j
-public class PartyAccessCodeHashingService {
+import java.util.Optional;
+import java.util.UUID;
 
-    private final PasswordEncoder encoder;
-    @Getter
-    private final boolean hashPinsEnabled;
+public interface PartyAccessCodeHashingService {
 
-    public PartyAccessCodeHashingService(
-        PasswordEncoder encoder,
-        @Value("${access-code.hash-pins-enabled}") boolean hashPinsEnabled
-    ) {
-        this.encoder = encoder;
-        this.hashPinsEnabled = hashPinsEnabled;
-    }
+    String encodeForStorage(String accessCode);
 
-
-    public String hash(String accessCode) {
-        if (accessCode == null || accessCode.isBlank()) {
-            throw new IllegalArgumentException("Access Code cannot be null or empty");
-        }
-        if (!hashPinsEnabled) {
-            return accessCode;
-        }
-        //TODO:For testing if raw code is matched to the stored hash. This will be removed before merging
-        log.warn("Access code to be hashed:{}", accessCode);
-        return encoder.encode(accessCode);
-    }
-
-    public boolean matches(String accessCode, String storedAccessCode) {
-        if (accessCode == null || storedAccessCode == null) {
-            return false;
-        }
-        if (!hashPinsEnabled) {
-            return accessCode.equals(storedAccessCode);
-        }
-        return encoder.matches(accessCode, storedAccessCode);
-    }
-
+    Optional<PartyAccessCodeEntity> findMatchingAccessCode(
+        PartyAccessCodeRepository repository,
+        UUID caseId,
+        String accessCode
+    );
 }

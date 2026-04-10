@@ -31,7 +31,7 @@ public class AccessCodeGenerationService {
     private final PartyAccessCodeHashingService hashingService;
 
     public PartyAccessCodeEntity createPartyAccessCodeEntity(PcsCaseEntity  pcsCaseEntity, UUID partyId) {
-        String code = hashingService.hash(accessCodeGenerator.generateAccessCode());
+        String code = hashingService.encodeForStorage(accessCodeGenerator.generateAccessCode());
 
         return PartyAccessCodeEntity.builder()
             .partyId(partyId)

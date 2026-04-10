@@ -44,15 +44,14 @@ class PartyAccessCodeLinkValidatorTest {
     }
 
     @Test
-    void shouldReturnPac_WhenHashingEnabledAndHashMatches() {
+    void shouldReturnPac_WhenAccessCodeMatches() {
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
             .partyId(PARTY_ID)
             .code("$2a$10$hashedCode")
             .build();
 
-        when(hashingService.isHashPinsEnabled()).thenReturn(true);
-        when(pacRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(pac));
-        when(hashingService.matches(ACCESS_CODE, "$2a$10$hashedCode")).thenReturn(true);
+        when(hashingService.findMatchingAccessCode(pacRepository, CASE_ID, ACCESS_CODE))
+            .thenReturn(Optional.of(pac));
 
         PartyAccessCodeEntity result = validator.validateAccessCode(CASE_ID, ACCESS_CODE);
 
@@ -62,41 +61,8 @@ class PartyAccessCodeLinkValidatorTest {
     }
 
     @Test
-    void shouldThrowInvalidAccessCodeException_WhenHashingEnabledAndNoHashesMatch() {
-        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-            .partyId(PARTY_ID)
-            .code("$2a$10$hashedCode")
-            .build();
-
-        when(hashingService.isHashPinsEnabled()).thenReturn(true);
-        when(pacRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(pac));
-        when(hashingService.matches(ACCESS_CODE, "$2a$10$hashedCode")).thenReturn(false);
-
-        assertThatThrownBy(() -> validator.validateAccessCode(CASE_ID, ACCESS_CODE))
-            .isInstanceOf(InvalidAccessCodeException.class)
-            .hasMessageContaining("Invalid data");
-    }
-
-    @Test
-    void shouldReturnPac_WhenHashingDisabledAndPlainTextCodeExists() {
-        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-            .partyId(PARTY_ID)
-            .code(ACCESS_CODE)
-            .build();
-
-        when(hashingService.isHashPinsEnabled()).thenReturn(false);
-        when(pacRepository.findByPcsCase_IdAndCode(CASE_ID, ACCESS_CODE)).thenReturn(Optional.of(pac));
-
-        PartyAccessCodeEntity result = validator.validateAccessCode(CASE_ID, ACCESS_CODE);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getPartyId()).isEqualTo(PARTY_ID);
-    }
-
-    @Test
-    void shouldThrowInvalidAccessCodeException_WhenHashingDisabledAndCodeNotFound() {
-        when(hashingService.isHashPinsEnabled()).thenReturn(false);
-        when(pacRepository.findByPcsCase_IdAndCode(CASE_ID, ACCESS_CODE))
+    void shouldThrowInvalidAccessCodeException_WhenAccessCodeDoesNotMatch() {
+        when(hashingService.findMatchingAccessCode(pacRepository, CASE_ID, ACCESS_CODE))
             .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> validator.validateAccessCode(CASE_ID, ACCESS_CODE))
