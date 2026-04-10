@@ -330,7 +330,7 @@ public class PCSCase {
 
     @CCD(
         label = "What does your ground 1 claim involve?",
-        hint = "Select all that apply",
+        hint = "Select all that you allege apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "RentArrearsOrBreachOfTenancy"
     )
