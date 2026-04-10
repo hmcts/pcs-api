@@ -19,7 +19,6 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
@@ -82,6 +81,12 @@ public class HouseholdCircumstancesEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo shareIncomeExpenseDetails;
+
+    private String regularIncome;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo universalCredit;
 
     private LocalDate ucApplicationDate;
@@ -94,6 +99,11 @@ public class HouseholdCircumstancesEntity {
 
     private BigDecimal debtContribution;
 
-    @Enumerated(EnumType.STRING)
-    private RentPaymentFrequency debtContributionFrequency;
+    private String debtContributionFrequency;
+
+    private String regularExpenses;
+
+    private BigDecimal expenseAmount;
+
+    private String expenseFrequency;
 }

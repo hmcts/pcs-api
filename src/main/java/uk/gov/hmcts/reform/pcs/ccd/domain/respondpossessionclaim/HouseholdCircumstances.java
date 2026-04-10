@@ -6,13 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Builder
@@ -25,26 +21,6 @@ public class HouseholdCircumstances {
     private YesOrNo dependantChildren;
 
     @CCD
-    private YesOrNo universalCredit;
-
-    @CCD
-    private LocalDate ucApplicationDate;
-
-    @CCD
-    private YesOrNo priorityDebts;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal debtTotal;
-
-    @CCD(typeOverride = FieldType.MoneyGBP)
-    @JacksonMoneyGBP
-    private BigDecimal debtContribution;
-
-    @CCD
-    private RentPaymentFrequency debtContributionFrequency;
-
-    @CCD
     private YesOrNo shareAdditionalCircumstances;
 
     @CCD(max = 500)
@@ -55,6 +31,7 @@ public class HouseholdCircumstances {
 
     @CCD(max = 500)
     private String exceptionalHardshipDetails;
+    
     @CCD(max = 500)
     private String dependantChildrenDetails;
 
