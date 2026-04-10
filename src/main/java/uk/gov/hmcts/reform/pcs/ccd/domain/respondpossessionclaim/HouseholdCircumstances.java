@@ -55,6 +55,7 @@ public class HouseholdCircumstances {
 
     @CCD(max = 500)
     private String exceptionalHardshipDetails;
+    
     @CCD(max = 500)
     private String dependantChildrenDetails;
 

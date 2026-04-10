@@ -82,6 +82,12 @@ public class HouseholdCircumstancesEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo shareIncomeExpenseDetails;
+
+    private String regularIncome;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo universalCredit;
 
     private LocalDate ucApplicationDate;
@@ -96,4 +102,11 @@ public class HouseholdCircumstancesEntity {
 
     @Enumerated(EnumType.STRING)
     private RentPaymentFrequency debtContributionFrequency;
+
+    private String regularExpenses;
+
+    private BigDecimal expenseAmount;
+
+    @Enumerated(EnumType.STRING)
+    private RentPaymentFrequency expenseFrequency;
 }
