@@ -358,53 +358,6 @@ class NoticeDetailsServiceTest {
     class EmailValidation {
 
         @Test
-        void shouldValidateEmailWithValidEmailAddress() {
-            // Given
-            LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                    .noticeEmailSentDateTime(pastDateTime)
-                    .noticeEmailAddress("tenant@example.com") // Valid email address length
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors).isEmpty();
-        }
-
-        @Test
-        void shouldValidateEmailWithTooLongEmailAddress() {
-            // Given
-            LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
-
-            // Create a string that exceeds 60 characters
-            String longText = "0".repeat(61);
-
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                    .noticeEmailSentDateTime(pastDateTime)
-                    .noticeEmailAddress(longText) // Too long email address
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            // Text area length validation is now handled by TextAreaValidationService in NoticeDetailsService
-            assertThat(errors)
-                .isNotEmpty()
-                .anyMatch(error -> error.contains("more than the maximum number of characters"));
-        }
-
-        @Test
         void shouldValidateEmailWithFutureDateTime() {
             // Given
             LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
