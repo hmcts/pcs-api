@@ -125,6 +125,12 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo otherConsiderations;
+
+    private String otherConsiderationsDetails;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "landlord_registered")
     private YesNoNotSure landlordRegistered;
 

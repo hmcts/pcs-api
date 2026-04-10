@@ -96,6 +96,6 @@ public class DefendantResponses {
     @CCD
     private YesOrNo otherConsiderations;
 
-    @CCD
+    @CCD(max = 6400)
     private String otherConsiderationsDetails;
 }
