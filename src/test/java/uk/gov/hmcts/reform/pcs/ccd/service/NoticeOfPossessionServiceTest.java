@@ -193,18 +193,18 @@ class NoticeOfPossessionServiceTest {
     void shouldSetNoticeServedDateAndDetailsForEmail() {
         // Given
         LocalDateTime emailSentDateTime = mock(LocalDateTime.class);
-        String emailExplanation = "some email details";
+        String emailAddress = "name@example.com";
 
         when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(NoticeServiceMethod.EMAIL);
         when(noticeServedDetails.getNoticeEmailSentDateTime()).thenReturn(emailSentDateTime);
-        when(noticeServedDetails.getNoticeEmailExplanation()).thenReturn(emailExplanation);
+        when(noticeServedDetails.getNoticeEmailAddress()).thenReturn(emailAddress);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
 
         // Then
         assertThat(noticeOfPossessionEntity.getNoticeDateTime()).isSameAs(emailSentDateTime);
-        assertThat(noticeOfPossessionEntity.getNoticeDetails()).isEqualTo(emailExplanation);
+        assertThat(noticeOfPossessionEntity.getNoticeDetails()).isEqualTo(emailAddress);
     }
 
     @Test

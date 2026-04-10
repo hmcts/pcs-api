@@ -80,15 +80,13 @@ public class NoticeServedDetails {
     private String noticePersonName;
 
     @CCD(
-            label = "Explain how it was served by email",
-            hint = "You can enter up to 250 characters",
-            typeOverride = TextArea
+            label = "What email address was the document sent to?",
+            hint = "For example, name@example.com"
     )
-    private String noticeEmailExplanation;
+    private String noticeEmailAddress;
 
     @CCD(
-            label = "Explain what the other means were",
-            hint = "You can enter up to 250 characters",
+            hint = "Give details of how the notice was served. You can enter up to 250 characters",
             typeOverride = TextArea
     )
     private String noticeOtherExplanation;

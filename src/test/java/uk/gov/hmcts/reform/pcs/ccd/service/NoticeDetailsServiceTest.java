@@ -366,7 +366,7 @@ class NoticeDetailsServiceTest {
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .noticeEmailSentDateTime(pastDateTime)
-                    .noticeEmailExplanation("Sent to tenant@example.com") // Valid explanation
+                    .noticeEmailAddress("tenant@example.com") // Valid explanation
                     .build())
                 .build();
 
@@ -390,7 +390,7 @@ class NoticeDetailsServiceTest {
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .noticeEmailSentDateTime(pastDateTime)
-                    .noticeEmailExplanation(longText) // Too long explanation
+                    .noticeEmailAddress(longText) // Too long explanation
                     .build())
                 .build();
 
@@ -413,7 +413,7 @@ class NoticeDetailsServiceTest {
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .noticeEmailSentDateTime(futureDateTime)
-                    .noticeEmailExplanation("Valid explanation")
+                    .noticeEmailAddress("test@example.com")
                     .build())
                 .build();
 

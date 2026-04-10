@@ -77,7 +77,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">By email</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\"")
             .optional(
-                NoticeServedDetails::getNoticeEmailExplanation,
+                NoticeServedDetails::getNoticeEmailAddress,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
             )
             .optional(
