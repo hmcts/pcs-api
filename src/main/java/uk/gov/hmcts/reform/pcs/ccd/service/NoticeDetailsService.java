@@ -78,11 +78,6 @@ public class NoticeDetailsService {
         // Validate textarea fields for character limits
         errors.addAll(textAreaValidationService.validateMultipleTextAreas(
             TextAreaValidationService.FieldValidation.of(
-                noticeServedDetails.getNoticeEmailAddress(),
-                NOTICE_EMAIL_EXPLANATION_LABEL,
-                TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT
-            ),
-            TextAreaValidationService.FieldValidation.of(
                 noticeServedDetails.getNoticeOtherExplanation(),
                 NOTICE_OTHER_EXPLANATION_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT

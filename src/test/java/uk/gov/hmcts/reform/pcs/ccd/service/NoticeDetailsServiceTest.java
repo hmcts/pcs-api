@@ -383,7 +383,7 @@ class NoticeDetailsServiceTest {
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
 
             // Create a string that exceeds 60 characters
-            String longText = "0123456789".repeat(7); // 10 chars x 7 = 70 chars
+            String longText = "0".repeat(61);
 
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)

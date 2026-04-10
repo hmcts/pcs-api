@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Email;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Builder
@@ -81,7 +82,9 @@ public class NoticeServedDetails {
 
     @CCD(
             label = "What email address was the document sent to?",
-            hint = "For example, name@example.com"
+            hint = "For example, name@example.com",
+            typeOverride = Email,
+            max = 60
     )
     private String noticeEmailAddress;
 
