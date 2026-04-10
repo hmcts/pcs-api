@@ -13,15 +13,12 @@ public class PaymentAgreementService {
             return null;
         }
 
-        return PaymentAgreementEntity.builder()
+        PaymentAgreementEntity paymentAgreementEntity = PaymentAgreementEntity.builder()
             .anyPaymentsMade(paymentAgreement.getAnyPaymentsMade())
-            .paymentDetails(paymentAgreement.getPaymentDetails())
-            .paidMoneyToHousingOrg(paymentAgreement.getPaidMoneyToHousingOrg())
             .repaymentPlanAgreed(paymentAgreement.getRepaymentPlanAgreed())
             .repaymentAgreedDetails(paymentAgreement.getRepaymentAgreedDetails())
-            .repayArrearsInstalments(paymentAgreement.getRepayArrearsInstalments())
-            .additionalRentContribution(paymentAgreement.getAdditionalRentContribution())
-            .additionalContributionFrequency(paymentAgreement.getAdditionalContributionFrequency())
             .build();
+
+        return paymentAgreementEntity;
     }
 }

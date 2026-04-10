@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreemen
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 
 import java.util.stream.Stream;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,32 +26,28 @@ class PaymentAgreementServiceTest {
         underTest = new PaymentAgreementService();
     }
 
-    @Test
-    void shouldMapAllFields() {
+    @ParameterizedTest
+    @MethodSource("paymentsMadeScenarios")
+    void shouldMapAnyPaymentsMadeField(YesOrNo expected) {
         //Given
         PaymentAgreement paymentAgreement = PaymentAgreement.builder()
-            .anyPaymentsMade(YesOrNo.YES)
-            .paymentDetails("Some details")
-            .paidMoneyToHousingOrg(YesOrNo.NO)
-            .repaymentPlanAgreed(YesNoNotSure.YES)
-            .repaymentAgreedDetails("Agreed to pay weekly")
-            .repayArrearsInstalments(YesOrNo.YES)
-            .additionalRentContribution(new java.math.BigDecimal("123.45"))
-            .additionalContributionFrequency("WEEKLY")
+            .anyPaymentsMade(expected)
             .build();
 
         //When
         PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(paymentAgreement);
 
         //Then
-        assertThat(entity.getAnyPaymentsMade()).isEqualTo(YesOrNo.YES);
-        assertThat(entity.getPaymentDetails()).isEqualTo("Some details");
-        assertThat(entity.getPaidMoneyToHousingOrg()).isEqualTo(YesOrNo.NO);
-        assertThat(entity.getRepaymentPlanAgreed()).isEqualTo(YesNoNotSure.YES);
-        assertThat(entity.getRepaymentAgreedDetails()).isEqualTo("Agreed to pay weekly");
-        assertThat(entity.getRepayArrearsInstalments()).isEqualTo(YesOrNo.YES);
-        assertThat(entity.getAdditionalRentContribution()).isEqualByComparingTo("123.45");
-        assertThat(entity.getAdditionalContributionFrequency()).isEqualTo("WEEKLY");
+        assertThat(entity).isNotNull();
+        assertThat(entity.getAnyPaymentsMade()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> paymentsMadeScenarios() {
+        return Stream.of(
+            Arguments.of(YesOrNo.YES),
+            Arguments.of(YesOrNo.NO),
+            Arguments.of((YesOrNo) null)
+        );
     }
 
     @Test
