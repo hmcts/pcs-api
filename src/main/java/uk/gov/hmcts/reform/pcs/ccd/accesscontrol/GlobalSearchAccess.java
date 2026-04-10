@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GS_PROFILE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HMCTS_STAFF;
 
 import uk.gov.hmcts.ccd.sdk.api.HasAccessControl;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
@@ -13,7 +13,7 @@ public class GlobalSearchAccess implements HasAccessControl {
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.put(GS_PROFILE, Permission.R);
+        grants.put(HMCTS_STAFF, Permission.R);
 
         return grants;
     }
