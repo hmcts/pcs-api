@@ -11,6 +11,7 @@ export class ClickRadioButtonAction implements IAction {
     const patterns = [
       () => this.radioPattern1(page, question, option, idx),
       () => this.radioPattern2(page, question, option, idx),
+      () => this.radioPattern3(page, question, option, idx),
     ];
 
     for (const getLocator of patterns) {
@@ -52,6 +53,12 @@ export class ClickRadioButtonAction implements IAction {
   private radioPattern2(page: Page, question: string, option: string, idx: number) {
     return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
   }
-
+  
+  private radioPattern3(page: Page, question: string, option: string, idx: number) {
+    if(question == null) {
+    return page.getByRole('radio', { name: option as string, exact: true })
+       .nth(idx);
+    }
+  }
 }
 
