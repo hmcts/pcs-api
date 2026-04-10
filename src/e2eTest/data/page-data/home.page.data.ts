@@ -5,5 +5,6 @@ export const home =
     caseListTab: 'Case list',
     createCaseTab: 'Create case',
     findCaseTab: 'Find case',
+    globalSearchTab: 'Search',
     signOutButton: 'Sign out'
   }
