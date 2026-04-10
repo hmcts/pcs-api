@@ -19,6 +19,12 @@ public class HouseholdCircumstancesService {
 
         return HouseholdCircumstancesEntity.builder()
             .dependantChildren(circumstances.getDependantChildren())
+            .universalCredit(circumstances.getUniversalCredit())
+            .ucApplicationDate(circumstances.getUcApplicationDate())
+            .priorityDebts(circumstances.getPriorityDebts())
+            .debtTotal(circumstances.getDebtTotal())
+            .debtContribution(circumstances.getDebtContribution())
+            .debtContributionFrequency(circumstances.getDebtContributionFrequency())
             .shareAdditionalCircumstances(circumstances.getShareAdditionalCircumstances())
             .additionalCircumstancesDetails(circumstances.getAdditionalCircumstancesDetails())
             .exceptionalHardship(circumstances.getExceptionalHardship())
@@ -31,7 +37,6 @@ public class HouseholdCircumstancesService {
             .alternativeAccommodation(alternativeAccommodation)
             .alternativeAccommodationTransferDate(alternativeAccommodation == YesNoNotSure.YES
                                                       ? circumstances.getAlternativeAccommodationTransferDate() : null)
-            .debtContributionFrequency(circumstances.getDebtContributionFrequency())
             .build();
     }
 }

@@ -10,11 +10,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.stream.Stream;
 
@@ -109,6 +110,33 @@ class HouseholdCircumstancesServiceTest {
         assertThat(entity).isNull();
     }
 
+    @Test
+    void shouldMapUniversalCreditAndPriorityDebtFields() {
+        // Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .dependantChildren(YesOrNo.NO)
+            .universalCredit(YesOrNo.YES)
+            .ucApplicationDate(LocalDate.of(2024, 5, 12))
+            .priorityDebts(YesOrNo.YES)
+            .debtTotal(new BigDecimal("1500.00"))
+            .debtContribution(new BigDecimal("200.00"))
+            .debtContributionFrequency(RentPaymentFrequency.MONTHLY)
+            .build();
+
+        // When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        // Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getDependantChildren()).isEqualTo(YesOrNo.NO);
+        assertThat(entity.getUniversalCredit()).isEqualTo(YesOrNo.YES);
+        assertThat(entity.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 5, 12));
+        assertThat(entity.getPriorityDebts()).isEqualTo(YesOrNo.YES);
+        assertThat(entity.getDebtTotal()).isEqualByComparingTo("1500.00");
+        assertThat(entity.getDebtContribution()).isEqualByComparingTo("200.00");
+        assertThat(entity.getDebtContributionFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY);
+    }
+
     @ParameterizedTest
     @NullSource
     @EnumSource(YesOrNo.class)
@@ -201,18 +229,5 @@ class HouseholdCircumstancesServiceTest {
             Arguments.of(YesNoNotSure.NOT_SURE, transferDate, null),
             Arguments.of(null, transferDate, null)
         );
-    }
-
-    @ParameterizedTest
-    @NullSource
-    @EnumSource(RentPaymentFrequency.class)
-    void shouldMapDebtContributionFrequencyField(RentPaymentFrequency expected) {
-        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .debtContributionFrequency(expected)
-            .build();
-
-        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
-
-        assertThat(entity.getDebtContributionFrequency()).isEqualTo(expected);
     }
 }
