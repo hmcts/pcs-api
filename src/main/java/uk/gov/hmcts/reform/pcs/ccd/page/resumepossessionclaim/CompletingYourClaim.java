@@ -41,14 +41,14 @@ public class CompletingYourClaim implements CcdPageConfiguration {
                 """
             )
             .mandatory(PCSCase::getCompletionNextStep)
-            .readonly(PCSCase::getSaveButtonLabelOnCaseSubmit, NEVER_SHOW, true)
+            .readonly(PCSCase::getEndButtonLabel, NEVER_SHOW, true)
             .label("completingYourClaim-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        caseData.setSaveButtonLabelOnCaseSubmit(
+        caseData.setEndButtonLabel(
                 CompletionNextStep.SAVE_IT_FOR_LATER == caseData.getCompletionNextStep()
                         ? "Save claim"
                         : "Submit claim"
