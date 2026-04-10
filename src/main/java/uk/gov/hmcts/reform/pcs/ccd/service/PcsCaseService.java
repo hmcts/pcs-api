@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class PcsCaseService {
 
@@ -27,6 +29,7 @@ public class PcsCaseService {
     private final DocumentService documentService;
     private final TenancyLicenceService tenancyLicenceService;
     private final AddressMapper addressMapper;
+    private final CaseLinkService caseLinkService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -64,4 +67,12 @@ public class PcsCaseService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
+    public void patchCaseLinks(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+
+        log.info("Patching linked cases for {}", caseReference);
+        if (pcsCase.getCaseLinks() != null) {
+            caseLinkService.mergeCaseLinks(pcsCase.getCaseLinks(), pcsCaseEntity);
+        }
+    }
 }
