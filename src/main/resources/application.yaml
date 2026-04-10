@@ -20,7 +20,7 @@ management:
       enabled: false
 
 hmcts:
-  hmctsOrgId: AAA3
+  hmctsOrgId:
 
 springdoc:
   swagger-ui:
