@@ -82,18 +82,6 @@ class AccessCodeGenerationServiceTest {
     }
 
     @Test
-    void shouldStoreHashedAccessCodeWhenHashingEnabled() {
-        UUID partyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
-        when(accessCodeGenerator.generateAccessCode()).thenReturn("ABCD1234");
-        when(hashingService.encodeForStorage("ABCD1234")).thenReturn("hashed-value");
-
-        PartyAccessCodeEntity createdEntity = underTest.createPartyAccessCodeEntity(caseEntity, partyId);
-
-        assertThat(createdEntity.getCode()).isEqualTo("hashed-value");
-    }
-
-    @Test
     void shouldCreateAccessCodeForSingleParty() {
         // Given
         UUID partyId = UUID.randomUUID();

@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Service
 @ConditionalOnProperty(name = "access-code.hash-pins-enabled", havingValue = "false", matchIfMissing = true)
-public class TestingPartyAccessCodeService implements PartyAccessCodeHashingService {
+public class SimplePartyAccessCodeService implements PartyAccessCodeHashingService {
 
     @Override
     public String encodeForStorage(String accessCode) {
