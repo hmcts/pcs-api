@@ -55,10 +55,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
             .complex(PCSCase::getTenancyLicenceDetails)
                 .optional(TenancyLicenceDetails::getTenancyLicenceDate)
             .done()
-            .label("tenancyLicenceDetails-doc-section", """
-               ---
-               <h2 class="govuk-heading-m">Do you have a copy of the tenancy or licence agreement?</h2>
-               """)
+            .label("tenancyLicenceDetails-doc-section", "---")
             .complex(PCSCase::getTenancyLicenceDetails)
                 .mandatory(TenancyLicenceDetails::getIsTenancyLicenseDocumentsUploaded)
                 .mandatory(

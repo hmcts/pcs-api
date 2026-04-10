@@ -56,7 +56,9 @@ public class TenancyLicenceDetails {
     )
     private List<ListValue<Document>> tenancyLicenceDocuments;
 
-    @CCD
+    @CCD(
+        label = "Do you have a copy of the tenancy or licence agreement?"
+    )
     private VerticalYesNo  isTenancyLicenseDocumentsUploaded;
 
     @CCD(
