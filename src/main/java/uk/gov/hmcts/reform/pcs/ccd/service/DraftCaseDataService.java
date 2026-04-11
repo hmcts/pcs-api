@@ -89,15 +89,12 @@ public class DraftCaseDataService {
 
         DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
             .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
-            .map(existingDraft -> {
-                log.debug("Replacing existing draft for userId={}", userId);
-                existingDraft.setCaseData(eventDataJson);
-                return existingDraft;
-            }).orElseGet(() -> {
-                log.debug("Creating new draft for caseReference={}, eventId={}, userId={}",
-                    caseReference, eventId, userId);
-                return createNewDraft(caseReference, eventId, userId, eventDataJson);
-            });
+            .orElseThrow(() -> new UnsubmittedDataException(
+                "No draft found for caseReference=" + caseReference
+                    + ", eventId=" + eventId + ", userId=" + userId));
+
+        log.debug("Replacing existing draft for userId={}", userId);
+        draftCaseDataEntity.setCaseData(eventDataJson);
 
         DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
         log.debug("Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
