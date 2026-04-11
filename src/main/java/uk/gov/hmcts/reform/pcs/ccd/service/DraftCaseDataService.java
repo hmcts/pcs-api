@@ -86,7 +86,6 @@ public class DraftCaseDataService {
         log.info("Saving draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
 
         String eventDataJson = writeCaseDataJson(eventData);
-        log.info("[holistic-debug] saveUnsubmittedEventData - serialized JSON: {}", eventDataJson);
 
         DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
             .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)

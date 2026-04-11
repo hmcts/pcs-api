@@ -39,10 +39,6 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
         final long caseRef = details.getId();
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
 
-        log.info("[holistic-debug] Raw response from frontend: {}", response);
-        log.info("[holistic-debug] defendantResponses: {}", response.getDefendantResponses());
-        log.info("[holistic-debug] defendantContactDetails: {}", response.getDefendantContactDetails());
-
         PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
             .defendantContactDetails(response.getDefendantContactDetails())
             .defendantResponses(response.getDefendantResponses())
@@ -51,8 +47,6 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
         PCSCase partialUpdate = PCSCase.builder()
             .possessionClaimResponse(defendantAnswersOnly)
             .build();
-
-        log.info("[holistic-debug] partialUpdate to save: {}", partialUpdate);
 
         if (response.getDefendantContactDetails() != null
             && response.getDefendantContactDetails().getParty() != null) {
