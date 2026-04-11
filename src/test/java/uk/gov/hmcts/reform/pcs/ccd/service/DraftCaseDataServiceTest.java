@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -188,26 +189,19 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
-    void shouldSaveNewUnsubmittedEventData() throws JsonProcessingException {
+    void shouldThrowWhenNoDraftExistsForSave() throws JsonProcessingException {
         // Given
-        String caseDataJson = "case data json";
         PCSCase caseData = mock(PCSCase.class);
-        when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
+        when(objectMapper.writeValueAsString(caseData)).thenReturn("case data json");
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
-        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
-            .thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When
-        underTest.saveUnsubmittedEventData(CASE_REFERENCE, caseData, eventId);
+        // When / Then
+        assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, caseData, eventId))
+            .isInstanceOf(UnsubmittedDataException.class)
+            .hasMessageContaining("No draft found");
 
-        // Then
-        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
-        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
-
-        assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
-        assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
-        assertThat(savedEntity.getIdamUserId()).isEqualTo(USER_ID);
+        verify(draftCaseDataRepository, never()).save(any());
     }
 
     @Test
