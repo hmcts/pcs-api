@@ -36,8 +36,12 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        long caseRef = details.getId();
+        final long caseRef = details.getId();
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
+
+        log.info("[holistic-debug] Raw response from frontend: {}", response);
+        log.info("[holistic-debug] defendantResponses: {}", response.getDefendantResponses());
+        log.info("[holistic-debug] defendantContactDetails: {}", response.getDefendantContactDetails());
 
         PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
             .defendantContactDetails(response.getDefendantContactDetails())
@@ -47,6 +51,8 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
         PCSCase partialUpdate = PCSCase.builder()
             .possessionClaimResponse(defendantAnswersOnly)
             .build();
+
+        log.info("[holistic-debug] partialUpdate to save: {}", partialUpdate);
 
         if (response.getDefendantContactDetails() != null
             && response.getDefendantContactDetails().getParty() != null) {
@@ -66,7 +72,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
         }
 
         try {
-            draftCaseDataService.patchUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
+            draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(partialUpdate)
                 .build();

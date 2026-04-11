@@ -188,6 +188,54 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
+    void shouldSaveNewUnsubmittedEventData() throws JsonProcessingException {
+        // Given
+        String caseDataJson = "case data json";
+        PCSCase caseData = mock(PCSCase.class);
+        when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.empty());
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        underTest.saveUnsubmittedEventData(CASE_REFERENCE, caseData, eventId);
+
+        // Then
+        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
+
+        assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
+        assertThat(savedEntity.getIdamUserId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    void shouldReplaceExistingUnsubmittedEventData() throws JsonProcessingException {
+        // Given
+        String newCaseDataJson = "new case data json";
+        PCSCase newCaseData = mock(PCSCase.class);
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn(newCaseDataJson);
+
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId);
+
+        // Then
+        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
+
+        assertThat(savedEntity).isSameAs(draftCaseDataEntity);
+        verify(draftCaseDataEntity).setCaseData(newCaseDataJson);
+    }
+
+    @Test
     void shouldDeleteUnsubmittedDataByCaseReference() {
         // When
         underTest.deleteUnsubmittedCaseData(CASE_REFERENCE, eventId);

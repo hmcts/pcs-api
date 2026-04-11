@@ -78,6 +78,33 @@ public class DraftCaseDataService {
         return exists;
     }
 
+    public <T> void saveUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
+        Objects.requireNonNull(eventData, "eventData must not be null");
+        Objects.requireNonNull(eventId, "eventId must not be null");
+
+        UUID userId = getCurrentUserId();
+        log.info("Saving draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
+
+        String eventDataJson = writeCaseDataJson(eventData);
+        log.info("[holistic-debug] saveUnsubmittedEventData - serialized JSON: {}", eventDataJson);
+
+        DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
+            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
+            .map(existingDraft -> {
+                log.debug("Replacing existing draft for userId={}", userId);
+                existingDraft.setCaseData(eventDataJson);
+                return existingDraft;
+            }).orElseGet(() -> {
+                log.debug("Creating new draft for caseReference={}, eventId={}, userId={}",
+                    caseReference, eventId, userId);
+                return createNewDraft(caseReference, eventId, userId, eventDataJson);
+            });
+
+        DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
+        log.debug("Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
+            saved.getId(), saved.getCaseReference(), saved.getEventId(), saved.getIdamUserId());
+    }
+
     public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
         Objects.requireNonNull(eventData, "eventData must not be null");
         Objects.requireNonNull(eventId, "eventId must not be null");

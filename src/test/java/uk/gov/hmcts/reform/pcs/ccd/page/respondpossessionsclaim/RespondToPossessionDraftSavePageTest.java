@@ -80,7 +80,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         assertThat(response.getErrors()).isNull();
 
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
 
@@ -118,7 +118,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             "Invalid submission: immutable field must not be sent: addressSameAsProperty"
         );
         assertThat(response.getData()).isNull();
-        verify(draftCaseDataService, never()).patchUnsubmittedEventData(anyLong(), any(), any());
+        verify(draftCaseDataService, never()).saveUnsubmittedEventData(anyLong(), any(), any());
     }
 
     @Test
@@ -144,7 +144,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -183,7 +183,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -216,7 +216,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -277,7 +277,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -313,7 +313,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -337,7 +337,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -362,7 +362,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         doThrow(new RuntimeException("DB connection failed"))
             .when(draftCaseDataService)
-            .patchUnsubmittedEventData(anyLong(), any(), any());
+            .saveUnsubmittedEventData(anyLong(), any(), any());
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
