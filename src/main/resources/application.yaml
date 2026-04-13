@@ -19,9 +19,6 @@ management:
     elasticsearch:
       enabled: false
 
-globalsearch:
-  caseManagementCategory: Property Possession Claims
-
 hmcts:
   hmctsOrgId: AAA3
 
