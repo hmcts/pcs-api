@@ -1,6 +1,6 @@
 export const groundsForPossession = {
   mainHeader: `Grounds for possession`,
-  areYouClaimingPossessionQuestion: `Are you claiming possession because of rent arrears?`,
+  areYouClaimingPossessionQuestion: `Do your grounds for possession include rent arrears?`,
   cancelLink: `Cancel`,
   caseNumber: `Case number:`,
   continueButton: `Continue`,
