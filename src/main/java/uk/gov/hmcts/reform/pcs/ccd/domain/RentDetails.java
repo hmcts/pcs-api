@@ -31,7 +31,7 @@ public class RentDetails {
     private BigDecimal currentRent;
 
     @CCD(
-        label = "How frequently should rent be paid?"
+        label = "How is the rent calculated?"
     )
     private RentPaymentFrequency frequency;
 

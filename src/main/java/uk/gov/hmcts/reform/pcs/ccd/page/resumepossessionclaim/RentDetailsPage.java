@@ -67,12 +67,6 @@ public class RentDetailsPage implements CcdPageConfiguration {
                     rentDetails.setCalculatedDailyCharge(dailyAmount);
                     rentDetails.setFormattedCalculatedDailyCharge(moneyFormatter.formatFee(dailyAmount));
                 }
-
-                // Set flag to NO - DailyRentAmount should show first
-                caseData.setShowRentArrearsPage(YesOrNo.NO);
-            } else {
-                // Set flag to YES - RentArrears should show directly (skip DailyRentAmount)
-                caseData.setShowRentArrearsPage(YesOrNo.YES);
             }
 
             caseData.setRentSectionPaymentFrequency(rentFrequency);
