@@ -37,6 +37,14 @@ public class GenAppService {
             genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
         }
 
+        genAppEntity.setOtherPartiesAgreed(citizenCreateGenApp.getOtherPartiesAgreed());
+        if (citizenCreateGenApp.getOtherPartiesAgreed() == YesOrNo.NO) {
+            genAppEntity.setWithoutNotice(citizenCreateGenApp.getWithoutNotice());
+            if (citizenCreateGenApp.getWithoutNotice() == YesOrNo.YES) {
+                genAppEntity.setWithoutNoticeReason(citizenCreateGenApp.getWithoutNoticeReason());
+            }
+        }
+
         pcsCaseEntity.addGenApp(genAppEntity);
 
         return genAppRepository.save(genAppEntity);

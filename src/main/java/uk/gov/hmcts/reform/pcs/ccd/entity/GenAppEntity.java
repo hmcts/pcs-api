@@ -78,4 +78,14 @@ public class GenAppEntity {
     @JsonManagedReference
     private HelpWithFeesEntity helpWithFeesEntity;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo otherPartiesAgreed;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo withoutNotice;
+
+    private String withoutNoticeReason;
+
 }
