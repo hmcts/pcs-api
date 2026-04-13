@@ -10,16 +10,19 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import java.util.Collections;
 import java.util.List;
 
+import static java.util.List.of;
 
 @Slf4j
 @Component
 @AllArgsConstructor
 public class SearchCriteria implements CCDConfig<PCSCase, State, UserRole> {
 
-    private static final List<SearchCriteriaField> SEARCH_CRITERIA_LIST = Collections.emptyList();
+    private static final List<SearchCriteriaField> SEARCH_CRITERIA_LIST = of(
+        SearchCriteriaField.builder().otherCaseReference("caseNameHmctsInternal").build(),
+        SearchCriteriaField.builder().otherCaseReference("caseNamePublic").build()
+    );
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
