@@ -8,11 +8,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
 @Getter
 public enum SecureAntisocialAdditionalGrounds implements PossessionGroundEnum {
 
-    CONDITION_1("Condition 1 of Section 84A of the Housing Act 1985"),
-    CONDITION_2("Condition 2 of Section 84A of the Housing Act 1985"),
-    CONDITION_3("Condition 3 of Section 84A of the Housing Act 1985"),
-    CONDITION_4("Condition 4 of Section 84A of the Housing Act 1985"),
-    CONDITION_5("Condition 5 of Section 84A of the Housing Act 1985");
+    S84A_CONDITION_1("Condition 1 of Section 84A of the Housing Act 1985"),
+    S84A_CONDITION_2("Condition 2 of Section 84A of the Housing Act 1985"),
+    S84A_CONDITION_3("Condition 3 of Section 84A of the Housing Act 1985"),
+    S84A_CONDITION_4("Condition 4 of Section 84A of the Housing Act 1985"),
+    S84A_CONDITION_5("Condition 5 of Section 84A of the Housing Act 1985");
 
     private final String label;
 

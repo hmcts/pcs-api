@@ -76,12 +76,34 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
 
     private static Stream<Arguments> groundsScenarios() {
         return Stream.of(
-                //Only one discretionary ground
+                //Discretionary ground
                 arguments(
                         Set.of(SecureOrFlexibleDiscretionaryGrounds.RIOT_OFFENCE),
                         Set.of(),
                         Set.of(),
                         Set.of(),
+                        Set.of(),
+                        false,
+                        false,
+                        YesOrNo.YES
+                ),
+                //Discretionary Alt ground
+                arguments(
+                        Set.of(),
+                        Set.of(SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.ADAPTED_ACCOMMODATION),
+                        Set.of(),
+                        Set.of(),
+                        Set.of(),
+                        false,
+                        false,
+                        YesOrNo.YES
+                ),
+                //Mandatory Alt ground
+                arguments(
+                        Set.of(),
+                        Set.of(),
+                        Set.of(),
+                        Set.of(SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD),
                         Set.of(),
                         false,
                         false,
@@ -115,7 +137,7 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
                         Set.of(),
                         Set.of(SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL),
                         Set.of(SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD),
-                        Set.of(SecureAntisocialAdditionalGrounds.CONDITION_1),
+                        Set.of(SecureAntisocialAdditionalGrounds.S84A_CONDITION_1),
                         false,
                         false,
                         YesOrNo.YES

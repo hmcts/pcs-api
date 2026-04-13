@@ -42,8 +42,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .complex(PCSCase::getSecureOrFlexiblePossessionGrounds)
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGrounds)
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGrounds)
-                .mandatory(SecureOrFlexiblePossessionGrounds::getSecureAntisocialAdditionalGrounds,
-                        "secureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
+            .mandatory(SecureOrFlexiblePossessionGrounds::getSecureAntisocialAdditionalGrounds,
+                    "secureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGroundsAlt)
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGroundsAlt)
             .done()
@@ -91,9 +91,7 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errorMessageOverride("Please select at least one ground")
                 .build();
-        }
-
-        if (!mandatoryGrounds.isEmpty()
+        } else if (mandatoryGrounds.contains(SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL)
                 && caseData.getSecureOrFlexiblePossessionGrounds().getSecureAntisocialAdditionalGrounds().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errorMessageOverride("Please select at least one absolute ground for possession for antisocial "
