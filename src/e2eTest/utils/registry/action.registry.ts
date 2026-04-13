@@ -97,11 +97,7 @@ export class ActionRegistry {
     ['claimSaved', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
-    ['enterCardDetails', new FeeAndPayAction()],
-    ['enterBillingAddress', new FeeAndPayAction()],
-    ['enterContactDetails', new FeeAndPayAction()],
-    ['confirmPayment', new FeeAndPayAction()],
-    ['cancelPayment', new FeeAndPayAction()]
+    ['enterPaymentDetails', new FeeAndPayAction()]
   ]);
 
   static getAction(actionName: string): IAction {

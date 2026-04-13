@@ -1,4 +1,3 @@
-
 export const enterPaymentDetails = {
   mainHeader: `Enter payment details`,
   cardNoLabel: `Card number`,
