@@ -9,19 +9,21 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
+import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
@@ -144,7 +146,7 @@ public class PCSCase {
     @CCD(
         label = "Case management location"
     )
-    private Integer caseManagementLocation;
+    private Integer caseManagementLocationNumber;
 
     @CCD(
         label = "Region Id"
@@ -518,6 +520,9 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
+    @CCD(access = DefendantAccess.class)
+    private CitizenGenAppRequest citizenGenAppRequest;
+
     @CCD(
         label = "Search Criteria",
         access = {GlobalSearchAccess.class}
@@ -548,7 +553,13 @@ public class PCSCase {
         label = "CaseManagementLocation",
         access = {GlobalSearchAccess.class}
     )
-    private String caseManagementLocationFormatted;
+    private CaseLocation caseManagementLocation;
+
+    @CCD(
+        label = "CaseManagementCategory",
+        access = {GlobalSearchAccess.class}
+    )
+    private DynamicList caseManagementCategory;
 
     @CCD( label = "Enter case number")
     private String enterCaseNumber;
