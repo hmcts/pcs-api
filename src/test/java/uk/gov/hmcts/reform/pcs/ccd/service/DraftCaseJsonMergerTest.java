@@ -14,9 +14,12 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 
 class DraftCaseJsonMergerTest {
 
@@ -71,6 +74,7 @@ class DraftCaseJsonMergerTest {
                             "claimantType",
                             "noRentArrearsReasonForGrounds.holidayLet",
                             "waysToPay",
+                            "caseLinks",
                             "claimGroundSummaries",
                             "enforcementOrder.showChangeNameAddressPage",
                             "enforcementOrder.showPeopleWhoWillBeEvictedPage",
@@ -112,6 +116,84 @@ class DraftCaseJsonMergerTest {
 
     private DynamicStringListElement createListElement(ClaimantType value) {
         return DynamicStringListElement.builder().code(value.name()).label(value.getLabel()).build();
+    }
+
+    @Test
+    void shouldClearAddressFieldsWhenPatchContainsAddress() throws Exception {
+        //Given
+        String baseJson = """
+        {
+          "party": {
+            "address": {
+              "AddressLine1": "Old Line 1",
+              "AddressLine2": "Old Line 2",
+              "AddressLine3": "Old Line 3",
+              "PostTown": "Old Town",
+              "County": "Old County",
+              "PostCode": "OLD123",
+              "Country": "Old Country"
+            }
+          }
+        }
+            """;
+
+        String patchJson = """
+            {
+              "party": {
+                "address": {
+                  "AddressLine1": "New Line 1"
+                }
+              }
+            }
+            """;
+
+        // When
+        String mergedJson = underTest.mergeJson(baseJson, patchJson);
+        JsonNode merged = objectMapper.readTree(mergedJson);
+        JsonNode address = merged.at("/party/address");
+
+        // Then: new field present
+        assertThat(address.get("AddressLine1").asText()).isEqualTo("New Line 1");
+
+        // All old fields removed
+        assertThat(address.has("AddressLine2")).isFalse();
+        assertThat(address.has("AddressLine3")).isFalse();
+        assertThat(address.has("PostTown")).isFalse();
+        assertThat(address.has("County")).isFalse();
+        assertThat(address.has("PostCode")).isFalse();
+        assertThat(address.has("Country")).isFalse();
+    }
+
+    @Test
+    void shouldNotClearAddressIfPatchDoesNotContainAddress() throws Exception {
+        //Given
+        String baseJson = """
+        {
+          "party": {
+            "address": {
+              "AddressLine1": "Line 1",
+              "PostCode": "ABC123"
+            }
+          }
+        }
+            """;
+
+        String patchJson = """
+            {
+              "party": {
+                "name": "John"
+              }
+            }
+            """;
+
+        // When
+        String mergedJson = underTest.mergeJson(baseJson, patchJson);
+        JsonNode merged = objectMapper.readTree(mergedJson);
+        JsonNode address = merged.at("/party/address");
+
+        // Then: address untouched
+        assertThat(address.get("AddressLine1").asText()).isEqualTo("Line 1");
+        assertThat(address.get("PostCode").asText()).isEqualTo("ABC123");
     }
 
 }
