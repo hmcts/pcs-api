@@ -260,4 +260,66 @@ class DocumentServiceTest {
         assertThat(entities).isEmpty();
         verify(documentRepository).saveAll(anyList());
     }
+
+    @Test
+    void shouldSaveDescriptionForAdditionalDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        AdditionalDocumentType additionalDocumentType =  AdditionalDocumentType.WITNESS_STATEMENT;
+        String description = "A short description";
+
+        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
+                .document(Document.builder().build())
+                .documentType(additionalDocumentType)
+                .description(description)
+                .build();
+
+        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument1).build()
+        );
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        DocumentType expectedDocumentType = DocumentType.valueOf(additionalDocumentType.name());
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+                .extracting(DocumentEntity::getType)
+                .containsExactly(expectedDocumentType);
+
+        assertThat(capturedEntities)
+                .extracting(DocumentEntity::getDescription)
+                .containsExactly(description);
+    }
+
+    @Test
+    void shouldAllowNullDescriptionForDocumentsOtherThanAdditionalDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document doc = Document.builder()
+                .build();
+
+        NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
+                .noticeDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+                .build();
+
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getDescription()).isNull();
+    }
 }
