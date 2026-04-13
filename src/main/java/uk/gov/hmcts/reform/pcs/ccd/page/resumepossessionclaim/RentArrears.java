@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection.RENT_ARREARS_RECOVERY_ATTEMPT_DETAILS_LABEL;
 
 import lombok.AllArgsConstructor;
