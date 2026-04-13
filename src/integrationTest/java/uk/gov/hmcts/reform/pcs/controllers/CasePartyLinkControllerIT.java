@@ -18,9 +18,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -31,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeRequest;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +44,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.pcs.controllers.CaseCreationHelper.ACCESS_CODE;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -60,10 +57,12 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
     private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174001");
-    private static final String ACCESS_CODE = "ABC123XYZ789";
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private CaseCreationHelper caseCreationHelper;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -97,11 +96,11 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         // Mock CaseAssignmentApi for all tests
         CaseAssignmentUserRolesResponse mockedResponse = CaseAssignmentUserRolesResponse.builder()
-                .statusMessage("Case-User-Role assignments created successfully").build();
+            .statusMessage("Case-User-Role assignments created successfully").build();
         when(caseAssignmentApi.addCaseUserRoles(
-                anyString(),
-                anyString(),
-                any(CaseAssignmentUserRolesRequest.class)
+            anyString(),
+            anyString(),
+            any(CaseAssignmentUserRolesRequest.class)
         )).thenReturn(mockedResponse);
     }
 
@@ -111,24 +110,30 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldSuccessfullyValidateAndLinkPartyWithValidAccessCode() throws Exception {
         // Given
         long caseReference = 12345L;
-        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, null,PartyRole.DEFENDANT);
-        String accessCode = createPartyAccessCode(caseEntity, getDefendants(caseEntity).getFirst().getId());
+        PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
+            caseReference, null,
+            PartyRole.DEFENDANT
+        );
+        String accessCode = caseCreationHelper.createPartyAccessCode(
+            caseEntity,
+            caseCreationHelper.getDefendants(caseEntity).getFirst().getId()
+        );
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
 
         // When/Then
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(""));
 
         // Verify defendant is linked in database
         PcsCaseEntity updatedCase = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow();
-        assertThat(getDefendants(updatedCase).getFirst().getIdamId()).isEqualTo(USER_ID);
+            .orElseThrow();
+        assertThat(caseCreationHelper.getDefendants(updatedCase).getFirst().getIdamId()).isEqualTo(USER_ID);
     }
 
     @Test
@@ -136,18 +141,22 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldCallIdamClientGetUserInfoWithExactAuthHeader() throws Exception {
         // Given
         long caseReference = 12355L;
-        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, null,PartyRole.DEFENDANT);
-        String accessCode = createPartyAccessCode(caseEntity, getDefendants(caseEntity).getFirst().getId());
+        PcsCaseEntity caseEntity = caseCreationHelper
+            .createTestCaseWithParty(caseReference, null, PartyRole.DEFENDANT);
+        String accessCode = caseCreationHelper.createPartyAccessCode(
+            caseEntity,
+            caseCreationHelper.getDefendants(caseEntity).getFirst().getId()
+        );
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
 
         // When
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk());
 
         // Then - Verify idamClient.getUserInfo was called with the exact AUTH_HEADER value
         // Note: getBearerToken() keeps the "Bearer " prefix if already present,
@@ -164,12 +173,12 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         // When/Then
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", nonExistentCaseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message", notNullValue()));
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message", notNullValue()));
     }
 
     @Test
@@ -177,7 +186,8 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldReturn404WhenPartyIsNotDefendant() throws Exception {
         // Given
         long caseReference = 12354L;
-        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, null,PartyRole.CLAIMANT);
+        PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(caseReference, null,
+                                                                              PartyRole.CLAIMANT);
 
         PartyEntity party = caseEntity.getClaims()
             .getFirst()
@@ -187,7 +197,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
             .map(ClaimPartyEntity::getParty)
             .toList().getFirst();
 
-        String accessCode = createPartyAccessCode(caseEntity, party.getId());
+        String accessCode = caseCreationHelper.createPartyAccessCode(caseEntity, party.getId());
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
 
@@ -198,8 +208,10 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message", is("The party this access code was generated for"
-                                                    + " is not a defendant in this case")));
+            .andExpect(jsonPath(
+                "$.message", is("The party this access code was generated for"
+                                    + " is not a defendant in this case")
+            ));
     }
 
     @Test
@@ -207,18 +219,18 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldReturn400WhenAccessCodeNotFound() throws Exception {
         // Given
         long caseReference = 12346L;
-        createTestCaseWithParty(caseReference, null,PartyRole.DEFENDANT);
+        caseCreationHelper.createTestCaseWithParty(caseReference, null, PartyRole.DEFENDANT);
         String invalidAccessCode = "INVALIDCODE12";
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(invalidAccessCode);
 
         // When/Then - Updated to expect 400 (BAD_REQUEST) instead of 404
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -226,19 +238,26 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldReturn409WhenAccessCodeAlreadyUsed() throws Exception {
         // Given
         long caseReference = 12347L;
-        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, USER_ID,PartyRole.DEFENDANT);
-        String accessCode = createPartyAccessCode(caseEntity, getDefendants(caseEntity).getFirst().getId());
+        PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
+            caseReference,
+            USER_ID,
+            PartyRole.DEFENDANT
+        );
+        String accessCode = caseCreationHelper.createPartyAccessCode(
+            caseEntity,
+            caseCreationHelper.getDefendants(caseEntity).getFirst().getId()
+        );
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
 
         // When/Then - Updated message to match new exception
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message", is("This access code is already linked to a user.")));
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message", is("This access code is already linked to a user.")));
     }
 
     @Test
@@ -247,22 +266,25 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldReturn409WhenUserIdAlreadyLinkedToAnotherDefendant() throws Exception {
         // Given
         long caseReference = 12348L;
-        PcsCaseEntity caseEntity = createTestCaseWithMultipleDefendants(caseReference, USER_ID, null);
+        PcsCaseEntity caseEntity = caseCreationHelper
+            .createTestCaseWithMultipleDefendants(caseReference, USER_ID, null);
         // Get access code for the second defendant (not yet linked)
-        UUID secondDefendantPartyId = getDefendants(caseEntity).get(1).getId();
-        String accessCode = createPartyAccessCode(caseEntity, secondDefendantPartyId);
+        UUID secondDefendantPartyId = caseCreationHelper.getDefendants(caseEntity).get(1).getId();
+        String accessCode = caseCreationHelper.createPartyAccessCode(caseEntity, secondDefendantPartyId);
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
 
         // When/Then - Should fail because USER_ID is already linked to first defendant
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message",
-                        is("This user is already linked to another party in this case.")));
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath(
+                "$.message",
+                is("This user is already linked to another party in this case.")
+            ));
     }
 
     @Test
@@ -274,11 +296,11 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         // When/Then
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -290,11 +312,11 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         // When/Then
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -306,10 +328,10 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         // When/Then - Spring returns 400 for missing required headers
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -319,29 +341,35 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         // Given - Create a case with a defendant that's already linked
         // This will cause an exception when trying to link again
         long caseReference = 12352L;
-        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, USER_ID,PartyRole.DEFENDANT);
-        String accessCode = createPartyAccessCode(caseEntity, getDefendants(caseEntity).getFirst().getId());
+        PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
+            caseReference, USER_ID,
+            PartyRole.DEFENDANT
+        );
+        String accessCode = caseCreationHelper.createPartyAccessCode(
+            caseEntity,
+            caseCreationHelper.getDefendants(caseEntity).getFirst().getId()
+        );
 
         // Capture the initial state before the failed operation
         PcsCaseEntity caseBefore = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow();
-        UUID initialIdamUserId = getDefendants(caseBefore).getFirst().getIdamId();
+            .orElseThrow();
+        UUID initialIdamUserId = caseCreationHelper.getDefendants(caseBefore).getFirst().getIdamId();
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
 
         // When - Attempt to link (should fail with 409)
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message", is("This access code is already linked to a user.")));
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.message", is("This access code is already linked to a user.")));
 
         // Then - Verify transaction rolled back: database state unchanged
         PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow();
-        UUID finalIdamUserId = getDefendants(caseAfter).getFirst().getIdamId();
+            .orElseThrow();
+        UUID finalIdamUserId = caseCreationHelper.getDefendants(caseAfter).getFirst().getIdamId();
 
         // The idamUserId should remain unchanged (transaction rolled back)
         assertThat(finalIdamUserId).isEqualTo(initialIdamUserId);
@@ -354,104 +382,33 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldCommitTransactionWhenOperationSucceeds() throws Exception {
         // Given
         long caseReference = 12353L;
-        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, null,PartyRole.DEFENDANT);
-        String accessCode = createPartyAccessCode(caseEntity, getDefendants(caseEntity).getFirst().getId());
+        PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(caseReference, null,
+                                                                              PartyRole.DEFENDANT);
+        String accessCode = caseCreationHelper.createPartyAccessCode(
+            caseEntity,
+            caseCreationHelper.getDefendants(caseEntity).getFirst().getId()
+        );
 
         // Verify initial state - defendant not linked
         PcsCaseEntity caseBefore = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow();
-        assertThat(getDefendants(caseBefore).getFirst().getIdamId()).isNull();
+            .orElseThrow();
+        assertThat(caseCreationHelper.getDefendants(caseBefore).getFirst().getIdamId()).isNull();
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
 
         // When - Successful linking
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(""));
 
         // Then - Verify transaction committed: data persisted
         PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow();
-        assertThat(getDefendants(caseAfter).getFirst().getIdamId()).isEqualTo(USER_ID);
-    }
-
-    // Helper methods
-
-    private PcsCaseEntity createTestCaseWithParty(long caseReference, UUID idamUserId, PartyRole partyRole) {
-        PcsCaseEntity caseEntity = new PcsCaseEntity();
-        caseEntity.setCaseReference(caseReference);
-
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
-            .build();
-
-        caseEntity.addClaim(claimEntity);
-
-        PartyEntity defendant = new PartyEntity();
-        defendant.setIdamId(idamUserId);
-        defendant.setFirstName("John");
-        defendant.setLastName("Doe");
-
-        caseEntity.addParty(defendant);
-        claimEntity.addParty(defendant, partyRole);
-
-        return pcsCaseRepository.save(caseEntity);
-    }
-
-    private PcsCaseEntity createTestCaseWithMultipleDefendants(
-            long caseReference, UUID firstIdamUserId, UUID secondIdamUserId) {
-        PcsCaseEntity caseEntity = new PcsCaseEntity();
-        caseEntity.setCaseReference(caseReference);
-
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
-            .build();
-
-        caseEntity.addClaim(claimEntity);
-
-        PartyEntity defendant1 = new PartyEntity();
-        defendant1.setIdamId(firstIdamUserId);
-        defendant1.setFirstName("John");
-        defendant1.setLastName("Doe");
-
-        PartyEntity defendant2 = new PartyEntity();
-        defendant2.setIdamId(secondIdamUserId);
-        defendant2.setFirstName("Jane");
-        defendant2.setLastName("Smith");
-
-        caseEntity.addParty(defendant1);
-        caseEntity.addParty(defendant2);
-
-        claimEntity.addParty(defendant1, PartyRole.DEFENDANT);
-        claimEntity.addParty(defendant2, PartyRole.DEFENDANT);
-
-        return pcsCaseRepository.save(caseEntity);
-    }
-
-    private String createPartyAccessCode(PcsCaseEntity caseEntity, UUID partyId) {
-        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-                .partyId(partyId)
-                .pcsCase(caseEntity)
-                .code(ACCESS_CODE)
-                .role(PartyRole.DEFENDANT)
-                .build();
-
-        partyAccessCodeRepository.save(pac);
-        return ACCESS_CODE;
-    }
-
-    private List<PartyEntity> getDefendants(PcsCaseEntity pcsCaseEntity) {
-        return pcsCaseEntity.getClaims()
-            .getFirst()
-            .getClaimParties()
-            .stream()
-            .filter(claimPartyEntity -> claimPartyEntity.getRole() == PartyRole.DEFENDANT)
-            .map(ClaimPartyEntity::getParty)
-            .toList();
+            .orElseThrow();
+        assertThat(caseCreationHelper.getDefendants(caseAfter).getFirst().getIdamId()).isEqualTo(USER_ID);
     }
 
 }

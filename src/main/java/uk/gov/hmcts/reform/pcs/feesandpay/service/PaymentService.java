@@ -113,7 +113,8 @@ public class PaymentService {
             .orElseThrow(() -> new IllegalStateException(MATCHING_PARTY_ENTITY_NOT_FOUND));
     }
 
-    private void saveNewFeePayment(String caseReference, ClaimEntity claimEntity, ClaimPartyEntity claimParty,
+    @Transactional
+    public void saveNewFeePayment(String caseReference, ClaimEntity claimEntity, ClaimPartyEntity claimParty,
                                    FeeDto feeDto, String serviceRequestReference) {
         log.info("Saving New Fee Payment for the case: {} with serviceRequestReference: {}", caseReference,
                  serviceRequestReference);

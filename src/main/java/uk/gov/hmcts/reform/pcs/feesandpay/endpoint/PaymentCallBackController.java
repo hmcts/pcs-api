@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.endpoint;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,17 +14,20 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @AllArgsConstructor
+@Slf4j
 public class PaymentCallBackController {
 
     public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
+    public static final String PAYMENT_UPDATE_PATH = "/payment-update";
 
     private final PaymentService paymentService;
 
-    @PutMapping(path = "/payment-update", consumes = APPLICATION_JSON_VALUE)
+    @PutMapping(path = PAYMENT_UPDATE_PATH, consumes = APPLICATION_JSON_VALUE)
     public void processPaymentCallback(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorisation,
         @RequestHeader(value = SERVICE_AUTHORIZATION, required = false) String s2sToken,
         @RequestBody ServiceRequestUpdate serviceRequestUpdate) {
+        log.info("Payment Callback Received For Case: {}", serviceRequestUpdate.getCcdCaseNumber());
         paymentService.processPaymentResponse(serviceRequestUpdate);
     }
 
