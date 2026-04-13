@@ -4,26 +4,6 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  nameAndAddressForEviction,
-  policeOrSocialServiceVisit,
-  riskPosedByEveryoneAtProperty,
-  verbalOrWrittenThreats,
-  violentOrAggressiveBehaviour,
-  vulnerableAdultsAndChildren,
-  yourApplication,
-  moneyOwed,
-  legalCosts,
-  landRegistryFees,
-  rePayments,
-  peopleWillBeEvicted,
-  youNeedPermission,
-  languageUsed,
-  peopleYouWantToEvict,
-  confirmDefendantsDOB,
-  enterDefendantsDOB,
-  suspendedOrder,
-  statementOfTruthOne,
-  statementOfTruthTwo,
   checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -39,7 +19,26 @@ import {
   evictionDelayWarning,
   firearmsPossessionRisk,
   protestorGroupRisk,
-  propertyAccessDetails
+  propertyAccessDetails,
+  nameAndAddressForEviction,
+  policeOrSocialServicesRisk,
+  evictionRisksPosed,
+  verbalOrWrittenThreatsRisk,
+  violentAggressiveRisk,
+  vulnerableAdultsChildren,
+  enforcementApplication,
+  moneyOwed,
+  legalCosts,
+  landRegistryFees,
+  repayments,
+  peopleWhoWillBeEvicted,
+  changeNameAddress,
+  languageUsed,
+  peopleYouWantToEvict,
+  confirmDefendantsDOB,
+  knownDefendantsDOBInformation,
+  suspendedOrder,
+  statementOfTruth
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -97,25 +96,25 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', yourApplication.mainHeader);
+      await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
-        journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-        type: yourApplication.summaryWritOrWarrant,
-        label1: yourApplication.warrantFeeValidationLabel,
-        text1: yourApplication.warrantFeeValidationText,
-        label2: yourApplication.writFeeValidationLabel,
-        text2: yourApplication.writFeeValidationText
+        journey: enforcementApplication.warrantOfPossessionRadioOption,
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        text1: enforcementApplication.warrantFeeValidationTextHidden,
+        label2: enforcementApplication.writFeeValidationLabelHidden,
+        text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('validateGetQuoteFromBailiffLink', {
-        type: yourApplication.summaryWritOrWarrant,
-        link: yourApplication.quoteFromBailiffLink,
-        newPage: yourApplication.hceoPageTitle
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        link: enforcementApplication.quoteFromBailiffLinkHidden,
+        newPage: enforcementApplication.hceoPageTitleHidden
       });
-      await performAction('expandSummary', yourApplication.summarySaveApplication);
-      await performAction('errorValidationYourApplicationPage', yourApplication.errorValidation);
+      await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
+      await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+        question: enforcementApplication.typeOfApplicationQuestion,
+        option: enforcementApplication.warrantOfPossessionRadioOption,
         nextPage: nameAndAddressForEviction.mainHeader
       });
       await performAction('errorValidationNameAndAddressForEvictionPage', nameAndAddressForEviction.errorValidation);
@@ -129,43 +128,43 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('confirmDefendantsDOB', {
         question: confirmDefendantsDOB.defendantsDOBQuestion,
         option: confirmDefendantsDOB.yesRadioOption,
-        nextPage: enterDefendantsDOB.mainHeader
+        nextPage: knownDefendantsDOBInformation.mainHeader
       });
-      await performAction('errorValidationEnterDefendantsDOBPage', enterDefendantsDOB.errorValidation);
+      await performAction('errorValidationEnterDefendantsDOBPage', knownDefendantsDOBInformation.errorValidation);
       await performAction('enterDefendantsDOB', {
-        label: enterDefendantsDOB.defendantsDOBTextLabel,
+        label: knownDefendantsDOBInformation.defendantsDOBQuestion,
         input: defendantDetails,
-        nextPage: peopleWillBeEvicted.mainHeader
+        nextPage: peopleWhoWillBeEvicted.mainHeader
       });
-      await performAction('errorValidationPeopleWhoWillBeEvictedPage', peopleWillBeEvicted.errorValidation);
+      await performAction('errorValidationPeopleWhoWillBeEvictedPage', peopleWhoWillBeEvicted.errorValidation);
       await performAction('selectPeopleWhoWillBeEvicted', {
-        question: peopleWillBeEvicted.evictEveryOneQuestion,
-        option: peopleWillBeEvicted.yesRadioOption,
+        question: peopleWhoWillBeEvicted.evictEveryOneQuestion,
+        option: peopleWhoWillBeEvicted.yesRadioOption,
         nextPage: livingInTheProperty.mainHeader
       });
       await performAction('selectEveryoneLivingAtTheProperty', {
         question: livingInTheProperty.riskToBailiffQuestion,
         option: livingInTheProperty.yesRadioOption,
-        nextPage: riskPosedByEveryoneAtProperty.mainHeader
+        nextPage: evictionRisksPosed.mainHeader
       });
-      await performAction('errorValidationRiskPosedByEveryonePage', riskPosedByEveryoneAtProperty.errorValidation);
+      await performAction('errorValidationRiskPosedByEveryonePage', evictionRisksPosed.errorValidation);
       await performAction('selectRiskPosedByEveryoneAtProperty', {
-        question: riskPosedByEveryoneAtProperty.kindOfRiskQuestion,
+        question: evictionRisksPosed.kindOfRiskQuestion,
         option: [
-          riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckbox,
-          riskPosedByEveryoneAtProperty.historyOfFirearmPossessionCheckbox,
-          riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviourCheckbox,
-          riskPosedByEveryoneAtProperty.verbalOrWrittenThreatsCheckbox,
-          riskPosedByEveryoneAtProperty.protestGroupCheckbox,
-          riskPosedByEveryoneAtProperty.policeOrSocialServiceCheckbox,
-          riskPosedByEveryoneAtProperty.aggressiveAnimalsCheckbox,
+          evictionRisksPosed.violentOrAggressiveBehaviourCheckbox,
+          evictionRisksPosed.historyOfFirearmPossessionCheckbox,
+          evictionRisksPosed.criminalOrAntisocialBehaviourCheckbox,
+          evictionRisksPosed.verbalOrWrittenThreatsCheckbox,
+          evictionRisksPosed.protestGroupCheckbox,
+          evictionRisksPosed.policeOrSocialServiceCheckbox,
+          evictionRisksPosed.aggressiveAnimalsCheckbox,
         ],
-        nextPage: violentOrAggressiveBehaviour.mainHeader
+        nextPage: violentAggressiveRisk.mainHeader
       });
-      await performAction('errorValidationViolentOrAggressiveBehaviourPage', violentOrAggressiveBehaviour.errorValidation);
+      await performAction('errorValidationViolentOrAggressiveBehaviourPage', violentAggressiveRisk.errorValidation);
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveTextLabel,
-        input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveTextInput,
+        label: violentAggressiveRisk.howHaveTheyBeenViolentAndAggressiveQuestion,
+        input: violentAggressiveRisk.howHaveTheyBeenViolentAndAggressiveTextInput,
         nextPage: firearmsPossessionRisk.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
@@ -176,36 +175,36 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('provideRiskPosedByEveryoneAtProperty', {
         label: criminalAntisocialRisk.whatIsTheirHistoryOfCriminalAntisocialBehaviourQuestion,
         input: criminalAntisocialRisk.whatIsTheirHistoryOfCriminalAntisocialBehaviourTextInput,
-        nextPage: verbalOrWrittenThreats.mainHeader
+        nextPage: verbalOrWrittenThreatsRisk.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeTextLabel,
-        input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeTextInput,
+        label: verbalOrWrittenThreatsRisk.verbalOrWrittenThreatsMadeQuestion,
+        input: verbalOrWrittenThreatsRisk.verbalOrWrittenThreatsMadeTextInput,
         nextPage: protestorGroupRisk.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
         label: protestorGroupRisk.whichGroupMemberQuestion,
         input: protestorGroupRisk.whichGroupMemberTextInput,
-        nextPage: policeOrSocialServiceVisit.mainHeader
+        nextPage: policeOrSocialServicesRisk.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyTextLabel,
-        input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyTextInput,
+        label: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyQuestion,
+        input: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyTextInput,
         nextPage: aggressiveAnimalsRisk.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
         label: aggressiveAnimalsRisk.whatKindOfAnimalDoTheyHaveQuestion,
         input: aggressiveAnimalsRisk.whatKindOfAnimalDoTheyHaveTextInput,
-        nextPage: vulnerableAdultsAndChildren.mainHeader
+        nextPage: vulnerableAdultsChildren.mainHeader
       });
-      await performAction('errorValidationVulnerablePeoplePage', vulnerableAdultsAndChildren.errorValidation);
+      await performAction('errorValidationVulnerablePeoplePage', vulnerableAdultsChildren.errorValidation);
       await performAction('selectVulnerablePeopleInTheProperty', {
-        question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
-        option: vulnerableAdultsAndChildren.yesRadioOption,
-        confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
-        peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
-        label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
-        input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput,
+        question: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion,
+        option: vulnerableAdultsChildren.yesRadioOption,
+        confirm: vulnerableAdultsChildren.confirmVulnerablePeopleHiddenQuestion,
+        peopleOption: vulnerableAdultsChildren.vulnerableAdultsHiddenRadioOption,
+        label: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextLabel,
+        input: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextInput,
         nextPage: propertyAccessDetails.mainHeader
       });
       await performAction('provideDetailsBasedOnRadioOptionSelection', {
@@ -232,52 +231,52 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.yesRadioOption,
-        label: legalCosts.howMuchYouWantToReclaimTextLabel,
-        input: legalCosts.howMuchYouWantToReclaimTextInput,
+        label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
+        input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
         nextPage: landRegistryFees.mainHeader
       });
       await performAction('errorValidationLandRegistryFeePage', landRegistryFees.errorValidation);
       await performAction('provideLandRegistryFees', {
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.yesRadioOption,
-        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
         input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-        nextPage: rePayments.mainHeader
+        nextPage: repayments.mainHeader
       });
-      await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
-      await performAction('errorValidationRepaymentsPage', rePayments.errorValidation);
+      await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
+      await performAction('errorValidationRepaymentsPage', repayments.errorValidation);
       await performAction('provideAmountToRePay', {
-        question: rePayments.rePaymentQuestion,
-        option: rePayments.rePaymentRadioOptions.some,
-        label: rePayments.enterTheAmountTextLabel,
-        input: rePayments.enterTheAmountTextInput,
+        question: repayments.rePaymentQuestion,
+        option: repayments.someRadioOptions,
+        label: repayments.enterTheAmountTextLabelHidden,
+        input: repayments.enterTheAmountTextInputHidden,
         nextPage: languageUsed.mainHeader
       });
       await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
-        option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+        option: languageUsed.englishRadioOption,
         nextPage: suspendedOrder.mainHeader
       });
       await performAction('errorValidationSuspendOrderPage', suspendedOrder.errorValidation);
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.yesRadioOption,
-        nextPage: statementOfTruthOne.mainHeader
+        nextPage: statementOfTruth.mainHeader
       });
-      await performAction('errorValidationSOT1Page', statementOfTruthOne.errorValidation);
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
+      await performAction('errorValidationSOT1Page', statementOfTruth.errorValidation);
+      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
-        question: statementOfTruthOne.completedByLabel,
-        option: statementOfTruthOne.claimantRadioOption,
-        option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        label: statementOfTruthOne.fullNameHiddenTextLabel,
-        input: statementOfTruthOne.fullNameHiddenTextInput,
-        label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-        input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
-        label2: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-        input2: statementOfTruthOne.nameOfFirmHiddenTextInput,
+        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
+        question: statementOfTruth.completedByLabel,
+        option: statementOfTruth.claimantRadioOption,
+        option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+        label: statementOfTruth.fullNameHiddenTextLabel,
+        input: statementOfTruth.fullNameHiddenTextInput,
+        label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+        input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+        label2: statementOfTruth.nameOfFirmHiddenTextLabel,
+        input2: statementOfTruth.nameOfFirmHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader
       });
     });
@@ -285,18 +284,18 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] @enforcement @PR @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', yourApplication.mainHeader);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
-      journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-      type: yourApplication.summaryWritOrWarrant,
-      label1: yourApplication.warrantFeeValidationLabel,
-      text1: yourApplication.warrantFeeValidationText,
-      label2: yourApplication.writFeeValidationLabel,
-      text2: yourApplication.writFeeValidationText
+      journey: enforcementApplication.warrantOfPossessionRadioOption,
+      type: enforcementApplication.summaryWritOrWarrantLink,
+      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      text1: enforcementApplication.warrantFeeValidationTextHidden,
+      label2: enforcementApplication.writFeeValidationLabelHidden,
+      text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {
-      question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
       nextPage: nameAndAddressForEviction.mainHeader
     });
     await performAction('selectNameAndAddressForEviction', {
@@ -308,11 +307,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('confirmDefendantsDOB', {
       question: confirmDefendantsDOB.defendantsDOBQuestion,
       option: confirmDefendantsDOB.noRadioOption,
-      nextPage: peopleWillBeEvicted.mainHeader
+      nextPage: peopleWhoWillBeEvicted.mainHeader
     });
     await performAction('selectPeopleWhoWillBeEvicted', {
-      question: peopleWillBeEvicted.evictEveryOneQuestion,
-      option: peopleWillBeEvicted.noRadioOption,
+      question: peopleWhoWillBeEvicted.evictEveryOneQuestion,
+      option: peopleWhoWillBeEvicted.noRadioOption,
       nextPage: peopleYouWantToEvict.mainHeader
     });
     await performAction('errorValidationPeopleYouWantToEvictPage', peopleYouWantToEvict.errorValidation);
@@ -324,15 +323,15 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: livingInTheProperty.riskToBailiffQuestion,
       option: livingInTheProperty.noRadioOption,
-      nextPage: vulnerableAdultsAndChildren.mainHeader
+      nextPage: vulnerableAdultsChildren.mainHeader
     });
     await performAction('selectVulnerablePeopleInTheProperty', {
-      question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
-      option: vulnerableAdultsAndChildren.noRadioOption,
-      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
-      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
-      label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
-      input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput,
+      question: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion,
+      option: vulnerableAdultsChildren.noRadioOption,
+      confirm: vulnerableAdultsChildren.confirmVulnerablePeopleHiddenQuestion,
+      peopleOption: vulnerableAdultsChildren.vulnerableAdultsHiddenRadioOption,
+      label: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextLabel,
+      input: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextInput,
       nextPage: propertyAccessDetails.mainHeader
     });
     await performAction('provideDetailsBasedOnRadioOptionSelection', {
@@ -353,47 +352,47 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
       option: legalCosts.noRadioOption,
-      label: legalCosts.howMuchYouWantToReclaimTextLabel,
-      input: legalCosts.howMuchYouWantToReclaimTextInput,
+      label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
+      input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
       nextPage: landRegistryFees.mainHeader
     });
     await performAction('provideLandRegistryFees', {
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.noRadioOption,
-      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-      nextPage: rePayments.mainHeader,
+      nextPage: repayments.mainHeader,
     });
-    await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
     await performAction('provideAmountToRePay', {
-      question: rePayments.rePaymentQuestion,
-      option: rePayments.rePaymentRadioOptions.none,
-      label: rePayments.enterTheAmountTextLabel,
-      input: rePayments.enterTheAmountTextInput,
+      question: repayments.rePaymentQuestion,
+      option: repayments.noneRadioOptions,
+      label: repayments.enterTheAmountTextLabelHidden,
+      input: repayments.enterTheAmountTextInputHidden,
       nextPage: languageUsed.mainHeader
     });
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+      option: languageUsed.englishRadioOption,
       nextPage: suspendedOrder.mainHeader
     });
     await performAction('confirmSuspendedOrder', {
       question: suspendedOrder.suspendedOrderQuestion,
       option: suspendedOrder.noRadioOption,
-      nextPage: statementOfTruthTwo.mainHeader
+      nextPage: statementOfTruth.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruthTwo.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
     await performAction('selectStatementOfTruth', {
-      selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
-      question: statementOfTruthTwo.completedByLabel,
-      option: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
-      option1: statementOfTruthTwo.signThisStatementHiddenCheckbox,
-      label: statementOfTruthTwo.fullNameHiddenTextLabel,
-      input: statementOfTruthTwo.fullNameHiddenTextInput,
-      label1: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
-      input1: statementOfTruthTwo.nameOfFirmHiddenTextInput,
-      label2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel,
-      input2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput,
+      selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
+      question: statementOfTruth.completedByLabel,
+      option: statementOfTruth.claimantLegalRepresentativeRadioOption,
+      option1: statementOfTruth.signThisStatementHiddenCheckbox,
+      label: statementOfTruth.fullNameHiddenTextLabel,
+      input: statementOfTruth.fullNameHiddenTextInput,
+      label1: statementOfTruth.nameOfFirmHiddenTextLabel,
+      input1: statementOfTruth.nameOfFirmHiddenTextInput,
+      label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+      input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader
     });
   });
@@ -401,18 +400,18 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', yourApplication.mainHeader);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
-      journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-      type: yourApplication.summaryWritOrWarrant,
-      label1: yourApplication.warrantFeeValidationLabel,
-      text1: yourApplication.warrantFeeValidationText,
-      label2: yourApplication.writFeeValidationLabel,
-      text2: yourApplication.writFeeValidationText
+      journey: enforcementApplication.warrantOfPossessionRadioOption,
+      type: enforcementApplication.summaryWritOrWarrantLink,
+      label1: enforcementApplication.warrantFeeValidationLabelHidden,
+      text1: enforcementApplication.warrantFeeValidationTextHidden,
+      label2: enforcementApplication.writFeeValidationLabelHidden,
+      text2: enforcementApplication.writFeeValidationTextHidden
     });
     await performAction('selectApplicationType', {
-      question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
       nextPage: nameAndAddressForEviction.mainHeader
     });
     await performAction('selectNameAndAddressForEviction', {
@@ -424,11 +423,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('confirmDefendantsDOB', {
       question: confirmDefendantsDOB.defendantsDOBQuestion,
       option: confirmDefendantsDOB.noRadioOption,
-      nextPage: peopleWillBeEvicted.mainHeader
+      nextPage: peopleWhoWillBeEvicted.mainHeader
     });
     await performAction('selectPeopleWhoWillBeEvicted', {
-      question: peopleWillBeEvicted.evictEveryOneQuestion,
-      option: peopleWillBeEvicted.noRadioOption,
+      question: peopleWhoWillBeEvicted.evictEveryOneQuestion,
+      option: peopleWhoWillBeEvicted.noRadioOption,
       nextPage: peopleYouWantToEvict.mainHeader
     });
     await performAction('selectPeopleYouWantToEvict', {
@@ -442,14 +441,14 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nextPage: evictionDelayWarning.mainHeader
     });
     await performAction('clickButton', evictionDelayWarning.continueButton);
-    await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
+    await performValidation('mainHeader', vulnerableAdultsChildren.mainHeader);
     await performAction('selectVulnerablePeopleInTheProperty', {
-      question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
-      option: vulnerableAdultsAndChildren.notSureRadioOption,
-      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
-      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
-      label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
-      input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput,
+      question: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion,
+      option: vulnerableAdultsChildren.notSureRadioOption,
+      confirm: vulnerableAdultsChildren.confirmVulnerablePeopleHiddenQuestion,
+      peopleOption: vulnerableAdultsChildren.vulnerableAdultsHiddenRadioOption,
+      label: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextLabel,
+      input: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextInput,
       nextPage: propertyAccessDetails.mainHeader
     });
     await performAction('provideDetailsBasedOnRadioOptionSelection', {
@@ -474,47 +473,47 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
       option: legalCosts.yesRadioOption,
-      label: legalCosts.howMuchYouWantToReclaimTextLabel,
-      input: legalCosts.howMuchYouWantToReclaimTextInput,
+      label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
+      input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
       nextPage: landRegistryFees.mainHeader
     });
     await performAction('provideLandRegistryFees', {
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.noRadioOption,
-      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-      nextPage: rePayments.mainHeader,
+      nextPage: repayments.mainHeader,
     });
-    await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
     await performAction('provideAmountToRePay', {
-      question: rePayments.rePaymentQuestion,
-      option: rePayments.rePaymentRadioOptions.all,
-      label: rePayments.enterTheAmountTextLabel,
-      input: rePayments.enterTheAmountTextInput,
+      question: repayments.rePaymentQuestion,
+      option: repayments.allRadioOptions,
+      label: repayments.enterTheAmountTextLabelHidden,
+      input: repayments.enterTheAmountTextInputHidden,
       nextPage: languageUsed.mainHeader
     });
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+      option: languageUsed.englishRadioOption,
       nextPage: suspendedOrder.mainHeader
     });
     await performAction('confirmSuspendedOrder', {
       question: suspendedOrder.suspendedOrderQuestion,
       option: suspendedOrder.yesRadioOption,
-      nextPage: statementOfTruthOne.mainHeader
+      nextPage: statementOfTruth.mainHeader
     });
-    await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
     await performAction('selectStatementOfTruth', {
-      selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
-      question: statementOfTruthOne.completedByLabel,
-      option: statementOfTruthOne.claimantRadioOption,
-      option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-      label: statementOfTruthOne.fullNameHiddenTextLabel,
-      input: statementOfTruthOne.fullNameHiddenTextInput,
-      label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-      input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
-      label2: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-      input2: statementOfTruthOne.nameOfFirmHiddenTextInput,
+      selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
+      question: statementOfTruth.completedByLabel,
+      option: statementOfTruth.claimantRadioOption,
+      option1: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      label: statementOfTruth.fullNameHiddenTextLabel,
+      input: statementOfTruth.fullNameHiddenTextInput,
+      label1: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+      input1: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
+      label2: statementOfTruth.nameOfFirmHiddenTextLabel,
+      input2: statementOfTruth.nameOfFirmHiddenTextInput,
       nextPage: checkYourAnswers.mainHeader
     });
   });
@@ -528,38 +527,38 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', yourApplication.mainHeader);
+      await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('selectApplicationType', {
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+        question: enforcementApplication.typeOfApplicationQuestion,
+        option: enforcementApplication.warrantOfPossessionRadioOption,
         nextPage: nameAndAddressForEviction.mainHeader
       });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.noRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-        nextPage: youNeedPermission.mainHeader
+        nextPage: changeNameAddress.mainHeader
       });
-      await performAction('clickButton', youNeedPermission.continueButton);
-      await performValidation('errorMessage', { header: youNeedPermission.eventCouldNotBeCreatedErrorMessage, message: youNeedPermission.errMessage });
+      await performAction('clickButton', changeNameAddress.continueButton);
+      await performValidation('errorMessage', { header: changeNameAddress.eventCouldNotBeCreatedErrorMessageHeader, message: changeNameAddress.errMessageDynamic });
     });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', yourApplication.mainHeader);
+      await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
-        journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-        type: yourApplication.summaryWritOrWarrant,
-        label1: yourApplication.warrantFeeValidationLabel,
-        text1: yourApplication.warrantFeeValidationText,
-        label2: yourApplication.writFeeValidationLabel,
-        text2: yourApplication.writFeeValidationText
+        journey: enforcementApplication.warrantOfPossessionRadioOption,
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        text1: enforcementApplication.warrantFeeValidationTextHidden,
+        label2: enforcementApplication.writFeeValidationLabelHidden,
+        text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('selectApplicationType', {
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+        question: enforcementApplication.typeOfApplicationQuestion,
+        option: enforcementApplication.warrantOfPossessionRadioOption,
         nextPage: nameAndAddressForEviction.mainHeader
       });
       await performAction('selectNameAndAddressForEviction', {
@@ -571,11 +570,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('confirmDefendantsDOB', {
         question: confirmDefendantsDOB.defendantsDOBQuestion,
         option: confirmDefendantsDOB.noRadioOption,
-        nextPage: peopleWillBeEvicted.mainHeader
+        nextPage: peopleWhoWillBeEvicted.mainHeader
       });
       await performAction('selectPeopleWhoWillBeEvicted', {
-        question: peopleWillBeEvicted.evictEveryOneQuestion,
-        option: peopleWillBeEvicted.noRadioOption,
+        question: peopleWhoWillBeEvicted.evictEveryOneQuestion,
+        option: peopleWhoWillBeEvicted.noRadioOption,
         nextPage: peopleYouWantToEvict.mainHeader
       });
       await performAction('errorValidationPeopleYouWantToEvictPage', peopleYouWantToEvict.errorValidation);
@@ -587,33 +586,33 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectEveryoneLivingAtTheProperty', {
         question: livingInTheProperty.riskToBailiffQuestion,
         option: livingInTheProperty.yesRadioOption,
-        nextPage: riskPosedByEveryoneAtProperty.mainHeader
+        nextPage: evictionRisksPosed.mainHeader
       });
       await performAction('selectRiskPosedByEveryoneAtProperty', {
-        question: riskPosedByEveryoneAtProperty.kindOfRiskQuestion,
+        question: evictionRisksPosed.kindOfRiskQuestion,
         option: [
-          riskPosedByEveryoneAtProperty.protestGroupCheckbox,
-          riskPosedByEveryoneAtProperty.policeOrSocialServiceCheckbox,
+          evictionRisksPosed.protestGroupCheckbox,
+          evictionRisksPosed.policeOrSocialServiceCheckbox,
         ],
         nextPage: protestorGroupRisk.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
         label: protestorGroupRisk.whichGroupMemberQuestion,
         input: protestorGroupRisk.whichGroupMemberTextInput,
-        nextPage: policeOrSocialServiceVisit.mainHeader
+        nextPage: policeOrSocialServicesRisk.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyTextLabel,
-        input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyTextInput,
-        nextPage: vulnerableAdultsAndChildren.mainHeader
+        label: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyQuestion,
+        input: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyTextInput,
+        nextPage: vulnerableAdultsChildren.mainHeader
       });
       await performAction('selectVulnerablePeopleInTheProperty', {
-        question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
-        option: vulnerableAdultsAndChildren.noRadioOption,
-        confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
-        peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
-        label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
-        input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput,
+        question: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion,
+        option: vulnerableAdultsChildren.noRadioOption,
+        confirm: vulnerableAdultsChildren.confirmVulnerablePeopleHiddenQuestion,
+        peopleOption: vulnerableAdultsChildren.vulnerableAdultsHiddenRadioOption,
+        label: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextLabel,
+        input: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextInput,
         nextPage: propertyAccessDetails.mainHeader
       });
       await performAction('provideDetailsBasedOnRadioOptionSelection', {
@@ -634,47 +633,47 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.noRadioOption,
-        label: legalCosts.howMuchYouWantToReclaimTextLabel,
-        input: legalCosts.howMuchYouWantToReclaimTextInput,
+        label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
+        input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
         nextPage: landRegistryFees.mainHeader
       });
       await performAction('provideLandRegistryFees', {
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.noRadioOption,
-        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
         input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-        nextPage: rePayments.mainHeader,
+        nextPage: repayments.mainHeader,
       });
-      await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
       await performAction('provideAmountToRePay', {
-        question: rePayments.rePaymentQuestion,
-        option: rePayments.rePaymentRadioOptions.none,
-        label: rePayments.enterTheAmountTextLabel,
-        input: rePayments.enterTheAmountTextInput,
+        question: repayments.rePaymentQuestion,
+        option: repayments.noneRadioOptions,
+        label: repayments.enterTheAmountTextLabelHidden,
+        input: repayments.enterTheAmountTextInputHidden,
         nextPage: languageUsed.mainHeader
       });
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
-        option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+        option: languageUsed.englishRadioOption,
         nextPage: suspendedOrder.mainHeader
       });
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.noRadioOption,
-        nextPage: statementOfTruthTwo.mainHeader
+        nextPage: statementOfTruth.mainHeader
       });
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruthTwo.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
-        question: statementOfTruthTwo.completedByLabel,
-        option: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
-        option1: statementOfTruthTwo.signThisStatementHiddenCheckbox,
-        label: statementOfTruthTwo.fullNameHiddenTextLabel,
-        input: statementOfTruthTwo.fullNameHiddenTextInput,
-        label1: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
-        input1: statementOfTruthTwo.nameOfFirmHiddenTextInput,
-        label2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel,
-        input2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput,
+        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
+        question: statementOfTruth.completedByLabel,
+        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
+        option1: statementOfTruth.signThisStatementHiddenCheckbox,
+        label: statementOfTruth.fullNameHiddenTextLabel,
+        input: statementOfTruth.fullNameHiddenTextInput,
+        label1: statementOfTruth.nameOfFirmHiddenTextLabel,
+        input1: statementOfTruth.nameOfFirmHiddenTextInput,
+        label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+        input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader
       });
     });
@@ -683,18 +682,18 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', yourApplication.mainHeader);
+      await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
-        journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-        type: yourApplication.summaryWritOrWarrant,
-        label1: yourApplication.warrantFeeValidationLabel,
-        text1: yourApplication.warrantFeeValidationText,
-        label2: yourApplication.writFeeValidationLabel,
-        text2: yourApplication.writFeeValidationText
+        journey: enforcementApplication.warrantOfPossessionRadioOption,
+        type: enforcementApplication.summaryWritOrWarrantLink,
+        label1: enforcementApplication.warrantFeeValidationLabelHidden,
+        text1: enforcementApplication.warrantFeeValidationTextHidden,
+        label2: enforcementApplication.writFeeValidationLabelHidden,
+        text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('selectApplicationType', {
-        question: yourApplication.typeOfApplicationQuestion,
-        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+        question: enforcementApplication.typeOfApplicationQuestion,
+        option: enforcementApplication.warrantOfPossessionRadioOption,
         nextPage: nameAndAddressForEviction.mainHeader,
       });
       await performAction('selectNameAndAddressForEviction', {
@@ -706,11 +705,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('confirmDefendantsDOB', {
         question: confirmDefendantsDOB.defendantsDOBQuestion,
         option: confirmDefendantsDOB.noRadioOption,
-        nextPage: peopleWillBeEvicted.mainHeader,
+        nextPage: peopleWhoWillBeEvicted.mainHeader,
       });
       await performAction('selectPeopleWhoWillBeEvicted', {
-        question: peopleWillBeEvicted.evictEveryOneQuestion,
-        option: peopleWillBeEvicted.noRadioOption,
+        question: peopleWhoWillBeEvicted.evictEveryOneQuestion,
+        option: peopleWhoWillBeEvicted.noRadioOption,
         nextPage: peopleYouWantToEvict.mainHeader,
       });     
       await performAction('selectPeopleYouWantToEvict', {
@@ -721,15 +720,15 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectEveryoneLivingAtTheProperty', {
         question: livingInTheProperty.riskToBailiffQuestion,
         option: livingInTheProperty.noRadioOption,
-        nextPage: vulnerableAdultsAndChildren.mainHeader,
+        nextPage: vulnerableAdultsChildren.mainHeader,
       });
       await performAction('selectVulnerablePeopleInTheProperty', {
-        question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
-        option: vulnerableAdultsAndChildren.noRadioOption,
-        confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
-        peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
-        label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
-        input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput,
+        question: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion,
+        option: vulnerableAdultsChildren.noRadioOption,
+        confirm: vulnerableAdultsChildren.confirmVulnerablePeopleHiddenQuestion,
+        peopleOption: vulnerableAdultsChildren.vulnerableAdultsHiddenRadioOption,
+        label: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextLabel,
+        input: vulnerableAdultsChildren.howAreTheyVulnerableHiddenTextInput,
         nextPage: propertyAccessDetails.mainHeader,
       });
       await performAction('provideDetailsBasedOnRadioOptionSelection', {
@@ -750,47 +749,47 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.noRadioOption,
-        label: legalCosts.howMuchYouWantToReclaimTextLabel,
-        input: legalCosts.howMuchYouWantToReclaimTextInput,
+        label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
+        input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
         nextPage: landRegistryFees.mainHeader
       });
       await performAction('provideLandRegistryFees', {
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.noRadioOption,
-        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
         input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-        nextPage: rePayments.mainHeader,
+        nextPage: repayments.mainHeader,
       });
-      await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
       await performAction('provideAmountToRePay', {
-        question: rePayments.rePaymentQuestion,
-        option: rePayments.rePaymentRadioOptions.none,
-        label: rePayments.enterTheAmountTextLabel,
-        input: rePayments.enterTheAmountTextInput,
+        question: repayments.rePaymentQuestion,
+        option: repayments.noneRadioOptions,
+        label: repayments.enterTheAmountTextLabelHidden,
+        input: repayments.enterTheAmountTextInputHidden,
         nextPage: languageUsed.mainHeader
       });
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
-        option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+        option: languageUsed.englishRadioOption,
         nextPage: suspendedOrder.mainHeader,
       });
       await performAction('confirmSuspendedOrder', {
         question: suspendedOrder.suspendedOrderQuestion,
         option: suspendedOrder.noRadioOption,
-        nextPage: statementOfTruthTwo.mainHeader,
+        nextPage: statementOfTruth.mainHeader,
       });
-      await performAction('validateAmountToRePayTable', { headerName: statementOfTruthTwo.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
-        selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
-        question: statementOfTruthTwo.completedByLabel,
-        option: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
-        option1: statementOfTruthTwo.signThisStatementHiddenCheckbox,
-        label: statementOfTruthTwo.fullNameHiddenTextLabel,
-        input: statementOfTruthTwo.fullNameHiddenTextInput,
-        label1: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
-        input1: statementOfTruthTwo.nameOfFirmHiddenTextInput,
-        label2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel,
-        input2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput,
+        selectCheckbox: statementOfTruth.iCertifyCheckboxDynamic,
+        question: statementOfTruth.completedByLabel,
+        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
+        option1: statementOfTruth.signThisStatementHiddenCheckbox,
+        label: statementOfTruth.fullNameHiddenTextLabel,
+        input: statementOfTruth.fullNameHiddenTextInput,
+        label1: statementOfTruth.nameOfFirmHiddenTextLabel,
+        input1: statementOfTruth.nameOfFirmHiddenTextInput,
+        label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+        input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
         nextPage: checkYourAnswers.mainHeader,
       });
     });
