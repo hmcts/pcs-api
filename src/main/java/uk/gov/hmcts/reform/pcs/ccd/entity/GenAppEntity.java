@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -10,30 +9,30 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.FetchType.LAZY;
 
+@Entity
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "document")
-public class DocumentEntity {
+@Table(name = "general_application")
+public class GenAppEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -43,21 +42,15 @@ public class DocumentEntity {
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
-    private String url;
-
-    private String fileName;
-
-    private String binaryUrl;
-
-    private String categoryId;
+    @Enumerated(EnumType.STRING)
+    private GenAppType type;
 
     @Enumerated(EnumType.STRING)
-    private DocumentType type;
+    private GenAppState state;
 
-    private String description;
+    @ManyToOne(fetch = EAGER)
+    @JoinColumn(name = "party_id")
+    @JsonBackReference
+    private PartyEntity party;
 
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "document")
-    @Builder.Default
-    @JsonManagedReference
-    private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
 }
