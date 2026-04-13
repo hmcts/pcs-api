@@ -16,6 +16,7 @@ import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-action
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
 import { FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
+import { caseFlagsAction } from '@utils/actions/custom-actions/commonComponent/caseFlags.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -101,7 +102,8 @@ export class ActionRegistry {
     ['enterBillingAddress', new FeeAndPayAction()],
     ['enterContactDetails', new FeeAndPayAction()],
     ['confirmPayment', new FeeAndPayAction()],
-    ['cancelPayment', new FeeAndPayAction()]
+    ['cancelPayment', new FeeAndPayAction()],
+    ['createCaseFlags', new caseFlagsAction()]
   ]);
 
   static getAction(actionName: string): IAction {
