@@ -175,7 +175,6 @@ class TenancyLicenceServiceTest {
         RentDetails rentDetails = RentDetails.builder()
             .currentRent(rentAmount)
             .calculatedDailyCharge(calculatedDailyCharge)
-            .perDayCorrect(VerticalYesNo.YES)
             .amendedDailyCharge(new BigDecimal("99.99")) // Should be ignored
             .frequency(rentFrequency)
             .otherFrequency("should be ignored")
@@ -191,7 +190,6 @@ class TenancyLicenceServiceTest {
         assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(calculatedDailyCharge);
         assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(rentFrequency);
         assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isNull();
-        assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
@@ -199,14 +197,14 @@ class TenancyLicenceServiceTest {
         // Given
         BigDecimal rentAmount = new BigDecimal("1.23");
         BigDecimal dailyCharge = new BigDecimal("4.56");
+        BigDecimal calculatedDailyCharge = new BigDecimal("99.99");
         RentPaymentFrequency rentFrequency = RentPaymentFrequency.OTHER;
         String otherRentFrequency = "other rent frequency";
 
         RentDetails rentDetails = RentDetails.builder()
             .currentRent(rentAmount)
             .dailyCharge(dailyCharge)
-            .perDayCorrect(VerticalYesNo.NO) // Should be ignored
-            .amendedDailyCharge(new BigDecimal("99.99")) // Should be ignored
+            .calculatedDailyCharge(calculatedDailyCharge) // Should be ignored
             .frequency(rentFrequency)
             .otherFrequency(otherRentFrequency)
             .build();
@@ -222,50 +220,6 @@ class TenancyLicenceServiceTest {
         assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(rentFrequency);
         assertThat(tenancyLicenceEntity.getOtherRentFrequency()).isEqualTo(otherRentFrequency);
         assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isNull();
-    }
-
-    @Test
-    void shouldSetDailyRentWhenNotCorrect() {
-        BigDecimal rentAmount = new BigDecimal("2000.00");
-        BigDecimal amendedDailyCharge = new BigDecimal("56.25");
-
-        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
-                .frequency(RentPaymentFrequency.WEEKLY)
-                .currentRent(rentAmount) // Should be ignored
-                .calculatedDailyCharge(new BigDecimal("99.99"))// Should be ignored
-                .amendedDailyCharge(amendedDailyCharge)
-                .perDayCorrect(VerticalYesNo.NO)
-                .build());
-
-        TenancyLicenceEntity tenancyLicenceEntity = underTest.createTenancyLicenceEntity(pcsCase);
-
-        assertThat(tenancyLicenceEntity.getRentAmount()).isEqualTo(rentAmount);
-        assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isEqualTo(VerticalYesNo.NO);
-        assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(amendedDailyCharge);
-        assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(RentPaymentFrequency.WEEKLY);
-        assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isNull();
-    }
-
-    @Test
-    void shouldThrowExceptionIfRentDataIsIncomplete() {
-        BigDecimal rentAmount = new BigDecimal("2000.00");
-        BigDecimal amendedDailyCharge = new BigDecimal("56.25");
-
-        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
-              .frequency(RentPaymentFrequency.WEEKLY)
-              .perDayCorrect(null)
-              .currentRent(rentAmount) // Should be ignored
-              .calculatedDailyCharge(new BigDecimal("99.99"))// Should be ignored
-              .amendedDailyCharge(amendedDailyCharge)
-              .build());
-
-        Throwable throwable = catchThrowable(() -> underTest.createTenancyLicenceEntity(pcsCase));
-
-        assertThat(throwable)
-            .isInstanceOf(CaseDataValidationException.class)
-            .hasMessageStartingWith("Invalid rent details:");
     }
 
     private static Stream<Arguments> noTenancyTypeScenarios() {
