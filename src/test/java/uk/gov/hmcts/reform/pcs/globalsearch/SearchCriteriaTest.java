@@ -9,7 +9,9 @@ import uk.gov.hmcts.ccd.sdk.api.SearchCriteriaField;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class SearchCriteriaTest {
 
@@ -25,7 +27,7 @@ class SearchCriteriaTest {
     void shouldConfigureSearchCriteria() {
         var configBuilder = mock(DecentralisedConfigBuilder.class);
         var searchCriteriaBuilder = mock(SearchCriteriaBuilder.class);
-        var expectedFields = List.of(
+        final var expectedFields = List.of(
             SearchCriteriaField.builder().otherCaseReference("caseNameHmctsInternal").build(),
             SearchCriteriaField.builder().otherCaseReference("caseNamePublic").build()
         );
