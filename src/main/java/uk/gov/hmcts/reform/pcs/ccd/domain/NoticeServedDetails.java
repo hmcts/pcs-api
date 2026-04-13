@@ -56,14 +56,14 @@ public class NoticeServedDetails {
     private LocalDateTime noticeHandedOverDateTime;
 
     @CCD(
-            label = "Date and time the email was sent",
+            label = "Date and time the document was emailed",
             hint = "For example, 16 4 2021, 11 15",
             access = {CitizenAccess.class}
     )
     private LocalDateTime noticeEmailSentDateTime;
 
     @CCD(
-            label = "Date and time the electronic message was sent",
+            label = "Date and time the message was sent",
             hint = "For example, 16 4 2021, 11 15",
             access = {CitizenAccess.class}
     )
@@ -93,6 +93,12 @@ public class NoticeServedDetails {
             typeOverride = TextArea
     )
     private String noticeOtherExplanation;
+
+    @CCD(
+        hint = "Give details of how the notice was served. You can enter up to 250 characters.",
+        typeOverride = TextArea
+    )
+    private String noticeOtherElectronicMethodExplanation;
 
     @CCD(
             label = "Add document",

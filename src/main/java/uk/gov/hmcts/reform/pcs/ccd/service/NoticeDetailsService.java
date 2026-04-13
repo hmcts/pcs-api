@@ -27,7 +27,7 @@ public class NoticeDetailsService {
     private static final String FUTURE_DATETIME_ERROR = "The date and time cannot be today or in the future";
     private static final String FUTURE_DATE_ERROR = "The date cannot be today or in the future";
     private static final String NOTICE_SERVICE_METHOD_REQUIRED = "You must select how you served the notice";
-    private static final String NOTICE_EMAIL_EXPLANATION_LABEL = "What email address was the document sent to?";
+    private static final String NOTICE_OTHER_ELECTRONIC_METHOD_EXPLANATION_LABEL = "By other electronic method";
     private static final String NOTICE_OTHER_EXPLANATION_LABEL = "Other";
     private static final String NAME_OF_PERSON_DOCUMENT_LEFT_WITH = "Name of person the document was left with";
 
@@ -86,8 +86,12 @@ public class NoticeDetailsService {
                 noticeServedDetails.getNoticePersonName(),
                 NAME_OF_PERSON_DOCUMENT_LEFT_WITH,
                 TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                noticeServedDetails.getNoticeOtherElectronicMethodExplanation(),
+                NOTICE_OTHER_ELECTRONIC_METHOD_EXPLANATION_LABEL,
+                TextAreaValidationService.SHORT_TEXT_LIMIT
             )
-
         ));
 
         return errors;

@@ -90,6 +90,10 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">By other electronic method</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\"")
             .optional(
+                NoticeServedDetails::getNoticeOtherElectronicMethodExplanation,
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\""
+            )
+            .optional(
                 NoticeServedDetails::getNoticeOtherElectronicDateTime,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\""
             )

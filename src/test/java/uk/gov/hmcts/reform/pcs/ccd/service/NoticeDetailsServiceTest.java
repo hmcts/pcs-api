@@ -381,6 +381,49 @@ class NoticeDetailsServiceTest {
     }
 
     @Nested
+    class OtherElectronicMethodValidation {
+        @Test
+        void shouldValidateOtherElectronicMethodWithValidExplanation() {
+            // Given
+            String validText = "x".repeat(250);
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                                         .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
+                                         .noticeOtherElectronicMethodExplanation(validText)
+                                         .build())
+                .build();
+
+            // When
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+
+            // Then
+            assertThat(errors).isEmpty();
+        }
+
+        @Test
+        void shouldValidateOtherElectronicMethodWithInvalidExplanation() {
+            // Given
+            String invalidText = "x".repeat(251);
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                                         .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
+                                         .noticeOtherElectronicMethodExplanation(invalidText)
+                                         .build())
+                .build();
+
+            // When
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+
+            // Then
+            assertThat(errors)
+                .isNotEmpty()
+                .anyMatch(error -> error.contains("more than the maximum number of characters"));
+        }
+    }
+
+    @Nested
     class OtherValidation {
 
         @Test
