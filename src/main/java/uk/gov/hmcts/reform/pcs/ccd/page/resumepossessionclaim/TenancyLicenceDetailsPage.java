@@ -60,11 +60,11 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
                 .mandatory(TenancyLicenceDetails::getHasCopyOfTenancyLicence)
                 .mandatory(
                     TenancyLicenceDetails::getTenancyLicenceDocuments,
-                    "tenancy_IsTenancyLicenseDocumentsUploaded=\"YES\""
+                    "tenancy_HasCopyOfTenancyLicence=\"YES\""
                 )
                 .mandatory(
                     TenancyLicenceDetails::getReasonsForNoTenancyLicenceDocuments,
-                    "tenancy_IsTenancyLicenseDocumentsUploaded=\"NO\""
+                    "tenancy_HasCopyOfTenancyLicence=\"NO\""
                 )
             .done()
             .label("lineSeparator", "---")
