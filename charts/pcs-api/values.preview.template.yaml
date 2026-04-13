@@ -25,6 +25,7 @@ java:
         - name: pcs-prd-admin-password
           alias: PCS_PRD_ADMIN_PASSWORD
   environment:
+    CHANGE_ID: ${CHANGE_ID}
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
     PCS_DB_NAME: "{{ .Values.postgresql.auth.database}}"
@@ -37,7 +38,7 @@ java:
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     CCD_SDK_DECENTRALISED: "true"
-    PAY_CALLBACK_URL: "https://${SERVICE_FQDN}/service-request-update"
+    PAY_CALLBACK_URL: "https://${SERVICE_FQDN}/payment-update"
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
