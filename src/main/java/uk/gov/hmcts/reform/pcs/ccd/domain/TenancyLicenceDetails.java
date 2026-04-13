@@ -59,12 +59,12 @@ public class TenancyLicenceDetails {
     @CCD(
         label = "Do you have a copy of the tenancy or licence agreement?"
     )
-    private VerticalYesNo  isTenancyLicenseDocumentsUploaded;
+    private VerticalYesNo  hasCopyOfTenancyLicence;
 
     @CCD(
         label = REASONS_FOR_NO_TENANCY_LICENCE_DOCUMENTS_LABEL,
         hint = "You can enter up to 500 characters",
         typeOverride = TextArea
     )
-    private String reasonsForNoTenancyLicenseDocuments;
+    private String reasonsForNoTenancyLicenceDocuments;
 }

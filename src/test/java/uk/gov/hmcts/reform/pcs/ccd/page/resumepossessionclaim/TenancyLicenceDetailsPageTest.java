@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -21,6 +22,9 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -71,6 +75,52 @@ class TenancyLicenceDetailsPageTest extends BasePageTest {
                 .isEqualTo(date);
         }
 
+    }
+
+    @Test
+    void shouldValidateDetailsOfOtherTypeOfTenancyLicenceInput() {
+        // Given
+        String detailsOfOtherTypeOfTenancyLicence = "no documents details";
+        String label = "Give details of the type of tenancy or licence agreement that’s in place";
+        Integer characterLimit = 500;
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
+                                       .typeOfTenancyLicence(TenancyLicenceType.OTHER)
+                                       .detailsOfOtherTypeOfTenancyLicence(detailsOfOtherTypeOfTenancyLicence)
+                                       .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
+        verify(textAreaValidationService, times(1))
+            .validateSingleTextArea(eq(detailsOfOtherTypeOfTenancyLicence), eq(label), eq(characterLimit));
+    }
+
+    @Test
+    void shouldValidateReasonsForNoTenancyLicenceDocumentsInput() {
+        // Given
+        String reasonsForNoTenancyLicenceDocuments = "no documents details";
+        String label = "Explain why you do not have a copy of the tenancy or licence agreement";
+        Integer characterLimit = 500;
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
+                                       .typeOfTenancyLicence(TenancyLicenceType.OTHER)
+                                       .reasonsForNoTenancyLicenceDocuments(reasonsForNoTenancyLicenceDocuments)
+                                       .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
+        verify(textAreaValidationService, times(1))
+            .validateSingleTextArea(eq(reasonsForNoTenancyLicenceDocuments), eq(label), eq(characterLimit));
     }
 
     private static Stream<Arguments> tenancyDateScenarios() {

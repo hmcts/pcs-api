@@ -57,13 +57,13 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
             .done()
             .label("tenancyLicenceDetails-doc-section", "---")
             .complex(PCSCase::getTenancyLicenceDetails)
-                .mandatory(TenancyLicenceDetails::getIsTenancyLicenseDocumentsUploaded)
+                .mandatory(TenancyLicenceDetails::getHasCopyOfTenancyLicence)
                 .mandatory(
                     TenancyLicenceDetails::getTenancyLicenceDocuments,
                     "tenancy_IsTenancyLicenseDocumentsUploaded=\"YES\""
                 )
                 .mandatory(
-                    TenancyLicenceDetails::getReasonsForNoTenancyLicenseDocuments,
+                    TenancyLicenceDetails::getReasonsForNoTenancyLicenceDocuments,
                     "tenancy_IsTenancyLicenseDocumentsUploaded=\"NO\""
                 )
             .done()
@@ -97,7 +97,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
         validationErrors.addAll(
             textAreaValidationService.validateSingleTextArea(
                 caseData.getTenancyLicenceDetails() != null
-                    ? caseData.getTenancyLicenceDetails().getReasonsForNoTenancyLicenseDocuments() : null,
+                    ? caseData.getTenancyLicenceDetails().getReasonsForNoTenancyLicenceDocuments() : null,
                 TenancyLicenceDetails.REASONS_FOR_NO_TENANCY_LICENCE_DOCUMENTS_LABEL,
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
