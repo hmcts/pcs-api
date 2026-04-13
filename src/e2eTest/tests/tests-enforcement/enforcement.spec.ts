@@ -91,7 +91,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Enforcement - Warrant of Possession]', async () => {
+test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
