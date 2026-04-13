@@ -34,9 +34,6 @@ public class ClaimResponseService {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
-    //when contact by phone = no, we MUST skip saving contact_by_text and phone number.
-    private boolean shouldSavePhoneNumAndTextPreference;
-
     /**
      * Saves defendant's contact preferences and contact details.
      * Finds the defendant party by the current user's IDAM ID and case reference updates their information.
@@ -54,8 +51,10 @@ public class ClaimResponseService {
         PartyEntity defendant = partyService.getPartyEntityByIdamId(currentUserIdamId, caseReference);
 
         //save to relevant tables
-        saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
-        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
+        boolean shouldSavePhoneNumAndTextPreference =
+            saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
+        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(),
+            shouldSavePhoneNumAndTextPreference);
 
         // Copy dateOfBirth from defendantResponses to party entity if present
         if (dataFromDraftTable.getDefendantResponses() != null
@@ -71,7 +70,8 @@ public class ClaimResponseService {
      * Updates party's contact details (phone number, email address, first name, and last name).
      * Only updates if the values are provided (non-blank).
      */
-    private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantResponse) {
+    private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantResponse,
+                                              boolean shouldSavePhoneNumAndTextPreference) {
 
         if (StringUtils.isNotBlank(defendantResponse.getParty().getFirstName())) {
             party.setFirstName(defendantResponse.getParty().getFirstName());
@@ -124,7 +124,7 @@ public class ClaimResponseService {
      * Creates and saves contact preferences entity with null-safe conversion.
      * Defaults null preferences to false (no contact).
      */
-    private void saveContactPreferences(PartyEntity party, DefendantResponses defendantResponse) {
+    private boolean saveContactPreferences(PartyEntity party, DefendantResponses defendantResponse) {
         ContactPreferencesEntity contactPrefs = party.getContactPreferences();
         boolean saveNeeded = false;
 
@@ -137,7 +137,7 @@ public class ClaimResponseService {
         contactPrefs.setPreferenceType(defendantResponse.getPreferenceType());
         contactPrefs.setContactByPhone(defendantResponse.getContactByPhone());
 
-        shouldSavePhoneNumAndTextPreference = Optional.ofNullable(defendantResponse.getContactByPhone())
+        boolean shouldSavePhoneNumAndTextPreference = Optional.ofNullable(defendantResponse.getContactByPhone())
             .map(VerticalYesNo::toBoolean)
             .orElse(false);
         if (shouldSavePhoneNumAndTextPreference) {
@@ -150,5 +150,6 @@ public class ClaimResponseService {
         }
 
         log.debug("Saved contact preferences for party ID: {}", party.getId());
+        return shouldSavePhoneNumAndTextPreference;
     }
 }

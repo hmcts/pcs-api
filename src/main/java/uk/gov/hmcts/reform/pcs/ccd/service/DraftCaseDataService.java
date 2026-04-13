@@ -78,6 +78,7 @@ public class DraftCaseDataService {
         return exists;
     }
 
+    @Transactional
     public <T> void saveUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
         Objects.requireNonNull(eventData, "eventData must not be null");
         Objects.requireNonNull(eventId, "eventId must not be null");
