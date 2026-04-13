@@ -335,7 +335,7 @@ test.describe('[Create Case - England]', async () => {
     )
   });
 
-  test('@PR England - Assured tenancy with No Rent arrears', async () => {
+  test('England - Assured tenancy with No Rent arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex

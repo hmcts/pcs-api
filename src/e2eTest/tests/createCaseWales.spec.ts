@@ -498,7 +498,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('@PR Wales - Secure contract - Rent arrears + estate grounds + other options @regression', async () => {
+  test('Wales - Secure contract - Rent arrears + estate grounds + other options @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
