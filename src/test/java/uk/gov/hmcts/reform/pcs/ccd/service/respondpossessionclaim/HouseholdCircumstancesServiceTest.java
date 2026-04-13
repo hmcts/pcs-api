@@ -14,9 +14,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.IncomeExpenseDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RegularExpenseType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularExpenseEntity;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -112,29 +116,34 @@ class HouseholdCircumstancesServiceTest {
 
     @Test
     void shouldMapExpenseAmountsAndFrequenciesWhenAnswerIsYes() {
+
         HouseholdCircumstances householdCircumstances = buildExpenseFields(YesOrNo.YES);
 
         HouseholdCircumstancesEntity entity =
             underTest.createHouseholdCircumstancesEntity(householdCircumstances);
 
-        assertThat(entity.getHouseholdBillsAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
-        assertThat(entity.getHouseholdBillsFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
-        assertThat(entity.getLoanPaymentsAmount()).isEqualByComparingTo(new BigDecimal("200.00"));
-        assertThat(entity.getLoanPaymentsFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
-        assertThat(entity.getChildSpousalMaintenanceAmount()).isEqualByComparingTo(new BigDecimal("300.00"));
-        assertThat(entity.getChildSpousalMaintenanceFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
-        assertThat(entity.getMobilePhoneAmount()).isEqualByComparingTo(new BigDecimal("400.00"));
-        assertThat(entity.getMobilePhoneFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
-        assertThat(entity.getGroceryShoppingAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
-        assertThat(entity.getGroceryShoppingFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
-        assertThat(entity.getFuelParkingTransportAmount()).isEqualByComparingTo(new BigDecimal("600.00"));
-        assertThat(entity.getFuelParkingTransportFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
-        assertThat(entity.getSchoolCostsAmount()).isEqualByComparingTo(new BigDecimal("700.00"));
-        assertThat(entity.getSchoolCostsFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
-        assertThat(entity.getClothingAmount()).isEqualByComparingTo(new BigDecimal("800.00"));
-        assertThat(entity.getClothingFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
-        assertThat(entity.getOtherExpensesAmount()).isEqualByComparingTo(new BigDecimal("900.00"));
-        assertThat(entity.getOtherExpensesFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+        List<RegularExpenseEntity> expenses = entity.getRegularExpenses();
+
+        assertThat(expenses).hasSize(9);
+
+        assertExpense(expenses, RegularExpenseType.HOUSEHOLD_BILLS, new BigDecimal("100.00"),
+                      RecurrenceFrequency.MONTHLY);
+        assertExpense(expenses, RegularExpenseType.LOAN_PAYMENTS, new BigDecimal("200.00"),
+                      RecurrenceFrequency.WEEKLY);
+        assertExpense(expenses, RegularExpenseType.CHILD_SPOUSAL_MAINTENANCE, new BigDecimal("300.00"),
+                      RecurrenceFrequency.MONTHLY);
+        assertExpense(expenses, RegularExpenseType.MOBILE_PHONE, new BigDecimal("400.00"),
+                      RecurrenceFrequency.WEEKLY);
+        assertExpense(expenses, RegularExpenseType.GROCERY_SHOPPING, new BigDecimal("500.00"),
+                      RecurrenceFrequency.MONTHLY);
+        assertExpense(expenses, RegularExpenseType.FUEL_PARKING_TRANSPORT, new BigDecimal("600.00"),
+                      RecurrenceFrequency.WEEKLY);
+        assertExpense(expenses, RegularExpenseType.SCHOOL_COSTS, new BigDecimal("700.00"),
+                      RecurrenceFrequency.MONTHLY);
+        assertExpense(expenses, RegularExpenseType.CLOTHING, new BigDecimal("800.00"),
+                      RecurrenceFrequency.WEEKLY);
+        assertExpense(expenses, RegularExpenseType.OTHER, new BigDecimal("900.00"),
+                      RecurrenceFrequency.MONTHLY);
     }
 
     @ParameterizedTest
@@ -146,24 +155,22 @@ class HouseholdCircumstancesServiceTest {
         HouseholdCircumstancesEntity entity =
             underTest.createHouseholdCircumstancesEntity(householdCircumstances);
 
-        assertThat(entity.getHouseholdBillsAmount()).isNull();
-        assertThat(entity.getHouseholdBillsFrequency()).isNull();
-        assertThat(entity.getLoanPaymentsAmount()).isNull();
-        assertThat(entity.getLoanPaymentsFrequency()).isNull();
-        assertThat(entity.getChildSpousalMaintenanceAmount()).isNull();
-        assertThat(entity.getChildSpousalMaintenanceFrequency()).isNull();
-        assertThat(entity.getMobilePhoneAmount()).isNull();
-        assertThat(entity.getMobilePhoneFrequency()).isNull();
-        assertThat(entity.getGroceryShoppingAmount()).isNull();
-        assertThat(entity.getGroceryShoppingFrequency()).isNull();
-        assertThat(entity.getFuelParkingTransportAmount()).isNull();
-        assertThat(entity.getFuelParkingTransportFrequency()).isNull();
-        assertThat(entity.getSchoolCostsAmount()).isNull();
-        assertThat(entity.getSchoolCostsFrequency()).isNull();
-        assertThat(entity.getClothingAmount()).isNull();
-        assertThat(entity.getClothingFrequency()).isNull();
-        assertThat(entity.getOtherExpensesAmount()).isNull();
-        assertThat(entity.getOtherExpensesFrequency()).isNull();
+        assertThat(entity.getRegularExpenses()).isNullOrEmpty();
+    }
+
+    private void assertExpense(
+        List<RegularExpenseEntity> expenses,
+        RegularExpenseType type,
+        BigDecimal expectedAmount,
+        RecurrenceFrequency expectedFrequency
+    ) {
+        RegularExpenseEntity expense = expenses.stream()
+            .filter(e -> e.getExpenseType() == type)
+            .findFirst()
+            .orElseThrow();
+
+        assertThat(expense.getAmount()).isEqualByComparingTo(expectedAmount);
+        assertThat(expense.getExpenseFrequency()).isEqualTo(expectedFrequency);
     }
 
     private static HouseholdCircumstances buildExpenseFields(YesOrNo answer) {

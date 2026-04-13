@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -9,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -20,11 +22,14 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
+import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Table(name = "household_circumstances")
@@ -43,6 +48,11 @@ public class HouseholdCircumstancesEntity {
     @JoinColumn(name = "defendant_response_id")
     @JsonBackReference
     private DefendantResponseEntity defendantResponse;
+
+    @OneToMany(mappedBy = "householdCircumstances", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    private List<RegularExpenseEntity> regularExpenses = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -102,84 +112,8 @@ public class HouseholdCircumstancesEntity {
 
     private String debtContributionFrequency;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo householdBills;
-
-    private BigDecimal householdBillsAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RecurrenceFrequency householdBillsFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo loanPayments;
-
-    private BigDecimal loanPaymentsAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RecurrenceFrequency loanPaymentsFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo childSpousalMaintenance;
-
-    private BigDecimal childSpousalMaintenanceAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RecurrenceFrequency childSpousalMaintenanceFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo mobilePhone;
-
-    private BigDecimal mobilePhoneAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RecurrenceFrequency mobilePhoneFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo groceryShopping;
-
-    private BigDecimal groceryShoppingAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RecurrenceFrequency groceryShoppingFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo fuelParkingTransport;
-
-    private BigDecimal fuelParkingTransportAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RecurrenceFrequency fuelParkingTransportFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo schoolCosts;
-
-    private BigDecimal schoolCostsAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RecurrenceFrequency schoolCostsFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo clothing;
-
-    private BigDecimal clothingAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RecurrenceFrequency clothingFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo otherExpenses;
-
-    private BigDecimal otherExpensesAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RecurrenceFrequency otherExpensesFrequency;
+    public void addRegularExpense(RegularExpenseEntity expense) {
+        regularExpenses.add(expense);
+        expense.setHouseholdCircumstances(this);
+    }
 }
