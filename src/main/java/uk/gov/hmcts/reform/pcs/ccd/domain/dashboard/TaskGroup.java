@@ -1,6 +1,7 @@
-package uk.gov.hmcts.reform.pcs.dashboard.model;
+package uk.gov.hmcts.reform.pcs.ccd.domain.dashboard;
 
 import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

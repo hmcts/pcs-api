@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.dashboard.model;
+package uk.gov.hmcts.reform.pcs.ccd.domain.dashboard;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DashboardNotificationData {
+public class DashboardNotification {
     private String templateId;
-    private String templateValues;
+    private Map<String, Object> templateValues;
 }
