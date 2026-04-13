@@ -9,13 +9,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsPaymentSourceEntity;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -49,64 +46,6 @@ class RentArrearsServiceTest {
 
         // Then
         assertThat(rentArrearsEntity).isNull();
-    }
-
-    @Test
-    void shouldNotSetThirdPartyPaymentSourcesWhenFlagIsNo() {
-        // Given
-        when(rentArrears.getThirdPartyPayments()).thenReturn(VerticalYesNo.NO);
-        when(rentArrears.getThirdPartyPaymentSources()).thenReturn(List.of(
-            ThirdPartyPaymentSource.DISCRETIONARY_HOUSING_PAYMENT,
-            ThirdPartyPaymentSource.OTHER
-        ));
-
-        // When
-        RentArrearsEntity rentArrearsEntity = underTest.createRentArrearsEntity(pcsCase);
-
-        // Then
-        assertThat(rentArrearsEntity.getThirdPartyPaymentsMade()).isEqualTo(VerticalYesNo.NO);
-        assertThat(rentArrearsEntity.getThirdPartyPaymentSources()).isEmpty();
-    }
-
-    @Test
-    void shouldSetThirdPartyPaymentSourcesWhenFlagIsYes() {
-        // Given
-        when(rentArrears.getThirdPartyPayments()).thenReturn(VerticalYesNo.YES);
-        when(rentArrears.getThirdPartyPaymentSources()).thenReturn(List.of(
-            ThirdPartyPaymentSource.DISCRETIONARY_HOUSING_PAYMENT,
-            ThirdPartyPaymentSource.OTHER
-        ));
-
-        // When
-        RentArrearsEntity rentArrearsEntity = underTest.createRentArrearsEntity(pcsCase);
-
-        // Then
-        assertThat(rentArrearsEntity.getThirdPartyPaymentsMade()).isEqualTo(VerticalYesNo.YES);
-        assertThat(rentArrearsEntity.getThirdPartyPaymentSources())
-            .map(RentArrearsPaymentSourceEntity::getName)
-            .contains(
-                ThirdPartyPaymentSource.DISCRETIONARY_HOUSING_PAYMENT,
-                ThirdPartyPaymentSource.OTHER
-            );
-    }
-
-    @Test
-    void shouldSetDescriptionForOtherThirdPartyPaymentSource() {
-        // Given
-        String otherSourceDescription = "other source description";
-
-        when(rentArrears.getThirdPartyPayments()).thenReturn(VerticalYesNo.YES);
-        when(rentArrears.getThirdPartyPaymentSources()).thenReturn(List.of(ThirdPartyPaymentSource.OTHER));
-        when(rentArrears.getPaymentSourceOther()).thenReturn(otherSourceDescription);
-
-        // When
-        RentArrearsEntity rentArrearsEntity = underTest.createRentArrearsEntity(pcsCase);
-
-        // Then
-        assertThat(rentArrearsEntity.getThirdPartyPaymentsMade()).isEqualTo(VerticalYesNo.YES);
-        assertThat(rentArrearsEntity.getThirdPartyPaymentSources())
-            .map(RentArrearsPaymentSourceEntity::getDescription)
-            .contains(otherSourceDescription);
     }
 
     @ParameterizedTest

@@ -90,8 +90,6 @@ class RentArrearsViewTest {
         Set<RentArrearsPaymentSourceEntity> thirdPartyPaymentSources = Set.of(paymentSource1, paymentSource2);
 
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
-        when(rentArrearsEntity.getThirdPartyPaymentsMade()).thenReturn(VerticalYesNo.YES);
-        when(rentArrearsEntity.getThirdPartyPaymentSources()).thenReturn(thirdPartyPaymentSources);
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES);
 
@@ -105,12 +103,6 @@ class RentArrearsViewTest {
 
         RentArrearsSection rentArrears = rentArrearsCaptor.getValue();
         assertThat(rentArrears.getTotal()).isEqualTo(totalRentArrears);
-        assertThat(rentArrears.getThirdPartyPayments()).isEqualTo(VerticalYesNo.YES);
-        assertThat(rentArrears.getThirdPartyPaymentSources()).containsExactlyInAnyOrder(
-            ThirdPartyPaymentSource.DISCRETIONARY_HOUSING_PAYMENT,
-            ThirdPartyPaymentSource.OTHER
-        );
-        assertThat(rentArrears.getPaymentSourceOther()).isEqualTo(otherPaymentSourceDescription);
 
         verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }

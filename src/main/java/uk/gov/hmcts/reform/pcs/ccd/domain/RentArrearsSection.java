@@ -49,28 +49,6 @@ public class RentArrearsSection {
     private BigDecimal total;
 
     @CCD(
-        label = "For the period shown on the rent statement, have any rent payments been paid by someone "
-            + "other than the defendants?",
-        hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
-            + "made by a government department, like the Department for Work and Pensions (DWP)"
-    )
-    private VerticalYesNo thirdPartyPayments;
-
-    @CCD(
-        label = "Where have the payments come from?",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "ThirdPartyPaymentSource"
-    )
-    private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
-
-    @CCD(
-        label = "Payment source",
-        max = 60
-    )
-    private String paymentSourceOther;
-
-    @CCD(
         label = "Have there been previous steps taken to recover rent arrears?"
     )
     private VerticalYesNo rentArrearsRecoveryAttempted;
