@@ -41,6 +41,7 @@ class DraftCaseJsonMergerTest {
         // Given
         PCSCase existingCaseData = Instancio.create(PCSCase.class);
         existingCaseData.setApplicationWithClaim(VerticalYesNo.NO);
+        existingCaseData.setDashboardData(null);
         String baseJson = objectMapper.writeValueAsString(existingCaseData);
 
         DynamicStringList claimantTypeList = createClaimantTypeList();
