@@ -19,7 +19,7 @@ public class PaymentCallBackController {
 
     private final PaymentService paymentService;
 
-    @PutMapping(path = "/service-request-update", consumes = APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/payment-update", consumes = APPLICATION_JSON_VALUE)
     public void processPaymentCallback(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorisation,
         @RequestHeader(value = SERVICE_AUTHORIZATION, required = false) String s2sToken,
