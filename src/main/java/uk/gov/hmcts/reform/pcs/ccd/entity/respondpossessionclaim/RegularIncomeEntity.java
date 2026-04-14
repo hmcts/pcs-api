@@ -41,7 +41,7 @@ public class RegularIncomeEntity {
     @JsonBackReference
     private HouseholdCircumstancesEntity householdCircumstances;
 
-    private String details;
+    private String otherIncomeDetails;
 
     @OneToMany(mappedBy = "regularIncome", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @Builder.Default

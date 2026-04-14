@@ -314,7 +314,7 @@ class HouseholdCircumstancesServiceTest {
         assertThat(items).hasSize(1);
         assertThat(items.get(0).getIncomeType()).isEqualTo(IncomeType.MONEY_FROM_ELSEWHERE);
         assertThat(items.get(0).getAmount()).isNull();
-        assertThat(entity.getRegularIncomeEntity().getDetails()).isEqualTo("Child maintenance payments");
+        assertThat(entity.getRegularIncomeEntity().getOtherIncomeDetails()).isEqualTo("Child maintenance payments");
     }
 
     @Test
@@ -363,7 +363,7 @@ class HouseholdCircumstancesServiceTest {
         HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
 
         assertThat(entity.getRegularIncomeEntity()).isNotNull();
-        assertThat(entity.getRegularIncomeEntity().getDetails()).isNull();
+        assertThat(entity.getRegularIncomeEntity().getOtherIncomeDetails()).isNull();
     }
 
     @Test
