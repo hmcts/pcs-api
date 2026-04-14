@@ -33,7 +33,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     private final WarrantOfRestitutionMapper warrantOfRestitutionMapper;
 
     private static final String STUB_GA_SUCCESSFUL_CONDITION =
-        WRIT_FLOW + " AND writHasClaimTransferredToHighCourt=\"YES\"";
+        WRIT_FLOW + " AND writHasClaimTransferredToHighCourt=\"Yes\"";
     private static final String ERROR_GA_TRANSFER_UNSUCCESSFUL =
         "You cannot continue with this application because your "
             + "application to transfer to the High Court was unsuccessful";
