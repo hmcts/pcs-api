@@ -193,10 +193,10 @@ xui-webapp:
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
       SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
-      JURISDICTIONS: PCS,CIVIL
-      GLOBAL_SEARCH_SERVICES: PCS,CIVIL
-      WA_SUPPORTED_JURISDICTIONS: PCS,CIVIL
-      STAFF_SUPPORTED_JURISDICTIONS: PCS
+      JURISDICTIONS: "pcs-${CHANGE_ID}",CIVIL
+      GLOBAL_SEARCH_SERVICES: "pcs-${CHANGE_ID}",CIVIL
+      WA_SUPPORTED_JURISDICTIONS: "pcs-${CHANGE_ID}",CIVIL
+      STAFF_SUPPORTED_JURISDICTIONS: "pcs-${CHANGE_ID}"
       FEATURE_REDIS_ENABLED: false
       REDISCLOUD_URL: http://dummyrediscloudurl
       FEATURE_APP_INSIGHTS_ENABLED: false
