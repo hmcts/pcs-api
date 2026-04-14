@@ -58,7 +58,7 @@ public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errorMessageOverride("You’re not eligible for this online service")
+            .errorMessageOverride("You cannot use this online service")
             .build();
     }
 
