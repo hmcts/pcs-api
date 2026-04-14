@@ -112,4 +112,73 @@ class CaseAssignmentServiceTest {
         // THEN
         verify(caseAssignmentApi).addCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture());
     }
+
+    @Test
+    void revokeCreatorRole_shouldCallApiWithCorrectCaseRole() {
+        // GIVEN
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
+        when(caseAssignmentApi.removeCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture()))
+            .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
+
+        // WHEN
+        caseAssignmentService.revokeCreatorRole(CASE_REFERENCE, USER_ID);
+
+        // THEN
+        CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
+            .getCaseAssignmentUserRolesWithOrganisation().get(0);
+
+        assertThat(assignment.getCaseRole()).isEqualTo("[CREATOR]");
+    }
+
+    @Test
+    void revokeCreatorRole_shouldCallApiWithCorrectCaseReferenceAndUserId() {
+        // GIVEN
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
+        when(caseAssignmentApi.removeCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture()))
+            .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
+
+        // WHEN
+        caseAssignmentService.revokeCreatorRole(CASE_REFERENCE, USER_ID);
+
+        // THEN
+        CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
+            .getCaseAssignmentUserRolesWithOrganisation().get(0);
+
+        assertThat(assignment.getCaseDataId()).isEqualTo(String.valueOf(CASE_REFERENCE));
+        assertThat(assignment.getUserId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    void revokeCreatorRole_shouldReturnApiResponse() {
+        // GIVEN
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
+        CaseAssignmentUserRolesResponse expectedResponse = mock(CaseAssignmentUserRolesResponse.class);
+        when(caseAssignmentApi.removeCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture()))
+            .thenReturn(expectedResponse);
+
+        // WHEN
+        CaseAssignmentUserRolesResponse result =
+            caseAssignmentService.revokeCreatorRole(CASE_REFERENCE, USER_ID);
+
+        // THEN
+        assertThat(result).isEqualTo(expectedResponse);
+    }
+
+    @Test
+    void revokeCreatorRole_shouldUseSystemUserTokenAndS2sToken() {
+        // GIVEN
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
+        when(caseAssignmentApi.removeCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture()))
+            .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
+
+        // WHEN
+        caseAssignmentService.revokeCreatorRole(CASE_REFERENCE, USER_ID);
+
+        // THEN
+        verify(caseAssignmentApi).removeCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture());
+    }
 }

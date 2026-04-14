@@ -66,4 +66,26 @@ public class CaseAssignmentService {
 
         return caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
     }
+
+    public CaseAssignmentUserRolesResponse revokeCreatorRole(long caseReference, String userId) {
+        String s2s = authTokenGenerator.generate();
+        String userToken = idamService.getSystemUserAuthorisation();
+
+        CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
+            = CaseAssignmentUserRoleWithOrganisation.builder()
+            .caseDataId(String.valueOf(caseReference))
+            .caseRole("[CREATOR]")
+            .userId(userId)
+            .build();
+
+        ArrayList<CaseAssignmentUserRoleWithOrganisation> caseAssignmentList = new ArrayList<>();
+        caseAssignmentList.add(caseAssignmentUserRoleWithOrganisation);
+
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
+            CaseAssignmentUserRolesRequest.builder()
+                    .caseAssignmentUserRolesWithOrganisation(caseAssignmentList)
+                        .build();
+
+        return caseAssignmentApi.removeCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
+    }
 }
