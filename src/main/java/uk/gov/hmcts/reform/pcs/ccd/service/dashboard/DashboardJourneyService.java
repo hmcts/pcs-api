@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.dashboard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -10,7 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -36,8 +39,8 @@ public class DashboardJourneyService {
             AddressFormatter.COMMA_DELIMITER
         );
 
-        List<DashboardNotification> notifications = computeNotifications(state);
-        List<TaskGroup> taskGroups = computeTaskGroups(state);
+        List<ListValue<DashboardNotification>> notifications = computeNotifications(state);
+        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(state);
 
         log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for state={}",
                  notifications.size(), taskGroups.size(), state);
@@ -66,39 +69,39 @@ public class DashboardJourneyService {
         return info.getFallbackClaimantName();
     }
 
-    private List<DashboardNotification> computeNotifications(State state) {
+    private List<ListValue<DashboardNotification>> computeNotifications(State state) {
         if (state == State.CASE_ISSUED) {
-            return List.of(
+            return ListValueUtils.wrapListItems(List.of(
                 DashboardNotification.builder()
                     .templateId("Notice.PCS.Dashboard.CaseIssued")
-                    .templateValues(Map.of(
+                    .templateValues(toTemplateValues(Map.of(
                         "hearingDateTime", "2026-06-15T10:30:00Z",
                         "responseEndDate", "2026-05-15"
-                    ))
+                    )))
                     .build()
-            );
+            ));
         }
 
         if (state == State.PENDING_CASE_ISSUED) {
-            return List.of(
+            return ListValueUtils.wrapListItems(List.of(
                 DashboardNotification.builder()
                     .templateId("Notice.PCS.Dashboard.PendingCaseIssued")
-                    .templateValues(Map.of(
+                    .templateValues(toTemplateValues(Map.of(
                         "submittedDate", "2026-04-01"
-                    ))
+                    )))
                     .build()
-            );
+            ));
         }
 
         return List.of();
     }
 
-    private List<TaskGroup> computeTaskGroups(State state) {
+    private List<ListValue<TaskGroup>> computeTaskGroups(State state) {
         if (state == State.CASE_ISSUED) {
-            return List.of(
+            return ListValueUtils.wrapListItems(List.of(
                 TaskGroup.builder()
                     .groupId("CLAIM")
-                    .tasks(List.of(
+                    .tasks(ListValueUtils.wrapListItems(List.of(
                         Task.builder()
                             .templateId("Task.PCS.Claim.ViewClaim")
                             .status("AVAILABLE")
@@ -107,34 +110,45 @@ public class DashboardJourneyService {
                             .templateId("Task.PCS.Claim.ViewDocuments")
                             .status("NOT_AVAILABLE")
                             .build()
-                    ))
+                    )))
                     .build(),
                 TaskGroup.builder()
                     .groupId("RESPONSE")
-                    .tasks(List.of(
+                    .tasks(ListValueUtils.wrapListItems(List.of(
                         Task.builder()
                             .templateId("Task.PCS.Response.RespondToClaim")
                             .status("ACTION_NEEDED")
                             .build()
-                    ))
+                    )))
                     .build()
-            );
+            ));
         }
 
         if (state == State.PENDING_CASE_ISSUED) {
-            return List.of(
+            return ListValueUtils.wrapListItems(List.of(
                 TaskGroup.builder()
                     .groupId("CLAIM")
-                    .tasks(List.of(
+                    .tasks(ListValueUtils.wrapListItems(List.of(
                         Task.builder()
                             .templateId("Task.PCS.Claim.ViewClaim")
                             .status("NOT_AVAILABLE")
                             .build()
-                    ))
+                    )))
                     .build()
-            );
+            ));
         }
 
         return List.of();
+    }
+
+    private List<ListValue<TemplateValue>> toTemplateValues(Map<String, String> values) {
+        return ListValueUtils.wrapListItems(
+            values.entrySet().stream()
+                .map(e -> TemplateValue.builder()
+                    .key(e.getKey())
+                    .value(e.getValue())
+                    .build())
+                .toList()
+        );
     }
 }

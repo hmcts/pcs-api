@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
 @Data
 @Builder
@@ -13,5 +14,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TaskGroup {
     private String groupId;
-    private List<Task> tasks;
+    private List<ListValue<Task>> tasks;
 }
