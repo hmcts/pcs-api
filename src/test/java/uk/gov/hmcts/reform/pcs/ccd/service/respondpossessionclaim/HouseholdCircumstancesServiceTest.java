@@ -351,6 +351,22 @@ class HouseholdCircumstancesServiceTest {
     }
 
     @Test
+    void shouldNotPersistDetailsWhenMoneyFromElsewhereIsNo() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .incomeFromJobs(YesOrNo.YES)
+            .incomeFromJobsAmount(new BigDecimal("200000"))
+            .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
+            .moneyFromElsewhere(YesOrNo.NO)
+            .moneyFromElsewhereDetails("Stale draft text")
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNotNull();
+        assertThat(entity.getRegularIncomeEntity().getDetails()).isNull();
+    }
+
+    @Test
     void shouldNotCreateRegularIncomeWhenNoIncomeTypesSelected() {
         HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
             .incomeFromJobs(YesOrNo.NO)
