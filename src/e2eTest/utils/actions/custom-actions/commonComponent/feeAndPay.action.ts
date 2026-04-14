@@ -46,6 +46,8 @@ export class FeeAndPayAction implements IAction {
                                                , ['inputText', payDetails.countryLabel , payDetails.countryText]
                                                , ['inputText', payDetails.postCodeLabel , payDetails.postCodeText]
                                                , ['inputText', payDetails.emailLabel , payDetails.emailText]);
+                                      
+    await performAction('clickButton', payDetails.button);
    }
  
 }

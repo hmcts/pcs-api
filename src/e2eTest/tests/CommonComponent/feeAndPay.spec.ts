@@ -74,9 +74,8 @@ test.describe('[Common Component Fee And Pay]', async () => {
       postCodeText: enterPaymentDetails.postcodeTextInput,
       emailLabel: enterPaymentDetails.emailLabel,
       emailText: enterPaymentDetails.emailTextInput,
-      continueButton: enterPaymentDetails.continueButton
+      button: enterPaymentDetails.continueButton
     });
-    await performAction('clickButton', enterPaymentDetails.continueButton);
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
     await performAction('clickButton', confirmYourPayment.confirmButton);
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader)
@@ -127,9 +126,8 @@ test.describe('[Common Component Fee And Pay]', async () => {
       postCodeText: enterPaymentDetails.postcodeTextInput,
       emailLabel: enterPaymentDetails.emailLabel,
       emailText: enterPaymentDetails.emailTextInput,
-      continueButton: enterPaymentDetails.continueButton
+      button: enterPaymentDetails.continueButton
     });
-    await performAction('clickButton', enterPaymentDetails.continueButton);
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
     await performAction('clickButton', confirmYourPayment.cancelPaymentButton);
     await performValidation('mainHeader', cancelPayment.mainHeader)
