@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
+import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
@@ -145,7 +146,7 @@ public class PCSCase {
     @CCD(
         label = "Case management location"
     )
-    private Integer caseManagementLocation;
+    private Integer caseManagementLocationNumber;
 
     @CCD(
         label = "Region Id"
@@ -552,6 +553,12 @@ public class PCSCase {
         label = "CaseManagementLocation",
         access = {GlobalSearchAccess.class}
     )
-    private String caseManagementLocationFormatted;
+    private CaseLocation caseManagementLocation;
+
+    @CCD(
+        label = "CaseManagementCategory",
+        access = {GlobalSearchAccess.class}
+    )
+    private DynamicList caseManagementCategory;
 
 }
