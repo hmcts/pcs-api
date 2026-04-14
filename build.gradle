@@ -101,6 +101,16 @@ ccd {
   runtimeIndexing = runtimeIndexingEnabled
 }
 
+tasks.register('generateCCDDefinition', Copy) {
+  from tasks.generateCCDConfig.outputs
+  from file('ccd-definitions')
+  into layout.buildDirectory.dir('definitions/PCS')
+}
+
+tasks.named('generateCCDConfig') {
+  finalizedBy('generateCCDDefinition')
+}
+
 tasks.withType(JavaCompile).configureEach {
   options.compilerArgs << "-Xlint:unchecked" << "-Werror"
 }
