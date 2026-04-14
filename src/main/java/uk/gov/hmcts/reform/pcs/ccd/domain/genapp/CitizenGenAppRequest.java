@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 
 @Builder
 @Data
@@ -30,5 +31,7 @@ public class CitizenGenAppRequest {
 
     @CCD(max = 6800)
     private String withoutNoticeReason;
+
+    private LanguageUsed languageUsed;
 
 }

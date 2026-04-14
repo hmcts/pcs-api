@@ -45,6 +45,8 @@ public class GenAppService {
             }
         }
 
+        genAppEntity.setLanguageUsed(citizenCreateGenApp.getLanguageUsed());
+
         pcsCaseEntity.addGenApp(genAppEntity);
 
         return genAppRepository.save(genAppEntity);
