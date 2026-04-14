@@ -8,16 +8,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsPaymentSourceEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -76,18 +73,6 @@ class RentArrearsViewTest {
     void shouldSetRentArrearsFields() {
         // Given
         BigDecimal totalRentArrears = new BigDecimal("1234.00");
-        String otherPaymentSourceDescription = "other source description";
-
-        RentArrearsPaymentSourceEntity paymentSource1 = RentArrearsPaymentSourceEntity.builder()
-            .name(ThirdPartyPaymentSource.DISCRETIONARY_HOUSING_PAYMENT)
-            .build();
-
-        RentArrearsPaymentSourceEntity paymentSource2 = RentArrearsPaymentSourceEntity.builder()
-            .name(ThirdPartyPaymentSource.OTHER)
-            .description(otherPaymentSourceDescription)
-            .build();
-
-        Set<RentArrearsPaymentSourceEntity> thirdPartyPaymentSources = Set.of(paymentSource1, paymentSource2);
 
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
