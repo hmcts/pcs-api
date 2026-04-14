@@ -15,6 +15,7 @@ import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
 import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
+import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -93,7 +94,10 @@ export class ActionRegistry {
     ['selectStatementOfTruth', new CreateCaseAction()],
     ['selectAsb', new CreateCaseWalesAction()],
     ['payClaimFee', new CreateCaseAction()],
-    ['claimSaved', new CreateCaseAction()]
+    ['claimSaved', new CreateCaseAction()],
+    ['selectPaymentTypePBA', new FeeAndPayAction()],
+    ['selectPaymentByCard', new FeeAndPayAction()],
+    ['enterPaymentDetails', new FeeAndPayAction()]
   ]);
 
   static getAction(actionName: string): IAction {
