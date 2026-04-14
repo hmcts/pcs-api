@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -87,6 +88,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
 
         caseFieldsView.setCaseFields(pcsCase);
+        pcsCase.setSearchCriteria(SearchCriteria.builder()
+            .otherCaseReferences(List.of(
+                ListValue.<String>builder()
+                    .id(UUID.randomUUID().toString())
+                    .value(caseReference + "-search")
+                    .build()))
+            .build());
 
         return pcsCase;
     }
