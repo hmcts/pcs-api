@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
-@Table(name = "regular_expense")
+@Table(name = "regular_expenses")
 @Getter
 @Setter
 @Builder

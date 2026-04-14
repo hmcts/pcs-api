@@ -1,4 +1,4 @@
-CREATE TABLE regular_expense(
+CREATE TABLE regular_expenses(
  id UUID PRIMARY KEY,
  hc_id UUID NOT NULL REFERENCES household_circumstances(id),
  expense_type VARCHAR(30) NOT NULL,
