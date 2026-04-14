@@ -18,7 +18,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class DemotionOfTenancy {
 
-    public static final String DEMOTION_OF_TENANCY_REASON_LABEL = "Why are you requesting a demotion order?";
+    public static final String DEMOTION_OF_TENANCY_REASON_LABEL = "Why are you requesting a demotion of tenancy?";
     public static final String STATEMENT_OF_EXPRESS_TERMS_DETAILS_LABEL = "Give details of the terms";
 
     @CCD(

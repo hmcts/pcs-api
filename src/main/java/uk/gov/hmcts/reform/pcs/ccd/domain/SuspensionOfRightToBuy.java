@@ -18,7 +18,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class SuspensionOfRightToBuy {
 
-    public static final String SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL = "Why are you requesting a suspension order?";
+    public static final String SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL =
+        "Why are you requesting a suspension of right to buy?";
 
     @CCD(
         label = "Which section of the Housing Act is the suspension of right to buy claim made under?"
