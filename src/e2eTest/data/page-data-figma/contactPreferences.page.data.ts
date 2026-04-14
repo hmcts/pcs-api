@@ -11,7 +11,7 @@ export const contactPreferences = {
   yesRadioOption: `Yes`,
   enterEmailAddressHiddenTextLabel: `Enter email address`,
   enterEmailAddressTextInput: `test@gmail.com`,
-  serviceAddressSubHeader: `Service Address`,
+  serviceAddressSubHeader: `Service address`,
   courtDocumentsLikeOrdersAndParagraph: `Court documents like orders and notices will be sent by post to the address registered with My HMCTS.`,
   youCanChangeParagraph:`You can change this service address if, for example, you work in a different office from the address registered with My HMCTS.`,
   yourMyHmctsRegisteredAddressSubHeader: `Your organisation’s My HMCTS registered address is:`,
