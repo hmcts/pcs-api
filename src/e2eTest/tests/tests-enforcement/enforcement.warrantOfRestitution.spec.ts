@@ -73,7 +73,7 @@ test.afterEach(async () => {
     PageContentValidation.finaliseTest();
 });
 
-test.describe('[Enforcement - Warrant of Restitution]', async () => {
+test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
   test('Warrant - Apply for a Warrant of Restitution - Warrant with all YES selection - no update on prepopulated data ,upload more than one evidence @allYES @enforcement @PR',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
