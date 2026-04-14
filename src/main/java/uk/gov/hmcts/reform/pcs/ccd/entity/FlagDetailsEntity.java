@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
+import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Table(name = "flag_details")
@@ -33,8 +38,12 @@ public class FlagDetailsEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "flags_id")
-    private FlagsEntity flags;
+    @JoinColumn(name = "case_id")
+    private PcsCaseEntity pcsCase;
+
+    @OneToMany(mappedBy = "flagDetails", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<FlagPathEntity> paths = new ArrayList<>();
 
     @Column(name = "flag_code")
     private String flagCode;
@@ -57,6 +66,9 @@ public class FlagDetailsEntity {
     @Column(name = "other_description")
     private String otherDescription;
 
+    @Column(name = "other_description_cy")
+    private String otherDescriptionWelsh;
+
     @Column(name = "hearing_relevant")
     private Boolean hearingRelevant;
 
@@ -74,10 +86,6 @@ public class FlagDetailsEntity {
 
     @Column(name = "date_time_modified")
     private LocalDateTime dateTimeModified;
-
-
-    @Column(name = "path")
-    private String path;
 
     @Column(name = "status")
     private String defaultStatus;

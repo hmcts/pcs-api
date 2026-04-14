@@ -18,10 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -39,6 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.doNothing;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -203,7 +203,9 @@ class PcsCaseServiceTest {
 
         // When
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData));
+                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData,
+                                                                                         EventFlow.CREATE.name()
+                                                          ));
 
         // Then
         assertEquals("PCSCase cannot be null", exception.getMessage());
@@ -212,9 +214,6 @@ class PcsCaseServiceTest {
     @Test
     void shouldPatchCaseDataWithCaseFlags() {
         // Given
-        FlagDetailsEntity flagDetailsEntity = createFlagDetailsEntity();
-        FlagsEntity flagsEntity = createFlagsEntity(List.of(flagDetailsEntity));
-
         PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
             .build();
@@ -231,38 +230,25 @@ class PcsCaseServiceTest {
             .build();
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.CREATE.name());
 
         // When
-        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.CREATE.name());
 
         // Then
-        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
-        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity);
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.CREATE.name());
+        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.CREATE.name());
     }
 
     private ListValue<FlagDetail> createFlagDetails() {
+
         return ListValue.<FlagDetail>builder()
             .id(UUID.randomUUID().toString())
             .value(FlagDetail.builder()
-                .flagCode("CF005")
-                .flagComment("Comment")
-                .name("Name")
+                .flagCode("CF0007")
+                .name("Urgent case")
+                .flagComment("Needs to be handled ASAP")
                 .build())
-            .build();
-    }
-
-    private FlagDetailsEntity createFlagDetailsEntity() {
-        return FlagDetailsEntity.builder()
-            .flagCode("CF005")
-            .flagComment("Comment")
-            .name("Name")
-            .build();
-    }
-
-    private FlagsEntity createFlagsEntity(List<FlagDetailsEntity> flagDetailsEntities) {
-        return FlagsEntity.builder()
-            .visibility("INTERNAL")
-            .flagDetails(flagDetailsEntities)
             .build();
     }
 

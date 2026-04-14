@@ -1,17 +1,20 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
 import java.util.List;
 
 @Component
+@AllArgsConstructor
 public class CaseFlagsView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -30,23 +33,33 @@ public class CaseFlagsView {
         pcsCase.setCaseFlags(caseFlags);
     }
 
-    private List<ListValue<FlagDetail>> mapFlagDetails(List<FlagsEntity> flagsEntities) {
+    private List<ListValue<FlagDetail>> mapFlagDetails(List<FlagDetailsEntity> flagsEntities) {
         if (flagsEntities.isEmpty()) {
             return List.of();
         }
 
-        return flagsEntities.getFirst().getFlagDetails().stream()
+        return flagsEntities.stream()
             .map(flagDetailsEntity -> ListValue.<FlagDetail>builder()
                 .id(flagDetailsEntity.getId().toString())
                 .value(FlagDetail.builder()
-                           .flagCode(flagDetailsEntity.getFlagCode())
-                           .nameCy(flagDetailsEntity.getName())
-                           .name(flagDetailsEntity.getNameWelsh())
-                           .flagComment(flagDetailsEntity.getFlagComment())
-                           .flagCommentCy(flagDetailsEntity.getFlagCommentWelsh())
-                           .status(flagDetailsEntity.getDefaultStatus())
-                           .subTypeKey(flagDetailsEntity.getSubTypeKey())
-                           .build())
+                   .flagCode(flagDetailsEntity.getFlagCode())
+                   .name(flagDetailsEntity.getName())
+                   .nameCy(flagDetailsEntity.getNameWelsh())
+                   .flagComment(flagDetailsEntity.getFlagComment())
+                   .flagCommentCy(flagDetailsEntity.getFlagCommentWelsh())
+                   .status(flagDetailsEntity.getDefaultStatus())
+                   .subTypeKey(flagDetailsEntity.getSubTypeKey())
+                   .otherDescription(flagDetailsEntity.getOtherDescription())
+                   .otherDescriptionCy(flagDetailsEntity.getOtherDescriptionWelsh())
+                   .hearingRelevant(YesOrNoConverter.toYesOrNo(flagDetailsEntity.getHearingRelevant()))
+                   .availableExternally(YesOrNoConverter.toYesOrNo(flagDetailsEntity.getAvailableExternally()))
+                   .path(flagDetailsEntity.getPaths().stream()
+                             .map(pathEntity -> ListValue.<String>builder()
+                                .id(pathEntity.getId().toString())
+                                .value(pathEntity.getPath())
+                                .build())
+                             .toList())
+                   .build())
                 .build())
             .toList();
     }

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,38 +21,33 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 @Slf4j
 @Setter
 @AllArgsConstructor
-public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
-
+public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
     private  final PcsCaseService pcsCaseService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
-                .decentralisedEvent(EventId.createFlags.name(), this::submit)
-                .forAllStates()
-                .name("Create flags")
-                .description("To create flags")
-                .showSummary()
-                .grant(Permission.CRU, UserRole.PCS_CASE_WORKER))
-                .page("caseworkerCaseFlag")
-                .pageLabel("Case Flags")
-                .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
-                .optional(
-                PCSCase::getFlagLauncherInternal,
-                null, null, null, null, "#ARGUMENT(CREATE)"
-            );
-
+                            .decentralisedEvent(EventId.amendFlags.name(), this::submit)
+                            .forAllStates()
+                            .name("Manage Flags")
+                            .description("To manage flags")
+                            .showSummary()
+                            .grant(Permission.CRU, UserRole.PCS_CASE_WORKER))
+            .page("caseworkerCaseFlag")
+            .pageLabel("Case Flags")
+            .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
+            .optional(PCSCase::getFlagLauncherInternal,null, null,
+                null, null, "#ARGUMENT(UPDATE)");
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
-        log.debug("Caseworker created case flag for {}", caseReference);
+        log.debug("Caseworker updated case flag for {}", caseReference);
 
-        pcsCaseService.patchCaseFlags(caseReference, pcsCase, EventFlow.CREATE.name());
+        pcsCaseService.patchCaseFlags(caseReference, pcsCase, EventFlow.UPDATE.name());
 
         return SubmitResponse.defaultResponse();
     }
 }
-

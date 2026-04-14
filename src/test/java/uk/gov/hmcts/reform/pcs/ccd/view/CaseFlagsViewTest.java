@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.util.List;
@@ -23,10 +23,7 @@ class CaseFlagsViewTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();
 
-        FlagsEntity flagsEntity = new FlagsEntity();
-        flagsEntity.setFlagDetails(List.of(createMockFlagsEntity()));
-
-        pcsCaseEntity.setCaseFlags(List.of(flagsEntity));
+        pcsCaseEntity.setCaseFlags(List.of(createMockFlagsEntity()));
 
         // When
         caseFlagsView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -34,7 +31,7 @@ class CaseFlagsViewTest {
         // Then
         assertNotNull(pcsCase.getCaseFlags());
         assertEquals(1, pcsCase.getCaseFlags().getDetails().size());
-        assertEquals("FLAG_CODE", pcsCase.getCaseFlags().getDetails().get(0).getValue().getFlagCode());
+        assertEquals("CF0007", pcsCase.getCaseFlags().getDetails().get(0).getValue().getFlagCode());
     }
 
     @Test
@@ -54,8 +51,16 @@ class CaseFlagsViewTest {
 
         return FlagDetailsEntity.builder()
             .id(UUID.randomUUID())
-            .flagCode("FLAG_CODE")
-            .flagComment("FLAG_COMMENT")
+            .flagCode("CF0007")
+            .flagComment("Urgent case")
+            .paths(List.of(createMockFlagPathEntity()))
+            .build();
+    }
+
+    private FlagPathEntity createMockFlagPathEntity() {
+        return FlagPathEntity.builder()
+            .id(UUID.randomUUID())
+            .path("Case")
             .build();
     }
 }

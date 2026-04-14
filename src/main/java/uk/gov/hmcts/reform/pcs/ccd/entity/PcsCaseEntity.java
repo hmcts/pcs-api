@@ -85,8 +85,7 @@ public class PcsCaseEntity {
 
     @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @Builder.Default
-    @JsonManagedReference
-    private List<FlagsEntity> caseFlags = new ArrayList<>();
+    private List<FlagDetailsEntity> caseFlags = new ArrayList<>();
 
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
