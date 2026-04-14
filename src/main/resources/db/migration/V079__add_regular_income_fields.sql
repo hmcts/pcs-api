@@ -1,6 +1,3 @@
--- Normalized regular income tables replacing wide-column income fields on household_circumstances.
--- Row presence in regular_income_item represents a selected income type (no YES_NO checkboxes stored).
-
 CREATE TYPE income_type AS ENUM (
     'INCOME_FROM_JOBS',
     'PENSION',
@@ -43,5 +40,4 @@ CREATE TABLE regular_income_item (
 
 CREATE INDEX idx_income_item_regular_income_id ON regular_income_item(regular_income_id);
 
--- Drop unused legacy column (never populated by application code)
 ALTER TABLE household_circumstances DROP COLUMN IF EXISTS regular_income;
