@@ -95,7 +95,8 @@ public class NoticeServedDetails {
     private String noticeOtherExplanation;
 
     @CCD(
-        hint = "Give details of how the notice was served. You can enter up to 250 characters.",
+        label = "Give details of how the notice was served",
+        hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
     private String noticeOtherElectronicMethodExplanation;
