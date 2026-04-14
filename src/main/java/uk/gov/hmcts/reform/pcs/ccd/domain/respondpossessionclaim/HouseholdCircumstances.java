@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,6 +25,18 @@ public class HouseholdCircumstances {
     @CCD
     private YesOrNo dependantChildren;
 
+    @CCD
+    private YesOrNo shareAdditionalCircumstances;
+
+    @CCD(max = 500)
+    private String additionalCircumstancesDetails;
+
+    @CCD
+    private YesOrNo exceptionalHardship;
+
+    @CCD(max = 500)
+    private String exceptionalHardshipDetails;
+
     @CCD(max = 500)
     private String dependantChildrenDetails;
 
@@ -32,6 +45,18 @@ public class HouseholdCircumstances {
 
     @CCD(max = 500)
     private String otherDependantDetails;
+
+    @CCD
+    private YesOrNo otherTenants;
+
+    @CCD(max = 500)
+    private String otherTenantsDetails;
+
+    @CCD
+    private YesNoNotSure alternativeAccommodation;
+
+    @CCD
+    private LocalDate alternativeAccommodationTransferDate;
 
     @CCD
     private YesOrNo shareIncomeExpenseDetails;
