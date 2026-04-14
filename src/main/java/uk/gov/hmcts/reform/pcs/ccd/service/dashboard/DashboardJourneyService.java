@@ -1,10 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.dashboard;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
@@ -12,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -24,21 +21,11 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class DashboardJourneyService {
 
-    private final AddressFormatter addressFormatter;
-
-    public DashboardData computeDashboardData(PCSCase submittedCaseData,
-                                              State state,
-                                              String appliedCaseState,
-                                              String stateResolution) {
-        String claimantName = extractClaimantName(submittedCaseData);
-        String propertyAddress = addressFormatter.formatShortAddress(
-            submittedCaseData.getPropertyAddress(),
-            AddressFormatter.COMMA_DELIMITER
-        );
-
+    public DashboardData computeDashboardData(long caseReference,
+                                              PCSCase submittedCaseData,
+                                              State state) {
         List<ListValue<DashboardNotification>> notifications = computeNotifications(state);
         List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(state);
 
@@ -46,27 +33,11 @@ public class DashboardJourneyService {
                  notifications.size(), taskGroups.size(), state);
 
         return DashboardData.builder()
-            .claimantName(claimantName)
-            .possessionPropertyAddress(propertyAddress)
+            .caseId(String.valueOf(caseReference))
+            .propertyAddress(submittedCaseData.getPropertyAddress())
             .notifications(notifications)
             .taskGroups(taskGroups)
-            .appliedCaseState(appliedCaseState)
-            .stateResolution(stateResolution)
             .build();
-    }
-
-    private String extractClaimantName(PCSCase caseData) {
-        ClaimantInformation info = caseData.getClaimantInformation();
-        if (info == null) {
-            return null;
-        }
-        if (info.getOverriddenClaimantName() != null) {
-            return info.getOverriddenClaimantName();
-        }
-        if (info.getClaimantName() != null) {
-            return info.getClaimantName();
-        }
-        return info.getFallbackClaimantName();
     }
 
     private List<ListValue<DashboardNotification>> computeNotifications(State state) {
@@ -82,10 +53,10 @@ public class DashboardJourneyService {
             ));
         }
 
-        if (state == State.PENDING_CASE_ISSUED) {
+        if (state == State.AWAITING_SUBMISSION_TO_HMCTS) {
             return ListValueUtils.wrapListItems(List.of(
                 DashboardNotification.builder()
-                    .templateId("Notice.PCS.Dashboard.PendingCaseIssued")
+                    .templateId("Notice.PCS.Dashboard.AwaitingSubmission")
                     .templateValues(toTemplateValues(Map.of(
                         "submittedDate", "2026-04-01"
                     )))
@@ -124,7 +95,7 @@ public class DashboardJourneyService {
             ));
         }
 
-        if (state == State.PENDING_CASE_ISSUED) {
+        if (state == State.AWAITING_SUBMISSION_TO_HMCTS) {
             return ListValueUtils.wrapListItems(List.of(
                 TaskGroup.builder()
                     .groupId("CLAIM")
