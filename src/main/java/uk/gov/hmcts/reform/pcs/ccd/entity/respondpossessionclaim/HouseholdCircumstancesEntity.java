@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -19,12 +20,13 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+
+import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Table(name = "household_circumstances")
@@ -84,55 +86,25 @@ public class HouseholdCircumstancesEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo shareIncomeExpenseDetails;
 
-    private String regularIncome;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo universalCredit;
 
     private LocalDate ucApplicationDate;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo incomeFromJobs;
+    @OneToOne(cascade = ALL, mappedBy = "householdCircumstances", orphanRemoval = true)
+    @JsonManagedReference
+    private RegularIncomeEntity regularIncomeEntity;
 
-    private BigDecimal incomeFromJobsAmount;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    private RecurrenceFrequency incomeFromJobsFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo pension;
-
-    private BigDecimal pensionAmount;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    private RecurrenceFrequency pensionFrequency;
-
-    private BigDecimal universalCreditAmount;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    private RecurrenceFrequency universalCreditFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo otherBenefits;
-
-    private BigDecimal otherBenefitsAmount;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    private RecurrenceFrequency otherBenefitsFrequency;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo moneyFromElsewhere;
-
-    private String moneyFromElsewhereDetails;
+    public void setRegularIncomeEntity(RegularIncomeEntity regularIncomeEntity) {
+        if (this.regularIncomeEntity != null) {
+            this.regularIncomeEntity.setHouseholdCircumstances(null);
+        }
+        this.regularIncomeEntity = regularIncomeEntity;
+        if (this.regularIncomeEntity != null) {
+            this.regularIncomeEntity.setHouseholdCircumstances(this);
+        }
+    }
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
