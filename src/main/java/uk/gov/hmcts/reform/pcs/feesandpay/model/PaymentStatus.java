@@ -20,7 +20,7 @@ public enum PaymentStatus {
         throw new IllegalArgumentException("Unknown PaymentStatus value: " + value);
     }
 
-    PaymentStatus(String s) {
-        value = s;
+    PaymentStatus(String value) {
+        this.value = value;
     }
 }

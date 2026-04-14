@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -110,7 +111,7 @@ public class PaymentService {
             .stream()
             .filter(party -> responsibleParty.equals(party.getParty().getOrgName()))
             .findFirst()
-            .orElseThrow(() -> new IllegalStateException(MATCHING_PARTY_ENTITY_NOT_FOUND));
+            .orElseThrow(() -> new PartyNotFoundException(MATCHING_PARTY_ENTITY_NOT_FOUND));
     }
 
     @Transactional
@@ -122,7 +123,6 @@ public class PaymentService {
             .claim(claimEntity)
             .requestReference(serviceRequestReference)
             .amount(feeDto.getCalculatedAmount())
-            //.party(claimParty.getParty())
             .build();
         feePaymentRepository.save(feePaymentEntity);
     }
