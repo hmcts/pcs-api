@@ -1,6 +1,6 @@
 CREATE TABLE regular_expense(
  id UUID PRIMARY KEY,
- household_circumstances_id UUID NOT NULL REFERENCES household_circumstances(id),
+ hc_id UUID NOT NULL REFERENCES household_circumstances(id),
  expense_type VARCHAR(30) NOT NULL,
  amount DECIMAL(18,2) NOT NULL,
  expense_frequency VARCHAR(10) NOT NULL,
@@ -9,6 +9,6 @@ CREATE TABLE regular_expense(
 );
 
 ALTER TABLE household_circumstances
-  DROP COLUMN regular_expenses,
-  DROP COLUMN expense_amount,
-  DROP COLUMN expense_frequency;
+  DROP COLUMN IF EXISTS regular_expenses,
+  DROP COLUMN IF EXISTS expense_amount,
+  DROP COLUMN IF EXISTS expense_frequency;

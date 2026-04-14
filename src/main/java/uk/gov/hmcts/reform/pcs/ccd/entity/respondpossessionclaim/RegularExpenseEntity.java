@@ -35,7 +35,7 @@ public class RegularExpenseEntity {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "household_circumstances_id")
+    @JoinColumn(name = "hc_id")
     @JsonBackReference
     private HouseholdCircumstancesEntity householdCircumstances;
 
