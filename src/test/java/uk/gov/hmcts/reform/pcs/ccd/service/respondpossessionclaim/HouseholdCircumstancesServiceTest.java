@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 
@@ -120,7 +120,7 @@ class HouseholdCircumstancesServiceTest {
             .priorityDebts(YesOrNo.YES)
             .debtTotal(new BigDecimal("1500.00"))
             .debtContribution(new BigDecimal("200.00"))
-            .debtContributionFrequency(RentPaymentFrequency.MONTHLY)
+            .debtContributionFrequency(RecurrenceFrequency.MONTHLY)
             .build();
 
         // When
@@ -134,7 +134,7 @@ class HouseholdCircumstancesServiceTest {
         assertThat(entity.getPriorityDebts()).isEqualTo(YesOrNo.YES);
         assertThat(entity.getDebtTotal()).isEqualByComparingTo("1500.00");
         assertThat(entity.getDebtContribution()).isEqualByComparingTo("200.00");
-        assertThat(entity.getDebtContributionFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY);
+        assertThat(entity.getDebtContributionFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
     }
 
     @ParameterizedTest

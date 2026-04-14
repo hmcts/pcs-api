@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,7 +41,7 @@ public class HouseholdCircumstances {
     private BigDecimal debtContribution;
 
     @CCD
-    private RentPaymentFrequency debtContributionFrequency;
+    private RecurrenceFrequency debtContributionFrequency;
 
     @CCD
     private YesOrNo shareAdditionalCircumstances;

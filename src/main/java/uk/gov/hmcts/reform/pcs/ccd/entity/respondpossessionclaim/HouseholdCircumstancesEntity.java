@@ -21,6 +21,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -101,7 +102,7 @@ public class HouseholdCircumstancesEntity {
     private BigDecimal debtContribution;
 
     @Enumerated(EnumType.STRING)
-    private RentPaymentFrequency debtContributionFrequency;
+    private RecurrenceFrequency debtContributionFrequency;
 
     private String regularExpenses;
 
