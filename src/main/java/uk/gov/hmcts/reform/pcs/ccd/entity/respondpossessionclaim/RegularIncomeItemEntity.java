@@ -52,6 +52,4 @@ public class RegularIncomeItemEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private RecurrenceFrequency frequency;
-
-    private String details;
 }

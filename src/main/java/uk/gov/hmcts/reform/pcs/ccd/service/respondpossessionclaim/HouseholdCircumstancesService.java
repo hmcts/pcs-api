@@ -48,7 +48,9 @@ public class HouseholdCircumstancesService {
     }
 
     private RegularIncomeEntity buildRegularIncome(HouseholdCircumstances circumstances) {
-        RegularIncomeEntity regularIncome = RegularIncomeEntity.builder().build();
+        RegularIncomeEntity regularIncome = RegularIncomeEntity.builder()
+            .details(circumstances.getMoneyFromElsewhereDetails())
+            .build();
 
         if (circumstances.getIncomeFromJobs() == YesOrNo.YES) {
             regularIncome.addItem(RegularIncomeItemEntity.builder()
@@ -85,7 +87,6 @@ public class HouseholdCircumstancesService {
         if (circumstances.getMoneyFromElsewhere() == YesOrNo.YES) {
             regularIncome.addItem(RegularIncomeItemEntity.builder()
                 .incomeType(IncomeType.MONEY_FROM_ELSEWHERE)
-                .details(circumstances.getMoneyFromElsewhereDetails())
                 .build());
         }
 
