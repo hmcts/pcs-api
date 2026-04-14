@@ -82,7 +82,6 @@ test.describe('[Common Component Fee And Pay]', async () => {
     });
 
     test('Fee And Pay - Cancel Payment from You Card Details Page @regression @nightly', async () => {
-
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -95,7 +94,6 @@ test.describe('[Common Component Fee And Pay]', async () => {
   });
 
     test('Fee And Pay - Cancel Payment from Confirm Card Details Page @regression @nightly', async () => {
-
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
