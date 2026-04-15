@@ -102,9 +102,9 @@ ccd {
 }
 
 tasks.register('generateCCDDefinition', Copy) {
-  from tasks.generateCCDConfig.outputs
+  from ("${tasks.generateCCDConfig.outputs.files.singleFile}/PCS")
   from file('ccd-definitions')
-  into layout.buildDirectory.dir('definitions/PCS')
+  into layout.buildDirectory.dir('json-definitions')
 }
 
 tasks.named('generateCCDConfig') {
