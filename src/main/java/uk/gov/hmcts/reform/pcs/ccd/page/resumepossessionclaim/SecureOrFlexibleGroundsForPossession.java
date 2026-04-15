@@ -55,18 +55,18 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
+        SecureOrFlexiblePossessionGrounds grounds = caseData.getSecureOrFlexiblePossessionGrounds();
 
         Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds =
-                caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleDiscretionaryGrounds();
+                grounds.getSecureOrFlexibleDiscretionaryGrounds();
 
         Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> discretionaryGroundsAlt =
-                caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleDiscretionaryGroundsAlt();
+                grounds.getSecureOrFlexibleDiscretionaryGroundsAlt();
 
-        Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds = caseData.getSecureOrFlexiblePossessionGrounds()
-            .getSecureOrFlexibleMandatoryGrounds();
+        Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds = grounds.getSecureOrFlexibleMandatoryGrounds();
 
         Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> mandatoryGroundsAlt =
-                caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleMandatoryGroundsAlt();
+                grounds.getSecureOrFlexibleMandatoryGroundsAlt();
 
         boolean hasOtherDiscretionaryGrounds = discretionaryGrounds
                 .stream()
@@ -79,7 +79,7 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                 .errorMessageOverride("Please select at least one ground")
                 .build();
         } else if (mandatoryGrounds.contains(SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL)
-                && caseData.getSecureOrFlexiblePossessionGrounds().getSecureAntisocialAdditionalGrounds().isEmpty()) {
+                && grounds.getSecureAntisocialAdditionalGrounds().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errorMessageOverride("Please select at least one absolute ground for possession for antisocial "
                         + "behaviour")
