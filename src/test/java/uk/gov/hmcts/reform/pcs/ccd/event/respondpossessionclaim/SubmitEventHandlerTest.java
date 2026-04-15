@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -155,7 +155,7 @@ class SubmitEventHandlerTest {
 
         DefendantResponses defendantResponses =
             DefendantResponses.builder()
-                .preferenceType(ContactPreferenceType.EMAIL)
+                .contactByEmail(YesOrNo.YES)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPhone(VerticalYesNo.YES)
                 .build();
@@ -186,7 +186,7 @@ class SubmitEventHandlerTest {
         verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
 
         PossessionClaimResponse capturedResponse = responseCaptor.getValue();
-        assertThat(capturedResponse.getDefendantResponses().getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
+        assertThat(capturedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(YesOrNo.YES);
         assertThat(capturedResponse.getDefendantResponses().getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantResponses().getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantContactDetails().getParty().getPhoneNumber())
@@ -203,7 +203,6 @@ class SubmitEventHandlerTest {
 
         DefendantResponses defendantResponses =
             DefendantResponses.builder()
-                .preferenceType(null)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPhone(VerticalYesNo.YES)
                 .build();
