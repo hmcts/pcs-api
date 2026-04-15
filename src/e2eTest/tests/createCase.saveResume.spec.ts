@@ -198,7 +198,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
       fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
       positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
     });
-    await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('clickButton', checkYourAnswers.submitClaim);
     await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -306,7 +306,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
       option: claimLanguageUsed.englishLRadioOption
     });
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-    await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('clickButton', checkYourAnswers.saveClaim);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
