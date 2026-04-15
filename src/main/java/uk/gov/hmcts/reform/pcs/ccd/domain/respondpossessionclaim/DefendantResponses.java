@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -31,7 +30,7 @@ public class DefendantResponses {
 
     @CCD
     private YesNoNotSure tenancyStartDateCorrect;
-  
+
     @CCD
     private LocalDate tenancyStartDate;
 
@@ -58,7 +57,10 @@ public class DefendantResponses {
     private VerticalYesNo contactByPhone;
 
     @CCD
-    private ContactPreferenceType preferenceType;
+    private YesOrNo contactByEmail;
+
+    @CCD
+    private YesOrNo contactByPost;
 
     @CCD
     private YesNoPreferNotToSay freeLegalAdvice;

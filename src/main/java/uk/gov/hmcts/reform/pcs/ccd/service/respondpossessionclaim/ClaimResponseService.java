@@ -134,7 +134,8 @@ public class ClaimResponseService {
             saveNeeded = true;
         }
 
-        contactPrefs.setPreferenceType(defendantResponse.getPreferenceType());
+        contactPrefs.setContactByEmail(defendantResponse.getContactByEmail());
+        contactPrefs.setContactByPost(defendantResponse.getContactByPost());
         contactPrefs.setContactByPhone(defendantResponse.getContactByPhone());
 
         shouldSavePhoneNumAndTextPreference = Optional.ofNullable(defendantResponse.getContactByPhone())
