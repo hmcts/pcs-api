@@ -27,7 +27,7 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
     @Override
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        log.info("DashboardView START invoked for caseReference={}", caseReference);
+        log.debug("DashboardView START invoked for caseReference={}", caseReference);
 
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
         accessValidator.validateAndGetDefendant(caseEntity, securityContextService.getCurrentUserId());
@@ -43,7 +43,7 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
             state
         );
 
-        log.info(
+        log.debug(
             "DashboardView START caseReference={} notifications={} taskGroups={}",
             caseReference,
             dashboardData.getNotifications().size(),
