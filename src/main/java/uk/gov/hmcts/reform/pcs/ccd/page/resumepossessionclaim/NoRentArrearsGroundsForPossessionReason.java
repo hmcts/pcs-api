@@ -34,9 +34,9 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
         pageBuilder
             .page("noRentArrearsGroundsForPossessionReason", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showCondition("claimDueToRentArrears=\"No\" "
+            .showCondition("claimDueToRentArrears=\"NO\" "
                                + "AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND noRentArrears_ShowGroundReasonPage=\"Yes\""
+                               + " AND noRentArrears_ShowGroundReasonPage=\"YES\""
                                + " AND legislativeCountry=\"England\"")
             .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsReasonForGrounds)
