@@ -89,6 +89,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
+        builder.tab("caseLinks", "Linked cases")
+            .forRoles(UserRole.PCS_SOLICITOR)
+            .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
+            .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
+
         builder.tab("caseFlags", "Case flags")
             .forRoles(UserRole.PCS_CASE_WORKER)
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")

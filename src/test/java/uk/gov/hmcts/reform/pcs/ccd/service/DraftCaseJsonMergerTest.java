@@ -74,6 +74,7 @@ class DraftCaseJsonMergerTest {
                             "claimantType",
                             "noRentArrearsReasonForGrounds.holidayLet",
                             "waysToPay",
+                            "caseLinks",
                             "caseFlags",
                             "claimGroundSummaries",
                             "enforcementOrder.showChangeNameAddressPage",

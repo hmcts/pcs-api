@@ -19,6 +19,9 @@ management:
     elasticsearch:
       enabled: false
 
+globalsearch:
+  caseManagementCategory: Property Possession Claims
+
 hmcts:
   hmctsOrgId: AAA7 #This is Civil jurisdiction service id for testing, and to be replaced with PCS service id before merge
 
