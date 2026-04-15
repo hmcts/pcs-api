@@ -30,8 +30,8 @@ public class ContactPreferences implements CcdPageConfiguration {
     private final TextAreaValidationService textAreaValidationService;
     private static final String EMAIL_LABEL = "Enter email address";
 
-    private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
-    private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
+    private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"YES\"";
+    private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"NO\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -110,7 +110,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             // Rest of address
             .complex(
                 ClaimantContactPreferences::getOverriddenClaimantContactAddress,
-                "isCorrectClaimantContactAddress=\"NO\" OR orgAddressFound=\"No\""
+                "isCorrectClaimantContactAddress=\"NO\" OR orgAddressFound=\"NO\""
             )
                 .mandatory(AddressUK::getAddressLine1)
                 .optional(AddressUK::getAddressLine2)
