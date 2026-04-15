@@ -339,6 +339,7 @@ class PCSCaseViewTest {
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     @Test

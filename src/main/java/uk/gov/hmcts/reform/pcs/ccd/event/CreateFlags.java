@@ -40,7 +40,8 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
                 .optional(
                 PCSCase::getFlagLauncherInternal,
-                null, null, null, null, "#ARGUMENT(CREATE)"
+                null, null, null, null,
+                "#ARGUMENT(CREATE)"
             );
 
     }
