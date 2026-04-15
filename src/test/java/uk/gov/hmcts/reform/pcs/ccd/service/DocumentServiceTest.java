@@ -304,6 +304,115 @@ class DocumentServiceTest {
     }
 
     @Test
+    void shouldConvertEmptyDescriptionToNull() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+                .document(Document.builder()
+                        .url("url1")
+                        .filename("file1")
+                        .binaryUrl("bin1")
+                        .categoryId("cat1")
+                        .build())
+                .documentType(AdditionalDocumentType.WITNESS_STATEMENT)
+                .description("")
+                .build();
+
+        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        );
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+        assertThat(capturedEntities.getFirst().getDescription()).isNull();
+    }
+
+    @Test
+    void shouldFilterOutNullValuesFromListValueDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document validDoc = Document.builder()
+                .url("url1")
+                .filename("file1")
+                .binaryUrl("bin1")
+                .categoryId("cat1")
+                .build();
+
+        List<ListValue<Document>> docsWithNull = List.of(
+                ListValue.<Document>builder().id("1").value(validDoc).build(),
+                ListValue.<Document>builder().id("2").value(null).build()
+        );
+
+        RentArrearsSection rentArrearsSection = RentArrearsSection.builder()
+                .statementDocuments(docsWithNull)
+                .build();
+
+        when(pcsCase.getRentArrears()).thenReturn(rentArrearsSection);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        assertThat(entities.getFirst().getFileName()).isEqualTo("file1");
+    }
+
+    @Test
+    void shouldSaveMultipleDocumentTypesInSingleCall() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document rentDoc = Document.builder()
+                .url("url-rent").filename("file-rent").binaryUrl("bin-rent").categoryId("cat-rent").build();
+        Document tenancyDoc = Document.builder()
+                .url("url-tenancy").filename("file-tenancy").binaryUrl("bin-tenancy").categoryId("cat-tenancy").build();
+        Document noticeDoc = Document.builder()
+                .url("url-notice").filename("file-notice").binaryUrl("bin-notice").categoryId("cat-notice").build();
+
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .statementDocuments(List.of(ListValue.<Document>builder().id("1").value(rentDoc).build()))
+                .build());
+        when(pcsCase.getTenancyLicenceDetails()).thenReturn(TenancyLicenceDetails.builder()
+                .tenancyLicenceDocuments(List.of(ListValue.<Document>builder().id("2").value(tenancyDoc).build()))
+                .build());
+        when(pcsCase.getNoticeServedDetails()).thenReturn(NoticeServedDetails.builder()
+                .noticeDocuments(List.of(ListValue.<Document>builder().id("3").value(noticeDoc).build()))
+                .build());
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(3);
+
+        assertThat(entities)
+            .extracting(DocumentEntity::getType)
+            .containsExactlyInAnyOrder(
+                DocumentType.RENT_STATEMENT,
+                DocumentType.TENANCY_LICENCE,
+                DocumentType.NOTICE_SERVED
+            );
+
+        assertThat(entities)
+            .extracting(DocumentEntity::getFileName)
+            .containsExactlyInAnyOrder("file-rent", "file-tenancy", "file-notice");
+    }
+
+    @Test
     void shouldAllowNullDescriptionForDocumentsOtherThanAdditionalDocuments() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
