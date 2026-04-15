@@ -26,7 +26,7 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
         pageBuilder
             .page("introductoryDemotedOtherGroundsReasons", this::midEvent)
             .pageLabel("Reasons for possession ")
-            .showCondition("showIntroductoryDemotedOtherGroundReasonPage=\"Yes\""
+            .showCondition("showIntroductoryDemotedOtherGroundReasonPage=\"YES\""
                     + " AND (tenancy_TypeOfTenancyLicence=\"INTRODUCTORY_TENANCY\""
                     + " OR tenancy_TypeOfTenancyLicence=\"DEMOTED_TENANCY\""
                     +  " OR tenancy_TypeOfTenancyLicence=\"OTHER\")"
