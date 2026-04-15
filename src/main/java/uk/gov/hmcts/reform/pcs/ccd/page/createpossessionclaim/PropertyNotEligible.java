@@ -26,7 +26,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
         pageBuilder
             .page("propertyNotEligible", this::midEvent)
             .pageLabel("Property not eligible for this online service")
-            .showCondition("showPropertyNotEligiblePage=\"Yes\"")
+            .showCondition("showPropertyNotEligiblePage=\"YES\"")
             .readonly(PCSCase::getShowPropertyNotEligiblePage, NEVER_SHOW)
 
             // England and Wales guidance section
