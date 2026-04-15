@@ -25,7 +25,7 @@ public class ChangeNameAddressWritPage implements CcdPageConfiguration {
             .page("changeNameAddressWrit", this::midEvent)
             .pageLabel("You need permission from a judge to change the name and address for the eviction")
             .showCondition(ShowConditionsEnforcementType.WRIT_FLOW
-                + " AND writShowChangeNameAddressPage=\"Yes\"")
+                + " AND writShowChangeNameAddressPage=\"YES\"")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
             .readonly(WritDetails::getShowChangeNameAddressPage, NEVER_SHOW)
