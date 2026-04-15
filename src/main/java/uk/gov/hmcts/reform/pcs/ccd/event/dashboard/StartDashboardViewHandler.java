@@ -34,13 +34,9 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
 
         PCSCase submittedCaseData = eventPayload.caseData();
 
-        // TODO: HDPI-5421 - CCD state is not available in EventPayload; default to CASE_ISSUED for now
-        State state = State.CASE_ISSUED;
-
         DashboardData dashboardData = dashboardJourneyService.computeDashboardData(
             caseReference,
-            submittedCaseData,
-            state
+            submittedCaseData
         );
 
         log.debug(

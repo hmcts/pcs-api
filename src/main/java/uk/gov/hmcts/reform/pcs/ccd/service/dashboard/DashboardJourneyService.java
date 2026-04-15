@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
@@ -16,21 +15,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Computes dashboard data (notifications + task groups) from submitted case data and current state.
+ * Computes dashboard data (notifications + task groups) from submitted case data.
  * READ-ONLY
  */
 @Service
 @Slf4j
 public class DashboardJourneyService {
 
-    public DashboardData computeDashboardData(long caseReference,
-                                              PCSCase submittedCaseData,
-                                              State state) {
-        List<ListValue<DashboardNotification>> notifications = computeNotifications(state);
-        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(state);
+    public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
+        List<ListValue<DashboardNotification>> notifications = computeNotifications();
+        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups();
 
-        log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for state={}",
-                 notifications.size(), taskGroups.size(), state);
+        log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for case={}",
+                 notifications.size(), taskGroups.size(), caseReference);
 
         return DashboardData.builder()
             .caseId(String.valueOf(caseReference))
@@ -40,82 +37,49 @@ public class DashboardJourneyService {
             .build();
     }
 
-    private List<ListValue<DashboardNotification>> computeNotifications(State state) {
-        if (state == State.CASE_ISSUED) {
-            return ListValueUtils.wrapListItems(List.of(
-                DashboardNotification.builder()
-                    .templateId("Defendant.CaseIssued")
-                    .templateValues(toTemplateValues(Map.of(
-                        "hearingDateTime", "2026-06-15T10:30:00Z",
-                        "responseEndDate", "2026-05-15"
-                    )))
-                    .build(),
-                DashboardNotification.builder()
-                    .templateId("Defendant.ResponseToClaim")
-                    .templateValues(toTemplateValues(Map.of(
-                        "ctaLabel", "Start your response."
-                    )))
-                    .build()
-            ));
-        }
-
-        if (state == State.AWAITING_SUBMISSION_TO_HMCTS) {
-            return ListValueUtils.wrapListItems(List.of(
-                DashboardNotification.builder()
-                    .templateId("Defendant.AwaitingSubmission")
-                    .templateValues(toTemplateValues(Map.of(
-                        "submittedDate", "2026-04-01"
-                    )))
-                    .build()
-            ));
-        }
-
-        return List.of();
+    private List<ListValue<DashboardNotification>> computeNotifications() {
+        return ListValueUtils.wrapListItems(List.of(
+            DashboardNotification.builder()
+                .templateId("Defendant.CaseIssued")
+                .templateValues(toTemplateValues(Map.of(
+                    "hearingDateTime", "2026-06-15T10:30:00Z",
+                    "responseEndDate", "2026-05-15"
+                )))
+                .build(),
+            DashboardNotification.builder()
+                .templateId("Defendant.ResponseToClaim")
+                .templateValues(toTemplateValues(Map.of(
+                    "ctaLabel", "Start your response."
+                )))
+                .build()
+        ));
     }
 
-    private List<ListValue<TaskGroup>> computeTaskGroups(State state) {
-        if (state == State.CASE_ISSUED) {
-            return ListValueUtils.wrapListItems(List.of(
-                TaskGroup.builder()
-                    .groupId("CLAIM")
-                    .tasks(ListValueUtils.wrapListItems(List.of(
-                        Task.builder()
-                            .templateId("Defendant.ViewClaim")
-                            .status("AVAILABLE")
-                            .build(),
-                        Task.builder()
-                            .templateId("Defendant.ViewDocuments")
-                            .status("NOT_AVAILABLE")
-                            .build()
-                    )))
-                    .build(),
-                TaskGroup.builder()
-                    .groupId("RESPONSE")
-                    .tasks(ListValueUtils.wrapListItems(List.of(
-                        Task.builder()
-                            .templateId("Defendant.RespondToClaim")
-                            .status("ACTION_NEEDED")
-                            .build()
-                    )))
-                    .build()
-            ));
-        }
-
-        if (state == State.AWAITING_SUBMISSION_TO_HMCTS) {
-            return ListValueUtils.wrapListItems(List.of(
-                TaskGroup.builder()
-                    .groupId("CLAIM")
-                    .tasks(ListValueUtils.wrapListItems(List.of(
-                        Task.builder()
-                            .templateId("Task.PCS.Claim.ViewClaim")
-                            .status("NOT_AVAILABLE")
-                            .build()
-                    )))
-                    .build()
-            ));
-        }
-
-        return List.of();
+    private List<ListValue<TaskGroup>> computeTaskGroups() {
+        return ListValueUtils.wrapListItems(List.of(
+            TaskGroup.builder()
+                .groupId("CLAIM")
+                .tasks(ListValueUtils.wrapListItems(List.of(
+                    Task.builder()
+                        .templateId("Defendant.ViewClaim")
+                        .status("AVAILABLE")
+                        .build(),
+                    Task.builder()
+                        .templateId("Defendant.ViewDocuments")
+                        .status("NOT_AVAILABLE")
+                        .build()
+                )))
+                .build(),
+            TaskGroup.builder()
+                .groupId("RESPONSE")
+                .tasks(ListValueUtils.wrapListItems(List.of(
+                    Task.builder()
+                        .templateId("Defendant.RespondToClaim")
+                        .status("ACTION_NEEDED")
+                        .build()
+                )))
+                .build()
+        ));
     }
 
     /**

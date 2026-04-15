@@ -59,7 +59,7 @@ class StartDashboardViewHandlerTest {
     }
 
     @Test
-    void shouldComputeDashboardDataForCaseIssuedAndAttachToCaseData() {
+    void shouldComputeDashboardDataAndAttachToCaseData() {
         UUID defendantUserId = UUID.randomUUID();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
         AddressUK propertyAddress = AddressUK.builder().addressLine1("10 Test Road").build();
@@ -76,7 +76,7 @@ class StartDashboardViewHandlerTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(accessValidator.validateAndGetDefendant(caseEntity, defendantUserId))
             .thenReturn(PartyEntity.builder().idamId(defendantUserId).build());
-        when(dashboardJourneyService.computeDashboardData(CASE_REFERENCE, caseData, State.CASE_ISSUED))
+        when(dashboardJourneyService.computeDashboardData(CASE_REFERENCE, caseData))
             .thenReturn(dashboardData);
 
         PCSCase result = underTest.start(eventPayload);
@@ -85,7 +85,7 @@ class StartDashboardViewHandlerTest {
         assertThat(result.getDashboardData()).isSameAs(dashboardData);
         verify(pcsCaseService).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(caseEntity, defendantUserId);
-        verify(dashboardJourneyService).computeDashboardData(CASE_REFERENCE, caseData, State.CASE_ISSUED);
+        verify(dashboardJourneyService).computeDashboardData(CASE_REFERENCE, caseData);
     }
 
     @ParameterizedTest(name = "{0}")

@@ -2,11 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.dashboard;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
@@ -27,11 +24,11 @@ class DashboardJourneyServiceTest {
     }
 
     @Test
-    void shouldPopulateCaseMetadataForCaseIssued() {
+    void shouldPopulateCaseMetadata() {
         AddressUK propertyAddress = AddressUK.builder().addressLine1("1 High Street").postCode("SW1A 1AA").build();
         PCSCase submitted = PCSCase.builder().propertyAddress(propertyAddress).build();
 
-        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted, State.CASE_ISSUED);
+        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted);
 
         assertThat(result.getCaseId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(result.getPropertyAddress()).isEqualTo(propertyAddress);
@@ -40,10 +37,10 @@ class DashboardJourneyServiceTest {
     }
 
     @Test
-    void shouldReturnCaseIssuedNotificationsWithExpectedTemplatesAndValues() {
+    void shouldReturnNotificationsWithExpectedTemplatesAndValues() {
         PCSCase submitted = PCSCase.builder().build();
 
-        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted, State.CASE_ISSUED);
+        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted);
 
         assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
             .extracting(n -> n.getTemplateId(), n -> n.getTemplateValues().size())
@@ -61,10 +58,10 @@ class DashboardJourneyServiceTest {
     }
 
     @Test
-    void shouldReturnCaseIssuedTaskGroupsWithExpectedStructure() {
+    void shouldReturnTaskGroupsWithExpectedStructure() {
         PCSCase submitted = PCSCase.builder().build();
 
-        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted, State.CASE_ISSUED);
+        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted);
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()))
             .extracting(g -> g.getGroupId(), g -> g.getTasks().size())
@@ -82,44 +79,10 @@ class DashboardJourneyServiceTest {
     }
 
     @Test
-    void shouldReturnAwaitingSubmissionNotificationsAndTasks() {
-        PCSCase submitted = PCSCase.builder().build();
-
-        DashboardData result = underTest.computeDashboardData(
-            CASE_REFERENCE,
-            submitted,
-            State.AWAITING_SUBMISSION_TO_HMCTS
-        );
-
-        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
-            .extracting(n -> n.getTemplateId())
-            .containsExactly("Defendant.AwaitingSubmission");
-
-        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()))
-            .extracting(g -> g.getGroupId())
-            .containsExactly("CLAIM");
-
-        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).getFirst().getTasks())
-            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
-            .containsExactly(tuple("Task.PCS.Claim.ViewClaim", "NOT_AVAILABLE"));
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = State.class, names = {"PENDING_CASE_ISSUED"})
-    void shouldReturnEmptyNotificationsAndTaskGroupsForUnsupportedStates(State state) {
-        PCSCase submitted = PCSCase.builder().build();
-
-        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted, state);
-
-        assertThat(result.getNotifications()).isEmpty();
-        assertThat(result.getTaskGroups()).isEmpty();
-    }
-
-    @Test
     void shouldOnlyExposeDeclaredPlaceholdersForResponseToClaimNotification() {
         PCSCase submitted = PCSCase.builder().build();
 
-        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted, State.CASE_ISSUED);
+        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted);
 
         List<String> keysForResponseNotification = ListValueUtils.unwrapListItems(result.getNotifications()).stream()
             .filter(n -> "Defendant.ResponseToClaim".equals(n.getTemplateId()))
