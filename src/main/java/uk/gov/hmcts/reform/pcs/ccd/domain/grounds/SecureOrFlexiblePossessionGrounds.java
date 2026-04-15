@@ -50,8 +50,8 @@ public class SecureOrFlexiblePossessionGrounds {
     @CCD(
         label = "Absolute ground for possession for antisocial behaviour",
         hint = "Select all that you allege apply",
-            typeOverride = FieldType.MultiSelectList,
-            typeParameterOverride = "SecureAntisocialAdditionalGrounds"
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureAntisocialAdditionalGrounds"
     )
     private Set<SecureAntisocialAdditionalGrounds> secureAntisocialAdditionalGrounds;
 }

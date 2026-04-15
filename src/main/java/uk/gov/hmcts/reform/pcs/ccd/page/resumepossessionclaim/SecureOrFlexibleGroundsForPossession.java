@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -43,7 +44,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGrounds)
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGrounds)
             .mandatory(SecureOrFlexiblePossessionGrounds::getSecureAntisocialAdditionalGrounds,
-                    "secureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
+                    ShowConditions.fieldContains("secureOrFlexibleMandatoryGrounds",
+                            SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL))
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGroundsAlt)
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGroundsAlt)
             .done()
@@ -71,21 +73,6 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                 .anyMatch(ground -> ground != RENT_ARREARS_OR_BREACH_OF_TENANCY
                 );
 
-        if (!discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
-            // Ground 1 not selected - clear rent arrears data
-            caseData.setRentArrearsOrBreachOfTenancy(Set.of());
-        }
-
-        if (hasOtherDiscretionaryGrounds
-               || !discretionaryGroundsAlt.isEmpty()
-               || !mandatoryGrounds.isEmpty()
-               || !mandatoryGroundsAlt.isEmpty()
-        ) {
-            caseData.setShowReasonsForGroundsPage(YesOrNo.YES);
-        } else {
-            caseData.setShowReasonsForGroundsPage(YesOrNo.NO);
-        }
-
         if (discretionaryGrounds.isEmpty() && discretionaryGroundsAlt.isEmpty() && mandatoryGrounds.isEmpty()
             && mandatoryGroundsAlt.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -98,9 +85,22 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                         + "behaviour")
                 .build();
         }
+
+        if (!discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
+            // Ground 1 not selected - clear rent arrears data
+            caseData.setRentArrearsOrBreachOfTenancy(Set.of());
+        }
+        if (hasOtherDiscretionaryGrounds
+                || !discretionaryGroundsAlt.isEmpty()
+                || !mandatoryGrounds.isEmpty()
+                || !mandatoryGroundsAlt.isEmpty()
+        ) {
+            caseData.setShowReasonsForGroundsPage(YesOrNo.YES);
+        } else {
+            caseData.setShowReasonsForGroundsPage(YesOrNo.NO);
+        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
-
 }
