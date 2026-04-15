@@ -3,9 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
@@ -37,8 +40,7 @@ public class DocumentService {
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
-        List<Pair<Document, DocumentType>> allDocuments = new ArrayList<>();
-
+        List<DocumentHolder> allDocuments = new ArrayList<>();
         allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
 
         allDocuments.addAll(mapDocumentsWithType(
@@ -64,49 +66,55 @@ public class DocumentService {
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
 
-    private List<Pair<Document, DocumentType>> mapDocumentsWithType(
+    private List<DocumentHolder> mapDocumentsWithType(
         List<ListValue<Document>> docs, DocumentType type) {
 
-        if (docs == null || docs.isEmpty()) {
+        if (CollectionUtils.isEmpty(docs)) {
             return Collections.emptyList();
         }
 
         return docs.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(doc -> Pair.of(doc, type))
+            .map(doc -> DocumentHolder.builder()
+                    .document(doc)
+                    .type(type)
+                    .description("")
+                    .build())
             .toList();
     }
 
-    private List<Pair<Document, DocumentType>> mapAdditionalDocumentsWithType(
+    private List<DocumentHolder> mapAdditionalDocumentsWithType(
         List<ListValue<AdditionalDocument>> documents) {
 
-        if (documents == null || documents.isEmpty()) {
+        if (CollectionUtils.isEmpty(documents)) {
             return Collections.emptyList();
         }
 
         return ListValueUtils.unwrapListItems(documents).stream()
-            .map(doc -> Pair.of(
-                doc.getDocument(),
-                mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType())
-            ))
+            .map(doc -> DocumentHolder.builder()
+                    .document(doc.getDocument())
+                    .type(mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType()))
+                    .description(doc.getDescription())
+                    .build())
             .toList();
     }
 
     private List<DocumentEntity> createDocumentEntities(
-        List<Pair<Document, DocumentType>> documents) {
+        List<DocumentHolder> documents) {
 
-        if (documents == null || documents.isEmpty()) {
+        if (CollectionUtils.isEmpty(documents)) {
             return List.of();
         }
 
         return documents.stream()
-            .map(pair -> DocumentEntity.builder()
-                .url(pair.getKey().getUrl())
-                .fileName(pair.getKey().getFilename())
-                .binaryUrl(pair.getKey().getBinaryUrl())
-                .categoryId(pair.getKey().getCategoryId())
-                .type(pair.getValue())
+            .map(holder -> DocumentEntity.builder()
+                .url(holder.getDocument().getUrl())
+                .fileName(holder.getDocument().getFilename())
+                .binaryUrl(holder.getDocument().getBinaryUrl())
+                .categoryId(holder.getDocument().getCategoryId())
+                .type(holder.getType())
+                .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                 .build())
             .toList();
     }
@@ -129,15 +137,6 @@ public class DocumentService {
         };
     }
 
-    /**
-     * Creates defendant evidence documents from uploaded documents in draft.
-     * Extracts mimeType and size from categoryId JSON (AC07 requirement).
-     * Called during final submit to persist document metadata to database.
-     *
-     * @param uploadedDocuments List of documents from DefendantResponses.uploadedDocuments
-     * @param pcsCase The PCS case to link documents to
-     * @return List of saved DocumentEntity objects
-     */
     public List<DocumentEntity> createDefendantEvidenceDocuments(
         List<ListValue<Document>> uploadedDocuments,
         PcsCaseEntity pcsCase
@@ -170,13 +169,6 @@ public class DocumentService {
         return saved;
     }
 
-    /**
-     * Extract content type (MIME type) from Document categoryId.
-     * Frontend stores CDAM metadata as JSON: {"mimeType":"application/pdf","size":2048576}
-     *
-     * @param doc Document from CCD
-     * @return MIME type string, or null if not available
-     */
     private String extractContentType(Document doc) {
         if (doc.getCategoryId() == null || doc.getCategoryId().isBlank()) {
             return null;
@@ -195,13 +187,6 @@ public class DocumentService {
         return null;
     }
 
-    /**
-     * Extract file size from Document categoryId.
-     * Frontend stores CDAM metadata as JSON: {"mimeType":"application/pdf","size":2048576}
-     *
-     * @param doc Document from CCD
-     * @return File size in bytes, or null if not available
-     */
     private Long extractSize(Document doc) {
         if (doc.getCategoryId() == null || doc.getCategoryId().isBlank()) {
             return null;
@@ -218,5 +203,13 @@ public class DocumentService {
         }
 
         return null;
+    }
+
+    @Builder
+    @Data
+    private static class DocumentHolder {
+        private Document document;
+        private DocumentType type;
+        private String description;
     }
 }

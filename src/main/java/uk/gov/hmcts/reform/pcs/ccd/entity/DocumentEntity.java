@@ -58,6 +58,8 @@ public class DocumentEntity {
 
     private Long size;
 
+    private String description;
+
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "document")
     @Builder.Default
     @JsonManagedReference
