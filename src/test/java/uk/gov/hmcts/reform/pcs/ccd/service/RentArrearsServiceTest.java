@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsPaymentSourceEntity;
 
@@ -54,7 +54,7 @@ class RentArrearsServiceTest {
     @Test
     void shouldNotSetThirdPartyPaymentSourcesWhenFlagIsNo() {
         // Given
-        when(rentArrears.getThirdPartyPayments()).thenReturn(SimpleYesNo.NO);
+        when(rentArrears.getThirdPartyPayments()).thenReturn(VerticalYesNo.NO);
         when(rentArrears.getThirdPartyPaymentSources()).thenReturn(List.of(
             ThirdPartyPaymentSource.DISCRETIONARY_HOUSING_PAYMENT,
             ThirdPartyPaymentSource.OTHER
@@ -64,14 +64,14 @@ class RentArrearsServiceTest {
         RentArrearsEntity rentArrearsEntity = underTest.createRentArrearsEntity(pcsCase);
 
         // Then
-        assertThat(rentArrearsEntity.getThirdPartyPaymentsMade()).isEqualTo(SimpleYesNo.NO);
+        assertThat(rentArrearsEntity.getThirdPartyPaymentsMade()).isEqualTo(VerticalYesNo.NO);
         assertThat(rentArrearsEntity.getThirdPartyPaymentSources()).isEmpty();
     }
 
     @Test
     void shouldSetThirdPartyPaymentSourcesWhenFlagIsYes() {
         // Given
-        when(rentArrears.getThirdPartyPayments()).thenReturn(SimpleYesNo.YES);
+        when(rentArrears.getThirdPartyPayments()).thenReturn(VerticalYesNo.YES);
         when(rentArrears.getThirdPartyPaymentSources()).thenReturn(List.of(
             ThirdPartyPaymentSource.DISCRETIONARY_HOUSING_PAYMENT,
             ThirdPartyPaymentSource.OTHER
@@ -81,7 +81,7 @@ class RentArrearsServiceTest {
         RentArrearsEntity rentArrearsEntity = underTest.createRentArrearsEntity(pcsCase);
 
         // Then
-        assertThat(rentArrearsEntity.getThirdPartyPaymentsMade()).isEqualTo(SimpleYesNo.YES);
+        assertThat(rentArrearsEntity.getThirdPartyPaymentsMade()).isEqualTo(VerticalYesNo.YES);
         assertThat(rentArrearsEntity.getThirdPartyPaymentSources())
             .map(RentArrearsPaymentSourceEntity::getName)
             .contains(
@@ -95,7 +95,7 @@ class RentArrearsServiceTest {
         // Given
         String otherSourceDescription = "other source description";
 
-        when(rentArrears.getThirdPartyPayments()).thenReturn(SimpleYesNo.YES);
+        when(rentArrears.getThirdPartyPayments()).thenReturn(VerticalYesNo.YES);
         when(rentArrears.getThirdPartyPaymentSources()).thenReturn(List.of(ThirdPartyPaymentSource.OTHER));
         when(rentArrears.getPaymentSourceOther()).thenReturn(otherSourceDescription);
 
@@ -103,15 +103,15 @@ class RentArrearsServiceTest {
         RentArrearsEntity rentArrearsEntity = underTest.createRentArrearsEntity(pcsCase);
 
         // Then
-        assertThat(rentArrearsEntity.getThirdPartyPaymentsMade()).isEqualTo(SimpleYesNo.YES);
+        assertThat(rentArrearsEntity.getThirdPartyPaymentsMade()).isEqualTo(VerticalYesNo.YES);
         assertThat(rentArrearsEntity.getThirdPartyPaymentSources())
             .map(RentArrearsPaymentSourceEntity::getDescription)
             .contains(otherSourceDescription);
     }
 
     @ParameterizedTest
-    @EnumSource(value = SimpleYesNo.class)
-    void shouldSetRentArrearsJudgementWantedFlag(SimpleYesNo arrearsJudgementWanted) {
+    @EnumSource(value = VerticalYesNo.class)
+    void shouldSetRentArrearsJudgementWantedFlag(VerticalYesNo arrearsJudgementWanted) {
         // Given
         when(pcsCase.getArrearsJudgmentWanted()).thenReturn(arrearsJudgementWanted);
 

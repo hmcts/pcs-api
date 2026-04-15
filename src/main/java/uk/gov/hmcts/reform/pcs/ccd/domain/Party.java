@@ -20,19 +20,19 @@ public class Party {
 
     private String orgName;
 
-    private SimpleYesNo nameKnown;
+    private VerticalYesNo nameKnown;
 
     private String emailAddress;
 
     private AddressUK address;
 
-    private SimpleYesNo addressKnown;
+    private VerticalYesNo addressKnown;
 
-    private SimpleYesNo addressSameAsProperty;
+    private VerticalYesNo addressSameAsProperty;
 
     private String phoneNumber;
 
-    private SimpleYesNo phoneNumberProvided;
+    private VerticalYesNo phoneNumberProvided;
 
     private LocalDate dateOfBirth;
 

@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 /**
  * Domain model for the "people who will be evicted" page.
@@ -26,7 +26,7 @@ public class PeopleToEvict {
         label = "Do you want to evict everyone at the property?",
         hint = "This includes all of the defendants and anyone else living at the property"
     )
-    private SimpleYesNo evictEveryone;
+    private VerticalYesNo evictEveryone;
 
 }
 

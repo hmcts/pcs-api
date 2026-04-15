@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
@@ -67,7 +67,7 @@ public class PropertyAccessDetailsWarrantOfRestitutionPage implements CcdPageCon
                 .getWarrantOfRestitutionDetails()
                 .getPropertyAccessDetails();
 
-        if (propertyAccessDetails.getIsDifficultToAccessProperty() == SimpleYesNo.YES) {
+        if (propertyAccessDetails.getIsDifficultToAccessProperty() == VerticalYesNo.YES) {
             String txt = propertyAccessDetails.getClarificationOnAccessDifficultyText();
 
             errors.addAll(textAreaValidationService.validateSingleTextArea(

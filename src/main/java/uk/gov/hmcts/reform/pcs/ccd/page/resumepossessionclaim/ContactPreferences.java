@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -30,8 +30,8 @@ public class ContactPreferences implements CcdPageConfiguration {
     private final TextAreaValidationService textAreaValidationService;
     private static final String EMAIL_LABEL = "Enter email address";
 
-    private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"YES\"";
-    private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"NO\"";
+    private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
+    private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -110,7 +110,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             // Rest of address
             .complex(
                 ClaimantContactPreferences::getOverriddenClaimantContactAddress,
-                "isCorrectClaimantContactAddress=\"NO\" OR orgAddressFound=\"NO\""
+                "isCorrectClaimantContactAddress=\"NO\" OR orgAddressFound=\"No\""
             )
                 .mandatory(AddressUK::getAddressLine1)
                 .optional(AddressUK::getAddressLine2)
@@ -148,16 +148,16 @@ public class ContactPreferences implements CcdPageConfiguration {
         ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
 
         if (contactPreferences != null) {
-            SimpleYesNo isCorrectClaimantContactAddress = contactPreferences.getIsCorrectClaimantContactAddress();
-            if (isCorrectClaimantContactAddress == SimpleYesNo.NO
+            VerticalYesNo isCorrectClaimantContactAddress = contactPreferences.getIsCorrectClaimantContactAddress();
+            if (isCorrectClaimantContactAddress == VerticalYesNo.NO
                 || contactPreferences.getOrgAddressFound() == YesOrNo.NO) {
                 AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress();
                 validationErrors.addAll(addressValidator.validateAddressFields(contactAddress));
 
             }
             String overriddenEmail = contactPreferences.getOverriddenClaimantContactEmail();
-            SimpleYesNo isCorrectEmailAddress = contactPreferences.getIsCorrectClaimantContactEmail();
-            if (isCorrectEmailAddress == SimpleYesNo.NO && overriddenEmail != null) {
+            VerticalYesNo isCorrectEmailAddress = contactPreferences.getIsCorrectClaimantContactEmail();
+            if (isCorrectEmailAddress == VerticalYesNo.NO && overriddenEmail != null) {
                 validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                     overriddenEmail, EMAIL_LABEL, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
                 );

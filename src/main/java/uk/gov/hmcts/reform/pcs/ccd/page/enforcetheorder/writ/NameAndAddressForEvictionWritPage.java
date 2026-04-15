@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
@@ -63,14 +63,14 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
         NameAndAddressForEviction nameAndAddress =
                 caseData.getEnforcementOrder().getWritDetails().getNameAndAddressForEviction();
 
-        SimpleYesNo correctNameAndAddress = nameAndAddress.getCorrectNameAndAddress();
+        VerticalYesNo correctNameAndAddress = nameAndAddress.getCorrectNameAndAddress();
 
         WritDetails writDetails = caseData.getEnforcementOrder().getWritDetails();
 
-        if (correctNameAndAddress == SimpleYesNo.NO) {
+        if (correctNameAndAddress == VerticalYesNo.NO) {
             // Navigate to ChangeNameAddressPage
             writDetails.setShowChangeNameAddressPage(YesOrNo.YES);
-        } else if (correctNameAndAddress == SimpleYesNo.YES) {
+        } else if (correctNameAndAddress == VerticalYesNo.YES) {
             // Navigate to PeopleWhoWillBeEvictedPage
             writDetails.setShowChangeNameAddressPage(YesOrNo.NO);
         }

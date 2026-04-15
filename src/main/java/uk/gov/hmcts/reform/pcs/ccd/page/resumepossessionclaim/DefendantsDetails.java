@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
@@ -78,7 +78,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
 
-        boolean additionalDefendantsProvided = caseData.getAddAnotherDefendant() == SimpleYesNo.YES;
+        boolean additionalDefendantsProvided = caseData.getAddAnotherDefendant() == VerticalYesNo.YES;
 
         DefendantDetails defendantDetails = caseData.getDefendant1();
         List<String> validationErrors

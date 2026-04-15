@@ -8,14 +8,14 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
  * presented with the options vertically instead of horizontally
  * and serialised in upper case rather than title case.
  */
-public enum SimpleYesNo implements HasLabel {
+public enum VerticalYesNo implements HasLabel {
 
     YES("Yes"),
     NO("No");
 
     private final String label;
 
-    SimpleYesNo(String label) {
+    VerticalYesNo(String label) {
         this.label = label;
     }
 
@@ -24,7 +24,7 @@ public enum SimpleYesNo implements HasLabel {
         return label;
     }
 
-    public static SimpleYesNo from(Boolean booleanValue) {
+    public static VerticalYesNo from(Boolean booleanValue) {
         if (booleanValue == null) {
             return null;
         }

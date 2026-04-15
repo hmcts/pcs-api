@@ -8,7 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
@@ -89,86 +89,86 @@ class AsbProhibitedConductServiceTest {
             Arguments.argumentSet(
                 "All set to No",
                 ASBQuestionsDetailsWales.builder() // Provided by claimant
-                    .antisocialBehaviour(SimpleYesNo.NO)
+                    .antisocialBehaviour(VerticalYesNo.NO)
                     .antisocialBehaviourDetails("Should be ignored")
-                    .illegalPurposesUse(SimpleYesNo.NO)
+                    .illegalPurposesUse(VerticalYesNo.NO)
                     .illegalPurposesUseDetails("Should be ignored")
-                    .otherProhibitedConduct(SimpleYesNo.NO)
+                    .otherProhibitedConduct(VerticalYesNo.NO)
                     .otherProhibitedConductDetails("Should be ignored")
                     .build(),
                 AsbProhibitedConductEntity.builder() // Expected entity
-                    .antisocialBehaviour(SimpleYesNo.NO)
-                    .illegalPurposes(SimpleYesNo.NO)
-                    .otherProhibitedConduct(SimpleYesNo.NO)
+                    .antisocialBehaviour(VerticalYesNo.NO)
+                    .illegalPurposes(VerticalYesNo.NO)
+                    .otherProhibitedConduct(VerticalYesNo.NO)
                     .build()
             ),
             Arguments.argumentSet(
                 "Antisocial behaviour",
                 ASBQuestionsDetailsWales.builder()
-                    .antisocialBehaviour(SimpleYesNo.YES)
+                    .antisocialBehaviour(VerticalYesNo.YES)
                     .antisocialBehaviourDetails("Antisocial behaviour details")
-                    .illegalPurposesUse(SimpleYesNo.NO)
+                    .illegalPurposesUse(VerticalYesNo.NO)
                     .illegalPurposesUseDetails("Should be ignored")
-                    .otherProhibitedConduct(SimpleYesNo.NO)
+                    .otherProhibitedConduct(VerticalYesNo.NO)
                     .otherProhibitedConductDetails("Should be ignored")
                     .build(),
                 AsbProhibitedConductEntity.builder()
-                    .antisocialBehaviour(SimpleYesNo.YES)
+                    .antisocialBehaviour(VerticalYesNo.YES)
                     .antisocialBehaviourDetails("Antisocial behaviour details")
-                    .illegalPurposes(SimpleYesNo.NO)
-                    .otherProhibitedConduct(SimpleYesNo.NO)
+                    .illegalPurposes(VerticalYesNo.NO)
+                    .otherProhibitedConduct(VerticalYesNo.NO)
                     .build()
             ),
             Arguments.argumentSet(
                 "Illegal purposes",
                 ASBQuestionsDetailsWales.builder()
-                    .antisocialBehaviour(SimpleYesNo.NO)
+                    .antisocialBehaviour(VerticalYesNo.NO)
                     .antisocialBehaviourDetails("Should be ignored")
-                    .illegalPurposesUse(SimpleYesNo.YES)
+                    .illegalPurposesUse(VerticalYesNo.YES)
                     .illegalPurposesUseDetails("Illegal purposes details")
-                    .otherProhibitedConduct(SimpleYesNo.NO)
+                    .otherProhibitedConduct(VerticalYesNo.NO)
                     .otherProhibitedConductDetails("Should be ignored")
                     .build(),
                 AsbProhibitedConductEntity.builder()
-                    .antisocialBehaviour(SimpleYesNo.NO)
-                    .illegalPurposes(SimpleYesNo.YES)
+                    .antisocialBehaviour(VerticalYesNo.NO)
+                    .illegalPurposes(VerticalYesNo.YES)
                     .illegalPurposesDetails("Illegal purposes details")
-                    .otherProhibitedConduct(SimpleYesNo.NO)
+                    .otherProhibitedConduct(VerticalYesNo.NO)
                     .build()
             ),
             Arguments.argumentSet(
                 "Other prohibited conduct",
                 ASBQuestionsDetailsWales.builder()
-                    .antisocialBehaviour(SimpleYesNo.NO)
+                    .antisocialBehaviour(VerticalYesNo.NO)
                     .antisocialBehaviourDetails("Should be ignored")
-                    .illegalPurposesUse(SimpleYesNo.NO)
+                    .illegalPurposesUse(VerticalYesNo.NO)
                     .illegalPurposesUseDetails("Should be ignored")
-                    .otherProhibitedConduct(SimpleYesNo.YES)
+                    .otherProhibitedConduct(VerticalYesNo.YES)
                     .otherProhibitedConductDetails("Other prohibited conduct details")
                     .build(),
                 AsbProhibitedConductEntity.builder()
-                    .antisocialBehaviour(SimpleYesNo.NO)
-                    .illegalPurposes(SimpleYesNo.NO)
-                    .otherProhibitedConduct(SimpleYesNo.YES)
+                    .antisocialBehaviour(VerticalYesNo.NO)
+                    .illegalPurposes(VerticalYesNo.NO)
+                    .otherProhibitedConduct(VerticalYesNo.YES)
                     .otherProhibitedConductDetails("Other prohibited conduct details")
                     .build()
             ),
             Arguments.argumentSet(
                 "All set to Yes",
                 ASBQuestionsDetailsWales.builder()
-                    .antisocialBehaviour(SimpleYesNo.YES)
+                    .antisocialBehaviour(VerticalYesNo.YES)
                     .antisocialBehaviourDetails("Antisocial behaviour details")
-                    .illegalPurposesUse(SimpleYesNo.YES)
+                    .illegalPurposesUse(VerticalYesNo.YES)
                     .illegalPurposesUseDetails("Illegal purposes details")
-                    .otherProhibitedConduct(SimpleYesNo.YES)
+                    .otherProhibitedConduct(VerticalYesNo.YES)
                     .otherProhibitedConductDetails("Other prohibited conduct details")
                     .build(),
                 AsbProhibitedConductEntity.builder()
-                    .antisocialBehaviour(SimpleYesNo.YES)
+                    .antisocialBehaviour(VerticalYesNo.YES)
                     .antisocialBehaviourDetails("Antisocial behaviour details")
-                    .illegalPurposes(SimpleYesNo.YES)
+                    .illegalPurposes(VerticalYesNo.YES)
                     .illegalPurposesDetails("Illegal purposes details")
-                    .otherProhibitedConduct(SimpleYesNo.YES)
+                    .otherProhibitedConduct(VerticalYesNo.YES)
                     .otherProhibitedConductDetails("Other prohibited conduct details")
                     .build()
             )
@@ -180,47 +180,47 @@ class AsbProhibitedConductServiceTest {
             Arguments.argumentSet(
                 "No claim for prohibited conduct contract",
                 PCSCase.builder() // Provided by claimant
-                    .prohibitedConductWalesClaim(SimpleYesNo.NO)
+                    .prohibitedConductWalesClaim(VerticalYesNo.NO)
                     .prohibitedConductWalesClaimDetails("Should be ignored")
                     .periodicContractTermsWales(PeriodicContractTermsWales.builder()
-                                                    .agreedTermsOfPeriodicContract(SimpleYesNo.YES)
+                                                    .agreedTermsOfPeriodicContract(VerticalYesNo.YES)
                                                     .detailsOfTerms("Should be ignored")
                                                     .build())
                     .build(),
                 AsbProhibitedConductEntity.builder() // Expected entity
-                    .claimingStandardContract(SimpleYesNo.NO)
+                    .claimingStandardContract(VerticalYesNo.NO)
                     .build()
             ),
             Arguments.argumentSet(
                 "Claim for prohibited conduct contract",
                 PCSCase.builder() // Provided by claimant
-                    .prohibitedConductWalesClaim(SimpleYesNo.YES)
+                    .prohibitedConductWalesClaim(VerticalYesNo.YES)
                     .prohibitedConductWalesClaimDetails("Claim details")
                     .periodicContractTermsWales(PeriodicContractTermsWales.builder()
-                                                    .agreedTermsOfPeriodicContract(SimpleYesNo.NO)
+                                                    .agreedTermsOfPeriodicContract(VerticalYesNo.NO)
                                                     .detailsOfTerms("Should be ignored")
                                                     .build())
                     .build(),
                 AsbProhibitedConductEntity.builder() // Expected entity
-                    .claimingStandardContract(SimpleYesNo.YES)
+                    .claimingStandardContract(VerticalYesNo.YES)
                     .claimingStandardContractDetails("Claim details")
-                    .periodicContractAgreed(SimpleYesNo.NO)
+                    .periodicContractAgreed(VerticalYesNo.NO)
                     .build()
             ),
             Arguments.argumentSet(
                 "Claim for prohibited conduct contract with periodic contract agreed",
                 PCSCase.builder() // Provided by claimant
-                    .prohibitedConductWalesClaim(SimpleYesNo.YES)
+                    .prohibitedConductWalesClaim(VerticalYesNo.YES)
                     .prohibitedConductWalesClaimDetails("Claim details")
                     .periodicContractTermsWales(PeriodicContractTermsWales.builder()
-                                                    .agreedTermsOfPeriodicContract(SimpleYesNo.YES)
+                                                    .agreedTermsOfPeriodicContract(VerticalYesNo.YES)
                                                     .detailsOfTerms("Periodic contract details")
                                                     .build())
                     .build(),
                 AsbProhibitedConductEntity.builder() // Expected entity
-                    .claimingStandardContract(SimpleYesNo.YES)
+                    .claimingStandardContract(VerticalYesNo.YES)
                     .claimingStandardContractDetails("Claim details")
-                    .periodicContractAgreed(SimpleYesNo.YES)
+                    .periodicContractAgreed(VerticalYesNo.YES)
                     .periodicContractDetails("Periodic contract details")
                     .build()
             )

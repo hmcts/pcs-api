@@ -4,7 +4,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.stream.Stream;
 
@@ -23,7 +23,7 @@ class YesOrNoConverterTest {
 
     @ParameterizedTest
     @MethodSource("verticalYesOrNoToBooleanScenarios")
-    void shouldConvertVerticalYesOrNoToBoolean(SimpleYesNo yesOrNo, Boolean expectedResult) {
+    void shouldConvertVerticalYesOrNoToBoolean(VerticalYesNo yesOrNo, Boolean expectedResult) {
         Boolean actualResult = YesOrNoConverter.toBoolean(yesOrNo);
 
         assertThat(actualResult).isEqualTo(expectedResult);
@@ -39,8 +39,8 @@ class YesOrNoConverterTest {
 
     @ParameterizedTest
     @MethodSource("yesOrNoToVerticalYesNoScenarios")
-    void shouldConvertYesOrNoToVerticalYesNo(YesOrNo yesOrNo, SimpleYesNo expectedResult) {
-        SimpleYesNo actualResult = YesOrNoConverter.toVerticalYesNo(yesOrNo);
+    void shouldConvertYesOrNoToVerticalYesNo(YesOrNo yesOrNo, VerticalYesNo expectedResult) {
+        VerticalYesNo actualResult = YesOrNoConverter.toVerticalYesNo(yesOrNo);
 
         assertThat(actualResult).isEqualTo(expectedResult);
     }
@@ -55,8 +55,8 @@ class YesOrNoConverterTest {
 
     private static Stream<Arguments> verticalYesOrNoToBooleanScenarios() {
         return Stream.of(
-            arguments(SimpleYesNo.YES, true),
-            arguments(SimpleYesNo.NO, false),
+            arguments(VerticalYesNo.YES, true),
+            arguments(VerticalYesNo.NO, false),
             arguments(null, null)
         );
     }
@@ -71,8 +71,8 @@ class YesOrNoConverterTest {
 
     private static Stream<Arguments> yesOrNoToVerticalYesNoScenarios() {
         return Stream.of(
-            arguments(YesOrNo.YES, SimpleYesNo.YES),
-            arguments(YesOrNo.NO, SimpleYesNo.NO),
+            arguments(YesOrNo.YES, VerticalYesNo.YES),
+            arguments(YesOrNo.NO, VerticalYesNo.NO),
             arguments(null, null)
         );
     }

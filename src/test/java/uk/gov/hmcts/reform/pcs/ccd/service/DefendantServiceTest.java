@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ class DefendantServiceTest {
         void shouldReturnNameNotKnownWhenNameKnownIsNo() {
             // Given
             Party details = Party.builder()
-                .nameKnown(SimpleYesNo.NO)
+                .nameKnown(VerticalYesNo.NO)
                 .firstName("John")
                 .lastName("Doe")
                 .build();
@@ -81,7 +81,7 @@ class DefendantServiceTest {
         void shouldTrimWhitespaceFromFinalResult() {
             // Given
             Party details = Party.builder()
-                .nameKnown(SimpleYesNo.YES)
+                .nameKnown(VerticalYesNo.YES)
                 .firstName("  John  ")
                 .lastName("  Doe  ")
                 .build();
@@ -101,7 +101,7 @@ class DefendantServiceTest {
                 argumentSet(
                     "Full name when both first and last name are provided",
                     Party.builder()
-                        .nameKnown(SimpleYesNo.YES)
+                        .nameKnown(VerticalYesNo.YES)
                         .firstName("John")
                         .lastName("Doe")
                         .build(),
@@ -110,7 +110,7 @@ class DefendantServiceTest {
                 argumentSet(
                     "First name only when last name is null",
                     Party.builder()
-                        .nameKnown(SimpleYesNo.YES)
+                        .nameKnown(VerticalYesNo.YES)
                         .firstName("John")
                         .lastName(null)
                         .build(),
@@ -119,7 +119,7 @@ class DefendantServiceTest {
                 argumentSet(
                     "Last name only when first name is null",
                     Party.builder()
-                        .nameKnown(SimpleYesNo.YES)
+                        .nameKnown(VerticalYesNo.YES)
                         .firstName(null)
                         .lastName("Doe")
                         .build(),
@@ -128,7 +128,7 @@ class DefendantServiceTest {
                 argumentSet(
                     "Unknown when both names are empty strings",
                     Party.builder()
-                        .nameKnown(SimpleYesNo.YES)
+                        .nameKnown(VerticalYesNo.YES)
                         .firstName("")
                         .lastName("")
                         .build(),
@@ -137,7 +137,7 @@ class DefendantServiceTest {
                 argumentSet(
                     "Unknown when both names are null",
                     Party.builder()
-                        .nameKnown(SimpleYesNo.YES)
+                        .nameKnown(VerticalYesNo.YES)
                         .firstName(null)
                         .lastName(null)
                         .build(),
@@ -178,7 +178,7 @@ class DefendantServiceTest {
             String defendant1Id = UUID.randomUUID().toString();
 
             Party defendantDetails = Party.builder()
-                .nameKnown(SimpleYesNo.YES)
+                .nameKnown(VerticalYesNo.YES)
                 .firstName("John")
                 .lastName("Doe")
                 .build();
@@ -205,19 +205,19 @@ class DefendantServiceTest {
             String defendant3Id = UUID.randomUUID().toString();
 
             Party defendant1 = Party.builder()
-                .nameKnown(SimpleYesNo.YES)
+                .nameKnown(VerticalYesNo.YES)
                 .firstName("John")
                 .lastName("Doe")
                 .build();
 
             Party defendant2 = Party.builder()
-                .nameKnown(SimpleYesNo.YES)
+                .nameKnown(VerticalYesNo.YES)
                 .firstName("Jane")
                 .lastName("Smith")
                 .build();
 
             Party defendant3 = Party.builder()
-                .nameKnown(SimpleYesNo.NO)
+                .nameKnown(VerticalYesNo.NO)
                 .build();
 
             List<ListValue<Party>> allDefendants = List.of(
@@ -250,31 +250,31 @@ class DefendantServiceTest {
             String defendant5Id = UUID.randomUUID().toString();
 
             Party defendant1 = Party.builder()
-                .nameKnown(SimpleYesNo.YES)
+                .nameKnown(VerticalYesNo.YES)
                 .firstName("John")
                 .lastName("Doe")
                 .build();
 
             Party defendant2 = Party.builder()
-                .nameKnown(SimpleYesNo.YES)
+                .nameKnown(VerticalYesNo.YES)
                 .firstName("Jane")
                 .lastName(null)
                 .build();
 
             Party defendant3 = Party.builder()
-                .nameKnown(SimpleYesNo.YES)
+                .nameKnown(VerticalYesNo.YES)
                 .firstName(null)
                 .lastName("Smith")
                 .build();
 
             Party defendant4 = Party.builder()
-                .nameKnown(SimpleYesNo.YES)
+                .nameKnown(VerticalYesNo.YES)
                 .firstName("")
                 .lastName("")
                 .build();
 
             Party defendant5 = Party.builder()
-                .nameKnown(SimpleYesNo.NO)
+                .nameKnown(VerticalYesNo.NO)
                 .build();
 
             List<ListValue<Party>> allDefendants = List.of(

@@ -10,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnderlesseeMortgageeValidator;
 
@@ -43,7 +43,7 @@ class UnderlesseeOrMortgageeDetailsPageTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .underlesseeOrMortgagee1(underlesseeOrMortgagee)
-            .addAdditionalUnderlesseeOrMortgagee(SimpleYesNo.NO)
+            .addAdditionalUnderlesseeOrMortgagee(VerticalYesNo.NO)
             .build();
 
         List<String> expectedValidationErrors = List.of("some error 1", "some error 2");
@@ -73,7 +73,7 @@ class UnderlesseeOrMortgageeDetailsPageTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .underlesseeOrMortgagee1(underlesseeOrMortgagee)
-            .addAdditionalUnderlesseeOrMortgagee(SimpleYesNo.YES)
+            .addAdditionalUnderlesseeOrMortgagee(VerticalYesNo.YES)
             .additionalUnderlesseeOrMortgagee(additionalUnderlesseeMortgageeList)
             .build();
 

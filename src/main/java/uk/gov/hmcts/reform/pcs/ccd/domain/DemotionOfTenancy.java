@@ -30,7 +30,7 @@ public class DemotionOfTenancy {
         label = "Have you served the defendants with a statement of the express terms which will apply "
             + "to the demoted tenancy?"
     )
-    private SimpleYesNo statementOfExpressTermsServed;
+    private VerticalYesNo statementOfExpressTermsServed;
 
     @CCD(
         label = STATEMENT_OF_EXPRESS_TERMS_DETAILS_LABEL,

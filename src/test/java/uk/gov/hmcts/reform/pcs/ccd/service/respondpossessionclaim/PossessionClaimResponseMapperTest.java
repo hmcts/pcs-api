@@ -10,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -53,13 +53,13 @@ class PossessionClaimResponseMapperTest {
             .idamId(defendantUserId)
             .firstName("John")
             .lastName("Doe")
-            .nameKnown(SimpleYesNo.YES)
+            .nameKnown(VerticalYesNo.YES)
             .emailAddress("john@example.com")
             .phoneNumber("07700900000")
-            .phoneNumberProvided(SimpleYesNo.YES)
+            .phoneNumberProvided(VerticalYesNo.YES)
             .address(addressEntity)
-            .addressKnown(SimpleYesNo.YES)
-            .addressSameAsProperty(SimpleYesNo.NO)
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.NO)
             .build();
 
         AddressUK propertyAddress = AddressUK.builder()
@@ -92,10 +92,10 @@ class PossessionClaimResponseMapperTest {
         assertThat(contactDetails.getParty().getEmailAddress()).isEqualTo("john@example.com");
         assertThat(contactDetails.getParty().getPhoneNumber()).isEqualTo("07700900000");
         assertThat(contactDetails.getParty().getAddress()).isEqualTo(expectedAddress);
-        assertThat(contactDetails.getParty().getNameKnown()).isEqualTo(SimpleYesNo.YES);
-        assertThat(contactDetails.getParty().getAddressKnown()).isEqualTo(SimpleYesNo.YES);
-        assertThat(contactDetails.getParty().getPhoneNumberProvided()).isEqualTo(SimpleYesNo.YES);
-        assertThat(contactDetails.getParty().getAddressSameAsProperty()).isEqualTo(SimpleYesNo.NO);
+        assertThat(contactDetails.getParty().getNameKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(contactDetails.getParty().getAddressKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(contactDetails.getParty().getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(contactDetails.getParty().getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
@@ -104,7 +104,7 @@ class PossessionClaimResponseMapperTest {
         PartyEntity matchedDefendant = PartyEntity.builder()
             .firstName("Jane")
             .lastName("Smith")
-            .addressSameAsProperty(SimpleYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.YES)
             .address(null)
             .build();
 
@@ -136,7 +136,7 @@ class PossessionClaimResponseMapperTest {
         PartyEntity matchedDefendant = PartyEntity.builder()
             .firstName("Bob")
             .lastName("Jones")
-            .addressSameAsProperty(SimpleYesNo.NO)
+            .addressSameAsProperty(VerticalYesNo.NO)
             .address(defendantAddress)
             .build();
 
@@ -207,13 +207,13 @@ class PossessionClaimResponseMapperTest {
         PartyEntity matchedDefendant = PartyEntity.builder()
             .firstName("John")
             .lastName("Doe")
-            .nameKnown(SimpleYesNo.YES)
+            .nameKnown(VerticalYesNo.YES)
             .emailAddress("john.doe@example.com")
             .phoneNumber("07700900123")
-            .phoneNumberProvided(SimpleYesNo.YES)
+            .phoneNumberProvided(VerticalYesNo.YES)
             .address(addressEntity)
-            .addressKnown(SimpleYesNo.YES)
-            .addressSameAsProperty(SimpleYesNo.NO)
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.NO)
             .build();
 
         PCSCase pcsCase = PCSCase.builder()
@@ -236,13 +236,13 @@ class PossessionClaimResponseMapperTest {
 
         assertThat(defendantParty.getFirstName()).isEqualTo("John");
         assertThat(defendantParty.getLastName()).isEqualTo("Doe");
-        assertThat(defendantParty.getNameKnown()).isEqualTo(SimpleYesNo.YES);
+        assertThat(defendantParty.getNameKnown()).isEqualTo(VerticalYesNo.YES);
         assertThat(defendantParty.getEmailAddress()).isEqualTo("john.doe@example.com");
         assertThat(defendantParty.getPhoneNumber()).isEqualTo("07700900123");
-        assertThat(defendantParty.getPhoneNumberProvided()).isEqualTo(SimpleYesNo.YES);
+        assertThat(defendantParty.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
         assertThat(defendantParty.getAddress()).isEqualTo(expectedAddress);
-        assertThat(defendantParty.getAddressKnown()).isEqualTo(SimpleYesNo.YES);
-        assertThat(defendantParty.getAddressSameAsProperty()).isEqualTo(SimpleYesNo.NO);
+        assertThat(defendantParty.getAddressKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(defendantParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
@@ -434,13 +434,13 @@ class PossessionClaimResponseMapperTest {
         PartyEntity matchedDefendant = PartyEntity.builder()
             .firstName("Arun")
             .lastName("Kumar")
-            .nameKnown(SimpleYesNo.YES)
+            .nameKnown(VerticalYesNo.YES)
             .emailAddress("arun@example.com")
             .phoneNumber("07700900000")
-            .phoneNumberProvided(SimpleYesNo.YES)
+            .phoneNumberProvided(VerticalYesNo.YES)
             .address(addressEntity)
-            .addressKnown(SimpleYesNo.YES)
-            .addressSameAsProperty(SimpleYesNo.NO)
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.NO)
             .build();
 
         AddressUK expectedAddress = AddressUK.builder()
@@ -461,7 +461,7 @@ class PossessionClaimResponseMapperTest {
         assertThat(result.getClaimantEnteredDefendantDetails()).isNotNull();
         assertThat(result.getClaimantEnteredDefendantDetails().getFirstName()).isEqualTo("Arun");
         assertThat(result.getClaimantEnteredDefendantDetails().getLastName()).isEqualTo("Kumar");
-        assertThat(result.getClaimantEnteredDefendantDetails().getNameKnown()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getClaimantEnteredDefendantDetails().getNameKnown()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getClaimantEnteredDefendantDetails().getEmailAddress()).isEqualTo("arun@example.com");
         assertThat(result.getClaimantEnteredDefendantDetails().getPhoneNumber()).isEqualTo("07700900000");
         assertThat(result.getClaimantEnteredDefendantDetails().getAddress()).isEqualTo(expectedAddress);

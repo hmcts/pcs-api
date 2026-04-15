@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
@@ -27,7 +27,7 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
             .page("peopleWhoWillBeEvicted", this::midEvent)
             .pageLabel("The people who will be evicted")
             .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
-                + " AND warrantShowPeopleWhoWillBeEvictedPage=\"YES\"")
+                + " AND warrantShowPeopleWhoWillBeEvictedPage=\"Yes\"")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .readonly(WarrantDetails::getShowPeopleWhoWillBeEvictedPage, NEVER_SHOW)
@@ -48,10 +48,10 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
 
         WarrantDetails warrantDetails = caseData.getEnforcementOrder().getWarrantDetails();
         PeopleToEvict peopleToEvict = warrantDetails.getPeopleToEvict();
-        if (peopleToEvict.getEvictEveryone() == SimpleYesNo.NO) {
+        if (peopleToEvict.getEvictEveryone() == VerticalYesNo.NO) {
             // Navigate to PeopleYouWantToEvictPage
             warrantDetails.setShowPeopleYouWantToEvictPage(YesOrNo.YES);
-        } else if (peopleToEvict.getEvictEveryone() == SimpleYesNo.YES) {
+        } else if (peopleToEvict.getEvictEveryone() == VerticalYesNo.YES) {
             // Skip PeopleYouWantToEvictPage, go directly to LivingInThePropertyPage
             warrantDetails.setShowPeopleYouWantToEvictPage(YesOrNo.NO);
         }

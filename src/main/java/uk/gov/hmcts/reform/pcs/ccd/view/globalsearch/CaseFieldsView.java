@@ -6,7 +6,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 import java.util.UUID;
@@ -100,6 +100,6 @@ public class CaseFieldsView {
     }
 
     private boolean isDefendantNameKnown(final List<ListValue<Party>> defendants) {
-        return defendants.getFirst().getValue().getNameKnown() == SimpleYesNo.YES;
+        return defendants.getFirst().getValue().getNameKnown() == VerticalYesNo.YES;
     }
 }

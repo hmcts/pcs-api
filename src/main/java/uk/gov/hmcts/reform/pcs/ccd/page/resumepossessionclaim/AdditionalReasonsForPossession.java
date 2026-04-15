@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo.YES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 @AllArgsConstructor
 @Component

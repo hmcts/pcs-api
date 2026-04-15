@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -152,7 +152,7 @@ class StartEventHandlerTest {
             .idamId(defendantUserId)
             .firstName("Jane")
             .lastName("Smith")
-            .addressSameAsProperty(SimpleYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.YES)
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
@@ -183,7 +183,7 @@ class StartEventHandlerTest {
             .idamId(defendantUserId)
             .firstName("Bob")
             .lastName("Johnson")
-            .addressSameAsProperty(SimpleYesNo.NO)
+            .addressSameAsProperty(VerticalYesNo.NO)
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
@@ -266,7 +266,7 @@ class StartEventHandlerTest {
     @ParameterizedTest(name = "phoneNumberProvided={0}, phoneNumber={1}")
     @MethodSource("phoneNumberScenarios")
     void shouldMapDefendantWithVariousPhoneNumberProvided(
-        SimpleYesNo phoneNumberProvided,
+        VerticalYesNo phoneNumberProvided,
         String phoneNumber,
         String firstName,
         String lastName
@@ -303,8 +303,8 @@ class StartEventHandlerTest {
 
     private static Stream<Arguments> phoneNumberScenarios() {
         return Stream.of(
-            Arguments.of(SimpleYesNo.YES, "07700900123", "John", "Doe"),
-            Arguments.of(SimpleYesNo.NO, null, "Jane", "Smith"),
+            Arguments.of(VerticalYesNo.YES, "07700900123", "John", "Doe"),
+            Arguments.of(VerticalYesNo.NO, null, "Jane", "Smith"),
             Arguments.of(null, null, "Bob", "Johnson")
         );
     }
@@ -340,8 +340,8 @@ class StartEventHandlerTest {
             .idamId(defendantUserId)
             .firstName("Arun")
             .lastName("Kumar")
-            .nameKnown(SimpleYesNo.YES)
-            .addressKnown(SimpleYesNo.NO)
+            .nameKnown(VerticalYesNo.YES)
+            .addressKnown(VerticalYesNo.NO)
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
@@ -349,8 +349,8 @@ class StartEventHandlerTest {
         Party originalParty = Party.builder()
             .firstName("Arun")
             .lastName("Kumar")
-            .nameKnown(SimpleYesNo.YES)
-            .addressKnown(SimpleYesNo.NO)
+            .nameKnown(VerticalYesNo.YES)
+            .addressKnown(VerticalYesNo.NO)
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);

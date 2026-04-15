@@ -6,13 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -52,10 +51,10 @@ public class DefendantResponses {
     private LocalDate noticeReceivedDate;
 
     @CCD
-    private SimpleYesNo contactByText;
+    private VerticalYesNo contactByText;
 
     @CCD
-    private SimpleYesNo contactByPhone;
+    private VerticalYesNo contactByPhone;
 
     @CCD
     private ContactPreferenceType preferenceType;
@@ -67,7 +66,7 @@ public class DefendantResponses {
     private LocalDate dateOfBirth;
 
     @CCD
-    private SimpleYesNo defendantNameConfirmation;
+    private VerticalYesNo defendantNameConfirmation;
 
     @CCD
     private YesNoNotSure landlordRegistered;
@@ -76,7 +75,7 @@ public class DefendantResponses {
     private YesNoNotSure writtenTerms;
 
     @CCD
-    private YesOrNo disputeClaim;
+    private VerticalYesNo disputeClaim;
 
     @CCD
     private String disputeClaimDetails;

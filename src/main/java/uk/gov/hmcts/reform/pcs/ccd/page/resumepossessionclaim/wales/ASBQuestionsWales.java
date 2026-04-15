@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
@@ -30,7 +30,7 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
             .page("asbQuestionsWales", this::midEvent)
             .pageLabel("Antisocial behaviour and illegal or prohibited conduct")
             .label("asbQuestionsWales-separator", "---")
-            .showCondition("showASBQuestionsPageWales=\"YES\"")
+            .showCondition("showASBQuestionsPageWales=\"Yes\"")
             .readonly(PCSCase::getShowASBQuestionsPageWales, NEVER_SHOW)
             .complex(PCSCase::getAsbQuestionsWales)
             .mandatory(ASBQuestionsDetailsWales::getAntisocialBehaviour)
@@ -68,7 +68,7 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
         ASBQuestionsDetailsWales asbQuestions = caseData.getAsbQuestionsWales();
 
         if (asbQuestions != null) {
-            if (asbQuestions.getAntisocialBehaviour() == SimpleYesNo.YES) {
+            if (asbQuestions.getAntisocialBehaviour() == VerticalYesNo.YES) {
                 textAreaValidationService.validateTextArea(
                         asbQuestions.getAntisocialBehaviourDetails(),
                         "Give details of the actual or threatened antisocial behaviour",
@@ -76,7 +76,7 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
                         validationErrors);
             }
 
-            if (asbQuestions.getIllegalPurposesUse() == SimpleYesNo.YES) {
+            if (asbQuestions.getIllegalPurposesUse() == VerticalYesNo.YES) {
                 textAreaValidationService.validateTextArea(
                         asbQuestions.getIllegalPurposesUseDetails(),
                         "Give details of the actual or threatened use of the premises for illegal purposes",
@@ -84,7 +84,7 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
                         validationErrors);
             }
 
-            if (asbQuestions.getOtherProhibitedConduct() == SimpleYesNo.YES) {
+            if (asbQuestions.getOtherProhibitedConduct() == VerticalYesNo.YES) {
                 textAreaValidationService.validateTextArea(
                         asbQuestions.getOtherProhibitedConductDetails(),
                         "Give details of other prohibited conduct",

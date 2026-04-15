@@ -22,7 +22,7 @@ public class UnderlesseeMortgageeDetails {
     private String nameSectionLabel;
 
     @CCD(label = "Do you know the underlessee or mortgagee’s name?")
-    private SimpleYesNo nameKnown;
+    private VerticalYesNo nameKnown;
 
     @CCD(label = "What is their name?",
         hint = "Enter their first and last name, or the company or organisation name",
@@ -38,7 +38,7 @@ public class UnderlesseeMortgageeDetails {
     private String addressSectionLabel;
 
     @CCD(label = "Do you know the underlessee or mortgagee’s correspondence address?")
-    private SimpleYesNo addressKnown;
+    private VerticalYesNo addressKnown;
 
     @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\"")
     private AddressUK address;

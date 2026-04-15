@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.PossessiveNameService;
 
@@ -20,8 +20,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @AllArgsConstructor
 public class ClaimantInformationPage implements CcdPageConfiguration {
 
-    private static final String ORG_NAME_FOUND = "orgNameFound=\"YES\"";
-    private static final String ORG_NAME_NOT_FOUND = "orgNameFound=\"NO\"";
+    private static final String ORG_NAME_FOUND = "orgNameFound=\"Yes\"";
+    private static final String ORG_NAME_NOT_FOUND = "orgNameFound=\"No\"";
 
     private final PossessiveNameService possessiveNameService;
 
@@ -72,7 +72,7 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
         String claimantName;
         if (claimantInfo.getOrgNameFound() == YesOrNo.NO) {
             claimantName = claimantInfo.getFallbackClaimantName();
-        } else if (claimantInfo.getIsClaimantNameCorrect() == SimpleYesNo.NO) {
+        } else if (claimantInfo.getIsClaimantNameCorrect() == VerticalYesNo.NO) {
             claimantName = claimantInfo.getOverriddenClaimantName();
         } else {
             claimantName = claimantInfo.getClaimantName();

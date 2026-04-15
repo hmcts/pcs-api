@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
@@ -97,7 +97,7 @@ class CreatePossessionClaimTest extends CftlibTest {
                                        .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
                                        .build())
             .defendant1(DefendantDetails.builder()
-                            .nameKnown(SimpleYesNo.YES)
+                            .nameKnown(VerticalYesNo.YES)
                             .firstName("Danny")
                             .lastName("Defendant")
                             .build())

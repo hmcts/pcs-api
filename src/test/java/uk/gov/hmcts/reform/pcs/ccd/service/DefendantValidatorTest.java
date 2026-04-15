@@ -8,7 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 
@@ -111,8 +111,8 @@ class DefendantValidatorTest {
 
     private static DefendantDetails createDefendantWithAddress(AddressUK address) {
         return DefendantDetails.builder()
-            .addressKnown(SimpleYesNo.YES)
-            .addressSameAsPossession(SimpleYesNo.NO)
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsPossession(VerticalYesNo.NO)
             .correspondenceAddress(address)
             .build();
     }

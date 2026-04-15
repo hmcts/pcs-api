@@ -10,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
@@ -76,8 +76,8 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(SimpleYesNo.NO);
-        assertThat(result.getShowPeopleYouWantToEvictPage()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
@@ -95,28 +95,28 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(SimpleYesNo.NO);
-        assertThat(result.getShowPeopleYouWantToEvictPage()).isEqualTo(SimpleYesNo.NO);
+        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
     void shouldMapSuspendTheOrder() {
         // Given
-        WarrantDetails warrantDetails = WarrantDetails.builder().isSuspendedOrder(SimpleYesNo.YES).build();
+        WarrantDetails warrantDetails = WarrantDetails.builder().isSuspendedOrder(VerticalYesNo.YES).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
         // When
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getIsSuspendedOrder()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getIsSuspendedOrder()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
     void shouldMapAdditionalInformation() {
         // Given
         AdditionalInformation additionalInfo = AdditionalInformation.builder()
-            .additionalInformationSelect(SimpleYesNo.YES)
+            .additionalInformationSelect(VerticalYesNo.YES)
             .additionalInformationDetails("Additional details")
             .build();
 
@@ -127,7 +127,7 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getAdditionalInformationSelect()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getAdditionalInformationSelect()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getAdditionalInformationDetails()).isEqualTo("Additional details");
     }
 
@@ -154,7 +154,7 @@ class WarrantDetailsMapperTest {
     void shouldMapNameAndAddressForEviction() {
         // Given
         NameAndAddressForEviction nameAndAddress = NameAndAddressForEviction.builder()
-            .correctNameAndAddress(SimpleYesNo.NO)
+            .correctNameAndAddress(VerticalYesNo.NO)
             .build();
 
         WarrantDetails warrantDetails = WarrantDetails.builder()
@@ -169,13 +169,13 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getCorrectNameAndAddress()).isEqualTo(SimpleYesNo.NO);
+        assertThat(result.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
     void shouldMapPeopleToEvict() {
         // Given
-        PeopleToEvict peopleToEvict = PeopleToEvict.builder().evictEveryone(SimpleYesNo.YES).build();
+        PeopleToEvict peopleToEvict = PeopleToEvict.builder().evictEveryone(VerticalYesNo.YES).build();
         WarrantDetails warrantDetails = WarrantDetails.builder().peopleToEvict(peopleToEvict).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
@@ -183,14 +183,14 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getEvictEveryone()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getEvictEveryone()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
     void shouldMapPropertyAccessDetails() {
         // Given
         PropertyAccessDetails accessDetails = PropertyAccessDetails.builder()
-            .isDifficultToAccessProperty(SimpleYesNo.YES)
+            .isDifficultToAccessProperty(VerticalYesNo.YES)
             .clarificationOnAccessDifficultyText("Hard to access")
             .build();
 
@@ -201,7 +201,7 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getIsDifficultToAccessProperty()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getIsDifficultToAccessProperty()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getClarificationOnAccessDifficultyText()).isEqualTo("Hard to access");
     }
 
@@ -209,7 +209,7 @@ class WarrantDetailsMapperTest {
     void shouldMapLegalCosts() {
         // Given
         LegalCosts legalCosts = LegalCosts.builder()
-            .areLegalCostsToBeClaimed(SimpleYesNo.YES)
+            .areLegalCostsToBeClaimed(VerticalYesNo.YES)
             .amountOfLegalCosts(new BigDecimal("1500.50"))
             .build();
         WarrantDetails warrantDetails = WarrantDetails.builder().legalCosts(legalCosts).build();
@@ -219,7 +219,7 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getAreLegalCostsToBeClaimed()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getAreLegalCostsToBeClaimed()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getAmountOfLegalCosts()).isEqualByComparingTo(new BigDecimal("1500.50"));
     }
 
@@ -227,7 +227,7 @@ class WarrantDetailsMapperTest {
     void shouldHandleLegalCostsWithEmptyAmount() {
         // Given
         LegalCosts legalCosts = LegalCosts.builder()
-            .areLegalCostsToBeClaimed(SimpleYesNo.YES)
+            .areLegalCostsToBeClaimed(VerticalYesNo.YES)
             .build();
         WarrantDetails warrantDetails = WarrantDetails.builder().legalCosts(legalCosts).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
@@ -236,7 +236,7 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getAreLegalCostsToBeClaimed()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getAreLegalCostsToBeClaimed()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getAmountOfLegalCosts()).isNull();
     }
 
@@ -275,7 +275,7 @@ class WarrantDetailsMapperTest {
     void shouldMapLandRegistryFees() {
         // Given
         LandRegistryFees landRegistryFees = LandRegistryFees.builder()
-            .haveLandRegistryFeesBeenPaid(SimpleYesNo.YES)
+            .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
             .amountOfLandRegistryFees(new BigDecimal("350.00"))
             .build();
         WarrantDetails warrantDetails = WarrantDetails.builder().landRegistryFees(landRegistryFees).build();
@@ -285,7 +285,7 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getHaveLandRegistryFeesBeenPaid()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getHaveLandRegistryFeesBeenPaid()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getAmountOfLandRegistryFees()).isEqualByComparingTo(new BigDecimal("350.00"));
     }
 
@@ -293,7 +293,7 @@ class WarrantDetailsMapperTest {
     void shouldMapLandRegistryFeesWithEmptyAmount() {
         // Given
         LandRegistryFees landRegistryFees = LandRegistryFees.builder()
-            .haveLandRegistryFeesBeenPaid(SimpleYesNo.YES)
+            .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
             .build();
 
         WarrantDetails warrantDetails = WarrantDetails.builder().landRegistryFees(landRegistryFees).build();
@@ -303,7 +303,7 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getHaveLandRegistryFeesBeenPaid()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getHaveLandRegistryFeesBeenPaid()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getAmountOfLandRegistryFees()).isNull();
     }
 
@@ -333,7 +333,7 @@ class WarrantDetailsMapperTest {
     void shouldMapDefendantsDOB() {
         // Given
         DefendantsDOB defendantsDOB = DefendantsDOB.builder().defendantsDOBDetails("01/01/1980").build();
-        WarrantDetails warrantDetails = WarrantDetails.builder().defendantsDOBKnown(SimpleYesNo.YES)
+        WarrantDetails warrantDetails = WarrantDetails.builder().defendantsDOBKnown(VerticalYesNo.YES)
             .defendantsDOB(defendantsDOB).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
@@ -341,14 +341,14 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getDefendantsDOBKnown()).isEqualTo(SimpleYesNo.YES);
+        assertThat(result.getDefendantsDOBKnown()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getDefendantsDOBDetails()).isEqualTo("01/01/1980");
     }
 
     @Test
     void shouldHandleNullDefendantsDOB() {
         // Given
-        WarrantDetails warrantDetails = WarrantDetails.builder().defendantsDOBKnown(SimpleYesNo.NO)
+        WarrantDetails warrantDetails = WarrantDetails.builder().defendantsDOBKnown(VerticalYesNo.NO)
             .defendantsDOB(null).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
@@ -356,7 +356,7 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getDefendantsDOBKnown()).isEqualTo(SimpleYesNo.NO);
+        assertThat(result.getDefendantsDOBKnown()).isEqualTo(VerticalYesNo.NO);
         assertThat(result.getDefendantsDOBDetails()).isNull();
     }
 
@@ -460,7 +460,7 @@ class WarrantDetailsMapperTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
-        assertThat(result.getIsSuspendedOrder()).isEqualTo(SimpleYesNo.NO);
+        assertThat(result.getIsSuspendedOrder()).isEqualTo(VerticalYesNo.NO);
         assertThat(result.getAmountOfLegalCosts()).isEqualByComparingTo(new BigDecimal("1000.00"));
         assertThat(result.getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
     }
@@ -496,13 +496,13 @@ class WarrantDetailsMapperTest {
 
         WarrantDetails warrantDetails = WarrantDetails.builder()
             .showChangeNameAddressPage(YesOrNo.YES)
-            .isSuspendedOrder(SimpleYesNo.NO)
+            .isSuspendedOrder(VerticalYesNo.NO)
             .additionalInformation(AdditionalInformation.builder()
-                                       .additionalInformationSelect(SimpleYesNo.YES)
+                                       .additionalInformationSelect(VerticalYesNo.YES)
                                        .additionalInformationDetails("Details")
                                        .build())
             .legalCosts(LegalCosts.builder()
-                            .areLegalCostsToBeClaimed(SimpleYesNo.YES)
+                            .areLegalCostsToBeClaimed(VerticalYesNo.YES)
                             .amountOfLegalCosts(new BigDecimal("1000.00"))
                             .build())
             .statementOfTruth(statementOfTruth)

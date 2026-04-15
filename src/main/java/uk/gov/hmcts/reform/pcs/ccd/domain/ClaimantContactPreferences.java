@@ -25,7 +25,7 @@ public class ClaimantContactPreferences {
     private String claimantContactEmail;
 
     @CCD(label = "Do you want to use this email address for notifications?")
-    private SimpleYesNo isCorrectClaimantContactEmail;
+    private VerticalYesNo isCorrectClaimantContactEmail;
 
     @CCD(
         label = "Enter email address",
@@ -36,13 +36,13 @@ public class ClaimantContactPreferences {
     private String formattedClaimantContactAddress;
 
     @CCD(label = "Do you want documents to be sent to this address?")
-    private SimpleYesNo isCorrectClaimantContactAddress;
+    private VerticalYesNo isCorrectClaimantContactAddress;
 
     @CCD(label = "Enter address details")
     private AddressUK overriddenClaimantContactAddress;
 
     @CCD(label = "Do you want to provide a contact phone number?")
-    private SimpleYesNo claimantProvidePhoneNumber;
+    private VerticalYesNo claimantProvidePhoneNumber;
 
     @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$", max = 60)
     private String claimantContactPhoneNumber;

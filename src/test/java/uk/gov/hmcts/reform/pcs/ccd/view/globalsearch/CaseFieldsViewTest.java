@@ -5,8 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo.NO;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo.YES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.NO;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;

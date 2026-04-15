@@ -32,7 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
@@ -88,7 +88,7 @@ class ClaimGroundServiceTest {
 
         IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
             IntroductoryDemotedOtherGroundsForPossession.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.YES)
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
                 .introductoryDemotedOrOtherGrounds(grounds)
                 .build();
 
@@ -164,9 +164,9 @@ class ClaimGroundServiceTest {
 
         IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
             IntroductoryDemotedOtherGroundsForPossession.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.YES)
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
                 .introductoryDemotedOrOtherGrounds(groundsThatShouldBeIgnored)
-                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.NO)
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
                 .build();
 
         PCSCase caseData = PCSCase.builder()

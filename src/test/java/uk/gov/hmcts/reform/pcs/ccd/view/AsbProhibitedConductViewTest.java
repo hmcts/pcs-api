@@ -10,7 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
@@ -26,8 +26,8 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo.NO;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo.YES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.NO;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 @ExtendWith(MockitoExtension.class)
 class AsbProhibitedConductViewTest {
@@ -77,9 +77,9 @@ class AsbProhibitedConductViewTest {
 
     @ParameterizedTest
     @MethodSource("asbQuestionScenarios")
-    void shouldSetAsbQuestionDetails(SimpleYesNo antisocialBehaviour,
-                                     SimpleYesNo illegalPurposes,
-                                     SimpleYesNo otherProhibitedConduct) {
+    void shouldSetAsbQuestionDetails(VerticalYesNo antisocialBehaviour,
+                                     VerticalYesNo illegalPurposes,
+                                     VerticalYesNo otherProhibitedConduct) {
         // Given
         when(asbProhibitedConductEntity.getAntisocialBehaviour()).thenReturn(antisocialBehaviour);
         when(asbProhibitedConductEntity.getAntisocialBehaviourDetails()).thenReturn("antisocial behaviour");
@@ -109,8 +109,8 @@ class AsbProhibitedConductViewTest {
 
     @ParameterizedTest
     @MethodSource("prohibitedConductScenarios")
-    void shouldSetProhibitedConductFields(SimpleYesNo claimingStandardContract,
-                                          SimpleYesNo periodicContractAgreed) {
+    void shouldSetProhibitedConductFields(VerticalYesNo claimingStandardContract,
+                                          VerticalYesNo periodicContractAgreed) {
         // Given
         when(asbProhibitedConductEntity.getClaimingStandardContract()).thenReturn(claimingStandardContract);
         when(asbProhibitedConductEntity.getClaimingStandardContractDetails()).thenReturn("claim details");

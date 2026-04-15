@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGround
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -64,7 +64,7 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
     @MethodSource("provideIntroductoryDemotedOtherScenarios")
     void shouldShowRentDetailsBasedOnGroundSelection(
         TenancyLicenceType tenancyType,
-        SimpleYesNo hasGroundsForPossession,
+        VerticalYesNo hasGroundsForPossession,
         Set<IntroductoryDemotedOrOtherGrounds> grounds,
         YesOrNo expected) {
 
@@ -93,7 +93,7 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
 
         IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
             IntroductoryDemotedOtherGroundsForPossession.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.NO)
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
                 .introductoryDemotedOrOtherGrounds(null)
                 .build();
 
@@ -139,7 +139,7 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
 
         IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
             IntroductoryDemotedOtherGroundsForPossession.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.YES)
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
                 .introductoryDemotedOrOtherGrounds(null)
                 .build();
 
@@ -162,7 +162,7 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
 
         IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
             IntroductoryDemotedOtherGroundsForPossession.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.YES)
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
                 .introductoryDemotedOrOtherGrounds(Set.of())
                 .build();
 
@@ -183,19 +183,19 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
     private static Stream<Arguments> provideIntroductoryDemotedOtherScenarios() {
         return Stream.of(
             // RENT_ARREARS selected - Should show Rent Details
-            arguments(INTRODUCTORY_TENANCY, SimpleYesNo.YES, Set.of(RENT_ARREARS), YesOrNo.YES),
-            arguments(DEMOTED_TENANCY, SimpleYesNo.YES, Set.of(RENT_ARREARS), YesOrNo.YES),
-            arguments(OTHER, SimpleYesNo.YES, Set.of(RENT_ARREARS), YesOrNo.YES),
+            arguments(INTRODUCTORY_TENANCY, VerticalYesNo.YES, Set.of(RENT_ARREARS), YesOrNo.YES),
+            arguments(DEMOTED_TENANCY, VerticalYesNo.YES, Set.of(RENT_ARREARS), YesOrNo.YES),
+            arguments(OTHER, VerticalYesNo.YES, Set.of(RENT_ARREARS), YesOrNo.YES),
 
             // Other grounds (not rent arrears) - Should NOT show Rent Details
-            arguments(INTRODUCTORY_TENANCY, SimpleYesNo.YES, Set.of(ANTI_SOCIAL), YesOrNo.NO),
-            arguments(DEMOTED_TENANCY, SimpleYesNo.YES, Set.of(BREACH_OF_THE_TENANCY), YesOrNo.NO),
-            arguments(OTHER, SimpleYesNo.YES, Set.of(ABSOLUTE_GROUNDS), YesOrNo.NO),
+            arguments(INTRODUCTORY_TENANCY, VerticalYesNo.YES, Set.of(ANTI_SOCIAL), YesOrNo.NO),
+            arguments(DEMOTED_TENANCY, VerticalYesNo.YES, Set.of(BREACH_OF_THE_TENANCY), YesOrNo.NO),
+            arguments(OTHER, VerticalYesNo.YES, Set.of(ABSOLUTE_GROUNDS), YesOrNo.NO),
 
             // Multiple grounds including RENT_ARREARS - Should show Rent Details
             arguments(
                 INTRODUCTORY_TENANCY,
-                SimpleYesNo.YES,
+                VerticalYesNo.YES,
                 Set.of(RENT_ARREARS, ANTI_SOCIAL, BREACH_OF_THE_TENANCY),
                 YesOrNo.YES
             ),
@@ -203,13 +203,13 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
             // Multiple grounds without RENT_ARREARS - Should NOT show Rent Details
             arguments(
                 DEMOTED_TENANCY,
-                SimpleYesNo.YES,
+                VerticalYesNo.YES,
                 Set.of(ANTI_SOCIAL, BREACH_OF_THE_TENANCY, ABSOLUTE_GROUNDS),
                 YesOrNo.NO
             ),
 
             // Has grounds for possession is NO - Should NOT show Rent Details
-            arguments(INTRODUCTORY_TENANCY, SimpleYesNo.NO, null, YesOrNo.NO)
+            arguments(INTRODUCTORY_TENANCY, VerticalYesNo.NO, null, YesOrNo.NO)
         );
     }
 }

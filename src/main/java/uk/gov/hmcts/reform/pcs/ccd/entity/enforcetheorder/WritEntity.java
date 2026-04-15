@@ -18,7 +18,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -42,26 +42,26 @@ public class WritEntity {
     // NameAndAddressForEviction
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo correctNameAndAddress;
+    private VerticalYesNo correctNameAndAddress;
 
     // LandRegistryFees
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo haveLandRegistryFeesBeenPaid;
+    private VerticalYesNo haveLandRegistryFeesBeenPaid;
 
     private BigDecimal amountOfLandRegistryFees;
 
     // Direct fields
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo hasHiredHighCourtEnforcementOfficer;
+    private VerticalYesNo hasHiredHighCourtEnforcementOfficer;
 
     private String hceoDetails;
 
     // LegalCosts
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo areLegalCostsToBeClaimed;
+    private VerticalYesNo areLegalCostsToBeClaimed;
 
     private BigDecimal amountOfLegalCosts;
 

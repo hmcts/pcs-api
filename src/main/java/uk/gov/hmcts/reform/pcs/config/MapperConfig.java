@@ -4,7 +4,7 @@ import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 @Configuration
 public class MapperConfig {
@@ -13,18 +13,18 @@ public class MapperConfig {
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
-        Converter<SimpleYesNo, Boolean> verticalYesNoToBoolean =
+        Converter<VerticalYesNo, Boolean> verticalYesNoToBoolean =
             context -> context.getSource() == null
                 ? null : context.getSource().toBoolean();
 
-        Converter<Boolean, SimpleYesNo> booleanToVerticalYesNo =
+        Converter<Boolean, VerticalYesNo> booleanToVerticalYesNo =
             context -> context.getSource() == null
-                ? null : SimpleYesNo.from(context.getSource());
+                ? null : VerticalYesNo.from(context.getSource());
 
-        modelMapper.createTypeMap(Boolean.class, SimpleYesNo.class)
+        modelMapper.createTypeMap(Boolean.class, VerticalYesNo.class)
             .setConverter(booleanToVerticalYesNo);
 
-        modelMapper.createTypeMap(SimpleYesNo.class, Boolean.class)
+        modelMapper.createTypeMap(VerticalYesNo.class, Boolean.class)
             .setConverter(verticalYesNoToBoolean);
 
         return modelMapper;

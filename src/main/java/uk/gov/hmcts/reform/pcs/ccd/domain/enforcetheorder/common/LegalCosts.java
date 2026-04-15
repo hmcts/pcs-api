@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
 
@@ -28,7 +28,7 @@ public class LegalCosts {
     @CCD(
             label = "Do you want to reclaim any legal costs?"
     )
-    private SimpleYesNo areLegalCostsToBeClaimed;
+    private VerticalYesNo areLegalCostsToBeClaimed;
 
     @CCD(
             label = "How much do you want to reclaim?",

@@ -11,7 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -60,7 +60,7 @@ class AdditionalReasonsForPossessionTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .additionalReasonsForPossession(AdditionalReasons.builder()
-                    .hasReasons(SimpleYesNo.YES)
+                    .hasReasons(VerticalYesNo.YES)
                     .reasons("Some additional reasons for possession")
                     .build())
                 .build();
@@ -95,7 +95,7 @@ class AdditionalReasonsForPossessionTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .additionalReasonsForPossession(AdditionalReasons.builder()
-                    .hasReasons(SimpleYesNo.YES)
+                    .hasReasons(VerticalYesNo.YES)
                     .reasons(null)
                     .build())
                 .build();

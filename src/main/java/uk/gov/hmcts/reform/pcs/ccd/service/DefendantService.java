@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class DefendantService {
         if (details == null) {
             return "Unknown";
         }
-        if (details.getNameKnown() == SimpleYesNo.NO) {
+        if (details.getNameKnown() == VerticalYesNo.NO) {
             return "Name not known";
         }
         String firstName = details.getFirstName() != null ? details.getFirstName() : "";

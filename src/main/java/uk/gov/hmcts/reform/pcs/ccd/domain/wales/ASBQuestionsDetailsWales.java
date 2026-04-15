@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -22,7 +22,7 @@ public class ASBQuestionsDetailsWales {
         searchable = false,
         label = "Is there actual or threatened antisocial behaviour?"
     )
-    private SimpleYesNo antisocialBehaviour;
+    private VerticalYesNo antisocialBehaviour;
 
     @CCD(
         label = "Give details of the actual or threatened antisocial behaviour",
@@ -35,7 +35,7 @@ public class ASBQuestionsDetailsWales {
         searchable = false,
         label = "Is there actual or threatened use of the premises for illegal purposes?"
     )
-    private SimpleYesNo illegalPurposesUse;
+    private VerticalYesNo illegalPurposesUse;
 
     @CCD(
         label = "Give details of the actual or threatened use of the premises for illegal purposes",
@@ -48,7 +48,7 @@ public class ASBQuestionsDetailsWales {
         searchable = false,
         label = "Has there been other prohibited conduct?"
     )
-    private SimpleYesNo otherProhibitedConduct;
+    private VerticalYesNo otherProhibitedConduct;
 
     @CCD(
         label = "Give details of the other prohibited conduct",

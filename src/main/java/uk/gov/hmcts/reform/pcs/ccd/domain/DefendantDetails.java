@@ -20,7 +20,7 @@ public class DefendantDetails {
     private String nameSectionLabel;
 
     @CCD(label = "Do you know the defendant’s name?")
-    private SimpleYesNo nameKnown;
+    private VerticalYesNo nameKnown;
 
     @CCD(
         label = "Defendant’s first name",
@@ -45,11 +45,11 @@ public class DefendantDetails {
         hint = "If their correspondence address is outside of the UK, you’ll need to make a general application for "
             + "permission to serve a claim outside the jurisdiction after you’ve submitted and paid for the claim"
     )
-    private SimpleYesNo addressKnown;
+    private VerticalYesNo addressKnown;
 
     @CCD(label = "Is the defendant’s correspondence address the same as the address of the property"
         + " you’re claiming possession of?", showCondition = "addressKnown=\"YES\"")
-    private SimpleYesNo addressSameAsPossession;
+    private VerticalYesNo addressSameAsPossession;
 
     @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
     private AddressUK correspondenceAddress;

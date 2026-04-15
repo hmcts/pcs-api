@@ -11,7 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -41,7 +41,7 @@ class ContactPreferencesTest extends BasePageTest {
         // Given
         AddressUK contactAddress = mock(AddressUK.class);
         ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
-            .isCorrectClaimantContactAddress(SimpleYesNo.NO)
+            .isCorrectClaimantContactAddress(VerticalYesNo.NO)
             .overriddenClaimantContactAddress(contactAddress)
             .build();
         PCSCase caseData = PCSCase.builder()
@@ -86,7 +86,7 @@ class ContactPreferencesTest extends BasePageTest {
         // Given
         ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
             .orgAddressFound(YesOrNo.YES)
-            .isCorrectClaimantContactAddress(SimpleYesNo.YES)
+            .isCorrectClaimantContactAddress(VerticalYesNo.YES)
             .overriddenClaimantContactAddress(null)
             .build();
 
@@ -120,9 +120,9 @@ class ContactPreferencesTest extends BasePageTest {
         //Given
         ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
             .orgAddressFound(YesOrNo.YES)
-            .isCorrectClaimantContactAddress(SimpleYesNo.YES)
+            .isCorrectClaimantContactAddress(VerticalYesNo.YES)
             .overriddenClaimantContactAddress(null)
-            .isCorrectClaimantContactEmail(SimpleYesNo.NO)
+            .isCorrectClaimantContactEmail(VerticalYesNo.NO)
             .overriddenClaimantContactEmail("John.Smith@hotmail.com")
             .build();
 
@@ -143,9 +143,9 @@ class ContactPreferencesTest extends BasePageTest {
         String longEmail = "John.Smith@hotmail.com".repeat(4);
         ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
             .orgAddressFound(YesOrNo.YES)
-            .isCorrectClaimantContactAddress(SimpleYesNo.YES)
+            .isCorrectClaimantContactAddress(VerticalYesNo.YES)
             .overriddenClaimantContactAddress(null)
-            .isCorrectClaimantContactEmail(SimpleYesNo.NO)
+            .isCorrectClaimantContactEmail(VerticalYesNo.NO)
             .overriddenClaimantContactEmail(longEmail)
             .build();
 

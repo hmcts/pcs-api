@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
@@ -36,7 +36,7 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
                 .enforcementOrder(EnforcementOrder.builder()
                     .warrantDetails(WarrantDetails.builder()
                         .peopleToEvict(PeopleToEvict.builder()
-                            .evictEveryone(SimpleYesNo.YES)
+                            .evictEveryone(VerticalYesNo.YES)
                             .build())
                         .build())
                     .build())
@@ -60,7 +60,7 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
                 .enforcementOrder(EnforcementOrder.builder()
                     .warrantDetails(WarrantDetails.builder()
                         .peopleToEvict(PeopleToEvict.builder()
-                            .evictEveryone(SimpleYesNo.NO)
+                            .evictEveryone(VerticalYesNo.NO)
                             .build())
                         .build())
                     .build())

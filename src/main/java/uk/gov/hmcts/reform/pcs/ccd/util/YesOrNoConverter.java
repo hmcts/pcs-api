@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 public class YesOrNoConverter {
 
@@ -9,7 +9,7 @@ public class YesOrNoConverter {
         return yesOrNo != null ? yesOrNo.toBoolean() : null;
     }
 
-    public static Boolean toBoolean(SimpleYesNo yesOrNo) {
+    public static Boolean toBoolean(VerticalYesNo yesOrNo) {
         return yesOrNo != null ? yesOrNo.toBoolean() : null;
     }
 
@@ -17,8 +17,8 @@ public class YesOrNoConverter {
         return value != null ? YesOrNo.from(value) : null;
     }
 
-    public static SimpleYesNo toVerticalYesNo(YesOrNo yesOrNo) {
-        return yesOrNo != null ? SimpleYesNo.from(yesOrNo.toBoolean()) : null;
+    public static VerticalYesNo toVerticalYesNo(YesOrNo yesOrNo) {
+        return yesOrNo != null ? VerticalYesNo.from(yesOrNo.toBoolean()) : null;
     }
 
 }

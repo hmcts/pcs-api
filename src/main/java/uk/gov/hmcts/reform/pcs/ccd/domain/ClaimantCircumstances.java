@@ -15,7 +15,7 @@ public class ClaimantCircumstances {
         hint = "This can be any information about your financial or general situation that you’d "
             + "like the court to consider when making its decision whether or not to grant a possession order"
     )
-    private SimpleYesNo claimantCircumstancesSelect;
+    private VerticalYesNo claimantCircumstancesSelect;
 
     @CCD(
         typeOverride = TextArea

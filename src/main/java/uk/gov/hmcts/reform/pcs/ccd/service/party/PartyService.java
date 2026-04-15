@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -82,10 +82,10 @@ public class PartyService {
 
         claimantParty.setEmailAddress(contactEmail);
 
-        SimpleYesNo phoneNumberProvided = claimantContactPreferences.getClaimantProvidePhoneNumber();
+        VerticalYesNo phoneNumberProvided = claimantContactPreferences.getClaimantProvidePhoneNumber();
 
         claimantParty.setPhoneNumberProvided(phoneNumberProvided);
-        if (phoneNumberProvided == SimpleYesNo.YES) {
+        if (phoneNumberProvided == VerticalYesNo.YES) {
             claimantParty.setPhoneNumber(claimantContactPreferences.getClaimantContactPhoneNumber());
         }
 
@@ -98,7 +98,7 @@ public class PartyService {
         if (claimantInformation.getOrgNameFound() == YesOrNo.NO) {
             claimantParty.setNameOverridden(YesOrNo.YES);
             claimantParty.setOrgName(claimantInformation.getFallbackClaimantName());
-        } else if (claimantInformation.getIsClaimantNameCorrect() == SimpleYesNo.NO) {
+        } else if (claimantInformation.getIsClaimantNameCorrect() == VerticalYesNo.NO) {
             claimantParty.setNameOverridden(YesOrNo.YES);
             claimantParty.setOrgName(claimantInformation.getOverriddenClaimantName());
         } else {
@@ -113,7 +113,7 @@ public class PartyService {
         List<PartyEntity> allDefendants = new ArrayList<>();
         allDefendants.add(createDefendant(pcsCase.getDefendant1()));
 
-        if (pcsCase.getAddAnotherDefendant() == SimpleYesNo.YES) {
+        if (pcsCase.getAddAnotherDefendant() == VerticalYesNo.YES) {
             pcsCase.getAdditionalDefendants().stream()
                 .map(ListValue::getValue)
                 .map(this::createDefendant)
@@ -128,19 +128,19 @@ public class PartyService {
     private PartyEntity createDefendant(DefendantDetails defendantDetails) {
         PartyEntity defendantEntity = new PartyEntity();
 
-        SimpleYesNo nameKnown = defendantDetails.getNameKnown();
+        VerticalYesNo nameKnown = defendantDetails.getNameKnown();
         defendantEntity.setNameKnown(nameKnown);
-        if (nameKnown == SimpleYesNo.YES) {
+        if (nameKnown == VerticalYesNo.YES) {
             defendantEntity.setFirstName(defendantDetails.getFirstName());
             defendantEntity.setLastName(defendantDetails.getLastName());
         }
 
-        SimpleYesNo addressKnown = defendantDetails.getAddressKnown();
+        VerticalYesNo addressKnown = defendantDetails.getAddressKnown();
         defendantEntity.setAddressKnown(addressKnown);
-        if (addressKnown == SimpleYesNo.YES) {
-            SimpleYesNo addressSameAsPossession = defendantDetails.getAddressSameAsPossession();
+        if (addressKnown == VerticalYesNo.YES) {
+            VerticalYesNo addressSameAsPossession = defendantDetails.getAddressSameAsPossession();
             defendantEntity.setAddressSameAsProperty(addressSameAsPossession);
-            if (addressSameAsPossession == SimpleYesNo.NO) {
+            if (addressSameAsPossession == VerticalYesNo.NO) {
                 defendantEntity.setAddress(mapAddress(defendantDetails.getCorrespondenceAddress()));
             }
         }
@@ -149,7 +149,7 @@ public class PartyService {
     }
 
     private List<PartyEntity> createUnderlesseeOrMortgagees(PCSCase pcsCase) {
-        if (pcsCase.getHasUnderlesseeOrMortgagee() != SimpleYesNo.YES) {
+        if (pcsCase.getHasUnderlesseeOrMortgagee() != VerticalYesNo.YES) {
             return List.of();
         }
 
@@ -158,7 +158,7 @@ public class PartyService {
         List<PartyEntity> allUnderlesseeOrMortgagees = new ArrayList<>();
         allUnderlesseeOrMortgagees.add(createUnderlesseeOrMortgagee(pcsCase.getUnderlesseeOrMortgagee1()));
 
-        if (pcsCase.getAddAdditionalUnderlesseeOrMortgagee() == SimpleYesNo.YES) {
+        if (pcsCase.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES) {
             pcsCase.getAdditionalUnderlesseeOrMortgagee().stream()
                 .map(ListValue::getValue)
                 .map(this::createUnderlesseeOrMortgagee)
@@ -174,15 +174,15 @@ public class PartyService {
 
         PartyEntity underlesseeMortgageeEntity = new PartyEntity();
 
-        SimpleYesNo nameKnown = underlesseeMortgageeDetails.getNameKnown();
+        VerticalYesNo nameKnown = underlesseeMortgageeDetails.getNameKnown();
         underlesseeMortgageeEntity.setNameKnown(nameKnown);
-        if (nameKnown == SimpleYesNo.YES) {
+        if (nameKnown == VerticalYesNo.YES) {
             underlesseeMortgageeEntity.setOrgName(underlesseeMortgageeDetails.getName());
         }
 
-        SimpleYesNo addressKnown = underlesseeMortgageeDetails.getAddressKnown();
+        VerticalYesNo addressKnown = underlesseeMortgageeDetails.getAddressKnown();
         underlesseeMortgageeEntity.setAddressKnown(addressKnown);
-        if (addressKnown == SimpleYesNo.YES) {
+        if (addressKnown == VerticalYesNo.YES) {
             underlesseeMortgageeEntity
                 .setAddress(mapAddress(underlesseeMortgageeDetails.getAddress()));
         }

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,7 +22,7 @@ class DailyRentAmountTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetails.builder()
-                        .perDayCorrect(SimpleYesNo.YES)
+                        .perDayCorrect(VerticalYesNo.YES)
                         .build())
                 .build();
 

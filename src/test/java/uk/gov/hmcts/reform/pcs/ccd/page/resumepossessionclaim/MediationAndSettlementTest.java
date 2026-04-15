@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -56,9 +56,9 @@ class MediationAndSettlementTest extends BasePageTest {
         void shouldValidateMediationAndSettlementTextAreas() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .mediationAttempted(SimpleYesNo.YES)
+                .mediationAttempted(VerticalYesNo.YES)
                 .mediationAttemptedDetails("Mediation was attempted but failed")
-                .settlementAttempted(SimpleYesNo.YES)
+                .settlementAttempted(VerticalYesNo.YES)
                 .settlementAttemptedDetails("Settlement discussions took place")
                 .build();
 
@@ -75,9 +75,9 @@ class MediationAndSettlementTest extends BasePageTest {
         void shouldHandleNullTextAreaValuesGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .mediationAttempted(SimpleYesNo.YES)
+                .mediationAttempted(VerticalYesNo.YES)
                 .mediationAttemptedDetails(null)
-                .settlementAttempted(SimpleYesNo.YES)
+                .settlementAttempted(VerticalYesNo.YES)
                 .settlementAttemptedDetails(null)
                 .build();
 

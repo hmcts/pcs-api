@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
@@ -28,7 +28,7 @@ class AdditionalInformationPageTest extends BasePageTest {
     void shouldHandleNoSelection() {
         // Given
         AdditionalInformation additionalInformation = AdditionalInformation.builder()
-            .additionalInformationSelect(SimpleYesNo.NO)
+            .additionalInformationSelect(VerticalYesNo.NO)
             .build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
             .warrantDetails(WarrantDetails.builder()
@@ -50,7 +50,7 @@ class AdditionalInformationPageTest extends BasePageTest {
         // Given
         String additionalInformationDetails = "Additional information details";
         AdditionalInformation additionalInformation = AdditionalInformation.builder()
-            .additionalInformationSelect(SimpleYesNo.YES)
+            .additionalInformationSelect(VerticalYesNo.YES)
             .additionalInformationDetails(additionalInformationDetails)
             .build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
@@ -73,7 +73,7 @@ class AdditionalInformationPageTest extends BasePageTest {
         // Given
         String additionalInformationDetails = "a".repeat(RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT + 1);
         AdditionalInformation additionalInformation = AdditionalInformation.builder()
-            .additionalInformationSelect(SimpleYesNo.YES)
+            .additionalInformationSelect(VerticalYesNo.YES)
             .additionalInformationDetails(additionalInformationDetails)
             .build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()

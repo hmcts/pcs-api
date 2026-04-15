@@ -52,7 +52,7 @@ public class RentDetails {
     @CCD(
         label = "Is the amount per day that unpaid rent should be charged at correct?"
     )
-    private SimpleYesNo perDayCorrect;
+    private VerticalYesNo perDayCorrect;
 
     @CCD(
         label = "Enter amount per day that unpaid rent should be charged at",

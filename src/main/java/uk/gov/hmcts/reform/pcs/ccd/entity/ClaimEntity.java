@@ -23,7 +23,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
@@ -69,7 +69,7 @@ public class ClaimEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo againstTrespassers;
+    private VerticalYesNo againstTrespassers;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -77,61 +77,61 @@ public class ClaimEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo claimCosts;
+    private VerticalYesNo claimCosts;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo preActionProtocolFollowed;
+    private VerticalYesNo preActionProtocolFollowed;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo mediationAttempted;
+    private VerticalYesNo mediationAttempted;
 
     private String mediationDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo settlementAttempted;
+    private VerticalYesNo settlementAttempted;
 
     private String settlementDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo claimantCircumstancesProvided;
+    private VerticalYesNo claimantCircumstancesProvided;
 
     private String claimantCircumstances;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo additionalDefendants;
+    private VerticalYesNo additionalDefendants;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo defendantCircumstancesProvided;
+    private VerticalYesNo defendantCircumstancesProvided;
 
     private String defendantCircumstances;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo additionalReasonsProvided;
+    private VerticalYesNo additionalReasonsProvided;
 
     private String additionalReasons;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo underlesseeOrMortgagee;
+    private VerticalYesNo underlesseeOrMortgagee;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo additionalUnderlesseesOrMortgagees;
+    private VerticalYesNo additionalUnderlesseesOrMortgagees;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo additionalDocsProvided;
+    private VerticalYesNo additionalDocsProvided;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo genAppExpected;
+    private VerticalYesNo genAppExpected;
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;

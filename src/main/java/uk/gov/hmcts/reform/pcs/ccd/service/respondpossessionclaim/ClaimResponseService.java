@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -138,7 +138,7 @@ public class ClaimResponseService {
         contactPrefs.setContactByPhone(defendantResponse.getContactByPhone());
 
         shouldSavePhoneNumAndTextPreference = Optional.ofNullable(defendantResponse.getContactByPhone())
-            .map(SimpleYesNo::toBoolean)
+            .map(VerticalYesNo::toBoolean)
             .orElse(false);
         if (shouldSavePhoneNumAndTextPreference) {
             contactPrefs.setContactByText(defendantResponse.getContactByText());

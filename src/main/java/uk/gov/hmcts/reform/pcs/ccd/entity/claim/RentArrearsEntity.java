@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
 import java.math.BigDecimal;
@@ -50,7 +50,7 @@ public class RentArrearsEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo thirdPartyPaymentsMade;
+    private VerticalYesNo thirdPartyPaymentsMade;
 
     @OneToMany(mappedBy = "rentArrears", fetch = EAGER, cascade = ALL)
     @Builder.Default
@@ -59,7 +59,7 @@ public class RentArrearsEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo arrearsJudgmentWanted;
+    private VerticalYesNo arrearsJudgmentWanted;
 
     public void addThirdPartyPaymentSource(RentArrearsPaymentSourceEntity paymentSource) {
         thirdPartyPaymentSources.add(paymentSource);

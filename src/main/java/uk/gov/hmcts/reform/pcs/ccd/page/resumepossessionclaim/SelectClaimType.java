@@ -7,11 +7,11 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo.YES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
@@ -38,7 +38,7 @@ public class SelectClaimType implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
-        SimpleYesNo claimAgainstTrespassers = caseData.getClaimAgainstTrespassers();
+        VerticalYesNo claimAgainstTrespassers = caseData.getClaimAgainstTrespassers();
 
         LegislativeCountry legislativeCountry = caseData.getLegislativeCountry();
 
@@ -53,11 +53,11 @@ public class SelectClaimType implements CcdPageConfiguration {
             .build();
     }
 
-    private boolean isEligibleInEngland(LegislativeCountry legislativeCountry, SimpleYesNo claimAgainstTrespassers) {
+    private boolean isEligibleInEngland(LegislativeCountry legislativeCountry, VerticalYesNo claimAgainstTrespassers) {
         return legislativeCountry == ENGLAND && claimAgainstTrespassers == YES;
     }
 
-    private Boolean isEligibleInWales(LegislativeCountry legislativeCountry, SimpleYesNo claimAgainstTrespassers) {
+    private Boolean isEligibleInWales(LegislativeCountry legislativeCountry, VerticalYesNo claimAgainstTrespassers) {
         return legislativeCountry == WALES && claimAgainstTrespassers == YES;
     }
 

@@ -20,7 +20,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 
 import java.math.BigDecimal;
@@ -48,45 +48,45 @@ public class WarrantEntity {
     // UI Control Flags
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo showPeopleWhoWillBeEvictedPage;
+    private VerticalYesNo showPeopleWhoWillBeEvictedPage;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo showPeopleYouWantToEvictPage;
+    private VerticalYesNo showPeopleYouWantToEvictPage;
 
     // Language & Status
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo isSuspendedOrder;
+    private VerticalYesNo isSuspendedOrder;
 
     // Additional Information
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo additionalInformationSelect;
+    private VerticalYesNo additionalInformationSelect;
 
     private String additionalInformationDetails;
 
     // NameAndAddressForEviction
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo correctNameAndAddress;
+    private VerticalYesNo correctNameAndAddress;
 
     // PeopleToEvict
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo evictEveryone;
+    private VerticalYesNo evictEveryone;
 
     // PropertyAccessDetails
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo isDifficultToAccessProperty;
+    private VerticalYesNo isDifficultToAccessProperty;
 
     private String clarificationOnAccessDifficultyText;
 
     // Legal Costs & Finances
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo areLegalCostsToBeClaimed;
+    private VerticalYesNo areLegalCostsToBeClaimed;
 
     private BigDecimal amountOfLegalCosts;
 
@@ -95,7 +95,7 @@ public class WarrantEntity {
     // Land Registry
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private SimpleYesNo haveLandRegistryFeesBeenPaid;
+    private VerticalYesNo haveLandRegistryFeesBeenPaid;
 
     private BigDecimal amountOfLandRegistryFees;
 
@@ -110,7 +110,7 @@ public class WarrantEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "defendants_dob_known")
-    private SimpleYesNo defendantsDOBKnown;
+    private VerticalYesNo defendantsDOBKnown;
 
     @Column(name = "defendants_dob_details")
     private String defendantsDOBDetails;

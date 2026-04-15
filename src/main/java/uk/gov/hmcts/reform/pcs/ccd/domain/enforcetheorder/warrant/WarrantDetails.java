@@ -13,7 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
@@ -70,7 +70,7 @@ public class WarrantDetails {
     private YesOrNo showPeopleYouWantToEvictPage;
 
     @CCD(label = "Do you know the defendants’ dates of birth?")
-    private SimpleYesNo defendantsDOBKnown;
+    private VerticalYesNo defendantsDOBKnown;
 
     @JsonUnwrapped
     @CCD(
@@ -113,7 +113,7 @@ public class WarrantDetails {
                     + "next page. If you do not know if your order is suspended: save your application as a draft, "
                     + "return to the case summary page, and then check the tab named 'Case File View'"
     )
-    private SimpleYesNo isSuspendedOrder;
+    private VerticalYesNo isSuspendedOrder;
 
     @JsonUnwrapped
     @CCD

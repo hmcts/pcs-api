@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
@@ -175,7 +175,7 @@ class TenancyLicenceServiceTest {
         RentDetails rentDetails = RentDetails.builder()
             .currentRent(rentAmount)
             .calculatedDailyCharge(calculatedDailyCharge)
-            .perDayCorrect(SimpleYesNo.YES)
+            .perDayCorrect(VerticalYesNo.YES)
             .amendedDailyCharge(new BigDecimal("99.99")) // Should be ignored
             .frequency(rentFrequency)
             .otherFrequency("should be ignored")
@@ -191,7 +191,7 @@ class TenancyLicenceServiceTest {
         assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(calculatedDailyCharge);
         assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(rentFrequency);
         assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isNull();
-        assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isEqualTo(SimpleYesNo.YES);
+        assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
@@ -205,7 +205,7 @@ class TenancyLicenceServiceTest {
         RentDetails rentDetails = RentDetails.builder()
             .currentRent(rentAmount)
             .dailyCharge(dailyCharge)
-            .perDayCorrect(SimpleYesNo.NO) // Should be ignored
+            .perDayCorrect(VerticalYesNo.NO) // Should be ignored
             .amendedDailyCharge(new BigDecimal("99.99")) // Should be ignored
             .frequency(rentFrequency)
             .otherFrequency(otherRentFrequency)
@@ -235,13 +235,13 @@ class TenancyLicenceServiceTest {
                 .currentRent(rentAmount) // Should be ignored
                 .calculatedDailyCharge(new BigDecimal("99.99"))// Should be ignored
                 .amendedDailyCharge(amendedDailyCharge)
-                .perDayCorrect(SimpleYesNo.NO)
+                .perDayCorrect(VerticalYesNo.NO)
                 .build());
 
         TenancyLicenceEntity tenancyLicenceEntity = underTest.createTenancyLicenceEntity(pcsCase);
 
         assertThat(tenancyLicenceEntity.getRentAmount()).isEqualTo(rentAmount);
-        assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isEqualTo(SimpleYesNo.NO);
+        assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isEqualTo(VerticalYesNo.NO);
         assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(amendedDailyCharge);
         assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(RentPaymentFrequency.WEEKLY);
         assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isNull();

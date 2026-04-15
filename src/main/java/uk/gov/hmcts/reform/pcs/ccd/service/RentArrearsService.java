@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsPaymentSourceEntity;
 
@@ -25,9 +25,9 @@ public class RentArrearsService {
         RentArrearsEntity rentArrearsEntity = new RentArrearsEntity();
         rentArrearsEntity.setTotalRentArrears(rentArrearsTotal);
 
-        SimpleYesNo thirdPartyPaymentsMade = rentArrears.getThirdPartyPayments();
+        VerticalYesNo thirdPartyPaymentsMade = rentArrears.getThirdPartyPayments();
         rentArrearsEntity.setThirdPartyPaymentsMade(thirdPartyPaymentsMade);
-        if (thirdPartyPaymentsMade == SimpleYesNo.YES) {
+        if (thirdPartyPaymentsMade == VerticalYesNo.YES) {
             rentArrears.getThirdPartyPaymentSources().stream()
                 .map(paymentSource -> createPaymentSourceEntity(paymentSource, rentArrears))
                 .forEach(rentArrearsEntity::addThirdPartyPaymentSource);

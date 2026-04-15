@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
@@ -30,7 +30,7 @@ class WarrantOfRestitutionMapperTest {
         WarrantDetails warrantDetails = WarrantDetails.builder()
                 .anyRiskToBailiff(YesNoNotSure.YES)
                 .propertyAccessDetails(PropertyAccessDetails.builder()
-                        .isDifficultToAccessProperty(SimpleYesNo.YES)
+                        .isDifficultToAccessProperty(VerticalYesNo.YES)
                         .clarificationOnAccessDifficultyText("original")
                         .build())
                 .riskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))

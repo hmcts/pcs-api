@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,8 +43,8 @@ public class DefendantValidator {
     }
 
     private List<String> validateDefendant(DefendantDetails defendantDetails, String sectionHint) {
-        if (defendantDetails.getAddressKnown() == SimpleYesNo.YES
-            && defendantDetails.getAddressSameAsPossession() == SimpleYesNo.NO) {
+        if (defendantDetails.getAddressKnown() == VerticalYesNo.YES
+            && defendantDetails.getAddressSameAsPossession() == VerticalYesNo.NO) {
 
             AddressUK correspondenceAddress = defendantDetails.getCorrespondenceAddress();
             if (correspondenceAddress != null) {

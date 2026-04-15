@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
@@ -13,7 +13,7 @@ public class AsbProhibitedConductService {
     public AsbProhibitedConductEntity createAsbProhibitedConductEntity(PCSCase pcsCase) {
         ASBQuestionsDetailsWales asbQuestionsWales = pcsCase.getAsbQuestionsWales();
 
-        SimpleYesNo prohibitedConductWalesClaim = pcsCase.getProhibitedConductWalesClaim();
+        VerticalYesNo prohibitedConductWalesClaim = pcsCase.getProhibitedConductWalesClaim();
 
         boolean hasAsbDetails = (asbQuestionsWales != null && asbQuestionsWales.getAntisocialBehaviour() != null);
         boolean hasProhibitedConductClaimDetails = (prohibitedConductWalesClaim != null);
@@ -25,25 +25,25 @@ public class AsbProhibitedConductService {
         AsbProhibitedConductEntity asbProhibitedConductEntity = new AsbProhibitedConductEntity();
 
         if (hasAsbDetails) {
-            SimpleYesNo antisocialBehaviour = asbQuestionsWales.getAntisocialBehaviour();
+            VerticalYesNo antisocialBehaviour = asbQuestionsWales.getAntisocialBehaviour();
             asbProhibitedConductEntity.setAntisocialBehaviour(antisocialBehaviour);
-            if (antisocialBehaviour == SimpleYesNo.YES) {
+            if (antisocialBehaviour == VerticalYesNo.YES) {
                 asbProhibitedConductEntity.setAntisocialBehaviourDetails(
                     asbQuestionsWales.getAntisocialBehaviourDetails()
                 );
             }
 
-            SimpleYesNo illegalPurposes = asbQuestionsWales.getIllegalPurposesUse();
+            VerticalYesNo illegalPurposes = asbQuestionsWales.getIllegalPurposesUse();
             asbProhibitedConductEntity.setIllegalPurposes(illegalPurposes);
-            if (illegalPurposes == SimpleYesNo.YES) {
+            if (illegalPurposes == VerticalYesNo.YES) {
                 asbProhibitedConductEntity.setIllegalPurposesDetails(
                     asbQuestionsWales.getIllegalPurposesUseDetails()
                 );
             }
 
-            SimpleYesNo otherProhibitedConduct = asbQuestionsWales.getOtherProhibitedConduct();
+            VerticalYesNo otherProhibitedConduct = asbQuestionsWales.getOtherProhibitedConduct();
             asbProhibitedConductEntity.setOtherProhibitedConduct(otherProhibitedConduct);
-            if (otherProhibitedConduct == SimpleYesNo.YES) {
+            if (otherProhibitedConduct == VerticalYesNo.YES) {
                 asbProhibitedConductEntity.setOtherProhibitedConductDetails(
                     asbQuestionsWales.getOtherProhibitedConductDetails()
                 );
@@ -53,15 +53,15 @@ public class AsbProhibitedConductService {
 
         if (hasProhibitedConductClaimDetails) {
             asbProhibitedConductEntity.setClaimingStandardContract(prohibitedConductWalesClaim);
-            if (prohibitedConductWalesClaim == SimpleYesNo.YES) {
+            if (prohibitedConductWalesClaim == VerticalYesNo.YES) {
                 asbProhibitedConductEntity.setClaimingStandardContractDetails(
                     pcsCase.getProhibitedConductWalesClaimDetails()
                 );
 
                 PeriodicContractTermsWales periodicContractTermsWales = pcsCase.getPeriodicContractTermsWales();
-                SimpleYesNo periodicContractAgreed = periodicContractTermsWales.getAgreedTermsOfPeriodicContract();
+                VerticalYesNo periodicContractAgreed = periodicContractTermsWales.getAgreedTermsOfPeriodicContract();
                 asbProhibitedConductEntity.setPeriodicContractAgreed(periodicContractAgreed);
-                if (periodicContractAgreed == SimpleYesNo.YES) {
+                if (periodicContractAgreed == VerticalYesNo.YES) {
                     asbProhibitedConductEntity.setPeriodicContractDetails(
                         periodicContractTermsWales.getDetailsOfTerms()
                     );

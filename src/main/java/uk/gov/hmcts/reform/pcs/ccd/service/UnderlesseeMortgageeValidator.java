@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ public class UnderlesseeMortgageeValidator {
 
     private List<String> validateUnderlesseeOrMortgageeAddress(UnderlesseeMortgageeDetails underlesseeOrMortgagee,
                                                                String sectionHint) {
-        if (underlesseeOrMortgagee.getAddressKnown() == SimpleYesNo.YES) {
+        if (underlesseeOrMortgagee.getAddressKnown() == VerticalYesNo.YES) {
             AddressUK correspondenceAddress = underlesseeOrMortgagee.getAddress();
 
             if (correspondenceAddress != null) {

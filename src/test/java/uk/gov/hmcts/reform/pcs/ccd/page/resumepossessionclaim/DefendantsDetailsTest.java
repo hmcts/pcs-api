@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantValidator;
 
@@ -50,7 +50,7 @@ class DefendantsDetailsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .defendant1(defendant1)
             .defendantCircumstances(defendantCircumstances)
-            .addAnotherDefendant(SimpleYesNo.NO)
+            .addAnotherDefendant(VerticalYesNo.NO)
             .build();
 
         List<String> expectedValidationErrors = List.of("error 1", "error 2");
@@ -81,7 +81,7 @@ class DefendantsDetailsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .defendant1(defendant1)
             .defendantCircumstances(defendantCircumstances)
-            .addAnotherDefendant(SimpleYesNo.YES)
+            .addAnotherDefendant(VerticalYesNo.YES)
             .additionalDefendants(additionalDefendants)
             .build();
 
@@ -105,7 +105,7 @@ class DefendantsDetailsTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("defendantTermScenarios")
-    void shouldSetDefendantTermPossessive(SimpleYesNo additionalDefendants, String expectedTermPossessive) {
+    void shouldSetDefendantTermPossessive(VerticalYesNo additionalDefendants, String expectedTermPossessive) {
         // Given
         DefendantCircumstances defendantCircumstances = new DefendantCircumstances();
         DefendantDetails defendant1 = mock(DefendantDetails.class);
@@ -127,8 +127,8 @@ class DefendantsDetailsTest extends BasePageTest {
 
     private static Stream<Arguments> defendantTermScenarios() {
         return Stream.of(
-            argumentSet("No additional defendants", SimpleYesNo.NO, "defendant’s"),
-            argumentSet("Additional defendants", SimpleYesNo.YES, "defendants’")
+            argumentSet("No additional defendants", VerticalYesNo.NO, "defendant’s"),
+            argumentSet("Additional defendants", VerticalYesNo.YES, "defendants’")
         );
     }
 
