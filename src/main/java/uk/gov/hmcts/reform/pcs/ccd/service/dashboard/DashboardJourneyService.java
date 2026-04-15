@@ -44,10 +44,16 @@ public class DashboardJourneyService {
         if (state == State.CASE_ISSUED) {
             return ListValueUtils.wrapListItems(List.of(
                 DashboardNotification.builder()
-                    .templateId("Notice.PCS.Dashboard.CaseIssued")
+                    .templateId("Defendant.CaseIssued")
                     .templateValues(toTemplateValues(Map.of(
                         "hearingDateTime", "2026-06-15T10:30:00Z",
                         "responseEndDate", "2026-05-15"
+                    )))
+                    .build(),
+                DashboardNotification.builder()
+                    .templateId("Defendant.ResponseToClaim")
+                    .templateValues(toTemplateValues(Map.of(
+                        "ctaLabel", "Start your response."
                     )))
                     .build()
             ));
@@ -56,7 +62,7 @@ public class DashboardJourneyService {
         if (state == State.AWAITING_SUBMISSION_TO_HMCTS) {
             return ListValueUtils.wrapListItems(List.of(
                 DashboardNotification.builder()
-                    .templateId("Notice.PCS.Dashboard.AwaitingSubmission")
+                    .templateId("Defendant.AwaitingSubmission")
                     .templateValues(toTemplateValues(Map.of(
                         "submittedDate", "2026-04-01"
                     )))
@@ -74,11 +80,11 @@ public class DashboardJourneyService {
                     .groupId("CLAIM")
                     .tasks(ListValueUtils.wrapListItems(List.of(
                         Task.builder()
-                            .templateId("Task.PCS.Claim.ViewClaim")
+                            .templateId("Defendant.ViewClaim")
                             .status("AVAILABLE")
                             .build(),
                         Task.builder()
-                            .templateId("Task.PCS.Claim.ViewDocuments")
+                            .templateId("Defendant.ViewDocuments")
                             .status("NOT_AVAILABLE")
                             .build()
                     )))
@@ -87,7 +93,7 @@ public class DashboardJourneyService {
                     .groupId("RESPONSE")
                     .tasks(ListValueUtils.wrapListItems(List.of(
                         Task.builder()
-                            .templateId("Task.PCS.Response.RespondToClaim")
+                            .templateId("Defendant.RespondToClaim")
                             .status("ACTION_NEEDED")
                             .build()
                     )))
@@ -112,9 +118,14 @@ public class DashboardJourneyService {
         return List.of();
     }
 
+    /**
+     * Entries with a null value are omitted so optional placeholders (for example {@code ctaLink}) can be left out
+     * of the map rather than sent as null.
+     */
     private List<ListValue<TemplateValue>> toTemplateValues(Map<String, String> values) {
         return ListValueUtils.wrapListItems(
             values.entrySet().stream()
+                .filter(e -> e.getValue() != null)
                 .map(e -> TemplateValue.builder()
                     .key(e.getKey())
                     .value(e.getValue())
