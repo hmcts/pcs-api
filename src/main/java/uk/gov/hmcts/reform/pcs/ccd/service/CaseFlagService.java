@@ -8,7 +8,6 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
 import java.time.LocalDateTime;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CaseFlagService {
 
-    public void mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity, String flow) {
+    public void mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
 
         Map<UUID, FlagDetailsEntity> existingFlagDetails =
             pcsCaseEntity.getCaseFlags().stream()
@@ -45,7 +44,13 @@ public class CaseFlagService {
             if (flagDetailsEntity == null) {
                 flagDetailsEntity = new FlagDetailsEntity();
                 flagDetailsEntity.setPcsCase(pcsCaseEntity);
+                flagDetailsEntity.setDateTimeCreated(LocalDateTime.now());
             }
+            if (incomingFlagDetail.getStatus().equals("Inactive")
+                && !(flagDetailsEntity.getFlagComment().equals(incomingFlagDetail.getFlagComment()))) {
+                flagDetailsEntity.setDateTimeModified(LocalDateTime.now());
+            }
+
             flagDetailsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
 
             flagDetailsEntity.setName(incomingFlagDetail.getName());
@@ -54,12 +59,6 @@ public class CaseFlagService {
             flagDetailsEntity.setFlagComment(incomingFlagDetail.getFlagComment());
             flagDetailsEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
 
-            if (flow.equals(EventFlow.CREATE.name())) {
-                flagDetailsEntity.setDateTimeCreated(LocalDateTime.now());
-            }
-            if (flow.equals(EventFlow.UPDATE.name())) {
-                flagDetailsEntity.setDateTimeModified(LocalDateTime.now());
-            }
             flagDetailsEntity.setDefaultStatus(incomingFlagDetail.getStatus());
             flagDetailsEntity.setSubTypeKey(incomingFlagDetail.getSubTypeKey());
             flagDetailsEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());

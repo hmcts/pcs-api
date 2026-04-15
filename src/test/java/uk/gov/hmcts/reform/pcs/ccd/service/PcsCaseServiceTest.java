@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -203,9 +202,7 @@ class PcsCaseServiceTest {
 
         // When
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData,
-                                                                                         EventFlow.CREATE.name()
-                                                          ));
+                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData));
 
         // Then
         assertEquals("PCSCase cannot be null", exception.getMessage());
@@ -230,14 +227,14 @@ class PcsCaseServiceTest {
             .build();
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.CREATE.name());
+        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
 
         // When
-        underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.CREATE.name());
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
 
         // Then
-        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.CREATE.name());
-        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.CREATE.name());
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
+        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity);
     }
 
     private ListValue<FlagDetail> createFlagDetails() {
