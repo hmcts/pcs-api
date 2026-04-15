@@ -10,6 +10,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -38,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -843,5 +846,61 @@ class DefendantResponseServiceTest {
             Arguments.of(YesNoNotSure.NOT_SURE),
             Arguments.of((YesNoNotSure) null)
         );
+    }
+
+    @Test
+    void shouldSaveUploadedDocumentsWhenPresent() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        Document doc = Document.builder()
+            .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build();
+
+        List<ListValue<Document>> uploadedDocs = List.of(
+            ListValue.<Document>builder().id("1").value(doc).build()
+        );
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .uploadedDocuments(uploadedDocs)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(documentService).createDefendantEvidenceDocuments(uploadedDocs, pcsCaseEntity);
+        verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
+    }
+
+    @Test
+    void shouldNotSaveDocumentsWhenUploadedDocumentsIsNull() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(documentService, never()).createDefendantEvidenceDocuments(any(), any());
+        verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
     }
 }
