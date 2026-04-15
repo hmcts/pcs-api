@@ -14,6 +14,17 @@ export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
+const enable_all_page_functional_tests = process.env.ENABLE_ALL_PAGE_FUNCTIONAL_TESTS || 'false';
+if (enable_all_page_functional_tests.toLowerCase() === 'true') {
+  process.env.ENABLE_CONTENT_VALIDATION = 'true';
+  process.env.ENABLE_ERROR_MESSAGES_VALIDATION = 'true';
+  process.env.ENABLE_NAVIGATION_TESTS = 'true';
+}
+
+export const enable_content_validation = process.env.ENABLE_CONTENT_VALIDATION || 'false';
+export const enable_error_message_validation = process.env.ENABLE_ERROR_MESSAGES_VALIDATION || 'false';
+export const enable_navigation_tests = process.env.ENABLE_NAVIGATION_TESTS || 'false';
+export const enable_axe_audit = process.env.ENABLE_AXE_AUDIT || 'true';
 
 export default defineConfig({
   testDir: 'tests/',
