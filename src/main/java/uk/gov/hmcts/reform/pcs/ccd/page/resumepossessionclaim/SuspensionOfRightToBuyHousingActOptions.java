@@ -13,7 +13,7 @@ public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfigura
         pageBuilder
             .page("suspensionOfRightToBuyHousingActOptions")
             .pageLabel("Housing Act")
-            .showCondition("suspensionOfRTB_ShowHousingActsPage=\"Yes\"")
+            .showCondition("suspensionOfRTB_ShowHousingActsPage=\"YES\"")
             .label("suspensionOfRightToBuyHousingActOptions-info", """
                 ---
                   <ul tabindex="0">

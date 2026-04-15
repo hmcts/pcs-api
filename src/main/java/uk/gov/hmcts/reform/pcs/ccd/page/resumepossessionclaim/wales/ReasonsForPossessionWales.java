@@ -47,7 +47,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         pageBuilder
             .page("reasonsForPossessionWales", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showCondition("legislativeCountry=\"Wales\" AND showReasonsForGroundsPageWales=\"Yes\"")
+            .showCondition("legislativeCountry=\"Wales\" AND showReasonsForGroundsPageWales=\"YES\"")
             .readonly(PCSCase::getShowReasonsForGroundsPageWales, NEVER_SHOW)
             .label("reasonsForPossessionWales-separator", "---")
             .complex(PCSCase::getGroundsReasonsWales)
