@@ -42,8 +42,8 @@
         "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"
       },
       "languageUsed": "ENGLISH",
-      "noticeServed": "No",
-      "userPcqIdSet": "No",
+      "noticeServed": "NO",
+      "userPcqIdSet": "NO",
       "allDefendants": [
         {
           "id": "[[IGNORE_VALUE]]",
@@ -85,7 +85,7 @@
             "label": "Tenancy obtained by false statement (ground 5)",
             "reason": "test",
             "category": "SECURE_OR_FLEXIBLE_DISCRETIONARY",
-            "isRentArrears": "No"
+            "isRentArrears": "NO"
           }
         }
       ],
