@@ -34,8 +34,8 @@ public class NoticeDetails implements CcdPageConfiguration {
         pageBuilder
             .page("noticeDetails", this::midEvent)
             .pageLabel("Notice details")
-            .showCondition("noticeServed=\"Yes\""
-                               + " OR walesNoticeServed=\"Yes\"")
+            .showCondition("noticeServed=\"YES\""
+                               + " OR walesNoticeServed=\"YES\"")
             .label("noticeDetails-separator", "---")
             .complex(PCSCase::getNoticeServedDetails)
             .mandatory(NoticeServedDetails::getNoticeServiceMethod)
