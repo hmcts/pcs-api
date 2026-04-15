@@ -37,7 +37,7 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
             .page("cannotApplyForWritInfo", this::midEvent)
             .pageLabel("You cannot apply for a writ until you have transferred your claim to the High Court")
             .showCondition(ShowConditionsEnforcementType.WRIT_FLOW
-                    + " AND writHasClaimTransferredToHighCourt=\"No\"")
+                    + " AND writHasClaimTransferredToHighCourt=\"NO\"")
             .label("cannotApplyForWritInfo-line-separator", "---")
             .label("cannotApplyForWritInfo-text", MARKDOWN_TEXT);
     }
