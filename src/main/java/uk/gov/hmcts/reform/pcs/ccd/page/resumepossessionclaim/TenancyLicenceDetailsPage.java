@@ -67,7 +67,6 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
                     "tenancy_HasCopyOfTenancyLicence=\"NO\""
                 )
             .done()
-            .label("lineSeparator", "---")
             .label("tenancyLicenceDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
