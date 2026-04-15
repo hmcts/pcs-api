@@ -72,7 +72,7 @@ test.afterEach(async () => {
   }
     PageContentValidation.finaliseTest();
 });
-
+// Skipping this test case as the feature is not part of Release 1 to save execution time.
 test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
   test('Warrant - Apply for a Warrant of Restitution - Warrant with all YES selection - no update on prepopulated data ,upload more than one evidence @allYES @enforcement @PR',
     async () => {
