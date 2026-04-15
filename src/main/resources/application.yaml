@@ -20,7 +20,7 @@ management:
       enabled: false
 
 hmcts:
-  hmctsOrgId: AAA7 // This is Civil jurisdiction service id for testing, and to replaced with PCS service id before merge
+  hmctsOrgId: AAA7 #This is Civil jurisdiction service id for testing, and to be replaced with PCS service id before merge
 
 springdoc:
   swagger-ui:
