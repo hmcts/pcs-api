@@ -13,7 +13,7 @@ public class SuspensionToBuyDemotionOfTenancyActs implements CcdPageConfiguratio
         pageBuilder
             .page("suspensionToBuyDemotionOfTenancyActs")
             .pageLabel("Housing Act")
-            .showCondition("suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
+            .showCondition("suspensionToBuyDemotionOfTenancyPages=\"YES\"")
             .label("suspensionToBuyDemotionOfTenancyActs-info", """
                 ---
                   <ul tabindex="0">
