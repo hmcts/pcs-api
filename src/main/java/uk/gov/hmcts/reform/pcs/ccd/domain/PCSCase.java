@@ -382,8 +382,8 @@ public class PCSCase {
     private DefendantCircumstances defendantCircumstances;
 
     @CCD(
-        label = "In the alternative to possession, would you like to claim suspension of right to buy"
-            + " or demotion of tenancy?",
+        label = "In the alternative to possession, do you want the court to order a suspension of right to buy "
+            + "and/or demotion of tenancy?",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "AlternativesToPossession"
