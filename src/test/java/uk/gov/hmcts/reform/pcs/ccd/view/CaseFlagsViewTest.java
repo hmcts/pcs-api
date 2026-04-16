@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
@@ -12,10 +12,32 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class CaseFlagsViewTest {
 
-    private final CaseFlagsView caseFlagsView = new CaseFlagsView();
+    private CaseFlagsView underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new CaseFlagsView();
+    }
+
+    @Test
+    void shouldMapBasicCaseFlagFieldsWhenCaseFlagsAreNull() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertNotNull(pcsCase.getCaseFlags());
+        assertNotNull(pcsCase.getCaseFlags());
+        assertNull(pcsCase.getCaseFlags().getDetails());
+
+    }
 
     @Test
     void shouldMapBasicCaseFlagFieldsWhenCaseFlagsExist() {
@@ -26,7 +48,7 @@ class CaseFlagsViewTest {
         pcsCaseEntity.setCaseFlags(List.of(createMockFlagsEntity()));
 
         // When
-        caseFlagsView.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertNotNull(pcsCase.getCaseFlags());
@@ -41,10 +63,10 @@ class CaseFlagsViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        caseFlagsView.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        Assertions.assertNull(pcsCase.getCaseFlags().getDetails());
+        assertNull(pcsCase.getCaseFlags().getDetails());
     }
 
     private FlagDetailsEntity createMockFlagsEntity() {

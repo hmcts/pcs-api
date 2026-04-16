@@ -46,14 +46,6 @@ public class CaseFlagService {
                     .build();
             }
 
-            if (incomingFlagDetail.getDateTimeCreated() != null) {
-                flagDetailsEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
-            }
-
-            if (incomingFlagDetail.getDateTimeModified() != null) {
-                flagDetailsEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
-            }
-
             flagDetailsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
 
             flagDetailsEntity.setName(incomingFlagDetail.getName());
@@ -61,6 +53,9 @@ public class CaseFlagService {
 
             flagDetailsEntity.setFlagComment(incomingFlagDetail.getFlagComment());
             flagDetailsEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+
+            flagDetailsEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
+            flagDetailsEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
 
             flagDetailsEntity.setDefaultStatus(incomingFlagDetail.getStatus());
             flagDetailsEntity.setSubTypeKey(incomingFlagDetail.getSubTypeKey());

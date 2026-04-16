@@ -33,13 +33,12 @@ class CaseFlagServiceTest {
     @Test
     void shouldMergeNewCaseFlags() {
         // Given
-        //UUID id = UUID.randomUUID();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build(); //createPcsCaseEntity(id, "Active");
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(createFlagDetail(null,"CF0002", "Complex Case",
-                                              "Complicated case", "Active"))
+                                              "Complicated case", "Active", false))
             .build();
 
         // When
@@ -51,7 +50,36 @@ class CaseFlagServiceTest {
         assertEquals("CF0002", savedFlags.getFirst().getFlagCode());
         assertEquals("Complicated case", savedFlags.getFirst().getFlagComment());
         assertEquals("Complex Case", savedFlags.getFirst().getName());
+        assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
         assertEquals(1, savedFlags.size());
+
+        List<FlagPathEntity> savedPaths = savedFlags.getFirst().getPaths();
+        assertEquals(1, savedPaths.size());
+        assertEquals("Case", savedPaths.getFirst().getPath());
+    }
+
+    @Test
+    void shouldMergeNewCaseFlagsWithNoPaths() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(createFlagDetail(null,"CF0007", "Urgent case",
+                                      "Urgent case test", "Active", true))
+            .build();
+
+        // When
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+
+        // Then
+        List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
+        List<FlagPathEntity> savedPaths = savedFlags.getFirst().getPaths();
+        assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
+        assertEquals(1, savedFlags.size());
+        assertEquals(0, savedPaths.size());
+
+
     }
 
     @Test
@@ -61,10 +89,10 @@ class CaseFlagServiceTest {
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity(id);
         List<ListValue<FlagDetail>> flagDetails = new ArrayList<>();
         flagDetails.addAll(createFlagDetail(null, "CF0002", "Complex Case",
-                                            "Complicated case", "Active"
+                                            "Complicated case", "Active", false
         ));
         flagDetails.addAll(createFlagDetail(id.toString(),"CF0008", "Power of arrest with Police ",
-                                            "Police arrest inactive", "Inactive"));
+                                            "Police arrest inactive", "Inactive", false));
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(flagDetails)
@@ -94,7 +122,7 @@ class CaseFlagServiceTest {
     }
 
     private List<ListValue<FlagDetail>> createFlagDetail(String id, String flagCode, String name,
-                                                         String flagComment, String status) {
+                                                         String flagComment, String status, boolean isPathEmpty) {
         List<ListValue<FlagDetail>> flagDetails = new ArrayList<>();
 
         ListValue<FlagDetail> flagDetailListValue = ListValue.<FlagDetail>builder()
@@ -106,7 +134,7 @@ class CaseFlagServiceTest {
                        .status(status)
                        .availableExternally(YesOrNo.NO)
                        .hearingRelevant(YesOrNo.YES)
-                       .path(createPathListValue())
+                       .path(createPathListValue(isPathEmpty))
                        .build())
             .build();
         flagDetails.add(flagDetailListValue);
@@ -114,7 +142,7 @@ class CaseFlagServiceTest {
         return flagDetails;
     }
 
-    private List<ListValue<String>> createPathListValue() {
+    private List<ListValue<String>> createPathListValue(boolean isPathEmpty) {
         List<ListValue<String>> paths = new ArrayList<>();
 
         ListValue<String> path = ListValue.<String>builder()
@@ -123,7 +151,7 @@ class CaseFlagServiceTest {
             .build();
         paths.add(path);
 
-        return paths;
+        return isPathEmpty ? null : paths;
     }
 
     private List<FlagDetailsEntity> createFlagDetailsEntity(UUID id) {
