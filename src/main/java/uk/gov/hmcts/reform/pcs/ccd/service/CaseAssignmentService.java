@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +79,7 @@ public class CaseAssignmentService {
             .userId(userId)
             .build();
 
-        ArrayList<CaseAssignmentUserRoleWithOrganisation> caseAssignmentList = new ArrayList<>();
+        List<CaseAssignmentUserRoleWithOrganisation> caseAssignmentList = new ArrayList<>();
         caseAssignmentList.add(caseAssignmentUserRoleWithOrganisation);
 
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =

@@ -25,5 +25,4 @@ public class ShowConditions {
         return "%sCONTAINS\"%s\"".formatted(fieldId, value.name());
     }
 
-
 }

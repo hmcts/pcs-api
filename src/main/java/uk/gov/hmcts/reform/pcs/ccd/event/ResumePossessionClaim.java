@@ -325,19 +325,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
 
-        try {
-            caseAssignmentService.assignClaimantSolicitorRole(caseReference,
-                securityContextService.getCurrentUserDetails().getUid());
-        } catch (Exception e) {
-            log.error("Failed to assign claimant solicitor role for case {}", caseReference, e);
-        }
+        caseAssignmentService.assignClaimantSolicitorRole(caseReference,
+            securityContextService.getCurrentUserDetails().getUid());
 
-        try {
-            caseAssignmentService.revokeCreatorRole(caseReference,
-                securityContextService.getCurrentUserDetails().getUid());
-        } catch (Exception e) {
-            log.error("Failed to assign claimant solicitor role for case {}", caseReference, e);
-        }
+        caseAssignmentService.revokeCreatorRole(caseReference,
+            securityContextService.getCurrentUserDetails().getUid());
 
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
