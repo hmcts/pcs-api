@@ -18,7 +18,7 @@ public class DefendantCircumstances {
     @CCD(label = """
         ---
         <p class="govuk-body" tabindex="0">
-         You can use this section to provide any information about the defendants’ circumstances.
+         You can use this section to provide any information about the ${defendantTermPossessive} circumstances.
         </p>
         <p class="govuk-body">
         You must give details if any of the following apply
@@ -36,13 +36,13 @@ public class DefendantCircumstances {
 
     @CCD(
         label = "Is there any information you’re required to provide, or you want to provide, "
-            + "about the defendants’ circumstances?",
+            + "about the ${defendantTermPossessive} circumstances?",
         hint = "This can be any known details or any attempts made to obtain details"
     )
     private VerticalYesNo hasDefendantCircumstancesInfo;
 
     @CCD(
-        label = "Give details about the defendants’ circumstances",
+        label = "Give details about the ${defendantTermPossessive} circumstances",
         hint = "You can enter up to 950 characters",
         typeOverride = TextArea
     )
