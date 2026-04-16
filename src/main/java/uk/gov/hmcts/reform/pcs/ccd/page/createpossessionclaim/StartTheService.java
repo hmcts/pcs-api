@@ -29,7 +29,7 @@ public class StartTheService implements CcdPageConfiguration {
                        + "Payment By Account (PBA).</p>"
                        + "<p class=\"govuk-body\">Your claim will be saved as you answer the questions, so you’ll be "
                        + "able to close and return to your draft. Before you submit, you must complete a statement of "
-                       + "truth. This certifies that you believe the information you've provided is true.</p>"
+                       + "truth. This certifies that you believe the information you’ve provided is true.</p>"
                        + "<h2 class=\"govuk-heading-m govuk-!-padding-top-0\">What you’ll need</h2>"
                        + "<p class=\"govuk-body\">Before you start, make sure you have the following information:</p>"
                        + "<ul>"
