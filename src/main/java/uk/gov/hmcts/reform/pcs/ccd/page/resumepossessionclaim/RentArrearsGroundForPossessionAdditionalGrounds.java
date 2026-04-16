@@ -27,9 +27,9 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         pageBuilder
             .page("groundForPossessionAdditionalGrounds", this::midEvent)
             .pageLabel("What are your additional grounds for possession?")
-            .showCondition("hasOtherAdditionalGrounds=\"Yes\""
+            .showCondition("hasOtherAdditionalGrounds=\"YES\""
                            + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                           + " AND claimDueToRentArrears=\"Yes\""
+                           + " AND claimDueToRentArrears=\"YES\""
                            + " AND legislativeCountry=\"England\"")
             .label("groundForPossessionAdditionalGrounds-info", """
             ---
