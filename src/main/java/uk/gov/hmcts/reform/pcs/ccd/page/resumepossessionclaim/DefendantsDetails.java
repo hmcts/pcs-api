@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -93,6 +94,20 @@ public class DefendantsDetails implements CcdPageConfiguration {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
                 .build();
+        }
+
+        if (caseData.getDefendant1().getAddressKnown() == VerticalYesNo.NO) {
+            caseData.getDefendant1().setCorrespondenceAddress(caseData.getPropertyAddress());
+        }
+
+        if (additionalDefendantsProvided) {
+            for (ListValue<DefendantDetails> defendantDetailsListValue : caseData.getAdditionalDefendants()) {
+                DefendantDetails additionalDefendantDetails = defendantDetailsListValue.getValue();
+
+                if (additionalDefendantDetails.getAddressKnown() == VerticalYesNo.NO) {
+                    additionalDefendantDetails.setCorrespondenceAddress(caseData.getPropertyAddress());
+                }
+            }
         }
 
         caseData.getDefendantCircumstances()

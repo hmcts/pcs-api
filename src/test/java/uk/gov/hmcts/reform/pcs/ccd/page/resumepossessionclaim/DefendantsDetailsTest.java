@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -123,6 +124,85 @@ class DefendantsDetailsTest extends BasePageTest {
         // Then
         assertThat(response.getData()
                        .getDefendantCircumstances().getDefendantTermPossessive()).isEqualTo(expectedTermPossessive);
+    }
+
+    @Test
+    void shouldSetDefendantCorrespondenceAddressIfAddressNotKnown() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("property address")
+            .build();
+        DefendantCircumstances defendantCircumstances = new DefendantCircumstances();
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+        DefendantDetails defendant2 = DefendantDetails.builder()
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+        List<ListValue<DefendantDetails>> additionalDefendants = List.of(
+            ListValue.<DefendantDetails>builder().value(defendant2).build()
+        );
+
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .defendant1(defendant1)
+            .defendantCircumstances(defendantCircumstances)
+            .addAnotherDefendant(VerticalYesNo.YES)
+            .additionalDefendants(additionalDefendants)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getData().getDefendant1().getCorrespondenceAddress()).isEqualTo(propertyAddress);
+        assertThat(response.getData().getAdditionalDefendants().getFirst().getValue().getCorrespondenceAddress())
+            .isEqualTo(propertyAddress);
+    }
+
+    @Test
+    void shouldNotSetDefendantCorrespondenceAddressIfAddressKnown() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("property address")
+            .build();
+        AddressUK defendant1Address = AddressUK.builder()
+            .addressLine1("defendant 1 address")
+            .build();
+        AddressUK defendant2Address = AddressUK.builder()
+            .addressLine1("defendant 2 address")
+            .build();
+        DefendantCircumstances defendantCircumstances = new DefendantCircumstances();
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .addressKnown(VerticalYesNo.YES)
+            .correspondenceAddress(defendant1Address)
+            .build();
+        DefendantDetails defendant2 = DefendantDetails.builder()
+            .addressKnown(VerticalYesNo.YES)
+            .correspondenceAddress(defendant2Address)
+            .build();
+        List<ListValue<DefendantDetails>> additionalDefendants = List.of(
+            ListValue.<DefendantDetails>builder().value(defendant2).build()
+        );
+
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .defendant1(defendant1)
+            .defendantCircumstances(defendantCircumstances)
+            .addAnotherDefendant(VerticalYesNo.YES)
+            .additionalDefendants(additionalDefendants)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getData().getDefendant1().getCorrespondenceAddress()).isNotEqualTo(propertyAddress);
+        assertThat(response.getData().getAdditionalDefendants().getFirst().getValue().getCorrespondenceAddress())
+            .isNotEqualTo(propertyAddress);
+        assertThat(response.getData().getDefendant1().getCorrespondenceAddress()).isEqualTo(defendant1Address);
+        assertThat(response.getData().getAdditionalDefendants().getFirst().getValue().getCorrespondenceAddress())
+            .isEqualTo(defendant2Address);
     }
 
     private static Stream<Arguments> defendantTermScenarios() {

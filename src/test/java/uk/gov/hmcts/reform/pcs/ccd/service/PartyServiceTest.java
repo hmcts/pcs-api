@@ -500,8 +500,11 @@ class PartyServiceTest {
         void shouldBuildListWithMultipleDefendants() {
             // Given
             AddressUK defendant1Address = mock(AddressUK.class);
+            AddressUK defendant2Address = mock(AddressUK.class);
             AddressEntity mappedDefendant1Address = mock(AddressEntity.class);
+            AddressEntity mappedDefendant2Address = mock(AddressEntity.class);
             when(addressMapper.toAddressEntityAndNormalise(defendant1Address)).thenReturn(mappedDefendant1Address);
+            when(addressMapper.toAddressEntityAndNormalise(defendant2Address)).thenReturn(mappedDefendant2Address);
 
             DefendantDetails defendant1Details = DefendantDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
@@ -517,6 +520,7 @@ class PartyServiceTest {
                 .firstName("defendant 2 first name")
                 .lastName(("defendant 2 last name"))
                 .addressKnown(VerticalYesNo.NO)
+                .correspondenceAddress(defendant2Address)
                 .build();
 
             DefendantDetails defendant3Details = DefendantDetails.builder()
@@ -545,6 +549,7 @@ class PartyServiceTest {
                 .firstName("defendant 2 first name")
                 .lastName("defendant 2 last name")
                 .addressKnown(VerticalYesNo.NO)
+                .address(mappedDefendant2Address)
                 .build();
 
             PartyEntity expectedDefendant3 = PartyEntity.builder()
@@ -629,6 +634,7 @@ class PartyServiceTest {
                     DefendantDetails.builder()
                         .nameKnown(VerticalYesNo.NO)
                         .addressKnown(VerticalYesNo.NO)
+                        .correspondenceAddress(correspondenceAddress)
                         .build(),
                     PartyEntity.builder()
                         .nameKnown(VerticalYesNo.NO)
@@ -642,6 +648,7 @@ class PartyServiceTest {
                         .firstName("expected first name")
                         .lastName(("expected last name"))
                         .addressKnown(VerticalYesNo.NO)
+                        .correspondenceAddress(correspondenceAddress)
                         .build(),
                     PartyEntity.builder()
                         .nameKnown(VerticalYesNo.YES)

@@ -143,6 +143,8 @@ public class PartyService {
             if (addressSameAsPossession == VerticalYesNo.NO) {
                 defendantEntity.setAddress(mapAddress(defendantDetails.getCorrespondenceAddress()));
             }
+        } else {
+            defendantEntity.setAddress(mapAddress(defendantDetails.getCorrespondenceAddress()));
         }
 
         return defendantEntity;
