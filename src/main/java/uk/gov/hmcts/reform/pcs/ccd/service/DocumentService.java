@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +16,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
@@ -36,7 +35,6 @@ import java.util.Optional;
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
-    private final ObjectMapper objectMapper;
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
@@ -138,10 +136,10 @@ public class DocumentService {
     }
 
     public List<DocumentEntity> createDefendantEvidenceDocuments(
-        List<ListValue<Document>> uploadedDocuments,
-        PcsCaseEntity pcsCase
+        List<ListValue<DefendantDocument>> uploadedDocuments,
+        DefendantResponseEntity defendantResponse
     ) {
-        if (uploadedDocuments == null || uploadedDocuments.isEmpty()) {
+        if (CollectionUtils.isEmpty(uploadedDocuments)) {
             log.info("No defendant evidence documents to save");
             return Collections.emptyList();
         }
@@ -149,60 +147,24 @@ public class DocumentService {
         List<DocumentEntity> documentEntities = uploadedDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(doc -> DocumentEntity.builder()
-                .pcsCase(pcsCase)
-                .url(doc.getUrl())
-                .fileName(doc.getFilename())
-                .binaryUrl(doc.getBinaryUrl())
-                .categoryId(doc.getCategoryId())
+            .map(defDoc -> DocumentEntity.builder()
+                .defendantResponse(defendantResponse)
+                .url(defDoc.getDocument().getUrl())
+                .fileName(defDoc.getDocument().getFilename())
+                .binaryUrl(defDoc.getDocument().getBinaryUrl())
+                .categoryId(defDoc.getDocument().getCategoryId())
                 .type(DocumentType.DEFENDANT_EVIDENCE)
-                .contentType(extractContentType(doc))
-                .size(extractSize(doc))
+                .contentType(defDoc.getContentType())
+                .size(defDoc.getSize())
                 .build())
             .toList();
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
 
-        log.info("Saved {} defendant evidence documents for case {}",
-            saved.size(), pcsCase.getCaseReference());
+        log.info("Saved {} defendant evidence documents for defendant response {}",
+            saved.size(), defendantResponse.getId());
 
         return saved;
-    }
-
-    private String extractContentType(Document doc) {
-        if (doc.getCategoryId() == null || doc.getCategoryId().isBlank()) {
-            return null;
-        }
-
-        try {
-            JsonNode metadata = objectMapper.readTree(doc.getCategoryId());
-            if (metadata.has("mimeType")) {
-                return metadata.get("mimeType").asText();
-            }
-        } catch (Exception e) {
-            log.warn("Failed to extract mimeType from categoryId for document: {}",
-                doc.getFilename(), e);
-        }
-
-        return null;
-    }
-
-    private Long extractSize(Document doc) {
-        if (doc.getCategoryId() == null || doc.getCategoryId().isBlank()) {
-            return null;
-        }
-
-        try {
-            JsonNode metadata = objectMapper.readTree(doc.getCategoryId());
-            if (metadata.has("size")) {
-                return metadata.get("size").asLong();
-            }
-        } catch (Exception e) {
-            log.warn("Failed to extract size from categoryId for document: {}",
-                doc.getFilename(), e);
-        }
-
-        return null;
     }
 
     @Builder

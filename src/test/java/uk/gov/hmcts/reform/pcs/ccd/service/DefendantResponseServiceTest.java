@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
@@ -49,6 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -856,12 +858,18 @@ class DefendantResponseServiceTest {
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubPartyLookup();
         stubClaimLookup();
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenAnswer(inv -> inv.getArgument(0));
 
-        Document doc = Document.builder()
-            .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build();
+        DefendantDocument defDoc = DefendantDocument.builder()
+            .document(Document.builder()
+                .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
+            .contentType("application/pdf")
+            .size(135529L)
+            .build();
 
-        List<ListValue<Document>> uploadedDocs = List.of(
-            ListValue.<Document>builder().id("1").value(doc).build()
+        List<ListValue<DefendantDocument>> uploadedDocs = List.of(
+            ListValue.<DefendantDocument>builder().id("1").value(defDoc).build()
         );
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -876,8 +884,8 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(documentService).createDefendantEvidenceDocuments(uploadedDocs, pcsCaseEntity);
-        verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
+        verify(documentService).createDefendantEvidenceDocuments(
+            eq(uploadedDocs), any(DefendantResponseEntity.class));
     }
 
     @Test
@@ -888,6 +896,8 @@ class DefendantResponseServiceTest {
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubPartyLookup();
         stubClaimLookup();
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenAnswer(inv -> inv.getArgument(0));
 
         DefendantResponses responses = DefendantResponses.builder()
             .build();
@@ -901,6 +911,5 @@ class DefendantResponseServiceTest {
 
         // Then
         verify(documentService, never()).createDefendantEvidenceDocuments(any(), any());
-        verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
     }
 }

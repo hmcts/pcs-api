@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,10 @@ public class DocumentEntity {
     @JoinColumn(name = "case_id")
     @JsonBackReference
     private PcsCaseEntity pcsCase;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "defendant_response_id")
+    private DefendantResponseEntity defendantResponse;
 
     private String url;
 

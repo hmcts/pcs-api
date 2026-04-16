@@ -96,28 +96,21 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
-        DefendantResponseEntity responseEntity =
-            buildDefendantResponseEntity(
-                claimRef,
-                partyRef,
-                possessionClaimResponse.getDefendantResponses()
-            );
-
-        buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
-
-        // Save uploaded documents from draft to permanent document table (HDPI-3928)
         DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
+
+        DefendantResponseEntity responseEntity =
+            buildDefendantResponseEntity(claimRef, partyRef, responses);
+
+        buildAndLinkChildEntities(responseEntity, responses);
+
+        DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
+
         if (responses != null && responses.getUploadedDocuments() != null) {
             documentService.createDefendantEvidenceDocuments(
                 responses.getUploadedDocuments(),
-                claimRef.getPcsCase()
+                savedResponse
             );
-
-            log.info("Saved {} defendant evidence documents for case {} user {}",
-                responses.getUploadedDocuments().size(), caseReference, userId);
         }
-
-        defendantResponseRepository.save(responseEntity);
 
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
     }

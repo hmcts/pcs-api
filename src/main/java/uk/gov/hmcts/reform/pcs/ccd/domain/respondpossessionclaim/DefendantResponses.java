@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -97,6 +96,6 @@ public class DefendantResponses {
     private PaymentAgreement paymentAgreement;
 
     @CCD(access = {CitizenAccess.class})
-    private List<ListValue<Document>> uploadedDocuments;
+    private List<ListValue<DefendantDocument>> uploadedDocuments;
 
 }

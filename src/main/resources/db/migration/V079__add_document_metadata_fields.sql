@@ -1,7 +1,6 @@
--- Add content_type and size columns to document table per HDPI-3928 AC07
 ALTER TABLE document
-    ADD COLUMN content_type VARCHAR(255),
-    ADD COLUMN size BIGINT;
+    ADD COLUMN content_type VARCHAR(200),
+    ADD COLUMN size BIGINT,
+    ADD COLUMN defendant_response_id UUID REFERENCES defendant_response(id);
 
-COMMENT ON COLUMN document.content_type IS 'MIME type of the document (e.g., application/pdf, image/jpeg)';
-COMMENT ON COLUMN document.size IS 'File size in bytes';
+CREATE INDEX idx_document_defendant_response_id ON document(defendant_response_id);

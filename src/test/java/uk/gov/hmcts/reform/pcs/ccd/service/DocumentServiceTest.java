@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,13 +18,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -40,9 +41,6 @@ class DocumentServiceTest {
     @Mock
     private DocumentRepository documentRepository;
 
-    @Mock
-    private ObjectMapper objectMapper;
-
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
@@ -50,7 +48,7 @@ class DocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentService(documentRepository, objectMapper);
+        underTest = new DocumentService(documentRepository);
     }
 
     @Test
@@ -442,23 +440,32 @@ class DocumentServiceTest {
     @Test
     void shouldSaveDefendantEvidenceDocuments() {
         // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getCaseReference()).thenReturn(123L);
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        when(response.getId()).thenReturn(UUID.randomUUID());
 
-        Document doc1 = Document.builder()
-            .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build();
-        Document doc2 = Document.builder()
-            .url("url2").filename("file2.pdf").binaryUrl("bin2").categoryId("cat2").build();
+        DefendantDocument defDoc1 = DefendantDocument.builder()
+            .document(Document.builder()
+                .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
+            .contentType("application/pdf")
+            .size(135529L)
+            .build();
 
-        List<ListValue<Document>> uploadedDocs = List.of(
-            ListValue.<Document>builder().id("1").value(doc1).build(),
-            ListValue.<Document>builder().id("2").value(doc2).build()
+        DefendantDocument defDoc2 = DefendantDocument.builder()
+            .document(Document.builder()
+                .url("url2").filename("file2.xlsx").binaryUrl("bin2").categoryId("cat2").build())
+            .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .size(26033L)
+            .build();
+
+        List<ListValue<DefendantDocument>> uploadedDocs = List.of(
+            ListValue.<DefendantDocument>builder().id("1").value(defDoc1).build(),
+            ListValue.<DefendantDocument>builder().id("2").value(defDoc2).build()
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(uploadedDocs, pcsCase);
+        List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(uploadedDocs, response);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -467,12 +474,21 @@ class DocumentServiceTest {
 
         assertThat(entities).allSatisfy(entity -> {
             assertThat(entity.getType()).isEqualTo(DocumentType.DEFENDANT_EVIDENCE);
-            assertThat(entity.getPcsCase()).isEqualTo(pcsCase);
+            assertThat(entity.getDefendantResponse()).isEqualTo(response);
         });
 
         assertThat(entities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("file1.pdf", "file2.pdf");
+            .containsExactly("file1.pdf", "file2.xlsx");
+
+        assertThat(entities)
+            .extracting(DocumentEntity::getContentType)
+            .containsExactly("application/pdf",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+        assertThat(entities)
+            .extracting(DocumentEntity::getSize)
+            .containsExactly(135529L, 26033L);
 
         assertThat(result).hasSize(2);
     }
@@ -480,10 +496,10 @@ class DocumentServiceTest {
     @Test
     void shouldReturnEmptyListWhenNoDefendantEvidenceDocuments() {
         // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
 
         // When
-        List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(null, pcsCase);
+        List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(null, response);
 
         // Then
         assertThat(result).isEmpty();
@@ -493,11 +509,11 @@ class DocumentServiceTest {
     @Test
     void shouldReturnEmptyListWhenDefendantEvidenceDocumentsIsEmpty() {
         // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
 
         // When
         List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(
-            Collections.emptyList(), pcsCase);
+            Collections.emptyList(), response);
 
         // Then
         assertThat(result).isEmpty();
@@ -507,21 +523,25 @@ class DocumentServiceTest {
     @Test
     void shouldFilterOutNullValuesFromDefendantEvidenceDocuments() {
         // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getCaseReference()).thenReturn(123L);
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        when(response.getId()).thenReturn(UUID.randomUUID());
 
-        Document validDoc = Document.builder()
-            .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build();
+        DefendantDocument validDoc = DefendantDocument.builder()
+            .document(Document.builder()
+                .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
+            .contentType("application/pdf")
+            .size(100L)
+            .build();
 
-        List<ListValue<Document>> uploadedDocs = List.of(
-            ListValue.<Document>builder().id("1").value(validDoc).build(),
-            ListValue.<Document>builder().id("2").value(null).build()
+        List<ListValue<DefendantDocument>> uploadedDocs = List.of(
+            ListValue.<DefendantDocument>builder().id("1").value(validDoc).build(),
+            ListValue.<DefendantDocument>builder().id("2").value(null).build()
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createDefendantEvidenceDocuments(uploadedDocs, pcsCase);
+        underTest.createDefendantEvidenceDocuments(uploadedDocs, response);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -531,134 +551,24 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldExtractContentTypeFromCategoryIdJson() throws Exception {
+    void shouldSaveDefendantEvidenceWithNullMetadata() {
         // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getCaseReference()).thenReturn(123L);
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        when(response.getId()).thenReturn(UUID.randomUUID());
 
-        String categoryIdJson = "{\"mimeType\":\"application/pdf\",\"size\":1024}";
-        Document doc = Document.builder()
-            .url("url1").filename("file1.pdf").binaryUrl("bin1")
-            .categoryId(categoryIdJson).build();
+        DefendantDocument defDoc = DefendantDocument.builder()
+            .document(Document.builder()
+                .url("url1").filename("file1.pdf").binaryUrl("bin1").build())
+            .build();
 
-        List<ListValue<Document>> uploadedDocs = List.of(
-            ListValue.<Document>builder().id("1").value(doc).build()
-        );
-
-        ObjectMapper realMapper = new ObjectMapper();
-        DocumentService serviceWithRealMapper = new DocumentService(documentRepository, realMapper);
-        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
-
-        // When
-        serviceWithRealMapper.createDefendantEvidenceDocuments(uploadedDocs, pcsCase);
-
-        // Then
-        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
-        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
-        assertThat(entities.getFirst().getContentType()).isEqualTo("application/pdf");
-        assertThat(entities.getFirst().getSize()).isEqualTo(1024L);
-    }
-
-    @Test
-    void shouldReturnNullContentTypeWhenCategoryIdIsNull() {
-        // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getCaseReference()).thenReturn(123L);
-
-        Document doc = Document.builder()
-            .url("url1").filename("file1.pdf").binaryUrl("bin1")
-            .categoryId(null).build();
-
-        List<ListValue<Document>> uploadedDocs = List.of(
-            ListValue.<Document>builder().id("1").value(doc).build()
+        List<ListValue<DefendantDocument>> uploadedDocs = List.of(
+            ListValue.<DefendantDocument>builder().id("1").value(defDoc).build()
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createDefendantEvidenceDocuments(uploadedDocs, pcsCase);
-
-        // Then
-        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
-        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
-        assertThat(entities.getFirst().getContentType()).isNull();
-        assertThat(entities.getFirst().getSize()).isNull();
-    }
-
-    @Test
-    void shouldReturnNullContentTypeWhenCategoryIdIsBlank() {
-        // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getCaseReference()).thenReturn(123L);
-
-        Document doc = Document.builder()
-            .url("url1").filename("file1.pdf").binaryUrl("bin1")
-            .categoryId("   ").build();
-
-        List<ListValue<Document>> uploadedDocs = List.of(
-            ListValue.<Document>builder().id("1").value(doc).build()
-        );
-
-        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
-
-        // When
-        underTest.createDefendantEvidenceDocuments(uploadedDocs, pcsCase);
-
-        // Then
-        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
-        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
-        assertThat(entities.getFirst().getContentType()).isNull();
-        assertThat(entities.getFirst().getSize()).isNull();
-    }
-
-    @Test
-    void shouldReturnNullContentTypeWhenCategoryIdIsNotJson() throws Exception {
-        // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getCaseReference()).thenReturn(123L);
-
-        Document doc = Document.builder()
-            .url("url1").filename("file1.pdf").binaryUrl("bin1")
-            .categoryId("not-json").build();
-
-        List<ListValue<Document>> uploadedDocs = List.of(
-            ListValue.<Document>builder().id("1").value(doc).build()
-        );
-
-        ObjectMapper realMapper = new ObjectMapper();
-        DocumentService serviceWithRealMapper = new DocumentService(documentRepository, realMapper);
-        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
-
-        // When
-        serviceWithRealMapper.createDefendantEvidenceDocuments(uploadedDocs, pcsCase);
-
-        // Then
-        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
-        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
-        assertThat(entities.getFirst().getContentType()).isNull();
-        assertThat(entities.getFirst().getSize()).isNull();
-    }
-
-    @Test
-    void shouldReturnNullWhenJsonHasNoMimeTypeOrSizeFields() throws Exception {
-        // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getCaseReference()).thenReturn(123L);
-
-        Document doc = Document.builder()
-            .url("url1").filename("file1.pdf").binaryUrl("bin1")
-            .categoryId("{\"other\":\"value\"}").build();
-
-        List<ListValue<Document>> uploadedDocs = List.of(
-            ListValue.<Document>builder().id("1").value(doc).build()
-        );
-
-        ObjectMapper realMapper = new ObjectMapper();
-        DocumentService serviceWithRealMapper = new DocumentService(documentRepository, realMapper);
-        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
-
-        // When
-        serviceWithRealMapper.createDefendantEvidenceDocuments(uploadedDocs, pcsCase);
+        underTest.createDefendantEvidenceDocuments(uploadedDocs, response);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
