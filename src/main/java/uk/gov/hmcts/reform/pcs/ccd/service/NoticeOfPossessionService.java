@@ -57,6 +57,8 @@ public class NoticeOfPossessionService {
             }
             case OTHER_ELECTRONIC -> {
                 noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime());
+                noticeOfPossessionEntity
+                    .setNoticeDetails(noticeServedDetails.getNoticeOtherElectronicMethodExplanation());
             }
             case OTHER -> {
                 noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getNoticeOtherDateTime());

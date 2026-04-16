@@ -208,18 +208,21 @@ class NoticeOfPossessionServiceTest {
     }
 
     @Test
-    void shouldSetNoticeServedDateForOtherElectronic() {
+    void shouldSetNoticeServedDateAndDetailsForOtherElectronic() {
         // Given
         LocalDateTime otherElectronicDateTime = mock(LocalDateTime.class);
+        String details = "details";
 
         when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(NoticeServiceMethod.OTHER_ELECTRONIC);
         when(noticeServedDetails.getNoticeOtherElectronicDateTime()).thenReturn(otherElectronicDateTime);
+        when(noticeServedDetails.getNoticeOtherElectronicMethodExplanation()).thenReturn(details);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
 
         // Then
         assertThat(noticeOfPossessionEntity.getNoticeDateTime()).isSameAs(otherElectronicDateTime);
+        assertThat(noticeOfPossessionEntity.getNoticeDetails()).isEqualTo(details);
     }
 
     @Test
