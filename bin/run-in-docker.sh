@@ -45,7 +45,7 @@ execute_script() {
     ./gradlew assemble
   fi
 
-#  echo "Assigning environment variables.."
+  echo "Assigning environment variables.."
 #
 #  export DB_PASSWORD=${DB_PASSWORD}
 #  export S2S_URL=${S2S_URL}

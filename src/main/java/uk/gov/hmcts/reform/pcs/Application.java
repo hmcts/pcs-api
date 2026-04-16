@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.idam.api.IdamTokenApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
+import uk.gov.hmcts.reform.pcs.noticeofchange.client.AssignCaseAccessClient;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 
 @SpringBootApplication(
@@ -28,7 +29,8 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         IdamApi.class,
         IdamTokenApi.class,
         RdProfessionalApi.class,
-        FeesApi.class
+        FeesApi.class,
+        AssignCaseAccessClient.class
     }
 )
 @EnableJms

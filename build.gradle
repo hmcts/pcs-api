@@ -101,16 +101,6 @@ ccd {
   runtimeIndexing = runtimeIndexingEnabled
 }
 
-tasks.register('generateCCDDefinition', Copy) {
-  from ("${tasks.generateCCDConfig.outputs.files.singleFile}/PCS")
-  from file('ccd-definitions')
-  into layout.buildDirectory.dir('json-definitions')
-}
-
-tasks.named('generateCCDConfig') {
-  finalizedBy('generateCCDDefinition')
-}
-
 tasks.withType(JavaCompile).configureEach {
   options.compilerArgs << "-Xlint:unchecked" << "-Werror"
 }
@@ -438,6 +428,9 @@ dependencies {
     exclude group: 'org.apache.poi', module: 'poi'
     exclude group: 'com.launchdarkly', module: 'launchdarkly-java-server-sdk'
   }
+  implementation group: 'com.github.hmcts', name: 'ccd-config-generator', version: 'DEV-SNAPSHOT'
+//  implementation group: 'com.github.hmcts', name: 'rse-cft-lib', version: 'DEV-SNAPSHOT'
+
 
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityBddVersion
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityBddVersion
@@ -544,6 +537,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
+  environment 'XUI_SESSION_SECRET', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
