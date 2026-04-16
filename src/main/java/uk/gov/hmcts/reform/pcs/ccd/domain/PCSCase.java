@@ -241,7 +241,7 @@ public class PCSCase {
     private YesOrNo showClaimantTypeNotEligibleWales;
 
     @CCD(
-        label = "Is this a claim against trespassers?"
+        label = "Is your claim a trespass claim?"
     )
     private VerticalYesNo claimAgainstTrespassers;
 
