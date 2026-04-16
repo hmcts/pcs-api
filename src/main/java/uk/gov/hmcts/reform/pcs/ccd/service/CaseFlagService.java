@@ -1,14 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
-import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.LocalDateTime;
@@ -16,60 +19,82 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class CaseFlagService {
 
     public void mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
-        Map<UUID, FlagsEntity> existingCaseFlags = pcsCaseEntity.getCaseFlags() != null
-            ? Map.of(pcsCaseEntity.getCaseFlags().getId(), pcsCaseEntity.getCaseFlags())
-            : Map.of();
 
-        if (existingCaseFlags.isEmpty()) {
-            return;
-        }
+        Map<UUID, FlagDetailsEntity> existingFlagDetails =
+            pcsCaseEntity.getCaseFlags().stream()
+                .collect(Collectors.toMap(FlagDetailsEntity::getId, Function.identity()));
 
-        FlagsEntity mergedFlagsEntity = mergeFlags(incomingCaseFlags, existingCaseFlags, pcsCaseEntity);
+        List<FlagDetailsEntity> mergedFlagDetails = new ArrayList<>();
 
-        pcsCaseEntity.setCaseFlags(mergedFlagsEntity);
-    }
+        List<String> existingFlagPathIds = getExistingPathIds(existingFlagDetails);
 
-    private FlagsEntity mergeFlags(Flags incomingCaseFlags, Map<UUID, FlagsEntity> existingCaseFlags,
-                                   PcsCaseEntity pcsCaseEntity) {
+        for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
+            FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
+            String flagId = incomingFlagDetailListValue.getId();
 
-        FlagsEntity flagsEntity = new FlagsEntity();
+            FlagDetailsEntity flagDetailsEntity = existingFlagDetails.remove(UUID.fromString(flagId));
 
-        flagsEntity.setVisibility(incomingCaseFlags.getVisibility().getValue());
 
-        if (!incomingCaseFlags.getDetails().isEmpty()) {
-            for (ListValue<FlagDetail> incomingFlagDetail : incomingCaseFlags.getDetails()) {
-                FlagDetailsEntity flagDetailsEntity = FlagDetailsEntity.builder()
-                    .flagCode(incomingFlagDetail.getValue().getFlagCode())
-                    .name(incomingFlagDetail.getValue().getName())
-                    .nameWelsh(incomingFlagDetail.getValue().getNameCy())
-                    .flagComment(incomingFlagDetail.getValue().getFlagComment())
-                    .flagCommentWelsh(incomingFlagDetail.getValue().getFlagCommentCy())
-                    .availableExternally(convertYesOrNoToBoolean(
-                        incomingFlagDetail.getValue().getAvailableExternally()))
-                    .dateTimeCreated(LocalDateTime.now())
-                    .defaultStatus(incomingFlagDetail.getValue().getStatus())
-                    .hearingRelevant(convertYesOrNoToBoolean(incomingFlagDetail.getValue().getHearingRelevant()))
-                    .subTypeKey(incomingFlagDetail.getValue().getSubTypeKey())
-                    .subTypeValue(incomingFlagDetail.getValue().getSubTypeValue())
-                    .subTypeValueWelsh(incomingFlagDetail.getValue().getSubTypeValueCy())
-                    .flagUpdateComment(incomingFlagDetail.getValue().getFlagUpdateComment())
+            if (flagDetailsEntity == null) {
+                flagDetailsEntity = FlagDetailsEntity.builder()
+                    .pcsCase(pcsCaseEntity)
                     .build();
-                flagsEntity.getCaseFlags().add(flagDetailsEntity);
             }
+
+            if (incomingFlagDetail.getDateTimeCreated() != null) {
+                flagDetailsEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
+            }
+
+            if (incomingFlagDetail.getDateTimeModified() != null) {
+                flagDetailsEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
+            }
+
+            flagDetailsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
+
+            flagDetailsEntity.setName(incomingFlagDetail.getName());
+            flagDetailsEntity.setNameWelsh(incomingFlagDetail.getNameCy());
+
+            flagDetailsEntity.setFlagComment(incomingFlagDetail.getFlagComment());
+            flagDetailsEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+
+            flagDetailsEntity.setDefaultStatus(incomingFlagDetail.getStatus());
+            flagDetailsEntity.setSubTypeKey(incomingFlagDetail.getSubTypeKey());
+            flagDetailsEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
+            flagDetailsEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
+
+            flagDetailsEntity.setFlagUpdateComment(incomingFlagDetail.getFlagUpdateComment());
+
+            flagDetailsEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
+            flagDetailsEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
+
+            flagDetailsEntity.setHearingRelevant(YesOrNoConverter.toBoolean(incomingFlagDetail.getHearingRelevant()));
+            flagDetailsEntity.setAvailableExternally(
+                YesOrNoConverter.toBoolean(incomingFlagDetail.getAvailableExternally()));
+
+            if (incomingFlagDetail.getPath() != null
+                && !(new HashSet<>(existingFlagPathIds).containsAll(getIncomingFlagPathIds(incomingFlagDetail)))) {
+                for (ListValue<String> path : incomingFlagDetail.getPath()) {
+                    FlagPathEntity flagPathEntity = FlagPathEntity.builder()
+                        .flagDetails(flagDetailsEntity)
+                        .path(path.getValue())
+                        .build();
+                    flagDetailsEntity.getPaths().add(flagPathEntity);
+                }
+            }
+
+            mergedFlagDetails.add(flagDetailsEntity);
         }
-
-        return flagsEntity;
-    }
-
-    private Boolean convertYesOrNoToBoolean(YesOrNo yesOrNo) {
-        return yesOrNo == YesOrNo.YES;
+        pcsCaseEntity.getCaseFlags().clear();
+        pcsCaseEntity.getCaseFlags().addAll(mergedFlagDetails);
     }
 
     public void mergePartyFlags(List<ListValue<Party>> incomingParties, PcsCaseEntity pcsCaseEntity) {
@@ -129,5 +154,20 @@ public class CaseFlagService {
                 flagsEntity.getCaseFlags().add(flagDetailsEntity);
             }
         }
+    }
+
+    private List<String> getIncomingFlagPathIds(FlagDetail incomingFlagDetail) {
+
+        return incomingFlagDetail.getPath().stream().map(ListValue::getId).toList();
+    }
+
+    private List<String> getExistingPathIds(Map<UUID, FlagDetailsEntity> existingFlagDetails) {
+        List<String> list = new ArrayList<>();
+        for (FlagDetailsEntity flagDetails : existingFlagDetails.values()) {
+            for (FlagPathEntity flagPathEntity : flagDetails.getPaths()) {
+                list.add(flagPathEntity.getId().toString());
+            }
+        }
+        return list;
     }
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
+import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Table(name = "flag_details")
@@ -33,56 +38,48 @@ public class FlagDetailsEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "flags_id")
-    private FlagsEntity caseFlag;
+    @JoinColumn(name = "case_id")
+    private PcsCaseEntity pcsCase;
 
-    @Column(name = "flag_code")
+    @OneToMany(mappedBy = "flagDetails", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<FlagPathEntity> paths = new ArrayList<>();
+
     private String flagCode;
 
-    @Column(name = "name")
     private String name;
 
     @Column(name = "name_cy")
     private String nameWelsh;
 
-    @Column(name = "sub_type_value")
     private String subTypeValue;
 
     @Column(name = "sub_type_value_cy")
     private String subTypeValueWelsh;
 
-    @Column(name = "sub_type_key")
     private String subTypeKey;
 
-    @Column(name = "other_description")
     private String otherDescription;
 
-    @Column(name = "hearing_relevant")
+    @Column(name = "other_description_cy")
+    private String otherDescriptionWelsh;
+
     private Boolean hearingRelevant;
 
-    @Column(name = "flag_comment")
     private String flagComment;
 
     @Column(name = "flag_comment_cy")
     private String flagCommentWelsh;
 
-    @Column(name = "flag_update_comment")
     private String flagUpdateComment;
 
-    @Column(name = "date_time_created")
     private LocalDateTime dateTimeCreated;
 
-    @Column(name = "date_time_modified")
     private LocalDateTime dateTimeModified;
-
-
-    @Column(name = "path")
-    private String path;
 
     @Column(name = "status")
     private String defaultStatus;
 
-    @Column(name = "available_externally")
     private Boolean availableExternally;
 }
 

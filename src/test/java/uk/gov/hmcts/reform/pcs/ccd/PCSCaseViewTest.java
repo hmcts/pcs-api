@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -35,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -98,6 +100,8 @@ class PCSCaseViewTest {
     @Mock
     private CaseFieldsView caseFieldsView;
     @Mock
+    private CaseLinkView caseLinkView;
+    @Mock
     private CaseFlagsView caseFlagsView;
 
     private PCSCaseView underTest;
@@ -111,7 +115,7 @@ class PCSCaseViewTest {
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
                                     alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
-                                    statementOfTruthView, caseFieldsView, caseFlagsView
+                                    statementOfTruthView, caseFieldsView, caseLinkView, caseFlagsView
         );
     }
 
@@ -335,6 +339,8 @@ class PCSCaseViewTest {
         verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     @Test

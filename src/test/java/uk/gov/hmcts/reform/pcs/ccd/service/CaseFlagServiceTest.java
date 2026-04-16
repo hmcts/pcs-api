@@ -1,115 +1,93 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
 class CaseFlagServiceTest {
 
-    private final CaseFlagService caseFlagService = new CaseFlagService();
+    private CaseFlagService underTest;
 
-    @Test
-    void testMergeCaseFlags_NewCaseFlags() {
-        FlagDetailsEntity existingFlagDetail = FlagDetailsEntity.builder()
-            .flagCode("EXISTING_FLAG")
-            .flagComment("Existing Case Flag Comment")
-            .build();
-
-        FlagsEntity existingFlagsEntity = FlagsEntity.builder()
-            .id(UUID.randomUUID())
-            .visibility(FlagVisibility.INTERNAL.getValue())
-            .caseFlags(new ArrayList<>(List.of(existingFlagDetail)))
-            .build();
-
-        Flags incomingFlags = Flags.builder()
-            .visibility(FlagVisibility.INTERNAL)
-            .details(List.of(createFlagDetail("FLAG_CODE_1", "Test Flag Comment 1")))
-            .build();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .id(UUID.randomUUID())
-            .caseFlags(existingFlagsEntity).build();
-
-        caseFlagService.mergeCaseFlags(incomingFlags, pcsCaseEntity);
-
-        assertNotNull(pcsCaseEntity.getCaseFlags());
-        FlagsEntity savedFlags = pcsCaseEntity.getCaseFlags();
-        assertEquals("Internal", savedFlags.getVisibility());
-        assertEquals(1, savedFlags.getCaseFlags().size());
+    @BeforeEach
+    void setUp() {
+        underTest = new CaseFlagService();
     }
 
     @Test
-    void testMergeCaseFlags_UpdateExistingCaseFlags() {
-        FlagDetailsEntity existingFlagDetail = FlagDetailsEntity.builder()
-            .flagCode("EXISTING_FLAG")
-            .flagComment("Existing Case Flag Comment")
-            .build();
-
-        FlagsEntity existingFlagsEntity = FlagsEntity.builder()
-            .id(UUID.randomUUID())
-            .visibility(FlagVisibility.INTERNAL.getValue())
-            .caseFlags(new ArrayList<>(List.of(existingFlagDetail)))
-            .build();
+    void shouldMergeNewCaseFlags() {
+        // Given
+        //UUID id = UUID.randomUUID();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build(); //createPcsCaseEntity(id, "Active");
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(new ArrayList<>()).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .id(UUID.randomUUID())
-            .caseFlags(existingFlagsEntity).build();
+            .details(createFlagDetail(null,"CF0002", "Complex Case",
+                                              "Complicated case", "Active"))
+            .build();
 
-        caseFlagService.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+        // When
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
 
+        // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
-        FlagsEntity updatedFlags = pcsCaseEntity.getCaseFlags();
-        assertEquals("Internal", updatedFlags.getVisibility());
-        assertEquals(0, updatedFlags.getCaseFlags().size());
+        List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
+        assertEquals("CF0002", savedFlags.getFirst().getFlagCode());
+        assertEquals("Complicated case", savedFlags.getFirst().getFlagComment());
+        assertEquals("Complex Case", savedFlags.getFirst().getName());
+        assertEquals(1, savedFlags.size());
     }
 
     @Test
-    void testMergeCaseFlags_NoIncomingCaseFlags() {
-        FlagDetailsEntity existingFlagDetail = FlagDetailsEntity.builder()
-            .flagCode("EXISTING_FLAG")
-            .flagComment("Existing Case Flag Comment")
-            .build();
-
-        FlagsEntity existingFlagsEntity = FlagsEntity.builder()
-            .id(UUID.randomUUID())
-            .visibility(FlagVisibility.INTERNAL.getValue())
-            .caseFlags(new ArrayList<>(List.of(existingFlagDetail)))
-            .build();
-
+    void shouldAmendExistingCaseFlags() {
+        // Given
+        UUID id = UUID.randomUUID();
+        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity(id);
+        List<ListValue<FlagDetail>> flagDetails = new ArrayList<>();
+        flagDetails.addAll(createFlagDetail(null, "CF0002", "Complex Case",
+                                            "Complicated case", "Active"
+        ));
+        flagDetails.addAll(createFlagDetail(id.toString(),"CF0008", "Power of arrest with Police ",
+                                            "Police arrest inactive", "Inactive"));
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(new ArrayList<>()).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .id(UUID.randomUUID())
-            .caseFlags(existingFlagsEntity).build();
+            .details(flagDetails)
+            .build();
 
-        caseFlagService.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+        // When
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
 
+        // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
-        FlagsEntity unchangedFlags = pcsCaseEntity.getCaseFlags();
-        assertEquals("Internal", unchangedFlags.getVisibility());
-        assertEquals(0, unchangedFlags.getCaseFlags().size());
+        List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
+        assertEquals("CF0002", savedFlags.getFirst().getFlagCode());
+        assertEquals("Complicated case", savedFlags.getFirst().getFlagComment());
+        assertEquals("Complex Case", savedFlags.getFirst().getName());
+        assertEquals(2, savedFlags.size());
+        assertThat(savedFlags).extracting(FlagDetailsEntity::getFlagCode).containsExactly("CF0002", "CF0008");
+        assertThat(savedFlags.getLast().getFlagComment()).isEqualTo("Police arrest inactive");
+        assertThat(savedFlags.getLast().getFlagCode()).isEqualTo("CF0008");
     }
 
     @Test
@@ -192,17 +170,18 @@ class CaseFlagServiceTest {
         assertEquals("Updated Flag Comment", updatedFlagDetail.getFlagComment());
     }
 
+
     @Test
     void testMergePartyFlags_NoIncomingChanges() {
         PartyEntity existingParty = PartyEntity.builder()
-                .id(UUID.randomUUID())
-                .firstName("John")
-                .lastName("Doe")
-                .build();
+            .id(UUID.randomUUID())
+            .firstName("John")
+            .lastName("Doe")
+            .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-                .parties(new HashSet<>(List.of(existingParty)))
-                .build();
+            .parties(new HashSet<>(List.of(existingParty)))
+            .build();
 
         caseFlagService.mergePartyFlags(new ArrayList<>(), pcsCaseEntity);
 
@@ -214,17 +193,82 @@ class CaseFlagServiceTest {
         assertTrue(retainedParty.getAppellantFlags().isEmpty());
     }
 
-    private ListValue<FlagDetail> createFlagDetail(String flagCode, String comment) {
-        return ListValue.<FlagDetail>builder()
-                .id(UUID.randomUUID().toString())
-                .value(FlagDetail.builder().flagCode(flagCode).flagComment(comment).build())
-                .build();
+    private PcsCaseEntity createPcsCaseEntity(UUID id) {
+        return PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .caseReference(1234L)
+            .caseFlags(createFlagDetailsEntity(id))
+            .build();
+    }
+
+    private List<ListValue<FlagDetail>> createFlagDetail(String id, String flagCode, String name,
+                                                         String flagComment, String status) {
+        List<ListValue<FlagDetail>> flagDetails = new ArrayList<>();
+
+        ListValue<FlagDetail> flagDetailListValue = ListValue.<FlagDetail>builder()
+            .id(id == null ? UUID.randomUUID().toString() : id)
+            .value(FlagDetail.builder()
+                       .flagCode(flagCode)
+                       .name(name)
+                       .flagComment(flagComment)
+                       .status(status)
+                       .availableExternally(YesOrNo.NO)
+                       .hearingRelevant(YesOrNo.YES)
+                       .path(createPathListValue())
+                       .build())
+            .build();
+        flagDetails.add(flagDetailListValue);
+
+        return flagDetails;
+    }
+
+    private List<ListValue<String>> createPathListValue() {
+        List<ListValue<String>> paths = new ArrayList<>();
+
+        ListValue<String> path = ListValue.<String>builder()
+            .id(UUID.randomUUID().toString())
+            .value("Case")
+            .build();
+        paths.add(path);
+
+        return paths;
+    }
+
+    private List<FlagDetailsEntity> createFlagDetailsEntity(UUID id) {
+        List<FlagDetailsEntity> flagDetailsEntities = new ArrayList<>();
+
+        FlagDetailsEntity flagDetailsEntity = FlagDetailsEntity.builder()
+            .id(id)
+            .defaultStatus("Active")
+            .flagCode("CF0008")
+            .name("Power of arrest with Police")
+            .flagComment("Police arrest inactive")
+            .availableExternally(YesOrNoConverter.toBoolean(YesOrNo.NO))
+            .hearingRelevant(YesOrNoConverter.toBoolean(YesOrNo.YES))
+            .paths(createFlagPathEntity())
+            .dateTimeCreated(LocalDateTime.now())
+            .build();
+        flagDetailsEntities.add(flagDetailsEntity);
+
+        return flagDetailsEntities;
+    }
+
+    private List<FlagPathEntity> createFlagPathEntity() {
+        List<FlagPathEntity> flagPathEntities = new ArrayList<>();
+
+        FlagPathEntity flagPathEntity = FlagPathEntity.builder()
+            .id(UUID.randomUUID())
+            .path("Case")
+            .build();
+        flagPathEntities.add(flagPathEntity);
+
+        return flagPathEntities;
     }
 
     private ListValue<Party> createPartyListValue(String id, Party party) {
         return ListValue.<Party>builder()
-                .id(id)
-                .value(party)
-                .build();
+            .id(id)
+            .value(party)
+            .build();
     }
 }

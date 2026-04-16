@@ -1,35 +1,70 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
-
 @Component
+@AllArgsConstructor
 public class CaseFlagsView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getCaseFlags() != null) {
-            mapBasicCaseFlagFields(pcsCase, pcsCaseEntity);
-        }
-        if (pcsCaseEntity.getParties() != null) {
-            mapComplexPartyFlagFields(pcsCase, pcsCaseEntity);
-        }
+
+        mapBasicCaseFlagFields(pcsCase, pcsCaseEntity);
     }
 
     private void mapBasicCaseFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        Flags caseFlags = Flags.builder()
+        Flags caseFlags = pcsCaseEntity.getCaseFlags().isEmpty()
+            ? Flags.builder().build()
+            : Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
             .details(mapFlagDetails(pcsCaseEntity.getCaseFlags()))
             .build();
         pcsCase.setCaseFlags(caseFlags);
+    }
+
+    private List<ListValue<FlagDetail>> mapFlagDetails(List<FlagDetailsEntity> flagsEntities) {
+        if (flagsEntities.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return flagsEntities.stream()
+            .map(flagDetailsEntity -> ListValue.<FlagDetail>builder()
+                .id(flagDetailsEntity.getId().toString())
+                .value(FlagDetail.builder()
+                   .flagCode(flagDetailsEntity.getFlagCode())
+                   .name(flagDetailsEntity.getName())
+                   .nameCy(flagDetailsEntity.getNameWelsh())
+                   .flagComment(flagDetailsEntity.getFlagComment())
+                   .flagCommentCy(flagDetailsEntity.getFlagCommentWelsh())
+                   .status(flagDetailsEntity.getDefaultStatus())
+                   .subTypeKey(flagDetailsEntity.getSubTypeKey())
+                   .otherDescription(flagDetailsEntity.getOtherDescription())
+                   .otherDescriptionCy(flagDetailsEntity.getOtherDescriptionWelsh())
+                   .hearingRelevant(YesOrNoConverter.toYesOrNo(flagDetailsEntity.getHearingRelevant()))
+                   .availableExternally(YesOrNoConverter.toYesOrNo(flagDetailsEntity.getAvailableExternally()))
+                   .path(flagDetailsEntity.getPaths().stream()
+                             .map(pathEntity -> ListValue.<String>builder()
+                                .id(pathEntity.getId().toString())
+                                .value(pathEntity.getPath())
+                                .build())
+                             .toList())
+                   .build())
+                .build())
+            .toList();
     }
 
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -67,24 +102,4 @@ public class CaseFlagsView {
             .build();
     }
 
-    private List<ListValue<FlagDetail>> mapFlagDetails(FlagsEntity flagsEntity) {
-        if (flagsEntity.getCaseFlags() == null || flagsEntity.getCaseFlags().isEmpty()) {
-            return List.of();
-        }
-
-        return flagsEntity.getCaseFlags().stream()
-            .map(flagDetailsEntity -> ListValue.<FlagDetail>builder()
-                .id(flagDetailsEntity.getId().toString())
-                .value(FlagDetail.builder()
-                           .flagCode(flagDetailsEntity.getFlagCode())
-                           .flagComment(flagDetailsEntity.getFlagComment())
-                           .nameCy(flagDetailsEntity.getName())
-                           .name(flagDetailsEntity.getNameWelsh())
-                           .flagCommentCy(flagDetailsEntity.getFlagCommentWelsh())
-                           .status(flagDetailsEntity.getDefaultStatus())
-                           .subTypeKey(flagDetailsEntity.getSubTypeKey())
-                           .build())
-                .build())
-            .toList();
-    }
 }

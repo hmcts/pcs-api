@@ -26,8 +26,8 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
         pageBuilder
             .page("statementOfExpressTerms", this::midEvent)
             .pageLabel("Statement of express terms")
-            .showCondition("demotionOfTenancy_ShowHousingActsPage=\"Yes\""
-                               + " OR suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
+            .showCondition("demotionOfTenancy_ShowHousingActsPage=\"YES\""
+                               + " OR suspensionToBuyDemotionOfTenancyPages=\"YES\"")
             .label("statementOfExpressTerms-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsServed)

@@ -53,7 +53,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
-        builder.hmctsServiceId(hmctsServiceId);
+        // TODO: This is Civil jurisdiction service id for testing, and to be replaced with PCS service id before merge
+        builder.hmctsServiceId("AAA7");
 
         builder.searchInputFields()
             .caseReferenceField();
@@ -89,10 +90,15 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
-        builder.tab("caseFlags", "Case flags")
+        builder.tab("caseLinks", "Linked cases")
             .forRoles(UserRole.PCS_SOLICITOR)
+            .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
+            .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
+
+        builder.tab("caseFlags", "Case flags")
+            .forRoles(UserRole.PCS_CASE_WORKER)
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
-            .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)")
+            .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
     }
 }
