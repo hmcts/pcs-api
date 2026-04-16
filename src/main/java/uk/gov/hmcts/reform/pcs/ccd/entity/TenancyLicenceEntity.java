@@ -19,7 +19,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -61,6 +61,6 @@ public class TenancyLicenceEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo calculatedDailyRentCorrect;
+    private SimpleYesNo calculatedDailyRentCorrect;
 
 }

@@ -7,7 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -90,7 +90,7 @@ public class PossessionClaimResponseMapper {
      * Otherwise convert defendant's address entity to AddressUK.
      */
     private AddressUK resolveAddress(PartyEntity defendantEntity, PCSCase pcsCase) {
-        if (defendantEntity.getAddressSameAsProperty() == VerticalYesNo.YES) {
+        if (defendantEntity.getAddressSameAsProperty() == SimpleYesNo.YES) {
             return pcsCase.getPropertyAddress();  // Already AddressUK from view
         } else {
             return Optional.ofNullable(defendantEntity.getAddress())

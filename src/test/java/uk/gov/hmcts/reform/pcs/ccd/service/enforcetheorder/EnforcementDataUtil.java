@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
@@ -49,7 +49,7 @@ public final class EnforcementDataUtil {
                 .warrantDetails(WarrantDetails.builder()
                     .anyRiskToBailiff(YesNoNotSure.YES)
                     .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                            .correctNameAndAddress(VerticalYesNo.YES)
+                            .correctNameAndAddress(SimpleYesNo.YES)
                             .build())
                     .riskCategories(
                             Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.VERBAL_OR_WRITTEN_THREATS))
@@ -66,7 +66,7 @@ public final class EnforcementDataUtil {
                 .chooseEnforcementType(buildEnforcementTypes(WARRANT))
                 .warrantDetails(WarrantDetails.builder()
                         .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                                .correctNameAndAddress(VerticalYesNo.YES)
+                                .correctNameAndAddress(SimpleYesNo.YES)
                                 .build())
                         .build())
                 .rawWarrantDetails(RawWarrantDetails.builder()
@@ -88,10 +88,10 @@ public final class EnforcementDataUtil {
             .chooseEnforcementType(buildEnforcementTypes(WARRANT))
             .warrantDetails(WarrantDetails.builder()
                                 .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                                                               .correctNameAndAddress(VerticalYesNo.YES)
+                                                               .correctNameAndAddress(SimpleYesNo.YES)
                                                                .build())
                                 .peopleToEvict(PeopleToEvict.builder()
-                                                   .evictEveryone(VerticalYesNo.NO)
+                                                   .evictEveryone(SimpleYesNo.NO)
                                                    .build())
                                 .build())
             .rawWarrantDetails(RawWarrantDetails.builder()
@@ -105,7 +105,7 @@ public final class EnforcementDataUtil {
                 .chooseEnforcementType(buildEnforcementTypes(enforcementType))
                 .warrantDetails(WarrantDetails.builder()
                         .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                                .correctNameAndAddress(VerticalYesNo.YES)
+                                .correctNameAndAddress(SimpleYesNo.YES)
                                 .build())
                         .build())
                 .rawWarrantDetails(RawWarrantDetails.builder().build())

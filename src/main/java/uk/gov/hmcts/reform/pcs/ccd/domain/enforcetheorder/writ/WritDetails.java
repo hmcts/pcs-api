@@ -13,7 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
@@ -37,7 +37,7 @@ public class WritDetails {
     @CCD(
         label = "Have you hired a High Court enforcement officer?"
     )
-    private VerticalYesNo hasHiredHighCourtEnforcementOfficer;
+    private SimpleYesNo hasHiredHighCourtEnforcementOfficer;
 
     @CCD(
         label = "Name of your High Court enforcement officer",

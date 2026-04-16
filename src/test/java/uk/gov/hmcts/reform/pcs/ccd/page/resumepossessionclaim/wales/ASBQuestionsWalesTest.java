@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -44,7 +44,7 @@ class ASBQuestionsWalesTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
+
         setPageUnderTest(new ASBQuestionsWales(textAreaValidationService));
     }
 
@@ -58,11 +58,11 @@ class ASBQuestionsWalesTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .asbQuestionsWales(ASBQuestionsDetailsWales.builder()
-                    .antisocialBehaviour(VerticalYesNo.YES)
+                    .antisocialBehaviour(SimpleYesNo.YES)
                     .antisocialBehaviourDetails("Details about antisocial behaviour")
-                    .illegalPurposesUse(VerticalYesNo.YES)
+                    .illegalPurposesUse(SimpleYesNo.YES)
                     .illegalPurposesUseDetails("Details about illegal purposes use")
-                    .otherProhibitedConduct(VerticalYesNo.YES)
+                    .otherProhibitedConduct(SimpleYesNo.YES)
                     .otherProhibitedConductDetails("Details about other prohibited conduct")
                     .build())
                 .build();
@@ -81,11 +81,11 @@ class ASBQuestionsWalesTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .asbQuestionsWales(ASBQuestionsDetailsWales.builder()
-                    .antisocialBehaviour(VerticalYesNo.YES)
+                    .antisocialBehaviour(SimpleYesNo.YES)
                     .antisocialBehaviourDetails(null)
-                    .illegalPurposesUse(VerticalYesNo.YES)
+                    .illegalPurposesUse(SimpleYesNo.YES)
                     .illegalPurposesUseDetails(null)
-                    .otherProhibitedConduct(VerticalYesNo.YES)
+                    .otherProhibitedConduct(SimpleYesNo.YES)
                     .otherProhibitedConductDetails(null)
                     .build())
                 .build();

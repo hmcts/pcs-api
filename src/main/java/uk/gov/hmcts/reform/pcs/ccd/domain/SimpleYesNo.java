@@ -5,16 +5,17 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 /**
  * A YesNo enum that is not treated in a special way in ExUI
  * like {@link uk.gov.hmcts.ccd.sdk.type.YesOrNo} so it is
- * presented with the options vertically instead of horizontally.
+ * presented with the options vertically instead of horizontally
+ * and serialised in upper case rather than title case.
  */
-public enum VerticalYesNo implements HasLabel {
+public enum SimpleYesNo implements HasLabel {
 
     YES("Yes"),
     NO("No");
 
     private final String label;
 
-    VerticalYesNo(String label) {
+    SimpleYesNo(String label) {
         this.label = label;
     }
 
@@ -23,7 +24,7 @@ public enum VerticalYesNo implements HasLabel {
         return label;
     }
 
-    public static VerticalYesNo from(Boolean booleanValue) {
+    public static SimpleYesNo from(Boolean booleanValue) {
         if (booleanValue == null) {
             return null;
         }

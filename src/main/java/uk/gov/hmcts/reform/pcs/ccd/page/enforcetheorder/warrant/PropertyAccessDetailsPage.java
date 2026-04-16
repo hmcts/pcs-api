@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
@@ -64,7 +64,7 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
                 .getWarrantDetails().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
 
         if (data.getEnforcementOrder().getWarrantDetails().getPropertyAccessDetails().getIsDifficultToAccessProperty()
-            .equals(VerticalYesNo.YES)) {
+            .equals(SimpleYesNo.YES)) {
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,
                 CLARIFICATION_PROPERTY_ACCESS_LABEL,

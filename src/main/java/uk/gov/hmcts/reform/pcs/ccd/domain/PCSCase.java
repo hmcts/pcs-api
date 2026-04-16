@@ -164,12 +164,12 @@ public class PCSCase {
         hint = "You do not need to provide the exact amount at this stage, but a judge will request a schedule "
             + "of costs at the hearing"
     )
-    private VerticalYesNo claimingCostsWanted;
+    private SimpleYesNo claimingCostsWanted;
 
     @CCD(
         label = "Have you followed the pre-action protocol?"
     )
-    private VerticalYesNo preActionProtocolCompleted;
+    private SimpleYesNo preActionProtocolCompleted;
 
     @CCD(
         label = "Do your grounds for possession include rent arrears?",
@@ -191,7 +191,7 @@ public class PCSCase {
     @CCD(
         label = "Have you attempted mediation with the defendants?"
     )
-    private VerticalYesNo mediationAttempted;
+    private SimpleYesNo mediationAttempted;
 
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
@@ -203,7 +203,7 @@ public class PCSCase {
     @CCD(
         label = "Have you tried to reach a settlement with the defendants?"
     )
-    private VerticalYesNo settlementAttempted;
+    private SimpleYesNo settlementAttempted;
 
     @CCD(
         label = "Explain what steps you’ve taken to reach a settlement",
@@ -243,7 +243,7 @@ public class PCSCase {
     @CCD(
         label = "Is this a claim against trespassers?"
     )
-    private VerticalYesNo claimAgainstTrespassers;
+    private SimpleYesNo claimAgainstTrespassers;
 
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleEngland;
@@ -256,7 +256,7 @@ public class PCSCase {
     private WalesHousingAct walesHousingAct;
 
     @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
-    private VerticalYesNo prohibitedConductWalesClaim;
+    private SimpleYesNo prohibitedConductWalesClaim;
 
     @CCD(
         label = "Why are you making this claim?",
@@ -287,7 +287,7 @@ public class PCSCase {
     private DefendantDetails defendant1;
 
     @CCD(label = "Do you need to add another defendant?")
-    private VerticalYesNo addAnotherDefendant;
+    private SimpleYesNo addAnotherDefendant;
 
     /**
      * List of additional defendants added by the user, after the primary defendant.
@@ -357,7 +357,7 @@ public class PCSCase {
         label = "Do you want the court to make a judgment for the outstanding arrears?",
         searchable = false
     )
-    private VerticalYesNo arrearsJudgmentWanted;
+    private SimpleYesNo arrearsJudgmentWanted;
 
     @JsonUnwrapped(prefix = "noRentArrears_")
     private AssuredNoArrearsPossessionGrounds noRentArrearsGroundsOptions;
@@ -408,7 +408,7 @@ public class PCSCase {
             + "Any documents you upload now will be included in the pack of documents a judge will "
             + "receive before the hearing (the bundle)"
     )
-    private VerticalYesNo wantToUploadDocuments;
+    private SimpleYesNo wantToUploadDocuments;
 
     @CCD(
         label = "Add document",
@@ -420,7 +420,7 @@ public class PCSCase {
         label = "Are you planning to make an application at the same time as your claim?",
         hint = "After you’ve submitted your claim, there will be instructions on how to make an application"
     )
-    private VerticalYesNo applicationWithClaim;
+    private SimpleYesNo applicationWithClaim;
 
     @CCD(
         label = "What would you like to do next?",
@@ -459,13 +459,13 @@ public class PCSCase {
     private EnforcementOrder enforcementOrder;
 
     @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
-    private VerticalYesNo hasUnderlesseeOrMortgagee;
+    private SimpleYesNo hasUnderlesseeOrMortgagee;
 
     @CCD
     private UnderlesseeMortgageeDetails underlesseeOrMortgagee1;
 
     @CCD(label = "Do you need to add another underlessee or mortgagee?")
-    private VerticalYesNo addAdditionalUnderlesseeOrMortgagee;
+    private SimpleYesNo addAdditionalUnderlesseeOrMortgagee;
 
     @CCD(
         label = "Add underlessee or mortgagee",

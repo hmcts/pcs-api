@@ -8,7 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
@@ -36,7 +36,7 @@ class PropertyAccessDetailsWarrantOfRestitutionPageTest extends BasePageTest {
                 .enforcementOrder(EnforcementOrder.builder()
                     .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
-                                .isDifficultToAccessProperty(VerticalYesNo.YES)
+                                .isDifficultToAccessProperty(SimpleYesNo.YES)
                                 .clarificationOnAccessDifficultyText(validText)
                                 .build())
                         .build())
@@ -62,7 +62,7 @@ class PropertyAccessDetailsWarrantOfRestitutionPageTest extends BasePageTest {
                 .enforcementOrder(EnforcementOrder.builder()
                     .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
-                                .isDifficultToAccessProperty(VerticalYesNo.YES)
+                                .isDifficultToAccessProperty(SimpleYesNo.YES)
                                 .clarificationOnAccessDifficultyText(longText)
                                 .build())
                         .build())
@@ -87,7 +87,7 @@ class PropertyAccessDetailsWarrantOfRestitutionPageTest extends BasePageTest {
             .enforcementOrder(EnforcementOrder.builder()
                   .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
                            .propertyAccessDetails(PropertyAccessDetails.builder()
-                                  .isDifficultToAccessProperty(VerticalYesNo.NO)
+                                  .isDifficultToAccessProperty(SimpleYesNo.NO)
                                   .clarificationOnAccessDifficultyText("Some Text")
                                   .build())
                            .build())

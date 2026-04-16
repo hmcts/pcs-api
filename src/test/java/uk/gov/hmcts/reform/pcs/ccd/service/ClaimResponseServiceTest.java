@@ -11,7 +11,7 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -81,8 +81,8 @@ class ClaimResponseServiceTest {
                 .build(),
             DefendantResponses.builder()
                 .preferenceType(ContactPreferenceType.EMAIL)
-                .contactByPhone(VerticalYesNo.YES)
-                .contactByText(VerticalYesNo.YES)
+                .contactByPhone(SimpleYesNo.YES)
+                .contactByText(SimpleYesNo.YES)
                 .preferenceType(ContactPreferenceType.POST)
                 .build()
         );
@@ -103,8 +103,8 @@ class ClaimResponseServiceTest {
         assertThat(savedParty.getAddress()).isEqualTo(addressEntity);
 
         ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
-        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(SimpleYesNo.YES);
+        assertThat(savedPrefs.getContactByText()).isEqualTo(SimpleYesNo.YES);
         assertThat(savedPrefs.getPreferenceType()).isEqualTo(ContactPreferenceType.POST);
     }
 
@@ -117,7 +117,7 @@ class ClaimResponseServiceTest {
                 .address(TEST_ADDRESS)
                 .build(),
             DefendantResponses.builder()
-                .contactByPhone(VerticalYesNo.YES)
+                .contactByPhone(SimpleYesNo.YES)
                 .build()
         );
 
@@ -231,7 +231,7 @@ class ClaimResponseServiceTest {
                 .build(),
             DefendantResponses.builder()
                 .preferenceType(ContactPreferenceType.EMAIL)
-                .contactByPhone(VerticalYesNo.NO)
+                .contactByPhone(SimpleYesNo.NO)
                 //no text option is possible when contact by phone = no
                 .preferenceType(ContactPreferenceType.POST)
                 .build()
@@ -246,7 +246,7 @@ class ClaimResponseServiceTest {
         // Then
         verify(partyRepository).save(partyCaptor.capture());
         ContactPreferencesEntity savedPrefs = partyCaptor.getValue().getContactPreferences();
-        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(SimpleYesNo.NO);
         assertThat(savedPrefs.getContactByText()).isEqualTo(null);
         assertThat(savedPrefs.getPreferenceType()).isEqualTo(ContactPreferenceType.POST);
     }
@@ -262,8 +262,8 @@ class ClaimResponseServiceTest {
                 .build(),
             DefendantResponses.builder()
                 .preferenceType(ContactPreferenceType.EMAIL)
-                .contactByPhone(VerticalYesNo.YES)
-                .contactByText(VerticalYesNo.YES)
+                .contactByPhone(SimpleYesNo.YES)
+                .contactByText(SimpleYesNo.YES)
                 .preferenceType(ContactPreferenceType.POST)
                 .build()
         );
@@ -296,8 +296,8 @@ class ClaimResponseServiceTest {
         assertThat(savedParty.getEmailAddress()).isEqualTo("test@example.com");
 
         ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
-        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(SimpleYesNo.YES);
+        assertThat(savedPrefs.getContactByText()).isEqualTo(SimpleYesNo.YES);
         assertThat(savedPrefs.getPreferenceType()).isEqualTo(ContactPreferenceType.POST);
     }
 

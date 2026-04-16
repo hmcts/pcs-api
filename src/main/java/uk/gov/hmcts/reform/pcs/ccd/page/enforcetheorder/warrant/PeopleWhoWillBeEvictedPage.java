@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
@@ -48,10 +48,10 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
 
         WarrantDetails warrantDetails = caseData.getEnforcementOrder().getWarrantDetails();
         PeopleToEvict peopleToEvict = warrantDetails.getPeopleToEvict();
-        if (peopleToEvict.getEvictEveryone() == VerticalYesNo.NO) {
+        if (peopleToEvict.getEvictEveryone() == SimpleYesNo.NO) {
             // Navigate to PeopleYouWantToEvictPage
             warrantDetails.setShowPeopleYouWantToEvictPage(YesOrNo.YES);
-        } else if (peopleToEvict.getEvictEveryone() == VerticalYesNo.YES) {
+        } else if (peopleToEvict.getEvictEveryone() == SimpleYesNo.YES) {
             // Skip PeopleYouWantToEvictPage, go directly to LivingInThePropertyPage
             warrantDetails.setShowPeopleYouWantToEvictPage(YesOrNo.NO);
         }

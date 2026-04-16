@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
@@ -81,8 +81,8 @@ public class WritDetailsMapper {
         return yesOrNo == YesOrNo.YES ? YesOrNo.YES : YesOrNo.NO;
     }
 
-    private VerticalYesNo convertToVerticalYesNo(VerticalYesNo yesOrNo) {
-        return yesOrNo == VerticalYesNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
+    private SimpleYesNo convertToVerticalYesNo(SimpleYesNo yesOrNo) {
+        return yesOrNo == SimpleYesNo.YES ? SimpleYesNo.YES : SimpleYesNo.NO;
     }
 
 }

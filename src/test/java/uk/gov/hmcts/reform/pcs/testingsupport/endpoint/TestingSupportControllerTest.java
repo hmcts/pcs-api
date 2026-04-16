@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -697,7 +697,7 @@ class TestingSupportControllerTest {
             .id(partyCode)
             .firstName(firstName)
             .lastName(lastName)
-            .addressKnown(VerticalYesNo.NO)
+            .addressKnown(SimpleYesNo.NO)
             .build();
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()

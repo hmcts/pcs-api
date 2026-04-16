@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnderlesseeMortgageeValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
@@ -77,7 +77,7 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
 
-        boolean additionalUnderlesseeMortgagee = caseData.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES;
+        boolean additionalUnderlesseeMortgagee = caseData.getAddAdditionalUnderlesseeOrMortgagee() == SimpleYesNo.YES;
 
         UnderlesseeMortgageeDetails underlesseeMortgagee1 = caseData.getUnderlesseeOrMortgagee1();
         List<String> validationErrors =

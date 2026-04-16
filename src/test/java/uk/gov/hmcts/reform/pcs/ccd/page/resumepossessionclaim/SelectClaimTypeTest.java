@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -29,7 +29,7 @@ class SelectClaimTypeTest extends BasePageTest {
     @ParameterizedTest
     @MethodSource("claimTypeScenarios")
     void shouldSetDisplayFlagsInMidEventCallback(LegislativeCountry legislativeCountry,
-                                                 VerticalYesNo isClaimAgainstTrespassers,
+                                                 SimpleYesNo isClaimAgainstTrespassers,
                                                  YesOrNo showNotEligibleEngland,
                                                  YesOrNo showNotEligibleWales) {
         // Given
@@ -50,11 +50,11 @@ class SelectClaimTypeTest extends BasePageTest {
 
         return Stream.of(
             // Country, Claim is against trespassers, show England ineligible page, show Wales ineligble page
-            arguments(ENGLAND, VerticalYesNo.NO, NO, NO),
-            arguments(WALES, VerticalYesNo.NO, NO, NO),
+            arguments(ENGLAND, SimpleYesNo.NO, NO, NO),
+            arguments(WALES, SimpleYesNo.NO, NO, NO),
 
-            arguments(ENGLAND, VerticalYesNo.YES, YES, NO),
-            arguments(WALES, VerticalYesNo.YES, NO, YES)
+            arguments(ENGLAND, SimpleYesNo.YES, YES, NO),
+            arguments(WALES, SimpleYesNo.YES, NO, YES)
         );
 
     }

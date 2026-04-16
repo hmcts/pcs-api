@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 
 import java.util.Set;
@@ -80,8 +80,8 @@ public class PossessionAlternativesService {
                                               PossessionAlternativesEntity possessionAlternativesEntity) {
         DemotionOfTenancy demotionOfTenancy = pcsCase.getDemotionOfTenancy();
 
-        VerticalYesNo statementOfExpressTermsServed = demotionOfTenancy.getStatementOfExpressTermsServed();
-        if (statementOfExpressTermsServed == VerticalYesNo.YES) {
+        SimpleYesNo statementOfExpressTermsServed = demotionOfTenancy.getStatementOfExpressTermsServed();
+        if (statementOfExpressTermsServed == SimpleYesNo.YES) {
             possessionAlternativesEntity.setDotStatementServed(YesOrNo.YES);
             possessionAlternativesEntity
                 .setDotStatementDetails(demotionOfTenancy.getStatementOfExpressTermsDetails());

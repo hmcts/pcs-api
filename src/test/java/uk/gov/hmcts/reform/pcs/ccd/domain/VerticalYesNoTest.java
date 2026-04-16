@@ -9,15 +9,15 @@ class VerticalYesNoTest {
     @Test
     @SuppressWarnings("ConstantValue")
     void shouldReturnEnumForBoolean() {
-        assertThat(VerticalYesNo.from(true)).isEqualTo(VerticalYesNo.YES);
-        assertThat(VerticalYesNo.from(false)).isEqualTo(VerticalYesNo.NO);
-        assertThat(VerticalYesNo.from(null)).isEqualTo(null);
+        assertThat(SimpleYesNo.from(true)).isEqualTo(SimpleYesNo.YES);
+        assertThat(SimpleYesNo.from(false)).isEqualTo(SimpleYesNo.NO);
+        assertThat(SimpleYesNo.from(null)).isEqualTo(null);
     }
 
     @Test
     void shouldConvertToBoolean() {
-        assertThat(VerticalYesNo.YES.toBoolean()).isTrue();
-        assertThat(VerticalYesNo.NO.toBoolean()).isFalse();
+        assertThat(SimpleYesNo.YES.toBoolean()).isTrue();
+        assertThat(SimpleYesNo.NO.toBoolean()).isFalse();
     }
 
 }

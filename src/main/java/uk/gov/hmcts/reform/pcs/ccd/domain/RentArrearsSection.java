@@ -49,7 +49,7 @@ public class RentArrearsSection {
         hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
             + "made by a government department, like the Department for Work and Pensions (DWP)"
     )
-    private VerticalYesNo thirdPartyPayments;
+    private SimpleYesNo thirdPartyPayments;
 
     @CCD(
         label = "Where have the payments come from?",

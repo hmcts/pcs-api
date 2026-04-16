@@ -11,7 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -60,7 +60,7 @@ class ClaimantCircumstancesPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .claimantCircumstances(ClaimantCircumstances.builder()
-                    .claimantCircumstancesSelect(VerticalYesNo.YES)
+                    .claimantCircumstancesSelect(SimpleYesNo.YES)
                     .claimantCircumstancesDetails("Claimant circumstances details")
                     .claimantNamePossessiveForm("John’s")
                     .build())
@@ -96,7 +96,7 @@ class ClaimantCircumstancesPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .claimantCircumstances(ClaimantCircumstances.builder()
-                    .claimantCircumstancesSelect(VerticalYesNo.YES)
+                    .claimantCircumstancesSelect(SimpleYesNo.YES)
                     .claimantCircumstancesDetails(null)
                     .claimantNamePossessiveForm("John’s")
                     .build())

@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
@@ -254,10 +254,10 @@ public class ClaimGroundService {
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
 
-        VerticalYesNo hasGrounds = pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession()
+        SimpleYesNo hasGrounds = pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession()
             .getHasIntroductoryDemotedOtherGroundsForPossession();
 
-        if (hasGrounds == VerticalYesNo.YES) {
+        if (hasGrounds == SimpleYesNo.YES) {
             Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds =
                 pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getIntroductoryDemotedOrOtherGrounds();
 

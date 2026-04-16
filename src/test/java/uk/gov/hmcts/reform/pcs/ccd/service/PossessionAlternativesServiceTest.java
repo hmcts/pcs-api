@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 
 import java.util.Set;
@@ -158,7 +158,7 @@ class PossessionAlternativesServiceTest {
     void shouldSetStatementOfExpressForDemotionOfTenancyWhenServed() {
         // Given
         when(pcsCase.getAlternativesToPossession()).thenReturn(Set.of(DEMOTION_OF_TENANCY));
-        demotionOfTenancy.setStatementOfExpressTermsServed(VerticalYesNo.YES);
+        demotionOfTenancy.setStatementOfExpressTermsServed(SimpleYesNo.YES);
         demotionOfTenancy.setStatementOfExpressTermsDetails("statement of express details");
 
         // When
@@ -174,7 +174,7 @@ class PossessionAlternativesServiceTest {
     void shouldNotSetStatementOfExpressForDemotionOfTenancyWhenNotServed() {
         // Given
         when(pcsCase.getAlternativesToPossession()).thenReturn(Set.of(DEMOTION_OF_TENANCY));
-        demotionOfTenancy.setStatementOfExpressTermsServed(VerticalYesNo.NO);
+        demotionOfTenancy.setStatementOfExpressTermsServed(SimpleYesNo.NO);
 
         // When
         PossessionAlternativesEntity possessionAlternativesEntity

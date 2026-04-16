@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -74,19 +74,19 @@ class ClaimServiceTest {
     @Test
     void shouldCreateMainClaim() {
         // Given
-        when(pcsCase.getClaimAgainstTrespassers()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getClaimAgainstTrespassers()).thenReturn(SimpleYesNo.YES);
         when(pcsCase.getClaimDueToRentArrears()).thenReturn(YesOrNo.NO);
-        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
-        when(pcsCase.getPreActionProtocolCompleted()).thenReturn(VerticalYesNo.YES);
-        when(pcsCase.getMediationAttempted()).thenReturn(VerticalYesNo.NO);
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(SimpleYesNo.YES);
+        when(pcsCase.getPreActionProtocolCompleted()).thenReturn(SimpleYesNo.YES);
+        when(pcsCase.getMediationAttempted()).thenReturn(SimpleYesNo.NO);
         when(pcsCase.getMediationAttemptedDetails()).thenReturn("mediation details");
-        when(pcsCase.getSettlementAttempted()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getSettlementAttempted()).thenReturn(SimpleYesNo.YES);
         when(pcsCase.getSettlementAttemptedDetails()).thenReturn("settlement details");
-        when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
-        when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.NO);
-        when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
-        when(pcsCase.getWantToUploadDocuments()).thenReturn(VerticalYesNo.YES);
-        when(pcsCase.getApplicationWithClaim()).thenReturn(VerticalYesNo.NO);
+        when(pcsCase.getAddAnotherDefendant()).thenReturn(SimpleYesNo.NO);
+        when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(SimpleYesNo.NO);
+        when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(SimpleYesNo.YES);
+        when(pcsCase.getWantToUploadDocuments()).thenReturn(SimpleYesNo.YES);
+        when(pcsCase.getApplicationWithClaim()).thenReturn(SimpleYesNo.NO);
         when(pcsCase.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
 
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
@@ -96,19 +96,19 @@ class ClaimServiceTest {
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
 
         // Then
-        assertThat(createdClaimEntity.getAgainstTrespassers()).isEqualTo(VerticalYesNo.YES);
+        assertThat(createdClaimEntity.getAgainstTrespassers()).isEqualTo(SimpleYesNo.YES);
         assertThat(createdClaimEntity.getDueToRentArrears()).isEqualTo(YesOrNo.NO);
-        assertThat(createdClaimEntity.getClaimCosts()).isEqualTo(VerticalYesNo.YES);
-        assertThat(createdClaimEntity.getPreActionProtocolFollowed()).isEqualTo(VerticalYesNo.YES);
-        assertThat(createdClaimEntity.getMediationAttempted()).isEqualTo(VerticalYesNo.NO);
+        assertThat(createdClaimEntity.getClaimCosts()).isEqualTo(SimpleYesNo.YES);
+        assertThat(createdClaimEntity.getPreActionProtocolFollowed()).isEqualTo(SimpleYesNo.YES);
+        assertThat(createdClaimEntity.getMediationAttempted()).isEqualTo(SimpleYesNo.NO);
         assertThat(createdClaimEntity.getMediationDetails()).isEqualTo("mediation details");
-        assertThat(createdClaimEntity.getSettlementAttempted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(createdClaimEntity.getSettlementAttempted()).isEqualTo(SimpleYesNo.YES);
         assertThat(createdClaimEntity.getSettlementDetails()).isEqualTo("settlement details");
-        assertThat(createdClaimEntity.getAdditionalDefendants()).isEqualTo(VerticalYesNo.NO);
-        assertThat(createdClaimEntity.getUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.YES);
-        assertThat(createdClaimEntity.getAdditionalUnderlesseesOrMortgagees()).isEqualTo(VerticalYesNo.NO);
-        assertThat(createdClaimEntity.getAdditionalDocsProvided()).isEqualTo(VerticalYesNo.YES);
-        assertThat(createdClaimEntity.getGenAppExpected()).isEqualTo(VerticalYesNo.NO);
+        assertThat(createdClaimEntity.getAdditionalDefendants()).isEqualTo(SimpleYesNo.NO);
+        assertThat(createdClaimEntity.getUnderlesseeOrMortgagee()).isEqualTo(SimpleYesNo.YES);
+        assertThat(createdClaimEntity.getAdditionalUnderlesseesOrMortgagees()).isEqualTo(SimpleYesNo.NO);
+        assertThat(createdClaimEntity.getAdditionalDocsProvided()).isEqualTo(SimpleYesNo.YES);
+        assertThat(createdClaimEntity.getGenAppExpected()).isEqualTo(SimpleYesNo.NO);
         assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
         assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
 
@@ -134,7 +134,7 @@ class ClaimServiceTest {
     @Test
     void shouldCreateMainClaim_WithDefendantCircumstancesDetails() {
         // Given
-        VerticalYesNo defendantInfoProvided = VerticalYesNo.YES;
+        SimpleYesNo defendantInfoProvided = SimpleYesNo.YES;
         String circumstancesInfo = "Some circumstance Info";
 
         DefendantCircumstances defendantCircumstances = mock(DefendantCircumstances.class);
@@ -153,7 +153,7 @@ class ClaimServiceTest {
     @Test
     void shouldCreateMainClaim_WithClaimantCircumstancesDetails() {
         // Given
-        VerticalYesNo claimantInfoProvided = VerticalYesNo.NO;
+        SimpleYesNo claimantInfoProvided = SimpleYesNo.NO;
         String circumstancesInfo = "example circumstance Info";
 
         ClaimantCircumstances claimantCircumstances = mock(ClaimantCircumstances.class);

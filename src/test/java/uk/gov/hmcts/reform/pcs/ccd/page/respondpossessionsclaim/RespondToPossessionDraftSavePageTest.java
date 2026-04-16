@@ -14,7 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
@@ -96,9 +96,9 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Given
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(Party.builder()
-                       .nameKnown(VerticalYesNo.YES)
-                       .addressKnown(VerticalYesNo.YES)
-                       .addressSameAsProperty(VerticalYesNo.NO)
+                       .nameKnown(SimpleYesNo.YES)
+                       .addressKnown(SimpleYesNo.YES)
+                       .addressSameAsProperty(SimpleYesNo.NO)
                        .build())
             .build();
 
@@ -205,7 +205,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .preferenceType(ContactPreferenceType.EMAIL)
-            .contactByPhone(VerticalYesNo.NO)
+            .contactByPhone(SimpleYesNo.NO)
             .build();
 
         PCSCase caseData = buildCaseData(PossessionClaimResponse.builder().defendantResponses(responses).build());
@@ -225,7 +225,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedResponses.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponses.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponses.getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
-        assertThat(savedResponses.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedResponses.getContactByPhone()).isEqualTo(SimpleYesNo.NO);
     }
 
     @Test
@@ -258,7 +258,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .preferenceType(ContactPreferenceType.EMAIL)
-            .contactByText(VerticalYesNo.NO)
+            .contactByText(SimpleYesNo.NO)
             .reasonableAdjustments(reasonableAdjustments)
             .householdCircumstances(householdCircumstances)
             .paymentAgreement(paymentAgreement)
@@ -289,7 +289,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedParty.getAddress().getAddressLine1()).isEqualTo("456 Another Road");
 
         assertThat(savedResponses.getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
-        assertThat(savedResponses.getContactByText()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedResponses.getContactByText()).isEqualTo(SimpleYesNo.NO);
 
         DefendantResponses savedResponse = savedDraft.getPossessionClaimResponse().getDefendantResponses();
         assertThat(savedResponse.getReasonableAdjustments()).isEqualTo(reasonableAdjustments);

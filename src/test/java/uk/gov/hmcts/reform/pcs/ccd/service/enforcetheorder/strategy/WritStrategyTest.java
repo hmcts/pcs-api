@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
@@ -49,10 +49,10 @@ class WritStrategyTest {
 
         writDetails = WritDetails.builder()
             .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                                           .correctNameAndAddress(VerticalYesNo.YES)
+                                           .correctNameAndAddress(SimpleYesNo.YES)
                                            .build())
             .showChangeNameAddressPage(YesOrNo.NO)
-            .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.YES)
+            .hasHiredHighCourtEnforcementOfficer(SimpleYesNo.YES)
             .hceoDetails("Enforcement")
             .hasClaimTransferredToHighCourt(YesOrNo.YES)
             .build();
@@ -136,7 +136,7 @@ class WritStrategyTest {
     void shouldHandleWritDetailsWithMinimalData() {
         // Given
         WritDetails minimalWritDetails = WritDetails.builder()
-            .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.NO)
+            .hasHiredHighCourtEnforcementOfficer(SimpleYesNo.NO)
             .build();
         enforcementOrder.setWritDetails(minimalWritDetails);
         WritEntity minimalWritEntity = new WritEntity();
@@ -160,10 +160,10 @@ class WritStrategyTest {
         // Given
         WritDetails fullWritDetails = WritDetails.builder()
             .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                                           .correctNameAndAddress(VerticalYesNo.YES)
+                                           .correctNameAndAddress(SimpleYesNo.YES)
                                            .build())
             .showChangeNameAddressPage(YesOrNo.NO)
-            .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.YES)
+            .hasHiredHighCourtEnforcementOfficer(SimpleYesNo.YES)
             .hceoDetails("Complete HCEO Details")
             .hasClaimTransferredToHighCourt(YesOrNo.YES)
             .build();

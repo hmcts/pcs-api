@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 
 import java.util.UUID;
 
@@ -39,31 +39,31 @@ public class AsbProhibitedConductEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo antisocialBehaviour;
+    private SimpleYesNo antisocialBehaviour;
 
     private String antisocialBehaviourDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo illegalPurposes;
+    private SimpleYesNo illegalPurposes;
 
     private String illegalPurposesDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo otherProhibitedConduct;
+    private SimpleYesNo otherProhibitedConduct;
 
     private String otherProhibitedConductDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo claimingStandardContract;
+    private SimpleYesNo claimingStandardContract;
 
     private String claimingStandardContractDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo periodicContractAgreed;
+    private SimpleYesNo periodicContractAgreed;
 
     private String periodicContractDetails;
 

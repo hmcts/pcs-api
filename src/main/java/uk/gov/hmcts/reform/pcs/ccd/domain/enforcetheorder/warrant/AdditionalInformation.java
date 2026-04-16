@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -24,7 +24,7 @@ public class AdditionalInformation {
         = "Tell us anything else that could help with the eviction";
 
     @CCD
-    private VerticalYesNo additionalInformationSelect;
+    private SimpleYesNo additionalInformationSelect;
 
     @CCD(
         label = ADDITIONAL_INFORMATION_DETAILS_LABEL,

@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo.YES;
 
 @AllArgsConstructor
 @Component
@@ -42,9 +42,9 @@ public class AdditionalReasonsForPossession implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         AdditionalReasons additionalReasons = caseData.getAdditionalReasonsForPossession();
         if (additionalReasons != null) {
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
@@ -53,7 +53,7 @@ public class AdditionalReasonsForPossession implements CcdPageConfiguration {
                 TextAreaValidationService.EXTRA_LONG_TEXT_LIMIT
             ));
         }
-        
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 

@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 
 @Builder
 @Data
@@ -22,6 +22,6 @@ public class NameAndAddressForEviction {
         label = "Is this the correct name and address for the eviction?",
         hint = "You can choose the defendants you want to evict on the next page"
     )
-    private VerticalYesNo correctNameAndAddress;
+    private SimpleYesNo correctNameAndAddress;
 
 }

@@ -16,7 +16,7 @@ public class AdditionalReasons {
         label = "Is there any other information you’d like to provide about your reasons for possession?",
         hint = "This can be any information that you have not had the chance to share yet"
     )
-    private VerticalYesNo hasReasons;
+    private SimpleYesNo hasReasons;
 
     @CCD(
         label = "Additional reasons for possession",

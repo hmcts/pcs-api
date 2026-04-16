@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -61,7 +61,7 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         // Given
         IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
             IntroductoryDemotedOtherGroundsForPossession.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.YES)
                 .introductoryDemotedOrOtherGrounds(
                     Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS))
                 .build();
@@ -86,7 +86,7 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         // Given
         IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
             IntroductoryDemotedOtherGroundsForPossession.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.YES)
                 .introductoryDemotedOrOtherGrounds(grounds)
                 .build();
 
@@ -108,7 +108,7 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         // Given
         IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
             IntroductoryDemotedOtherGroundsForPossession.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.NO)
                 .introductoryDemotedOrOtherGrounds(null)
                 .build();
 
@@ -130,7 +130,7 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         // Given
         IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
             IntroductoryDemotedOtherGroundsForPossession.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.YES)
                 .introductoryDemotedOrOtherGrounds(
                     IntroductoryDemotedOrOtherGroundsForPossessionTest
                         .buildIntroductoryDemotedOrOtherGrounds()
@@ -155,7 +155,7 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         // Given
         IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
             IntroductoryDemotedOtherGroundsForPossession.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+                .hasIntroductoryDemotedOtherGroundsForPossession(SimpleYesNo.NO)
                 .build();
 
         PCSCase caseData =

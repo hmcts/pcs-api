@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -56,9 +56,9 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
         PeriodicContractTermsWales periodicContractTermsWales =
             caseData.getPeriodicContractTermsWales();
 
-        if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES
+        if (caseData.getProhibitedConductWalesClaim() == SimpleYesNo.YES
             && periodicContractTermsWales != null
-            && periodicContractTermsWales.getAgreedTermsOfPeriodicContract() == VerticalYesNo.YES) {
+            && periodicContractTermsWales.getAgreedTermsOfPeriodicContract() == SimpleYesNo.YES) {
             textAreaValidationService.validateTextArea(
                 periodicContractTermsWales.getDetailsOfTerms(),
                 "Give details of the terms you’ve agreed",
@@ -67,7 +67,7 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
             );
         }
 
-        if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
+        if (caseData.getProhibitedConductWalesClaim() == SimpleYesNo.YES) {
             textAreaValidationService.validateTextArea(
                 caseData.getProhibitedConductWalesClaimDetails(),
                 "Why are you making this claim?",

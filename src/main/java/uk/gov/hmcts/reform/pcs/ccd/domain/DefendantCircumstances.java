@@ -29,7 +29,7 @@ public class DefendantCircumstances {
         label = "Is there any information you’d like to provide about the ${defendantTermPossessive} circumstances?",
         hint = "This can be any known details or any attempts made to obtain details"
     )
-    private VerticalYesNo hasDefendantCircumstancesInfo;
+    private SimpleYesNo hasDefendantCircumstancesInfo;
 
     @CCD(
         label = "Give details about the ${defendantTermPossessive} circumstances",

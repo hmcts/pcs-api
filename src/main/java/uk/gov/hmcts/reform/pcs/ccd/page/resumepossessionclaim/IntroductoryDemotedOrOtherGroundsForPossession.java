@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -98,7 +98,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
         if (hasOtherDiscretionaryGrounds
             || caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
                 .getHasIntroductoryDemotedOtherGroundsForPossession()
-            == VerticalYesNo.NO) {
+            == SimpleYesNo.NO) {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.YES);
         } else {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);

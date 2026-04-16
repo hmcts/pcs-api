@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -156,8 +156,8 @@ class SubmitEventHandlerTest {
         DefendantResponses defendantResponses =
             DefendantResponses.builder()
                 .preferenceType(ContactPreferenceType.EMAIL)
-                .contactByText(VerticalYesNo.YES)
-                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(SimpleYesNo.YES)
+                .contactByPhone(SimpleYesNo.YES)
                 .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
@@ -187,8 +187,8 @@ class SubmitEventHandlerTest {
 
         PossessionClaimResponse capturedResponse = responseCaptor.getValue();
         assertThat(capturedResponse.getDefendantResponses().getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
-        assertThat(capturedResponse.getDefendantResponses().getContactByText()).isEqualTo(VerticalYesNo.YES);
-        assertThat(capturedResponse.getDefendantResponses().getContactByPhone()).isEqualTo(VerticalYesNo.YES);
+        assertThat(capturedResponse.getDefendantResponses().getContactByText()).isEqualTo(SimpleYesNo.YES);
+        assertThat(capturedResponse.getDefendantResponses().getContactByPhone()).isEqualTo(SimpleYesNo.YES);
         assertThat(capturedResponse.getDefendantContactDetails().getParty().getPhoneNumber())
             .isEqualTo("07987654321");
         assertThat(capturedResponse.getDefendantContactDetails().getParty().getEmailAddress())
@@ -204,8 +204,8 @@ class SubmitEventHandlerTest {
         DefendantResponses defendantResponses =
             DefendantResponses.builder()
                 .preferenceType(null)
-                .contactByText(VerticalYesNo.YES)
-                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(SimpleYesNo.YES)
+                .contactByPhone(SimpleYesNo.YES)
                 .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
@@ -242,7 +242,7 @@ class SubmitEventHandlerTest {
             .party(party).build();
 
         DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByPhone(VerticalYesNo.YES)
+            .contactByPhone(SimpleYesNo.YES)
             .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
@@ -285,7 +285,7 @@ class SubmitEventHandlerTest {
             .party(party).build();
 
         DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByPhone(VerticalYesNo.YES)
+            .contactByPhone(SimpleYesNo.YES)
             .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()

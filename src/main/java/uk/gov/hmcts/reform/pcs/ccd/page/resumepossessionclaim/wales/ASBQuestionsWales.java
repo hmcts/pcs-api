@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
@@ -68,7 +68,7 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
         ASBQuestionsDetailsWales asbQuestions = caseData.getAsbQuestionsWales();
 
         if (asbQuestions != null) {
-            if (asbQuestions.getAntisocialBehaviour() == VerticalYesNo.YES) {
+            if (asbQuestions.getAntisocialBehaviour() == SimpleYesNo.YES) {
                 textAreaValidationService.validateTextArea(
                         asbQuestions.getAntisocialBehaviourDetails(),
                         "Give details of the actual or threatened antisocial behaviour",
@@ -76,7 +76,7 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
                         validationErrors);
             }
 
-            if (asbQuestions.getIllegalPurposesUse() == VerticalYesNo.YES) {
+            if (asbQuestions.getIllegalPurposesUse() == SimpleYesNo.YES) {
                 textAreaValidationService.validateTextArea(
                         asbQuestions.getIllegalPurposesUseDetails(),
                         "Give details of the actual or threatened use of the premises for illegal purposes",
@@ -84,7 +84,7 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
                         validationErrors);
             }
 
-            if (asbQuestions.getOtherProhibitedConduct() == VerticalYesNo.YES) {
+            if (asbQuestions.getOtherProhibitedConduct() == SimpleYesNo.YES) {
                 textAreaValidationService.validateTextArea(
                         asbQuestions.getOtherProhibitedConductDetails(),
                         "Give details of other prohibited conduct",

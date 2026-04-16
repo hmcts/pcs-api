@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
@@ -37,16 +37,16 @@ class WritDetailsMapperTest {
     @BeforeEach
     void setUp() {
         nameAndAddressForEviction = NameAndAddressForEviction.builder()
-            .correctNameAndAddress(VerticalYesNo.YES)
+            .correctNameAndAddress(SimpleYesNo.YES)
             .build();
 
         LandRegistryFees landRegistryFees = LandRegistryFees.builder()
-            .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
+            .haveLandRegistryFeesBeenPaid(SimpleYesNo.YES)
             .amountOfLandRegistryFees(new BigDecimal("500.00"))
             .build();
 
         LegalCosts legalCosts = LegalCosts.builder()
-            .areLegalCostsToBeClaimed(VerticalYesNo.YES)
+            .areLegalCostsToBeClaimed(SimpleYesNo.YES)
             .amountOfLegalCosts(new BigDecimal("1500.00"))
             .build();
 
@@ -57,7 +57,7 @@ class WritDetailsMapperTest {
         writDetails = WritDetails.builder()
             .nameAndAddressForEviction(nameAndAddressForEviction)
             .showChangeNameAddressPage(YesOrNo.NO)
-            .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.YES)
+            .hasHiredHighCourtEnforcementOfficer(SimpleYesNo.YES)
             .hceoDetails("John Smith, Enforcement Ltd")
             .hasClaimTransferredToHighCourt(YesOrNo.YES)
             .landRegistryFees(landRegistryFees)
@@ -72,13 +72,13 @@ class WritDetailsMapperTest {
         WritEntity entity = underTest.toEntity(writDetails);
 
         // Then
-        assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.YES);
-        assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.YES);
+        assertThat(entity.getCorrectNameAndAddress()).isEqualTo(SimpleYesNo.YES);
+        assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(SimpleYesNo.YES);
         assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.YES);
-        assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isEqualTo(VerticalYesNo.YES);
+        assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isEqualTo(SimpleYesNo.YES);
         assertThat(entity.getAmountOfLandRegistryFees()).isEqualByComparingTo(new BigDecimal("500.00"));
-        assertThat(entity.getAreLegalCostsToBeClaimed()).isEqualTo(VerticalYesNo.YES);
+        assertThat(entity.getAreLegalCostsToBeClaimed()).isEqualTo(SimpleYesNo.YES);
         assertThat(entity.getAmountOfLegalCosts()).isEqualByComparingTo(new BigDecimal("1500.00"));
         assertThat(entity.getAmountOwed()).isEqualByComparingTo(new BigDecimal("3000.00"));
     }
@@ -163,16 +163,16 @@ class WritDetailsMapperTest {
         // Given
         WritDetails noWritDetails = WritDetails.builder()
             .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                                           .correctNameAndAddress(VerticalYesNo.NO)
+                                           .correctNameAndAddress(SimpleYesNo.NO)
                                            .build())
             .showChangeNameAddressPage(YesOrNo.NO)
-            .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.NO)
+            .hasHiredHighCourtEnforcementOfficer(SimpleYesNo.NO)
             .hasClaimTransferredToHighCourt(YesOrNo.NO)
             .landRegistryFees(LandRegistryFees.builder()
-                                  .haveLandRegistryFeesBeenPaid(VerticalYesNo.NO)
+                                  .haveLandRegistryFeesBeenPaid(SimpleYesNo.NO)
                                   .build())
             .legalCosts(LegalCosts.builder()
-                            .areLegalCostsToBeClaimed(VerticalYesNo.NO)
+                            .areLegalCostsToBeClaimed(SimpleYesNo.NO)
                             .build())
             .moneyOwedByDefendants(MoneyOwedByDefendants.builder().build())
             .build();
@@ -181,11 +181,11 @@ class WritDetailsMapperTest {
         WritEntity entity = underTest.toEntity(noWritDetails);
 
         // Then
-        assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.NO);
-        assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.NO);
+        assertThat(entity.getCorrectNameAndAddress()).isEqualTo(SimpleYesNo.NO);
+        assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(SimpleYesNo.NO);
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.NO);
-        assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isEqualTo(VerticalYesNo.NO);
-        assertThat(entity.getAreLegalCostsToBeClaimed()).isEqualTo(VerticalYesNo.NO);
+        assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isEqualTo(SimpleYesNo.NO);
+        assertThat(entity.getAreLegalCostsToBeClaimed()).isEqualTo(SimpleYesNo.NO);
     }
 
     @Test
@@ -194,11 +194,11 @@ class WritDetailsMapperTest {
         WritDetails zeroAmountWritDetails = WritDetails.builder()
             .nameAndAddressForEviction(nameAndAddressForEviction)
             .landRegistryFees(LandRegistryFees.builder()
-                                  .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
+                                  .haveLandRegistryFeesBeenPaid(SimpleYesNo.YES)
                                   .amountOfLandRegistryFees(BigDecimal.ZERO)
                                   .build())
             .legalCosts(LegalCosts.builder()
-                            .areLegalCostsToBeClaimed(VerticalYesNo.YES)
+                            .areLegalCostsToBeClaimed(SimpleYesNo.YES)
                             .amountOfLegalCosts(BigDecimal.ZERO)
                             .build())
             .moneyOwedByDefendants(MoneyOwedByDefendants.builder()
@@ -222,11 +222,11 @@ class WritDetailsMapperTest {
         WritDetails largeAmountWritDetails = WritDetails.builder()
             .nameAndAddressForEviction(nameAndAddressForEviction)
             .landRegistryFees(LandRegistryFees.builder()
-                                  .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
+                                  .haveLandRegistryFeesBeenPaid(SimpleYesNo.YES)
                                   .amountOfLandRegistryFees(largeAmount)
                                   .build())
             .legalCosts(LegalCosts.builder()
-                            .areLegalCostsToBeClaimed(VerticalYesNo.YES)
+                            .areLegalCostsToBeClaimed(SimpleYesNo.YES)
                             .amountOfLegalCosts(largeAmount)
                             .build())
             .moneyOwedByDefendants(MoneyOwedByDefendants.builder()
@@ -267,7 +267,7 @@ class WritDetailsMapperTest {
 
         // Then
         assertThat(entity.getHceoDetails()).isNull();
-        assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.YES);
+        assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(SimpleYesNo.YES);
     }
 
     @Test
@@ -285,7 +285,7 @@ class WritDetailsMapperTest {
     void shouldMapPartialDataCorrectly() {
         // Given
         WritDetails partialWritDetails = WritDetails.builder()
-            .hasHiredHighCourtEnforcementOfficer(VerticalYesNo.NO)
+            .hasHiredHighCourtEnforcementOfficer(SimpleYesNo.NO)
             .hasClaimTransferredToHighCourt(YesOrNo.YES)
             .moneyOwedByDefendants(MoneyOwedByDefendants.builder()
                                        .amountOwed(new BigDecimal("2000.00"))
@@ -296,7 +296,7 @@ class WritDetailsMapperTest {
         WritEntity entity = underTest.toEntity(partialWritDetails);
 
         // Then
-        assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.NO);
+        assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(SimpleYesNo.NO);
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.YES);
         assertThat(entity.getAmountOwed()).isEqualByComparingTo(new BigDecimal("2000.00"));
         assertThat(entity.getCorrectNameAndAddress()).isNull();

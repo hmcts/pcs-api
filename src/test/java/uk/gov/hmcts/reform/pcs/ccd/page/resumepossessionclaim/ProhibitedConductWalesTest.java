@@ -13,7 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
@@ -83,7 +83,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
     void shouldHandleEmptyCaseDataGracefully() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .prohibitedConductWalesClaim(VerticalYesNo.NO)
+            .prohibitedConductWalesClaim(SimpleYesNo.NO)
             .prohibitedConductWalesClaimDetails("")
             .periodicContractTermsWales(PeriodicContractTermsWales.builder().build())
             .build();
@@ -93,7 +93,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
 
         // Then - Should not throw any exceptions
         assertThat(caseData).isNotNull();
-        assertThat(caseData.getProhibitedConductWalesClaim()).isEqualTo(VerticalYesNo.NO);
+        assertThat(caseData.getProhibitedConductWalesClaim()).isEqualTo(SimpleYesNo.NO);
     }
 
     @ParameterizedTest
@@ -101,8 +101,8 @@ class ProhibitedConductWalesTest extends BasePageTest {
     @DisplayName("Should handle different prohibited conduct contract scenarios: {0}")
     void shouldHandleDifferentProhibitedConductContractScenarios(
         @SuppressWarnings("unused") String testDescription,
-        VerticalYesNo claimForProhibitedConductContract,
-        VerticalYesNo agreedTermsOfPeriodicContract,
+        SimpleYesNo claimForProhibitedConductContract,
+        SimpleYesNo agreedTermsOfPeriodicContract,
         String detailsOfTerms,
         String whyMakingClaim) {
 
@@ -137,10 +137,10 @@ class ProhibitedConductWalesTest extends BasePageTest {
         String expectedWhyMakingClaim = "The tenant has repeatedly violated the terms of the contract";
 
         PCSCase caseData = PCSCase.builder()
-            .prohibitedConductWalesClaim(VerticalYesNo.YES)
+            .prohibitedConductWalesClaim(SimpleYesNo.YES)
             .prohibitedConductWalesClaimDetails(expectedWhyMakingClaim)
             .periodicContractTermsWales(PeriodicContractTermsWales.builder()
-                .agreedTermsOfPeriodicContract(VerticalYesNo.YES)
+                .agreedTermsOfPeriodicContract(SimpleYesNo.YES)
                 .detailsOfTerms(expectedDetailsOfTerms)
                 .build())
             .build();
@@ -149,11 +149,11 @@ class ProhibitedConductWalesTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getProhibitedConductWalesClaim()).isEqualTo(VerticalYesNo.YES);
+        assertThat(caseData.getProhibitedConductWalesClaim()).isEqualTo(SimpleYesNo.YES);
         assertThat(caseData.getProhibitedConductWalesClaimDetails()).isEqualTo(expectedWhyMakingClaim);
         assertThat(caseData.getPeriodicContractTermsWales()).isNotNull();
         assertThat(caseData.getPeriodicContractTermsWales()
-            .getAgreedTermsOfPeriodicContract()).isEqualTo(VerticalYesNo.YES);
+            .getAgreedTermsOfPeriodicContract()).isEqualTo(SimpleYesNo.YES);
         assertThat(caseData.getPeriodicContractTermsWales()
             .getDetailsOfTerms()).isEqualTo(expectedDetailsOfTerms);
     }
@@ -163,7 +163,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
     void shouldHandleWrappedQuestionWithNullValues() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .prohibitedConductWalesClaim(VerticalYesNo.YES)
+            .prohibitedConductWalesClaim(SimpleYesNo.YES)
             .prohibitedConductWalesClaimDetails("Some reason")
             .periodicContractTermsWales(PeriodicContractTermsWales.builder()
                 .agreedTermsOfPeriodicContract(null)
@@ -184,29 +184,29 @@ class ProhibitedConductWalesTest extends BasePageTest {
         return Stream.of(
             Arguments.of(
                 "User claims prohibited conduct contract and agrees terms",
-                VerticalYesNo.YES,
-                VerticalYesNo.YES,
+                SimpleYesNo.YES,
+                SimpleYesNo.YES,
                 "We have agreed on specific maintenance terms",
                 "The tenant has breached contract conditions"
             ),
             Arguments.of(
                 "User claims prohibited conduct contract but disagrees on terms",
-                VerticalYesNo.YES,
-                VerticalYesNo.NO,
+                SimpleYesNo.YES,
+                SimpleYesNo.NO,
                 null,
                 "The tenant has violated multiple contract terms"
             ),
             Arguments.of(
                 "User does not claim prohibited conduct contract",
-                VerticalYesNo.NO,
+                SimpleYesNo.NO,
                 null,
                 null,
                 null
             ),
             Arguments.of(
                 "User claims prohibited conduct contract with empty text fields",
-                VerticalYesNo.YES,
-                VerticalYesNo.YES,
+                SimpleYesNo.YES,
+                SimpleYesNo.YES,
                 "",
                 ""
             )
@@ -219,10 +219,10 @@ class ProhibitedConductWalesTest extends BasePageTest {
         // Given
         String longText = "a".repeat(251); // Exceeds 250 character limit
         PCSCase caseData = PCSCase.builder()
-            .prohibitedConductWalesClaim(VerticalYesNo.YES)
+            .prohibitedConductWalesClaim(SimpleYesNo.YES)
             .prohibitedConductWalesClaimDetails(longText)
             .periodicContractTermsWales(PeriodicContractTermsWales.builder()
-                .agreedTermsOfPeriodicContract(VerticalYesNo.YES)
+                .agreedTermsOfPeriodicContract(SimpleYesNo.YES)
                 .detailsOfTerms(longText)
                 .build())
             .build();
@@ -260,10 +260,10 @@ class ProhibitedConductWalesTest extends BasePageTest {
         // Given
         String validText = "a".repeat(250); // Exactly 250 characters
         PCSCase caseData = PCSCase.builder()
-            .prohibitedConductWalesClaim(VerticalYesNo.YES)
+            .prohibitedConductWalesClaim(SimpleYesNo.YES)
             .prohibitedConductWalesClaimDetails(validText)
             .periodicContractTermsWales(PeriodicContractTermsWales.builder()
-                .agreedTermsOfPeriodicContract(VerticalYesNo.YES)
+                .agreedTermsOfPeriodicContract(SimpleYesNo.YES)
                 .detailsOfTerms(validText)
                 .build())
             .build();
@@ -290,10 +290,10 @@ class ProhibitedConductWalesTest extends BasePageTest {
         // Given
         String longText = "a".repeat(251); // Exceeds 250 character limit
         PCSCase caseData = PCSCase.builder()
-            .prohibitedConductWalesClaim(VerticalYesNo.YES)
+            .prohibitedConductWalesClaim(SimpleYesNo.YES)
             .prohibitedConductWalesClaimDetails(longText)
             .periodicContractTermsWales(PeriodicContractTermsWales.builder()
-                .agreedTermsOfPeriodicContract(VerticalYesNo.NO)
+                .agreedTermsOfPeriodicContract(SimpleYesNo.NO)
                 .detailsOfTerms(longText)
                 .build())
             .build();
@@ -330,7 +330,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
     void shouldHandleNullWrappedQuestionGracefullyDuringValidation() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .prohibitedConductWalesClaim(VerticalYesNo.YES)
+            .prohibitedConductWalesClaim(SimpleYesNo.YES)
             .prohibitedConductWalesClaimDetails("Valid reason")
             .periodicContractTermsWales(null)
             .build();

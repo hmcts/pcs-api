@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 
 import java.util.Set;
 
@@ -25,7 +25,7 @@ public class IntroductoryDemotedOtherGroundsForPossession {
     @CCD(
         label = "Do you have grounds for possession?"
     )
-    private VerticalYesNo hasIntroductoryDemotedOtherGroundsForPossession;
+    private SimpleYesNo hasIntroductoryDemotedOtherGroundsForPossession;
 
     @CCD(
         label = "What are your grounds for possession?",

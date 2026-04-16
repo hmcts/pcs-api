@@ -8,7 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 
 import java.util.List;
 
@@ -120,7 +120,7 @@ class UnderlesseeMortgageeValidatorTest {
 
     private static UnderlesseeMortgageeDetails buildUnderlesseeMortgageeDetails(AddressUK address) {
         return UnderlesseeMortgageeDetails.builder()
-            .addressKnown(VerticalYesNo.YES)
+            .addressKnown(SimpleYesNo.YES)
             .address(address)
             .build();
     }

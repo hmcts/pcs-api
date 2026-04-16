@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 
 import java.math.BigDecimal;
 
@@ -30,7 +30,7 @@ public class LandRegistryFees {
         hint = "For example, if you paid the Land Registry a fee to view the property boundary. If you have paid a "
             + "Land Registry fee, but you do not want the defendant to repay it, you can choose ‘No’"
     )
-    private VerticalYesNo haveLandRegistryFeesBeenPaid;
+    private SimpleYesNo haveLandRegistryFeesBeenPaid;
 
     @CCD(
         label = "How much did you spend on Land Registry fees?",

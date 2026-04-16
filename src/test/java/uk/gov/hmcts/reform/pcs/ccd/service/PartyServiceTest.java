@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -148,12 +148,12 @@ class PartyServiceTest {
 
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantContactEmail("test@test.com")
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantProvidePhoneNumber(SimpleYesNo.NO)
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder()
                 .claimantName(expectedClaimantName)
-                .isClaimantNameCorrect(VerticalYesNo.YES)
+                .isClaimantNameCorrect(SimpleYesNo.YES)
                 .build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
@@ -177,7 +177,7 @@ class PartyServiceTest {
             // Given
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantContactEmail("test@test.com")
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantProvidePhoneNumber(SimpleYesNo.NO)
                 .build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
@@ -216,7 +216,7 @@ class PartyServiceTest {
                         .fallbackClaimantName("fallback name")
                         .overriddenClaimantName("overridden name")
                         .orgNameFound(YesOrNo.YES)
-                        .isClaimantNameCorrect(VerticalYesNo.NO)
+                        .isClaimantNameCorrect(SimpleYesNo.NO)
                         .build(),
                     "overridden name",
                     YesOrNo.YES
@@ -228,7 +228,7 @@ class PartyServiceTest {
                         .fallbackClaimantName("fallback name")
                         .overriddenClaimantName("overridden name")
                         .orgNameFound(YesOrNo.YES)
-                        .isClaimantNameCorrect(VerticalYesNo.YES)
+                        .isClaimantNameCorrect(SimpleYesNo.YES)
                         .build(),
                     "org name",
                     YesOrNo.NO
@@ -246,11 +246,11 @@ class PartyServiceTest {
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .organisationAddress(organisationAddress)
                 .claimantContactEmail("test@test.com")
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantProvidePhoneNumber(SimpleYesNo.NO)
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder()
-                .isClaimantNameCorrect(VerticalYesNo.YES)
+                .isClaimantNameCorrect(SimpleYesNo.YES)
                 .claimantName("Claimant name")
                 .build();
 
@@ -279,11 +279,11 @@ class PartyServiceTest {
                 .overriddenClaimantContactAddress(overriddenAddress)
                 .organisationAddress(mock(AddressUK.class)) // should be ignored when overridden present
                 .claimantContactEmail("test@test.com")
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantProvidePhoneNumber(SimpleYesNo.NO)
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder()
-                .isClaimantNameCorrect(VerticalYesNo.NO)
+                .isClaimantNameCorrect(SimpleYesNo.NO)
                 .build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
@@ -307,7 +307,7 @@ class PartyServiceTest {
 
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantContactEmail(expectedEmailAddress)
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantProvidePhoneNumber(SimpleYesNo.NO)
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder().build();
@@ -334,7 +334,7 @@ class PartyServiceTest {
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantContactEmail("original@test.com")
                 .overriddenClaimantContactEmail(expectedEmailAddress)
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantProvidePhoneNumber(SimpleYesNo.NO)
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder().build();
@@ -361,7 +361,7 @@ class PartyServiceTest {
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantContactEmail(claimantEmail)
                 .overriddenClaimantContactEmail("   ")
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantProvidePhoneNumber(SimpleYesNo.NO)
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder().build();
@@ -385,7 +385,7 @@ class PartyServiceTest {
             String expectedPhoneNumber = "some phone number";
 
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
-                .claimantProvidePhoneNumber(VerticalYesNo.YES)
+                .claimantProvidePhoneNumber(SimpleYesNo.YES)
                 .claimantContactPhoneNumber(expectedPhoneNumber)
                 .claimantContactEmail("test@test.com")
                 .build();
@@ -403,7 +403,7 @@ class PartyServiceTest {
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
 
             assertThat(createdClaimant.getPhoneNumber()).isEqualTo(expectedPhoneNumber);
-            assertThat(createdClaimant.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
+            assertThat(createdClaimant.getPhoneNumberProvided()).isEqualTo(SimpleYesNo.YES);
             verify(pcsCaseEntity).addParty(createdClaimant);
         }
 
@@ -411,7 +411,7 @@ class PartyServiceTest {
         void shouldNotUseClaimantPhoneNumerWhenNotProvided() {
             // Given
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantProvidePhoneNumber(SimpleYesNo.NO)
                 .claimantContactPhoneNumber("some phone number")
                 .claimantContactEmail("test@test.com")
                 .build();
@@ -429,7 +429,7 @@ class PartyServiceTest {
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
 
             assertThat(createdClaimant.getPhoneNumber()).isNull();
-            assertThat(createdClaimant.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.NO);
+            assertThat(createdClaimant.getPhoneNumberProvided()).isEqualTo(SimpleYesNo.NO);
             verify(pcsCaseEntity).addParty(createdClaimant);
         }
     }
@@ -449,7 +449,7 @@ class PartyServiceTest {
 
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantContactEmail("test@test.com")
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantProvidePhoneNumber(SimpleYesNo.NO)
                 .build();
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
         }
@@ -473,7 +473,7 @@ class PartyServiceTest {
         void shouldBuildListWithSingleDefendant(DefendantDetails defendant1, PartyEntity expectedPartyEntity) {
             // Given
             when(pcsCase.getDefendant1()).thenReturn(defendant1);
-            when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
+            when(pcsCase.getAddAnotherDefendant()).thenReturn(SimpleYesNo.NO);
 
             AddressUK correspondenceAddress = defendant1.getCorrespondenceAddress();
             if (correspondenceAddress != null) {
@@ -504,53 +504,53 @@ class PartyServiceTest {
             when(addressMapper.toAddressEntityAndNormalise(defendant1Address)).thenReturn(mappedDefendant1Address);
 
             DefendantDetails defendant1Details = DefendantDetails.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .firstName("defendant 1 first name")
                 .lastName(("defendant 1 last name"))
-                .addressKnown(VerticalYesNo.YES)
-                .addressSameAsPossession(VerticalYesNo.NO)
+                .addressKnown(SimpleYesNo.YES)
+                .addressSameAsPossession(SimpleYesNo.NO)
                 .correspondenceAddress(defendant1Address)
                 .build();
 
             DefendantDetails defendant2Details = DefendantDetails.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .firstName("defendant 2 first name")
                 .lastName(("defendant 2 last name"))
-                .addressKnown(VerticalYesNo.NO)
+                .addressKnown(SimpleYesNo.NO)
                 .build();
 
             DefendantDetails defendant3Details = DefendantDetails.builder()
-                .nameKnown(VerticalYesNo.NO)
-                .addressKnown(VerticalYesNo.YES)
-                .addressSameAsPossession(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.NO)
+                .addressKnown(SimpleYesNo.YES)
+                .addressSameAsPossession(SimpleYesNo.YES)
                 .build();
 
             when(pcsCase.getDefendant1()).thenReturn(defendant1Details);
 
             List<DefendantDetails> additionalDefendantsDetails = List.of(defendant2Details, defendant3Details);
             when(pcsCase.getAdditionalDefendants()).thenReturn(wrapListItems(additionalDefendantsDetails));
-            when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
+            when(pcsCase.getAddAnotherDefendant()).thenReturn(SimpleYesNo.YES);
 
             PartyEntity expectedDefendant1 = PartyEntity.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .firstName("defendant 1 first name")
                 .lastName("defendant 1 last name")
-                .addressKnown(VerticalYesNo.YES)
-                .addressSameAsProperty(VerticalYesNo.NO)
+                .addressKnown(SimpleYesNo.YES)
+                .addressSameAsProperty(SimpleYesNo.NO)
                 .address(mappedDefendant1Address)
                 .build();
 
             PartyEntity expectedDefendant2 = PartyEntity.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .firstName("defendant 2 first name")
                 .lastName("defendant 2 last name")
-                .addressKnown(VerticalYesNo.NO)
+                .addressKnown(SimpleYesNo.NO)
                 .build();
 
             PartyEntity expectedDefendant3 = PartyEntity.builder()
-                .nameKnown(VerticalYesNo.NO)
-                .addressKnown(VerticalYesNo.YES)
-                .addressSameAsProperty(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.NO)
+                .addressKnown(SimpleYesNo.YES)
+                .addressSameAsProperty(SimpleYesNo.YES)
                 .build();
 
             // When
@@ -581,31 +581,31 @@ class PartyServiceTest {
             when(addressMapper.toAddressEntityAndNormalise(defendant1Address)).thenReturn(mappedDefendant1Address);
 
             DefendantDetails defendant1Details = DefendantDetails.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .firstName("defendant 1 first name")
                 .lastName(("defendant 1 last name"))
-                .addressKnown(VerticalYesNo.YES)
-                .addressSameAsPossession(VerticalYesNo.NO)
+                .addressKnown(SimpleYesNo.YES)
+                .addressSameAsPossession(SimpleYesNo.NO)
                 .correspondenceAddress(defendant1Address)
                 .build();
 
             DefendantDetails defendant2Details = DefendantDetails.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .firstName("defendant 2 first name")
                 .lastName(("defendant 2 last name"))
-                .addressKnown(VerticalYesNo.NO)
+                .addressKnown(SimpleYesNo.NO)
                 .build();
 
             when(pcsCase.getDefendant1()).thenReturn(defendant1Details);
             when(pcsCase.getAdditionalDefendants()).thenReturn(wrapListItems(List.of(defendant2Details)));
-            when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
+            when(pcsCase.getAddAnotherDefendant()).thenReturn(SimpleYesNo.NO);
 
             PartyEntity expectedDefendant1 = PartyEntity.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .firstName("defendant 1 first name")
                 .lastName("defendant 1 last name")
-                .addressKnown(VerticalYesNo.YES)
-                .addressSameAsProperty(VerticalYesNo.NO)
+                .addressKnown(SimpleYesNo.YES)
+                .addressSameAsProperty(SimpleYesNo.NO)
                 .address(mappedDefendant1Address)
                 .build();
 
@@ -627,58 +627,58 @@ class PartyServiceTest {
                 argumentSet(
                     "Name and address not known",
                     DefendantDetails.builder()
-                        .nameKnown(VerticalYesNo.NO)
-                        .addressKnown(VerticalYesNo.NO)
+                        .nameKnown(SimpleYesNo.NO)
+                        .addressKnown(SimpleYesNo.NO)
                         .build(),
                     PartyEntity.builder()
-                        .nameKnown(VerticalYesNo.NO)
-                        .addressKnown(VerticalYesNo.NO)
+                        .nameKnown(SimpleYesNo.NO)
+                        .addressKnown(SimpleYesNo.NO)
                         .build()
                 ),
                 argumentSet(
                     "Name known, address not known",
                     DefendantDetails.builder()
-                        .nameKnown(VerticalYesNo.YES)
+                        .nameKnown(SimpleYesNo.YES)
                         .firstName("expected first name")
                         .lastName(("expected last name"))
-                        .addressKnown(VerticalYesNo.NO)
+                        .addressKnown(SimpleYesNo.NO)
                         .build(),
                     PartyEntity.builder()
-                        .nameKnown(VerticalYesNo.YES)
+                        .nameKnown(SimpleYesNo.YES)
                         .firstName("expected first name")
                         .lastName("expected last name")
-                        .addressKnown(VerticalYesNo.NO)
+                        .addressKnown(SimpleYesNo.NO)
                         .build()
                 ),
                 argumentSet(
                     "Name not known, address same as property",
                     DefendantDetails.builder()
-                        .nameKnown(VerticalYesNo.NO)
-                        .addressKnown(VerticalYesNo.YES)
-                        .addressSameAsPossession(VerticalYesNo.YES)
+                        .nameKnown(SimpleYesNo.NO)
+                        .addressKnown(SimpleYesNo.YES)
+                        .addressSameAsPossession(SimpleYesNo.YES)
                         .build(),
                     PartyEntity.builder()
-                        .nameKnown(VerticalYesNo.NO)
-                        .addressKnown(VerticalYesNo.YES)
-                        .addressSameAsProperty(VerticalYesNo.YES)
+                        .nameKnown(SimpleYesNo.NO)
+                        .addressKnown(SimpleYesNo.YES)
+                        .addressSameAsProperty(SimpleYesNo.YES)
                         .build()
                 ),
                 argumentSet(
                     "Name known, different correspondence address",
                     DefendantDetails.builder()
-                        .nameKnown(VerticalYesNo.YES)
+                        .nameKnown(SimpleYesNo.YES)
                         .firstName("expected first name")
                         .lastName(("expected last name"))
-                        .addressKnown(VerticalYesNo.YES)
-                        .addressSameAsPossession(VerticalYesNo.NO)
+                        .addressKnown(SimpleYesNo.YES)
+                        .addressSameAsPossession(SimpleYesNo.NO)
                         .correspondenceAddress(correspondenceAddress)
                         .build(),
                     PartyEntity.builder()
-                        .nameKnown(VerticalYesNo.YES)
+                        .nameKnown(SimpleYesNo.YES)
                         .firstName("expected first name")
                         .lastName("expected last name")
-                        .addressKnown(VerticalYesNo.YES)
-                        .addressSameAsProperty(VerticalYesNo.NO)
+                        .addressKnown(SimpleYesNo.YES)
+                        .addressSameAsProperty(SimpleYesNo.NO)
                         .build()
                 )
             );
@@ -701,7 +701,7 @@ class PartyServiceTest {
 
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantContactEmail("test@test.com")
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .claimantProvidePhoneNumber(SimpleYesNo.NO)
                 .build();
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
         }
@@ -714,7 +714,7 @@ class PartyServiceTest {
         @Test
         void shouldThrowExceptionForNullUnderlessee1() {
             // Given
-            when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
+            when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(SimpleYesNo.YES);
             when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(null);
 
             // When
@@ -729,7 +729,7 @@ class PartyServiceTest {
         @Test
         void shouldNotCreateUnderlesseeWhenFlagIsNo() {
             // Given
-            when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.NO);
+            when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(SimpleYesNo.NO);
             when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(UnderlesseeMortgageeDetails.builder().build());
 
             // When
@@ -744,9 +744,9 @@ class PartyServiceTest {
         void shouldBuildListWithSingleUnderlessee(UnderlesseeMortgageeDetails underlessee1,
                                                   PartyEntity expectedPartyEntity) {
             // Given
-            when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
+            when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(SimpleYesNo.YES);
             when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(underlessee1);
-            when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.NO);
+            when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(SimpleYesNo.NO);
 
             AddressUK correspondenceAddress = underlessee1.getAddress();
             if (correspondenceAddress != null) {
@@ -772,7 +772,7 @@ class PartyServiceTest {
         @Test
         void shouldBuildListWithMultipleUnderlessees() {
             // Given
-            when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
+            when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(SimpleYesNo.YES);
 
             AddressUK underlessee1Address = mock(AddressUK.class);
             AddressEntity mappedUnderlessee1Address = mock(AddressEntity.class);
@@ -783,45 +783,45 @@ class PartyServiceTest {
             when(addressMapper.toAddressEntityAndNormalise(underlessee3Address)).thenReturn(mappedUnderlessee3Address);
 
             UnderlesseeMortgageeDetails underlessee1Details = UnderlesseeMortgageeDetails.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .name("underlessee 1 name")
-                .addressKnown(VerticalYesNo.YES)
+                .addressKnown(SimpleYesNo.YES)
                 .address(underlessee1Address)
                 .build();
 
             UnderlesseeMortgageeDetails underlessee2Details = UnderlesseeMortgageeDetails.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .name("underlessee 2 name")
-                .addressKnown(VerticalYesNo.NO)
+                .addressKnown(SimpleYesNo.NO)
                 .build();
 
             UnderlesseeMortgageeDetails underlessee3Details = UnderlesseeMortgageeDetails.builder()
-                .nameKnown(VerticalYesNo.NO)
-                .addressKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.NO)
+                .addressKnown(SimpleYesNo.YES)
                 .address(underlessee3Address)
                 .build();
 
             when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(underlessee1Details);
             when(pcsCase.getAdditionalUnderlesseeOrMortgagee())
                 .thenReturn(wrapListItems(List.of(underlessee2Details, underlessee3Details)));
-            when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
+            when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(SimpleYesNo.YES);
 
             PartyEntity expectedUnderlessee1 = PartyEntity.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .orgName("underlessee 1 name")
-                .addressKnown(VerticalYesNo.YES)
+                .addressKnown(SimpleYesNo.YES)
                 .address(mappedUnderlessee1Address)
                 .build();
 
             PartyEntity expectedUnderlessee2 = PartyEntity.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .orgName("underlessee 2 name")
-                .addressKnown(VerticalYesNo.NO)
+                .addressKnown(SimpleYesNo.NO)
                 .build();
 
             PartyEntity expectedUnderlessee3 = PartyEntity.builder()
-                .nameKnown(VerticalYesNo.NO)
-                .addressKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.NO)
+                .addressKnown(SimpleYesNo.YES)
                 .address(mappedUnderlessee3Address)
                 .build();
 
@@ -848,33 +848,33 @@ class PartyServiceTest {
         @Test
         void shouldIgnoreMultipleUnderlesseesIfAdditionalUnderlesseesNotIndicated() {
             // Given
-            when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
+            when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(SimpleYesNo.YES);
 
             AddressUK underlessee1Address = mock(AddressUK.class);
             AddressEntity mappedUnderlessee1Address = mock(AddressEntity.class);
             when(addressMapper.toAddressEntityAndNormalise(underlessee1Address)).thenReturn(mappedUnderlessee1Address);
 
             UnderlesseeMortgageeDetails underlessee1Details = UnderlesseeMortgageeDetails.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .name("underlessee 1 name")
-                .addressKnown(VerticalYesNo.YES)
+                .addressKnown(SimpleYesNo.YES)
                 .address(underlessee1Address)
                 .build();
 
             UnderlesseeMortgageeDetails underlessee2Details = UnderlesseeMortgageeDetails.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .name("underlessee 2 name")
-                .addressKnown(VerticalYesNo.NO)
+                .addressKnown(SimpleYesNo.NO)
                 .build();
 
             when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(underlessee1Details);
             when(pcsCase.getAdditionalUnderlesseeOrMortgagee()).thenReturn(wrapListItems(List.of(underlessee2Details)));
-            when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.NO);
+            when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(SimpleYesNo.NO);
 
             PartyEntity expectedUnderlessee1 = PartyEntity.builder()
-                .nameKnown(VerticalYesNo.YES)
+                .nameKnown(SimpleYesNo.YES)
                 .orgName("underlessee 1 name")
-                .addressKnown(VerticalYesNo.YES)
+                .addressKnown(SimpleYesNo.YES)
                 .address(mappedUnderlessee1Address)
                 .build();
 
@@ -896,39 +896,39 @@ class PartyServiceTest {
                 argumentSet(
                     "Name and address not known",
                     UnderlesseeMortgageeDetails.builder()
-                        .nameKnown(VerticalYesNo.NO)
-                        .addressKnown(VerticalYesNo.NO)
+                        .nameKnown(SimpleYesNo.NO)
+                        .addressKnown(SimpleYesNo.NO)
                         .build(),
                     PartyEntity.builder()
-                        .nameKnown(VerticalYesNo.NO)
-                        .addressKnown(VerticalYesNo.NO)
+                        .nameKnown(SimpleYesNo.NO)
+                        .addressKnown(SimpleYesNo.NO)
                         .build()
                 ),
                 argumentSet(
                     "Name known, address not known",
                     UnderlesseeMortgageeDetails.builder()
-                        .nameKnown(VerticalYesNo.YES)
+                        .nameKnown(SimpleYesNo.YES)
                         .name("expected underlessee name")
-                        .addressKnown(VerticalYesNo.NO)
+                        .addressKnown(SimpleYesNo.NO)
                         .build(),
                     PartyEntity.builder()
-                        .nameKnown(VerticalYesNo.YES)
+                        .nameKnown(SimpleYesNo.YES)
                         .orgName("expected underlessee name")
-                        .addressKnown(VerticalYesNo.NO)
+                        .addressKnown(SimpleYesNo.NO)
                         .build()
                 ),
                 argumentSet(
                     "Name known, address known",
                     UnderlesseeMortgageeDetails.builder()
-                        .nameKnown(VerticalYesNo.YES)
+                        .nameKnown(SimpleYesNo.YES)
                         .name("expected underlessee name")
-                        .addressKnown(VerticalYesNo.YES)
+                        .addressKnown(SimpleYesNo.YES)
                         .address(correspondenceAddress)
                         .build(),
                     PartyEntity.builder()
-                        .nameKnown(VerticalYesNo.YES)
+                        .nameKnown(SimpleYesNo.YES)
                         .orgName("expected underlessee name")
-                        .addressKnown(VerticalYesNo.YES)
+                        .addressKnown(SimpleYesNo.YES)
                         .build()
                 )
             );

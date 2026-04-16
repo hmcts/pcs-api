@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -19,7 +19,7 @@ public class PeriodicContractTermsWales {
         label = "Have you and the contract holder agreed terms of the periodic standard contract "
             + "in addition to those incorporated by statute?"
     )
-    private VerticalYesNo agreedTermsOfPeriodicContract;
+    private SimpleYesNo agreedTermsOfPeriodicContract;
 
     @CCD(
         label = "Give details of the terms you’ve agreed",

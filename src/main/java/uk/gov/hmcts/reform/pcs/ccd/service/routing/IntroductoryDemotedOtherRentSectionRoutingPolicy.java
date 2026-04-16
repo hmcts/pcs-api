@@ -5,7 +5,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SimpleYesNo;
 
 import java.util.Set;
 
@@ -25,7 +25,7 @@ public class IntroductoryDemotedOtherRentSectionRoutingPolicy implements RentSec
     @Override
     public YesOrNo shouldShowRentSection(PCSCase caseData) {
         if (caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
-            .getHasIntroductoryDemotedOtherGroundsForPossession() != VerticalYesNo.YES) {
+            .getHasIntroductoryDemotedOtherGroundsForPossession() != SimpleYesNo.YES) {
             return YesOrNo.NO;
         }
 
