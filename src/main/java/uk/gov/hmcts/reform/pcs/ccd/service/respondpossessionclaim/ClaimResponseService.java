@@ -86,11 +86,8 @@ public class ClaimResponseService {
             log.debug("Updated date of birth for party ID: {}", party.getId());
         }
 
-        boolean contactByPhone = Optional.ofNullable(defendantResponses.getContactByPhone())
-            .map(VerticalYesNo::toBoolean)
-            .orElse(false);
-
-        if (contactByPhone && StringUtils.isNotBlank(defendantContactDetails.getParty().getPhoneNumber())) {
+        if (isContactByPhoneSelected(defendantResponses.getContactByPhone())
+            && StringUtils.isNotBlank(defendantContactDetails.getParty().getPhoneNumber())) {
             party.setPhoneNumber(defendantContactDetails.getParty().getPhoneNumber());
             log.debug("Updated phone number for party ID: {}", party.getId());
         }
@@ -139,10 +136,7 @@ public class ClaimResponseService {
         contactPrefs.setContactByPost(defendantResponse.getContactByPost());
         contactPrefs.setContactByPhone(defendantResponse.getContactByPhone());
 
-        boolean contactByPhone = Optional.ofNullable(defendantResponse.getContactByPhone())
-            .map(VerticalYesNo::toBoolean)
-            .orElse(false);
-        if (contactByPhone) {
+        if (isContactByPhoneSelected(defendantResponse.getContactByPhone())) {
             contactPrefs.setContactByText(defendantResponse.getContactByText());
         }
 
@@ -152,5 +146,11 @@ public class ClaimResponseService {
         }
 
         log.debug("Saved contact preferences for party ID: {}", party.getId());
+    }
+
+    private boolean isContactByPhoneSelected(VerticalYesNo contactByPhone) {
+        return Optional.ofNullable(contactByPhone)
+            .map(VerticalYesNo::toBoolean)
+            .orElse(false);
     }
 }
