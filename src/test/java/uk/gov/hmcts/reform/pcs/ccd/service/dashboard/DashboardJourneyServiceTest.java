@@ -67,7 +67,7 @@ class DashboardJourneyServiceTest {
             .extracting(g -> g.getGroupId(), g -> g.getTasks().size())
             .containsExactly(
                 tuple("CLAIM", 2),
-                tuple("RESPONSE", 1)
+                tuple("RESPONSE", 3)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).getFirst().getTasks())
@@ -75,6 +75,14 @@ class DashboardJourneyServiceTest {
             .containsExactly(
                 tuple("Defendant.ViewClaim", "AVAILABLE"),
                 tuple("Defendant.ViewDocuments", "NOT_AVAILABLE")
+            );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple("Defendant.RespondToClaim", "NOT_STARTED"),
+                tuple("Defendant.ReviewResponse", "IN_PROGRESS"),
+                tuple("Defendant.SubmitResponse", "COMPLETED")
             );
     }
 

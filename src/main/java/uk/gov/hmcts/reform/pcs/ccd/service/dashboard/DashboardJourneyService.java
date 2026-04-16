@@ -75,7 +75,15 @@ public class DashboardJourneyService {
                 .tasks(ListValueUtils.wrapListItems(List.of(
                     Task.builder()
                         .templateId("Defendant.RespondToClaim")
-                        .status("ACTION_NEEDED")
+                        .status("NOT_STARTED")
+                        .build(),
+                    Task.builder()
+                        .templateId("Defendant.ReviewResponse")
+                        .status("IN_PROGRESS")
+                        .build(),
+                    Task.builder()
+                        .templateId("Defendant.SubmitResponse")
+                        .status("COMPLETED")
                         .build()
                 )))
                 .build()
