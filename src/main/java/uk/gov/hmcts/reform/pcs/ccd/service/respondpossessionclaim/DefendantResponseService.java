@@ -117,7 +117,7 @@ public class DefendantResponseService {
             .claim(claimRef)
             .party(partyRef)
             .freeLegalAdvice(responses.getFreeLegalAdvice())
-            .possessionNoticeReceived(responses.getNoticeReceived())
+            .possessionNoticeReceived(responses.getPossessionNoticeReceived())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
             .writtenTerms(responses.getWrittenTerms())
