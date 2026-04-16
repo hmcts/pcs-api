@@ -74,7 +74,7 @@ public class CaseAssignmentService {
         CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
             = CaseAssignmentUserRoleWithOrganisation.builder()
             .caseDataId(String.valueOf(caseReference))
-            .caseRole("[CREATOR]")
+            .caseRole(UserRole.CREATOR.getRole())
             .userId(userId)
             .build();
 

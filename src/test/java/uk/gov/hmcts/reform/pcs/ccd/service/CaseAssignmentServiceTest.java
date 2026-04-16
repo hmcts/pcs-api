@@ -57,7 +57,7 @@ class CaseAssignmentServiceTest {
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
-            .getCaseAssignmentUserRolesWithOrganisation().get(0);
+            .getCaseAssignmentUserRolesWithOrganisation().getFirst();
 
         assertThat(assignment.getCaseRole()).isEqualTo(UserRole.CLAIMANT_SOLICITOR.getRole());
     }
@@ -75,7 +75,7 @@ class CaseAssignmentServiceTest {
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
-            .getCaseAssignmentUserRolesWithOrganisation().get(0);
+            .getCaseAssignmentUserRolesWithOrganisation().getFirst();
 
         assertThat(assignment.getCaseDataId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(assignment.getUserId()).isEqualTo(USER_ID);
@@ -126,7 +126,7 @@ class CaseAssignmentServiceTest {
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
-            .getCaseAssignmentUserRolesWithOrganisation().get(0);
+            .getCaseAssignmentUserRolesWithOrganisation().getFirst();
 
         assertThat(assignment.getCaseRole()).isEqualTo("[CREATOR]");
     }
@@ -144,7 +144,7 @@ class CaseAssignmentServiceTest {
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
-            .getCaseAssignmentUserRolesWithOrganisation().get(0);
+            .getCaseAssignmentUserRolesWithOrganisation().getFirst();
 
         assertThat(assignment.getCaseDataId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(assignment.getUserId()).isEqualTo(USER_ID);
