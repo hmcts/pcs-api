@@ -62,6 +62,7 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
             .type(citizenCreateGenApp.getApplicationType())
             .party(applicantParty)
             .state(GenAppState.SUBMITTED)
+            .within14Days(citizenCreateGenApp.getWithin14Days())
             .build();
 
         pcsCaseEntity.addGenApp(genAppEntity);
