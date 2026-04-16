@@ -71,10 +71,6 @@ public class ClaimResponseService {
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantContactDetails,
                                            DefendantResponses defendantResponses) {
-        boolean contactByPhone = Optional.ofNullable(defendantResponses.getContactByPhone())
-            .map(VerticalYesNo::toBoolean)
-            .orElse(false);
-
         if (StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())) {
             party.setFirstName(defendantContactDetails.getParty().getFirstName());
             log.debug("Updated first name for party ID: {}", party.getId());
@@ -89,6 +85,10 @@ public class ClaimResponseService {
             party.setDateOfBirth(defendantContactDetails.getParty().getDateOfBirth());
             log.debug("Updated date of birth for party ID: {}", party.getId());
         }
+
+        boolean contactByPhone = Optional.ofNullable(defendantResponses.getContactByPhone())
+            .map(VerticalYesNo::toBoolean)
+            .orElse(false);
 
         if (contactByPhone && StringUtils.isNotBlank(defendantContactDetails.getParty().getPhoneNumber())) {
             party.setPhoneNumber(defendantContactDetails.getParty().getPhoneNumber());
