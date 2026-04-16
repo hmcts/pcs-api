@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,13 +41,17 @@ public class CaseFlagService {
 
 
             if (flagDetailsEntity == null) {
-                flagDetailsEntity = new FlagDetailsEntity();
-                flagDetailsEntity.setPcsCase(pcsCaseEntity);
-                flagDetailsEntity.setDateTimeCreated(LocalDateTime.now());
+                flagDetailsEntity = FlagDetailsEntity.builder()
+                    .pcsCase(pcsCaseEntity)
+                    .build();
             }
-            if (incomingFlagDetail.getStatus().equals("Inactive")
-                && !(flagDetailsEntity.getFlagComment().equals(incomingFlagDetail.getFlagComment()))) {
-                flagDetailsEntity.setDateTimeModified(LocalDateTime.now());
+
+            if (incomingFlagDetail.getDateTimeCreated() != null) {
+                flagDetailsEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
+            }
+
+            if (incomingFlagDetail.getDateTimeModified() != null) {
+                flagDetailsEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
             }
 
             flagDetailsEntity.setFlagCode(incomingFlagDetail.getFlagCode());

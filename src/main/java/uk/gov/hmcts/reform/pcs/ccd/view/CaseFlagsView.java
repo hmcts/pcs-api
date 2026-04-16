@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -18,9 +19,8 @@ import java.util.List;
 public class CaseFlagsView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getCaseFlags() != null) {
-            mapBasicCaseFlagFields(pcsCase, pcsCaseEntity);
-        }
+
+        mapBasicCaseFlagFields(pcsCase, pcsCaseEntity);
     }
 
     private void mapBasicCaseFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -35,7 +35,7 @@ public class CaseFlagsView {
 
     private List<ListValue<FlagDetail>> mapFlagDetails(List<FlagDetailsEntity> flagsEntities) {
         if (flagsEntities.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
 
         return flagsEntities.stream()

@@ -45,52 +45,41 @@ public class FlagDetailsEntity {
     @Builder.Default
     private List<FlagPathEntity> paths = new ArrayList<>();
 
-    @Column(name = "flag_code")
     private String flagCode;
 
-    @Column(name = "name")
     private String name;
 
     @Column(name = "name_cy")
     private String nameWelsh;
 
-    @Column(name = "sub_type_value")
     private String subTypeValue;
 
     @Column(name = "sub_type_value_cy")
     private String subTypeValueWelsh;
 
-    @Column(name = "sub_type_key")
     private String subTypeKey;
 
-    @Column(name = "other_description")
     private String otherDescription;
 
     @Column(name = "other_description_cy")
     private String otherDescriptionWelsh;
 
-    @Column(name = "hearing_relevant")
     private Boolean hearingRelevant;
 
-    @Column(name = "flag_comment")
     private String flagComment;
 
     @Column(name = "flag_comment_cy")
     private String flagCommentWelsh;
 
-    @Column(name = "flag_update_comment")
     private String flagUpdateComment;
 
-    @Column(name = "date_time_created")
     private LocalDateTime dateTimeCreated;
 
-    @Column(name = "date_time_modified")
     private LocalDateTime dateTimeModified;
 
     @Column(name = "status")
     private String defaultStatus;
 
-    @Column(name = "available_externally")
     private Boolean availableExternally;
 }
 

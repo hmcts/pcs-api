@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 
 import lombok.AllArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -20,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 @Component
 @Slf4j
-@Setter
 @AllArgsConstructor
 public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
