@@ -3,5 +3,7 @@ export const caseSummary = {
   mainHeader: 'Case Summary',
   nextStepEventList: 'Next step',
   enforceTheOrderEvent: 'Enforce the order',
+  createFlagsEvent: 'Create flags',
+  manageCaseFlagsEvent: 'Manage Flags',
   go: "Go"
-}
+};

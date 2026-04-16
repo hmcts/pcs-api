@@ -1,0 +1,16 @@
+export const reviewFlagDetails={
+    title: `Case Details - HM Courts & Tribunals Service - GOV.UK`,
+    mainHeader: 'Create Flags',
+    reviewFlagDetailsHeader: 'Review flag details',
+    addFlagToLabel: 'Add flag to',
+    addFlagToValue: 'Case level',
+    flagTypeLabel: 'Flag type',
+    flagTypeValue: 'Complex case',
+    commentsLabel: 'Comments',
+    commentsValue: 'Test',
+    statusLabel: 'Status',
+    statusValue: 'Active',
+    saveAndContinueButton: 'Save and continue',
+    previousButton: 'Previous',
+    cancelButton: 'Cancel',
+};

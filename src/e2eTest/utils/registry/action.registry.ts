@@ -16,6 +16,7 @@ import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-action
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
+import { CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -97,7 +98,12 @@ export class ActionRegistry {
     ['claimSaved', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
-    ['enterPaymentDetails', new FeeAndPayAction()]
+    ['enterPaymentDetails', new FeeAndPayAction()],
+    ['selectFlagLevel', new CaseFlagAction()],
+    ['selectFlagType', new CaseFlagAction()],
+    ['addFlagComment', new CaseFlagAction()],
+    ['createFlag', new CaseFlagAction()],
+    ['inactivateFlag', new CaseFlagAction()],
   ]);
 
   static getAction(actionName: string): IAction {
