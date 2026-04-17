@@ -72,7 +72,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             }
         }
 
-        log.info("Saving draft for case {}: defendantContactDetails={}, defendantResponses={}",
+        log.warn("Saving draft for case {}: defendantContactDetails={}, defendantResponses={}",
             caseRef,
             defendantAnswersOnly.getDefendantContactDetails(),
             defendantAnswersOnly.getDefendantResponses());
