@@ -9,10 +9,10 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,65 +23,65 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class DefendantResponses {
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesNoNotSure tenancyTypeCorrect;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private String tenancyType;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesNoNotSure tenancyStartDateCorrect;
-  
-    @CCD
+
+    @CCD(access = {CitizenAccess.class})
     private LocalDate tenancyStartDate;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesNoNotSure tenancyStartDateConfirmation;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesNoNotSure rentArrearsAmountConfirmation;
 
-    @CCD(typeOverride = FieldType.MoneyGBP)
+    @CCD(typeOverride = FieldType.MoneyGBP, access = {CitizenAccess.class})
     @JacksonMoneyGBP
     private BigDecimal rentArrearsAmount;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesNoNotSure noticeReceived;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private LocalDate noticeReceivedDate;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private VerticalYesNo contactByText;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private VerticalYesNo contactByPhone;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private ContactPreferenceType preferenceType;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesNoPreferNotToSay freeLegalAdvice;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private LocalDate dateOfBirth;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private VerticalYesNo defendantNameConfirmation;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesNoNotSure landlordRegistered;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesNoNotSure writtenTerms;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesOrNo disputeClaim;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private String disputeClaimDetails;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesNoNotSure landlordLicensed;
 
     @CCD(access = {CitizenAccess.class})

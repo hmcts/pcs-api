@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.time.LocalDate;
@@ -17,40 +18,40 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class HouseholdCircumstances {
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesOrNo dependantChildren;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesOrNo shareAdditionalCircumstances;
 
-    @CCD(max = 500)
+    @CCD(max = 500,access = {CitizenAccess.class})
     private String additionalCircumstancesDetails;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesOrNo exceptionalHardship;
 
-    @CCD(max = 500)
+    @CCD(max = 500,access = {CitizenAccess.class})
     private String exceptionalHardshipDetails;
-    
-    @CCD(max = 500)
+
+    @CCD(max = 500,access = {CitizenAccess.class})
     private String dependantChildrenDetails;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesOrNo otherDependants;
 
-    @CCD(max = 500)
+    @CCD(max = 500,access = {CitizenAccess.class})
     private String otherDependantDetails;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesOrNo otherTenants;
 
-    @CCD(max = 500)
+    @CCD(max = 500,access = {CitizenAccess.class})
     private String otherTenantsDetails;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesNoNotSure alternativeAccommodation;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private LocalDate alternativeAccommodationTransferDate;
 
 }

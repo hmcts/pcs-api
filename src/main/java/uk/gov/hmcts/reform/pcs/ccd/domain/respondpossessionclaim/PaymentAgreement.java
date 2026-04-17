@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 @Builder
@@ -14,13 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 @AllArgsConstructor
 public class PaymentAgreement {
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private YesOrNo anyPaymentsMade;
 
-    @CCD(searchable = false)
+    @CCD(searchable = false,access = {CitizenAccess.class})
     private YesNoNotSure repaymentPlanAgreed;
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private String repaymentAgreedDetails;
 
 }

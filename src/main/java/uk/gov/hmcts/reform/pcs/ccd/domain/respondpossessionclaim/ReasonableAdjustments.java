@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 @Builder
 @Data
@@ -12,6 +13,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class ReasonableAdjustments {
 
-    @CCD
+    @CCD(access = {CitizenAccess.class})
     private String reasonableAdjustmentsRequired;
 }
