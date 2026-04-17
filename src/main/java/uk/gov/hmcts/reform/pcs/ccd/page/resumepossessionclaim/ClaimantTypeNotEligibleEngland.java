@@ -27,13 +27,13 @@ public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
 
                 <ul class="govuk-list">
                   <li class="govuk-!-font-size-19">
-                    For rental or mortgage arrears claims, use the
+                    for rental or mortgage arrears claims, use the
                     <a href="https://www.gov.uk/possession-claim-online-recover-property"
                         target="_blank"
                         class="govuk-link">Possession Claim Online (PCOL) service (opens in a new tab)</a>.
                   </li>
                   <li class="govuk-!-font-size-19">
-                    For other claim types, use form N5 and the correct particulars of claim form.
+                    for other claim types, use form N5 and the correct particulars of claim form.
                   </li>
                 </ul>
 
