@@ -43,60 +43,28 @@ test.describe('[Common Component Case Flags]', async () => {
     await performAction('createFlag', {
       flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
       flagLevelOption: whereShouldThisFlagBeAdded.caseLevelRadioOption,
-      continueButton: whereShouldThisFlagBeAdded.continueButton});
+      continueButton: whereShouldThisFlagBeAdded.continueButton
+    });
     await performValidation('mainHeader', selectFlagType.mainHeader);
     await performAction('selectFlag', {
-        selectFlagQuestion: selectFlagType.selectFlagTypeQuestion,
-        selectFlagOption: selectFlagType.complexCaseRadioOption,
-        continueButton: selectFlagType.continueButton
-      });
+      selectFlagQuestion: selectFlagType.selectFlagTypeQuestion,
+      selectFlagOption: selectFlagType.complexCaseRadioOption,
+      continueButton: selectFlagType.continueButton
+    });
     await performValidation('mainHeader', addFlagcomment.mainHeader);
     await performAction('addComment', {
-        label: addFlagcomment.addCommentsQuestion,
-        input: addFlagcomment.addCommentTextInput,
-        continueButton: addFlagcomment.continueButton
-      });
-      await performValidation('mainHeader', reviewFlagDetails.mainHeader);
-      await performAction('reviewFlag', {
-        saveAndContinueButton: reviewFlagDetails.saveAndContinueButton
-      });
-      await performValidation('bannerAlert','Case #.* has been updated with event: Create flags');
+      label: addFlagcomment.addCommentsQuestion,
+      input: addFlagcomment.addCommentTextInput,
+      continueButton: addFlagcomment.continueButton
+    });
+    await performValidation('mainHeader', reviewFlagDetails.mainHeader);
+    await performAction('reviewFlag', {
+      saveButton: reviewFlagDetails.saveAndContinueButton
+    });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Create flags');
+    await performAction('viewFlag', {
+      viewFlagLink: caseSummary.viewCaseFlagsLink
+    });
   });
-
-  // test('Case Flags - Cancel Case Flag @regression', async () => {
-  //   await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
-  //   await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, whereShouldThisFlagBeAdded.mainHeader);
-  //   await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
-  // });
-
-  //  test('Case Flags - Mark Flag Inactive @PR @regression @nightly', async () => {
-  //   await performAction('createFlag', {
-  //     nextStepEventList: caseSummary.nextStepEventList,
-  //     createFlagsEvent: caseSummary.createFlagsEvent,
-  //     goButton: caseSummary.go,
-  //     flagLevelHeader: whereShouldThisFlagBeAdded.mainHeader,
-  //     flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
-  //     flagLevelOption: whereShouldThisFlagBeAdded.caseLevelRadioOption,
-  //     flagTypeQuestion: selectFlagType.selectFlagTypeQuestion,
-  //     flagTypeOption: selectFlagType.complexCaseRadioOption,
-  //     commentLabel: addFlagcomment.addCommentsLabel,
-  //     commentText: addFlagcomment.addCommentTextInput,
-  //     continueButton: whereShouldThisFlagBeAdded.continueButton,
-  //     saveAndContinueButton: reviewFlagDetails.saveAndContinueButton,
-  //     bannerMessage: 'Case #.* has been updated with event: Create flags',
-  //   });
-  //   await performAction('inactivateFlag', {
-  //     nextStepEventList: caseSummary.nextStepEventList,
-  //     manageFlagsEvent: caseSummary.manageCaseFlagsEvent,
-  //     goButton: caseSummary.go,
-  //     flagLevelHeader: whereShouldThisFlagBeAdded.mainHeader,
-  //     option: whereShouldThisFlagBeAdded.caseLevelComplexCaseRadioOption,
-  //     continueButton: whereShouldThisFlagBeAdded.continueButton,
-  //     makeInactiveButton: addFlagcomment.makeInactiveButton,
-  //     confirmButton: addFlagcomment.continueButton,
-  //     saveAndContinueButton: reviewFlagDetails.saveAndContinueButton,
-  //     bannerMessage: 'Case #.* has been updated with event: Manage Flags',
-  //   });
-  // });
 });
 

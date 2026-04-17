@@ -103,6 +103,7 @@ export class ActionRegistry {
     ['selectFlag', new CaseFlagAction()],
     ['addComment', new CaseFlagAction()],
     ['reviewFlag', new CaseFlagAction()],
+    ['viewFlag', new CaseFlagAction()]
   ]);
 
   static getAction(actionName: string): IAction {

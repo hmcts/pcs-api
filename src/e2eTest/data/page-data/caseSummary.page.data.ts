@@ -5,5 +5,6 @@ export const caseSummary = {
   enforceTheOrderEvent: 'Enforce the order',
   createFlagsEvent: 'Create flags',
   manageCaseFlagsEvent: 'Manage Flags',
+  viewCaseFlagsLink: 'View case flags',
   go: "Go"
 };
