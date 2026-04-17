@@ -1,0 +1,13 @@
+services:
+
+  tornado:
+    platform: "linux/amd64"
+    build: https://raw.githubusercontent.com/docmosis/tornado-docker/master/Dockerfile
+    ports:
+      - "5544:8080"
+    volumes:
+      - ./temp/docmosis:/home/docmosis/templates
+    environment:
+      DOCMOSIS_KEY: "3RAD-KLTN-JAJP-JKIA-EBBM-2ELH-VBKQ-IS07-E7E1-B-E2C6"
+      DOCMOSIS_SITE: "Free Trial Tornado"
+      DOCMOSIS_ADMINPW: "admin"
