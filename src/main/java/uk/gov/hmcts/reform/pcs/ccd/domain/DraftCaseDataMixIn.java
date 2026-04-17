@@ -24,4 +24,7 @@ public abstract class DraftCaseDataMixIn {
     @JsonIgnore
     private String claimantContactEmail;
 
+    @JsonIgnore
+    private Long draftCaseReference;
+
 }

@@ -36,7 +36,14 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        long caseRef = details.getId();
+        long caseRef = caseData.getDraftCaseReference() != null
+            ? caseData.getDraftCaseReference()
+            : details.getId();
+
+        if (caseRef == 0) {
+            log.error("No case reference available for draft save — draftCaseReference not provided");
+            return error(List.of("Unable to save draft: case reference is missing."));
+        }
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
 
         PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
@@ -64,6 +71,11 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
                 return error(errors);
             }
         }
+
+        log.info("Saving draft for case {}: defendantContactDetails={}, defendantResponses={}",
+            caseRef,
+            defendantAnswersOnly.getDefendantContactDetails(),
+            defendantAnswersOnly.getDefendantResponses());
 
         try {
             draftCaseDataService.patchUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);

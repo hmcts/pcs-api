@@ -505,6 +505,12 @@ public class PCSCase {
     private PossessionClaimResponse possessionClaimResponse;
 
     @CCD(
+        access = {CitizenAccess.class},
+        searchable = false
+    )
+    private Long draftCaseReference;
+
+    @CCD(
         label = "Select an operation to perform.",
         typeOverride = DynamicRadioList
     )
