@@ -94,5 +94,5 @@ public class DefendantResponses {
     private PaymentAgreement paymentAgreement;
 
     @CCD
-    private YesOrNo makeCounterClaim ;
+    private YesOrNo makeCounterClaim;
 }
