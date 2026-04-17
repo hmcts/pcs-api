@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -105,7 +106,7 @@ public class DefendantResponseService {
 
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
-        if (responses != null && responses.getUploadedDocuments() != null) {
+        if (!CollectionUtils.isEmpty(responses.getUploadedDocuments())) {
             documentService.createDefendantEvidenceDocuments(
                 responses.getUploadedDocuments(),
                 savedResponse
