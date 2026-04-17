@@ -71,7 +71,6 @@ import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import feign.FeignException;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -83,14 +82,12 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -470,84 +467,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
             );
         }
 
-        @Test
-        void shouldAssignClaimantSolicitorRoleWithCaseReferenceAndUserId() {
-            // Given
-            stubStartCallbackDependencies();
-
-            PCSCase caseData = PCSCase.builder()
-                .propertyAddress(mock(AddressUK.class))
-                .legislativeCountry(ENGLAND)
-                .build();
-
-            // When
-            callStartHandler(caseData);
-
-            // Then
-            verify(caseAssignmentService).assignClaimantSolicitorRole(TEST_CASE_REFERENCE, USER_ID.toString());
-        }
-
-        @Test
-        void shouldRevokeCreatorRoleWithCaseReferenceAndUserId() {
-            // Given
-            stubStartCallbackDependencies();
-
-            PCSCase caseData = PCSCase.builder()
-                .propertyAddress(mock(AddressUK.class))
-                .legislativeCountry(ENGLAND)
-                .build();
-
-            // When
-            callStartHandler(caseData);
-
-            // Then
-            verify(caseAssignmentService).revokeCreatorRole(TEST_CASE_REFERENCE, USER_ID.toString());
-        }
-
-        @Test
-        void shouldPropagateExceptionWhenAssignClaimantSolicitorRoleFails() {
-            // Given
-            stubStartCallbackDependencies();
-
-            FeignException feignException = mock(FeignException.class);
-            doThrow(feignException).when(caseAssignmentService)
-                .assignClaimantSolicitorRole(TEST_CASE_REFERENCE, USER_ID.toString());
-
-            PCSCase caseData = PCSCase.builder()
-                .propertyAddress(mock(AddressUK.class))
-                .legislativeCountry(ENGLAND)
-                .build();
-
-            // When / Then
-            assertThatThrownBy(() -> callStartHandler(caseData))
-                .isSameAs(feignException);
-        }
-
-        @Test
-        void shouldPropagateExceptionWhenRevokeCreatorRoleFails() {
-            // Given
-            stubStartCallbackDependencies();
-
-            FeignException feignException = mock(FeignException.class);
-            doThrow(feignException).when(caseAssignmentService)
-                .revokeCreatorRole(TEST_CASE_REFERENCE, USER_ID.toString());
-
-            PCSCase caseData = PCSCase.builder()
-                .propertyAddress(mock(AddressUK.class))
-                .legislativeCountry(ENGLAND)
-                .build();
-
-            // When / Then
-            assertThatThrownBy(() -> callStartHandler(caseData))
-                .isSameAs(feignException);
-        }
-
-        private void stubStartCallbackDependencies() {
-            when(userDetails.getSub()).thenReturn("user@test.com");
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(null);
-            when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER)).thenReturn(null);
-        }
     }
 
     @Nested

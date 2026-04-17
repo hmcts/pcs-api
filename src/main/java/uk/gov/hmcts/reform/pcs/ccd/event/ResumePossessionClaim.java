@@ -291,12 +291,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         caseData.setClaimantContactPreferences(contactPreferences);
 
-        caseAssignmentService.assignClaimantSolicitorRole(caseReference,
-            securityContextService.getCurrentUserDetails().getUid());
-
-        caseAssignmentService.revokeCreatorRole(caseReference,
-            securityContextService.getCurrentUserDetails().getUid());
-
         return caseData;
     }
 
