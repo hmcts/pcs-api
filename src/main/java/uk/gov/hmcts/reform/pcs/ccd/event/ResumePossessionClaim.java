@@ -291,6 +291,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         caseData.setClaimantContactPreferences(contactPreferences);
 
+        caseAssignmentService.assignClaimantSolicitorRole(caseReference,
+            securityContextService.getCurrentUserDetails().getUid());
+
+        caseAssignmentService.revokeCreatorRole(caseReference,
+            securityContextService.getCurrentUserDetails().getUid());
+
         return caseData;
     }
 
@@ -324,13 +330,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
-
-        caseAssignmentService.assignClaimantSolicitorRole(caseReference,
-            securityContextService.getCurrentUserDetails().getUid());
-
-        caseAssignmentService.revokeCreatorRole(caseReference,
-            securityContextService.getCurrentUserDetails().getUid());
-
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
