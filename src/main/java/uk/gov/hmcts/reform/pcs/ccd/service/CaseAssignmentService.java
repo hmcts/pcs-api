@@ -62,7 +62,8 @@ public class CaseAssignmentService {
         return invokeAddCaseUserRoles(caseAssignmentUserRolesRequest);
     }
 
-    private CaseAssignmentUserRolesResponse invokeAddCaseUserRoles(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest) {
+    private CaseAssignmentUserRolesResponse invokeAddCaseUserRoles(
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest) {
         String s2s = authTokenGenerator.generate();
         String userToken = idamService.getSystemUserAuthorisation();
 
