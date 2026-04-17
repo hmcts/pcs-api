@@ -19,6 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds.S84A_CONDITION_1;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds.S84A_CONDITION_2;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds.S84A_CONDITION_3;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds.S84A_CONDITION_4;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds.S84A_CONDITION_5;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.DOMESTIC_VIOLENCE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.FURNITURE_DETERIORATION;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE;
@@ -34,7 +39,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscret
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.SPECIAL_NEEDS_ACCOMMODATION;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.UNDER_OCCUPYING_AFTER_SUCCESSION;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm.LANDLORD_WORKS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm.OVERCROWDING;
@@ -47,7 +51,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
     private static final String DISCRETIONARY_GROUNDS = "secureOrFlexibleDiscretionaryGrounds";
 
     private static final String BREACH_OF_TENANCY_GROUND_LABEL = "Breach of the tenancy (ground 1)";
-    private static final String MANDATORY_GROUNDS = "secureOrFlexibleMandatoryGrounds";
+    private static final String ANTISOCIAL_GROUNDS = "secureAntisocialAdditionalGrounds";
     private static final String MANDATORY_GROUNDS_ALT = "secureOrFlexibleMandatoryGroundsAlt";
     private static final String DISCRETIONARY_GROUNDS_ALT = "secureOrFlexibleDiscretionaryGroundsAlt";
 
@@ -190,16 +194,70 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                        ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, REFUSAL_TO_MOVE_BACK))
 
             // Mandatory grounds
-            .label("possessionReasons-antiSocial-label",
+            .label("possessionReasons-S84A_CONDITION_1-label",
                    """
-                 <h2 class="govuk-heading-l" tabindex="0">Antisocial behaviour</h2>
+                 <h2 class="govuk-heading-l" tabindex="0">
+                    Condition 1 of Section 84A of the Housing Act 1985
+                </h2>
                  <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                  </h3>
-                 """,
-                   ShowConditions.fieldContains(MANDATORY_GROUNDS, ANTI_SOCIAL))
-            .mandatory(SecureOrFlexibleGroundsReasons::getAntiSocialGround,
-                       ShowConditions.fieldContains(MANDATORY_GROUNDS, ANTI_SOCIAL))
+                """,
+                   ShowConditions.fieldContains(ANTISOCIAL_GROUNDS, S84A_CONDITION_1))
+            .mandatory(SecureOrFlexibleGroundsReasons::getAntiSocialCondition1OfS84AGround,
+                       ShowConditions.fieldContains(ANTISOCIAL_GROUNDS, S84A_CONDITION_1))
+
+            .label("possessionReasons-S84A_CONDITION_2-label",
+                    """
+                  <h2 class="govuk-heading-l" tabindex="0">
+                    Condition 2 of Section 84A of the Housing Act 1985
+                  </h2>
+                  <h3 class="govuk-heading-m" tabindex="0">
+                     Why are you making a claim for possession under this ground?
+                  </h3>
+                  """,
+                    ShowConditions.fieldContains(ANTISOCIAL_GROUNDS, S84A_CONDITION_2))
+            .mandatory(SecureOrFlexibleGroundsReasons::getAntiSocialCondition2OfS84AGround,
+                        ShowConditions.fieldContains(ANTISOCIAL_GROUNDS, S84A_CONDITION_2))
+
+            .label("possessionReasons-S84A_CONDITION_3-label",
+                    """
+                  <h2 class="govuk-heading-l" tabindex="0">
+                    Condition 3 of Section 84A of the Housing Act 1985
+                  </h2>
+                  <h3 class="govuk-heading-m" tabindex="0">
+                     Why are you making a claim for possession under this ground?
+                  </h3>
+                  """,
+                    ShowConditions.fieldContains(ANTISOCIAL_GROUNDS, S84A_CONDITION_3))
+            .mandatory(SecureOrFlexibleGroundsReasons::getAntiSocialCondition3OfS84AGround,
+                    ShowConditions.fieldContains(ANTISOCIAL_GROUNDS, S84A_CONDITION_3))
+
+            .label("possessionReasons-S84A_CONDITION_4-label",
+                    """
+                  <h2 class="govuk-heading-l" tabindex="0">
+                    Condition 4 of Section 84A of the Housing Act 1985
+                  </h2>
+                  <h3 class="govuk-heading-m" tabindex="0">
+                     Why are you making a claim for possession under this ground?
+                  </h3>
+                  """,
+                    ShowConditions.fieldContains(ANTISOCIAL_GROUNDS, S84A_CONDITION_4))
+            .mandatory(SecureOrFlexibleGroundsReasons::getAntiSocialCondition4OfS84AGround,
+                    ShowConditions.fieldContains(ANTISOCIAL_GROUNDS, S84A_CONDITION_4))
+
+            .label("possessionReasons-S84A_CONDITION_5-label",
+                    """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Condition 5 of Section 84A of the Housing Act 1985
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """,
+                    ShowConditions.fieldContains(ANTISOCIAL_GROUNDS, S84A_CONDITION_5))
+            .mandatory(SecureOrFlexibleGroundsReasons::getAntiSocialCondition5OfS84AGround,
+                    ShowConditions.fieldContains(ANTISOCIAL_GROUNDS, S84A_CONDITION_5))
 
             // Mandatory grounds (if alternative accommodation is available)
             .label("possessionReasons-overcrowding-label",
@@ -398,8 +456,28 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             SecureOrFlexibleGroundsReasons grounds) {
         return new TextAreaValidationService.FieldValidation[] {
             TextAreaValidationService.FieldValidation.of(
-                grounds.getAntiSocialGround(),
-                ANTI_SOCIAL.getLabel(),
+                grounds.getAntiSocialCondition1OfS84AGround(),
+                S84A_CONDITION_1.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getAntiSocialCondition1OfS84AGround(),
+                S84A_CONDITION_2.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getAntiSocialCondition1OfS84AGround(),
+                S84A_CONDITION_3.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getAntiSocialCondition1OfS84AGround(),
+                S84A_CONDITION_4.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getAntiSocialCondition1OfS84AGround(),
+                S84A_CONDITION_5.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         };
