@@ -25,7 +25,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("propertyNotEligible", this::midEvent)
-            .pageLabel("Property not eligible for this online service")
+            .pageLabel("You cannot use this online service")
             .showCondition("showPropertyNotEligiblePage=\"YES\"")
             .readonly(PCSCase::getShowPropertyNotEligiblePage, NEVER_SHOW)
 
@@ -42,17 +42,15 @@ public class PropertyNotEligible implements CcdPageConfiguration {
 
                     <ul class="govuk-list govuk-list--bullet">
                       <li class="govuk-!-font-size-19">
-                        <span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims in England</span> –
+                        for rental or mortgage arrears claims in England,
                         use the <a class="govuk-link" href="https://www.gov.uk/possession-claim-online-recover-property" target="_blank" rel="noopener noreferrer">
-                        Possession Claim Online (PCOL) service (opens in new tab)</a>.
+                        Possession Claim Online (PCOL) service (opens in new tab)</a>
                       </li>
                       <li class="govuk-!-font-size-19">
-                        <span class="govuk-!-font-weight-bold">For other types of claims in England</span> –
-                        use form N5 and the correct particulars of claim form.
+                        for other types of claims in England, use form N5 and the correct particulars of claim form
                       </li>
                       <li class="govuk-!-font-size-19">
-                        <span class="govuk-!-font-weight-bold">For claims in Wales</span> –
-                        use form N5 Wales and the correct particulars of claim form.
+                        for claims in Wales, use form N5 Wales and the correct particulars of claim form
                       </li>
                     </ul>
 
@@ -139,7 +137,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                    CaseDetails<PCSCase, State> detailsBefore) {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errorMessageOverride("Property not eligible for this online service")
+            .errorMessageOverride("You cannot use this online service")
             .build();
     }
 
