@@ -5,12 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class PartyAccessCodeLinkService {
 
     private final PcsCaseService pcsCaseService;
     private final PartyAccessCodeLinkValidator validator;
-    private final CaseAssignmentService caseAssignmentService;
+    private final CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Transactional
     public void linkPartyByAccessCode(
@@ -60,7 +61,7 @@ public class PartyAccessCodeLinkService {
 
         partyEntity.setIdamId(idamUserId);
 
-        caseAssignmentService.assignDefendantRole(caseReference, idamUserId.toString());
+        caseRoleAssignmentService.assignRasRole(caseReference, idamUserId.toString(), UserRole.DEFENDANT);
     }
 
 }

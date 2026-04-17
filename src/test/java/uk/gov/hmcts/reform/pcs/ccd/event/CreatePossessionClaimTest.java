@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcod
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.task.RoleAssignmentTaskComponent;
+import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -83,7 +83,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
 
         return captor.getAllValues().stream()
             .filter(t -> t.getTaskInstance().getTaskName()
-                .equals(RoleAssignmentTaskComponent.ROLE_ASSIGNMENT_TASK_DESCRIPTOR.getTaskName()))
+                .equals(CaseRoleAssignmentTaskComponent.ROLE_ASSIGNMENT_TASK_DESCRIPTOR.getTaskName()))
             .map(SchedulableInstance::getTaskInstance)
             .map(TaskInstance::getData)
             .map(RoleAssignmentTaskData.class::cast)

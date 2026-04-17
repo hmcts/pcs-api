@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssigne
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.task.RoleAssignmentTaskComponent;
+import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -101,7 +101,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
 
         schedulerClient.scheduleIfNotExists(
-            RoleAssignmentTaskComponent.ROLE_ASSIGNMENT_TASK_DESCRIPTOR
+            CaseRoleAssignmentTaskComponent.ROLE_ASSIGNMENT_TASK_DESCRIPTOR
                 .instance(taskId)
                 .data(taskData)
                 .scheduledTo(Instant.now())

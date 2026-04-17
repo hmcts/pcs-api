@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CaseAssignmentServiceTest {
+class CaseRoleAssignmentServiceTest {
 
     private static final long CASE_REFERENCE = 123456789L;
     private static final String USER_ID = "abc-123-def-456";
@@ -30,7 +30,7 @@ class CaseAssignmentServiceTest {
     private static final String USER_TOKEN = "Bearer user-token";
 
     @InjectMocks
-    private CaseAssignmentService caseAssignmentService;
+    private CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Mock
     private AuthTokenGenerator authTokenGenerator;
@@ -45,7 +45,7 @@ class CaseAssignmentServiceTest {
     private ArgumentCaptor<CaseAssignmentUserRolesRequest> requestCaptor;
 
     @Test
-    void assignClaimantSolicitorRole_shouldCallApiWithCorrectCaseRole() {
+    void assignRasRole_shouldCallApiWithCorrectCaseRole() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
@@ -53,7 +53,7 @@ class CaseAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseAssignmentService.assignClaimantSolicitorRole(CASE_REFERENCE, USER_ID);
+        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
@@ -63,7 +63,7 @@ class CaseAssignmentServiceTest {
     }
 
     @Test
-    void assignClaimantSolicitorRole_shouldCallApiWithCorrectCaseReferenceAndUserId() {
+    void assignRasRole_shouldCallApiWithCorrectCaseReferenceAndUserId() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
@@ -71,7 +71,7 @@ class CaseAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseAssignmentService.assignClaimantSolicitorRole(CASE_REFERENCE, USER_ID);
+        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
@@ -82,7 +82,7 @@ class CaseAssignmentServiceTest {
     }
 
     @Test
-    void assignClaimantSolicitorRole_shouldReturnApiResponse() {
+    void assignRasRole_shouldReturnApiResponse() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
@@ -92,14 +92,14 @@ class CaseAssignmentServiceTest {
 
         // WHEN
         CaseAssignmentUserRolesResponse result =
-            caseAssignmentService.assignClaimantSolicitorRole(CASE_REFERENCE, USER_ID);
+            caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
 
         // THEN
         assertThat(result).isEqualTo(expectedResponse);
     }
 
     @Test
-    void assignClaimantSolicitorRole_shouldUseSystemUserTokenAndS2sToken() {
+    void assignRasRole_shouldUseSystemUserTokenAndS2SToken() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
@@ -107,14 +107,14 @@ class CaseAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseAssignmentService.assignClaimantSolicitorRole(CASE_REFERENCE, USER_ID);
+        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
 
         // THEN
         verify(caseAssignmentApi).addCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture());
     }
 
     @Test
-    void revokeCreatorRole_shouldCallApiWithCorrectCaseRole() {
+    void revokeRasRole_shouldCallApiWithCorrectCaseRole() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
@@ -122,7 +122,7 @@ class CaseAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseAssignmentService.revokeCreatorRole(CASE_REFERENCE, USER_ID);
+        caseRoleAssignmentService.revokeRasRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
@@ -132,7 +132,7 @@ class CaseAssignmentServiceTest {
     }
 
     @Test
-    void revokeCreatorRole_shouldCallApiWithCorrectCaseReferenceAndUserId() {
+    void revokeRasRole_shouldCallApiWithCorrectCaseReferenceAndUserId() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
@@ -140,7 +140,7 @@ class CaseAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseAssignmentService.revokeCreatorRole(CASE_REFERENCE, USER_ID);
+        caseRoleAssignmentService.revokeRasRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
@@ -151,7 +151,7 @@ class CaseAssignmentServiceTest {
     }
 
     @Test
-    void revokeCreatorRole_shouldReturnApiResponse() {
+    void revokeRasRole_shouldReturnApiResponse() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
@@ -161,14 +161,14 @@ class CaseAssignmentServiceTest {
 
         // WHEN
         CaseAssignmentUserRolesResponse result =
-            caseAssignmentService.revokeCreatorRole(CASE_REFERENCE, USER_ID);
+            caseRoleAssignmentService.revokeRasRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
 
         // THEN
         assertThat(result).isEqualTo(expectedResponse);
     }
 
     @Test
-    void revokeCreatorRole_shouldUseSystemUserTokenAndS2sToken() {
+    void revokeRasRole_shouldUseSystemUserTokenAndS2SToken() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
@@ -176,7 +176,7 @@ class CaseAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseAssignmentService.revokeCreatorRole(CASE_REFERENCE, USER_ID);
+        caseRoleAssignmentService.revokeRasRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
 
         // THEN
         verify(caseAssignmentApi).removeCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture());

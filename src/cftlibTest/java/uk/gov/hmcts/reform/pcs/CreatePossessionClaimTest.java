@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -48,7 +48,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 class CreatePossessionClaimTest extends CftlibTest {
 
     @MockitoBean
-    private CaseAssignmentService caseAssignmentService;
+    private CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Autowired
     private CoreCaseDataApi ccdApi;
