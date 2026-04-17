@@ -24,7 +24,6 @@ public class ClaimView {
     private void mapBasicClaimFields(PCSCase pcsCase, ClaimEntity claim) {
         pcsCase.setClaimAgainstTrespassers(claim.getAgainstTrespassers());
         pcsCase.setClaimDueToRentArrears(claim.getDueToRentArrears());
-        pcsCase.setClaimingCostsWanted(claim.getClaimCosts());
         pcsCase.setPreActionProtocolCompleted(claim.getPreActionProtocolFollowed());
         pcsCase.setMediationAttempted(claim.getMediationAttempted());
         pcsCase.setMediationAttemptedDetails(claim.getMediationDetails());

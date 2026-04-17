@@ -165,7 +165,7 @@ public class PCSCase {
             + "of costs at the hearing"
     )
     @Deprecated
-    private VerticalYesNo claimingCostsWantedX;
+    private VerticalYesNo claimingCostsWanted;
 
     @CCD(
         label = "Have you followed the pre-action protocol?"
