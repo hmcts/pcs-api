@@ -196,8 +196,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private MoneyFormatter feeFormatter;
     @Mock
     private RentDetailsPage rentDetailsPage;
-    @Mock
-    private CaseAssignmentService caseAssignmentService;
 
     @BeforeEach
     void setUp() {
@@ -223,7 +221,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
             addressFormatter, rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage, caseAssignmentService
+            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage
         );
 
         setEventUnderTest(underTest);
