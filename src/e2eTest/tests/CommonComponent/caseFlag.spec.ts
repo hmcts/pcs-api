@@ -65,6 +65,22 @@ test.describe('[Common Component Case Flags]', async () => {
     await performAction('viewFlag', {
       viewFlagLink: caseSummary.viewCaseFlagsLink
     });
-  });
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageCaseFlagsEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
+    await performAction('createFlag', {
+      flagQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
+      flagOption: whereShouldThisFlagBeAdded.caseLevelComplexCaseRadioOption,
+      continueButton: whereShouldThisFlagBeAdded.continueButton
+    }); 
+    await performAction('updateComment', {
+      updateLabel: addFlagcomment.updateFlagQuestion,
+      updateInput: addFlagcomment.updateFlagTextInput,
+      inactiveButton: addFlagcomment.makeInactiveButton,
+      continueButton: addFlagcomment.continueButton
+    });
+    await performAction('reviewFlag', {
+      saveButton: reviewFlagDetails.saveAndContinueButton
+    });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage Flags');});
 });
-

@@ -1,6 +1,6 @@
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
-import { expect, Page } from '@playwright/test';
-import { performAction, performValidation } from '@utils/controller';
+import { Page } from '@playwright/test';
+import { performAction } from '@utils/controller';
 
 export class CaseFlagAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -9,7 +9,8 @@ export class CaseFlagAction implements IAction {
       ['selectFlag', () => this.selectFlag(fieldName as actionRecord, page)],
       ['addComment', () => this.addComment(fieldName as actionRecord, page)],
       ['reviewFlag', () => this.reviewFlag(fieldName as actionRecord, page)],
-      ['viewFlag', () => this.viewFlag(fieldName as actionRecord, page)]
+      ['viewFlag',   () => this.viewFlag(fieldName as actionRecord, page)],
+      ['updateComment', () => this.updateComment(fieldName as actionRecord, page)]
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -40,5 +41,11 @@ export class CaseFlagAction implements IAction {
   private async viewFlag(viewOptions: actionRecord, page: Page) {
     await page.waitForLoadState();
     await page.locator('a', { hasText: viewOptions.viewFlagLink as string }).click();
+  }
+
+  private async updateComment(commentUpdate: actionRecord, page: Page) {
+    await performAction('inputText', commentUpdate.updateLabel, commentUpdate.updateInput);
+    await performAction('clickButton', commentUpdate.inactiveButton);
+    await performAction('clickButton', commentUpdate.continueButton);
   }
 }

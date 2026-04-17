@@ -8,4 +8,6 @@ export const addFlagcomment = {
     makeInactiveButton: 'Make inactive',
     previousButton: 'Previous',
     cancelButton: 'Cancel',
+    updateFlagQuestion:'Update flag "Complex Case" comments',
+    updateFlagTextInput:'Test update'
 };
