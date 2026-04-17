@@ -24,8 +24,6 @@ public class HashingPartyAccessCodeService implements PartyAccessCodeHashingServ
         if (accessCode == null || accessCode.isBlank()) {
             throw new IllegalArgumentException("Access Code cannot be null or empty");
         }
-        //TODO:For testing if raw code is matched to the stored hash. This will be removed before merging
-        log.warn("Access code to be hashed:{}", accessCode);
         return encoder.encode(accessCode);
     }
 
