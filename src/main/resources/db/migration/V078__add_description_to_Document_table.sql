@@ -1,0 +1,1 @@
+ALTER TABLE Document ADD COLUMN description VARCHAR(60);

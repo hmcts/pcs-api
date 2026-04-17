@@ -1,17 +1,24 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
+import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
+import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CaseFieldsView {
 
+    @Value("${globalsearch.caseManagementCategory}")
+    private String caseManagementCategory;
 
     /**
      * Sets case fields for the pcsCase.
@@ -20,6 +27,7 @@ public class CaseFieldsView {
     public void setCaseFields(final PCSCase pcsCase) {
         setCaseNameHmctsField(pcsCase);
         setCaseManagementLocationField(pcsCase);
+        setCaseManagementCategory(pcsCase);
     }
 
     /**
@@ -41,18 +49,30 @@ public class CaseFieldsView {
         pcsCase.setCaseNamePublic(formattedCaseName);
     }
 
-    /**
-     * Builds a formatted string for the case management location field based on epimsId and regionId.
-     *
-     * @param pcsCase The current case data
-     */
+
     private void setCaseManagementLocationField(final PCSCase pcsCase) {
-        Integer epimsId = pcsCase.getCaseManagementLocation();
+        Integer epimsId = pcsCase.getCaseManagementLocationNumber();
         Integer region = pcsCase.getRegionId();
 
         if (epimsId != null && region != null) {
-            pcsCase.setCaseManagementLocationFormatted(getFormattedValue(region, epimsId));
+            pcsCase.setCaseManagementLocation(CaseLocation.builder()
+                .baseLocation(String.valueOf(epimsId))
+                .region(String.valueOf(region))
+                .build());
         }
+    }
+
+    private void setCaseManagementCategory(PCSCase pcsCase) {
+        DynamicListElement listElement = DynamicListElement.builder()
+            .code(UUID.randomUUID())
+            .label(caseManagementCategory)
+            .build();
+        List<DynamicListElement> caseManagementCategoryList = List.of(listElement);
+
+        pcsCase.setCaseManagementCategory(DynamicList.builder()
+            .value(listElement)
+            .listItems(caseManagementCategoryList)
+            .build());
     }
 
     private String getFormattedClaimantName(final List<ListValue<Party>> claimants) {
@@ -81,9 +101,5 @@ public class CaseFieldsView {
 
     private boolean isDefendantNameKnown(final List<ListValue<Party>> defendants) {
         return defendants.getFirst().getValue().getNameKnown() == VerticalYesNo.YES;
-    }
-
-    private String getFormattedValue(int region, int epimsId) {
-        return "{region:%s,baseLocation:%s}".formatted(region, epimsId);
     }
 }
