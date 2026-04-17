@@ -469,6 +469,85 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 arguments(true, YesOrNo.YES)
             );
         }
+
+        @Test
+        void shouldAssignClaimantSolicitorRoleWithCaseReferenceAndUserId() {
+            // Given
+            stubStartCallbackDependencies();
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(ENGLAND)
+                .build();
+
+            // When
+            callStartHandler(caseData);
+
+            // Then
+            verify(caseAssignmentService).assignClaimantSolicitorRole(TEST_CASE_REFERENCE, USER_ID.toString());
+        }
+
+        @Test
+        void shouldRevokeCreatorRoleWithCaseReferenceAndUserId() {
+            // Given
+            stubStartCallbackDependencies();
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(ENGLAND)
+                .build();
+
+            // When
+            callStartHandler(caseData);
+
+            // Then
+            verify(caseAssignmentService).revokeCreatorRole(TEST_CASE_REFERENCE, USER_ID.toString());
+        }
+
+        @Test
+        void shouldPropagateExceptionWhenAssignClaimantSolicitorRoleFails() {
+            // Given
+            stubStartCallbackDependencies();
+
+            FeignException feignException = mock(FeignException.class);
+            doThrow(feignException).when(caseAssignmentService)
+                .assignClaimantSolicitorRole(TEST_CASE_REFERENCE, USER_ID.toString());
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(ENGLAND)
+                .build();
+
+            // When / Then
+            assertThatThrownBy(() -> callStartHandler(caseData))
+                .isSameAs(feignException);
+        }
+
+        @Test
+        void shouldPropagateExceptionWhenRevokeCreatorRoleFails() {
+            // Given
+            stubStartCallbackDependencies();
+
+            FeignException feignException = mock(FeignException.class);
+            doThrow(feignException).when(caseAssignmentService)
+                .revokeCreatorRole(TEST_CASE_REFERENCE, USER_ID.toString());
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(ENGLAND)
+                .build();
+
+            // When / Then
+            assertThatThrownBy(() -> callStartHandler(caseData))
+                .isSameAs(feignException);
+        }
+
+        private void stubStartCallbackDependencies() {
+            when(userDetails.getSub()).thenReturn("user@test.com");
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(null);
+            when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER)).thenReturn(null);
+        }
     }
 
     @Nested
@@ -629,74 +708,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(submitResponse.getConfirmationBody()).contains("You must pay the claim fee of " + formattedFee);
-        }
-
-        @Test
-        void shouldAssignClaimantSolicitorRoleWithCaseReferenceAndUserId() {
-            // Given
-            stubFeeService();
-
-            PCSCase caseData = PCSCase.builder()
-                .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .build();
-
-            // When
-            callSubmitHandler(caseData);
-
-            // Then
-            verify(caseAssignmentService).assignClaimantSolicitorRole(TEST_CASE_REFERENCE, USER_ID.toString());
-        }
-
-        @Test
-        void shouldRevokeCreatorRoleWithCaseReferenceAndUserId() {
-            // Given
-            stubFeeService();
-
-            PCSCase caseData = PCSCase.builder()
-                .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .build();
-
-            // When
-            callSubmitHandler(caseData);
-
-            // Then
-            verify(caseAssignmentService).revokeCreatorRole(TEST_CASE_REFERENCE, USER_ID.toString());
-        }
-
-        @Test
-        void shouldPropagateExceptionWhenAssignClaimantSolicitorRoleFails() {
-            // Given
-            stubFeeService();
-
-            FeignException feignException = mock(FeignException.class);
-            doThrow(feignException).when(caseAssignmentService)
-                .assignClaimantSolicitorRole(TEST_CASE_REFERENCE, USER_ID.toString());
-
-            PCSCase caseData = PCSCase.builder()
-                .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .build();
-
-            // When / Then
-            assertThatThrownBy(() -> callSubmitHandler(caseData))
-                .isSameAs(feignException);
-        }
-
-        @Test
-        void shouldPropagateExceptionWhenRevokeCreatorRoleFails() {
-            // Given
-            stubFeeService();
-
-            FeignException feignException = mock(FeignException.class);
-            doThrow(feignException).when(caseAssignmentService)
-                .revokeCreatorRole(TEST_CASE_REFERENCE, USER_ID.toString());
-
-            PCSCase caseData = PCSCase.builder()
-                .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .build();
-
-            // When / Then
-            assertThatThrownBy(() -> callSubmitHandler(caseData))
-                .isSameAs(feignException);
         }
 
         private FeeDetails stubFeeService() {
