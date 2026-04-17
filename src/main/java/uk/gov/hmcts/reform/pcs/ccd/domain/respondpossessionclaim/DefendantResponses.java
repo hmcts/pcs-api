@@ -46,7 +46,7 @@ public class DefendantResponses {
     private BigDecimal rentArrearsAmount;
 
     @CCD(access = {CitizenAccess.class})
-    private YesNoNotSure noticeReceived;
+    private YesNoNotSure possessionNoticeReceived;
 
     @CCD(access = {CitizenAccess.class})
     private LocalDate noticeReceivedDate;

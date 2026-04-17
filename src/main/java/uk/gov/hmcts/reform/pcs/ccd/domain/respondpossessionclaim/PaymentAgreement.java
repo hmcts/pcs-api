@@ -17,6 +17,9 @@ public class PaymentAgreement {
 
     @CCD(access = {CitizenAccess.class})
     private YesOrNo anyPaymentsMade;
+    
+    @CCD(max = 500)
+    private String paymentDetails;
 
     @CCD(searchable = false,access = {CitizenAccess.class})
     private YesNoNotSure repaymentPlanAgreed;
