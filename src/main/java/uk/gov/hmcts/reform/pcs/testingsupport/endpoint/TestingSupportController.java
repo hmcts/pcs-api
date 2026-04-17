@@ -17,14 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -33,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -43,12 +37,7 @@ import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -71,6 +60,7 @@ public class TestingSupportController {
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final SecureRandom secureRandom = new SecureRandom();
+    private final CaseAssignmentService caseAssignmentService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -413,4 +403,29 @@ public class TestingSupportController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
+
+
+    @PostMapping(
+        value = "/assign-defendant-solicitor/{caseReference}/{userId}",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+        summary = "Assign a case a user with role DEFENDANT_SOLICITOR"
+    )
+    @ApiResponse(responseCode = "200", description = "Successful assignment",
+        content = @Content())
+    @ApiResponse(responseCode = "401", description = "Invalid access token",
+        content = @Content())
+    public ResponseEntity<Void> assignDefendantSolicitorRole(
+        @Parameter(description = "The 12-digit case reference number", required = true)
+        @PathVariable long caseReference,
+        @Parameter(description = "Id of User case will be assigned to", required = true)
+        @PathVariable String userId,
+        @RequestHeader(value = AUTHORIZATION) String authorization,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
+    ) {
+        caseAssignmentService.assignDefendantSolicitorRole(caseReference, userId);
+        return ResponseEntity.ok().build();
+    }
+
 }

@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
@@ -78,7 +79,8 @@ class TestingSupportControllerTest {
     private CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     @Mock
     private ModelMapper modelMapper;
-
+    @Mock
+    private CaseAssignmentService caseAssignmentService;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -88,7 +90,7 @@ class TestingSupportControllerTest {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  docAssemblyService, eligibilityService,
                                                  pcsCaseRepository, partyAccessCodeRepository,
-                                                 modelMapper, ccdTestCaseOrchestrator
+                                                 modelMapper, ccdTestCaseOrchestrator,caseAssignmentService
                 );
     }
 
@@ -766,6 +768,25 @@ class TestingSupportControllerTest {
 
         // Then
         assertThat(HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode()));
+    }
+
+    @Test
+    void assignDefendantSolicitorRole() {
+        // given
+        long caseReference = 111111111111L;
+        String userId = "abc";
+
+        // when
+        ResponseEntity<Void> response = underTest.assignDefendantSolicitorRole(
+            caseReference,
+            userId,
+            "testAuth",
+            "testS2S"
+        );
+
+        // then
+        verify(caseAssignmentService).assignDefendantSolicitorRole(caseReference, userId);
+        assertThat(HttpStatus.OK.equals(response.getStatusCode()));
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName) {
