@@ -29,7 +29,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Fee And Pay]', async () => {
-  test('Fee And Pay - Pay by account PBA @PR @regression @nightly', async () => {
+  test('Fee And Pay - Pay by account PBA @nightly', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -44,7 +44,7 @@ test.describe('[Common Component Fee And Pay]', async () => {
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
   });
 
-  test('Fee And Pay - Pay by Card @PR @regression @nightly', async () => {
+  test('Fee And Pay - Pay by Card @nightly', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -70,7 +70,7 @@ test.describe('[Common Component Fee And Pay]', async () => {
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
   });
 
-  test('Fee And Pay - Cancel Payment from You Card Details Page @regression @nightly', async () => {
+  test('Fee And Pay - Cancel Payment from You Card Details Page @nightly', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -82,7 +82,7 @@ test.describe('[Common Component Fee And Pay]', async () => {
     await performValidation('mainHeader', cancelPayment.mainHeader);
   });
 
-  test('Fee And Pay - Cancel Payment from Confirm Card Details Page @regression @nightly', async () => {
+  test('Fee And Pay - Cancel Payment from Confirm Card Details Page @nightly', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
