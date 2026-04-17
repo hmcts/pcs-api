@@ -769,4 +769,40 @@ class DefendantResponseServiceTest {
             Arguments.of((String) null)
         );
     }
+
+    @ParameterizedTest(name = "makeCounterClaim={0}")
+    @MethodSource("makeCounterClaimPersistenceScenarios")
+    void shouldPersistMakeCounterClaim(YesOrNo makeCounterClaim) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .makeCounterClaim(makeCounterClaim)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getMakeCounterClaim()).isEqualTo(makeCounterClaim);
+    }
+
+    private static Stream<Arguments> makeCounterClaimPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(YesOrNo.YES),
+            Arguments.of(YesOrNo.NO),
+            Arguments.of((YesOrNo) null)
+        );
+    }
 }
