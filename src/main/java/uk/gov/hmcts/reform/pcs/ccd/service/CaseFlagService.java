@@ -50,14 +50,6 @@ public class CaseFlagService {
                     .build();
             }
 
-            if (incomingFlagDetail.getDateTimeCreated() != null) {
-                flagDetailsEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
-            }
-
-            if (incomingFlagDetail.getDateTimeModified() != null) {
-                flagDetailsEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
-            }
-
             flagDetailsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
 
             flagDetailsEntity.setName(incomingFlagDetail.getName());
@@ -65,6 +57,9 @@ public class CaseFlagService {
 
             flagDetailsEntity.setFlagComment(incomingFlagDetail.getFlagComment());
             flagDetailsEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+
+            flagDetailsEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
+            flagDetailsEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
 
             flagDetailsEntity.setDefaultStatus(incomingFlagDetail.getStatus());
             flagDetailsEntity.setSubTypeKey(incomingFlagDetail.getSubTypeKey());
@@ -76,9 +71,8 @@ public class CaseFlagService {
             flagDetailsEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagDetailsEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
 
-            flagDetailsEntity.setHearingRelevant(YesOrNoConverter.toBoolean(incomingFlagDetail.getHearingRelevant()));
-            flagDetailsEntity.setAvailableExternally(
-                YesOrNoConverter.toBoolean(incomingFlagDetail.getAvailableExternally()));
+            flagDetailsEntity.setHearingRelevant(getBooleanValue(incomingFlagDetail.getHearingRelevant()));
+            flagDetailsEntity.setAvailableExternally(getBooleanValue(incomingFlagDetail.getAvailableExternally()));
 
             if (incomingFlagDetail.getPath() != null
                 && !(new HashSet<>(existingFlagPathIds).containsAll(getIncomingFlagPathIds(incomingFlagDetail)))) {
@@ -156,6 +150,10 @@ public class CaseFlagService {
         }
     }
 
+    private Boolean getBooleanValue(YesOrNo yesOrNoValue) {
+        return YesOrNoConverter.toBoolean(yesOrNoValue);
+    }
+
     private List<String> getIncomingFlagPathIds(FlagDetail incomingFlagDetail) {
 
         return incomingFlagDetail.getPath().stream().map(ListValue::getId).toList();
@@ -171,3 +169,4 @@ public class CaseFlagService {
         return list;
     }
 }
+

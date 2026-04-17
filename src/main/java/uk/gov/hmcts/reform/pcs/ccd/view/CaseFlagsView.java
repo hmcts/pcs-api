@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -37,9 +36,6 @@ public class CaseFlagsView {
     }
 
     private List<ListValue<FlagDetail>> mapFlagDetails(List<FlagDetailsEntity> flagsEntities) {
-        if (flagsEntities.isEmpty()) {
-            return new ArrayList<>();
-        }
 
         return flagsEntities.stream()
             .map(flagDetailsEntity -> ListValue.<FlagDetail>builder()
@@ -52,6 +48,11 @@ public class CaseFlagsView {
                    .flagCommentCy(flagDetailsEntity.getFlagCommentWelsh())
                    .status(flagDetailsEntity.getDefaultStatus())
                    .subTypeKey(flagDetailsEntity.getSubTypeKey())
+                   .subTypeValue(flagDetailsEntity.getSubTypeValue())
+                   .subTypeValueCy(flagDetailsEntity.getSubTypeValueWelsh())
+                   .flagUpdateComment(flagDetailsEntity.getFlagUpdateComment())
+                   .dateTimeCreated(flagDetailsEntity.getDateTimeCreated())
+                   .dateTimeModified(flagDetailsEntity.getDateTimeModified())
                    .otherDescription(flagDetailsEntity.getOtherDescription())
                    .otherDescriptionCy(flagDetailsEntity.getOtherDescriptionWelsh())
                    .hearingRelevant(YesOrNoConverter.toYesOrNo(flagDetailsEntity.getHearingRelevant()))
