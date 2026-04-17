@@ -109,7 +109,8 @@ public class DefendantResponseService {
         if (!CollectionUtils.isEmpty(responses.getUploadedDocuments())) {
             documentService.createDefendantEvidenceDocuments(
                 responses.getUploadedDocuments(),
-                savedResponse
+                savedResponse,
+                claimRef.getPcsCase()
             );
         }
 

@@ -922,7 +922,7 @@ class DefendantResponseServiceTest {
 
         // Then
         verify(documentService).createDefendantEvidenceDocuments(
-            eq(uploadedDocs), any(DefendantResponseEntity.class));
+            eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity));
     }
 
     @Test
@@ -947,6 +947,6 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(documentService, never()).createDefendantEvidenceDocuments(any(), any());
+        verify(documentService, never()).createDefendantEvidenceDocuments(any(), any(), any());
     }
 }

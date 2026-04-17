@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -137,7 +138,8 @@ public class DocumentService {
 
     public List<DocumentEntity> createDefendantEvidenceDocuments(
         List<ListValue<DefendantDocument>> uploadedDocuments,
-        DefendantResponseEntity defendantResponse
+        DefendantResponseEntity defendantResponse,
+        PcsCaseEntity pcsCase
     ) {
         if (CollectionUtils.isEmpty(uploadedDocuments)) {
             log.info("No defendant evidence documents to save");
@@ -148,6 +150,7 @@ public class DocumentService {
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
             .map(defDoc -> DocumentEntity.builder()
+                .pcsCase(pcsCase)
                 .defendantResponse(defendantResponse)
                 .url(defDoc.getDocument().getUrl())
                 .fileName(defDoc.getDocument().getFilename())
