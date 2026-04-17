@@ -45,6 +45,8 @@ public class GenAppService {
             }
         }
 
+        genAppEntity.setWhatOrderWanted(citizenCreateGenApp.getWhatOrderWanted());
+
         genAppEntity.setLanguageUsed(citizenCreateGenApp.getLanguageUsed());
 
         pcsCaseEntity.addGenApp(genAppEntity);
