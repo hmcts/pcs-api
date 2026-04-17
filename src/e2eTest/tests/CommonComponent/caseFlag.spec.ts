@@ -20,10 +20,10 @@ test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Case%20flags`);
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Case%20flags`);
+    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
@@ -52,13 +52,13 @@ test.describe('[Common Component Case Flags]', async () => {
       });
     await performValidation('mainHeader', addFlagcomment.mainHeader);
     await performAction('addComment', {
-        addQuestion: addFlagcomment.addCommentsQuestion,
-        addInput: addFlagcomment.addCommentTextInput,
+        label: addFlagcomment.addCommentsQuestion,
+        input: addFlagcomment.addCommentTextInput,
         continueButton: addFlagcomment.continueButton
       });
       await performValidation('mainHeader', reviewFlagDetails.mainHeader);
       await performAction('reviewFlag', {
-        continueButton: reviewFlagDetails.saveAndContinueButton
+        saveAndContinueButton: reviewFlagDetails.saveAndContinueButton
       });
       await performValidation('bannerAlert','Case #.* has been updated with event: Create flags');
   });

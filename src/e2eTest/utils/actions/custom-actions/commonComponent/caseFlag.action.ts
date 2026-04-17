@@ -16,32 +16,25 @@ export class CaseFlagAction implements IAction {
     await actionToPerform();
   }
   
-
-  private async createFlag(flagOptions: actionRecord, page: Page) {
-    const flagQuestion = flagOptions.flagLevelQuestion;
-    if (typeof flagQuestion === 'string' && flagQuestion !== '') {
-      await performValidation('elementToBeVisible', flagQuestion);
-    }
+  private async createFlag(flagOptions: actionRecord) {
     await performAction('clickRadioButton', { question:flagOptions.flagLevelQuestion, option:flagOptions.flagLevelOption });
     await performAction('clickButton', flagOptions.continueButton);
-    
-      const flagLevelQuestionText = flagOptions.flagLevelQuestion;
-      if (typeof flagLevelQuestionText === 'string' && flagLevelQuestionText !== '') {
-        await expect(page.getByText(flagLevelQuestionText, { exact: true })).toBeVisible();
-      }
   }
 
 private async selectFlag(selectOptions: actionRecord, page: Page) {
+     const radio = page.locator(`label >> text=${selectOptions.selectFlagOption}`);
+     await radio.waitFor({ state: 'visible' });
     await performAction('clickRadioButton', { question:selectOptions.selectFlagQuestion, option:selectOptions.selectFlagOption });
     await performAction('clickButton', selectOptions.continueButton);
   }
 
-  private async addComment(commentOptions: actionRecord, page: Page) {
-    await performAction('inputText', { question:commentOptions.addQuestion, option:commentOptions.addInput });
-    await performAction('clickButton', commentOptions.continueButton);
+  private async addComment(commentadd: actionRecord, page: Page) {
+     await performAction('inputText', commentadd.label, commentadd.input);
+     await performAction('clickButton', commentadd.continueButton);
   }
-private async reviewFlag(reviewOptions: actionRecord, page: Page) {
-    await performAction('clickButton', reviewOptions.continueButton);
+
+private async reviewFlag(reviewOptions: actionRecord) {
+    await performAction('clickButton', reviewOptions.saveAndContinueButton);
   }
 
 

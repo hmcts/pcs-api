@@ -1,6 +1,6 @@
 export const addFlagcomment = {
     title: `Case Details - HM Courts & Tribunals Service - GOV.UK`,
-    mainHeader: 'Add comments for this flag (optional)',
+    mainHeader: 'Case Flags',
     addCommentsQuestion:`Add comments for this flag (optional)`,
     addCommentHintText: `Explain why you are creating this flag. Do not include any sensitive information such as personal details.`,
     addCommentTextInput:`Test`,

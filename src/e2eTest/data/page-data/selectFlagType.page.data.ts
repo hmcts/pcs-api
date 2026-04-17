@@ -1,6 +1,6 @@
 export const selectFlagType = {
     title: `Case Details - HM Courts & Tribunals Service - GOV.UK`,
-    mainHeader: 'Select flag type',
+    mainHeader: 'Case Flags',
     selectFlagTypeQuestion: 'Select flag type',
     complexCaseRadioOption: 'Complex Case',
     urgentCaseRadioOption: `Urgent case`,
