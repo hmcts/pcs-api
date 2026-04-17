@@ -210,7 +210,8 @@ export function ragStatus(summary: AllureSummary): string {
 function latestResultByKey(tests: AllureTestRecord[]): AllureTestRecord[] {
   const byKey = new Map<string, AllureTestRecord>();
   for (const t of tests) {
-    const key = (t.historyId ?? t.fullName ?? t.name).trim() || t.name;
+    const keyTrimmed = (t.historyId ?? t.fullName ?? t.name).trim();
+    const key = keyTrimmed || t.name;
     const existing = byKey.get(key);
     const start = t.start ?? 0;
     const existingStart = existing?.start ?? 0;
@@ -431,9 +432,10 @@ export function getSlackMessage(): string {
     process.env.E2E_SERVICE_NAME ?? process.env.COMPONENT ?? 'pcs-api';
   const serviceName = serviceNameRaw.trim() || 'pcs-api';
   const pipelineTypeArg = parsePipelineTypeFromArgv();
-  const pipelineTypeInferred =
-    (process.env.E2E_PIPELINE_TYPE ??
-      (jobName.toLowerCase().includes('nightly') ? 'nightly' : 'master')).trim() || 'master';
+  const pipelineTypeFromEnv =
+    process.env.E2E_PIPELINE_TYPE ??
+    (jobName.toLowerCase().includes('nightly') ? 'nightly' : 'master');
+  const pipelineTypeInferred = pipelineTypeFromEnv.trim() || 'master';
   const pipelineType = pipelineTypeArg ?? pipelineTypeInferred;
 
   try {
