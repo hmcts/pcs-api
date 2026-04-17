@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
-import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
+import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
@@ -500,7 +500,7 @@ public class PCSCase {
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
     @CCD(
-        access = {DefendantAccess.class}
+        access = {DefendantAccess.class, CitizenAccess.class}
     )
     private PossessionClaimResponse possessionClaimResponse;
 
