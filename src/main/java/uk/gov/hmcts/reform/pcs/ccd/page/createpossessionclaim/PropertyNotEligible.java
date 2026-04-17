@@ -42,7 +42,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
 
                     <ul class="govuk-list govuk-list--bullet">
                       <li class="govuk-!-font-size-19">
-                        for rental or mortgage arrears claims in England,
+                        for rent or mortgage arrears claims in England,
                         use the <a class="govuk-link" href="https://www.gov.uk/possession-claim-online-recover-property" target="_blank" rel="noopener noreferrer">
                         Possession Claim Online (PCOL) service (opens in new tab)</a>
                       </li>

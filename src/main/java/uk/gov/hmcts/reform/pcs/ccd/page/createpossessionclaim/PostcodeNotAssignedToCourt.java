@@ -20,7 +20,6 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
     private static final String SHOW_PAGE = "showPostcodeNotAssignedToCourt=\"YES\"";
     private static final String SHOW_ENGLAND = SHOW_PAGE + " AND postcodeNotAssignedView=\"ENGLAND\"";
     private static final String SHOW_WALES = SHOW_PAGE + " AND postcodeNotAssignedView=\"WALES\"";
-    private static final String SHOW_SCOTLAND = SHOW_PAGE + " AND postcodeNotAssignedView=\"SCOTLAND\"";
     private static final String SHOW_ALL = SHOW_PAGE + " AND postcodeNotAssignedView=\"ALL_COUNTRIES\"";
 
     @Override
@@ -64,13 +63,6 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 <p class="govuk-body">Use form N5 Wales and the correct particulars of claim form.</p>
                 """,
                 SHOW_WALES
-            )
-            .label(
-                "postcodeNotAssignedToCourt-scotland",
-                """
-                    <p class="govuk-body"> Use your %s.
-                """.formatted(LOCAL_SHERIFF_OFFICE_LINK),
-                SHOW_SCOTLAND
             )
             .label(
                 "postcodeNotAssignedToCourt-all",
