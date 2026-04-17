@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -67,9 +68,8 @@ public class CaseFlagService {
             flagDetailsEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagDetailsEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
 
-            flagDetailsEntity.setHearingRelevant(YesOrNoConverter.toBoolean(incomingFlagDetail.getHearingRelevant()));
-            flagDetailsEntity.setAvailableExternally(
-                YesOrNoConverter.toBoolean(incomingFlagDetail.getAvailableExternally()));
+            flagDetailsEntity.setHearingRelevant(getBooleanValue(incomingFlagDetail.getHearingRelevant()));
+            flagDetailsEntity.setAvailableExternally(getBooleanValue(incomingFlagDetail.getAvailableExternally()));
 
             if (incomingFlagDetail.getPath() != null
                 && !(new HashSet<>(existingFlagPathIds).containsAll(getIncomingFlagPathIds(incomingFlagDetail)))) {
@@ -86,6 +86,10 @@ public class CaseFlagService {
         }
         pcsCaseEntity.getCaseFlags().clear();
         pcsCaseEntity.getCaseFlags().addAll(mergedFlagDetails);
+    }
+
+    private Boolean getBooleanValue(YesOrNo yesOrNoValue) {
+        return YesOrNoConverter.toBoolean(yesOrNoValue);
     }
 
     private List<String> getIncomingFlagPathIds(FlagDetail incomingFlagDetail) {

@@ -66,7 +66,7 @@ public class PcsCaseService {
         }
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
-        if (pcsCase.getCaseFlags() != null) {
+        if (pcsCase.getCaseFlags() != null && pcsCase.getCaseFlags().getDetails() != null) {
             caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(), pcsCaseEntity);
         }
     }
