@@ -99,11 +99,10 @@ export class ActionRegistry {
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
-    ['selectFlagLevel', new CaseFlagAction()],
-    ['selectFlagType', new CaseFlagAction()],
-    ['addFlagComment', new CaseFlagAction()],
     ['createFlag', new CaseFlagAction()],
-    ['inactivateFlag', new CaseFlagAction()],
+    ['selectFlag', new CaseFlagAction()],
+    ['addComment', new CaseFlagAction()],
+    ['reviewFlag', new CaseFlagAction()],
   ]);
 
   static getAction(actionName: string): IAction {
