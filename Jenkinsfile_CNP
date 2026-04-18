@@ -68,16 +68,6 @@ withPipeline(type, product, component) {
     if (e2eSpec?.trim()) {
       env.E2E_SPEC = e2eSpec.trim()
     }
-
-    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
-      env.E2E_SUITE = "chrome"
-    }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
-      env.E2E_SUITE = "regression"
-    }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_enforcement_test").size() > 0) {
-      env.E2E_SUITE = "enforcement"
-    }
   }
 
   onMaster() {
