@@ -3,6 +3,16 @@
 properties([
   pipelineTriggers([cron('H 07 * * 1-5')]),
   parameters([
+    choice(
+      name: 'ENVIRONMENT',
+      choices: ['aat', 'preview'],
+      description: 'Environment to run the test.'
+    ),
+    string(
+      name: 'PR_NUMBER',
+      defaultValue: '',
+      description: 'PR number (REQUIRED if environment is preview, leave blank otherwise).'
+    ),
     booleanParam(
       name: 'CHROME_TESTS',
       defaultValue: true,
@@ -79,26 +89,54 @@ def secrets = [
 ]
 
 withNightlyPipeline(type, product, component) {
-  enableSlackNotifications('#qa-pipeline-status')
+  validateInputs()
+  enableSlackNotifications('#pcs-tech')
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
+  enableE2eTest()
 
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-    runE2eMatrix()
+  }
+
+  afterAlways('E2eTest') {
+    postPrimaryE2eSlack()
+    runE2eSupplementaryMatrix()
+  }
+}
+
+def validateInputs() {
+  if (params.ENVIRONMENT == 'preview' && (!params.PR_NUMBER?.trim())) {
+    error("Validation Failed: PR number is required when environment is 'preview'")
+  }
+  if (params.ENVIRONMENT == 'preview' && !params.PR_NUMBER.trim().matches("^\\d+\$")) {
+    error("Validation Failed: PR number must contain only numerical values")
+  }
+  if (params.ENVIRONMENT == 'aat' && !getE2eMatrix().any { row -> params[row.flag] }) {
+    error('E2E matrix: enable at least one browser/device option (e.g. CHROME_TESTS).')
   }
 }
 
 def handleEnvironmentSetting() {
-  env.MANAGE_CASE_BASE_URL = 'https://manage-case.aat.platform.hmcts.net'
-  env.DATA_STORE_URL_BASE = 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
-  env.ENVIRONMENT = 'aat'
   def tag = params.PLAYWRIGHT_GREP_TAG ?: '@nightly'
   env.E2E_TEST_SCOPE = (tag == '(all tests)') ? '' : tag
   env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
+  env.ENVIRONMENT = params.ENVIRONMENT
+  env.MANAGE_CASE_BASE_URL = (params.ENVIRONMENT == 'preview')
+    ? "https://xui-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
+    : "https://manage-case.${params.ENVIRONMENT}.platform.hmcts.net"
+
+  env.DATA_STORE_URL_BASE = (params.ENVIRONMENT == 'preview')
+    ? "https://ccd-data-store-api-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
+    : "http://ccd-data-store-api-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
+
+  env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
+    ? 'pr'
+    : resolvePrimaryE2eRow().project
 }
 
+/** Order matches parameter list: first enabled row drives enableE2eTest() (library End to End test stage). */
 def getE2eMatrix() {
   return [
     [flag: 'CHROME_TESTS', project: 'chrome', browser: 'Chrome', label: 'Desktop Chrome'],
@@ -111,15 +149,33 @@ def getE2eMatrix() {
   ]
 }
 
-def runE2eMatrix() {
-  def e2eMatrix = getE2eMatrix()
-  if (!e2eMatrix.any { row -> params[row.flag] }) {
+def resolvePrimaryE2eRow() {
+  def primary = getE2eMatrix().find { row -> params[row.flag] }
+  if (!primary) {
     error('E2E matrix: enable at least one browser/device option (e.g. CHROME_TESTS).')
   }
+  return primary
+}
+
+def postPrimaryE2eSlack() {
+  if (params.ENVIRONMENT == 'preview') {
+    sendAllureReportToSlack('PR preview', 'E2E_20Test_20Report/')
+    return
+  }
+  def primary = resolvePrimaryE2eRow()
+  // Matches GradleBuilder.e2eTest() publishHTML reportName: 'E2E Test Report'
+  sendAllureReportToSlack(primary.label, 'E2E_20Test_20Report/')
+}
+
+def runE2eSupplementaryMatrix() {
+  if (params.ENVIRONMENT == 'preview') {
+    return
+  }
+  def primaryProject = resolvePrimaryE2eRow().project
   def gradleBuilder = new uk.gov.hmcts.contino.GradleBuilder(this, product)
-  e2eMatrix.each { row ->
-    if (params[row.flag]) {
-      runE2eStage(gradleBuilder, row.project, row.label)
+  getE2eMatrix().each { row ->
+    if (params[row.flag] && row.project != primaryProject) {
+      runE2eStage(gradleBuilder, row.project, row.browser, row.label)
     }
   }
 }
@@ -152,18 +208,19 @@ def sendAllureReportToSlack(String stageLabel, String projectId) {
   env.E2E_BROWSER = stageLabel
   env.ALLURE_REPORT_PATH_SUFFIX = "Full_20${projectId}_20E2E_20Test_20Report/"
   env.E2E_SERVICE_NAME = 'pcs-api'
-  env.E2E_PIPELINE_TYPE = 'nightly'
+  def pipelineType = 'nightly'
+  env.E2E_PIPELINE_TYPE = pipelineType
   def msg = sh(
-    script: 'cd src/e2eTest && ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only --pipeline-type nightly 2>/dev/null || true',
+    script: "cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=${pipelineType} ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true",
     returnStdout: true
   ).trim()
   if (!msg) {
-    msg = "E2E Test Results — Build #${env.BUILD_NUMBER} — See ${env.BUILD_URL} for details"
+    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}${reportSuffix}"
   }
   try {
     slackSend(channel: '#qa-pipeline-status', message: msg)
     echo "E2E Slack notification sent to #qa-pipeline-status (${stageLabel})"
   } catch (Exception e) {
-    echo "WARNING: Slack notification failed: ${e.message}"
+    echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
 }
