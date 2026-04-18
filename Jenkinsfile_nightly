@@ -27,7 +27,7 @@ properties([
     booleanParam(
       name: 'WEBKIT_TESTS',
       defaultValue: false,
-      description: 'Run E2E tests in WebKit / desktop Safari (off by default; enable when needed).'
+      description: 'Run E2E tests in WebKit (off by default; enable when needed).'
     ),
     booleanParam(
       name: 'EDGE_TESTS',
