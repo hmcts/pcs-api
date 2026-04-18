@@ -66,8 +66,6 @@ test.beforeEach(async ({ page }) => {
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
-
-
 test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CREATOR]');
