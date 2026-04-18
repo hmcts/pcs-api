@@ -22,7 +22,7 @@ properties([
     booleanParam(
       name: 'FIREFOX_TESTS',
       defaultValue: false,
-      description: description: 'Run E2E tests in Firefox (off by default; enable when needed).'
+      description: 'Run E2E tests in Firefox (off by default; enable when needed).'
     ),
     booleanParam(
       name: 'WEBKIT_TESTS',
