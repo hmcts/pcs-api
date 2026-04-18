@@ -40,8 +40,8 @@ properties([
     ),
     choice(
       name: 'PLAYWRIGHT_GREP_TAG',
-      choices: ['(all tests)', '@PR', '@regression', '@enforcement', '@nightly'],
-      description: 'Tag filter for Playwright --grep. (all tests) = no tag filter. Aligned with HDPI-5905 release-test pipeline.'
+      choices: ['@nightly', '@smoke', '@e2e', '@crossbrowser', '(all tests)'],
+      description: 'Test title grep. (all tests) = no grep. Default: @nightly.'
     ),
     string(
       name: 'PLAYWRIGHT_SPEC',
@@ -94,8 +94,8 @@ def handleEnvironmentSetting() {
   env.MANAGE_CASE_BASE_URL = 'https://manage-case.aat.platform.hmcts.net'
   env.DATA_STORE_URL_BASE = 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
   env.ENVIRONMENT = 'aat'
-  def tag = params.PLAYWRIGHT_GREP_TAG ?: '(all tests)'
-  env.PLAYWRIGHT_GREP = (tag == '(all tests)') ? '' : tag
+  def tag = params.PLAYWRIGHT_GREP_TAG ?: '@nightly'
+  env.E2E_TEST_SCOPE = (tag == '(all tests)') ? '' : tag
   env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
 }
 

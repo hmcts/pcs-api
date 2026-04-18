@@ -15,8 +15,23 @@ export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
 
+/** Build test file globs from E2E_SPEC (comma or semicolon keywords). Empty = run all specs. */
+function testMatchFromE2eSpec(raw: string | undefined): string[] | undefined {
+  const keys = raw
+    ?.split(/[,;]/)
+    .map(k => k.trim())
+    .filter(Boolean);
+  return keys?.length ? keys.map(k => `**/*${k}*.spec.ts`) : undefined;
+}
+
+const e2eSpecTestMatch = testMatchFromE2eSpec(process.env.E2E_SPEC);
+// Aligned with pcs-frontend HDPI-6105: unset -> @nightly; empty string -> no grep (e.g. nightly “all tests”).
+const e2eTag = process.env.E2E_TEST_SCOPE ?? '@nightly';
+
 export default defineConfig({
   testDir: 'tests/',
+  ...(e2eSpecTestMatch?.length ? { testMatch: e2eSpecTestMatch } : {}),
+  ...(e2eTag ? { grep: new RegExp(e2eTag) } : {}),
   /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

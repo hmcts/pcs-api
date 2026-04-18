@@ -169,7 +169,7 @@ There are also several custom test scripts available:
 
 Locally, `playwright.config.ts` registers Firefox, WebKit, Edge, and mobile projects only when `CI` is set (as on Jenkins). For a local multi-browser run, set `CI=true` or pass `--project <name>` for a project that is defined in config.
 
-The nightly Jenkins job (`Jenkinsfile_nightly`) uses AAT URLs, string parameters `PLAYWRIGHT_GREP` (tag filter) and `PLAYWRIGHT_SPEC` (comma-separated spec keywords), and one E2E stage per enabled browser/device checkbox; Slack goes to `#qa-pipeline-status`. PR builds (`Jenkinsfile_CNP`) set suite from `enable_e2e_*` labels and optional `e2e-tag:` / `e2e-spec:` labels for the same env vars. CI runs E2E via `bin/run-e2e-suite.sh` (invoked by `./gradlew runE2eTests`).
+The nightly Jenkins job (`Jenkinsfile_nightly`) uses AAT URLs, choice parameter `PLAYWRIGHT_GREP_TAG` (same options as pcs-frontend nightly: `@nightly`, `@smoke`, `@e2e`, `@crossbrowser`, `(all tests)`; written to `E2E_TEST_SCOPE`, with `(all tests)` meaning no tag filter) and `PLAYWRIGHT_SPEC` (written to `E2E_SPEC`, comma- or semicolon-separated keywords for spec filenames). Tag and spec filtering are applied in `src/e2eTest/playwright.config.ts`, aligned with pcs-frontend HDPI-6105. PR builds (`Jenkinsfile_CNP`) set suite from `enable_e2e_*` labels and optional `e2e-tag:` / `e2e-spec:` labels (`E2E_TEST_SCOPE` / `E2E_SPEC`). CI runs E2E via `src/e2eTest/bin/run-e2e-suite.sh` (invoked by `./gradlew runE2eTests`).
 
 To open generated Allure report
 
