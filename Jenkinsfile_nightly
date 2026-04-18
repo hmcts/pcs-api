@@ -1,6 +1,7 @@
 #!groovy
 
 properties([
+  // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
   pipelineTriggers([cron('H 07 * * 1-5')]),
   parameters([
     choice(
@@ -16,37 +17,37 @@ properties([
     booleanParam(
       name: 'CHROME_TESTS',
       defaultValue: true,
-      description: 'Tick to run E2E tests in Desktop Chrome.'
+      description: 'Run E2E tests in Chrome (on by default).'
     ),
     booleanParam(
       name: 'FIREFOX_TESTS',
       defaultValue: false,
-      description: 'Tick to run E2E tests in Desktop Firefox.'
+      description: description: 'Run E2E tests in Firefox (off by default; enable when needed).'
     ),
     booleanParam(
       name: 'WEBKIT_TESTS',
       defaultValue: false,
-      description: 'Tick to run E2E tests in Desktop WebKit (Safari).'
+      description: 'Run E2E tests in WebKit (off by default; enable when needed).'
     ),
     booleanParam(
-      name: 'MICROSOFT_EDGE_TESTS',
+      name: 'EDGE_TESTS',
       defaultValue: false,
-      description: 'Tick to run E2E tests in Microsoft Edge.'
+      description: 'Run E2E tests in Microsoft Edge (off by default; enable when needed).'
     ),
     booleanParam(
       name: 'MOBILE_ANDROID_TESTS',
       defaultValue: false,
-      description: 'Run E2E tests on the Android (Pixel 5) profile.'
+      description: 'Run E2E tests on the Android (Pixel 5) profile (off by default; enable when needed).'
     ),
     booleanParam(
       name: 'MOBILE_IOS_TESTS',
       defaultValue: false,
-      description: 'Run E2E tests on the iOS (iPhone 12) WebKit profile.'
+      description: 'Run E2E tests on the iOS (iPhone 12) WebKit profile (off by default; enable when needed).'
     ),
     booleanParam(
       name: 'MOBILE_IPAD_TESTS',
       defaultValue: false,
-      description: 'Run E2E tests on the iPad (iPad Pro 11) WebKit profile.'
+      description: 'Run E2E tests on the iPad (iPad Pro 11) WebKit profile (off by default; enable when needed).'
     ),
     choice(
       name: 'PLAYWRIGHT_GREP_TAG',
@@ -180,7 +181,7 @@ def runE2eSupplementaryMatrix() {
   }
 }
 
-def runE2eStage(gradleBuilder, String e2eSuite, String stageLabel) {
+def runE2eStage(gradleBuilder, String e2eSuite, String browser, String stageLabel) {
   stage("${stageLabel}") {
     node {
       checkout scm
@@ -190,23 +191,24 @@ def runE2eStage(gradleBuilder, String e2eSuite, String stageLabel) {
           gradleBuilder.gradle('runE2eTests')
         }
       }
+      def reportPathSuffix = "Full_20${browser}_20E2E_20Test_20Report/"
       publishHTML([
         allowMissing: true,
         alwaysLinkToLastBuild: true,
         keepAll: true,
         reportDir: 'e2e-output',
         reportFiles: 'index.html',
-        reportName: "${stageLabel} E2E Report"
+        reportName: "Full ${browser} E2E Test Report"
       ])
       steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
-      sendAllureReportToSlack(stageLabel, e2eSuite)
+      sendAllureReportToSlack(stageLabel, reportPathSuffix)
     }
   }
 }
 
-def sendAllureReportToSlack(String stageLabel, String projectId) {
+def sendAllureReportToSlack(String stageLabel, String reportPathSuffix) {
   env.E2E_BROWSER = stageLabel
-  env.ALLURE_REPORT_PATH_SUFFIX = "Full_20${projectId}_20E2E_20Test_20Report/"
+  env.ALLURE_REPORT_PATH_SUFFIX = reportPathSuffix
   env.E2E_SERVICE_NAME = 'pcs-api'
   def pipelineType = 'nightly'
   env.E2E_PIPELINE_TYPE = pipelineType
@@ -215,7 +217,7 @@ def sendAllureReportToSlack(String stageLabel, String projectId) {
     returnStdout: true
   ).trim()
   if (!msg) {
-    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}${reportSuffix}"
+    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}${reportPathSuffix}"
   }
   try {
     slackSend(channel: '#qa-pipeline-status', message: msg)
