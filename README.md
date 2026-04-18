@@ -169,7 +169,7 @@ There are also several custom test scripts available:
 
 Locally, `playwright.config.ts` registers Firefox, WebKit, Edge, and mobile projects only when `CI` is set (as on Jenkins). For a local multi-browser run, set `CI=true` or pass `--project <name>` for a project that is defined in config.
 
-The nightly Jenkins job (`Jenkinsfile_nightly`) can run a subset of these via build parameters (one stage and Slack notification per enabled browser/device).
+The nightly Jenkins job (`Jenkinsfile_nightly`) follows the same release-test style as pcs-frontend **HDPI-5905**: AAT URLs, optional `PLAYWRIGHT_GREP_TAG` / `PLAYWRIGHT_SPEC`, one stage per enabled browser/device, and Slack to `#qa-pipeline-status`. CI runs E2E via `bin/run-e2e-suite.sh` (invoked by `./gradlew runE2eTests`); optional env vars `PLAYWRIGHT_GREP` and `E2E_SPEC` override defaults for `pr` / `regression` / `enforcement` when set.
 
 To open generated Allure report
 

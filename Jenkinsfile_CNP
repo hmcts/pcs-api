@@ -58,6 +58,17 @@ withPipeline(type, product, component) {
     } else {
       env.CCD_ENABLED = "false"
     }
+
+    // Configurable E2E (aligned with pcs-frontend HDPI-6105: e2e-tag: / e2e-spec: labels)
+    def e2eGrep = prLabelSuffix(githubApi, 'e2e-tag:')
+    if (e2eGrep?.trim()) {
+      env.PLAYWRIGHT_GREP = e2eGrep.trim()
+    }
+    def e2eSpec = prLabelSuffix(githubApi, 'e2e-spec:')
+    if (e2eSpec?.trim()) {
+      env.E2E_SPEC = e2eSpec.trim()
+    }
+
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
     }
@@ -143,6 +154,12 @@ withPipeline(type, product, component) {
   }
 }
 
+/** First PR label matching prefix → value after prefix (e.g. e2e-tag:@smoke → @smoke), or null if none. */
+def prLabelSuffix(githubApi, String prefix) {
+  def labels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, prefix)
+  return (labels && labels.size() > 0) ? labels[0].replaceFirst('^' + prefix, '') : null
+}
+
 def setPreviewEnvVars() {
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
@@ -212,7 +229,7 @@ def archiveE2eTestReports() {
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
 }
 
-// E2E stage notification to #hdp-qa-e2e-test-results
+// E2E stage notification to #qa-pipeline-status (aligned with nightly / HDPI-5905)
 def postAllureResultsToSlack(String pipelineType = 'master') {
   env.E2E_SERVICE_NAME = 'pcs-api'
   env.E2E_PIPELINE_TYPE = pipelineType
@@ -224,8 +241,8 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
   }
   try {
-    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
-    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results"
+    slackSend(channel: '#qa-pipeline-status', message: msg)
+    echo "E2E Slack notification sent to #qa-pipeline-status"
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }

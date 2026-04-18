@@ -1,43 +1,52 @@
 #!groovy
 
 properties([
-  // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
   pipelineTriggers([cron('H 07 * * 1-5')]),
   parameters([
     booleanParam(
       name: 'CHROME_TESTS',
       defaultValue: true,
-      description: 'Run E2E tests in Chrome (on by default).'
+      description: 'Tick to run E2E tests in Desktop Chrome.'
     ),
     booleanParam(
       name: 'FIREFOX_TESTS',
       defaultValue: false,
-      description: 'Run E2E tests in Firefox (off by default; enable when needed).'
+      description: 'Tick to run E2E tests in Desktop Firefox.'
     ),
     booleanParam(
       name: 'WEBKIT_TESTS',
       defaultValue: false,
-      description: 'Run E2E tests in WebKit / desktop Safari (off by default; enable when needed).'
+      description: 'Tick to run E2E tests in Desktop WebKit (Safari).'
     ),
     booleanParam(
-      name: 'EDGE_TESTS',
+      name: 'MICROSOFT_EDGE_TESTS',
       defaultValue: false,
-      description: 'Run E2E tests in Microsoft Edge (off by default; enable when needed).'
+      description: 'Tick to run E2E tests in Microsoft Edge.'
     ),
     booleanParam(
       name: 'MOBILE_ANDROID_TESTS',
       defaultValue: false,
-      description: 'Run E2E tests on the Android (Pixel 5) profile (off by default; enable when needed).'
+      description: 'Run E2E tests on the Android (Pixel 5) profile.'
     ),
     booleanParam(
       name: 'MOBILE_IOS_TESTS',
       defaultValue: false,
-      description: 'Run E2E tests on the iOS (iPhone 12) WebKit profile (off by default; enable when needed).'
+      description: 'Run E2E tests on the iOS (iPhone 12) WebKit profile.'
     ),
     booleanParam(
       name: 'MOBILE_IPAD_TESTS',
       defaultValue: false,
-      description: 'Run E2E tests on the iPad (iPad Pro 11) WebKit profile (off by default; enable when needed).'
+      description: 'Run E2E tests on the iPad (iPad Pro 11) WebKit profile.'
+    ),
+    choice(
+      name: 'PLAYWRIGHT_GREP_TAG',
+      choices: ['(all tests)', '@PR', '@regression', '@enforcement', '@nightly'],
+      description: 'Tag filter for Playwright --grep. (all tests) = no tag filter. Aligned with HDPI-5905 release-test pipeline.'
+    ),
+    string(
+      name: 'PLAYWRIGHT_SPEC',
+      defaultValue: '',
+      description: 'Optional: comma-separated spec path keywords (e.g. searchCase,createCase). Blank = all specs under tests/.'
     ),
   ])
 ])
@@ -70,7 +79,7 @@ def secrets = [
 ]
 
 withNightlyPipeline(type, product, component) {
-  enableSlackNotifications('#pcs-tech')
+  enableSlackNotifications('#qa-pipeline-status')
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
@@ -85,6 +94,9 @@ def handleEnvironmentSetting() {
   env.MANAGE_CASE_BASE_URL = 'https://manage-case.aat.platform.hmcts.net'
   env.DATA_STORE_URL_BASE = 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
   env.ENVIRONMENT = 'aat'
+  def tag = params.PLAYWRIGHT_GREP_TAG ?: '(all tests)'
+  env.PLAYWRIGHT_GREP = (tag == '(all tests)') ? '' : tag
+  env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
 }
 
 def getE2eMatrix() {
@@ -92,7 +104,7 @@ def getE2eMatrix() {
     [flag: 'CHROME_TESTS', project: 'chrome', browser: 'Chrome', label: 'Desktop Chrome'],
     [flag: 'FIREFOX_TESTS', project: 'firefox', browser: 'Firefox', label: 'Desktop Firefox'],
     [flag: 'WEBKIT_TESTS', project: 'webkit', browser: 'Safari', label: 'Desktop Safari (WebKit)'],
-    [flag: 'EDGE_TESTS', project: 'edge', browser: 'Edge', label: 'Desktop Edge'],
+    [flag: 'MICROSOFT_EDGE_TESTS', project: 'edge', browser: 'Edge', label: 'Desktop Edge'],
     [flag: 'MOBILE_ANDROID_TESTS', project: 'mobile-android', browser: 'MobileAndroid', label: 'Mobile Android (Pixel 5)'],
     [flag: 'MOBILE_IOS_TESTS', project: 'mobile-ios', browser: 'MobileIos', label: 'Mobile iOS (WebKit)'],
     [flag: 'MOBILE_IPAD_TESTS', project: 'mobile-ipad', browser: 'MobileIpad', label: 'Mobile iPad (WebKit)'],
@@ -107,13 +119,13 @@ def runE2eMatrix() {
   def gradleBuilder = new uk.gov.hmcts.contino.GradleBuilder(this, product)
   e2eMatrix.each { row ->
     if (params[row.flag]) {
-      runE2eStage(gradleBuilder, row.project, row.browser, row.label)
+      runE2eStage(gradleBuilder, row.project, row.label)
     }
   }
 }
 
-def runE2eStage(gradleBuilder, String e2eSuite, String browser, String stageLabel) {
-  stage("E2E - ${stageLabel}") {
+def runE2eStage(gradleBuilder, String e2eSuite, String stageLabel) {
+  stage("${stageLabel}") {
     node {
       checkout scm
       sh 'rm -rf e2e-output allure-report src/e2eTest/allure-results src/e2eTest/.auth/storage-state.json || true'
@@ -128,17 +140,17 @@ def runE2eStage(gradleBuilder, String e2eSuite, String browser, String stageLabe
         keepAll: true,
         reportDir: 'e2e-output',
         reportFiles: 'index.html',
-        reportName: "Full ${browser} E2E Test Report"
+        reportName: "${stageLabel} E2E Report"
       ])
       steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
-      sendAllureReportToSlack(stageLabel, "Full_20${browser}_20E2E_20Test_20Report/")
+      sendAllureReportToSlack(stageLabel, e2eSuite)
     }
   }
 }
 
-def sendAllureReportToSlack(String stageLabel, String reportSuffix) {
+def sendAllureReportToSlack(String stageLabel, String projectId) {
   env.E2E_BROWSER = stageLabel
-  env.ALLURE_REPORT_PATH_SUFFIX = reportSuffix
+  env.ALLURE_REPORT_PATH_SUFFIX = "Full_20${projectId}_20E2E_20Test_20Report/"
   env.E2E_SERVICE_NAME = 'pcs-api'
   env.E2E_PIPELINE_TYPE = 'nightly'
   def msg = sh(
@@ -149,8 +161,8 @@ def sendAllureReportToSlack(String stageLabel, String reportSuffix) {
     msg = "E2E Test Results — Build #${env.BUILD_NUMBER} — See ${env.BUILD_URL} for details"
   }
   try {
-    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
-    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results (${stageLabel})"
+    slackSend(channel: '#qa-pipeline-status', message: msg)
+    echo "E2E Slack notification sent to #qa-pipeline-status (${stageLabel})"
   } catch (Exception e) {
     echo "WARNING: Slack notification failed: ${e.message}"
   }
