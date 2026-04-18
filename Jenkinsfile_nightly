@@ -4,15 +4,40 @@ properties([
   // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
   pipelineTriggers([cron('H 07 * * 1-5')]),
   parameters([
-    choice(
-      name: 'ENVIRONMENT',
-      choices: ['aat', 'preview'],
-      description: 'Environment to run the test.'
+    booleanParam(
+      name: 'CHROME_TESTS',
+      defaultValue: true,
+      description: 'Run E2E tests in Chrome (on by default).'
     ),
-    string(
-      name: 'PR_NUMBER',
-      defaultValue: '',
-      description: 'PR number (REQUIRED if environment is preview, leave blank otherwise).'
+    booleanParam(
+      name: 'FIREFOX_TESTS',
+      defaultValue: false,
+      description: 'Run E2E tests in Firefox (off by default; enable when needed).'
+    ),
+    booleanParam(
+      name: 'WEBKIT_TESTS',
+      defaultValue: false,
+      description: 'Run E2E tests in WebKit / desktop Safari (off by default; enable when needed).'
+    ),
+    booleanParam(
+      name: 'EDGE_TESTS',
+      defaultValue: false,
+      description: 'Run E2E tests in Microsoft Edge (off by default; enable when needed).'
+    ),
+    booleanParam(
+      name: 'MOBILE_ANDROID_TESTS',
+      defaultValue: false,
+      description: 'Run E2E tests on the Android (Pixel 5) profile (off by default; enable when needed).'
+    ),
+    booleanParam(
+      name: 'MOBILE_IOS_TESTS',
+      defaultValue: false,
+      description: 'Run E2E tests on the iOS (iPhone 12) WebKit profile (off by default; enable when needed).'
+    ),
+    booleanParam(
+      name: 'MOBILE_IPAD_TESTS',
+      defaultValue: false,
+      description: 'Run E2E tests on the iPad (iPad Pro 11) WebKit profile (off by default; enable when needed).'
     ),
   ])
 ])
@@ -45,61 +70,88 @@ def secrets = [
 ]
 
 withNightlyPipeline(type, product, component) {
-  validateInputs()
   enableSlackNotifications('#pcs-tech')
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
 
-  enableE2eTest()
-
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-  }
-
-  afterAlways('E2eTest') {
-    postAllureResultsToSlack()
-  }
-}
-
-def validateInputs() {
-  if (params.ENVIRONMENT == 'preview' && (!params.PR_NUMBER?.trim())) {
-    error("Validation Failed: PR number is required when environment is 'preview'")
-  }
-  if (params.ENVIRONMENT == 'preview' && !params.PR_NUMBER.trim().matches("^\\d+\$")) {
-    error("Validation Failed: PR number must contain only numerical values")
+    runE2eMatrix()
   }
 }
 
 def handleEnvironmentSetting() {
-  env.MANAGE_CASE_BASE_URL = (params.ENVIRONMENT == 'preview')
-    ? "https://xui-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
-    : "https://manage-case.${params.ENVIRONMENT}.platform.hmcts.net"
-
-  env.DATA_STORE_URL_BASE = (params.ENVIRONMENT == 'preview')
-    ? "https://ccd-data-store-api-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
-    : "http://ccd-data-store-api-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
-
-  env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
-    ? "pr"
-    : "chrome"
+  env.MANAGE_CASE_BASE_URL = 'https://manage-case.aat.platform.hmcts.net'
+  env.DATA_STORE_URL_BASE = 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
+  env.ENVIRONMENT = 'aat'
 }
 
-// E2E stage notification to #hdp-qa-e2e-test-results
-def postAllureResultsToSlack() {
+def getE2eMatrix() {
+  return [
+    [flag: 'CHROME_TESTS', project: 'chrome', browser: 'Chrome', label: 'Desktop Chrome'],
+    [flag: 'FIREFOX_TESTS', project: 'firefox', browser: 'Firefox', label: 'Desktop Firefox'],
+    [flag: 'WEBKIT_TESTS', project: 'webkit', browser: 'Safari', label: 'Desktop Safari (WebKit)'],
+    [flag: 'EDGE_TESTS', project: 'edge', browser: 'Edge', label: 'Desktop Edge'],
+    [flag: 'MOBILE_ANDROID_TESTS', project: 'mobile-android', browser: 'MobileAndroid', label: 'Mobile Android (Pixel 5)'],
+    [flag: 'MOBILE_IOS_TESTS', project: 'mobile-ios', browser: 'MobileIos', label: 'Mobile iOS (WebKit)'],
+    [flag: 'MOBILE_IPAD_TESTS', project: 'mobile-ipad', browser: 'MobileIpad', label: 'Mobile iPad (WebKit)'],
+  ]
+}
+
+def runE2eMatrix() {
+  def e2eMatrix = getE2eMatrix()
+  if (!e2eMatrix.any { row -> params[row.flag] }) {
+    error('E2E matrix: enable at least one browser/device option (e.g. CHROME_TESTS).')
+  }
+  def gradleBuilder = new uk.gov.hmcts.contino.GradleBuilder(this, product)
+  e2eMatrix.each { row ->
+    if (params[row.flag]) {
+      runE2eStage(gradleBuilder, row.project, row.browser, row.label)
+    }
+  }
+}
+
+def runE2eStage(gradleBuilder, String e2eSuite, String browser, String stageLabel) {
+  stage("E2E - ${stageLabel}") {
+    node {
+      checkout scm
+      sh 'rm -rf e2e-output allure-report src/e2eTest/allure-results src/e2eTest/.auth/storage-state.json || true'
+      catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+        withEnv(["E2E_SUITE=${e2eSuite}"]) {
+          gradleBuilder.gradle('runE2eTests')
+        }
+      }
+      publishHTML([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: 'e2e-output',
+        reportFiles: 'index.html',
+        reportName: "Full ${browser} E2E Test Report"
+      ])
+      steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
+      sendAllureReportToSlack(stageLabel, "Full_20${browser}_20E2E_20Test_20Report/")
+    }
+  }
+}
+
+def sendAllureReportToSlack(String stageLabel, String reportSuffix) {
+  env.E2E_BROWSER = stageLabel
+  env.ALLURE_REPORT_PATH_SUFFIX = reportSuffix
   env.E2E_SERVICE_NAME = 'pcs-api'
   env.E2E_PIPELINE_TYPE = 'nightly'
   def msg = sh(
-    script: "cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=nightly ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true",
+    script: 'cd src/e2eTest && ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only --pipeline-type nightly 2>/dev/null || true',
     returnStdout: true
   ).trim()
   if (!msg) {
-    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* nightly\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
+    msg = "E2E Test Results — Build #${env.BUILD_NUMBER} — See ${env.BUILD_URL} for details"
   }
   try {
     slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
-    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results"
+    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results (${stageLabel})"
   } catch (Exception e) {
-    echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
+    echo "WARNING: Slack notification failed: ${e.message}"
   }
 }
