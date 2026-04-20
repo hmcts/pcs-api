@@ -6,5 +6,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 
 public interface TaskGroupEvaluator {
     TaskGroupId groupId();
+    
     TaskGroup evaluate(DashboardContext ctx);
 }

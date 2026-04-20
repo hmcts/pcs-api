@@ -8,4 +8,4 @@ public enum TaskStatus {
     IN_PROGRESS,
     OPTIONAL,
     COMPLETED
-  }
+}
