@@ -38,8 +38,9 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Defendant Response Submission")
             .description("Save defendants response as draft or to a case based on flag")
-            .grant(Permission.CRU, UserRole.DEFENDANT);
+            .grant(Permission.CRU, UserRole.DEFENDANT, UserRole.PCS_SOLICITOR);
         new PageBuilder(eventBuilder)
             .add(respondToPossessionDraftSavePage);
     }
+    
 }

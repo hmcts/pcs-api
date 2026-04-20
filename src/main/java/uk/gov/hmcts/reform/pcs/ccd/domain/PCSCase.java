@@ -564,4 +564,7 @@ public class PCSCase {
     )
     private DynamicList caseManagementCategory;
 
+    @CCD( label = "Enter case number")
+    private String enterCaseNumber;
+
 }
