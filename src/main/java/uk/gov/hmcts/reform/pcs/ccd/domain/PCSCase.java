@@ -429,6 +429,9 @@ public class PCSCase {
     )
     private CompletionNextStep completionNextStep;
 
+    @CCD(searchable = false)
+    private String endButtonLabel;
+
     @JsonUnwrapped(prefix = "possessionGroundsWales_")
     private GroundsForPossessionWales groundsForPossessionWales;
 
@@ -560,5 +563,11 @@ public class PCSCase {
         access = {GlobalSearchAccess.class}
     )
     private DynamicList caseManagementCategory;
+
+    @CCD(searchable = false)
+    private String confirmEvictionSummaryMarkup;
+
+    @CCD(searchable = false, access = {ClaimantAccess.class})
+    private YesOrNo showConfirmEvictionJourney;
 
 }
