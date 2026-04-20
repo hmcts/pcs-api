@@ -16,6 +16,7 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -281,15 +283,25 @@ class PcsCaseServiceTest {
             .caseFlags(flags)
             .build();
 
+        List<ListValue<Party>> parties = createParties();
+        caseData.setParties(parties);
+
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
+        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties);
 
         // When
         underTest.patchCaseFlags(CASE_REFERENCE, caseData);
 
         // Then
-        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
-        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity);
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties);
+        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity, parties);
+    }
+
+    private List<ListValue<Party>> createParties() {
+        List<ListValue<Party>> parties = new ArrayList<>();
+        parties.add(ListValue.<Party>builder().value(Party.builder().build()).build());
+
+        return parties;
     }
 
     private ListValue<FlagDetail> createFlagDetails() {
@@ -315,15 +327,19 @@ class PcsCaseServiceTest {
         PCSCase caseData = PCSCase.builder()
             .caseFlags(flags)
             .build();
-        caseData.setCaseFlags(flags);
+
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        List<ListValue<Party>> parties = createParties();
+
+        caseData.setParties(parties);
 
         // When
         underTest.patchCaseFlags(CASE_REFERENCE, caseData);
 
         // Then
-        assertThat(pcsCaseEntity.getCaseFlags()).isNull();
-        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
+        assertThat(pcsCaseEntity.getCaseFlags()).hasSize(0);
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties);
     }
 
     @Test
@@ -357,9 +373,9 @@ class PcsCaseServiceTest {
         return ListValue.<FlagDetail>builder()
             .id(UUID.randomUUID().toString())
             .value(FlagDetail.builder()
-                .flagCode("RA0012")
-                .flagComment("Test Comment")
-                .name("Test Flag")
+                .flagCode("CF002")
+                .flagComment("Complex case")
+                .name("Complex Case")
                 .build())
             .build();
     }

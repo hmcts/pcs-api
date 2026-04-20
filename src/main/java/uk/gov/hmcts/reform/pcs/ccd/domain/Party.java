@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 
 import java.time.LocalDate;
 
@@ -39,13 +40,8 @@ public class Party {
     private LocalDate dateOfBirth;
 
     @CCD(
-        label = "Flags for Appellant",
-        retainHiddenValue = true
-    )
-    private Flags appellantFlags;
-
-    @CCD(
-        label = "Flags for Respondent",
+        access = {InternalCaseFlagAccess.class},
+        label = "Party Flags",
         retainHiddenValue = true
     )
     private Flags respondentFlags;

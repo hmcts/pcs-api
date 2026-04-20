@@ -24,25 +24,43 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 @AllArgsConstructor
 public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
+    private  static final String ALWAYS_HIDE = "flagLauncherInternal = \"ALWAYS_HIDE\"";
     private  final PcsCaseService pcsCaseService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        new PageBuilder(configBuilder
+        Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
+            configBuilder
                 .decentralisedEvent(EventId.createFlags.name(), this::submit)
                 .forAllStates()
-                .name("Create flags")
+                .name("Create Flag")
                 .description("To create flags")
                 .showSummary()
-                .grant(Permission.CRU, UserRole.PCS_CASE_WORKER))
+                .grant(Permission.CRU, UserRole.PCS_SOLICITOR);
+
+        new PageBuilder(eventBuilder)
                 .page("caseworkerCaseFlag")
                 .pageLabel("Case Flags")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
-                .optional(
-                PCSCase::getFlagLauncherInternal,
-                null, null, null, null,
-                "#ARGUMENT(CREATE)"
-            );
+                .optional(PCSCase::getParties, ALWAYS_HIDE, true, true)
+                .page("respondentFlags")
+                .list(PCSCase::getParties, ALWAYS_HIDE)
+                    .optional(Party::getFirstName, ALWAYS_HIDE)
+                    .optional(Party::getLastName, ALWAYS_HIDE)
+                    .optional(Party::getOrgName, ALWAYS_HIDE)
+                    .optional(Party::getNameKnown, ALWAYS_HIDE)
+                    .optional(Party::getEmailAddress, ALWAYS_HIDE)
+                    .complex(Party::getAddress, ALWAYS_HIDE)
+                    .done()
+                    .optional(Party::getAddressKnown, ALWAYS_HIDE)
+                    .optional(Party::getAddressSameAsProperty, ALWAYS_HIDE)
+                    .optional(Party::getPhoneNumber, ALWAYS_HIDE)
+                    .optional(Party::getPhoneNumberProvided, ALWAYS_HIDE)
+                    .optional(Party::getRespondentFlags, ALWAYS_HIDE,  true)
+                .done()
+                .optional(PCSCase::getFlagLauncherInternal,
+                      null, null, null, null,
+                      "#ARGUMENT(CREATE)");
 
     }
 

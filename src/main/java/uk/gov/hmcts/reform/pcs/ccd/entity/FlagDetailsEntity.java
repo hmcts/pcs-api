@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,6 +41,10 @@ public class FlagDetailsEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "case_id")
     private PcsCaseEntity pcsCase;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "party_id")
+    private PartyEntity party;
 
     @OneToMany(mappedBy = "flagDetails", cascade = ALL, orphanRemoval = true)
     @Builder.Default

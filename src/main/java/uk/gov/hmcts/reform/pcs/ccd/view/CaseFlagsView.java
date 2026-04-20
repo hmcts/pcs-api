@@ -9,12 +9,15 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @AllArgsConstructor
@@ -23,6 +26,7 @@ public class CaseFlagsView {
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
 
         mapBasicCaseFlagFields(pcsCase, pcsCaseEntity);
+        mapComplexPartyFlagFields(pcsCase, pcsCaseEntity);
     }
 
     private void mapBasicCaseFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -70,37 +74,38 @@ public class CaseFlagsView {
 
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<ListValue<Party>> mappedParties = pcsCaseEntity.getParties().stream()
-            .map(this::mapPartyWithAppellantFlags)
+            .map(this::mapPartyWithRespondentFlags)
             .toList();
 
         pcsCase.setParties(mappedParties);
     }
 
-    private ListValue<Party> mapPartyWithAppellantFlags(PartyEntity partyEntity) {
+    private ListValue<Party> mapPartyWithRespondentFlags(PartyEntity partyEntity) {
         return ListValue.<Party>builder()
             .id(partyEntity.getId().toString())
             .value(
                 Party.builder()
                     .firstName(partyEntity.getFirstName())
                     .lastName(partyEntity.getLastName())
-                    .appellantFlags(mapAppellantFlags(partyEntity))
+                    .respondentFlags(mapRespondentFlags(partyEntity))
                     .build()
             )
             .build();
     }
 
-    private Flags mapAppellantFlags(PartyEntity partyEntity) {
-        if (partyEntity.getAppellantFlags() == null || partyEntity.getAppellantFlags().isEmpty()) {
-            return Flags.builder().details(List.of()).build();
+    private Flags mapRespondentFlags(PartyEntity partyEntity) {
+        if (partyEntity.getRespondentFlags() == null || partyEntity.getRespondentFlags().isEmpty()) {
+            return Flags.builder().details(new ArrayList<>()).build();
         }
 
-        FlagsEntity firstAppellantFlag = partyEntity.getAppellantFlags().getFirst();
+        List<FlagDetailsEntity> firstRespondentFlag = partyEntity.getRespondentFlags();
 
         return Flags.builder()
-            .partyName(firstAppellantFlag.getPartyName())
-            .roleOnCase(firstAppellantFlag.getRoleOnCase())
-            .details(mapFlagDetails(firstAppellantFlag))
+            .partyName(Stream.of(partyEntity.getFirstName(), partyEntity.getLastName(),
+                                 partyEntity.getOrgName()).filter(
+                Objects::nonNull).collect(Collectors.joining(" ")))
+            .roleOnCase(partyEntity.getOrgName())
+            .details(mapFlagDetails(firstRespondentFlag))
             .build();
     }
-
 }

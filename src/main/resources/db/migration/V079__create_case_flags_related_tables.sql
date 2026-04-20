@@ -1,6 +1,7 @@
 CREATE TABLE flag_details (
                             id UUID PRIMARY KEY,
-                            case_id UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
+                            case_id UUID REFERENCES pcs_case(id) ON DELETE CASCADE,
+                            party_id UUID REFERENCES party(id) ON DELETE CASCADE,
                             flag_code VARCHAR(6) NOT NULL,
                             name VARCHAR(255) NOT NULL,
                             name_cy VARCHAR(255) NOT NULL,

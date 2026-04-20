@@ -24,7 +24,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.time.LocalDate;
@@ -110,12 +110,6 @@ public class PartyEntity {
         cascade = ALL,
         orphanRemoval = true)
     @Builder.Default
-    private List<FlagsEntity> appellantFlags = new ArrayList<>();
-
-    @OneToMany(mappedBy = "party",
-        cascade = ALL,
-        orphanRemoval = true)
-    @Builder.Default
-    private List<FlagsEntity> respondentFlags = new ArrayList<>();
+    private List<FlagDetailsEntity> respondentFlags = new ArrayList<>();
 
 }

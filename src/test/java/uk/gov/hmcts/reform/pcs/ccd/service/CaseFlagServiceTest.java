@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -19,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,8 +46,10 @@ class CaseFlagServiceTest {
                                               "Complicated case", "Active", false))
             .build();
 
+        List<ListValue<Party>> parties = createParties();
+
         // When
-        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, parties);
 
         // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
@@ -63,6 +65,16 @@ class CaseFlagServiceTest {
         assertEquals("Case", savedPaths.getFirst().getPath());
     }
 
+    private List<ListValue<Party>> createParties() {
+        List<ListValue<Party>> parties = new ArrayList<>();
+        ListValue<Party> partyListValue = ListValue.<Party>builder()
+            .id(UUID.randomUUID().toString())
+            .value(Party.builder().build())
+            .build();
+        parties.add(partyListValue);
+        return parties;
+    }
+
     @Test
     void shouldMergeNewCaseFlagsWithNoPaths() {
         // Given
@@ -74,8 +86,10 @@ class CaseFlagServiceTest {
                                       "Urgent case test", "Active", true))
             .build();
 
+        List<ListValue<Party>> parties = createParties();
+
         // When
-        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, parties);
 
         // Then
         List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
@@ -103,8 +117,10 @@ class CaseFlagServiceTest {
             .details(flagDetails)
             .build();
 
+        List<ListValue<Party>> parties = createParties();
+
         // When
-        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, parties);
 
         // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
@@ -120,50 +136,53 @@ class CaseFlagServiceTest {
 
     @Test
     void testMergePartyFlags_NewPartyWithFlags() {
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().parties(new HashSet<>()).build();
+        UUID partyId = UUID.randomUUID();
+        Set<PartyEntity> partyEntities = createPartyEntities(partyId);
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().parties(partyEntities).build();
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(List.of(createFlagDetail("FLAG_CODE_1", "Test Flag Comment 1")))
+            .details(createFlagDetail(null,"CF0002", "Complex Case",
+                                              "Complicated case", "Active", false))
             .build();
 
-        Party incomingParty = Party.builder().appellantFlags(incomingFlags).build();
-        List<ListValue<Party>> parties = List.of(createPartyListValue(UUID.randomUUID().toString(), incomingParty));
+        Party incomingParty = Party.builder().respondentFlags(incomingFlags).build();
+        List<ListValue<Party>> parties = List.of(createPartyListValue(partyId.toString(), incomingParty));
 
-        caseFlagService.mergePartyFlags(parties, pcsCaseEntity);
+        underTest.mergePartyFlags(parties, pcsCaseEntity);
 
         assertEquals(1, pcsCaseEntity.getParties().size());
         PartyEntity savedParty = pcsCaseEntity.getParties().iterator().next();
 
-        assertNotNull(savedParty.getAppellantFlags());
-        assertEquals(1, savedParty.getAppellantFlags().size());
+        assertNotNull(savedParty.getRespondentFlags());
+        assertEquals(1, savedParty.getRespondentFlags().size());
 
-        FlagsEntity savedFlags = savedParty.getAppellantFlags().get(0);
-        assertEquals("Internal", savedFlags.getVisibility());
-        assertEquals(1, savedFlags.getCaseFlags().size());
+        FlagDetailsEntity savedFlags = savedParty.getRespondentFlags().getFirst();
+        assertEquals("CF0002", savedFlags.getFlagCode());
+    }
 
-        FlagDetailsEntity flagDetail = savedFlags.getCaseFlags().iterator().next();
-        assertEquals("FLAG_CODE_1", flagDetail.getFlagCode());
-        assertEquals("Test Flag Comment 1", flagDetail.getFlagComment());
+    private Set<PartyEntity> createPartyEntities(UUID partyId) {
+        Set<PartyEntity> parties = new HashSet<>();
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(partyId)
+            .firstName("King")
+            .lastName("Smith")
+            .build();
+        parties.add(partyEntity);
+        return parties;
     }
 
     @Test
     void testMergePartyFlags_UpdateExistingPartyFlags() {
+        // Given
         UUID existingPartyId = UUID.randomUUID();
 
-        FlagDetailsEntity existingFlagDetail = FlagDetailsEntity.builder()
-            .flagCode("OLD_FLAG")
-            .flagComment("Old Flag Comment")
-            .build();
+        List<FlagDetailsEntity> existingFlagsEntity = createFlagDetailsEntity(existingPartyId);
 
-        FlagsEntity existingFlagsEntity = FlagsEntity.builder()
-            .visibility("Hidden")
-            .caseFlags(new ArrayList<>(List.of(existingFlagDetail)))
-            .build();
 
         PartyEntity existingParty = PartyEntity.builder()
             .id(existingPartyId)
-            .appellantFlags(new ArrayList<>(List.of(existingFlagsEntity)))
+            .respondentFlags(existingFlagsEntity)
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
@@ -172,30 +191,26 @@ class CaseFlagServiceTest {
 
         Flags updatedFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(List.of(createFlagDetail("NEW_FLAG", "Updated Flag Comment")))
+            .details((createFlagDetail(null,"CF0008", "Power of arrest with Police ",
+                                              "Police arrest inactive", "Inactive", false)))
             .build();
 
-        Party incomingParty = Party.builder().appellantFlags(updatedFlags).build();
+        Party incomingParty = Party.builder().respondentFlags(updatedFlags).build();
         List<ListValue<Party>> incomingParties = List.of(createPartyListValue(
             existingPartyId.toString(),
             incomingParty
         ));
 
-        caseFlagService.mergePartyFlags(incomingParties, pcsCaseEntity);
+        // When
+        underTest.mergePartyFlags(incomingParties, pcsCaseEntity);
 
+        // Then
         assertEquals(1, pcsCaseEntity.getParties().size());
         PartyEntity updatedParty = pcsCaseEntity.getParties().iterator().next();
 
-        assertNotNull(updatedParty.getAppellantFlags());
-        assertEquals(1, updatedParty.getAppellantFlags().size());
+        assertNotNull(updatedParty.getRespondentFlags());
+        assertEquals(1, updatedParty.getRespondentFlags().size());
 
-        FlagsEntity updatedFlagsEntity = updatedParty.getAppellantFlags().get(0);
-        assertEquals("Internal", updatedFlagsEntity.getVisibility());
-        assertEquals(1, updatedFlagsEntity.getCaseFlags().size());
-
-        FlagDetailsEntity updatedFlagDetail = updatedFlagsEntity.getCaseFlags().iterator().next();
-        assertEquals("NEW_FLAG", updatedFlagDetail.getFlagCode());
-        assertEquals("Updated Flag Comment", updatedFlagDetail.getFlagComment());
     }
 
 
@@ -211,14 +226,14 @@ class CaseFlagServiceTest {
             .parties(new HashSet<>(List.of(existingParty)))
             .build();
 
-        caseFlagService.mergePartyFlags(new ArrayList<>(), pcsCaseEntity);
+        underTest.mergePartyFlags(new ArrayList<>(), pcsCaseEntity);
 
         assertEquals(1, pcsCaseEntity.getParties().size());
         PartyEntity retainedParty = pcsCaseEntity.getParties().iterator().next();
 
         assertEquals("John", retainedParty.getFirstName());
         assertEquals("Doe", retainedParty.getLastName());
-        assertTrue(retainedParty.getAppellantFlags().isEmpty());
+        assertTrue(retainedParty.getRespondentFlags().isEmpty());
     }
 
     private PcsCaseEntity createPcsCaseEntity(UUID id) {

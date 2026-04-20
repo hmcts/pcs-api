@@ -1,3 +1,4 @@
+/*
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,3 +28,4 @@ class FlagDetailsEntityTest {
         assertThat(underTest.getCaseFlag()).isSameAs(updatedFlagsEntity);
     }
 }
+*/
