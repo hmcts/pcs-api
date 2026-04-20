@@ -564,4 +564,10 @@ public class PCSCase {
     )
     private DynamicList caseManagementCategory;
 
+    @CCD(searchable = false)
+    private String confirmEvictionSummaryMarkup;
+
+    @CCD(searchable = false, access = {ClaimantAccess.class})
+    private YesOrNo showConfirmEvictionJourney;
+
 }
