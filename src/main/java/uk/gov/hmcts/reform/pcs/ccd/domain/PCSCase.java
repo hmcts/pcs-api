@@ -429,6 +429,9 @@ public class PCSCase {
     )
     private CompletionNextStep completionNextStep;
 
+    @CCD(searchable = false)
+    private String endButtonLabel;
+
     @JsonUnwrapped(prefix = "possessionGroundsWales_")
     private GroundsForPossessionWales groundsForPossessionWales;
 
