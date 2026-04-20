@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -20,7 +23,7 @@ class DashboardJourneyServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DashboardJourneyService();
+        underTest = new DashboardJourneyService(new ClaimTaskGroupEvaluator());
     }
 
     @Test
@@ -66,23 +69,23 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()))
             .extracting(g -> g.getGroupId(), g -> g.getTasks().size())
             .containsExactly(
-                tuple("CLAIM", 2),
-                tuple("RESPONSE", 3)
+                tuple(TaskGroupId.CLAIM, 2),
+                tuple(TaskGroupId.RESPONSE, 3)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).getFirst().getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.ViewClaim", "AVAILABLE"),
-                tuple("Defendant.ViewDocuments", "NOT_AVAILABLE")
+                tuple("Defendant.ViewClaim", TaskStatus.AVAILABLE),
+                tuple("Defendant.ViewDocuments", TaskStatus.NOT_AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.RespondToClaim", "NOT_STARTED"),
-                tuple("Defendant.ReviewResponse", "IN_PROGRESS"),
-                tuple("Defendant.SubmitResponse", "COMPLETED")
+                tuple("Defendant.RespondToClaim", TaskStatus.NOT_STARTED),
+                tuple("Defendant.ReviewResponse", TaskStatus.IN_PROGRESS),
+                tuple("Defendant.SubmitResponse", TaskStatus.COMPLETED)
             );
     }
 
