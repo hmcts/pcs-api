@@ -166,7 +166,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                .showSummary();
+                .showSummary()
+                .endButtonLabel("${endButtonLabel}");
 
         savingPageBuilderFactory.create(eventBuilder, resumePossessionClaim)
             .add(resumeClaim)

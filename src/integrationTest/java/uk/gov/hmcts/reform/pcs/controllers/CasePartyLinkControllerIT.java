@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeRequest;
+import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
 import java.util.UUID;
@@ -84,6 +85,9 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @MockitoBean
     private CaseAssignmentApi caseAssignmentApi;
+
+    @Autowired
+    private PartyAccessCodeHashingService partyAccessCodeHashingService;
 
     @BeforeEach
     void setUp() {
@@ -407,8 +411,84 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         // Then - Verify transaction committed: data persisted
         PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow();
-        assertThat(caseCreationHelper.getDefendants(caseAfter).getFirst().getIdamId()).isEqualTo(USER_ID);
+                .orElseThrow();
+        assertThat(getDefendants(caseAfter).getFirst().getIdamId()).isEqualTo(USER_ID);
+    }
+
+    // Helper methods
+
+    private PcsCaseEntity createTestCaseWithParty(long caseReference, UUID idamUserId, PartyRole partyRole) {
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setCaseReference(caseReference);
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .claimCosts(VerticalYesNo.NO)
+            .build();
+
+        caseEntity.addClaim(claimEntity);
+
+        PartyEntity defendant = new PartyEntity();
+        defendant.setIdamId(idamUserId);
+        defendant.setFirstName("John");
+        defendant.setLastName("Doe");
+
+        caseEntity.addParty(defendant);
+        claimEntity.addParty(defendant, partyRole);
+
+        return pcsCaseRepository.save(caseEntity);
+    }
+
+    private PcsCaseEntity createTestCaseWithMultipleDefendants(
+            long caseReference, UUID firstIdamUserId, UUID secondIdamUserId) {
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setCaseReference(caseReference);
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .claimCosts(VerticalYesNo.NO)
+            .build();
+
+        caseEntity.addClaim(claimEntity);
+
+        PartyEntity defendant1 = new PartyEntity();
+        defendant1.setIdamId(firstIdamUserId);
+        defendant1.setFirstName("John");
+        defendant1.setLastName("Doe");
+
+        PartyEntity defendant2 = new PartyEntity();
+        defendant2.setIdamId(secondIdamUserId);
+        defendant2.setFirstName("Jane");
+        defendant2.setLastName("Smith");
+
+        caseEntity.addParty(defendant1);
+        caseEntity.addParty(defendant2);
+
+        claimEntity.addParty(defendant1, PartyRole.DEFENDANT);
+        claimEntity.addParty(defendant2, PartyRole.DEFENDANT);
+
+        return pcsCaseRepository.save(caseEntity);
+    }
+
+    private String createPartyAccessCode(PcsCaseEntity caseEntity, UUID partyId) {
+        String storedCode = partyAccessCodeHashingService.encodeForStorage(ACCESS_CODE);
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+                .partyId(partyId)
+                .pcsCase(caseEntity)
+                .code(storedCode)
+                .role(PartyRole.DEFENDANT)
+                .build();
+
+        partyAccessCodeRepository.save(pac);
+        return ACCESS_CODE;
+    }
+
+    private List<PartyEntity> getDefendants(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getClaims()
+            .getFirst()
+            .getClaimParties()
+            .stream()
+            .filter(claimPartyEntity -> claimPartyEntity.getRole() == PartyRole.DEFENDANT)
+            .map(ClaimPartyEntity::getParty)
+            .toList();
     }
 
 }
