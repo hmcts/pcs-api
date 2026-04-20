@@ -9,12 +9,14 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
 
 @Builder
 @Data
@@ -95,4 +97,7 @@ public class DefendantResponses {
     @CCD(access = {CitizenAccess.class})
     private PaymentAgreement paymentAgreement;
 
+    private LanguageUsed languageUsed;
+
+    private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
 }
