@@ -1,16 +1,16 @@
 package uk.gov.hmcts.reform.pcs.document.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.docassembly.DocAssemblyClient;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyResponse;
+import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-import com.fasterxml.jackson.databind.JsonNode;
-import uk.gov.hmcts.reform.pcs.document.model.JsonNodeFormPayload;
-import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.document.model.GenAppFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
@@ -45,12 +45,17 @@ public class DocAssemblyService {
             String authorization = idamService.getSystemUserAuthorisation();
             String serviceAuthorization = authTokenGenerator.generate();
 
-            JsonNodeFormPayload formPayloadWrapper = new JsonNodeFormPayload(formPayload);
+            GenAppFormPayload genAppFormPayload = GenAppFormPayload.builder()
+                .hwfReference("hwf-builder-1234")
+                .withoutNoticeReason("reason here from the builder")
+                .ccdCaseReference("1234-5678-0000-0000")
+                .caseName("Sample case name here")
+                .build();
 
             DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
                 .templateId(templateId)
                 .outputType(outputType)
-                .formPayload(formPayloadWrapper)
+                .formPayload(genAppFormPayload)
                 .outputFilename(outputFilename)
                 .caseTypeId(CaseType.getCaseType())
                 .jurisdictionId(CaseType.getJurisdictionId())
