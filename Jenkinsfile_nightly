@@ -4,16 +4,6 @@ properties([
   // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
   pipelineTriggers([cron('H 07 * * 1-5')]),
   parameters([
-    choice(
-      name: 'ENVIRONMENT',
-      choices: ['aat', 'preview'],
-      description: 'Environment to run the test.'
-    ),
-    string(
-      name: 'PR_NUMBER',
-      defaultValue: '',
-      description: 'PR number (REQUIRED if environment is preview, leave blank otherwise).'
-    ),
     booleanParam(
       name: 'CHROME_TESTS',
       defaultValue: true,
@@ -85,46 +75,26 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
-  enableE2eTest()
 
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-  }
-
-  afterAlways('E2eTest') {
-    postPrimaryE2eSlack()
-    runE2eSupplementaryMatrix()
+    runE2eMatrix()
   }
 }
 
 def validateInputs() {
-  if (params.ENVIRONMENT == 'preview' && (!params.PR_NUMBER?.trim())) {
-    error("Validation Failed: PR number is required when environment is 'preview'")
-  }
-  if (params.ENVIRONMENT == 'preview' && !params.PR_NUMBER.trim().matches("^\\d+\$")) {
-    error("Validation Failed: PR number must contain only numerical values")
-  }
-  if (params.ENVIRONMENT == 'aat' && !getE2eMatrix().any { row -> params[row.flag] }) {
+  if (!getE2eMatrix().any { row -> params[row.flag] }) {
     error('E2E matrix: enable at least one browser/device option (e.g. CHROME_TESTS).')
   }
 }
 
 def handleEnvironmentSetting() {
-  env.ENVIRONMENT = params.ENVIRONMENT
-  env.MANAGE_CASE_BASE_URL = (params.ENVIRONMENT == 'preview')
-    ? "https://xui-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
-    : "https://manage-case.${params.ENVIRONMENT}.platform.hmcts.net"
-
-  env.DATA_STORE_URL_BASE = (params.ENVIRONMENT == 'preview')
-    ? "https://ccd-data-store-api-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
-    : "http://ccd-data-store-api-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
-
-  env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
-    ? 'pr'
-    : resolvePrimaryE2eRow().project
+  env.E2E_TEST_SCOPE = '@nightly'
+  env.ENVIRONMENT = 'aat'
+  env.MANAGE_CASE_BASE_URL = 'https://manage-case.aat.platform.hmcts.net'
+  env.DATA_STORE_URL_BASE = 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
 }
 
-/** Order matches parameter list: first enabled row drives enableE2eTest() (library End to End test stage). */
 def getE2eMatrix() {
   return [
     [flag: 'CHROME_TESTS', project: 'chrome', browser: 'Chrome', label: 'Desktop Chrome'],
@@ -137,34 +107,18 @@ def getE2eMatrix() {
   ]
 }
 
-def resolvePrimaryE2eRow() {
-  def primary = getE2eMatrix().find { row -> params[row.flag] }
-  if (!primary) {
-    error('E2E matrix: enable at least one browser/device option (e.g. CHROME_TESTS).')
-  }
-  return primary
+def getSelectedE2eRows() {
+  return getE2eMatrix().findAll { row -> params[row.flag] }
 }
 
-def postPrimaryE2eSlack() {
-  if (params.ENVIRONMENT == 'preview') {
-    sendAllureReportToSlack('PR preview', 'E2E_20Test_20Report/')
-    return
+def runE2eMatrix() {
+  def rows = getSelectedE2eRows()
+  if (!rows || rows.isEmpty()) {
+    error('E2E matrix: no browser rows selected.')
   }
-  def primary = resolvePrimaryE2eRow()
-  // Matches GradleBuilder.e2eTest() publishHTML reportName: 'E2E Test Report'
-  sendAllureReportToSlack(primary.label, 'E2E_20Test_20Report/')
-}
-
-def runE2eSupplementaryMatrix() {
-  if (params.ENVIRONMENT == 'preview') {
-    return
-  }
-  def primaryProject = resolvePrimaryE2eRow().project
   def gradleBuilder = new uk.gov.hmcts.contino.GradleBuilder(this, product)
-  getE2eMatrix().each { row ->
-    if (params[row.flag] && row.project != primaryProject) {
-      runE2eStage(gradleBuilder, row.project, row.browser, row.label)
-    }
+  rows.each { row ->
+    runE2eStage(gradleBuilder, row.project, row.browser, row.label)
   }
 }
 

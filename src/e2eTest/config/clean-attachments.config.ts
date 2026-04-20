@@ -2,6 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const testCasesPath = path.join(__dirname, '../../../e2e-output/data/test-cases');
+if (!fs.existsSync(testCasesPath)) {
+  process.exit(0);
+}
 
 const files = fs.readdirSync(testCasesPath).filter(f => f.endsWith('.json'));
 let removedCount = 0;

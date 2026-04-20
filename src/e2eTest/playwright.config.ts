@@ -14,9 +14,11 @@ export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
+const e2eTag = process.env.E2E_TEST_SCOPE ?? '@nightly';
 
 export default defineConfig({
   testDir: 'tests/',
+  ...(e2eTag ? { grep: new RegExp(e2eTag) } : {}),
   /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
