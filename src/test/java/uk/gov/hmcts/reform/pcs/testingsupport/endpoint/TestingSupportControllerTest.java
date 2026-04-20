@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.net.URI;
@@ -78,6 +79,8 @@ class TestingSupportControllerTest {
     private CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
 
 
     private TestingSupportController underTest;
@@ -88,7 +91,8 @@ class TestingSupportControllerTest {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  docAssemblyService, eligibilityService,
                                                  pcsCaseRepository, partyAccessCodeRepository,
-                                                 modelMapper, ccdTestCaseOrchestrator
+                                                 modelMapper, ccdTestCaseOrchestrator,
+                                                 legalRepresentativePartyLinkService
                 );
     }
 

@@ -1,0 +1,59 @@
+package uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+
+import java.time.LocalDateTime;
+
+import static jakarta.persistence.FetchType.LAZY;
+
+@Entity
+@Table(name = "claim_party_legal_representative")
+@Setter
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ClaimPartyLegalRepresentativeEntity {
+
+    @EmbeddedId
+    @Builder.Default
+    private LegalRepresentativePartyId id = new LegalRepresentativePartyId();
+
+    @ManyToOne(fetch = LAZY)
+    @MapsId("partyId")
+    @JsonBackReference
+    private PartyEntity party;
+
+    @ManyToOne(fetch = LAZY)
+    @MapsId("legalRepresentativeId")
+    @JsonBackReference
+    private LegalRepresentativeEntity legalRepresentative;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo active;
+
+    @Column(name = "start_date") // DATETIME
+    private LocalDateTime startDate;
+
+    @Column(name = "end_date") // DATETIME
+    private LocalDateTime endDate;
+}

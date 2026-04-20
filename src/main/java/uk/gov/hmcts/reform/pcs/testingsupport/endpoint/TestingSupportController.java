@@ -33,11 +33,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.net.URI;
@@ -71,6 +73,7 @@ public class TestingSupportController {
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final SecureRandom secureRandom = new SecureRandom();
+    private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -413,4 +416,29 @@ public class TestingSupportController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
+
+    @PostMapping(
+        value = "/link-defendant-solicitor-to-party/{caseReference}/{partyId}",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+        summary = "Link a defendant solicitor to a party for a case"
+    )
+    @ApiResponse(responseCode = "200", description = "Successful assignment",
+        content = @Content())
+    @ApiResponse(responseCode = "401", description = "Invalid access token",
+        content = @Content())
+    public ResponseEntity<Void> linkDefendantSolicitorToParty(
+        @Parameter(description = "The 12-digit case reference number", required = true)
+        @PathVariable long caseReference,
+        @Parameter(description = "Id of Party to link", required = true)
+        @PathVariable String partyId,
+        @RequestHeader(value = AUTHORIZATION) String authorization,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
+    ) {
+
+        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, authorization, partyId);
+        return ResponseEntity.ok().build();
+    }
+
 }
