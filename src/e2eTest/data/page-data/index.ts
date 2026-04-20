@@ -23,3 +23,8 @@ export * from '@data/page-data/cancelPayment.page.data';
 export * from '@data/page-data/confirmYourPayment.page.data';
 export * from '@data/page-data/enterPaymentDetails.page.data';
 export * from '@data/page-data/serviceRequest.page.data';
+export * from '@data/page-data/caseFlag.page.data';
+export * from '@data/page-data/whereShouldThisFlagBeAdded.page.data';
+export * from '@data/page-data/addFlagComment.page.data';
+export * from '@data/page-data/reviewFlagDetails.page.data';
+export * from '@data/page-data/selectFlagType.page.data';
