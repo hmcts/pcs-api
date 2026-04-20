@@ -71,7 +71,7 @@ def secrets = [
 
 withNightlyPipeline(type, product, component) {
   validateInputs()
-  enableSlackNotifications('#pcs-tech')
+  enableSlackNotifications('#qa-pipeline-status')
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
@@ -89,7 +89,7 @@ def validateInputs() {
 }
 
 def handleEnvironmentSetting() {
-  env.E2E_TEST_SCOPE = '@nightly'
+  env.E2E_TEST_SCOPE = '@smoke'
   env.ENVIRONMENT = 'aat'
   env.MANAGE_CASE_BASE_URL = 'https://manage-case.aat.platform.hmcts.net'
   env.DATA_STORE_URL_BASE = 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
@@ -160,8 +160,8 @@ def sendAllureReportToSlack(String stageLabel, String reportSuffix) {
     msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}${reportSuffix}"
   }
   try {
-    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
-    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results (${stageLabel})"
+    slackSend(channel: '#qa-pipeline-status', message: msg)
+    echo "E2E Slack notification sent to #qa-pipeline-status (${stageLabel})"
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
