@@ -31,3 +31,5 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/verbalOrWritten
 export * from '@data/page-data-figma/page-data-enforcement-figma/violentAggressiveRisk.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/languageUsed.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/vulnerableAdultsChildren.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefendantsReturned.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/shareEvidenceWithJudge.page.data';

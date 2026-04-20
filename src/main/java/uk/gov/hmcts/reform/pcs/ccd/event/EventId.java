@@ -7,5 +7,8 @@ public enum EventId {
     enforceTheOrder,
     respondPossessionClaim,
     submitDefendantResponse,
-    createTestCase
+    citizenCreateGenApp,
+    createTestCase,
+    createCaseLink,
+    maintainCaseLink
 }
