@@ -11,6 +11,7 @@ public enum EventId {
     createTestCase,
     createCaseLink,
     maintainCaseLink,
+    confirmEviction,
     createFlags,
     amendFlags
 }
