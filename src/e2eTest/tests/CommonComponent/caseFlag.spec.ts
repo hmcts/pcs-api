@@ -66,7 +66,7 @@ test.describe('[Common Component Case Flags]', async () => {
     await performAction('viewFlag', {
       viewFlagLink: caseSummary.viewCaseFlagsLink
     });
-    //await performValidation('subHeader', caseFlag.subHeader);
+    
     await performAction('select', caseFlag.nextStepEventList, caseFlag.manageCaseFlagsEvent);
     await performAction('clickButton', caseFlag.go);
     await performAction('selectFlagFromManageCaseFlags', {

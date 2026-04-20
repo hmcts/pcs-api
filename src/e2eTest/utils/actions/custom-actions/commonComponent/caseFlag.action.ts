@@ -1,6 +1,7 @@
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller';
+import { whereShouldThisFlagBeAdded } from '@data/page-data';
 
 export class CaseFlagAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -45,6 +46,8 @@ export class CaseFlagAction implements IAction {
     }
 
   private async selectFlagFromManageCaseFlags(selectOptions: actionRecord, page: Page) {
+    const radio = page.locator(`label >> text=${selectOptions.flagOptions}`);
+    await radio.waitFor({ state: 'visible' });
     await performAction('clickRadioButton', { option: selectOptions.flagOptions });
     await performAction('clickButton', selectOptions.continueButton);
   }

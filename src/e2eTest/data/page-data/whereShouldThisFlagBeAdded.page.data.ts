@@ -3,6 +3,7 @@ export const whereShouldThisFlagBeAdded = {
     mainHeader: 'Case Flags',
     whereShouldThisFlagBeAddedQuestion: 'Where should this flag be added?',
     caseLevelRadioOption: 'Case level',
+    manageLabel: 'Manage case flags',
     caseLevelComplexCaseRadioOption: 'Case level - Complex case (Test)',
     continueButton: 'Continue',
     cancelButton: 'Cancel',
