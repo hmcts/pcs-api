@@ -8,7 +8,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -21,6 +24,13 @@ import java.util.Map;
 @Service
 @Slf4j
 public class DashboardJourneyService {
+
+    private final ClaimTaskGroupEvaluator claimTaskGroupEvaluator;
+
+    public DashboardJourneyService(ClaimTaskGroupEvaluator claimTaskGroupEvaluator) {
+        this.claimTaskGroupEvaluator = claimTaskGroupEvaluator;
+    }
+
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
         List<ListValue<DashboardNotification>> notifications = computeNotifications();
@@ -57,33 +67,22 @@ public class DashboardJourneyService {
 
     private List<ListValue<TaskGroup>> computeTaskGroups() {
         return ListValueUtils.wrapListItems(List.of(
+            claimTaskGroupEvaluator.evaluate(null),
+
             TaskGroup.builder()
-                .groupId("CLAIM")
-                .tasks(ListValueUtils.wrapListItems(List.of(
-                    Task.builder()
-                        .templateId("Defendant.ViewClaim")
-                        .status("AVAILABLE")
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.ViewDocuments")
-                        .status("NOT_AVAILABLE")
-                        .build()
-                )))
-                .build(),
-            TaskGroup.builder()
-                .groupId("RESPONSE")
+                .groupId(TaskGroupId.RESPONSE)
                 .tasks(ListValueUtils.wrapListItems(List.of(
                     Task.builder()
                         .templateId("Defendant.RespondToClaim")
-                        .status("NOT_STARTED")
+                        .status(TaskStatus.NOT_STARTED)
                         .build(),
                     Task.builder()
                         .templateId("Defendant.ReviewResponse")
-                        .status("IN_PROGRESS")
+                        .status(TaskStatus.IN_PROGRESS)
                         .build(),
                     Task.builder()
                         .templateId("Defendant.SubmitResponse")
-                        .status("COMPLETED")
+                        .status(TaskStatus.COMPLETED)
                         .build()
                 )))
                 .build()
