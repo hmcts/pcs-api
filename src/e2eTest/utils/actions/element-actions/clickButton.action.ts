@@ -5,7 +5,7 @@ import { actionRetries, waitForPageRedirectionTimeout } from '../../../playwrigh
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string, actionParams: string): Promise<void> {
     const i = Number(actionParams) || 0;
-    const button = page.locator(`button:text-is("${buttonText}"),
+    const button = page.locator(`button:has-text("${buttonText}"),
                                   [value="${buttonText}"],
                                   :has-text("${buttonText}") + button,
                                   :has-text("${buttonText}") ~ button,
