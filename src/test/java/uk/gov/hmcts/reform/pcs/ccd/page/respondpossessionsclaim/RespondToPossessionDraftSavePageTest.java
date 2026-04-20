@@ -67,7 +67,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .noticeReceived(YesNoNotSure.NO)
+            .possessionNoticeReceived(YesNoNotSure.NO)
             .build();
 
         PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
