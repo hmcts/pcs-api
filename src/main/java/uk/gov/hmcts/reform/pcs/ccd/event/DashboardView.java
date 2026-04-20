@@ -32,7 +32,7 @@ public class DashboardView implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Dashboard view")
             .description("Compute dashboard notifications for case journey")
-            .grant(Permission.CRU, UserRole.DEFENDANT);
+            .grant(Permission.R, UserRole.DEFENDANT);
     }
 }
 
