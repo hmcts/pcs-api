@@ -41,8 +41,8 @@ export class CaseFlagAction implements IAction {
   }
   private async viewFlag(viewOptions: actionRecord, page: Page) {
     await page.waitForLoadState();
-    await page.locator('a', { hasText: viewOptions.viewFlagLink as string }).click();
-  }
+    await performAction('clickButton', viewOptions.viewFlagLink);
+    }
 
   private async selectFlagFromManageCaseFlags(selectOptions: actionRecord, page: Page) {
     await performAction('clickRadioButton', { option: selectOptions.flagOptions });
