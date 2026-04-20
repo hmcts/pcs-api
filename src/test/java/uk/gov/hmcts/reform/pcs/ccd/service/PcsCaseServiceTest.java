@@ -5,21 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.CaseLink;
-import uk.gov.hmcts.ccd.sdk.type.LinkReason;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -28,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -36,7 +29,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseServiceTest {
@@ -55,13 +47,10 @@ class PcsCaseServiceTest {
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private AddressMapper addressMapper;
-    @Mock
-    private CaseLinkService caseLinkService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
-    @InjectMocks
     private PcsCaseService underTest;
 
     @BeforeEach
@@ -72,8 +61,7 @@ class PcsCaseServiceTest {
             partyService,
             documentService,
             tenancyLicenceService,
-            addressMapper,
-            caseLinkService
+            addressMapper
         );
     }
 
@@ -194,51 +182,6 @@ class PcsCaseServiceTest {
         verify(pcsCaseEntity).setTenancyLicence(tenancyLicenceEntity);
     }
 
-    @Test
-    void shouldPatchCaseData() {
-        // Given
-        PcsCaseEntity pcsCaseEntity =  mock(PcsCaseEntity.class);
-        PCSCase caseData = PCSCase.builder().build();
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(java.util.Optional.of(pcsCaseEntity));
-
-        // When
-        underTest.patchCaseLinks(CASE_REFERENCE, caseData);
-
-        // Then
-        verify(caseLinkService, times(1)).mergeCaseLinks(caseData.getCaseLinks(), pcsCaseEntity);
-    }
-
-    @Test
-    void shouldPatchCaseDataWithCaseLinks() {
-        // Given
-        CaseLinkReasonEntity caseLinkReasonEntity = createCaseLinkReasonEntity();
-        CaseLinkEntity caseLinkEntity = createCaseLinkEntity(List.of(caseLinkReasonEntity));
-        List<ListValue<LinkReason>> linkReasons = List.of(createLinkReasonValue(caseLinkReasonEntity));
-
-        CaseLink caseLink = createCaseLink(String.valueOf(caseLinkEntity.getLinkedCaseReference()),
-                                           caseLinkEntity.getCcdListId(), linkReasons);
-
-        List<ListValue<CaseLink>> caseLinks = List.of(createCaseLinkValue(caseLink));
-
-        PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder()//mock(PcsCaseEntity.class);
-            .caseReference(CASE_REFERENCE)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .caseLinks(caseLinks)
-            .build();
-
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-
-        // When
-        underTest.patchCaseLinks(CASE_REFERENCE, caseData);
-
-        // Then
-        verify(caseLinkService).mergeCaseLinks(caseLinks, pcsCaseEntity);
-        verify(caseLinkService, times(1)).mergeCaseLinks(caseLinks, pcsCaseEntity);
-    }
-
-
     private PcsCaseEntity stubFindCase() {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
@@ -249,58 +192,6 @@ class PcsCaseServiceTest {
         ClaimEntity claimEntity = mock(ClaimEntity.class);
         when(claimService.createMainClaimEntity(any(PCSCase.class))).thenReturn(claimEntity);
         return claimEntity;
-    }
-
-
-    private ListValue<LinkReason> createLinkReasonValue(CaseLinkReasonEntity caseLinkReasonEntity) {
-        return ListValue.<LinkReason>builder()
-            .id(caseLinkReasonEntity.getId().toString())
-            .value(createLinkReason(caseLinkReasonEntity.getReasonCode()))
-            .build();
-    }
-
-    private ListValue<CaseLink> createCaseLinkValue(CaseLink caseLink) {
-        return ListValue.<CaseLink>builder()
-            .id(UUID.randomUUID().toString())
-            .value(caseLink)
-            .build();
-    }
-
-    private CaseLinkReasonEntity createCaseLinkReasonEntity() {
-
-        CaseLinkEntity caseLinkEntity = mock(CaseLinkEntity.class);
-
-        return CaseLinkReasonEntity.builder()
-            .id(UUID.randomUUID())
-            .reasonCode("CLR003")
-            .caseLink(caseLinkEntity)
-            .build();
-    }
-
-    private CaseLinkEntity createCaseLinkEntity(List<CaseLinkReasonEntity> linkReasonEntities) {
-
-        return CaseLinkEntity.builder()
-            .id(UUID.randomUUID())
-            .linkedCaseReference(CASE_REFERENCE)
-            .ccdListId("PCS")
-            .reasons(linkReasonEntities)
-            .build();
-    }
-
-    private CaseLink createCaseLink(String ref, String caseType, List<ListValue<LinkReason>> reasons) {
-
-        return CaseLink.builder()
-            .caseReference(ref)
-            .caseType(caseType)
-            .reasonForLink(reasons)
-            .build();
-    }
-
-    private LinkReason createLinkReason(String reason) {
-
-        return LinkReason.builder()
-            .reason(reason)
-            .build();
     }
 
 }

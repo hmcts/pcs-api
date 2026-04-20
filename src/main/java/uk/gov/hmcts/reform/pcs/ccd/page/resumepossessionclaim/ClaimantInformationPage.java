@@ -20,8 +20,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @AllArgsConstructor
 public class ClaimantInformationPage implements CcdPageConfiguration {
 
-    private static final String ORG_NAME_FOUND = "orgNameFound=\"YES\"";
-    private static final String ORG_NAME_NOT_FOUND = "orgNameFound=\"NO\"";
+    private static final String ORG_NAME_FOUND = "orgNameFound=\"Yes\"";
+    private static final String ORG_NAME_NOT_FOUND = "orgNameFound=\"No\"";
 
     private final PossessiveNameService possessiveNameService;
 

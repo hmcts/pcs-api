@@ -172,7 +172,7 @@ export class PageContentValidation implements IValidation {
   private async getFileName(urlSegment: string, page: Page): Promise<string | null> {
     try {
       let mappingPath;
-      if(page.url().includes("enforceTheOrder")){
+      if (page.url().includes("enforceTheOrder") || page.url().includes("confirmEviction")) {
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
       }
       else{
@@ -226,7 +226,7 @@ export class PageContentValidation implements IValidation {
 
   private async loadPageDataFile(fileName: string, page: Page): Promise<any> {
    let filePath;
-      if(page.url().includes("enforceTheOrder")){
+      if(page.url().includes("enforceTheOrder") || page.url().includes("confirmEviction")){
         filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
       }
       else{

@@ -57,6 +57,8 @@ export default {
     'enforceTheOrderconfirmHCEOfficer': 'confirmHCEOfficer',
     'enforceTheOrderenforcementOfficerSelection': 'enforcementOfficerSelection',
     'enforceTheOrderhCEOfficerDetails': 'hCEOfficerDetails',
+    'confirmEvictionconfirmEvictionDetails': 'confirmEvictionDetails',
+    'confirmEvictionevictionDate': 'evictionDate',
     'enforceTheOrderexplainHowDefendantsReturned': 'explainHowDefendantsReturned',
     'enforceTheOrdershareEvidenceWithJudge': 'shareEvidenceWithJudge'
 };

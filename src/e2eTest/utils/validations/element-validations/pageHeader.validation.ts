@@ -3,9 +3,7 @@ import { IValidation} from '../../interfaces/validation.interface';
 
 export class MainHeaderValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string): Promise<void> {
-    const locator = page.locator('h1,h1.govuk-heading-xl, h1.govuk-heading-l').filter({ visible: true }).first();
+    const locator = page.locator('h1,h1.govuk-heading-xl, h1.govuk-heading-l');
     await expect(locator).toHaveText(fieldName);
   }
 }
-
-

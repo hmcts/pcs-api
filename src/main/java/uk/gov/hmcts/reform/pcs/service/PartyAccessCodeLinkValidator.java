@@ -19,12 +19,13 @@ import java.util.UUID;
 public class PartyAccessCodeLinkValidator {
 
     private final PartyAccessCodeRepository pacRepository;
-    private final PartyAccessCodeHashingService hashingService;
 
     public PartyAccessCodeEntity validateAccessCode(UUID caseId, String accessCode) {
-        return hashingService.findMatchingAccessCode(pacRepository, caseId, accessCode)
+        return pacRepository
+            .findByPcsCase_IdAndCode(caseId, accessCode)
             .orElseThrow(() -> {
-                log.error("Invalid access code - caseId: {}, accessCodeProvided: {}", caseId, accessCode != null);
+                log.error("Invalid access code - caseId: {}, accessCodeLength: {}, accessCodeProvided: {}",
+                    caseId, accessCode != null ? accessCode.length() : 0, accessCode != null);
                 return new InvalidAccessCodeException("Invalid data");
             });
     }

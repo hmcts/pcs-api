@@ -38,16 +38,16 @@ public class DefendantDetails {
 
     @CCD(label = """
                 ---
-                <h2>Defendant’s address for service</h2>""", typeOverride = FieldType.Label)
+                <h2>Defendant’s correspondence address</h2>""", typeOverride = FieldType.Label)
     private String addressSectionLabel;
 
-    @CCD(label = "Do you know the defendant’s address for service?",
-        hint = "If their address for service is outside of the UK, you’ll need to make a general application for "
+    @CCD(label = "Do you know the defendant’s correspondence address?",
+        hint = "If their correspondence address is outside of the UK, you’ll need to make a general application for "
             + "permission to serve a claim outside the jurisdiction after you’ve submitted and paid for the claim"
     )
     private VerticalYesNo addressKnown;
 
-    @CCD(label = "Is the defendant’s address for service the same as the address of the property"
+    @CCD(label = "Is the defendant’s correspondence address the same as the address of the property"
         + " you’re claiming possession of?", showCondition = "addressKnown=\"YES\"")
     private VerticalYesNo addressSameAsPossession;
 

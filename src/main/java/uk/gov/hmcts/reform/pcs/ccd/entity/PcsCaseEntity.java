@@ -76,23 +76,12 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
-    private Set<GenAppEntity> genApps = new HashSet<>();
-
-    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
-    @Builder.Default
-    @JsonManagedReference
     private List<DefendantResponseEntity> defendantResponses = new ArrayList<>();
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @Builder.Default
     @JsonManagedReference
     private List<DocumentEntity> documents = new ArrayList<>();
-
-    @OneToMany(mappedBy = "pcsCase",
-        cascade = ALL,
-        orphanRemoval = true)
-    @Builder.Default
-    private List<CaseLinkEntity> caseLinks = new ArrayList<>();
 
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
@@ -109,11 +98,6 @@ public class PcsCaseEntity {
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);
         claim.setPcsCase(this);
-    }
-
-    public void addGenApp(GenAppEntity genApp) {
-        genApps.add(genApp);
-        genApp.setPcsCase(this);
     }
 
     public void addParty(PartyEntity party) {

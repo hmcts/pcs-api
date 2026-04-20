@@ -108,30 +108,6 @@ class PaymentAgreementServiceTest {
         );
     }
 
-    @ParameterizedTest
-    @MethodSource("paymentDetailsScenarios")
-    void shouldMapPaymentDetailsField(String expected) {
-        // Given
-        PaymentAgreement model = PaymentAgreement.builder()
-                .paymentDetails(expected)
-                .build();
-
-        // When
-        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
-
-        // Then
-        assertThat(entity).isNotNull();
-        assertThat(entity.getPaymentDetails()).isEqualTo(expected);
-    }
-
-    private static Stream<Arguments> paymentDetailsScenarios() {
-        return Stream.of(
-                Arguments.of("Paid £500 on 01/01/2024"),
-                Arguments.of(""),
-                Arguments.of((String) null)
-        );
-    }
-
 
 }
 

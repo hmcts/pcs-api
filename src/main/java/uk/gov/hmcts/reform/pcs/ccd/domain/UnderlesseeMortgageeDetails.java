@@ -33,11 +33,11 @@ public class UnderlesseeMortgageeDetails {
 
     @CCD(label = """
                     ---
-                    <h2 class="govuk-heading-m">Underlessee or mortgagee address for service</h2>
+                    <h2 class="govuk-heading-m">Underlessee or mortgagee correspondence address</h2>
                     """, typeOverride = FieldType.Label)
     private String addressSectionLabel;
 
-    @CCD(label = "Do you know the underlessee or mortgagee’s address for service?")
+    @CCD(label = "Do you know the underlessee or mortgagee’s correspondence address?")
     private VerticalYesNo addressKnown;
 
     @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\"")

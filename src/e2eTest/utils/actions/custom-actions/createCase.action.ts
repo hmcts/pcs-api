@@ -313,7 +313,7 @@ export class CreateCaseAction implements IAction {
     });
     if (defendantData.correspondenceAddressOption === defendantDetails.yesRadioOption) {
       await performAction('clickRadioButton', {
-        question: defendantDetails.isTheDefendantsAddressForServiceHiddenQuestion,
+        question: defendantDetails.isTheDefendantsCorrespondenceAddressHiddenQuestion,
         option: defendantData.correspondenceAddressSameOption,
       });
       if (defendantData.correspondenceAddressSameOption === defendantDetails.noRadioOption) {
@@ -363,7 +363,7 @@ export class CreateCaseAction implements IAction {
           defendantData[`correspondenceAddressSame${index}Option`] || defendantDetails.noRadioOption;
         if (correspondenceAddressOption === defendantDetails.yesRadioOption) {
           await performAction('clickRadioButton', {
-            question: defendantDetails.isTheDefendantsAddressForServiceHiddenQuestion,
+            question: defendantDetails.isTheDefendantsCorrespondenceAddressHiddenQuestion,
             option: correspondenceAddressSameOption,
             index,
           });
