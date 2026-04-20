@@ -1,5 +1,5 @@
 export const tenancyLicenceDetails = {
-  makeAClaimCaption: `Make a claim`,
+  makeAClaimCaption: `Make a claim`, 
   mainHeader: `Tenancy or licence details`,
   cancelLink: `Cancel`,
   continueButton: `Continue`,
