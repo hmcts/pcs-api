@@ -21,6 +21,8 @@ export class CaseFlagAction implements IAction {
   }
 
   private async createFlag(flagOptions: actionRecord, page: Page) {
+    const radio = page.locator(`label >> text=${flagOptions.flagLevelOption}`);
+    await radio.waitFor({ state: 'visible' });
     await performAction('clickRadioButton', { question: flagOptions.flagLevelQuestion, option: flagOptions.flagLevelOption });
     await performAction('clickButton', flagOptions.continueButton);
   }
