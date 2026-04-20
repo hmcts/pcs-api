@@ -17,7 +17,7 @@ public class SecureOrFlexiblePossessionGrounds {
 
     @CCD(
         label = "Discretionary grounds",
-        hint = "Select all that you allege apply",
+        hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "SecureOrFlexibleDiscretionaryGrounds"
     )
@@ -25,7 +25,7 @@ public class SecureOrFlexiblePossessionGrounds {
 
     @CCD(
         label = "Mandatory grounds",
-        hint = "Select all that you allege apply",
+        hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "SecureOrFlexibleMandatoryGrounds"
     )
@@ -33,7 +33,7 @@ public class SecureOrFlexiblePossessionGrounds {
 
     @CCD(
         label = "Discretionary grounds (if alternative accommodation available)",
-        hint = "Select all that you allege apply",
+        hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm"
     )
@@ -41,7 +41,7 @@ public class SecureOrFlexiblePossessionGrounds {
 
     @CCD(
         label = "Mandatory grounds (if alternative accommodation available)",
-        hint = "Select all that you allege apply",
+        hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "SecureOrFlexibleMandatoryGroundsAlternativeAccomm"
     )

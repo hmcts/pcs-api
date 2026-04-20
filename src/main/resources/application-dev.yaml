@@ -1,6 +1,2 @@
 fees:
   mock: true
-
-spring:
-  flyway:
-    locations: classpath:db/migration,classpath:db/testdata

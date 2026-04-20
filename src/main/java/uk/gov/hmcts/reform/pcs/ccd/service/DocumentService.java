@@ -1,11 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
@@ -34,7 +31,8 @@ public class DocumentService {
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
-        List<DocumentHolder> allDocuments = new ArrayList<>();
+        List<Pair<Document, DocumentType>> allDocuments = new ArrayList<>();
+
         allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
 
         allDocuments.addAll(mapDocumentsWithType(
@@ -60,55 +58,49 @@ public class DocumentService {
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
 
-    private List<DocumentHolder> mapDocumentsWithType(
+    private List<Pair<Document, DocumentType>> mapDocumentsWithType(
         List<ListValue<Document>> docs, DocumentType type) {
 
-        if (CollectionUtils.isEmpty(docs)) {
+        if (docs == null || docs.isEmpty()) {
             return Collections.emptyList();
         }
 
         return docs.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(doc -> DocumentHolder.builder()
-                    .document(doc)
-                    .type(type)
-                    .description("")
-                    .build())
+            .map(doc -> Pair.of(doc, type))
             .toList();
     }
 
-    private List<DocumentHolder> mapAdditionalDocumentsWithType(
+    private List<Pair<Document, DocumentType>> mapAdditionalDocumentsWithType(
         List<ListValue<AdditionalDocument>> documents) {
 
-        if (CollectionUtils.isEmpty(documents)) {
+        if (documents == null || documents.isEmpty()) {
             return Collections.emptyList();
         }
 
         return ListValueUtils.unwrapListItems(documents).stream()
-            .map(doc -> DocumentHolder.builder()
-                    .document(doc.getDocument())
-                    .type(mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType()))
-                    .description(doc.getDescription())
-                    .build())
+            .map(doc -> Pair.of(
+                doc.getDocument(),
+                mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType())
+            ))
             .toList();
     }
 
     private List<DocumentEntity> createDocumentEntities(
-        List<DocumentHolder> documents) {
+        List<Pair<Document, DocumentType>> documents) {
 
-        if (CollectionUtils.isEmpty(documents)) {
+        if (documents == null || documents.isEmpty()) {
             return List.of();
         }
 
         return documents.stream()
-            .map(holder -> DocumentEntity.builder()
-                .url(holder.getDocument().getUrl())
-                .fileName(holder.getDocument().getFilename())
-                .binaryUrl(holder.getDocument().getBinaryUrl())
-                .categoryId(holder.getDocument().getCategoryId())
-                .type(holder.getType())
-                .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
+            .map(pair -> DocumentEntity.builder()
+                .url(pair.getKey().getUrl())
+                .fileName(pair.getKey().getFilename())
+                .binaryUrl(pair.getKey().getBinaryUrl())
+                .categoryId(pair.getKey().getCategoryId())
+                .type(pair.getValue())
                 .build())
             .toList();
     }
@@ -129,13 +121,5 @@ public class DocumentService {
             case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
             case OTHER -> DocumentType.OTHER;
         };
-    }
-
-    @Builder
-    @Data
-    private static class DocumentHolder {
-        private Document document;
-        private DocumentType type;
-        private String description;
     }
 }

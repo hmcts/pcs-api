@@ -46,7 +46,7 @@ public class DefendantResponses {
     private BigDecimal rentArrearsAmount;
 
     @CCD
-    private YesNoNotSure possessionNoticeReceived;
+    private YesNoNotSure noticeReceived;
 
     @CCD
     private LocalDate noticeReceivedDate;

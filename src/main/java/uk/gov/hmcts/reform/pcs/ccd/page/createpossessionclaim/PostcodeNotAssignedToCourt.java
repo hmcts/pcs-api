@@ -17,7 +17,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Slf4j
 public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
 
-    private static final String SHOW_PAGE = "showPostcodeNotAssignedToCourt=\"YES\"";
+    private static final String SHOW_PAGE = "showPostcodeNotAssignedToCourt=\"Yes\"";
     private static final String SHOW_ENGLAND = SHOW_PAGE + " AND postcodeNotAssignedView=\"ENGLAND\"";
     private static final String SHOW_WALES = SHOW_PAGE + " AND postcodeNotAssignedView=\"WALES\"";
     private static final String SHOW_ALL = SHOW_PAGE + " AND postcodeNotAssignedView=\"ALL_COUNTRIES\"";

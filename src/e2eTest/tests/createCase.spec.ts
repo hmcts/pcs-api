@@ -189,7 +189,7 @@ test.describe('[Create Case - England]', async () => {
        fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
        positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
      });
-    await performAction('clickButton', checkYourAnswers.submitClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -323,7 +323,7 @@ test.describe('[Create Case - England]', async () => {
       nameOfFirmTextInput: statementOfTruth.nameOfFirmHiddenTextInput,
       positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
     });
-    await performAction('clickButton', checkYourAnswers.submitClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('payClaimFee',{clickLink: true});
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -424,7 +424,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectApplications', generalApplication.noRadioOption);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.welshRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-    await performAction('clickButton', checkYourAnswers.saveClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
@@ -533,7 +533,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectApplications', generalApplication.noRadioOption);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishAndWelshRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-    await performAction('clickButton', checkYourAnswers.saveClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved')
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
@@ -618,7 +618,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectApplications', generalApplication.noRadioOption);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishAndWelshRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-    await performAction('clickButton', checkYourAnswers.saveClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
@@ -712,7 +712,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectApplications', generalApplication.noRadioOption);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-    await performAction('clickButton', checkYourAnswers.saveClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
@@ -809,7 +809,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-    await performAction('clickButton', checkYourAnswers.saveClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
@@ -910,7 +910,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-    await performAction('clickButton', checkYourAnswers.saveClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
@@ -1033,7 +1033,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-    await performAction('clickButton', checkYourAnswers.saveClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
@@ -1138,7 +1138,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectApplications', generalApplication.noRadioOption);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.welshRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-    await performAction('clickButton', checkYourAnswers.saveClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
@@ -1224,7 +1224,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-    await performAction('clickButton', checkYourAnswers.saveClaim);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });

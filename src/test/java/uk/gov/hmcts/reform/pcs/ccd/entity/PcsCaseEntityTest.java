@@ -29,4 +29,5 @@ class PcsCaseEntityTest {
         verify(existingTenancyLicence).setPcsCase(null);
         verify(updatedTenancyLicence).setPcsCase(underTest);
     }
+
 }

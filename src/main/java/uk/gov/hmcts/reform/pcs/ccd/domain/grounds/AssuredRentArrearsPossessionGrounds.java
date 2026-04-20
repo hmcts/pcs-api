@@ -21,7 +21,7 @@ public class AssuredRentArrearsPossessionGrounds {
 
     @CCD(
         label = "What are your grounds for possession?",
-        hint = "Select all that you allege apply",
+        hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "AssuredRentArrearsGround"
     )
@@ -29,7 +29,7 @@ public class AssuredRentArrearsPossessionGrounds {
 
     @CCD(
         label = "Mandatory grounds",
-        hint = "Select all that you allege apply",
+        hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "AssuredAdditionalMandatoryGrounds"
     )
@@ -37,7 +37,7 @@ public class AssuredRentArrearsPossessionGrounds {
 
     @CCD(
         label = "Discretionary grounds",
-        hint = "Select all that you allege apply",
+        hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "AssuredAdditionalDiscretionaryGrounds"
     )

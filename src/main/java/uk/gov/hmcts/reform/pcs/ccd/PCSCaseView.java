@@ -34,7 +34,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -71,7 +70,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
     private final CaseFieldsView caseFieldsView;
-    private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
 
     /**
@@ -85,10 +83,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = getSubmittedCase(caseReference);
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
+        caseFieldsView.setCaseFields(pcsCase);
+
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
-
-        caseFieldsView.setCaseFields(pcsCase);
 
         //allows indexing for Global Search
         pcsCase.setSearchCriteria(new SearchCriteria());
@@ -112,7 +110,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
-            .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
+            .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
             .allClaimants(partyMap.get(PartyRole.CLAIMANT))
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
@@ -132,7 +130,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
-        caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
@@ -257,4 +254,5 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .build())
             .collect(Collectors.toList());
     }
+
 }
