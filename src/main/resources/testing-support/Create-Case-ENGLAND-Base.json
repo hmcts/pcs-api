@@ -61,7 +61,9 @@
   ],
   "secureOrFlexibleDiscretionaryGroundsAlt": [
   ],
-  "secureAntisocialAdditionalGrounds": [],
+  "secureAntisocialAdditionalGrounds": [
+    "Condition 1 of Section 84A of the Housing Act 1985"
+  ],
   "antiSocialGround": "Antisocial behaviour reasons.",
   "showReasonsForGroundsPage": "Yes",
   "preActionProtocolCompleted": "NO",
