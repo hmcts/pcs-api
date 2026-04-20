@@ -83,7 +83,7 @@ withNightlyPipeline(type, product, component) {
 }
 
 def validateInputs() {
-  if (!getE2eMatrix().any { row -> params[row.flag] }) {
+  if (!getE2eMatrix().any { params[it.flag] }) {
     error('E2E matrix: enable at least one browser/device option (e.g. CHROME_TESTS).')
   }
 }
@@ -96,39 +96,31 @@ def handleEnvironmentSetting() {
 }
 
 def getE2eMatrix() {
-  return [
-    [flag: 'CHROME_TESTS', project: 'chrome', browser: 'Chrome', label: 'Desktop Chrome'],
-    [flag: 'FIREFOX_TESTS', project: 'firefox', browser: 'Firefox', label: 'Desktop Firefox'],
-    [flag: 'WEBKIT_TESTS', project: 'webkit', browser: 'Safari', label: 'Desktop Safari (WebKit)'],
-    [flag: 'EDGE_TESTS', project: 'edge', browser: 'Edge', label: 'Desktop Edge'],
-    [flag: 'MOBILE_ANDROID_TESTS', project: 'mobile-android', browser: 'MobileAndroid', label: 'Mobile Android (Pixel 5)'],
-    [flag: 'MOBILE_IOS_TESTS', project: 'mobile-ios', browser: 'MobileIos', label: 'Mobile iOS (WebKit)'],
-    [flag: 'MOBILE_IPAD_TESTS', project: 'mobile-ipad', browser: 'MobileIpad', label: 'Mobile iPad (WebKit)'],
+  [
+    [flag: 'CHROME_TESTS', suite: 'chrome', browser: 'Chrome', label: 'Desktop Chrome'],
+    [flag: 'FIREFOX_TESTS', suite: 'firefox', browser: 'Firefox', label: 'Desktop Firefox'],
+    [flag: 'WEBKIT_TESTS', suite: 'webkit', browser: 'Safari', label: 'Desktop Safari (WebKit)'],
+    [flag: 'EDGE_TESTS', suite: 'edge', browser: 'Edge', label: 'Desktop Edge'],
+    [flag: 'MOBILE_ANDROID_TESTS', suite: 'mobile-android', browser: 'MobileAndroid', label: 'Mobile Android (Pixel 5)'],
+    [flag: 'MOBILE_IOS_TESTS', suite: 'mobile-ios', browser: 'MobileIos', label: 'Mobile iOS (WebKit)'],
+    [flag: 'MOBILE_IPAD_TESTS', suite: 'mobile-ipad', browser: 'MobileIpad', label: 'Mobile iPad (WebKit)'],
   ]
 }
 
-def getSelectedE2eRows() {
-  return getE2eMatrix().findAll { row -> params[row.flag] }
-}
-
 def runE2eMatrix() {
-  def rows = getSelectedE2eRows()
-  if (!rows || rows.isEmpty()) {
-    error('E2E matrix: no browser rows selected.')
-  }
   def gradleBuilder = new uk.gov.hmcts.contino.GradleBuilder(this, product)
-  rows.each { row ->
-    runE2eStage(gradleBuilder, row.project, row.browser, row.label)
+  getE2eMatrix().findAll { params[it.flag] }.each { row ->
+    runE2eStage(gradleBuilder, row)
   }
 }
 
-def runE2eStage(gradleBuilder, String e2eSuite, String browser, String stageLabel) {
-  stage("E2E - ${stageLabel}") {
+def runE2eStage(gradleBuilder, Map row) {
+  stage("E2E - ${row.label}") {
     node {
       checkout scm
       sh 'rm -rf e2e-output allure-report src/e2eTest/allure-results src/e2eTest/.auth/storage-state.json || true'
       catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-        withEnv(["E2E_SUITE=${e2eSuite}"]) {
+        withEnv(["E2E_SUITE=${row.suite}"]) {
           gradleBuilder.gradle('runE2eTests')
         }
       }
@@ -138,10 +130,10 @@ def runE2eStage(gradleBuilder, String e2eSuite, String browser, String stageLabe
         keepAll: true,
         reportDir: 'e2e-output',
         reportFiles: 'index.html',
-        reportName: "Full ${browser} E2E Test Report"
+        reportName: "Full ${row.browser} E2E Test Report"
       ])
       steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
-      sendAllureReportToSlack(stageLabel, "Full_20${browser}_20E2E_20Test_20Report/")
+      sendAllureReportToSlack(row.label, "Full_20${row.browser}_20E2E_20Test_20Report/")
     }
   }
 }
@@ -150,14 +142,13 @@ def sendAllureReportToSlack(String stageLabel, String reportSuffix) {
   env.E2E_BROWSER = stageLabel
   env.ALLURE_REPORT_PATH_SUFFIX = reportSuffix
   env.E2E_SERVICE_NAME = 'pcs-api'
-  def pipelineType = 'nightly'
-  env.E2E_PIPELINE_TYPE = pipelineType
+  env.E2E_PIPELINE_TYPE = 'nightly'
   def msg = sh(
-    script: "cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=${pipelineType} ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true",
+    script: 'cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=nightly ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true',
     returnStdout: true
   ).trim()
   if (!msg) {
-    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}${reportSuffix}"
+    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* nightly\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}${reportSuffix}"
   }
   try {
     slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
