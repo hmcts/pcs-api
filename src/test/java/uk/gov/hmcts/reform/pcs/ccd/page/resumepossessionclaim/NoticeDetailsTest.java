@@ -149,4 +149,149 @@ class NoticeDetailsTest extends BasePageTest {
             assertThat(response.getData()).isEqualTo(caseData);
         }
     }
+
+    @Nested
+    class ClearFieldsTests {
+
+        @Test
+        void shouldClearNonSelectedFieldsWhenFirstClassPostSelected() {
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(LocalDate.of(2023, 1, 1))
+                    .build())
+                .build();
+
+            when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new ArrayList<>());
+
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).contains(
+                "notice_NoticeDeliveredDate",
+                "notice_NoticePersonName",
+                "notice_NoticeHandedOverDateTime",
+                "notice_NoticeEmailExplanation",
+                "notice_NoticeEmailSentDateTime",
+                "notice_NoticeOtherElectronicDateTime",
+                "notice_NoticeOtherExplanation",
+                "notice_NoticeOtherDateTime"
+            );
+            assertThat(response.getData().getClearFields()).doesNotContain("notice_NoticePostedDate");
+        }
+
+        @Test
+        void shouldClearNonSelectedFieldsWhenEmailSelected() {
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
+                    .build())
+                .build();
+
+            when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new ArrayList<>());
+
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).contains(
+                "notice_NoticePostedDate",
+                "notice_NoticeDeliveredDate",
+                "notice_NoticePersonName",
+                "notice_NoticeHandedOverDateTime",
+                "notice_NoticeOtherElectronicDateTime",
+                "notice_NoticeOtherExplanation",
+                "notice_NoticeOtherDateTime"
+            );
+            assertThat(response.getData().getClearFields()).doesNotContain(
+                "notice_NoticeEmailExplanation",
+                "notice_NoticeEmailSentDateTime"
+            );
+        }
+
+        @Test
+        void shouldClearNonSelectedFieldsWhenPersonallyHandedSelected() {
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
+                    .build())
+                .build();
+
+            when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new ArrayList<>());
+
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).contains(
+                "notice_NoticePostedDate",
+                "notice_NoticeDeliveredDate",
+                "notice_NoticeEmailExplanation",
+                "notice_NoticeEmailSentDateTime",
+                "notice_NoticeOtherElectronicDateTime",
+                "notice_NoticeOtherExplanation",
+                "notice_NoticeOtherDateTime"
+            );
+            assertThat(response.getData().getClearFields()).doesNotContain(
+                "notice_NoticePersonName",
+                "notice_NoticeHandedOverDateTime"
+            );
+        }
+
+        @Test
+        void shouldNotSetClearFieldsWhenNoticeServedDetailsIsNull() {
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .build();
+
+            when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new ArrayList<>());
+
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            assertThat(response.getData().getClearFields()).isNull();
+        }
+
+        @Test
+        void shouldNotSetClearFieldsWhenNoticeServiceMethodIsNull() {
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder().build())
+                .build();
+
+            when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new ArrayList<>());
+
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            assertThat(response.getData().getClearFields()).isNull();
+        }
+
+        @Test
+        void shouldClearCorrectFieldsForAllEnumValues() {
+            // Test all 6 enum values to ensure complete coverage
+            assertClearFieldsForMethod(NoticeServiceMethod.FIRST_CLASS_POST, "notice_NoticePostedDate");
+            assertClearFieldsForMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE, "notice_NoticeDeliveredDate");
+            assertClearFieldsForMethod(NoticeServiceMethod.PERSONALLY_HANDED, "notice_NoticePersonName");
+            assertClearFieldsForMethod(NoticeServiceMethod.EMAIL, "notice_NoticeEmailExplanation");
+            assertClearFieldsForMethod(NoticeServiceMethod.OTHER_ELECTRONIC, "notice_NoticeOtherElectronicDateTime");
+            assertClearFieldsForMethod(NoticeServiceMethod.OTHER, "notice_NoticeOtherExplanation");
+        }
+
+        private void assertClearFieldsForMethod(NoticeServiceMethod method, String fieldConstant) {
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(method)
+                    .build())
+                .build();
+
+            when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new ArrayList<>());
+
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            assertThat(response.getData().getClearFields()).isNotNull();
+            assertThat(response.getData().getClearFields()).isNotEmpty();
+            assertThat(response.getData().getClearFields()).doesNotContain(fieldConstant);
+        }
+    }
 }

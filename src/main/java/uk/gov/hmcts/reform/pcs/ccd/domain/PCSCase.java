@@ -564,4 +564,7 @@ public class PCSCase {
     )
     private DynamicList caseManagementCategory;
 
+    @CCD(ignore = true)
+    private List<String> clearFields;
+
 }

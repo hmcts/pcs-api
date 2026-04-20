@@ -76,6 +76,7 @@ class DraftCaseJsonMergerTest {
                             "waysToPay",
                             "caseLinks",
                             "claimGroundSummaries",
+                            "enforcementOrder.clearFields",
                             "enforcementOrder.showChangeNameAddressPage",
                             "enforcementOrder.showPeopleWhoWillBeEvictedPage",
                             "enforcementOrder.showPeopleYouWantToEvictPage",

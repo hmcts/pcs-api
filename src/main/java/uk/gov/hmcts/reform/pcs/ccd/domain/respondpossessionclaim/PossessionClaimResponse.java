@@ -44,5 +44,8 @@ public class PossessionClaimResponse {
     @CCD(access = {CitizenAccess.class})
     private DefendantResponses defendantResponses;
 
+    @CCD(ignore = true)
+    private List<String> clearFields;
+
 }
 
