@@ -19,3 +19,7 @@ export * from '@data/page-data/userIneligible.page.data';
 export * from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 export * from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 export * from '@data/user-data/permanent.user.data';
+export * from '@data/page-data/cancelPayment.page.data';
+export * from '@data/page-data/confirmYourPayment.page.data';
+export * from '@data/page-data/enterPaymentDetails.page.data';
+export * from '@data/page-data/serviceRequest.page.data';
