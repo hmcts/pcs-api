@@ -67,10 +67,8 @@ test.describe('[Common Component Case Flags]', async () => {
     });
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageCaseFlagsEvent);
     await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
-    await performAction('createFlag', {
-      flagQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
-      flagOption: whereShouldThisFlagBeAdded.caseLevelComplexCaseRadioOption,
+    await performAction('selectFlagFromManageCaseFlags', {
+      flagOptions: whereShouldThisFlagBeAdded.caseLevelComplexCaseRadioOption,
       continueButton: whereShouldThisFlagBeAdded.continueButton
     }); 
     await performAction('updateComment', {

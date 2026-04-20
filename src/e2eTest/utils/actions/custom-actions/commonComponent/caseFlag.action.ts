@@ -10,6 +10,7 @@ export class CaseFlagAction implements IAction {
       ['addComment', () => this.addComment(fieldName as actionRecord, page)],
       ['reviewFlag', () => this.reviewFlag(fieldName as actionRecord, page)],
       ['viewFlag',   () => this.viewFlag(fieldName as actionRecord, page)],
+      ['selectFlagFromManageCaseFlags', () => this.selectFlagFromManageCaseFlags(fieldName as actionRecord, page)],
       ['updateComment', () => this.updateComment(fieldName as actionRecord, page)]
     ]);
 
@@ -41,6 +42,11 @@ export class CaseFlagAction implements IAction {
   private async viewFlag(viewOptions: actionRecord, page: Page) {
     await page.waitForLoadState();
     await page.locator('a', { hasText: viewOptions.viewFlagLink as string }).click();
+  }
+
+  private async selectFlagFromManageCaseFlags(selectOptions: actionRecord, page: Page) {
+    await performAction('clickRadioButton', { option: selectOptions.flagOptions });
+    await performAction('clickButton', selectOptions.continueButton);
   }
 
   private async updateComment(commentUpdate: actionRecord, page: Page) {
