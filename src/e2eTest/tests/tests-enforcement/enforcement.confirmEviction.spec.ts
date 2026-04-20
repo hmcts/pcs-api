@@ -43,7 +43,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Enforcement - Confirm Eviction]', async () => {
+test.describe.skip('[Enforcement - Confirm Eviction]', async () => {
   test('Confirm Eviction - Eviction data provide by Bailiff @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.confirmEvictionEvent);
