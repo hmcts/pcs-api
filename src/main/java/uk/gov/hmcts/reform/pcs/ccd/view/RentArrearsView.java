@@ -21,6 +21,8 @@ public class RentArrearsView {
         RentArrearsSection rentArrears = new RentArrearsSection();
 
         rentArrears.setTotal(rentArrearsEntity.getTotalRentArrears());
+        rentArrears.setRentArrearsRecoveryAttempted(rentArrearsEntity.getRentArrearsRecoveryAttempted());
+        rentArrears.setRentArrearsRecoveryAttemptDetails(rentArrearsEntity.getRentArrearsRecoveryAttemptDetails());
 
         pcsCase.setRentArrears(rentArrears);
 

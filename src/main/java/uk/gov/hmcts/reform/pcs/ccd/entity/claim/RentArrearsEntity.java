@@ -45,4 +45,10 @@ public class RentArrearsEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo arrearsJudgmentWanted;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo rentArrearsRecoveryAttempted;
+
+    private String rentArrearsRecoveryAttemptDetails;
+
 }

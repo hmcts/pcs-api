@@ -21,6 +21,8 @@ public class RentArrearsService {
 
         RentArrearsEntity rentArrearsEntity = new RentArrearsEntity();
         rentArrearsEntity.setTotalRentArrears(rentArrearsTotal);
+        rentArrearsEntity.setRentArrearsRecoveryAttempted(rentArrears.getRentArrearsRecoveryAttempted());
+        rentArrearsEntity.setRentArrearsRecoveryAttemptDetails(rentArrears.getRentArrearsRecoveryAttemptDetails());
         rentArrearsEntity.setArrearsJudgmentWanted(pcsCase.getArrearsJudgmentWanted());
 
         return rentArrearsEntity;
