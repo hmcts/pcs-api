@@ -105,6 +105,7 @@ export class ActionRegistry {
     ['reviewFlag', new CaseFlagAction()],
     ['viewFlag', new CaseFlagAction()],
     ['updateComment', new CaseFlagAction()]
+    ['enterPaymentDetails', new FeeAndPayAction()]
   ]);
 
   static getAction(actionName: string): IAction {

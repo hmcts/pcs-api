@@ -54,11 +54,7 @@ export class ClickRadioButtonAction implements IAction {
     return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
   }
 
-   private radioPattern3(page: Page, question: string, option: string, idx: number) {
-    if(question == null) {
-    return page.getByRole('radio', { name: option as string, exact: true })
-       .nth(idx);
-    }
-  }
-
+  private radioPattern3(page: Page, question: string, option: string, idx: number) {
+    return page.locator(`label >> text=${option}`);
+  } 
 }

@@ -29,10 +29,11 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Fee And Pay]', async () => {
-  test('Fee And Pay - Pay by account PBA @PR @regression @nightly', async () => {
+  test('Fee And Pay - Pay by account PBA @nightly', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
+      expectedAmount: serviceRequest.amount404,
       payByOption: serviceRequest.payByAccountRadioOption,
       pbaLabel: serviceRequest.selectPBALabel,
       pbaIndex: serviceRequest.pbaIndex1,
@@ -40,48 +41,36 @@ test.describe('[Common Component Fee And Pay]', async () => {
       referenceText: serviceRequest.pbaReferenceInputText,
       confirmButton: serviceRequest.confirmPaymentButton,
     });
-    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader)
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
   });
 
-  test('Fee And Pay - Pay by Card @PR @regression @nightly', async () => {
+  test('Fee And Pay - Pay by Card @nightly', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
       continueButton: serviceRequest.continueButton
     });
-    await performValidation('mainHeader', enterPaymentDetails.mainHeader)
+    await performValidation('mainHeader', enterPaymentDetails.mainHeader);
     await performAction('enterPaymentDetails', {
-      cardLabel: enterPaymentDetails.cardNoLabel,
-      cardText: enterPaymentDetails.cardNoInputText,
-      monthLabel: enterPaymentDetails.monthTextLabel,
-      monthText: enterPaymentDetails.monthTextInput,
-      yearLabel: enterPaymentDetails.yearTextLabel,
-      yearText: enterPaymentDetails.yearTextInput,
-      nameLabel: enterPaymentDetails.nameOnCardLabel,
-      nameText: enterPaymentDetails.nameOnCardTextInput,
-      cardSecCodeLabel: enterPaymentDetails.cardSecurityCodeLabel,
-      cardSecText: enterPaymentDetails.cardSecurityCodeTextInput,
-      addressLabel1: enterPaymentDetails.addressLine1TextLabel,
-      addressText1: enterPaymentDetails.addressLine1TextInput,
-      addressLabel2: enterPaymentDetails.addressLine2TextLabel,
-      addressText2: enterPaymentDetails.addressLine2TextInput,
-      townLabel: enterPaymentDetails.townOrCityTextLabel,
-      townText: enterPaymentDetails.TownOrCityTextInput,
-      countryLabel: enterPaymentDetails.countryLabel,
-      countryText: enterPaymentDetails.countryTextInput,
-      postCodeLabel: enterPaymentDetails.postcodeTextLabel,
-      postCodeText: enterPaymentDetails.postcodeTextInput,
-      emailLabel: enterPaymentDetails.emailLabel,
-      emailText: enterPaymentDetails.emailTextInput,
-      button: enterPaymentDetails.continueButton
+      cardInput: enterPaymentDetails.cardNoInputText,
+      monthInput: enterPaymentDetails.monthTextInput,
+      yearInput: enterPaymentDetails.yearTextInput,
+      nameInput: enterPaymentDetails.nameOnCardTextInput,
+      cardSecInput: enterPaymentDetails.cardSecurityCodeTextInput,
+      address1Input: enterPaymentDetails.addressLine1TextInput,
+      address2Input: enterPaymentDetails.addressLine2TextInput,
+      townInput: enterPaymentDetails.TownOrCityTextInput,
+      countryInput: enterPaymentDetails.countryTextInput,
+      postCodeInput: enterPaymentDetails.postcodeTextInput,
+      emailInput: enterPaymentDetails.emailTextInput
     });
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
     await performAction('clickButton', confirmYourPayment.confirmButton);
-    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader)
-    });
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+  });
 
-    test('Fee And Pay - Cancel Payment from You Card Details Page @regression @nightly', async () => {
+  test('Fee And Pay - Cancel Payment from You Card Details Page @nightly', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -90,44 +79,32 @@ test.describe('[Common Component Fee And Pay]', async () => {
     });
     await performValidation('mainHeader', enterPaymentDetails.mainHeader);
     await performAction('clickButton', enterPaymentDetails.cancelPaymentButton);
-    await performValidation('mainHeader', cancelPayment.mainHeader)
+    await performValidation('mainHeader', cancelPayment.mainHeader);
   });
 
-    test('Fee And Pay - Cancel Payment from Confirm Card Details Page @regression @nightly', async () => {
+  test('Fee And Pay - Cancel Payment from Confirm Card Details Page @nightly', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
       continueButton: serviceRequest.continueButton
     });
-    await performValidation('mainHeader', enterPaymentDetails.mainHeader)
+    await performValidation('mainHeader', enterPaymentDetails.mainHeader);
     await performAction('enterPaymentDetails', {
-      cardLabel: enterPaymentDetails.cardNoLabel,
-      cardText: enterPaymentDetails.cardNoInputText,
-      monthLabel: enterPaymentDetails.monthTextLabel,
-      monthText: enterPaymentDetails.monthTextInput,
-      yearLabel: enterPaymentDetails.yearTextLabel,
-      yearText: enterPaymentDetails.yearTextInput,
-      nameLabel: enterPaymentDetails.nameOnCardLabel,
-      nameText: enterPaymentDetails.nameOnCardTextInput,
-      cardSecCodeLabel: enterPaymentDetails.cardSecurityCodeLabel,
-      cardSecText: enterPaymentDetails.cardSecurityCodeTextInput,
-      addressLabel1: enterPaymentDetails.addressLine1TextLabel,
-      addressText1: enterPaymentDetails.addressLine1TextInput,
-      addressLabel2: enterPaymentDetails.addressLine2TextLabel,
-      addressText2: enterPaymentDetails.addressLine2TextInput,
-      townLabel: enterPaymentDetails.townOrCityTextLabel,
-      townText: enterPaymentDetails.TownOrCityTextInput,
-      countryLabel: enterPaymentDetails.countryLabel,
-      countryText: enterPaymentDetails.countryTextInput,
-      postCodeLabel: enterPaymentDetails.postcodeTextLabel,
-      postCodeText: enterPaymentDetails.postcodeTextInput,
-      emailLabel: enterPaymentDetails.emailLabel,
-      emailText: enterPaymentDetails.emailTextInput,
-      button: enterPaymentDetails.continueButton
+      cardInput: enterPaymentDetails.cardNoInputText,
+      monthInput: enterPaymentDetails.monthTextInput,
+      yearInput: enterPaymentDetails.yearTextInput,
+      nameInput: enterPaymentDetails.nameOnCardTextInput,
+      cardSecInput: enterPaymentDetails.cardSecurityCodeTextInput,
+      address1Input: enterPaymentDetails.addressLine1TextInput,
+      address2Input: enterPaymentDetails.addressLine2TextInput,
+      townInput: enterPaymentDetails.TownOrCityTextInput,
+      countryInput: enterPaymentDetails.countryTextInput,
+      postCodeInput: enterPaymentDetails.postcodeTextInput,
+      emailInput: enterPaymentDetails.emailTextInput
     });
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
     await performAction('clickButton', confirmYourPayment.cancelPaymentButton);
-    await performValidation('mainHeader', cancelPayment.mainHeader)
+    await performValidation('mainHeader', cancelPayment.mainHeader);
   });
 });
