@@ -185,7 +185,6 @@ fees:
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
 
 access-code:
-  hash-pins-enabled: ${HASH_PINS_ENABLED:false}
   request:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}

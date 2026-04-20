@@ -28,8 +28,6 @@ class PartyAccessCodeLinkValidatorTest {
 
     @Mock
     private PartyAccessCodeRepository pacRepository;
-    @Mock
-    private PartyAccessCodeHashingService hashingService;
 
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final String ACCESS_CODE = "ABCD1234";
@@ -44,27 +42,32 @@ class PartyAccessCodeLinkValidatorTest {
     }
 
     @Test
-    void shouldReturnPac_WhenAccessCodeMatches() {
+    void shouldReturnPac_WhenAccessCodeExists() {
+        // GIVEN
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
             .partyId(PARTY_ID)
-            .code("$2a$10$hashedCode")
+            .code(ACCESS_CODE)
             .build();
 
-        when(hashingService.findMatchingAccessCode(pacRepository, CASE_ID, ACCESS_CODE))
+        when(pacRepository.findByPcsCase_IdAndCode(CASE_ID, ACCESS_CODE))
             .thenReturn(Optional.of(pac));
 
+        // WHEN
         PartyAccessCodeEntity result = validator.validateAccessCode(CASE_ID, ACCESS_CODE);
 
+        // THEN
         assertThat(result).isNotNull();
         assertThat(result.getPartyId()).isEqualTo(PARTY_ID);
-        assertThat(result.getCode()).isEqualTo("$2a$10$hashedCode");
+        assertThat(result.getCode()).isEqualTo(ACCESS_CODE);
     }
 
     @Test
-    void shouldThrowInvalidAccessCodeException_WhenAccessCodeDoesNotMatch() {
-        when(hashingService.findMatchingAccessCode(pacRepository, CASE_ID, ACCESS_CODE))
+    void shouldThrowInvalidAccessCodeException_WhenAccessCodeNotFound() {
+        // GIVEN
+        when(pacRepository.findByPcsCase_IdAndCode(CASE_ID, ACCESS_CODE))
             .thenReturn(Optional.empty());
 
+        // WHEN + THEN
         assertThatThrownBy(() -> validator.validateAccessCode(CASE_ID, ACCESS_CODE))
             .isInstanceOf(InvalidAccessCodeException.class)
             .hasMessageContaining("Invalid data");

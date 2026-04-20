@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeRequest;
-import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
 import java.util.List;
@@ -86,9 +85,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @MockitoBean
     private CaseAssignmentApi caseAssignmentApi;
-
-    @Autowired
-    private PartyAccessCodeHashingService partyAccessCodeHashingService;
 
     @BeforeEach
     void setUp() {
@@ -437,11 +433,10 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     }
 
     private String createPartyAccessCode(PcsCaseEntity caseEntity, UUID partyId) {
-        String storedCode = partyAccessCodeHashingService.encodeForStorage(ACCESS_CODE);
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
                 .partyId(partyId)
                 .pcsCase(caseEntity)
-                .code(storedCode)
+                .code(ACCESS_CODE)
                 .role(PartyRole.DEFENDANT)
                 .build();
 
