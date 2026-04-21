@@ -461,22 +461,22 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
-                grounds.getAntiSocialCondition1OfS84AGround(),
+                grounds.getAntiSocialCondition2OfS84AGround(),
                 S84A_CONDITION_2.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
-                grounds.getAntiSocialCondition1OfS84AGround(),
+                grounds.getAntiSocialCondition3OfS84AGround(),
                 S84A_CONDITION_3.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
-                grounds.getAntiSocialCondition1OfS84AGround(),
+                grounds.getAntiSocialCondition4OfS84AGround(),
                 S84A_CONDITION_4.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
-                grounds.getAntiSocialCondition1OfS84AGround(),
+                grounds.getAntiSocialCondition5OfS84AGround(),
                 S84A_CONDITION_5.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
