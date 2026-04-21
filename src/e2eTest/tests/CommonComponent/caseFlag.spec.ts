@@ -37,7 +37,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Case Flags]', async () => {
-  test('Case Flags - Create New Case Flag @nightly', async ({ page }) => {
+  test('Case Flags - Create New Case Flag @PR @regression @nightly', async ({ page }) => {
     const nextStepDropdown = page.locator('#next-step');
     await expect(nextStepDropdown).toContainText(caseSummary.createFlagsEvent);
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
