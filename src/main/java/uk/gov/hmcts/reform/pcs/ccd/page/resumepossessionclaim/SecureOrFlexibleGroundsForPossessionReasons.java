@@ -61,7 +61,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .showCondition(
                     "tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
                             + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
-                            + " AND (showBreachOfTenancyTextarea=\"YES\" OR showReasonsForGroundsPage=\"YES\")"
+                            + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
                             + " AND legislativeCountry=\"England\""
             )
             .label("possessionReasons-lineSeparator","---")
@@ -74,10 +74,10 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                 Why are you making a claim for possession under this ground?</h3>
-                """, "showBreachOfTenancyTextarea=\"YES\" AND "
+                """, "showBreachOfTenancyTextarea=\"Yes\" AND "
                 + ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, RENT_ARREARS_OR_BREACH_OF_TENANCY))
             .mandatory(SecureOrFlexibleGroundsReasons::getBreachOfTenancyGround,
-                    "showBreachOfTenancyTextarea=\"YES\" AND "
+                    "showBreachOfTenancyTextarea=\"Yes\" AND "
                         + ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, RENT_ARREARS_OR_BREACH_OF_TENANCY))
 
             .label("possessionReasons-nuisanceOrImmoralUse-label",
