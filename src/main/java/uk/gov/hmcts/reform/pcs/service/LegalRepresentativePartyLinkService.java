@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
@@ -27,27 +28,28 @@ public class LegalRepresentativePartyLinkService {
     private final PcsCaseService pcsCaseService;
     private final OrganisationDetailsService organisationDetailsService;
     private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final AddressMapper addressMapper;
 
     @Transactional
     public void linkLegalRepresentativeToParty(long caseReference, String authToken, String partyId) {
         var user = idamService.validateAuthToken(authToken).getUserDetails();
-
+        String userUid = user.getUid();
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
 //        OrganisationDetailsResponse organisationDetails =
 //        organisationDetailsService.getOrganisationDetails(user.getUid());
-        // ToDo: Get formatted address
         // get contact details
 
         LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
-            .organisationName(organisationDetailsService.getOrganisationName(user.getUid()))
+            .organisationName(organisationDetailsService.getOrganisationName(userUid))
+            .idamId(UUID.fromString(userUid))
             .firstName(user.getName())
             .lastName(user.getFamilyName())
             .email("e-mail")
             .phone("0121")
-            .address(null)
+            .address(addressMapper.toAddressEntityAndNormalise(organisationDetailsService.getOrganisationAddress(userUid)))
             .build();
 
         legalRepresentative.addParty(defendantPartyEntity);

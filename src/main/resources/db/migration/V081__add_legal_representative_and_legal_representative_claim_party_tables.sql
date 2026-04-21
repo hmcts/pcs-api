@@ -1,5 +1,6 @@
 create table legal_representative (
   id uuid primary key,
+  idam_id  UUID,
   organisation_name varchar(120),
   first_name varchar(60),
   last_name varchar(60),

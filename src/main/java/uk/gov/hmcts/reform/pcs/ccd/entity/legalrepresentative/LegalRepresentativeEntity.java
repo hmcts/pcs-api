@@ -39,6 +39,8 @@ public class LegalRepresentativeEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    private UUID idamId;
+
     @Column(name = "organisation_name")
     private String organisationName;
 
@@ -48,10 +50,8 @@ public class LegalRepresentativeEntity {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column
     private String email;
 
-    @Column
     private String phone;
 
     @OneToOne(cascade = ALL,orphanRemoval = true)

@@ -772,6 +772,26 @@ class TestingSupportControllerTest {
         assertThat(HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode()));
     }
 
+    @Test
+    void linkDefendantSolicitorToParty() {
+        // given
+        long caseReference = 111111111111L;
+        String partyId = "abc";
+        String authToken = "testAuth";
+
+        // when
+        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
+            caseReference,
+            partyId,
+            authToken,
+            "testS2S"
+        );
+
+        // then
+        verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(caseReference, authToken, partyId);
+        assertThat(HttpStatus.OK.equals(response.getStatusCode()));
+    }
+
     private JsonNode createJsonNodeFormPayload(String applicantName) {
         try {
             String json = String.format("{\"applicantName\":\"%s\",\"caseNumber\":\"%s\"}",

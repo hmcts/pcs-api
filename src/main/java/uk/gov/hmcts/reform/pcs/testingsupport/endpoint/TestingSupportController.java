@@ -33,7 +33,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
