@@ -98,7 +98,7 @@ public class CcdCaseAssignmentConsumerTest {
                      "Content-Type", "application/json")
             .body(deleteRoleBody())
             .willRespondWith()
-            .status(201)
+            .status(200)
             .toPact(V4Pact.class);
     }
 
