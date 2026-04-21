@@ -15,5 +15,5 @@ import java.util.List;
 public class Task {
     private String templateId;
     private List<ListValue<TemplateValue>> templateValues;
-    private String status;
+    private TaskStatus status;
 }

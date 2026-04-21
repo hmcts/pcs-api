@@ -13,6 +13,6 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaskGroup {
-    private String groupId;
+    private TaskGroupId groupId;
     private List<ListValue<Task>> tasks;
 }
