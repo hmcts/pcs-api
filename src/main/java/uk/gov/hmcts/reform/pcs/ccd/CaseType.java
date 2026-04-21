@@ -74,7 +74,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field("nextStepsMarkdown", NEVER_SHOW);
 
         builder.tab("summary", "Summary")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
+            .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
             .field(PCSCase::getPropertyAddress);
 
         builder.tab("CaseHistory", "History")
