@@ -21,10 +21,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -295,6 +300,61 @@ class DocumentServiceTest {
         // Then
         assertThat(entities).isEmpty();
         verify(documentRepository).saveAll(anyList());
+    }
+
+    @ParameterizedTest
+    @EnumSource(EvidenceDocumentType.class)
+    void shouldMapAllEvidenceDocumentTypes(EvidenceDocumentType evidenceDocumentType) {
+        // Given
+        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
+                .document(Document.builder()
+                        .url("url-WITNESS_STATEMENT")
+                        .filename("file-WITNESS_STATEMENT")
+                        .binaryUrl("bin-WITNESS_STATEMENT")
+                        .categoryId("cat-WITNESS_STATEMENT")
+                        .build())
+                .documentType(evidenceDocumentType)
+                .build();
+
+        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
+                List.of(ListValue.<EvidenceOfDefendants>builder()
+                        .id("1").value(evidenceDocument).build());
+
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                        .additionalDocuments(evidenceDocuments)
+                        .build())
+                .build();
+
+        // When
+        underTest.createAllDocuments(enforcementOrder);
+
+        // Then
+        DocumentType expectedDocumentType = DocumentType.valueOf(evidenceDocumentType.name());
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+                .extracting(DocumentEntity::getType)
+                .containsExactly(expectedDocumentType);
+    }
+
+    @Test
+    void shouldHandleEmptyEvidenceDocument() {
+        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
+                new ArrayList<>();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                        .additionalDocuments(evidenceDocuments)
+                        .build())
+                .build();
+
+        // When
+        underTest.createAllDocuments(enforcementOrder);
+
+        // Then
+        verify(documentRepository).saveAll(List.of());
     }
 
     @Test
