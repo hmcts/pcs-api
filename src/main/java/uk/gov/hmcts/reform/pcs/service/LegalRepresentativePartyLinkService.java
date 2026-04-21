@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
@@ -37,6 +38,12 @@ public class LegalRepresentativePartyLinkService {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
+
+        if (legalRepresentativeRepository.isLegalRepresentativeLinkedToPartyAndActive(
+            UUID.fromString(userUid), UUID.fromString(partyId))) {
+            throw new LegalRepresentativeAlreadyLinkedToPartyException(
+                "Legal Representative [" + userUid + "] already linked to Party [" + partyId + "]");
+        }
 
         LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
             .organisationName(organisationDetailsService.getOrganisationName(userUid))
@@ -64,6 +71,10 @@ public class LegalRepresentativePartyLinkService {
                 log.error("Unable to find Party [{}]", partyId);
                 return new PartyNotFoundException("Unable to find Party with Id [" + partyId + "]");
             });
+    }
+
+    private void checkIfLegalRepresentativeAlreadyLinkedToParty(String legalRepresentativeIdamId, String partyId) {
+
     }
 
 }

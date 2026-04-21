@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -130,6 +131,58 @@ class LegalRepresentativePartyLinkServiceTest {
     }
 
     @Test
+    void linkLegalRepresentativeToParty_WithLegalRepAlreadyLinkedToParty_ThrowsException() {
+        // given
+        String authToken = "authToken";
+        UUID userUid = UUID.randomUUID();
+        long caseReference = 1L;
+        UUID partyId = UUID.randomUUID();
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(partyId)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .claims(List.of(ClaimEntity.builder()
+                                .claimParties(
+                                    List.of(ClaimPartyEntity.builder()
+                                                .role(PartyRole.DEFENDANT)
+                                                .party(partyEntity)
+                                                .build()))
+                                .build()
+            )).build();
+
+
+        when(idamService.validateAuthToken(authToken)).thenReturn(user);
+        when(user.getUserDetails()).thenReturn(userInfo);
+        when(userInfo.getUid()).thenReturn(userUid.toString());
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(legalRepresentativeRepository.isLegalRepresentativeLinkedToPartyAndActive(userUid, partyId))
+            .thenReturn(true);
+
+        try {
+            // when
+            legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+                caseReference,
+                authToken,
+                partyId.toString()
+            );
+        } catch (LegalRepresentativeAlreadyLinkedToPartyException e) {
+            // then
+            assertEquals("Legal Representative [" + userUid + "] already linked to Party [" + partyId + "]",
+                         e.getMessage());
+
+            verify(organisationDetailsService, never()).getOrganisationName(anyString());
+            verify(userInfo, never()).getName();
+            verify(userInfo, never()).getFamilyName();
+            verify(userInfo, never()).getSub();
+            verify(organisationDetailsService, never()).getOrganisationAddress(anyString());
+            verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
+            verify(legalRepresentativeRepository, never()).save(any());
+        }
+    }
+
+    @Test
     void linkLegalRepresentativeToParty_WithNoPartyFound_ThrowsException() {
         // given
         String authToken = "authToken";
@@ -156,6 +209,7 @@ class LegalRepresentativePartyLinkServiceTest {
         when(user.getUserDetails()).thenReturn(userInfo);
         when(userInfo.getUid()).thenReturn(userUid.toString());
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
         try {
             // when
             legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
@@ -203,6 +257,7 @@ class LegalRepresentativePartyLinkServiceTest {
         when(user.getUserDetails()).thenReturn(userInfo);
         when(userInfo.getUid()).thenReturn(userUid.toString());
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
         try {
             // when
             legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(

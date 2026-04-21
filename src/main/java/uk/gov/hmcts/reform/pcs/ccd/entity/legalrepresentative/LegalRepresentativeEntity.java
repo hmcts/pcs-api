@@ -14,7 +14,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -25,6 +24,7 @@ import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 @Entity
 @Table(name = "legal_representative")
@@ -68,7 +68,7 @@ public class LegalRepresentativeEntity {
             .legalRepresentative(this)
             .party(party)
             .startDate(Instant.now())
-            .active(VerticalYesNo.YES)
+            .active(YesOrNo.YES)
             .build();
         claimPartyLegalRepresentativeList.add(claimPartyLegalRepresentativeEntity);
         party.getClaimPartyLegalRepresentativeList().add(claimPartyLegalRepresentativeEntity);
