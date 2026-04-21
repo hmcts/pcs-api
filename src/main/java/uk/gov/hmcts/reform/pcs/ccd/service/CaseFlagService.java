@@ -42,9 +42,8 @@ public class CaseFlagService {
 
 
             if (flagDetailsEntity == null) {
-                flagDetailsEntity = FlagDetailsEntity.builder()
-                    .pcsCase(pcsCaseEntity)
-                    .build();
+                flagDetailsEntity = new FlagDetailsEntity();
+                flagDetailsEntity.setPcsCase(pcsCaseEntity);
             }
 
             flagDetailsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
