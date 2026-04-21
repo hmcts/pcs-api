@@ -29,6 +29,7 @@ public class PcsCaseService {
     private final TenancyLicenceService tenancyLicenceService;
     private final AddressMapper addressMapper;
     private final CaseLinkService caseLinkService;
+    private final CaseFlagService caseFlagService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -57,6 +58,17 @@ public class PcsCaseService {
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
+    }
+
+    public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
+        if (pcsCase == null) {
+            throw new IllegalArgumentException("PCSCase cannot be null");
+        }
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+
+        if (pcsCase.getCaseFlags() != null && pcsCase.getCaseFlags().getDetails() != null) {
+            caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(), pcsCaseEntity);
+        }
     }
 
     public PcsCaseEntity loadCase(long caseReference) {

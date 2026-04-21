@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -73,6 +74,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFieldsView caseFieldsView;
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
+    private final CaseFlagsView flagsView;
+
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -133,6 +136,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
+        flagsView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
