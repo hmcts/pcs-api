@@ -25,10 +25,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -148,7 +150,8 @@ public class DefendantResponseEntity {
 
     private LocalDateTime responseReceivedDate;
 
-    private String languageUsed;
+    @Enumerated(EnumType.STRING)
+    private LanguageUsed languageUsed;
 
     private String channel;
 

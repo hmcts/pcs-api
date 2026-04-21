@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
@@ -767,6 +768,43 @@ class DefendantResponseServiceTest {
         return Stream.of(
             Arguments.of("I dispute this claim because the rent has been paid in full"),
             Arguments.of((String) null)
+        );
+    }
+
+    @ParameterizedTest(name = "languageUsed={0}")
+    @MethodSource("languageUsedPersistenceScenarios")
+    void shouldPersistLanguageUsed(LanguageUsed languageUsed) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .languageUsed(languageUsed)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getLanguageUsed()).isEqualTo(languageUsed);
+    }
+
+    private static Stream<Arguments> languageUsedPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(LanguageUsed.ENGLISH),
+            Arguments.of(LanguageUsed.WELSH),
+            Arguments.of(LanguageUsed.ENGLISH_AND_WELSH),
+            Arguments.of((LanguageUsed) null)
         );
     }
 }
