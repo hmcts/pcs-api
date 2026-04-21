@@ -61,9 +61,7 @@
   ],
   "secureOrFlexibleDiscretionaryGroundsAlt": [
   ],
-  "secureAntisocialAdditionalGrounds": [
-    "S84A_CONDITION_1"
-  ],
+  "secureAntisocialAdditionalGrounds": [],
   "antiSocialGround": "Antisocial behaviour reasons.",
   "showReasonsForGroundsPage": "Yes",
   "preActionProtocolCompleted": "NO",
