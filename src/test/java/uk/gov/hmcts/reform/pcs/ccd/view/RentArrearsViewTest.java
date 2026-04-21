@@ -73,10 +73,13 @@ class RentArrearsViewTest {
     void shouldSetRentArrearsFields() {
         // Given
         BigDecimal totalRentArrears = new BigDecimal("1234.00");
+        String details = "details";
 
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES);
+        when(rentArrearsEntity.getRentArrearsRecoveryAttempted()).thenReturn(VerticalYesNo.YES);
+        when(rentArrearsEntity.getRentArrearsRecoveryAttemptDetails()).thenReturn(details);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -88,6 +91,8 @@ class RentArrearsViewTest {
 
         RentArrearsSection rentArrears = rentArrearsCaptor.getValue();
         assertThat(rentArrears.getTotal()).isEqualTo(totalRentArrears);
+        assertThat(rentArrears.getRentArrearsRecoveryAttempted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(rentArrears.getRentArrearsRecoveryAttemptDetails()).isEqualTo(details);
 
         verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }

@@ -61,4 +61,29 @@ class RentArrearsServiceTest {
         assertThat(rentArrearsEntity.getArrearsJudgmentWanted()).isEqualTo(arrearsJudgementWanted);
     }
 
+    @ParameterizedTest
+    @EnumSource(value = VerticalYesNo.class)
+    void shouldSetRentArrearsRecoveryAttempted(VerticalYesNo rentArrearsRecoveryAttempted) {
+        // Given
+        when(rentArrears.getRentArrearsRecoveryAttempted()).thenReturn(rentArrearsRecoveryAttempted);
+
+        // When
+        RentArrearsEntity rentArrearsEntity = underTest.createRentArrearsEntity(pcsCase);
+
+        // Then
+        assertThat(rentArrearsEntity.getRentArrearsRecoveryAttempted()).isEqualTo(rentArrearsRecoveryAttempted);
+    }
+
+    @Test
+    void shouldSetRentArrearsDetails() {
+        // Given
+        String details = "details";
+        when(rentArrears.getRentArrearsRecoveryAttemptDetails()).thenReturn(details);
+
+        // When
+        RentArrearsEntity rentArrearsEntity = underTest.createRentArrearsEntity(pcsCase);
+
+        // Then
+        assertThat(rentArrearsEntity.getRentArrearsRecoveryAttemptDetails()).isEqualTo(details);
+    }
 }
