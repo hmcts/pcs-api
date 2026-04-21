@@ -13,9 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
 
 @Builder
 @Data
@@ -46,7 +48,7 @@ public class DefendantResponses {
     private BigDecimal rentArrearsAmount;
 
     @CCD
-    private YesNoNotSure noticeReceived;
+    private YesNoNotSure possessionNoticeReceived;
 
     @CCD
     private LocalDate noticeReceivedDate;
@@ -93,4 +95,7 @@ public class DefendantResponses {
     @CCD(access = {CitizenAccess.class})
     private PaymentAgreement paymentAgreement;
 
+    private LanguageUsed languageUsed;
+
+    private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
 }
