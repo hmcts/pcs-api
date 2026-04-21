@@ -18,13 +18,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -267,6 +273,61 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(anyList());
     }
 
+    @ParameterizedTest
+    @EnumSource(EvidenceDocumentType.class)
+    void shouldMapAllEvidenceDocumentTypes(EvidenceDocumentType evidenceDocumentType) {
+        // Given
+        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
+                .document(Document.builder()
+                        .url("url-WITNESS_STATEMENT")
+                        .filename("file-WITNESS_STATEMENT")
+                        .binaryUrl("bin-WITNESS_STATEMENT")
+                        .categoryId("cat-WITNESS_STATEMENT")
+                        .build())
+                .documentType(evidenceDocumentType)
+                .build();
+
+        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
+                List.of(ListValue.<EvidenceOfDefendants>builder()
+                        .id("1").value(evidenceDocument).build());
+
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                        .additionalDocuments(evidenceDocuments)
+                        .build())
+                .build();
+
+        // When
+        underTest.createAllDocuments(enforcementOrder);
+
+        // Then
+        DocumentType expectedDocumentType = DocumentType.valueOf(evidenceDocumentType.name());
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+                .extracting(DocumentEntity::getType)
+                .containsExactly(expectedDocumentType);
+    }
+
+    @Test
+    void shouldHandleEmptyEvidenceDocument() {
+        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
+                new ArrayList<>();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                        .additionalDocuments(evidenceDocuments)
+                        .build())
+                .build();
+
+        // When
+        underTest.createAllDocuments(enforcementOrder);
+
+        // Then
+        verify(documentRepository).saveAll(List.of());
+    }
+
     @Test
     void shouldSaveDescriptionForAdditionalDocuments() {
         // Given
@@ -443,6 +504,7 @@ class DocumentServiceTest {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
 
         DefendantDocument defDoc1 = DefendantDocument.builder()
@@ -467,7 +529,8 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(uploadedDocs, response, pcsCase);
+        List<DocumentEntity> result =
+            underTest.createDefendantEvidenceDocuments(uploadedDocs, response, pcsCase, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -478,6 +541,7 @@ class DocumentServiceTest {
             assertThat(entity.getType()).isEqualTo(DocumentType.DEFENDANT_EVIDENCE);
             assertThat(entity.getDefendantResponse()).isEqualTo(response);
             assertThat(entity.getPcsCase()).isEqualTo(pcsCase);
+            assertThat(entity.getParty()).isEqualTo(party);
         });
 
         assertThat(entities)
@@ -501,9 +565,10 @@ class DocumentServiceTest {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
 
         // When
-        List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(null, response, pcsCase);
+        List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(null, response, pcsCase, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -515,10 +580,11 @@ class DocumentServiceTest {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
 
         // When
         List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(
-            Collections.emptyList(), response, pcsCase);
+            Collections.emptyList(), response, pcsCase, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -530,6 +596,7 @@ class DocumentServiceTest {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
 
         DefendantDocument validDoc = DefendantDocument.builder()
@@ -547,7 +614,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createDefendantEvidenceDocuments(uploadedDocs, response, pcsCase);
+        underTest.createDefendantEvidenceDocuments(uploadedDocs, response, pcsCase, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -561,6 +628,7 @@ class DocumentServiceTest {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
 
         DefendantDocument defDoc = DefendantDocument.builder()
@@ -575,7 +643,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createDefendantEvidenceDocuments(uploadedDocs, response, pcsCase);
+        underTest.createDefendantEvidenceDocuments(uploadedDocs, response, pcsCase, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());

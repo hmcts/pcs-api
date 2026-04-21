@@ -110,7 +110,8 @@ public class DefendantResponseService {
             documentService.createDefendantEvidenceDocuments(
                 responses.getUploadedDocuments(),
                 savedResponse,
-                claimRef.getPcsCase()
+                claimRef.getPcsCase(),
+                partyRef
             );
         }
 

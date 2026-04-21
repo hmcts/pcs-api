@@ -923,7 +923,7 @@ class DefendantResponseServiceTest {
 
         // Then
         verify(documentService).createDefendantEvidenceDocuments(
-            eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity));
+            eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), any(PartyEntity.class));
     }
 
     @Test
@@ -948,7 +948,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(documentService, never()).createDefendantEvidenceDocuments(any(), any(), any());
+        verify(documentService, never()).createDefendantEvidenceDocuments(any(), any(), any(), any());
     }
 
     @ParameterizedTest(name = "languageUsed={0}")

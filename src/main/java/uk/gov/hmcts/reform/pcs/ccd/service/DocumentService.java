@@ -16,10 +16,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -39,52 +43,72 @@ public class DocumentService {
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
-        List<DocumentHolder> allDocuments = new ArrayList<>();
-        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
-
-        allDocuments.addAll(mapDocumentsWithType(
-            Optional.ofNullable(pcsCase.getRentArrears())
-                .map(RentArrearsSection::getStatementDocuments)
-                .orElse(null), DocumentType.RENT_STATEMENT));
-
-        allDocuments.addAll(mapDocumentsWithType(
-            Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
-                .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
-                .orElse(null), DocumentType.TENANCY_LICENCE));
-
-        allDocuments.addAll(mapDocumentsWithType(
-            Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
-                .map(OccupationLicenceDetailsWales::getLicenceDocuments)
-                .orElse(null), DocumentType.OCCUPATION_LICENCE));
-
-        allDocuments.addAll(mapDocumentsWithType(
-            Optional.ofNullable(pcsCase.getNoticeServedDetails())
-                .map(NoticeServedDetails::getNoticeDocuments)
-                .orElse(null), DocumentType.NOTICE_SERVED));
+        List<DocumentHolder> allDocuments = getPcsCaseDocuments(pcsCase);
 
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
 
+    public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
+
+        List<DocumentHolder> allDocuments = getWarrantOfRestitutionDocuments(enforcementOrder);
+
+        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+    }
+
+    private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
+        List<DocumentHolder> allDocuments = new ArrayList<>();
+
+        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRentArrears())
+                    .map(RentArrearsSection::getStatementDocuments)
+                    .orElse(null), DocumentType.RENT_STATEMENT));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
+                    .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
+                    .orElse(null), DocumentType.TENANCY_LICENCE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
+                    .map(OccupationLicenceDetailsWales::getLicenceDocuments)
+                    .orElse(null), DocumentType.OCCUPATION_LICENCE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getNoticeServedDetails())
+                    .map(NoticeServedDetails::getNoticeDocuments)
+                    .orElse(null), DocumentType.NOTICE_SERVED));
+
+        return allDocuments;
+    }
+
+    private List<DocumentHolder> getWarrantOfRestitutionDocuments(EnforcementOrder enforcementOrder) {
+
+        return new ArrayList<>(mapEvidenceOfDefendantsDocumentsWithType(
+                enforcementOrder.getWarrantOfRestitutionDetails().getAdditionalDocuments()));
+    }
+
     private List<DocumentHolder> mapDocumentsWithType(
-        List<ListValue<Document>> docs, DocumentType type) {
+            List<ListValue<Document>> docs, DocumentType type) {
 
         if (CollectionUtils.isEmpty(docs)) {
             return Collections.emptyList();
         }
 
         return docs.stream()
-            .map(ListValue::getValue)
-            .filter(Objects::nonNull)
-            .map(doc -> DocumentHolder.builder()
-                    .document(doc)
-                    .type(type)
-                    .description("")
-                    .build())
-            .toList();
+                .map(ListValue::getValue)
+                .filter(Objects::nonNull)
+                .map(doc -> DocumentHolder.builder()
+                        .document(doc)
+                        .type(type)
+                        .description("")
+                        .build())
+                .toList();
     }
 
     private List<DocumentHolder> mapAdditionalDocumentsWithType(
-        List<ListValue<AdditionalDocument>> documents) {
+            List<ListValue<AdditionalDocument>> documents) {
 
         if (CollectionUtils.isEmpty(documents)) {
             return Collections.emptyList();
@@ -92,30 +116,46 @@ public class DocumentService {
 
         return ListValueUtils.unwrapListItems(documents).stream()
             .map(doc -> DocumentHolder.builder()
-                    .document(doc.getDocument())
-                    .type(mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType()))
-                    .description(doc.getDescription())
-                    .build())
+                .document(doc.getDocument())
+                .type(mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType()))
+                .description(doc.getDescription())
+                .build())
+            .toList();
+    }
+
+    private List<DocumentHolder> mapEvidenceOfDefendantsDocumentsWithType(
+            List<ListValue<EvidenceOfDefendants>> documents) {
+
+        if (CollectionUtils.isEmpty(documents)) {
+            return Collections.emptyList();
+        }
+
+        return ListValueUtils.unwrapListItems(documents).stream()
+            .map(doc -> DocumentHolder.builder()
+                .document(doc.getDocument())
+                .type(mapEvidenceDocumentTypeToDocumentType(doc.getDocumentType()))
+                .description(doc.getDescription())
+                .build())
             .toList();
     }
 
     private List<DocumentEntity> createDocumentEntities(
-        List<DocumentHolder> documents) {
+            List<DocumentHolder> documents) {
 
         if (CollectionUtils.isEmpty(documents)) {
             return List.of();
         }
 
         return documents.stream()
-            .map(holder -> DocumentEntity.builder()
-                .url(holder.getDocument().getUrl())
-                .fileName(holder.getDocument().getFilename())
-                .binaryUrl(holder.getDocument().getBinaryUrl())
-                .categoryId(holder.getDocument().getCategoryId())
-                .type(holder.getType())
-                .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
-                .build())
-            .toList();
+                .map(holder -> DocumentEntity.builder()
+                        .url(holder.getDocument().getUrl())
+                        .fileName(holder.getDocument().getFilename())
+                        .binaryUrl(holder.getDocument().getBinaryUrl())
+                        .categoryId(holder.getDocument().getCategoryId())
+                        .type(holder.getType())
+                        .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
+                        .build())
+                .toList();
     }
 
     private DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
@@ -139,7 +179,8 @@ public class DocumentService {
     public List<DocumentEntity> createDefendantEvidenceDocuments(
         List<ListValue<DefendantDocument>> uploadedDocuments,
         DefendantResponseEntity defendantResponse,
-        PcsCaseEntity pcsCase
+        PcsCaseEntity pcsCase,
+        PartyEntity party
     ) {
         if (CollectionUtils.isEmpty(uploadedDocuments)) {
             log.info("No defendant evidence documents to save");
@@ -151,6 +192,7 @@ public class DocumentService {
             .filter(Objects::nonNull)
             .map(defDoc -> DocumentEntity.builder()
                 .pcsCase(pcsCase)
+                .party(party)
                 .defendantResponse(defendantResponse)
                 .url(defDoc.getDocument().getUrl())
                 .fileName(defDoc.getDocument().getFilename())
@@ -168,6 +210,15 @@ public class DocumentService {
             saved.size(), defendantResponse.getId());
 
         return saved;
+    }
+
+    private DocumentType mapEvidenceDocumentTypeToDocumentType(EvidenceDocumentType evidenceDocumentType) {
+        return switch (evidenceDocumentType) {
+            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
+            case POLICE_REPORT -> DocumentType.POLICE_REPORT;
+            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
+            case OTHER -> DocumentType.OTHER;
+        };
     }
 
     @Builder

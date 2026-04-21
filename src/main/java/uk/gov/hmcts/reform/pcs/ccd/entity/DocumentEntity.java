@@ -18,6 +18,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
 import java.util.ArrayList;
@@ -45,6 +47,14 @@ public class DocumentEntity {
     private PcsCaseEntity pcsCase;
 
     @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "party_id")
+    private PartyEntity party;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "general_application_id")
+    private GenAppEntity generalApplication;
+
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "defendant_response_id")
     private DefendantResponseEntity defendantResponse;
 
@@ -69,4 +79,9 @@ public class DocumentEntity {
     @Builder.Default
     @JsonManagedReference
     private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "enf_case_id")
+    @JsonBackReference
+    private EnforcementOrderEntity enfCase;
 }
