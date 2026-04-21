@@ -16,6 +16,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -25,7 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
@@ -80,7 +81,7 @@ class TestingSupportControllerTest {
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private CaseAssignmentService caseAssignmentService;
+    private CaseRoleAssignmentService caseRoleAssignmentService;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -90,7 +91,7 @@ class TestingSupportControllerTest {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  docAssemblyService, eligibilityService,
                                                  pcsCaseRepository, partyAccessCodeRepository,
-                                                 modelMapper, ccdTestCaseOrchestrator,caseAssignmentService
+                                                 modelMapper, ccdTestCaseOrchestrator, caseRoleAssignmentService
                 );
     }
 
@@ -785,7 +786,7 @@ class TestingSupportControllerTest {
         );
 
         // then
-        verify(caseAssignmentService).assignDefendantSolicitorRole(caseReference, userId);
+        verify(caseRoleAssignmentService).assignRasRole(caseReference, userId, UserRole.DEFENDANT_SOLICITOR);
         assertThat(HttpStatus.OK.equals(response.getStatusCode()));
     }
 
