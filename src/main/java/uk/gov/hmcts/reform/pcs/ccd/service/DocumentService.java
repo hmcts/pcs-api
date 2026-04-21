@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -106,7 +107,7 @@ public class DocumentService {
                 .url(holder.getDocument().getUrl())
                 .fileName(holder.getDocument().getFilename())
                 .binaryUrl(holder.getDocument().getBinaryUrl())
-                .categoryId(holder.getDocument().getCategoryId())
+                .categoryId(mapDocumentTypeToCategory(holder.getType()).getId())
                 .type(holder.getType())
                 .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                 .build())
@@ -128,6 +129,28 @@ public class DocumentService {
             case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
             case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
             case OTHER -> DocumentType.OTHER;
+        };
+    }
+
+    private CaseFileCategory mapDocumentTypeToCategory(DocumentType documentType) {
+        return switch (documentType) {
+            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION -> CaseFileCategory.STATEMENTS_OF_CASE;
+            case RENT_STATEMENT,
+                 TENANCY_AGREEMENT,
+                 TENANCY_LICENCE,
+                 OCCUPATION_LICENCE,
+                 POSSESSION_NOTICE,
+                 NOTICE_SERVED -> CaseFileCategory.PROPERTY_DOCUMENTS;
+            case WITNESS_STATEMENT,
+                 CERTIFICATE_OF_SERVICE,
+                 CORRESPONDENCE_FROM_DEFENDANT,
+                 CORRESPONDENCE_FROM_CLAIMANT,
+                 PHOTOGRAPHIC_EVIDENCE,
+                 INSPECTION_OR_REPORT -> CaseFileCategory.EVIDENCE;
+            case CERTIFICATE_OF_SUITABILITY_AS_LF,
+                 LEGAL_AID_CERTIFICATE -> CaseFileCategory.CORRESPONDENCE;
+            case LETTER_FROM_CLAIMANT,
+                 OTHER -> CaseFileCategory.UNCATEGORISED;
         };
     }
 

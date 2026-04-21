@@ -4,7 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -13,6 +15,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -23,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -129,6 +133,34 @@ class DocumentServiceTest {
             .containsExactly(expectedDocumentType);
     }
 
+    @ParameterizedTest
+    @MethodSource("additionalDocumentCategoryScenarios")
+    void shouldMapAdditionalDocumentsToCaseFileCategories(AdditionalDocumentType additionalDocumentType,
+                                                          CaseFileCategory expectedCategory) {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder().categoryId("uploaded-category").build())
+            .documentType(additionalDocumentType)
+            .build();
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getCategoryId)
+            .containsExactly(expectedCategory.getId());
+    }
+
     @Test
     void shouldSaveRentStatementDocuments() {
         // Given
@@ -156,6 +188,7 @@ class DocumentServiceTest {
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.RENT_STATEMENT);
         assertThat(entity.getFileName()).isEqualTo("file1");
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
     @Test
@@ -185,6 +218,7 @@ class DocumentServiceTest {
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.TENANCY_LICENCE);
         assertThat(entity.getFileName()).isEqualTo("file2");
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
     @Test
@@ -215,6 +249,7 @@ class DocumentServiceTest {
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.OCCUPATION_LICENCE);
         assertThat(entity.getFileName()).isEqualTo("file3");
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
     @Test
@@ -245,6 +280,7 @@ class DocumentServiceTest {
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.NOTICE_SERVED);
         assertThat(entity.getFileName()).isEqualTo("file4");
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
     @Test
@@ -321,5 +357,26 @@ class DocumentServiceTest {
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getDescription()).isNull();
+    }
+
+    private static Stream<Arguments> additionalDocumentCategoryScenarios() {
+        return Stream.of(
+            Arguments.of(
+                AdditionalDocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
+                CaseFileCategory.STATEMENTS_OF_CASE
+            ),
+            Arguments.of(AdditionalDocumentType.RENT_STATEMENT, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(AdditionalDocumentType.TENANCY_AGREEMENT, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(AdditionalDocumentType.POSSESSION_NOTICE, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(AdditionalDocumentType.WITNESS_STATEMENT, CaseFileCategory.EVIDENCE),
+            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SERVICE, CaseFileCategory.EVIDENCE),
+            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT, CaseFileCategory.EVIDENCE),
+            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT, CaseFileCategory.EVIDENCE),
+            Arguments.of(AdditionalDocumentType.PHOTOGRAPHIC_EVIDENCE, CaseFileCategory.EVIDENCE),
+            Arguments.of(AdditionalDocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE),
+            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF, CaseFileCategory.CORRESPONDENCE),
+            Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE),
+            Arguments.of(AdditionalDocumentType.OTHER, CaseFileCategory.UNCATEGORISED)
+        );
     }
 }
