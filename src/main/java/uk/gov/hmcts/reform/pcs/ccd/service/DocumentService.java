@@ -16,10 +16,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -177,17 +177,17 @@ public class DocumentService {
     }
 
     public List<DocumentEntity> createDefendantEvidenceDocuments(
-        List<ListValue<DefendantDocument>> uploadedDocuments,
+        List<ListValue<UploadedDocument>> defendantDocuments,
         DefendantResponseEntity defendantResponse,
         PcsCaseEntity pcsCase,
         PartyEntity party
     ) {
-        if (CollectionUtils.isEmpty(uploadedDocuments)) {
+        if (CollectionUtils.isEmpty(defendantDocuments)) {
             log.info("No defendant evidence documents to save");
             return Collections.emptyList();
         }
 
-        List<DocumentEntity> documentEntities = uploadedDocuments.stream()
+        List<DocumentEntity> documentEntities = defendantDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
             .map(defDoc -> DocumentEntity.builder()

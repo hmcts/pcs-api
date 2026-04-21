@@ -18,11 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -507,23 +507,23 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
 
-        DefendantDocument defDoc1 = DefendantDocument.builder()
+        UploadedDocument defDoc1 = UploadedDocument.builder()
             .document(Document.builder()
                 .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
             .contentType("application/pdf")
             .size(135529L)
             .build();
 
-        DefendantDocument defDoc2 = DefendantDocument.builder()
+        UploadedDocument defDoc2 = UploadedDocument.builder()
             .document(Document.builder()
                 .url("url2").filename("file2.xlsx").binaryUrl("bin2").categoryId("cat2").build())
             .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             .size(26033L)
             .build();
 
-        List<ListValue<DefendantDocument>> uploadedDocs = List.of(
-            ListValue.<DefendantDocument>builder().id("1").value(defDoc1).build(),
-            ListValue.<DefendantDocument>builder().id("2").value(defDoc2).build()
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc1).build(),
+            ListValue.<UploadedDocument>builder().id("2").value(defDoc2).build()
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
@@ -599,16 +599,16 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
 
-        DefendantDocument validDoc = DefendantDocument.builder()
+        UploadedDocument validDoc = UploadedDocument.builder()
             .document(Document.builder()
                 .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
             .contentType("application/pdf")
             .size(100L)
             .build();
 
-        List<ListValue<DefendantDocument>> uploadedDocs = List.of(
-            ListValue.<DefendantDocument>builder().id("1").value(validDoc).build(),
-            ListValue.<DefendantDocument>builder().id("2").value(null).build()
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(validDoc).build(),
+            ListValue.<UploadedDocument>builder().id("2").value(null).build()
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
@@ -631,13 +631,13 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
 
-        DefendantDocument defDoc = DefendantDocument.builder()
+        UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder()
                 .url("url1").filename("file1.pdf").binaryUrl("bin1").build())
             .build();
 
-        List<ListValue<DefendantDocument>> uploadedDocs = List.of(
-            ListValue.<DefendantDocument>builder().id("1").value(defDoc).build()
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));

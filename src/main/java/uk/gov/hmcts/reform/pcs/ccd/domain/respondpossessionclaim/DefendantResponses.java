@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
@@ -98,7 +99,10 @@ public class DefendantResponses {
     private PaymentAgreement paymentAgreement;
 
     @CCD(access = {CitizenAccess.class})
-    private List<ListValue<DefendantDocument>> uploadedDocuments;
+    private List<ListValue<UploadedDocument>> defendantDocuments;
+
+    @CCD(access = {CitizenAccess.class})
+    private List<ListValue<UploadedDocument>> counterClaimDocuments;
 
     private LanguageUsed languageUsed;
 

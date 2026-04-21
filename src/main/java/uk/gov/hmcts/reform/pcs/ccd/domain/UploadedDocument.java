@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DefendantDocument {
+public class UploadedDocument {
 
     @CCD(access = {CitizenAccess.class})
     private Document document;

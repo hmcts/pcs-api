@@ -13,7 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -899,19 +899,19 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
             .thenAnswer(inv -> inv.getArgument(0));
 
-        DefendantDocument defDoc = DefendantDocument.builder()
+        UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder()
                 .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
             .contentType("application/pdf")
             .size(135529L)
             .build();
 
-        List<ListValue<DefendantDocument>> uploadedDocs = List.of(
-            ListValue.<DefendantDocument>builder().id("1").value(defDoc).build()
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
         );
 
         DefendantResponses responses = DefendantResponses.builder()
-            .uploadedDocuments(uploadedDocs)
+            .defendantDocuments(uploadedDocs)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
