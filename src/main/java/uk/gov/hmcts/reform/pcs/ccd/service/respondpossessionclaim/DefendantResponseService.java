@@ -141,6 +141,7 @@ public class DefendantResponseService {
             .landlordLicensed(responses.getLandlordLicensed())
             .noticeReceivedDate(responses.getNoticeReceivedDate())
             .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
+            .languageUsed(responses.getLanguageUsed())
             .build();
 
         //set bidirectional relationship with the pcs case

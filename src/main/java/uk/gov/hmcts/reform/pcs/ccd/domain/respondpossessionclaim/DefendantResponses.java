@@ -14,10 +14,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+
 
 @Builder
 @Data
@@ -98,4 +100,7 @@ public class DefendantResponses {
     @CCD(access = {CitizenAccess.class})
     private List<ListValue<DefendantDocument>> uploadedDocuments;
 
+    private LanguageUsed languageUsed;
+
+    private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
 }
