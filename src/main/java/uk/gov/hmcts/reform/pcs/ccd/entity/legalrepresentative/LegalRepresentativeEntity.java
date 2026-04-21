@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -67,7 +67,7 @@ public class LegalRepresentativeEntity {
             ClaimPartyLegalRepresentativeEntity.builder()
             .legalRepresentative(this)
             .party(party)
-            .startDate(LocalDateTime.now())
+            .startDate(Instant.now())
             .active(VerticalYesNo.YES)
             .build();
         claimPartyLegalRepresentativeList.add(claimPartyLegalRepresentativeEntity);

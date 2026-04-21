@@ -38,10 +38,6 @@ public class LegalRepresentativePartyLinkService {
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
-//        OrganisationDetailsResponse organisationDetails =
-//        organisationDetailsService.getOrganisationDetails(user.getUid());
-        // get contact details
-
         LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
             .organisationName(organisationDetailsService.getOrganisationName(userUid))
             .idamId(UUID.fromString(userUid))
@@ -49,7 +45,8 @@ public class LegalRepresentativePartyLinkService {
             .lastName(user.getFamilyName())
             .email("e-mail")
             .phone("0121")
-            .address(addressMapper.toAddressEntityAndNormalise(organisationDetailsService.getOrganisationAddress(userUid)))
+            .address(addressMapper.toAddressEntityAndNormalise(
+                organisationDetailsService.getOrganisationAddress(userUid)))
             .build();
 
         legalRepresentative.addParty(defendantPartyEntity);

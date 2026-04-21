@@ -13,8 +13,8 @@ create table claim_party_legal_representative (
   party_id UUID REFERENCES party (id),
   legal_representative_id UUID REFERENCES legal_representative (id),
   active YES_NO,
-  start_date DATE,
-  end_date DATE,
+  start_date TIMESTAMP WITHOUT TIME ZONE,
+  end_date TIMESTAMP WITHOUT TIME ZONE,
 
   primary key (party_id, legal_representative_id)
 );

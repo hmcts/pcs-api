@@ -20,7 +20,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -51,9 +51,9 @@ public class ClaimPartyLegalRepresentativeEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo active;
 
-    @Column(name = "start_date") // DATETIME
-    private LocalDateTime startDate;
+    @Column(name = "start_date")
+    private Instant startDate;
 
-    @Column(name = "end_date") // DATETIME
-    private LocalDateTime endDate;
+    @Column(name = "end_date")
+    private Instant endDate;
 }
