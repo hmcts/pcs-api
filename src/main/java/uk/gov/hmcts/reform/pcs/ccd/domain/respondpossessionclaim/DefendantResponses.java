@@ -95,4 +95,7 @@ public class DefendantResponses {
 
     @CCD
     private YesOrNo makeCounterClaim;
+
+    @CCD(access = {CitizenAccess.class})
+    private CounterClaim counterClaim;
 }
