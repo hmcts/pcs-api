@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -114,26 +113,6 @@ class PaymentServiceTest {
             .isInstanceOf(CaseNotFoundException.class);
     }
 
-    @Disabled
-    @Test
-    void shouldCreateServiceRequest_NoClaimPartyEntityFound() {
-        // Given
-        FeeDetails feeDetails = mock(FeeDetails.class);
-        ClaimPartyEntity claimPartyEntity = mock(ClaimPartyEntity.class);
-        PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyEntity.getOrgName()).thenReturn("different");
-        when(claimPartyEntity.getParty()).thenReturn(partyEntity);
-        PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-
-        // When ... Then
-        assertThatThrownBy(() -> underTest.createServiceRequest(String.valueOf(CASE_REFERENCE), CCD_CASE_NUMBER,
-                                                                feeDetails, VOLUME, RESPONSIBLE_PARTY))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Matching PartyEntity not found");
-
-    }
-
     @Test
     void shouldProcessPaymentResponse() {
         // Given
@@ -163,6 +142,68 @@ class PaymentServiceTest {
         assertThat(paymentEntity.getRequestReference()).isEqualTo(requestReference);
         assertThat(paymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
         assertThat(paymentEntity.getExternalReference()).isEqualTo(paymentReference);
+    }
+
+    @Test
+    void shouldNotUpdateFeePaymentWhenRequestReferenceNotFound() {
+        // Given
+        String requestReference = UUID.randomUUID().toString();
+        ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
+            .serviceRequestReference(requestReference)
+            .serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(Payment.builder().paymentReference(UUID.randomUUID().toString()).build())
+            .build();
+        when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.empty());
+
+        // When
+        underTest.processPaymentResponse(serviceRequestUpdate);
+
+        // Then
+        verify(feePaymentRepository).findByRequestReference(requestReference);
+        verify(feePaymentRepository, org.mockito.Mockito.never()).save(any(FeePaymentEntity.class));
+    }
+
+    @Test
+    void shouldSaveNewFeePaymentWithExpectedFields() {
+        // Given
+        ClaimEntity claimEntity = mock(ClaimEntity.class);
+        FeeDto feeDto = createFeeDto();
+
+        // When
+        underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto, SERVICE_REQUEST_REFERENCE);
+
+        // Then
+        ArgumentCaptor<FeePaymentEntity> captor = ArgumentCaptor.forClass(FeePaymentEntity.class);
+        verify(feePaymentRepository).save(captor.capture());
+        FeePaymentEntity saved = captor.getValue();
+
+        assertThat(saved.getClaim()).isSameAs(claimEntity);
+        assertThat(saved.getRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
+        assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
+    }
+
+    @Test
+    void shouldPersistFeePaymentWhenCreatingServiceRequest() {
+        // Given
+        FeeDetails feeDetails = mock(FeeDetails.class);
+        paymentsClientDependencies(feeDetails);
+        PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity());
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
+            .thenReturn(createPaymentServiceResponse());
+
+        // When
+        underTest.createServiceRequest(String.valueOf(CASE_REFERENCE), CCD_CASE_NUMBER,
+                                       feeDetails, VOLUME, RESPONSIBLE_PARTY);
+
+        // Then
+        ArgumentCaptor<FeePaymentEntity> captor = ArgumentCaptor.forClass(FeePaymentEntity.class);
+        verify(feePaymentRepository).save(captor.capture());
+        FeePaymentEntity saved = captor.getValue();
+
+        assertThat(saved.getRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
+        assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
+        assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
     }
 
     private void paymentsClientDependencies(FeeDetails feeDetails) {

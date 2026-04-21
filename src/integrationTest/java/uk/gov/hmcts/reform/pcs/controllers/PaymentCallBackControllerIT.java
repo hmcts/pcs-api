@@ -103,6 +103,6 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     void establishFeePayment(PcsCaseEntity pcsCaseEntity, String serviceCaseReference, FeeDto feeDto) {
         ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
         paymentService.saveNewFeePayment(String.valueOf(caseReference),
-                                         claimEntity, null, feeDto, serviceCaseReference);
+                                         claimEntity, feeDto, serviceCaseReference);
     }
 }

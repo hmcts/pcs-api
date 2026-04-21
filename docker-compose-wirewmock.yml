@@ -5,5 +5,5 @@ services:
     ports:
       - "8083:8083"
     volumes:
-      - ./src/test/resources/wiremock/mappings:/home/wiremock/mappings:ro
+      - ./src/test/resources/wiremock:/home/wiremock/mappings:ro
     command: --global-response-templating --verbose --port 8083

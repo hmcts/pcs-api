@@ -13,10 +13,8 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -30,7 +28,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    public static final String MATCHING_PARTY_ENTITY_NOT_FOUND = "Matching PartyEntity not found";
     private final PaymentsClient paymentsClient;
     private final PaymentRequestMapper paymentRequestMapper;
     private final IdamService idamService;
@@ -85,9 +82,8 @@ public class PaymentService {
             idamService.getSystemUserAuthorisation(), requestDto);
 
         ClaimEntity claimEntity = retrieveClaimEntity(Long.parseLong(caseReference));
-        ClaimPartyEntity claimPartyEntity = null; //retrieveClaimPartyEntity(claimEntity, responsibleParty);
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
-        saveNewFeePayment(caseReference, claimEntity, claimPartyEntity, feeDto,
+        saveNewFeePayment(caseReference, claimEntity, feeDto,
                           paymentServiceResponse.getServiceRequestReference());
 
         return paymentServiceResponse;
@@ -106,16 +102,8 @@ public class PaymentService {
         }
     }
 
-    private ClaimPartyEntity retrieveClaimPartyEntity(ClaimEntity claimEntity, String responsibleParty) {
-        return claimEntity.getClaimParties()
-            .stream()
-            .filter(party -> responsibleParty.equals(party.getParty().getOrgName()))
-            .findFirst()
-            .orElseThrow(() -> new PartyNotFoundException(MATCHING_PARTY_ENTITY_NOT_FOUND));
-    }
-
     @Transactional
-    public void saveNewFeePayment(String caseReference, ClaimEntity claimEntity, ClaimPartyEntity claimParty,
+    public void saveNewFeePayment(String caseReference, ClaimEntity claimEntity,
                                    FeeDto feeDto, String serviceRequestReference) {
         log.info("Saving New Fee Payment for the case: {} with serviceRequestReference: {}", caseReference,
                  serviceRequestReference);
