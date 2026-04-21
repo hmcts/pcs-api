@@ -70,21 +70,26 @@ public class CaseFlagService {
             flagDetailsEntity.setHearingRelevant(getBooleanValue(incomingFlagDetail.getHearingRelevant()));
             flagDetailsEntity.setAvailableExternally(getBooleanValue(incomingFlagDetail.getAvailableExternally()));
 
-            if (incomingFlagDetail.getPath() != null
-                && !(new HashSet<>(existingFlagPathIds).containsAll(getIncomingFlagPathIds(incomingFlagDetail)))) {
-                for (ListValue<String> path : incomingFlagDetail.getPath()) {
-                    FlagPathEntity flagPathEntity = FlagPathEntity.builder()
-                        .flagDetails(flagDetailsEntity)
-                        .path(path.getValue())
-                        .build();
-                    flagDetailsEntity.getPaths().add(flagPathEntity);
-                }
-            }
+            setFlagPath(incomingFlagDetail, existingFlagPathIds, flagDetailsEntity);
 
             mergedFlagDetails.add(flagDetailsEntity);
         }
         pcsCaseEntity.getCaseFlags().clear();
         pcsCaseEntity.getCaseFlags().addAll(mergedFlagDetails);
+    }
+
+    private void setFlagPath(FlagDetail incomingFlagDetail, List<String> existingFlagPathIds,
+                                             FlagDetailsEntity flagDetailsEntity) {
+        if (incomingFlagDetail.getPath() != null
+            && !(new HashSet<>(existingFlagPathIds).containsAll(getIncomingFlagPathIds(incomingFlagDetail)))) {
+            for (ListValue<String> path : incomingFlagDetail.getPath()) {
+                FlagPathEntity flagPathEntity = FlagPathEntity.builder()
+                    .flagDetails(flagDetailsEntity)
+                    .path(path.getValue())
+                    .build();
+                flagDetailsEntity.getPaths().add(flagPathEntity);
+            }
+        }
     }
 
     private Boolean getBooleanValue(YesOrNo yesOrNoValue) {
