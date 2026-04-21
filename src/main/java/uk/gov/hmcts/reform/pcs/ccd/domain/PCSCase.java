@@ -175,6 +175,7 @@ public class PCSCase {
 
     @CCD(
         label = PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL,
+        hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
     private String preActionProtocolIncompleteExplanation;
