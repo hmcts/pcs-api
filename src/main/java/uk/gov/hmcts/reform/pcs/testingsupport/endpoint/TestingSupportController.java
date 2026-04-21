@@ -27,13 +27,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -42,7 +43,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.net.URI;
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -71,8 +71,7 @@ public class TestingSupportController {
     private final PartyAccessCodeRepository partyAccessCodeRepository;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
-    private final SecureRandom secureRandom = new SecureRandom();
-    private final CaseAssignmentService caseAssignmentService;
+    private final CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -436,7 +435,7 @@ public class TestingSupportController {
         @RequestHeader(value = AUTHORIZATION) String authorization,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
     ) {
-        caseAssignmentService.assignDefendantSolicitorRole(caseReference, userId);
+        caseRoleAssignmentService.assignRasRole(caseReference, userId, UserRole.DEFENDANT_SOLICITOR);
         return ResponseEntity.ok().build();
     }
 

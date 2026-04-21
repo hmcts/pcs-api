@@ -9,12 +9,13 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
@@ -26,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,7 +42,7 @@ class PartyAccessCodeLinkServiceTest {
     private PartyAccessCodeLinkValidator validator;
 
     @Mock
-    private CaseAssignmentService caseAssignmentService;
+    private CaseRoleAssignmentService caseRoleAssignmentService;
 
     private static final long CASE_REFERENCE = 123456L;
     private static final String ACCESS_CODE = "ABCD1234";
@@ -86,6 +86,8 @@ class PartyAccessCodeLinkServiceTest {
         // GIVEN
         UUID caseId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
+        CaseAssignmentUserRolesResponse caseAssignmentUserRolesResponse =
+            CaseAssignmentUserRolesResponse.builder().build();
 
         PartyEntity defendantEntity = createParty(partyId, null);
         PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(defendantEntity));
@@ -96,8 +98,10 @@ class PartyAccessCodeLinkServiceTest {
             .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(caseAssignmentService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString())).thenReturn(
-            mock(CaseAssignmentUserRolesResponse.class));
+        when(caseRoleAssignmentService.assignRasRole(Mockito.anyLong(),
+                                                     Mockito.anyString(),
+                                                     Mockito.any(UserRole.class)))
+            .thenReturn(caseAssignmentUserRolesResponse);
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
         when(validator.validatePartyIsADefendant(List.of(defendantEntity), partyId))
             .thenReturn(defendantEntity);
