@@ -28,7 +28,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class RentArrearsSection {
 
-    public static final String RENT_ARREARS_RECOVERY_ATTEMPT_DETAILS_LABEL =
+    public static final String RECOVERY_ATTEMPT_DETAILS_LABEL =
         "Give details of previous steps taken to recover rent arrears";
 
     @CCD(
@@ -51,13 +51,13 @@ public class RentArrearsSection {
     @CCD(
         label = "Have there been previous steps taken to recover rent arrears?"
     )
-    private VerticalYesNo rentArrearsRecoveryAttempted;
+    private VerticalYesNo recoveryAttempted;
 
     @CCD(
-        label = RENT_ARREARS_RECOVERY_ATTEMPT_DETAILS_LABEL,
+        label = RECOVERY_ATTEMPT_DETAILS_LABEL,
         hint = "Include any case numbers if there were previous court proceedings. You can enter up to 500 characters.",
         typeOverride = TextArea
     )
-    private String rentArrearsRecoveryAttemptDetails;
+    private String recoveryAttemptDetails;
 }
 

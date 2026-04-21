@@ -47,8 +47,8 @@ public class RentArrearsEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo rentArrearsRecoveryAttempted;
+    private VerticalYesNo recoveryAttempted;
 
-    private String rentArrearsRecoveryAttemptDetails;
+    private String recoveryAttemptDetails;
 
 }

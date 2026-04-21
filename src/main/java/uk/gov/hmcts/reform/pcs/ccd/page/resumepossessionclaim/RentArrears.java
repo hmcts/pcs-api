@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection.RENT_ARREARS_RECOVERY_ATTEMPT_DETAILS_LABEL;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection.RECOVERY_ATTEMPT_DETAILS_LABEL;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -74,10 +74,10 @@ public class RentArrears implements CcdPageConfiguration {
                             How much are the total rent arrears as shown on the rent statement?</h3>
                             """)
                     .mandatory(RentArrearsSection::getTotal)
-                    .mandatory(RentArrearsSection::getRentArrearsRecoveryAttempted)
+                    .mandatory(RentArrearsSection::getRecoveryAttempted)
                     .mandatory(
-                        RentArrearsSection::getRentArrearsRecoveryAttemptDetails,
-                        "rentArrears_RentArrearsRecoveryAttempted=\"YES\" "
+                        RentArrearsSection::getRecoveryAttemptDetails,
+                        "rentArrears_RecoveryAttempted=\"YES\" "
                     )
 
                 .done()
@@ -89,8 +89,8 @@ public class RentArrears implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
-            caseData.getRentArrears() != null ? caseData.getRentArrears().getRentArrearsRecoveryAttemptDetails() : null,
-            RENT_ARREARS_RECOVERY_ATTEMPT_DETAILS_LABEL,
+            caseData.getRentArrears() != null ? caseData.getRentArrears().getRecoveryAttemptDetails() : null,
+            RECOVERY_ATTEMPT_DETAILS_LABEL,
             TextAreaValidationService.MEDIUM_TEXT_LIMIT
         );
 

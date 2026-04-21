@@ -38,7 +38,7 @@ public class RentArrearsTest extends BasePageTest {
             .rentArrears(
                 RentArrearsSection
                     .builder()
-                    .rentArrearsRecoveryAttemptDetails(rentRecoveryAttempt)
+                    .recoveryAttemptDetails(rentRecoveryAttempt)
                     .build()
             ).build();
 
