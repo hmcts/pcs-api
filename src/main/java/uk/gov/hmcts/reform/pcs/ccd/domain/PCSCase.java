@@ -172,7 +172,7 @@ public class PCSCase {
     private VerticalYesNo preActionProtocolCompleted;
 
     @CCD(
-        label = "Are you claiming possession because of rent arrears?",
+        label = "Do your grounds for possession include rent arrears?",
         hint = "You’ll be able to add additional grounds later if you select yes"
     )
     private YesOrNo claimDueToRentArrears;
@@ -332,7 +332,7 @@ public class PCSCase {
 
     @CCD(
         label = "What does your ground 1 claim involve?",
-        hint = "Select all that apply",
+        hint = "Select all that you allege apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "RentArrearsOrBreachOfTenancy"
     )
@@ -428,6 +428,9 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @CCD(searchable = false)
+    private String endButtonLabel;
 
     @JsonUnwrapped(prefix = "possessionGroundsWales_")
     private GroundsForPossessionWales groundsForPossessionWales;
@@ -560,5 +563,11 @@ public class PCSCase {
         access = {GlobalSearchAccess.class}
     )
     private DynamicList caseManagementCategory;
+
+    @CCD(searchable = false)
+    private String confirmEvictionSummaryMarkup;
+
+    @CCD(searchable = false, access = {ClaimantAccess.class})
+    private YesOrNo showConfirmEvictionJourney;
 
 }
