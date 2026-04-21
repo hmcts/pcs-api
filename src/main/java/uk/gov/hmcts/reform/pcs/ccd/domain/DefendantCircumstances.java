@@ -21,7 +21,7 @@ public class DefendantCircumstances {
          You can use this section to provide any information about the ${defendantTermPossessive} circumstances.
         </p>
         <p class="govuk-body">
-        You must give details if any of the following apply
+        You must give details if any of the following apply:
         <ul class="govuk-list govuk-list--bullet">
             <li class="govuk-!-font-size-19">
             the defendant receives any social security benefits</li>
