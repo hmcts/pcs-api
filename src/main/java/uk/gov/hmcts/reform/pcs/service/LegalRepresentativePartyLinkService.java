@@ -43,8 +43,7 @@ public class LegalRepresentativePartyLinkService {
             .idamId(UUID.fromString(userUid))
             .firstName(user.getName())
             .lastName(user.getFamilyName())
-            .email("e-mail")
-            .phone("0121")
+            .email(user.getSub())
             .address(addressMapper.toAddressEntityAndNormalise(
                 organisationDetailsService.getOrganisationAddress(userUid)))
             .build();
