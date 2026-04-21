@@ -10,12 +10,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.ClearFields;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.NO;
 
 @AllArgsConstructor
 @Component
@@ -69,6 +71,13 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
                 dynamicLabel,
                 TextAreaValidationService.LONG_TEXT_LIMIT
             ));
+        }
+
+        if (claimantCircumstances != null) {
+            ClearFields.on(caseData)
+                .clearWhen(claimantCircumstances.getClaimantCircumstancesSelect() == NO,
+                    "claimantCircumstancesDetails")
+                .apply();
         }
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
