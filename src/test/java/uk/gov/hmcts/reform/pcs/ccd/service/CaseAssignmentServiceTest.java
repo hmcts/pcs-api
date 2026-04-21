@@ -17,8 +17,6 @@ import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,7 +45,8 @@ class CaseAssignmentServiceTest {
     @Test
     void assignDefendantRole_shouldCallApiWithCorrectCaseRole() {
         // GIVEN
-        CaseAssignmentUserRolesResponse caseAssignmentUserRolesResponse = CaseAssignmentUserRolesResponse.builder().build();
+        CaseAssignmentUserRolesResponse caseAssignmentUserRolesResponse =
+            CaseAssignmentUserRolesResponse.builder().build();
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
@@ -55,7 +54,8 @@ class CaseAssignmentServiceTest {
             .thenReturn(caseAssignmentUserRolesResponse);
 
         // WHEN
-        CaseAssignmentUserRolesResponse result = caseAssignmentService.assignDefendantRole(CASE_REFERENCE, USER_ID);
+        CaseAssignmentUserRolesResponse result =
+            caseAssignmentService.assignDefendantRole(CASE_REFERENCE, USER_ID);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
@@ -70,7 +70,8 @@ class CaseAssignmentServiceTest {
     @Test
     void assignDefendantSolicitorRole_shouldCallApiWithCorrectCaseRole() {
         // GIVEN
-        CaseAssignmentUserRolesResponse caseAssignmentUserRolesResponse = CaseAssignmentUserRolesResponse.builder().build();
+        CaseAssignmentUserRolesResponse caseAssignmentUserRolesResponse =
+            CaseAssignmentUserRolesResponse.builder().build();
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(idamService.getSystemUserAuthorisation()).thenReturn(USER_TOKEN);
@@ -78,7 +79,8 @@ class CaseAssignmentServiceTest {
             .thenReturn(caseAssignmentUserRolesResponse);
 
         // WHEN
-        CaseAssignmentUserRolesResponse result = caseAssignmentService.assignDefendantSolicitorRole(CASE_REFERENCE, USER_ID);
+        CaseAssignmentUserRolesResponse result =
+            caseAssignmentService.assignDefendantSolicitorRole(CASE_REFERENCE, USER_ID);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
