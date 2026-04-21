@@ -210,7 +210,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         PartyEntity claimant = mock(PartyEntity.class);
         lenient().when(claimant.getOrgName()).thenReturn(RESPONSIBLE_PARTY_LTD);
-        lenient().when(pcsCaseService.createMainClaimOnCase(anyLong(), any())).thenReturn(claimant);
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, securityContextService,
@@ -516,6 +515,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
                 .build();
 
             // When
@@ -548,6 +548,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
                 .build();
 
             FeeDetails feeDetails = stubFeeService();
@@ -569,6 +570,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
                 .build();
 
             // When
@@ -586,6 +588,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
                 .build();
 
             // When
@@ -605,6 +608,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
                 .build();
 
             // When

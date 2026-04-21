@@ -34,7 +34,7 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
 
-    public PartyEntity createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
+    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
         PartyEntity claimant = createClaimant(pcsCase);
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
@@ -54,7 +54,6 @@ public class PartyService {
                 claimEntity.addParty(underlesseeOrMortgagee, PartyRole.UNDERLESSEE_OR_MORTGAGEE);
             }
         );
-        return claimant;
     }
 
     public PartyEntity getPartyEntityByIdamId(UUID idamId, long caseReference) {

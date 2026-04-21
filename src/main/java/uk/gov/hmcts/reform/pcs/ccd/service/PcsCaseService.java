@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -46,7 +45,7 @@ public class PcsCaseService {
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    public PartyEntity createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
+    public void createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
@@ -55,11 +54,9 @@ public class PcsCaseService {
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
 
-        PartyEntity claimant = partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
-
-        return claimant;
     }
 
     public PcsCaseEntity loadCase(long caseReference) {
