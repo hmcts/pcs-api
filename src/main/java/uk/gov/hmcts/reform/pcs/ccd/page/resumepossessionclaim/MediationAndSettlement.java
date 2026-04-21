@@ -40,8 +40,19 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         </section>
                         """)
                 .mandatory(PCSCase::getMediationAttempted)
-                .mandatory(PCSCase::getMediationAttemptedDetails, "mediationAttempted=\"YES\"")
-                .label("settlement-section",
+                .mandatory(PCSCase::getMediationAttemptedDetails, "mediationAttempted=\"YES\" "
+                    + "AND legislativeCountry=\"Wales\"")
+                .label("settlement-section-england",
+                       """
+                       ---
+                       <section tabindex="0">
+                           <p class="govuk-body">
+                               If your claim is on the grounds of rent arrears, this includes any steps you’ve taken \
+                               to agree a repayment plan.
+                           </p>
+                       </section>
+                       """, "legislativeCountry=\"England\"")
+                .label("settlement-section-wales",
                         """
                         ---
                         <section tabindex="0">
@@ -50,9 +61,10 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                                 to recover the arrears or to agree a repayment plan.
                             </p>
                         </section>
-                        """)
+                        """, "legislativeCountry=\"Wales\"")
                 .mandatory(PCSCase::getSettlementAttempted)
-                .mandatory(PCSCase::getSettlementAttemptedDetails, "settlementAttempted=\"YES\"")
+            .mandatory(PCSCase::getSettlementAttemptedDetails, "settlementAttempted=\"YES\" "
+                + "AND legislativeCountry=\"Wales\"")
                 .label("mediationAndSettlement-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 

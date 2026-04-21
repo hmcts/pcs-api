@@ -88,6 +88,7 @@ class ClaimServiceTest {
         when(pcsCase.getWantToUploadDocuments()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getApplicationWithClaim()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
+        when(pcsCase.getPreActionProtocolIncompleteExplanation()).thenReturn("explanation");
 
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.createClaimGroundEntities(pcsCase)).thenReturn(expectedClaimGrounds);
@@ -111,6 +112,7 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getGenAppExpected()).isEqualTo(VerticalYesNo.NO);
         assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
         assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
+        assertThat(createdClaimEntity.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
 
         verify(claimRepository).save(createdClaimEntity);
     }

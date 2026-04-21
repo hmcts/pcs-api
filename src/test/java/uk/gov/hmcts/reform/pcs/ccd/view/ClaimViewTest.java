@@ -59,6 +59,7 @@ class ClaimViewTest {
         when(claimEntity.getGenAppExpected()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
         when(claimEntity.getAdditionalDocsProvided()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getPreActionProtocolIncompleteExplanation()).thenReturn("explanation");
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -78,6 +79,7 @@ class ClaimViewTest {
         assertThat(pcsCase.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
         assertThat(pcsCase.getWantToUploadDocuments()).isEqualTo(VerticalYesNo.YES);
+        assertThat(pcsCase.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
     }
 
     @ParameterizedTest

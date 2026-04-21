@@ -83,6 +83,8 @@ public class ClaimEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo preActionProtocolFollowed;
 
+    private String preActionProtocolIncompleteExplanation;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo mediationAttempted;

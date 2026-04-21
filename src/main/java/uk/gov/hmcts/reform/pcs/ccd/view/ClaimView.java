@@ -26,6 +26,7 @@ public class ClaimView {
         pcsCase.setClaimDueToRentArrears(claim.getDueToRentArrears());
         pcsCase.setClaimingCostsWanted(claim.getClaimCosts());
         pcsCase.setPreActionProtocolCompleted(claim.getPreActionProtocolFollowed());
+        pcsCase.setPreActionProtocolIncompleteExplanation(claim.getPreActionProtocolIncompleteExplanation());
         pcsCase.setMediationAttempted(claim.getMediationAttempted());
         pcsCase.setMediationAttemptedDetails(claim.getMediationDetails());
         pcsCase.setSettlementAttempted(claim.getSettlementAttempted());

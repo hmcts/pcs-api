@@ -65,6 +65,8 @@ public class PCSCase {
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
+    public static final String PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL =
+        "Explain why you have not followed the pre-action protocol";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
@@ -170,6 +172,12 @@ public class PCSCase {
         label = "Have you followed the pre-action protocol?"
     )
     private VerticalYesNo preActionProtocolCompleted;
+
+    @CCD(
+        label = PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL,
+        typeOverride = TextArea
+    )
+    private String preActionProtocolIncompleteExplanation;
 
     @CCD(
         label = "Do your grounds for possession include rent arrears?",
