@@ -37,7 +37,9 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Case Flags]', async () => {
-  test('Case Flags - Create New Case Flag @PR @regression @nightly', async () => {
+  test('Case Flags - Create New Case Flag @nightly', async ({ page }) => {
+    const nextStepDropdown = page.locator('#next-step');
+    await expect(nextStepDropdown).toContainText(caseSummary.createFlagsEvent);
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
@@ -67,6 +69,7 @@ test.describe('[Common Component Case Flags]', async () => {
       viewFlagLink: caseSummary.viewCaseFlagsLink
     });
     
+    await expect(nextStepDropdown).toContainText(caseFlag.manageCaseFlagsEvent);
     await performAction('select', caseFlag.nextStepEventList, caseFlag.manageCaseFlagsEvent);
     await performAction('clickButton', caseFlag.go);
     await performAction('selectFlagFromManageCaseFlags', {
