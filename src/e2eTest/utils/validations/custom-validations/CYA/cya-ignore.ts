@@ -11,12 +11,13 @@ export const cyaIgnoreQuestions = [
   'Defendant’s last name',
   'I believe that the facts stated in this claim form are true.',
   'Enter a UK postcode',
-  'Is the defendant’s correspondence address the same as the address of the property you’re claiming possession of?',
+  'Is the defendant’s address for service the same as the address of the property you’re claiming possession of?',
   'Do you know the defendant’s name?',
   'Selected options',
   'How much is the rent?',
   'The claimant believes that the facts stated in this claim form are true. I am authorised by the claimant to sign this statement.',
   'Do you know the underlessee or mortgagee’s correspondence address?',
   'Do you know the underlessee or mortgagee’s name?',
-  'Do you want to resume your claim using your saved answers?'
+  'Do you want to resume your claim using your saved answers?',
+  'Do you know the underlessee or mortgagee’s address for service?'
 ];
