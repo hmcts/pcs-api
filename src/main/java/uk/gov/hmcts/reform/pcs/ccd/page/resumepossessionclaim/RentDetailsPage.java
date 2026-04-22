@@ -33,7 +33,7 @@ public class RentDetailsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("rentDetails", this::midEvent)
                 .pageLabel("Rent details")
-                .showCondition("showRentSectionPage=\"YES\"")
+                .showCondition("showRentSectionPage=\"Yes\"")
                 .label("rentDetails-content",
                         """
                         ---
