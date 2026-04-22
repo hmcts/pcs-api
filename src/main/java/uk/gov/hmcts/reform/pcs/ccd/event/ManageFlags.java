@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
@@ -34,6 +35,22 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
             .page("caseworkerCaseFlag")
             .pageLabel("Case Flags")
             .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
+            .optional(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW, true, true)
+            .page("respondentFlags")
+            .list(PCSCase::getParties, ShowConditions.NEVER_SHOW)
+                .optional(Party::getFirstName, ShowConditions.NEVER_SHOW)
+                .optional(Party::getLastName, ShowConditions.NEVER_SHOW)
+                .optional(Party::getOrgName, ShowConditions.NEVER_SHOW)
+                .optional(Party::getNameKnown, ShowConditions.NEVER_SHOW)
+                .optional(Party::getEmailAddress, ShowConditions.NEVER_SHOW)
+                .complex(Party::getAddress, ShowConditions.NEVER_SHOW)
+                .done()
+                .optional(Party::getAddressKnown, ShowConditions.NEVER_SHOW)
+                .optional(Party::getAddressSameAsProperty, ShowConditions.NEVER_SHOW)
+                .optional(Party::getPhoneNumber, ShowConditions.NEVER_SHOW)
+                .optional(Party::getPhoneNumberProvided, ShowConditions.NEVER_SHOW)
+                .optional(Party::getRespondentFlags, ShowConditions.NEVER_SHOW,  true)
+            .done()
             .optional(PCSCase::getFlagLauncherInternal,null, null,
                 null, null, "#ARGUMENT(UPDATE)");
     }

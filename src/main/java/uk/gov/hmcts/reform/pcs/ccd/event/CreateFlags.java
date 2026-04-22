@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 @AllArgsConstructor
 public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
-    private  static final String ALWAYS_HIDE = "flagLauncherInternal = \"ALWAYS_HIDE\"";
     private  final PcsCaseService pcsCaseService;
 
     @Override
@@ -36,27 +35,27 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Create Flag")
                 .description("To create flags")
                 .showSummary()
-                .grant(Permission.CRU, UserRole.PCS_SOLICITOR);
+                .grant(Permission.CRU, UserRole.PCS_CASE_WORKER);
 
         new PageBuilder(eventBuilder)
                 .page("caseworkerCaseFlag")
                 .pageLabel("Case Flags")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
-                .optional(PCSCase::getParties, ALWAYS_HIDE, true, true)
+                .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
                 .page("respondentFlags")
-                .list(PCSCase::getParties, ALWAYS_HIDE)
-                    .optional(Party::getFirstName, ALWAYS_HIDE)
-                    .optional(Party::getLastName, ALWAYS_HIDE)
-                    .optional(Party::getOrgName, ALWAYS_HIDE)
-                    .optional(Party::getNameKnown, ALWAYS_HIDE)
-                    .optional(Party::getEmailAddress, ALWAYS_HIDE)
-                    .complex(Party::getAddress, ALWAYS_HIDE)
+                .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
+                    .optional(Party::getFirstName, ShowConditions.NEVER_SHOW)
+                    .optional(Party::getLastName, ShowConditions.NEVER_SHOW)
+                    .optional(Party::getOrgName, ShowConditions.NEVER_SHOW)
+                    .optional(Party::getNameKnown, ShowConditions.NEVER_SHOW)
+                    .optional(Party::getEmailAddress, ShowConditions.NEVER_SHOW)
+                    .complex(Party::getAddress, ShowConditions.NEVER_SHOW)
                     .done()
-                    .optional(Party::getAddressKnown, ALWAYS_HIDE)
-                    .optional(Party::getAddressSameAsProperty, ALWAYS_HIDE)
-                    .optional(Party::getPhoneNumber, ALWAYS_HIDE)
-                    .optional(Party::getPhoneNumberProvided, ALWAYS_HIDE)
-                    .optional(Party::getRespondentFlags, ALWAYS_HIDE,  true)
+                    .optional(Party::getAddressKnown, ShowConditions.NEVER_SHOW)
+                    .optional(Party::getAddressSameAsProperty, ShowConditions.NEVER_SHOW)
+                    .optional(Party::getPhoneNumber, ShowConditions.NEVER_SHOW)
+                    .optional(Party::getPhoneNumberProvided, ShowConditions.NEVER_SHOW)
+                    .optional(Party::getRespondentFlags, ShowConditions.NEVER_SHOW,  true)
                 .done()
                 .optional(PCSCase::getFlagLauncherInternal,
                       null, null, null, null,

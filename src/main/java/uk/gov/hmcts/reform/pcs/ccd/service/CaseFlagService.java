@@ -100,13 +100,11 @@ public class CaseFlagService {
             FlagDetailsEntity flagDetailsEntity = existingFlagDetailsMap.remove(UUID.fromString(flagId));
 
             if (flagDetailsEntity == null && partyEntity != null) {
-                flagDetailsEntity = FlagDetailsEntity.builder()
-                    .party(partyEntity)
-                    .build();
+                flagDetailsEntity = new FlagDetailsEntity();
+                flagDetailsEntity.setParty(partyEntity);
             } else if (flagDetailsEntity == null) {
-                flagDetailsEntity = FlagDetailsEntity.builder()
-                    .pcsCase(pcsCaseEntity)
-                    .build();
+                flagDetailsEntity = new FlagDetailsEntity();
+                flagDetailsEntity.setPcsCase(pcsCaseEntity);
             }
             flagDetailsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
 

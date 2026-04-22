@@ -23,6 +23,9 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public class CaseFlagsView {
 
+    private static final String RESPONDENT = "respondent";
+    private static final String CLAIMANT = "claimant";
+
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
 
         mapBasicCaseFlagFields(pcsCase, pcsCaseEntity);
@@ -98,14 +101,17 @@ public class CaseFlagsView {
             return Flags.builder().details(new ArrayList<>()).build();
         }
 
-        List<FlagDetailsEntity> firstRespondentFlag = partyEntity.getRespondentFlags();
+        List<FlagDetailsEntity> respondentFlags = partyEntity.getRespondentFlags();
 
         return Flags.builder()
             .partyName(Stream.of(partyEntity.getFirstName(), partyEntity.getLastName(),
                                  partyEntity.getOrgName()).filter(
                 Objects::nonNull).collect(Collectors.joining(" ")))
-            .roleOnCase(partyEntity.getOrgName())
-            .details(mapFlagDetails(firstRespondentFlag))
+            .roleOnCase(partyEntity.getOrgName() != null && !partyEntity.getOrgName().isEmpty()
+                            ? CLAIMANT
+                            : RESPONDENT)
+            .details(mapFlagDetails(respondentFlags))
+            .visibility(FlagVisibility.INTERNAL)
             .build();
     }
 }

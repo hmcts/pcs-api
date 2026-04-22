@@ -10,7 +10,7 @@ CREATE TABLE flag_details (
                             sub_type_value_cy VARCHAR(50),
                             other_description VARCHAR(50),
                             other_description_cy VARCHAR(50),
-                            hearing_relevant BOOLEAN NOT NULL,
+                            hearing_relevant BOOLEAN,
                             flag_comment VARCHAR(255),
                             flag_comment_cy VARCHAR(255),
                             flag_update_comment VARCHAR(255),

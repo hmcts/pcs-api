@@ -77,12 +77,12 @@ class CaseFlagsViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        //assertNotNull(pcsCase.getParties());
+        assertNotNull(pcsCase.getParties());
         assertEquals(1, pcsCase.getParties().size());
         Party party = pcsCase.getParties().getFirst().getValue();
         assertNotNull(party.getRespondentFlags());
-        //assertEquals(1, party.getRespondentFlags().getDetails().size());
-        //assertEquals("CF0007", party.getRespondentFlags().getDetails().getFirst().getValue().getFlagCode());
+        assertEquals(1, party.getRespondentFlags().getDetails().size());
+        assertEquals("CF0007", party.getRespondentFlags().getDetails().getFirst().getValue().getFlagCode());
     }
 
     @Test
