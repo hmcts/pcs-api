@@ -23,7 +23,6 @@ import {
   contactPreferences,
   preactionProtocol,
   claimantCircumstances,
-  claimingCosts,
   dailyRentAmount,
   defendantCircumstances,
   mediationAndSettlement,
@@ -148,8 +147,6 @@ test.describe('[Create Case - Wales]', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -265,9 +262,6 @@ test.describe('[Create Case - Wales]', async () => {
       label2: prohibitedConductWales.giveDetailsOfTermsHiddenTextLabel,
       input2: prohibitedConductWales.giveDetailsOfTermsTextInput
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
-    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -379,8 +373,6 @@ test.describe('[Create Case - Wales]', async () => {
       question2: prohibitedConductWales.haveYouAndContractHolderAgreedHiddenQuestion,
       option2: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -478,8 +470,6 @@ test.describe('[Create Case - Wales]', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -589,8 +579,6 @@ test.describe('[Create Case - Wales]', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -697,8 +685,6 @@ test.describe('[Create Case - Wales]', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -807,8 +793,6 @@ test.describe('[Create Case - Wales]', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
