@@ -49,7 +49,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
                    """)
             .complex(PCSCase::getWalesNoticeDetails)
             .mandatory(WalesNoticeDetails::getNoticeServed)
-            .mandatory(WalesNoticeDetails::getTypeOfNoticeServed,"walesNoticeServed=\"YES\"")
+            .mandatory(WalesNoticeDetails::getTypeOfNoticeServed,"walesNoticeServed=\"Yes\"")
             .done()
             .label("walesCheckingNotice-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
