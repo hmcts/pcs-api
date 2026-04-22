@@ -9,14 +9,17 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,8 +36,8 @@ class HouseholdCircumstancesServiceTest {
 
     @ParameterizedTest
     @NullSource
-    @EnumSource(VerticalYesNo.class)
-    void shouldMapDependantChildrenField(VerticalYesNo expected) {
+    @EnumSource(YesOrNo.class)
+    void shouldMapDependantChildrenField(YesOrNo expected) {
         // Given
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .dependantChildren(expected)
@@ -64,7 +67,7 @@ class HouseholdCircumstancesServiceTest {
 
     @ParameterizedTest
     @MethodSource("otherDependantsScenarios")
-    void shouldMapOtherDependantsField(VerticalYesNo expected) {
+    void shouldMapOtherDependantsField(YesOrNo expected) {
         //Given
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .otherDependants(expected)
@@ -80,9 +83,9 @@ class HouseholdCircumstancesServiceTest {
 
     private static Stream<Arguments> otherDependantsScenarios() {
         return Stream.of(
-            Arguments.of(VerticalYesNo.YES),
-            Arguments.of(VerticalYesNo.NO),
-            Arguments.of((VerticalYesNo) null)
+            Arguments.of(YesOrNo.YES),
+            Arguments.of(YesOrNo.NO),
+            Arguments.of((YesOrNo) null)
         );
     }
 
@@ -110,37 +113,10 @@ class HouseholdCircumstancesServiceTest {
         assertThat(entity).isNull();
     }
 
-    @Test
-    void shouldMapUniversalCreditAndPriorityDebtFields() {
-        // Given
-        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .dependantChildren(VerticalYesNo.NO)
-            .universalCredit(VerticalYesNo.YES)
-            .ucApplicationDate(LocalDate.of(2024, 5, 12))
-            .priorityDebts(VerticalYesNo.YES)
-            .debtTotal(new BigDecimal("1500.00"))
-            .debtContribution(new BigDecimal("200.00"))
-            .debtContributionFrequency(RecurrenceFrequency.MONTHLY)
-            .build();
-
-        // When
-        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
-
-        // Then
-        assertThat(entity).isNotNull();
-        assertThat(entity.getDependantChildren()).isEqualTo(VerticalYesNo.NO);
-        assertThat(entity.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
-        assertThat(entity.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 5, 12));
-        assertThat(entity.getPriorityDebts()).isEqualTo(VerticalYesNo.YES);
-        assertThat(entity.getDebtTotal()).isEqualByComparingTo("1500.00");
-        assertThat(entity.getDebtContribution()).isEqualByComparingTo("200.00");
-        assertThat(entity.getDebtContributionFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
-    }
-
     @ParameterizedTest
     @NullSource
-    @EnumSource(VerticalYesNo.class)
-    void shouldMapOtherTenantsField(VerticalYesNo expected) {
+    @EnumSource(YesOrNo.class)
+    void shouldMapOtherTenantsField(YesOrNo expected) {
         // Given
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .otherTenants(expected)
@@ -156,7 +132,7 @@ class HouseholdCircumstancesServiceTest {
     @ParameterizedTest
     @MethodSource("otherTenantsDetailsScenarios")
     void shouldMapOtherTenantsDetailsOnlyWhenOtherTenantsIsYes(
-        VerticalYesNo expectedOtherTenants,
+        YesOrNo expectedOtherTenants,
         String draftDetails,
         String expectedDetailsOnEntity
     ) {
@@ -176,9 +152,9 @@ class HouseholdCircumstancesServiceTest {
 
     private static Stream<Arguments> otherTenantsDetailsScenarios() {
         return Stream.of(
-            Arguments.of(VerticalYesNo.YES, "Two other adults", "Two other adults"),
-            Arguments.of(VerticalYesNo.YES, null, null),
-            Arguments.of(VerticalYesNo.NO, "Draft still has text", null),
+            Arguments.of(YesOrNo.YES, "Two other adults", "Two other adults"),
+            Arguments.of(YesOrNo.YES, null, null),
+            Arguments.of(YesOrNo.NO, "Draft still has text", null),
             Arguments.of(null, "Draft still has text", null)
         );
     }
@@ -229,5 +205,178 @@ class HouseholdCircumstancesServiceTest {
             Arguments.of(YesNoNotSure.NOT_SURE, transferDate, null),
             Arguments.of(null, transferDate, null)
         );
+    }
+
+    @Test
+    void shouldCreateIncomeFromJobsItem() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .incomeFromJobs(YesOrNo.YES)
+            .incomeFromJobsAmount(new BigDecimal("200000"))
+            .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNotNull();
+        List<RegularIncomeItemEntity> items = entity.getRegularIncomeEntity().getItems();
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).getIncomeType()).isEqualTo(IncomeType.INCOME_FROM_JOBS);
+        assertThat(items.get(0).getAmount()).isEqualByComparingTo("200000");
+        assertThat(items.get(0).getFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+    }
+
+    @Test
+    void shouldNotCreateIncomeFromJobsItemWhenNo() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .incomeFromJobs(YesOrNo.NO)
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNull();
+    }
+
+    @Test
+    void shouldCreatePensionItem() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .pension(YesOrNo.YES)
+            .pensionAmount(new BigDecimal("50000"))
+            .pensionFrequency(RecurrenceFrequency.MONTHLY)
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNotNull();
+        List<RegularIncomeItemEntity> items = entity.getRegularIncomeEntity().getItems();
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).getIncomeType()).isEqualTo(IncomeType.PENSION);
+        assertThat(items.get(0).getAmount()).isEqualByComparingTo("50000");
+        assertThat(items.get(0).getFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+    }
+
+    @Test
+    void shouldCreateUniversalCreditItemWhenAmountProvided() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .universalCreditAmount(new BigDecimal("100000"))
+            .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNotNull();
+        List<RegularIncomeItemEntity> items = entity.getRegularIncomeEntity().getItems();
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).getIncomeType()).isEqualTo(IncomeType.UNIVERSAL_CREDIT);
+        assertThat(items.get(0).getAmount()).isEqualByComparingTo("100000");
+        assertThat(items.get(0).getFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+    }
+
+    @Test
+    void shouldNotCreateUniversalCreditItemWhenAmountNull() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .universalCredit(YesOrNo.YES)
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNull();
+    }
+
+    @Test
+    void shouldCreateOtherBenefitsItem() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .otherBenefits(YesOrNo.YES)
+            .otherBenefitsAmount(new BigDecimal("20000"))
+            .otherBenefitsFrequency(RecurrenceFrequency.WEEKLY)
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNotNull();
+        List<RegularIncomeItemEntity> items = entity.getRegularIncomeEntity().getItems();
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).getIncomeType()).isEqualTo(IncomeType.OTHER_BENEFITS);
+        assertThat(items.get(0).getAmount()).isEqualByComparingTo("20000");
+        assertThat(items.get(0).getFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
+    }
+
+    @Test
+    void shouldCreateMoneyFromElsewhereItemWithDetails() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .moneyFromElsewhere(YesOrNo.YES)
+            .moneyFromElsewhereDetails("Child maintenance payments")
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNotNull();
+        List<RegularIncomeItemEntity> items = entity.getRegularIncomeEntity().getItems();
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).getIncomeType()).isEqualTo(IncomeType.MONEY_FROM_ELSEWHERE);
+        assertThat(items.get(0).getAmount()).isNull();
+        assertThat(entity.getRegularIncomeEntity().getOtherIncomeDetails()).isEqualTo("Child maintenance payments");
+    }
+
+    @Test
+    void shouldCreateMultipleIncomeItems() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .incomeFromJobs(YesOrNo.YES)
+            .incomeFromJobsAmount(new BigDecimal("200000"))
+            .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
+            .pension(YesOrNo.YES)
+            .pensionAmount(new BigDecimal("50000"))
+            .pensionFrequency(RecurrenceFrequency.MONTHLY)
+            .universalCreditAmount(new BigDecimal("100000"))
+            .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
+            .otherBenefits(YesOrNo.YES)
+            .otherBenefitsAmount(new BigDecimal("20000"))
+            .otherBenefitsFrequency(RecurrenceFrequency.WEEKLY)
+            .moneyFromElsewhere(YesOrNo.YES)
+            .moneyFromElsewhereDetails("Child support")
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNotNull();
+        List<RegularIncomeItemEntity> items = entity.getRegularIncomeEntity().getItems();
+        assertThat(items).hasSize(5);
+        assertThat(items).extracting(RegularIncomeItemEntity::getIncomeType)
+            .containsExactly(
+                IncomeType.INCOME_FROM_JOBS,
+                IncomeType.PENSION,
+                IncomeType.UNIVERSAL_CREDIT,
+                IncomeType.OTHER_BENEFITS,
+                IncomeType.MONEY_FROM_ELSEWHERE
+        );
+    }
+
+    @Test
+    void shouldNotPersistDetailsWhenMoneyFromElsewhereIsNo() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .incomeFromJobs(YesOrNo.YES)
+            .incomeFromJobsAmount(new BigDecimal("200000"))
+            .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
+            .moneyFromElsewhere(YesOrNo.NO)
+            .moneyFromElsewhereDetails("Stale draft text")
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNotNull();
+        assertThat(entity.getRegularIncomeEntity().getOtherIncomeDetails()).isNull();
+    }
+
+    @Test
+    void shouldNotCreateRegularIncomeWhenNoIncomeTypesSelected() {
+        HouseholdCircumstances circumstances = HouseholdCircumstances.builder()
+            .incomeFromJobs(YesOrNo.NO)
+            .pension(YesOrNo.NO)
+            .otherBenefits(YesOrNo.NO)
+            .moneyFromElsewhere(YesOrNo.NO)
+            .build();
+
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
+
+        assertThat(entity.getRegularIncomeEntity()).isNull();
     }
 }

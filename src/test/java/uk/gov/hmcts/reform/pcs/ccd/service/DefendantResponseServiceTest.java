@@ -10,7 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
@@ -639,20 +639,20 @@ class DefendantResponseServiceTest {
             .reasonableAdjustmentsRequired("Wheelchair access")
             .build();
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .dependantChildren(VerticalYesNo.YES)
+            .dependantChildren(YesOrNo.YES)
             .build();
         PaymentAgreement paymentAgreement = PaymentAgreement.builder()
-            .anyPaymentsMade(VerticalYesNo.NO)
+            .anyPaymentsMade(YesOrNo.NO)
             .build();
 
         ReasonableAdjustmentEntity reasonableAdjustmentEntity = ReasonableAdjustmentEntity.builder()
             .reasonableAdjustmentsRequired("Wheelchair access")
             .build();
         HouseholdCircumstancesEntity householdCircumstancesEntity = HouseholdCircumstancesEntity.builder()
-            .dependantChildren(VerticalYesNo.YES)
+            .dependantChildren(YesOrNo.YES)
             .build();
         PaymentAgreementEntity paymentAgreementEntity = PaymentAgreementEntity.builder()
-            .anyPaymentsMade(VerticalYesNo.NO)
+            .anyPaymentsMade(YesOrNo.NO)
             .build();
 
         when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
@@ -702,7 +702,7 @@ class DefendantResponseServiceTest {
 
     @ParameterizedTest(name = "disputeClaim={0}")
     @MethodSource("disputeClaimPersistenceScenarios")
-    void shouldPersistDisputeClaim(VerticalYesNo disputeClaim) {
+    void shouldPersistDisputeClaim(YesOrNo disputeClaim) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
@@ -730,9 +730,9 @@ class DefendantResponseServiceTest {
 
     private static Stream<Arguments> disputeClaimPersistenceScenarios() {
         return Stream.of(
-            Arguments.of(VerticalYesNo.YES),
-            Arguments.of(VerticalYesNo.NO),
-            Arguments.of((VerticalYesNo) null)
+            Arguments.of(YesOrNo.YES),
+            Arguments.of(YesOrNo.NO),
+            Arguments.of((YesOrNo) null)
         );
     }
 
@@ -771,9 +771,9 @@ class DefendantResponseServiceTest {
         );
     }
 
-    @ParameterizedTest(name = "languageUsed={0}")
-    @MethodSource("languageUsedPersistenceScenarios")
-    void shouldPersistLanguageUsed(LanguageUsed languageUsed) {
+    @ParameterizedTest(name = "defendantNameConfirmation={0}")
+    @MethodSource("defendantNameConfirmationScenarios")
+    void shouldPersistDefendantNameConfirmation(VerticalYesNo defendantNameConfirmation) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
@@ -782,7 +782,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .languageUsed(languageUsed)
+            .defendantNameConfirmation(defendantNameConfirmation)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -796,15 +796,86 @@ class DefendantResponseServiceTest {
         verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
-        assertThat(savedResponse.getLanguageUsed()).isEqualTo(languageUsed);
+        assertThat(savedResponse.getDefendantNameConfirmation()).isEqualTo(defendantNameConfirmation);
     }
 
-    private static Stream<Arguments> languageUsedPersistenceScenarios() {
+    private static Stream<Arguments> defendantNameConfirmationScenarios() {
         return Stream.of(
-            Arguments.of(LanguageUsed.ENGLISH),
-            Arguments.of(LanguageUsed.WELSH),
-            Arguments.of(LanguageUsed.ENGLISH_AND_WELSH),
-            Arguments.of((LanguageUsed) null)
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
+        );
+    }
+
+    @ParameterizedTest(name = "noticeReceivedDate={0}")
+    @MethodSource("noticeReceivedDateScenarios")
+    void shouldPersistNoticeReceivedDate(LocalDate noticeReceivedDate) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .noticeReceivedDate(noticeReceivedDate)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getNoticeReceivedDate()).isEqualTo(noticeReceivedDate);
+    }
+
+    private static Stream<Arguments> noticeReceivedDateScenarios() {
+        return Stream.of(
+            Arguments.of(LocalDate.of(2024, 6, 15)),
+            Arguments.of((LocalDate) null)
+        );
+    }
+
+    @ParameterizedTest(name = "rentArrearsAmountConfirmation={0}")
+    @MethodSource("rentArrearsAmountConfirmationScenarios")
+    void shouldPersistRentArrearsAmountConfirmation(YesNoNotSure rentArrearsAmountConfirmation) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .rentArrearsAmountConfirmation(rentArrearsAmountConfirmation)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(rentArrearsAmountConfirmation);
+    }
+
+    private static Stream<Arguments> rentArrearsAmountConfirmationScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of(YesNoNotSure.NOT_SURE),
+            Arguments.of((YesNoNotSure) null)
         );
     }
 }
