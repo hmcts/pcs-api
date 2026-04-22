@@ -94,12 +94,6 @@ public class RentArrears implements CcdPageConfiguration {
             TextAreaValidationService.MEDIUM_TEXT_LIMIT
         );
 
-        if (!validationErrors.isEmpty()) {
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
-        }
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

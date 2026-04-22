@@ -75,9 +75,10 @@ class RentArrearsServiceTest {
     }
 
     @Test
-    void shouldSetRentArrearsDetails() {
+    void shouldSetRentArrearsDetailsIfRentArrearsRecoveryAttempted() {
         // Given
         String details = "details";
+        when(rentArrears.getRecoveryAttempted()).thenReturn(VerticalYesNo.YES);
         when(rentArrears.getRecoveryAttemptDetails()).thenReturn(details);
 
         // When
@@ -85,5 +86,18 @@ class RentArrearsServiceTest {
 
         // Then
         assertThat(rentArrearsEntity.getRecoveryAttemptDetails()).isEqualTo(details);
+    }
+
+    @Test
+    void shouldNotSetRentArrearsDetailsIfRentArrearsRecoveryNotAttempted() {
+        // Given
+        String details = "details";
+        when(rentArrears.getRecoveryAttempted()).thenReturn(VerticalYesNo.NO);
+
+        // When
+        RentArrearsEntity rentArrearsEntity = underTest.createRentArrearsEntity(pcsCase);
+
+        // Then
+        assertThat(rentArrearsEntity.getRecoveryAttemptDetails()).isNull();
     }
 }

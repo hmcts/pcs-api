@@ -12,8 +12,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -25,6 +30,14 @@ public class RentArrearsTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
+        lenient().doAnswer(invocation -> {
+            Object caseData = invocation.getArgument(0);
+            List<String> errors = invocation.getArgument(1);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data((PCSCase) caseData)
+                .errors(errors.isEmpty() ? null : errors)
+                .build();
+        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
         setPageUnderTest(new RentArrears(textAreaValidationService));
     }
 

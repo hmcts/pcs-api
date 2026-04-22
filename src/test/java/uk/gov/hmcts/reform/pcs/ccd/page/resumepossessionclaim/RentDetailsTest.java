@@ -115,4 +115,40 @@ class RentDetailsTest extends BasePageTest {
         assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isNull();
     }
 
+    @Test
+    void shouldNotCalculateDailyRentWhenFrequencyIsNull() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .rentDetails(RentDetails.builder()
+                             .currentRent(new BigDecimal("70.00"))
+                             .frequency(null)
+                             .build())
+            .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isNull();
+        assertThat(caseData.getRentSectionPaymentFrequency()).isNull();
+    }
+
+    @Test
+    void shouldNotCalculateDailyRentWhenFrequencyIsOther() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .rentDetails(RentDetails.builder()
+                             .currentRent(new BigDecimal("70.00"))
+                             .frequency(RentPaymentFrequency.OTHER)
+                             .build())
+            .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isNull();
+        assertThat(caseData.getRentSectionPaymentFrequency()).isEqualTo(RentPaymentFrequency.OTHER);
+    }
+
 }
