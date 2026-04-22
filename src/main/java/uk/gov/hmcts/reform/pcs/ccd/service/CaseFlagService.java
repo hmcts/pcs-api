@@ -6,9 +6,12 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
 import java.util.List;
@@ -24,6 +27,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CaseFlagService {
 
+    private RefDataFlagsRepository refDataFlagsRepository;
+
     public void mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
 
         Map<UUID, FlagDetailsEntity> existingFlagDetails =
@@ -36,10 +41,27 @@ public class CaseFlagService {
 
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
+
+            RefDataFlagsEntity refDataFlagsEntity = refDataFlagsRepository.findByFlagCode((
+                incomingFlagDetail.getFlagCode())).orElse(null);
+
+            if (refDataFlagsEntity == null) {
+                refDataFlagsEntity = new RefDataFlagsEntity();
+            }
+            refDataFlagsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
+            refDataFlagsEntity.setFlagName(incomingFlagDetail.getName());
+            refDataFlagsEntity.setFlagNameWelsh(incomingFlagDetail.getNameCy());
+            refDataFlagsEntity.setVisibility(incomingCaseFlags.getVisibility() != null
+                                                 ? incomingCaseFlags.getVisibility().getValue()
+                                                 : FlagVisibility.INTERNAL.getValue());
+            refDataFlagsEntity.setHearingRelevant(YesOrNoConverter.toBoolean(incomingFlagDetail.getHearingRelevant()));
+            refDataFlagsEntity.setAvailableExternally(YesOrNoConverter.toBoolean(
+                incomingFlagDetail.getAvailableExternally()));
+
+            refDataFlagsRepository.save(refDataFlagsEntity);
+
             String flagId = incomingFlagDetailListValue.getId();
-
             FlagDetailsEntity flagDetailsEntity = existingFlagDetails.remove(UUID.fromString(flagId));
-
 
             if (flagDetailsEntity == null) {
                 flagDetailsEntity = new FlagDetailsEntity();
@@ -47,9 +69,6 @@ public class CaseFlagService {
             }
 
             flagDetailsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
-
-            flagDetailsEntity.setName(incomingFlagDetail.getName());
-            flagDetailsEntity.setNameWelsh(incomingFlagDetail.getNameCy());
 
             flagDetailsEntity.setFlagComment(incomingFlagDetail.getFlagComment());
             flagDetailsEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
@@ -66,9 +85,6 @@ public class CaseFlagService {
 
             flagDetailsEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagDetailsEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
-
-            flagDetailsEntity.setHearingRelevant(getBooleanValue(incomingFlagDetail.getHearingRelevant()));
-            flagDetailsEntity.setAvailableExternally(getBooleanValue(incomingFlagDetail.getAvailableExternally()));
 
             setFlagPath(incomingFlagDetail, existingFlagPathIds, flagDetailsEntity);
 
