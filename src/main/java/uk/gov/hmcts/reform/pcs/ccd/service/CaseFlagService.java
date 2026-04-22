@@ -103,8 +103,8 @@ public class CaseFlagService {
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
-            RefDataFlagsEntity refDataFlagsEntity = refDataFlagsRepository.findByFlagCode((
-                incomingFlagDetail.getFlagCode())).orElse(null);
+            RefDataFlagsEntity refDataFlagsEntity = refDataFlagsRepository.findByFlagCode(
+                incomingFlagDetail.getFlagCode());
 
             if (refDataFlagsEntity == null) {
                 refDataFlagsEntity = new RefDataFlagsEntity();

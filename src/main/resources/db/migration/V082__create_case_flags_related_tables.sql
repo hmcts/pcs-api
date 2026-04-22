@@ -13,7 +13,6 @@ CREATE TABLE flag_details (
                             flag_update_comment VARCHAR(255),
                             date_time_created TIMESTAMP,
                             date_time_modified TIMESTAMP,
-                            path VARCHAR(255),
                             status VARCHAR(50) NOT NULL
 );
 

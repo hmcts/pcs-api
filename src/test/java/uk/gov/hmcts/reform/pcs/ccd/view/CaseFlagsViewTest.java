@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 
 import java.util.List;
 import java.util.Set;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,7 +63,7 @@ class CaseFlagsViewTest {
 
         pcsCaseEntity.setCaseFlags(List.of(createMockFlagsEntity()));
 
-        when(refDataFlagsRepository.findByFlagCode(any())).thenReturn(Optional.of(createMockRefDataFlagsEntity()));
+        when(refDataFlagsRepository.findByFlagCode(any())).thenReturn(createMockRefDataFlagsEntity());
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -88,6 +87,7 @@ class CaseFlagsViewTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
         pcsCaseEntity.setParties(Set.of(partyEntity));
+        when(refDataFlagsRepository.findByFlagCode(any())).thenReturn(createMockRefDataFlagsEntity());
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);

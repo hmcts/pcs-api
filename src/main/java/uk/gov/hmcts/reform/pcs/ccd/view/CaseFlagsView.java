@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 public class CaseFlagsView {
 
     private static final String RESPONDENT = "respondent";
-    private static final String CLAIMANT = "claimant";
 
     private final RefDataFlagsRepository refDataFlagsRepository;
 
@@ -53,9 +52,9 @@ public class CaseFlagsView {
                 .value(FlagDetail.builder()
                    .flagCode(flagDetailsEntity.getFlagCode())
                    .name(refDataFlagsRepository.findByFlagCode(
-                       flagDetailsEntity.getFlagCode()).orElseThrow().getFlagName())
+                       flagDetailsEntity.getFlagCode()).getFlagName())
                    .nameCy(refDataFlagsRepository.findByFlagCode(
-                       flagDetailsEntity.getFlagCode()).orElseThrow().getFlagNameWelsh())
+                       flagDetailsEntity.getFlagCode()).getFlagNameWelsh())
                    .flagComment(flagDetailsEntity.getFlagComment())
                    .flagCommentCy(flagDetailsEntity.getFlagCommentWelsh())
                    .status(flagDetailsEntity.getDefaultStatus())
@@ -68,9 +67,9 @@ public class CaseFlagsView {
                    .otherDescription(flagDetailsEntity.getOtherDescription())
                    .otherDescriptionCy(flagDetailsEntity.getOtherDescriptionWelsh())
                    .hearingRelevant(YesOrNoConverter.toYesOrNo(refDataFlagsRepository.findByFlagCode(
-                       flagDetailsEntity.getFlagCode()).orElseThrow().getHearingRelevant()))
+                       flagDetailsEntity.getFlagCode()).getHearingRelevant()))
                    .availableExternally(YesOrNoConverter.toYesOrNo(refDataFlagsRepository.findByFlagCode(
-                       flagDetailsEntity.getFlagCode()).orElseThrow().getAvailableExternally()))
+                       flagDetailsEntity.getFlagCode()).getAvailableExternally()))
                    .path(flagDetailsEntity.getPaths().stream()
                              .map(pathEntity -> ListValue.<String>builder()
                                 .id(pathEntity.getId().toString())
@@ -84,6 +83,7 @@ public class CaseFlagsView {
 
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<ListValue<Party>> mappedParties = pcsCaseEntity.getParties().stream()
+            .filter(partyEntity -> partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty())
             .map(this::mapPartyWithRespondentFlags)
             .toList();
 
@@ -105,7 +105,11 @@ public class CaseFlagsView {
 
     private Flags mapRespondentFlags(PartyEntity partyEntity) {
         if (partyEntity.getRespondentFlags() == null || partyEntity.getRespondentFlags().isEmpty()) {
-            return Flags.builder().details(new ArrayList<>()).build();
+            return Flags.builder()
+                .partyName(partyEntity.getFirstName() + " " + partyEntity.getLastName())
+                .roleOnCase(RESPONDENT)
+                .details(new ArrayList<>())
+                .build();
         }
 
         List<FlagDetailsEntity> respondentFlags = partyEntity.getRespondentFlags();
@@ -114,9 +118,7 @@ public class CaseFlagsView {
             .partyName(Stream.of(partyEntity.getFirstName(), partyEntity.getLastName(),
                                  partyEntity.getOrgName()).filter(
                 Objects::nonNull).collect(Collectors.joining(" ")))
-            .roleOnCase(partyEntity.getOrgName() != null && !partyEntity.getOrgName().isEmpty()
-                            ? CLAIMANT
-                            : RESPONDENT)
+            .roleOnCase(RESPONDENT)
             .details(mapFlagDetails(respondentFlags))
             .visibility(FlagVisibility.INTERNAL)
             .build();
