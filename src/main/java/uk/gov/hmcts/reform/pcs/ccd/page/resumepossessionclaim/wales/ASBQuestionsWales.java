@@ -30,7 +30,7 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
             .page("asbQuestionsWales", this::midEvent)
             .pageLabel("Antisocial behaviour and illegal or prohibited conduct")
             .label("asbQuestionsWales-separator", "---")
-            .showCondition("showASBQuestionsPageWales=\"YES\"")
+            .showCondition("showASBQuestionsPageWales=\"Yes\"")
             .readonly(PCSCase::getShowASBQuestionsPageWales, NEVER_SHOW)
             .complex(PCSCase::getAsbQuestionsWales)
             .mandatory(ASBQuestionsDetailsWales::getAntisocialBehaviour)

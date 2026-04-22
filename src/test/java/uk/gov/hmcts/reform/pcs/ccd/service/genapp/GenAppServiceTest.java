@@ -11,8 +11,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
@@ -130,8 +130,8 @@ class GenAppServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(YesOrNo.class)
-    void shouldSetWithin14DaysFlag(YesOrNo within14Days) {
+    @EnumSource(VerticalYesNo.class)
+    void shouldSetWithin14DaysFlag(VerticalYesNo within14Days) {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
             .within14Days(within14Days)
@@ -154,8 +154,8 @@ class GenAppServiceTest {
         // Given
         String expectedHwfReference = "hwf-1234";
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
-            .needHwf(YesOrNo.YES)
-            .appliedForHwf(YesOrNo.YES)
+            .needHwf(VerticalYesNo.YES)
+            .appliedForHwf(VerticalYesNo.YES)
             .hwfReference(expectedHwfReference)
             .build();
 
@@ -170,8 +170,8 @@ class GenAppServiceTest {
         verify(genAppRepository).save(genAppEntityCaptor.capture());
         GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
 
-        assertThat(genAppEntity.getNeedHwf()).isEqualTo(YesOrNo.YES);
-        assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(YesOrNo.YES);
+        assertThat(genAppEntity.getNeedHwf()).isEqualTo(VerticalYesNo.YES);
+        assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(VerticalYesNo.YES);
         assertThat(genAppEntity.getHelpWithFeesEntity().getHwfReference()).isEqualTo(expectedHwfReference);
     }
 
@@ -179,8 +179,8 @@ class GenAppServiceTest {
     void shouldNotSetHwfReferenceIfAppliedForIsNo() {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
-            .needHwf(YesOrNo.YES)
-            .appliedForHwf(YesOrNo.NO)
+            .needHwf(VerticalYesNo.YES)
+            .appliedForHwf(VerticalYesNo.NO)
             .hwfReference("hwf-1234")
             .build();
 
@@ -195,8 +195,8 @@ class GenAppServiceTest {
         verify(genAppRepository).save(genAppEntityCaptor.capture());
         GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
 
-        assertThat(genAppEntity.getNeedHwf()).isEqualTo(YesOrNo.YES);
-        assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(YesOrNo.NO);
+        assertThat(genAppEntity.getNeedHwf()).isEqualTo(VerticalYesNo.YES);
+        assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(VerticalYesNo.NO);
         assertThat(genAppEntity.getHelpWithFeesEntity()).isNull();
     }
 
