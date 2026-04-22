@@ -32,9 +32,9 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
         pageBuilder
             .page("rentArrearsGroundsForPossessionReasons", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showCondition("claimDueToRentArrears=\"YES\""
+            .showCondition("claimDueToRentArrears=\"Yes\""
                                + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND hasOtherAdditionalGrounds=\"YES\""
+                               + " AND hasOtherAdditionalGrounds=\"Yes\""
                                + " AND legislativeCountry=\"England\""
             )
             .label("rentArrearsGrounds-lineSeparator","---")

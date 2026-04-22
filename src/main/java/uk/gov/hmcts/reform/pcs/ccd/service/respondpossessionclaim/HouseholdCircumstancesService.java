@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.IncomeExpenseDetails;
@@ -24,7 +25,7 @@ public class HouseholdCircumstancesService {
             return null;
         }
 
-        YesOrNo otherTenants = hc.getOtherTenants();
+        VerticalYesNo otherTenants = hc.getOtherTenants();
         YesNoNotSure alternativeAccommodation = hc.getAlternativeAccommodation();
 
         HouseholdCircumstancesEntity hcEntity = HouseholdCircumstancesEntity.builder()
@@ -37,7 +38,7 @@ public class HouseholdCircumstancesService {
             .otherDependants(hc.getOtherDependants())
             .otherDependantDetails(hc.getOtherDependantDetails())
             .otherTenants(otherTenants)
-            .otherTenantsDetails(otherTenants == YesOrNo.YES ? hc.getOtherTenantsDetails() : null)
+            .otherTenantsDetails(otherTenants == VerticalYesNo.YES ? hc.getOtherTenantsDetails() : null)
             .alternativeAccommodation(alternativeAccommodation)
             .alternativeAccommodationTransferDate(alternativeAccommodation == YesNoNotSure.YES
                                                       ? hc.getAlternativeAccommodationTransferDate() : null)
