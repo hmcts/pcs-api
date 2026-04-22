@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
 
@@ -16,12 +18,39 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class CounterClaim {
 
-    @CCD(typeOverride = FieldType.MoneyGBP)
+    @CCD(access = {CitizenAccess.class})
+    private VerticalYesNo isClaimAmountKnown;
+
+    @CCD(typeOverride = FieldType.MoneyGBP, access = {CitizenAccess.class})
     @JacksonMoneyGBP
     private BigDecimal claimAmount;
 
-    @CCD(typeOverride = FieldType.MoneyGBP)
+    @CCD(typeOverride = FieldType.MoneyGBP, access = {CitizenAccess.class})
     @JacksonMoneyGBP
     private BigDecimal estimatedMaxClaimAmount;
+
+    @CCD(access = {CitizenAccess.class})
+    private String claimType;
+
+    @CCD(access = {CitizenAccess.class})
+    private String counterclaimFor;
+
+    @CCD(access = {CitizenAccess.class})
+    private String counterclaimReasons;
+
+    @CCD(access = {CitizenAccess.class})
+    private String otherOrderRequestDetails;
+
+    @CCD(access = {CitizenAccess.class})
+    private String otherOrderRequestFacts;
+
+    @CCD(access = {CitizenAccess.class})
+    private VerticalYesNo needHelpWithFees;
+
+    @CCD(access = {CitizenAccess.class})
+    private VerticalYesNo appliedForHwf;
+
+    @CCD(access = {CitizenAccess.class})
+    private String hwfReferenceNumber;
 
 }

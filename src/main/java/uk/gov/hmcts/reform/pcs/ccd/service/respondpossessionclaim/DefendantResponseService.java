@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -175,8 +176,18 @@ public class DefendantResponseService {
         }
 
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .isClaimAmountKnown(counterClaim.getIsClaimAmountKnown())
             .claimAmount(counterClaim.getClaimAmount())
             .estimatedMaxClaimAmount(counterClaim.getEstimatedMaxClaimAmount())
+            .claimType(counterClaim.getClaimType())
+            .counterclaimFor(counterClaim.getCounterclaimFor())
+            .counterclaimReasons(counterClaim.getCounterclaimReasons())
+            .otherOrderRequestDetails(counterClaim.getOtherOrderRequestDetails())
+            .otherOrderRequestFacts(counterClaim.getOtherOrderRequestFacts())
+            .needHelpWithFees(counterClaim.getNeedHelpWithFees())
+            .appliedForHwf(counterClaim.getAppliedForHwf())
+            .hwfReferenceNumber(counterClaim.getHwfReferenceNumber())
+            .claimSubmittedDate(LocalDateTime.now())
             .party(partyRef)
             .build();
 

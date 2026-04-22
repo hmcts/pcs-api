@@ -777,7 +777,7 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldSaveCounterClaimWithBothAmounts() {
+    void shouldSaveCounterClaimWithAllFields() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
@@ -786,8 +786,17 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         CounterClaim counterClaim = CounterClaim.builder()
+            .isClaimAmountKnown(VerticalYesNo.YES)
             .claimAmount(new BigDecimal("250.00"))
             .estimatedMaxClaimAmount(new BigDecimal("500.00"))
+            .claimType("MONEY")
+            .counterclaimFor("Damage to property")
+            .counterclaimReasons("Landlord failed to maintain property")
+            .otherOrderRequestDetails("Request for compensation")
+            .otherOrderRequestFacts("Property was in disrepair for 6 months")
+            .needHelpWithFees(VerticalYesNo.YES)
+            .appliedForHwf(VerticalYesNo.NO)
+            .hwfReferenceNumber("HWF-123-456")
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -804,8 +813,18 @@ class DefendantResponseServiceTest {
         // Then
         verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
         CounterClaimEntity saved = counterClaimCaptor.getValue();
+        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(VerticalYesNo.YES);
         assertThat(saved.getClaimAmount()).isEqualByComparingTo(new BigDecimal("250.00"));
         assertThat(saved.getEstimatedMaxClaimAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
+        assertThat(saved.getClaimType()).isEqualTo("MONEY");
+        assertThat(saved.getCounterclaimFor()).isEqualTo("Damage to property");
+        assertThat(saved.getCounterclaimReasons()).isEqualTo("Landlord failed to maintain property");
+        assertThat(saved.getOtherOrderRequestDetails()).isEqualTo("Request for compensation");
+        assertThat(saved.getOtherOrderRequestFacts()).isEqualTo("Property was in disrepair for 6 months");
+        assertThat(saved.getNeedHelpWithFees()).isEqualTo(VerticalYesNo.YES);
+        assertThat(saved.getAppliedForHwf()).isEqualTo(VerticalYesNo.NO);
+        assertThat(saved.getHwfReferenceNumber()).isEqualTo("HWF-123-456");
+        assertThat(saved.getClaimSubmittedDate()).isNotNull();
         assertThat(saved.getParty()).isEqualTo(partyEntity);
     }
 
