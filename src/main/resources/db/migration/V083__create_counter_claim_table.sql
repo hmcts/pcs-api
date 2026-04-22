@@ -1,9 +1,9 @@
 CREATE TABLE counter_claim (
   id                         UUID PRIMARY KEY,
   version                    INTEGER,
-  sot_id                     UUID REFERENCES public.statement_of_truth (id),
-  pcs_case_id                UUID NOT NULL REFERENCES public.pcs_case (id),
-  party_id                   UUID NOT NULL REFERENCES public.party (id),
+  sot_id                     UUID REFERENCES statement_of_truth(id),
+  pcs_case_id                UUID NOT NULL REFERENCES pcs_case(id),
+  party_id                   UUID NOT NULL REFERENCES party(id),
   claim_type                 VARCHAR(50),
   is_claim_amount_known      YES_NO,
   claim_amount               DECIMAL(18,2),
