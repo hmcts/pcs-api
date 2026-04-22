@@ -114,7 +114,7 @@
   "showClaimantTypeNotEligibleWales": "NO",
   "showClaimantTypeNotEligibleEngland": "NO",
   "secureOrFlexibleMandatoryGroundsAlt": [],
-  "suspensionOfRTB_ShowHousingActsPage": "Yes",
+  "suspensionOfRTB_ShowHousingActsPage": "YES",
   "secureOrFlexibleDiscretionaryGrounds": [
     "NUISANCE_OR_IMMORAL_USE"
   ],
