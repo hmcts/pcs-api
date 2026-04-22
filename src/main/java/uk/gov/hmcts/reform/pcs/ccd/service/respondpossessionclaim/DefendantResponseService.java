@@ -5,10 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
@@ -103,6 +105,8 @@ public class DefendantResponseService {
 
         buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
 
+        saveCounterClaim(possessionClaimResponse.getDefendantResponses(), partyRef, claimRef);
+
         defendantResponseRepository.save(responseEntity);
 
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
@@ -162,5 +166,20 @@ public class DefendantResponseService {
                 response.getPaymentAgreement()
             )
         );
+    }
+
+    private void saveCounterClaim(DefendantResponses responses, PartyEntity partyRef, ClaimEntity claimRef) {
+        CounterClaim counterClaim = responses.getCounterClaim();
+        if (counterClaim == null) {
+            return;
+        }
+
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .claimAmount(counterClaim.getClaimAmount())
+            .estimatedMaxClaimAmount(counterClaim.getEstimatedMaxClaimAmount())
+            .party(partyRef)
+            .build();
+
+        claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
     }
 }
