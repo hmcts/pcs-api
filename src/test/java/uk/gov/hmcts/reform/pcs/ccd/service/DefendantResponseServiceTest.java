@@ -810,7 +810,7 @@ class DefendantResponseServiceTest {
 
     @ParameterizedTest(name = "makeCounterClaim={0}")
     @MethodSource("makeCounterClaimPersistenceScenarios")
-    void shouldPersistMakeCounterClaim(YesOrNo makeCounterClaim) {
+    void shouldPersistMakeCounterClaim(VerticalYesNo makeCounterClaim) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
@@ -838,9 +838,9 @@ class DefendantResponseServiceTest {
 
     private static Stream<Arguments> makeCounterClaimPersistenceScenarios() {
         return Stream.of(
-            Arguments.of(YesOrNo.YES),
-            Arguments.of(YesOrNo.NO),
-            Arguments.of((YesOrNo) null)
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
         );
     }
 }
