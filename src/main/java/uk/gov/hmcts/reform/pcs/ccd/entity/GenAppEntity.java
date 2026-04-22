@@ -20,8 +20,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -64,15 +64,15 @@ public class GenAppEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "within_14_days")
-    private YesOrNo within14Days;
+    private VerticalYesNo within14Days;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo needHwf;
+    private VerticalYesNo needHwf;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo appliedForHwf;
+    private VerticalYesNo appliedForHwf;
 
     @OneToOne(cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "hwf_id")
@@ -81,11 +81,11 @@ public class GenAppEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo otherPartiesAgreed;
+    private VerticalYesNo otherPartiesAgreed;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo withoutNotice;
+    private VerticalYesNo withoutNotice;
 
     private String withoutNoticeReason;
 

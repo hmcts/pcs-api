@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
@@ -31,8 +31,8 @@ class HouseholdCircumstancesServiceTest {
 
     @ParameterizedTest
     @NullSource
-    @EnumSource(YesOrNo.class)
-    void shouldMapDependantChildrenField(YesOrNo expected) {
+    @EnumSource(VerticalYesNo.class)
+    void shouldMapDependantChildrenField(VerticalYesNo expected) {
         // Given
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .dependantChildren(expected)
@@ -62,7 +62,7 @@ class HouseholdCircumstancesServiceTest {
 
     @ParameterizedTest
     @MethodSource("otherDependantsScenarios")
-    void shouldMapOtherDependantsField(YesOrNo expected) {
+    void shouldMapOtherDependantsField(VerticalYesNo expected) {
         //Given
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .otherDependants(expected)
@@ -78,9 +78,9 @@ class HouseholdCircumstancesServiceTest {
 
     private static Stream<Arguments> otherDependantsScenarios() {
         return Stream.of(
-            Arguments.of(YesOrNo.YES),
-            Arguments.of(YesOrNo.NO),
-            Arguments.of((YesOrNo) null)
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
         );
     }
 
@@ -110,8 +110,8 @@ class HouseholdCircumstancesServiceTest {
 
     @ParameterizedTest
     @NullSource
-    @EnumSource(YesOrNo.class)
-    void shouldMapOtherTenantsField(YesOrNo expected) {
+    @EnumSource(VerticalYesNo.class)
+    void shouldMapOtherTenantsField(VerticalYesNo expected) {
         // Given
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
             .otherTenants(expected)
@@ -127,7 +127,7 @@ class HouseholdCircumstancesServiceTest {
     @ParameterizedTest
     @MethodSource("otherTenantsDetailsScenarios")
     void shouldMapOtherTenantsDetailsOnlyWhenOtherTenantsIsYes(
-        YesOrNo expectedOtherTenants,
+        VerticalYesNo expectedOtherTenants,
         String draftDetails,
         String expectedDetailsOnEntity
     ) {
@@ -147,9 +147,9 @@ class HouseholdCircumstancesServiceTest {
 
     private static Stream<Arguments> otherTenantsDetailsScenarios() {
         return Stream.of(
-            Arguments.of(YesOrNo.YES, "Two other adults", "Two other adults"),
-            Arguments.of(YesOrNo.YES, null, null),
-            Arguments.of(YesOrNo.NO, "Draft still has text", null),
+            Arguments.of(VerticalYesNo.YES, "Two other adults", "Two other adults"),
+            Arguments.of(VerticalYesNo.YES, null, null),
+            Arguments.of(VerticalYesNo.NO, "Draft still has text", null),
             Arguments.of(null, "Draft still has text", null)
         );
     }
