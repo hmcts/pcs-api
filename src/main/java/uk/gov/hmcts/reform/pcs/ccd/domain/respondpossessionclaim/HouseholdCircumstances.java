@@ -7,8 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
@@ -21,16 +21,16 @@ import java.time.LocalDate;
 public class HouseholdCircumstances {
 
     @CCD
-    private YesOrNo dependantChildren;
+    private VerticalYesNo dependantChildren;
 
     @CCD
-    private YesOrNo universalCredit;
+    private VerticalYesNo universalCredit;
 
     @CCD
     private LocalDate ucApplicationDate;
 
     @CCD
-    private YesOrNo priorityDebts;
+    private VerticalYesNo priorityDebts;
 
     @CCD(typeOverride = FieldType.MoneyGBP)
     @JacksonMoneyGBP
@@ -44,28 +44,28 @@ public class HouseholdCircumstances {
     private RecurrenceFrequency debtContributionFrequency;
 
     @CCD
-    private YesOrNo shareAdditionalCircumstances;
+    private VerticalYesNo shareAdditionalCircumstances;
 
     @CCD(max = 500)
     private String additionalCircumstancesDetails;
 
     @CCD
-    private YesOrNo exceptionalHardship;
+    private VerticalYesNo exceptionalHardship;
 
     @CCD(max = 500)
     private String exceptionalHardshipDetails;
-    
+
     @CCD(max = 500)
     private String dependantChildrenDetails;
 
     @CCD
-    private YesOrNo otherDependants;
+    private VerticalYesNo otherDependants;
 
     @CCD(max = 500)
     private String otherDependantDetails;
 
     @CCD
-    private YesOrNo otherTenants;
+    private VerticalYesNo otherTenants;
 
     @CCD(max = 500)
     private String otherTenantsDetails;
