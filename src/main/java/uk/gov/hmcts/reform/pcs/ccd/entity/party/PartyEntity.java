@@ -68,6 +68,8 @@ public class PartyEntity {
 
     private String orgName;
 
+    /** Set by claimant at case creation. Must not be modified by defendant responses. */
+    @Column(updatable = false)
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo nameKnown;
@@ -82,10 +84,14 @@ public class PartyEntity {
     @OneToOne(cascade = ALL)
     private ContactPreferencesEntity contactPreferences;
 
+    /** Set by claimant at case creation. Must not be modified by defendant responses. */
+    @Column(updatable = false)
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo addressKnown;
 
+    /** Set by claimant at case creation. Must not be modified by defendant responses. */
+    @Column(updatable = false)
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo addressSameAsProperty;

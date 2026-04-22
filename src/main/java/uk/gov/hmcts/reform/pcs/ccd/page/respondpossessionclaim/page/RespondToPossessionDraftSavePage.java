@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 
 import java.util.List;
 
@@ -22,7 +21,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 @Slf4j
 public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
 
-    private final ImmutablePartyFieldValidator immutableFieldValidator;
     private final DraftCaseDataService draftCaseDataService;
 
     @Override
@@ -47,23 +45,6 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
         PCSCase partialUpdate = PCSCase.builder()
             .possessionClaimResponse(defendantAnswersOnly)
             .build();
-
-        if (response.getDefendantContactDetails() != null
-            && response.getDefendantContactDetails().getParty() != null) {
-
-            List<String> violations = immutableFieldValidator.findImmutableFieldViolations(
-                response.getDefendantContactDetails().getParty(),
-                caseRef
-            );
-
-            if (!violations.isEmpty()) {
-                log.error("Draft submit rejected for case {}: immutable field violations: {}", caseRef, violations);
-                List<String> errors = violations.stream()
-                    .map(field -> "Invalid submission: immutable field must not be sent: " + field)
-                    .toList();
-                return error(errors);
-            }
-        }
 
         try {
             draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
