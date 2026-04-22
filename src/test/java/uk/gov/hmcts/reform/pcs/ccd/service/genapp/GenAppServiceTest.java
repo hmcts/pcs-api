@@ -203,8 +203,8 @@ class GenAppServiceTest {
     @ParameterizedTest
     @MethodSource("otherPartiesAgreedScenarios")
     void shouldSetOtherPartiesAgreedDetails(CitizenGenAppRequest genAppRequest,
-                                            YesOrNo expectedOtherPartiesAgreed,
-                                            YesOrNo expectedWithoutNotice,
+                                            VerticalYesNo expectedOtherPartiesAgreed,
+                                            VerticalYesNo expectedWithoutNotice,
                                             String expectedWithoutNoticeReason) {
         // Given
         PCSCase caseData = PCSCase.builder()
@@ -226,30 +226,30 @@ class GenAppServiceTest {
     private static Stream<Arguments> otherPartiesAgreedScenarios() {
         return Stream.of(
             argumentSet("Parties agreed", CitizenGenAppRequest.builder()
-                            .otherPartiesAgreed(YesOrNo.YES)
-                            .withoutNotice(YesOrNo.YES)         // Should be ignored
+                            .otherPartiesAgreed(VerticalYesNo.YES)
+                            .withoutNotice(VerticalYesNo.YES)         // Should be ignored
                             .withoutNoticeReason("some reason") // Should be ignored
                             .build(),
-                        YesOrNo.YES,    // Expected otherPartiesAgreed
+                        VerticalYesNo.YES,    // Expected otherPartiesAgreed
                         null,           // Expected withoutNotice
                         null            // Expected withoutNoticeReason
             ),
             argumentSet("Parties not agreed, without notice", CitizenGenAppRequest.builder()
-                            .otherPartiesAgreed(YesOrNo.NO)
-                            .withoutNotice(YesOrNo.YES)
+                            .otherPartiesAgreed(VerticalYesNo.NO)
+                            .withoutNotice(VerticalYesNo.YES)
                             .withoutNoticeReason("some reason")
                             .build(),
-                        YesOrNo.NO,     // Expected otherPartiesAgreed
-                        YesOrNo.YES,    // Expected withoutNotice
+                        VerticalYesNo.NO,     // Expected otherPartiesAgreed
+                        VerticalYesNo.YES,    // Expected withoutNotice
                         "some reason"   // Expected withoutNoticeReason
             ),
             argumentSet("Parties not agreed, not without notice", CitizenGenAppRequest.builder()
-                            .otherPartiesAgreed(YesOrNo.NO)
-                            .withoutNotice(YesOrNo.NO)
+                            .otherPartiesAgreed(VerticalYesNo.NO)
+                            .withoutNotice(VerticalYesNo.NO)
                             .withoutNoticeReason("some reason") // Should be ignored
                             .build(),
-                        YesOrNo.NO,     // Expected otherPartiesAgreed
-                        YesOrNo.NO,     // Expected withoutNotice
+                        VerticalYesNo.NO,     // Expected otherPartiesAgreed
+                        VerticalYesNo.NO,     // Expected withoutNotice
                         null            // Expected withoutNoticeReason
             )
         );

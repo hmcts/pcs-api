@@ -38,9 +38,9 @@ public class GenAppService {
         }
 
         genAppEntity.setOtherPartiesAgreed(citizenCreateGenApp.getOtherPartiesAgreed());
-        if (citizenCreateGenApp.getOtherPartiesAgreed() == YesOrNo.NO) {
+        if (citizenCreateGenApp.getOtherPartiesAgreed() == VerticalYesNo.NO) {
             genAppEntity.setWithoutNotice(citizenCreateGenApp.getWithoutNotice());
-            if (citizenCreateGenApp.getWithoutNotice() == YesOrNo.YES) {
+            if (citizenCreateGenApp.getWithoutNotice() == VerticalYesNo.YES) {
                 genAppEntity.setWithoutNoticeReason(citizenCreateGenApp.getWithoutNoticeReason());
             }
         }
