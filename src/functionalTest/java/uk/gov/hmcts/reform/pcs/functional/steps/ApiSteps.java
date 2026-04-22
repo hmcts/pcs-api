@@ -230,4 +230,37 @@ public class ApiSteps {
             );
         }
     }
+
+
+    @Step("access code validated")
+    public String validateAccessCode(String caseReference, String accessCode) {
+        String idempotencyKey = UUID.randomUUID().toString();
+        Callable<String> validateCode = () -> {
+            SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsFrontendS2sToken)
+                .header("Idempotency-Key", idempotencyKey)
+                .pathParam("caseReference", caseReference)
+                .body(Map.of("accessCode", accessCode))
+                .when()
+                .post(Endpoints.ValidateAccessCode.getResource())
+                .then()
+                .statusCode(200);
+            return "Success";
+        };
+
+        try {
+            return await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(validateCode, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Validate access code failed: " + caseReference, e
+            );
+        }
+    }
 }

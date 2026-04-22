@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -55,6 +56,9 @@ public class EnforcementOrderEntity {
 
     @OneToOne(mappedBy = "enforcementOrder")
     private WarrantEntity warrantDetails;
+
+    @Column(name = "bailiff_date")
+    private LocalDateTime bailiffDate;
 
     @OneToOne(mappedBy = "enforcementOrder")
     private WarrantOfRestitutionEntity warrantOfRestitutionDetails;

@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
+import lombok.Builder;
+import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -35,20 +37,20 @@ public class DocumentService {
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
-        List<Pair<Document, DocumentType>> allDocuments = getPcsCaseDocuments(pcsCase);
+        List<DocumentHolder> allDocuments = getPcsCaseDocuments(pcsCase);
 
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
 
-        List<Pair<Document, DocumentType>> allDocuments = getWarrantOfRestitutionDocuments(enforcementOrder);
+        List<DocumentHolder> allDocuments = getWarrantOfRestitutionDocuments(enforcementOrder);
 
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
 
-    private List<Pair<Document, DocumentType>> getPcsCaseDocuments(PCSCase pcsCase) {
-        List<Pair<Document, DocumentType>> allDocuments = new ArrayList<>();
+    private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
+        List<DocumentHolder> allDocuments = new ArrayList<>();
 
         allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
 
@@ -75,42 +77,47 @@ public class DocumentService {
         return allDocuments;
     }
 
-    private List<Pair<Document, DocumentType>> getWarrantOfRestitutionDocuments(EnforcementOrder enforcementOrder) {
+    private List<DocumentHolder> getWarrantOfRestitutionDocuments(EnforcementOrder enforcementOrder) {
 
         return new ArrayList<>(mapEvidenceOfDefendantsDocumentsWithType(
                 enforcementOrder.getWarrantOfRestitutionDetails().getAdditionalDocuments()));
     }
 
-    private List<Pair<Document, DocumentType>> mapDocumentsWithType(
-        List<ListValue<Document>> docs, DocumentType type) {
+    private List<DocumentHolder> mapDocumentsWithType(
+            List<ListValue<Document>> docs, DocumentType type) {
 
         if (CollectionUtils.isEmpty(docs)) {
             return Collections.emptyList();
         }
 
         return docs.stream()
-            .map(ListValue::getValue)
-            .filter(Objects::nonNull)
-            .map(doc -> Pair.of(doc, type))
-            .toList();
+                .map(ListValue::getValue)
+                .filter(Objects::nonNull)
+                .map(doc -> DocumentHolder.builder()
+                        .document(doc)
+                        .type(type)
+                        .description("")
+                        .build())
+                .toList();
     }
 
-    private List<Pair<Document, DocumentType>> mapAdditionalDocumentsWithType(
-        List<ListValue<AdditionalDocument>> documents) {
+    private List<DocumentHolder> mapAdditionalDocumentsWithType(
+            List<ListValue<AdditionalDocument>> documents) {
 
         if (CollectionUtils.isEmpty(documents)) {
             return Collections.emptyList();
         }
 
         return ListValueUtils.unwrapListItems(documents).stream()
-            .map(doc -> Pair.of(
-                doc.getDocument(),
-                mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType())
-            ))
+            .map(doc -> DocumentHolder.builder()
+                .document(doc.getDocument())
+                .type(mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType()))
+                .description(doc.getDescription())
+                .build())
             .toList();
     }
 
-    private List<Pair<Document, DocumentType>> mapEvidenceOfDefendantsDocumentsWithType(
+    private List<DocumentHolder> mapEvidenceOfDefendantsDocumentsWithType(
             List<ListValue<EvidenceOfDefendants>> documents) {
 
         if (CollectionUtils.isEmpty(documents)) {
@@ -118,29 +125,31 @@ public class DocumentService {
         }
 
         return ListValueUtils.unwrapListItems(documents).stream()
-            .map(doc -> Pair.of(
-                    doc.getDocument(),
-                    mapEvidenceDocumentTypeToDocumentType(doc.getDocumentType())
-            ))
+            .map(doc -> DocumentHolder.builder()
+                .document(doc.getDocument())
+                .type(mapEvidenceDocumentTypeToDocumentType(doc.getDocumentType()))
+                .description(doc.getDescription())
+                .build())
             .toList();
     }
 
     private List<DocumentEntity> createDocumentEntities(
-        List<Pair<Document, DocumentType>> documents) {
+            List<DocumentHolder> documents) {
 
         if (CollectionUtils.isEmpty(documents)) {
             return List.of();
         }
 
         return documents.stream()
-            .map(pair -> DocumentEntity.builder()
-                .url(pair.getKey().getUrl())
-                .fileName(pair.getKey().getFilename())
-                .binaryUrl(pair.getKey().getBinaryUrl())
-                .categoryId(pair.getKey().getCategoryId())
-                .type(pair.getValue())
-                .build())
-            .toList();
+                .map(holder -> DocumentEntity.builder()
+                        .url(holder.getDocument().getUrl())
+                        .fileName(holder.getDocument().getFilename())
+                        .binaryUrl(holder.getDocument().getBinaryUrl())
+                        .categoryId(holder.getDocument().getCategoryId())
+                        .type(holder.getType())
+                        .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
+                        .build())
+                .toList();
     }
 
     private DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
@@ -168,5 +177,13 @@ public class DocumentService {
             case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
             case OTHER -> DocumentType.OTHER;
         };
+    }
+
+    @Builder
+    @Data
+    private static class DocumentHolder {
+        private Document document;
+        private DocumentType type;
+        private String description;
     }
 }

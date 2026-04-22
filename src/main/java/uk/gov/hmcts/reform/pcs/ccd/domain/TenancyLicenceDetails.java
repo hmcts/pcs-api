@@ -36,14 +36,15 @@ public class TenancyLicenceDetails {
     @CCD(
         label = DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
         hint = "You can enter up to 500 characters",
-        typeOverride = TextArea
+        typeOverride = TextArea,
+        access = {CaseworkerReadAccess.class, CitizenAccess.class}
     )
     private String detailsOfOtherTypeOfTenancyLicence;
 
     @CCD(
         label = "What date did the tenancy or licence begin?",
         hint = "For example, 16 4 2021",
-        access = {CitizenAccess.class}
+        access = {CaseworkerReadAccess.class, CitizenAccess.class}
     )
     private LocalDate tenancyLicenceDate;
 

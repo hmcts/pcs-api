@@ -15,6 +15,9 @@ public class PaymentAgreementService {
 
         PaymentAgreementEntity paymentAgreementEntity = PaymentAgreementEntity.builder()
             .anyPaymentsMade(paymentAgreement.getAnyPaymentsMade())
+            .paymentDetails(paymentAgreement.getPaymentDetails())
+            .repaymentPlanAgreed(paymentAgreement.getRepaymentPlanAgreed())
+            .repaymentAgreedDetails(paymentAgreement.getRepaymentAgreedDetails())
             .build();
 
         return paymentAgreementEntity;

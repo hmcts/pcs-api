@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -24,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.globalsearch.CaseNameHmctsFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -35,6 +35,8 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -95,7 +97,11 @@ class PCSCaseViewTest {
     @Mock
     private ClaimEntity claimEntity;
     @Mock
-    private CaseNameHmctsFormatter caseNameHmctsFormatter;
+    private CaseFieldsView caseFieldsView;
+    @Mock
+    private EnforcementOrderMediator enforcementOrderMediator;
+    @Mock
+    private CaseLinkView caseLinkView;
 
     private PCSCaseView underTest;
 
@@ -108,7 +114,7 @@ class PCSCaseViewTest {
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
                                     alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
-                                    statementOfTruthView, caseNameHmctsFormatter
+                                    statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator
         );
     }
 
@@ -332,17 +338,27 @@ class PCSCaseViewTest {
         verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     @Test
-    void shouldSetCaseNameHmctsField() {
+    void shouldSetCaseFields() {
         // When
-        doNothing().when(caseNameHmctsFormatter).setCaseNameHmctsField(any(PCSCase.class));
+        doNothing().when(caseFieldsView).setCaseFields(any(PCSCase.class));
 
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(caseNameHmctsFormatter).setCaseNameHmctsField(pcsCase);
+        verify(caseFieldsView).setCaseFields(pcsCase);
+    }
+
+    @Test
+    void shouldCallEnforcementOrderMediator() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(enforcementOrderMediator).handleEnforcementRequirements(CASE_REFERENCE, pcsCase);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

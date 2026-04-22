@@ -6,7 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+
+import java.time.LocalDate;
 
 @Builder
 @Data
@@ -15,6 +18,39 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 public class HouseholdCircumstances {
 
     @CCD
-    private YesOrNo dependantChildren;
+    private VerticalYesNo dependantChildren;
+
+    @CCD
+    private VerticalYesNo shareAdditionalCircumstances;
+
+    @CCD(max = 500)
+    private String additionalCircumstancesDetails;
+
+    @CCD
+    private VerticalYesNo exceptionalHardship;
+
+    @CCD(max = 500)
+    private String exceptionalHardshipDetails;
+
+    @CCD(max = 500)
+    private String dependantChildrenDetails;
+
+    @CCD
+    private VerticalYesNo otherDependants;
+
+    @CCD(max = 500)
+    private String otherDependantDetails;
+
+    @CCD
+    private VerticalYesNo otherTenants;
+
+    @CCD(max = 500)
+    private String otherTenantsDetails;
+
+    @CCD
+    private YesNoNotSure alternativeAccommodation;
+
+    @CCD
+    private LocalDate alternativeAccommodationTransferDate;
 
 }

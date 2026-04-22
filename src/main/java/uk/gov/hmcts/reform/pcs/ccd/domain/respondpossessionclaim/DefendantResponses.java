@@ -8,12 +8,15 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
 
 @Builder
 @Data
@@ -23,6 +26,12 @@ public class DefendantResponses {
 
     @CCD
     private YesNoNotSure tenancyTypeCorrect;
+
+    @CCD
+    private String tenancyType;
+
+    @CCD
+    private YesNoNotSure tenancyStartDateCorrect;
 
     @CCD
     private LocalDate tenancyStartDate;
@@ -38,22 +47,19 @@ public class DefendantResponses {
     private BigDecimal rentArrearsAmount;
 
     @CCD
-    private YesNoNotSure noticeReceived;
+    private YesNoNotSure possessionNoticeReceived;
 
     @CCD
     private LocalDate noticeReceivedDate;
 
     @CCD
-    private VerticalYesNo contactByEmail;
-
-    @CCD
     private VerticalYesNo contactByText;
 
     @CCD
-    private VerticalYesNo contactByPost;
+    private VerticalYesNo contactByPhone;
 
     @CCD
-    private VerticalYesNo contactByPhone;
+    private ContactPreferenceType preferenceType;
 
     @CCD
     private YesNoPreferNotToSay freeLegalAdvice;
@@ -68,6 +74,15 @@ public class DefendantResponses {
     private YesNoNotSure landlordRegistered;
 
     @CCD
+    private YesNoNotSure writtenTerms;
+
+    @CCD
+    private VerticalYesNo disputeClaim;
+
+    @CCD
+    private String disputeClaimDetails;
+
+    @CCD
     private YesNoNotSure landlordLicensed;
 
     @CCD(access = {CitizenAccess.class})
@@ -79,4 +94,7 @@ public class DefendantResponses {
     @CCD(access = {CitizenAccess.class})
     private PaymentAgreement paymentAgreement;
 
+    private LanguageUsed languageUsed;
+
+    private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
 }

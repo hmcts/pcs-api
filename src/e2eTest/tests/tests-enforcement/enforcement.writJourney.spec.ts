@@ -4,7 +4,6 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  confirmHCEOHired,
   yourHCEO,
   theNICEWillChoose,
   youCannotApplyForWrit,
@@ -15,7 +14,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { changeNameAddress, enforcementApplication, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, repayments, statementOfTruth } from '@data/page-data-figma/page-data-enforcement-figma';
+import { changeNameAddress, confirmHCEOfficer, enforcementApplication, landRegistryFees, languageUsed, legalCosts, moneyOwed, nameAndAddressForEviction, repayments, statementOfTruth } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -23,7 +22,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
-  
+
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
@@ -67,8 +66,8 @@ test.afterEach(async () => {
   }
   PageContentValidation.finaliseTest();
 });
-
-test.describe('[Enforcement - Writ of Possession]', async () => {
+// Skipping this test case as the feature is not part of Release 1 to save execution time.
+test.describe.skip('[Enforcement - Writ of Possession]', async () => {
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @enforcement @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
@@ -102,12 +101,12 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-        nextPage: confirmHCEOHired.mainHeader
+        nextPage: confirmHCEOfficer.mainHeader
       });
-      await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOHired.errorValidation);
+      await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOfficer.errorValidation);
       await performAction('selectHaveHiredHCEO', {
-        question: confirmHCEOHired.haveYouHiredHCEOQuestion,
-        option: confirmHCEOHired.yesRadioOption,
+        question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
+        option: confirmHCEOfficer.yesRadioOption,
         nextPage: yourHCEO.mainHeader
       });
       await performValidation('mainHeader', yourHCEO.mainHeader);
@@ -195,11 +194,11 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      nextPage: confirmHCEOHired.mainHeader
+      nextPage: confirmHCEOfficer.mainHeader
     });
     await performAction('selectHaveHiredHCEO', {
-      question: confirmHCEOHired.haveYouHiredHCEOQuestion,
-      option: confirmHCEOHired.noRadioOption,
+      question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
+      option: confirmHCEOfficer.noRadioOption,
       nextPage: theNICEWillChoose.mainHeader
     });
     await performAction('clickButton', theNICEWillChoose.continueButton);
@@ -277,11 +276,11 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      nextPage: confirmHCEOHired.mainHeader
+      nextPage: confirmHCEOfficer.mainHeader
     });
     await performAction('selectHaveHiredHCEO', {
-      question: confirmHCEOHired.haveYouHiredHCEOQuestion,
-      option: confirmHCEOHired.noRadioOption,
+      question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
+      option: confirmHCEOfficer.noRadioOption,
       nextPage: theNICEWillChoose.mainHeader
     });
     await performAction('clickButton', theNICEWillChoose.continueButton);

@@ -18,12 +18,13 @@ To build the project execute the following command:
 ```bash
 ./gradlew bootWithCCD
 ```
+
 Above command starts PCS API + CCD & all dependencies
 
 This will start several containers:
 
 | Container                         | Port |
-|-----------------------------------|------|
+| --------------------------------- | ---- |
 | PCS-API                           | 3206 |
 | XUI Manage case (UI Access point) | 3000 |
 | Elastic search                    | 9200 |
@@ -54,7 +55,7 @@ Then set the following environment variables based on the value below or named s
 from the PCS AAT key vault:
 
 | Environment Variable         | Value or Secret Name                                                         |
-|------------------------------|------------------------------------------------------------------------------|
+| ---------------------------- | ---------------------------------------------------------------------------- |
 | LOCATION_REF_URL             | http://rd-location-ref-api-aat.service.core-compute-aat.internal             |
 | DATA_STORE_URL_BASE          | https://ccd-data-store-api-pcs-api-pr-{CHANGE_ID}.preview.platform.hmcts.net |
 | PCS_API_S2S_SECRET           | secret: pcs-api-s2s-secret                                                   |
@@ -65,7 +66,6 @@ from the PCS AAT key vault:
 | PCS_PRD_ADMIN_PASSWORD       | secret: pcs-prd-admin-password                                               |
 | IDAM_PCS_USER_PASSWORD       | secret: idam-pcs-user-password                                               |
 | PCS_SOLICITOR_AUTOMATION_UID | secret: pcs-solicitor-automation-uid                                         |
-
 
 Finally, run the service with the `bootWithCCD` task as above.
 
@@ -93,6 +93,7 @@ To access the swagger documentation for the API, go to http://localhost:3206/swa
 The Functional tests use [Rest Assured](https://rest-assured.io) and [Serenity](https://serenity-bdd.github.io) for reporting, and are located in the `/src/functionalTest` directory.
 
 The following environment variables are needed to run the tests:
+
 - PCS_API_S2S_SECRET
 - TEST_URL
 - IDAM_S2S_AUTH_URL
@@ -104,14 +105,16 @@ The following environment variables are needed to run the tests:
 - S2S_EXPIRED_TOKEN
 
 To run the tests, use:
+
 ```bash
 ./gradlew functional
-````
+```
 
 To run tests based on tags, use the following command (replace `tagName` with the desired tag):
+
 ```bash
 ./gradlew functional -Dtags="tagName"
-````
+```
 
 Additionally, you can configure the tags to run in the pipeline by editing the functional task in the `build.gradle`, line:
 
@@ -127,13 +130,14 @@ This is done with:
 
 ```bash
 cd src/e2eTest
-````
+```
 
 Before running any tests, please install all required packages:
 
 ```bash
 yarn install
-````
+```
+
 Running the tests:
 
 The e2e tests use playwright, and are located in the /src/e2eTest directory.
@@ -149,9 +153,11 @@ The following environment variables are needed to run the tests:
 The e2e suite can be run with the following command:
 
 To run the critical tests/PR tagged tests, use:
+
 ```bash
 yarn test:pr
-````
+```
+
 There are also several custom test scripts available:
 
 - `yarn test:regression` - runs regression tagged tests
@@ -163,6 +169,7 @@ To open generated Allure report
 ```bash
 yarn test:openAllureReport
 ```
+
 Permanent IDAM Users:
 All permanent users needs to be added to ./data/permanent-users.data
 Temporary IDAM Users:
@@ -184,47 +191,48 @@ response for the possession claim fee:
 **Headers**: Content-Type:application/json
 
 **Body**:
+
 ```json
 {
-    "request": {
-        "method": "GET",
-        "urlPath": "/fees-register/fees/lookup",
-        "queryParameters": {
-            "service": {
-                "equalTo": "possession claim"
-            },
-            "jurisdiction1": {
-                "equalTo": "civil"
-            },
-            "jurisdiction2": {
-                "equalTo": "county court"
-            },
-            "channel": {
-                "equalTo": "default"
-            },
-            "event": {
-                "equalTo": "issue"
-            },
-            "amount_or_volume": {
-                "equalTo": "1"
-            },
-            "keyword": {
-                "equalTo": "PossessionCC"
-            }
-        }
-    },
-    "response": {
-        "status": 200,
-        "jsonBody": {
-            "code": "FEE0412",
-            "description": "Recovery of Land - County Court (Test)",
-            "version": 1,
-            "fee_amount": 1234.56
-        },
-        "headers": {
-            "Content-Type": "application/json"
-        }
+  "request": {
+    "method": "GET",
+    "urlPath": "/fees-register/fees/lookup",
+    "queryParameters": {
+      "service": {
+        "equalTo": "possession claim"
+      },
+      "jurisdiction1": {
+        "equalTo": "civil"
+      },
+      "jurisdiction2": {
+        "equalTo": "county court"
+      },
+      "channel": {
+        "equalTo": "default"
+      },
+      "event": {
+        "equalTo": "issue"
+      },
+      "amount_or_volume": {
+        "equalTo": "1"
+      },
+      "keyword": {
+        "equalTo": "PossessionCC"
+      }
     }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "code": "FEE0412",
+      "description": "Recovery of Land - County Court (Test)",
+      "version": 1,
+      "fee_amount": 1234.56
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
 }
 ```
 

@@ -16,13 +16,13 @@ plugins {
   id 'application'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
-  id 'org.springframework.boot' version '3.5.10'
+  id 'org.springframework.boot' version '3.5.13'
   id 'com.github.ben-manes.versions' version '0.53.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.2.3.7755'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
   id 'hmcts.ccd.sdk' version '6.7.2'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2049'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2061'
   id 'io.freefair.lombok' version '9.2.0'
   id 'au.com.dius.pact' version '4.6.20'
   /*
@@ -359,12 +359,12 @@ ext {
   logbackVersion = "1.5.32"
   testcontainersVersion = "2.0.4"
   testcontainersAdditionsVersion = "1.21.4"
-  springFrameworkBootVersion = "3.5.10"
+  springFrameworkBootVersion = "3.5.13"
   lombokVersion = "1.18.44"
   springSecurityVersion = "7.0.4"
   pactVersion = "4.6.20"
   tomcatEmbedVersion = "11.0.18"
-  nettyVersion = "4.1.130.Final"
+  nettyVersion = "4.1.132.Final"
 }
 
 ext['snakeyaml.version'] = '2.0'
@@ -395,7 +395,7 @@ dependencies {
   implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
-  implementation (group: 'com.github.hmcts', name: 'payments-java-client', version: '1.6.8') {
+  implementation (group: 'com.github.hmcts', name: 'payments-java-client', version: '1.7.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'service-auth-provider-client'
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
