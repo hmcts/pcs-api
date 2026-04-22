@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjus
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
@@ -37,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ReasonableAdju
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
@@ -83,6 +86,8 @@ class DefendantResponseServiceTest {
 
     @Captor
     private ArgumentCaptor<DefendantResponseEntity> responseCaptor;
+    @Captor
+    private ArgumentCaptor<CounterClaimEntity> counterClaimCaptor;
 
     private DefendantResponseService underTest;
 
@@ -769,6 +774,94 @@ class DefendantResponseServiceTest {
             Arguments.of("I dispute this claim because the rent has been paid in full"),
             Arguments.of((String) null)
         );
+    }
+
+    @Test
+    void shouldSaveCounterClaimWithBothAmounts() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimAmount(new BigDecimal("250.00"))
+            .estimatedMaxClaimAmount(new BigDecimal("500.00"))
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaim(counterClaim)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
+        CounterClaimEntity saved = counterClaimCaptor.getValue();
+        assertThat(saved.getClaimAmount()).isEqualByComparingTo(new BigDecimal("250.00"));
+        assertThat(saved.getEstimatedMaxClaimAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
+        assertThat(saved.getParty()).isEqualTo(partyEntity);
+    }
+
+    @Test
+    void shouldNotSaveCounterClaimWhenNull() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaim(null)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(pcsCaseEntity, never()).addCounterClaim(any(CounterClaimEntity.class));
+    }
+
+    @Test
+    void shouldSaveCounterClaimWithOnlyClaimAmount() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimAmount(new BigDecimal("1000.50"))
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaim(counterClaim)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
+        CounterClaimEntity saved = counterClaimCaptor.getValue();
+        assertThat(saved.getClaimAmount()).isEqualByComparingTo(new BigDecimal("1000.50"));
+        assertThat(saved.getEstimatedMaxClaimAmount()).isNull();
     }
 
     @ParameterizedTest(name = "languageUsed={0}")
