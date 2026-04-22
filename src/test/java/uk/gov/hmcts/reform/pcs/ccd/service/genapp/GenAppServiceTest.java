@@ -11,9 +11,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
@@ -131,8 +131,8 @@ class GenAppServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(YesOrNo.class)
-    void shouldSetWithin14DaysFlag(YesOrNo within14Days) {
+    @EnumSource(VerticalYesNo.class)
+    void shouldSetWithin14DaysFlag(VerticalYesNo within14Days) {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
             .within14Days(within14Days)
@@ -155,8 +155,8 @@ class GenAppServiceTest {
         // Given
         String expectedHwfReference = "hwf-1234";
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
-            .needHwf(YesOrNo.YES)
-            .appliedForHwf(YesOrNo.YES)
+            .needHwf(VerticalYesNo.YES)
+            .appliedForHwf(VerticalYesNo.YES)
             .hwfReference(expectedHwfReference)
             .build();
 
@@ -171,8 +171,8 @@ class GenAppServiceTest {
         verify(genAppRepository).save(genAppEntityCaptor.capture());
         GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
 
-        assertThat(genAppEntity.getNeedHwf()).isEqualTo(YesOrNo.YES);
-        assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(YesOrNo.YES);
+        assertThat(genAppEntity.getNeedHwf()).isEqualTo(VerticalYesNo.YES);
+        assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(VerticalYesNo.YES);
         assertThat(genAppEntity.getHelpWithFeesEntity().getHwfReference()).isEqualTo(expectedHwfReference);
     }
 
@@ -180,8 +180,8 @@ class GenAppServiceTest {
     void shouldNotSetHwfReferenceIfAppliedForIsNo() {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
-            .needHwf(YesOrNo.YES)
-            .appliedForHwf(YesOrNo.NO)
+            .needHwf(VerticalYesNo.YES)
+            .appliedForHwf(VerticalYesNo.NO)
             .hwfReference("hwf-1234")
             .build();
 
@@ -196,16 +196,16 @@ class GenAppServiceTest {
         verify(genAppRepository).save(genAppEntityCaptor.capture());
         GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
 
-        assertThat(genAppEntity.getNeedHwf()).isEqualTo(YesOrNo.YES);
-        assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(YesOrNo.NO);
+        assertThat(genAppEntity.getNeedHwf()).isEqualTo(VerticalYesNo.YES);
+        assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(VerticalYesNo.NO);
         assertThat(genAppEntity.getHelpWithFeesEntity()).isNull();
     }
 
     @ParameterizedTest
     @MethodSource("otherPartiesAgreedScenarios")
     void shouldSetOtherPartiesAgreedDetails(CitizenGenAppRequest genAppRequest,
-                                            YesOrNo expectedOtherPartiesAgreed,
-                                            YesOrNo expectedWithoutNotice,
+                                            VerticalYesNo expectedOtherPartiesAgreed,
+                                            VerticalYesNo expectedWithoutNotice,
                                             String expectedWithoutNoticeReason) {
         // Given
         PCSCase caseData = PCSCase.builder()
@@ -268,30 +268,30 @@ class GenAppServiceTest {
     private static Stream<Arguments> otherPartiesAgreedScenarios() {
         return Stream.of(
             argumentSet("Parties agreed", CitizenGenAppRequest.builder()
-                            .otherPartiesAgreed(YesOrNo.YES)
-                            .withoutNotice(YesOrNo.YES)         // Should be ignored
+                            .otherPartiesAgreed(VerticalYesNo.YES)
+                            .withoutNotice(VerticalYesNo.YES)         // Should be ignored
                             .withoutNoticeReason("some reason") // Should be ignored
                             .build(),
-                        YesOrNo.YES,    // Expected otherPartiesAgreed
+                        VerticalYesNo.YES,    // Expected otherPartiesAgreed
                         null,           // Expected withoutNotice
                         null            // Expected withoutNoticeReason
             ),
             argumentSet("Parties not agreed, without notice", CitizenGenAppRequest.builder()
-                            .otherPartiesAgreed(YesOrNo.NO)
-                            .withoutNotice(YesOrNo.YES)
+                            .otherPartiesAgreed(VerticalYesNo.NO)
+                            .withoutNotice(VerticalYesNo.YES)
                             .withoutNoticeReason("some reason")
                             .build(),
-                        YesOrNo.NO,     // Expected otherPartiesAgreed
-                        YesOrNo.YES,    // Expected withoutNotice
+                        VerticalYesNo.NO,     // Expected otherPartiesAgreed
+                        VerticalYesNo.YES,    // Expected withoutNotice
                         "some reason"   // Expected withoutNoticeReason
             ),
             argumentSet("Parties not agreed, not without notice", CitizenGenAppRequest.builder()
-                            .otherPartiesAgreed(YesOrNo.NO)
-                            .withoutNotice(YesOrNo.NO)
+                            .otherPartiesAgreed(VerticalYesNo.NO)
+                            .withoutNotice(VerticalYesNo.NO)
                             .withoutNoticeReason("some reason") // Should be ignored
                             .build(),
-                        YesOrNo.NO,     // Expected otherPartiesAgreed
-                        YesOrNo.NO,     // Expected withoutNotice
+                        VerticalYesNo.NO,     // Expected otherPartiesAgreed
+                        VerticalYesNo.NO,     // Expected withoutNotice
                         null            // Expected withoutNoticeReason
             )
         );
