@@ -50,9 +50,7 @@ class ClaimViewTest {
         when(claimEntity.getClaimCosts()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getPreActionProtocolFollowed()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getMediationAttempted()).thenReturn(VerticalYesNo.NO);
-        when(claimEntity.getMediationDetails()).thenReturn("mediation details");
         when(claimEntity.getSettlementAttempted()).thenReturn(VerticalYesNo.YES);
-        when(claimEntity.getSettlementDetails()).thenReturn("settlement details");
         when(claimEntity.getAdditionalDefendants()).thenReturn(VerticalYesNo.NO);
         when(claimEntity.getUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getAdditionalUnderlesseesOrMortgagees()).thenReturn(VerticalYesNo.NO);
@@ -70,9 +68,7 @@ class ClaimViewTest {
         assertThat(pcsCase.getClaimingCostsWanted()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getMediationAttempted()).isEqualTo(VerticalYesNo.NO);
-        assertThat(pcsCase.getMediationAttemptedDetails()).isEqualTo("mediation details");
         assertThat(pcsCase.getSettlementAttempted()).isEqualTo(VerticalYesNo.YES);
-        assertThat(pcsCase.getSettlementAttemptedDetails()).isEqualTo("settlement details");
         assertThat(pcsCase.getAddAnotherDefendant()).isEqualTo(VerticalYesNo.NO);
         assertThat(pcsCase.getHasUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.NO);

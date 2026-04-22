@@ -86,7 +86,7 @@ public class PreActionProtocol implements CcdPageConfiguration {
                         <li class="govuk-!-font-size-19 govuk-!-margin-bottom-3">applied for arrears to be paid by the
                         Department for Work and Pensions (DWP) by deductions from the defendants’ benefits</li>
                         <li class="govuk-!-font-size-19 govuk-!-margin-bottom-3">
-                            Offered to assist the defendants in a claim for housing benefit or Universal Credit
+                            offered to assist the defendants in a claim for housing benefit or Universal Credit
                         </li>
                     </ul>
 

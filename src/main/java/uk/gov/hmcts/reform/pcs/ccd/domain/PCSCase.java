@@ -207,6 +207,7 @@ public class PCSCase {
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
+    @Deprecated
     private String mediationAttemptedDetails;
 
     @CCD(
@@ -219,6 +220,7 @@ public class PCSCase {
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
+    @Deprecated
     private String settlementAttemptedDetails;
 
     @CCD(
