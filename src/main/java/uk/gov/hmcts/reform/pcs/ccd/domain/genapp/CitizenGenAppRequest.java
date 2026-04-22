@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 @Builder
 @Data
@@ -15,11 +15,11 @@ public class CitizenGenAppRequest {
 
     private GenAppType applicationType;
 
-    private YesOrNo within14Days;
+    private VerticalYesNo within14Days;
 
-    private YesOrNo needHwf;
+    private VerticalYesNo needHwf;
 
-    private YesOrNo appliedForHwf;
+    private VerticalYesNo appliedForHwf;
 
     @CCD(max = 16)
     private String hwfReference;

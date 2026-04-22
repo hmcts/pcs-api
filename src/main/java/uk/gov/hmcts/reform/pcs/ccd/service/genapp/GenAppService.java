@@ -2,8 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -31,7 +31,7 @@ public class GenAppService {
             .appliedForHwf(citizenCreateGenApp.getAppliedForHwf())
             .build();
 
-        if (citizenCreateGenApp.getAppliedForHwf() == YesOrNo.YES && citizenCreateGenApp.getHwfReference() != null) {
+        if (citizenCreateGenApp.getAppliedForHwf() == VerticalYesNo.YES && citizenCreateGenApp.getHwfReference() != null) {
             HelpWithFeesEntity helpWithFeesEntity = new HelpWithFeesEntity();
             helpWithFeesEntity.setHwfReference(citizenCreateGenApp.getHwfReference());
             genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
