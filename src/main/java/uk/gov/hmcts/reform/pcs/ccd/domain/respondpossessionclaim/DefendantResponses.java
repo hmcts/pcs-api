@@ -100,7 +100,4 @@ public class DefendantResponses {
     private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
     @CCD
     private YesOrNo makeCounterClaim;
-
-    @CCD(access = {CitizenAccess.class})
-    private CounterClaim counterClaim;
 }
