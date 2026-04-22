@@ -178,8 +178,7 @@ public class DocumentService {
                  TENANCY_AGREEMENT,
                  TENANCY_LICENCE,
                  OCCUPATION_LICENCE,
-                 POSSESSION_NOTICE,
-                 NOTICE_SERVED -> CaseFileCategory.PROPERTY_DOCUMENTS;
+                 POSSESSION_NOTICE -> CaseFileCategory.PROPERTY_DOCUMENTS;
             case WITNESS_STATEMENT,
                  CERTIFICATE_OF_SERVICE,
                  CORRESPONDENCE_FROM_DEFENDANT,
@@ -188,7 +187,7 @@ public class DocumentService {
                  INSPECTION_OR_REPORT -> CaseFileCategory.EVIDENCE;
             case CERTIFICATE_OF_SUITABILITY_AS_LF,
                  LEGAL_AID_CERTIFICATE -> CaseFileCategory.CORRESPONDENCE;
-            case LETTER_FROM_CLAIMANT,
+            case NOTICE_SERVED ,
                  POLICE_REPORT,
                  OTHER -> CaseFileCategory.UNCATEGORISED;
         };
