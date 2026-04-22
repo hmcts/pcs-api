@@ -26,12 +26,12 @@
     "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"
   },
   "claimAgainstTrespassers": "NO",
-  "orgNameFound": "Yes",
+  "orgNameFound": "YES",
   "claimantName": "Possession Claims Solicitor Org",
   "isClaimantNameCorrect": "YES",
   "claimantContactEmail": "pcs-solicitor1@test.com",
   "isCorrectClaimantContactEmail": "YES",
-  "orgAddressFound": "Yes",
+  "orgAddressFound": "YES",
   "organisationAddress": {
     "AddressLine1": "Ministry Of Justice",
     "AddressLine2": "Seventh Floor 102 Petty France",
@@ -65,7 +65,7 @@
   "secureOrFlexibleDiscretionaryGroundsAlt": [
   ],
   "antiSocialCondition1OfS84AGround": "Antisocial behaviour reasons.",
-  "showReasonsForGroundsPage": "Yes",
+  "showReasonsForGroundsPage": "YES",
   "preActionProtocolCompleted": "NO",
   "mediationAttempted": "NO",
   "settlementAttempted": "NO",
@@ -73,7 +73,7 @@
   "claimantNamePossessiveForm": "Possession Claims Solicitor Org’s",
   "claimantCircumstancesSelect": "NO",
   "hasDefendantCircumstancesInfo": "NO",
-  "suspensionOfRTB_ShowHousingActsPage": "Yes",
+  "suspensionOfRTB_ShowHousingActsPage": "YES",
   "demotionOfTenancy_ShowHousingActsPage": "NO",
   "suspensionToBuyDemotionOfTenancyPages": "NO",
   "alternativesToPossession": [
