@@ -285,7 +285,7 @@ class DocumentServiceTest {
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.NOTICE_SERVED);
         assertThat(entity.getFileName()).isEqualTo("file4");
-        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED.getId());
     }
 
     @Test
