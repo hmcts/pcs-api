@@ -44,7 +44,7 @@ class ASBQuestionsWalesTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-
+        
         setPageUnderTest(new ASBQuestionsWales(textAreaValidationService));
     }
 

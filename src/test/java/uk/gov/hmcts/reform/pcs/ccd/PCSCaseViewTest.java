@@ -13,7 +13,6 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -99,8 +98,6 @@ class PCSCaseViewTest {
     @Mock
     private CaseFieldsView caseFieldsView;
     @Mock
-    private EnforcementOrderMediator enforcementOrderMediator;
-    @Mock
     private CaseLinkView caseLinkView;
 
     private PCSCaseView underTest;
@@ -114,7 +111,7 @@ class PCSCaseViewTest {
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
                                     alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
-                                    statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator
+                                    statementOfTruthView, caseFieldsView, caseLinkView
         );
     }
 
@@ -350,15 +347,6 @@ class PCSCaseViewTest {
 
         // Then
         verify(caseFieldsView).setCaseFields(pcsCase);
-    }
-
-    @Test
-    void shouldCallEnforcementOrderMediator() {
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        verify(enforcementOrderMediator).handleEnforcementRequirements(CASE_REFERENCE, pcsCase);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

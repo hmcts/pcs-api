@@ -33,6 +33,7 @@ public class JacksonConfiguration {
             .enable(INFER_BUILDER_TYPE_BINDINGS)
             .disable(AUTO_CLOSE_JSON_CONTENT)
             .defaultPropertyInclusion(JsonInclude.Value.ALL_NON_NULL)
+            .addMixIn(YesOrNo.class, YesOrNoMixin.class)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)

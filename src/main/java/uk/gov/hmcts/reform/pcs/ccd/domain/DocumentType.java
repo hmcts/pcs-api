@@ -24,7 +24,6 @@ public enum DocumentType implements HasLabel {
     INSPECTION_OR_REPORT("Inspection or report"),
     CERTIFICATE_OF_SUITABILITY_AS_LF("Certificate of suitability as litigation friend"),
     LEGAL_AID_CERTIFICATE("Legal aid certificate"),
-    POLICE_REPORT("Police report"),
     OTHER("Other document");
 
     private final String label;

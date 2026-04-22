@@ -13,7 +13,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -72,7 +71,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final StatementOfTruthView statementOfTruthView;
     private final CaseFieldsView caseFieldsView;
     private final CaseLinkView caseLinkView;
-    private final EnforcementOrderMediator enforcementOrderMediator;
+
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -83,10 +82,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         long caseReference = request.caseRef();
         State state = request.state();
         PCSCase pcsCase = getSubmittedCase(caseReference);
+
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
-        enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
 

@@ -503,8 +503,7 @@ public class PCSCase {
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
     @CCD(
-        access = {DefendantAccess.class},
-        searchable = false
+        access = {DefendantAccess.class}
     )
     private PossessionClaimResponse possessionClaimResponse;
 
@@ -524,10 +523,7 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
-    @CCD(
-        access = DefendantAccess.class,
-        searchable = false
-    )
+    @CCD(access = DefendantAccess.class)
     private CitizenGenAppRequest citizenGenAppRequest;
 
     @CCD(
@@ -567,11 +563,5 @@ public class PCSCase {
         access = {GlobalSearchAccess.class}
     )
     private DynamicList caseManagementCategory;
-
-    @CCD(searchable = false)
-    private String confirmEvictionSummaryMarkup;
-
-    @CCD(searchable = false, access = {ClaimantAccess.class})
-    private YesOrNo showConfirmEvictionJourney;
 
 }

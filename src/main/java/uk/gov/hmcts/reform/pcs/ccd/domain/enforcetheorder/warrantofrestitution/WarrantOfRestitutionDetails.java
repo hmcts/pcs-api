@@ -75,4 +75,5 @@ public class WarrantOfRestitutionDetails {
     @JsonUnwrapped
     @CCD
     private AdditionalInformation additionalInformation;
+
 }

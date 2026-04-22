@@ -11,8 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.W
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantOfRestitutionEntity;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -76,43 +74,5 @@ public class WarrantOfRestitutionMapper {
         }
 
         currentEnfOrder.setRawWarrantRestDetails(rawWarrantRestDetails);
-    }
-
-    public WarrantOfRestitutionEntity toEntity(EnforcementOrder enforcementOrder,
-                                               EnforcementOrderEntity enforcementOrderEntity) {
-        WarrantOfRestitutionEntity warrantOfRestitutionEntity = WarrantOfRestitutionEntity.builder()
-                .enforcementOrder(enforcementOrderEntity).build();
-        if (enforcementOrder.getWarrantOfRestitutionDetails() != null) {
-            WarrantOfRestitutionDetails warrantOfRestitutionDetails = enforcementOrder.getWarrantOfRestitutionDetails();
-            mapDefendantReturned(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
-            mapAdditionalInformation(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
-            mapPropertyAccessDetails(warrantOfRestitutionEntity, warrantOfRestitutionDetails);
-        }
-        return warrantOfRestitutionEntity;
-    }
-
-    private void mapDefendantReturned(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
-                                      WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
-        warrantOfRestitutionEntity.setHowDefendantsReturned(warrantOfRestitutionDetails.getHowDefendantsReturned());
-    }
-
-    private void mapAdditionalInformation(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
-                                          WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
-        if (warrantOfRestitutionDetails.getAdditionalInformation() != null) {
-            warrantOfRestitutionEntity.setAdditionalInformationSelect(
-                    warrantOfRestitutionDetails.getAdditionalInformation().getAdditionalInformationSelect());
-            warrantOfRestitutionEntity.setAdditionalInformationDetails(
-                    warrantOfRestitutionDetails.getAdditionalInformation().getAdditionalInformationDetails());
-        }
-    }
-
-    private void mapPropertyAccessDetails(WarrantOfRestitutionEntity warrantOfRestitutionEntity,
-                                          WarrantOfRestitutionDetails warrantOfRestitutionDetails) {
-        if (warrantOfRestitutionDetails.getPropertyAccessDetails() != null) {
-            warrantOfRestitutionEntity.setIsDifficultToAccessProperty(
-                    warrantOfRestitutionDetails.getPropertyAccessDetails().getIsDifficultToAccessProperty());
-            warrantOfRestitutionEntity.setClarificationOnAccessDifficultyText(
-                    warrantOfRestitutionDetails.getPropertyAccessDetails().getClarificationOnAccessDifficultyText());
-        }
     }
 }

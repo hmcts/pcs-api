@@ -10,6 +10,5 @@ public enum EventId {
     citizenCreateGenApp,
     createTestCase,
     createCaseLink,
-    maintainCaseLink,
-    confirmEviction
+    maintainCaseLink
 }

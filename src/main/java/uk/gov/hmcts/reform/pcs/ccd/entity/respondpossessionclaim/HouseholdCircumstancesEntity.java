@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 
@@ -50,19 +50,19 @@ public class HouseholdCircumstancesEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo dependantChildren;
+    private YesOrNo dependantChildren;
 
     private String dependantChildrenDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo otherDependants;
+    private YesOrNo otherDependants;
 
     private String otherDependantDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo otherTenants;
+    private YesOrNo otherTenants;
 
     private String otherTenantsDetails;
 
@@ -74,23 +74,23 @@ public class HouseholdCircumstancesEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo shareAdditionalCircumstances;
+    private YesOrNo shareAdditionalCircumstances;
 
     private String additionalCircumstancesDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo exceptionalHardship;
+    private YesOrNo exceptionalHardship;
 
     private String exceptionalHardshipDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo shareIncomeExpenseDetails;
+    private YesOrNo shareIncomeExpenseDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo universalCredit;
+    private YesOrNo universalCredit;
 
     private LocalDate ucApplicationDate;
 
@@ -110,7 +110,7 @@ public class HouseholdCircumstancesEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo priorityDebts;
+    private YesOrNo priorityDebts;
 
     private BigDecimal debtTotal;
 

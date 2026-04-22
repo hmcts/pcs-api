@@ -3,6 +3,5 @@ export const caseSummary = {
   mainHeader: 'Case Summary',
   nextStepEventList: 'Next step',
   enforceTheOrderEvent: 'Enforce the order',
-  confirmEvictionEvent: 'Confirm the eviction details',
   go: "Go"
 }

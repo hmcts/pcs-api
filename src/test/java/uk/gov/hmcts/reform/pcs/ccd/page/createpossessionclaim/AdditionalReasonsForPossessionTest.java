@@ -46,7 +46,7 @@ class AdditionalReasonsForPossessionTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-
+        
         setPageUnderTest(new AdditionalReasonsForPossession(textAreaValidationService));
     }
 

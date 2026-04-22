@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
-import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
 
 import java.util.List;
 import java.util.Set;
@@ -28,10 +27,9 @@ public class AccessCodeGenerationService {
     private final PartyAccessCodeRepository partyAccessCodeRepo;
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerator accessCodeGenerator;
-    private final PartyAccessCodeHashingService hashingService;
 
     public PartyAccessCodeEntity createPartyAccessCodeEntity(PcsCaseEntity  pcsCaseEntity, UUID partyId) {
-        String code = hashingService.encodeForStorage(accessCodeGenerator.generateAccessCode());
+        String code = accessCodeGenerator.generateAccessCode();
 
         return PartyAccessCodeEntity.builder()
             .partyId(partyId)

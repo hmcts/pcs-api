@@ -1,7 +1,7 @@
 {
   "data": {
-    "hasUnsubmittedCaseData": "No",
-    "orgNameFound": "Yes",
+    "hasUnsubmittedCaseData": "NO",
+    "orgNameFound": "YES",
     "claimantName": "Possession Claims Solicitor Org",
     "propertyAddress": {
       "AddressLine1": "1",
@@ -18,7 +18,7 @@
       "PostCode": "SW1H 9AJ",
       "Country": "United Kingdom"
     },
-    "orgAddressFound": "Yes",
+    "orgAddressFound": "YES",
     "claimantContactEmail": "pcs-solicitor-automation@test.com",
     "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ",
     "legislativeCountry": "England",

@@ -16,7 +16,7 @@ public class WarrantOfRestitutionPageConfigurer implements PageConfigurer {
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
-            .add(new PeopleYouWantToEvictWarrantRestPlaceholder())
+            .add(new PeopleWhoWillBeEvictedWarrantRestPlaceholder())
             .add(new ShareEvidenceWithJudgePage())
             .add(explainHowDefendantsReturnedPage)
             .add(new DefendantAtPropertyPage())

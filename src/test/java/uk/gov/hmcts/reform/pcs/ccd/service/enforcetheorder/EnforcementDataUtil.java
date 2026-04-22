@@ -14,8 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCateg
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -26,7 +24,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory.VULNERABLE_CHILDREN;
 
 public final class EnforcementDataUtil {
 
@@ -138,22 +135,5 @@ public final class EnforcementDataUtil {
         return DynamicStringList.builder()
                 .listItems(listItems)
                 .build();
-    }
-
-    public static RiskProfileEntity createExpectedRiskProfileEntity(EnforcementOrderEntity enforcementOrderEntity) {
-        RiskProfileEntity entity = new RiskProfileEntity();
-        entity.setEnforcementOrder(enforcementOrderEntity);
-        entity.setAnyRiskToBailiff(YesNoNotSure.YES);
-        entity.setViolentDetails("Violent behavior reported");
-        entity.setFirearmsDetails("Firearms present");
-        entity.setCriminalDetails("Criminal history");
-        entity.setVerbalThreatsDetails("Verbal threats made");
-        entity.setProtestGroupDetails("Member of protest group");
-        entity.setPoliceSocialServicesDetails("Police involvement");
-        entity.setAnimalsDetails("Aggressive dogs on premises");
-        entity.setVulnerablePeoplePresent(YesNoNotSure.YES);
-        entity.setVulnerableCategory(VULNERABLE_CHILDREN);
-        entity.setVulnerableReasonText("Young children present");
-        return entity;
     }
 }
