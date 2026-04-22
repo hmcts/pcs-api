@@ -10,11 +10,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
@@ -249,11 +248,11 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .dependantChildren(YesOrNo.YES)
+            .dependantChildren(VerticalYesNo.YES)
             .build();
 
         PaymentAgreement paymentAgreement = PaymentAgreement.builder()
-            .anyPaymentsMade(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .anyPaymentsMade(VerticalYesNo.YES)
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()
