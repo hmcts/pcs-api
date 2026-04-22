@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -19,9 +20,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,8 +41,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class GenAppServiceTest {
 
+    private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
+            .atTime(12, 51, 19);
+
     @Mock
     private GenAppRepository genAppRepository;
+    @Mock
+    private Clock utcClock;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
     @Mock
@@ -48,7 +59,9 @@ class GenAppServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new GenAppService(genAppRepository);
+        stubUtcClock(TEST_UTC_DATE_TIME);
+
+        underTest = new GenAppService(genAppRepository, utcClock);
     }
 
     @Test
@@ -244,6 +257,49 @@ class GenAppServiceTest {
         assertThat(genAppEntityCaptor.getValue().getLanguageUsed()).isEqualTo(languageUsed);
     }
 
+    @Test
+    void shouldSetApplicationSubmittedDate() {
+        // Given
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .citizenGenAppRequest(genAppRequest)
+            .build();
+
+        // When
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+
+        // Then
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        assertThat(genAppEntityCaptor.getValue().getApplicationSubmittedDate()).isEqualTo(TEST_UTC_DATE_TIME);
+    }
+
+    @Test
+    void shouldCreateAndSetStatementOfTruth() {
+        // Given
+        String expectedFullName = "Expected full name";
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
+            .sotFullName(expectedFullName)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .citizenGenAppRequest(genAppRequest)
+            .build();
+
+        // When
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+
+        // Then
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+
+        StatementOfTruthEntity statementOfTruth = genAppEntityCaptor.getValue().getStatementOfTruth();
+        assertThat(statementOfTruth.getAccepted()).isEqualTo(YesOrNo.YES);
+        assertThat(statementOfTruth.getFullName()).isEqualTo(expectedFullName);
+        assertThat(statementOfTruth.getCompletedDate()).isEqualTo(TEST_UTC_DATE_TIME);
+    }
+
     private static Stream<Arguments> otherPartiesAgreedScenarios() {
         return Stream.of(
             argumentSet("Parties agreed", CitizenGenAppRequest.builder()
@@ -274,6 +330,12 @@ class GenAppServiceTest {
                         null            // Expected withoutNoticeReason
             )
         );
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private void stubUtcClock(LocalDateTime fixedTestDate) {
+        when(utcClock.instant()).thenReturn(fixedTestDate.toInstant(ZoneOffset.UTC));
+        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
     }
 
 }
