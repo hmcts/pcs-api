@@ -52,11 +52,6 @@ public class FlagDetailsEntity {
 
     private String flagCode;
 
-    private String name;
-
-    @Column(name = "name_cy")
-    private String nameWelsh;
-
     private String subTypeValue;
 
     @Column(name = "sub_type_value_cy")
@@ -68,8 +63,6 @@ public class FlagDetailsEntity {
 
     @Column(name = "other_description_cy")
     private String otherDescriptionWelsh;
-
-    private Boolean hearingRelevant;
 
     private String flagComment;
 
@@ -84,7 +77,5 @@ public class FlagDetailsEntity {
 
     @Column(name = "status")
     private String defaultStatus;
-
-    private Boolean availableExternally;
 }
 

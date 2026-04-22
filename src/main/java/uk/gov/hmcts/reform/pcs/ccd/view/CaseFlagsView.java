@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -25,6 +26,8 @@ public class CaseFlagsView {
 
     private static final String RESPONDENT = "respondent";
     private static final String CLAIMANT = "claimant";
+
+    private final RefDataFlagsRepository refDataFlagsRepository;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
 
@@ -49,8 +52,10 @@ public class CaseFlagsView {
                 .id(flagDetailsEntity.getId().toString())
                 .value(FlagDetail.builder()
                    .flagCode(flagDetailsEntity.getFlagCode())
-                   .name(flagDetailsEntity.getName())
-                   .nameCy(flagDetailsEntity.getNameWelsh())
+                   .name(refDataFlagsRepository.findByFlagCode(
+                       flagDetailsEntity.getFlagCode()).orElseThrow().getFlagName())
+                   .nameCy(refDataFlagsRepository.findByFlagCode(
+                       flagDetailsEntity.getFlagCode()).orElseThrow().getFlagNameWelsh())
                    .flagComment(flagDetailsEntity.getFlagComment())
                    .flagCommentCy(flagDetailsEntity.getFlagCommentWelsh())
                    .status(flagDetailsEntity.getDefaultStatus())
@@ -62,8 +67,10 @@ public class CaseFlagsView {
                    .dateTimeModified(flagDetailsEntity.getDateTimeModified())
                    .otherDescription(flagDetailsEntity.getOtherDescription())
                    .otherDescriptionCy(flagDetailsEntity.getOtherDescriptionWelsh())
-                   .hearingRelevant(YesOrNoConverter.toYesOrNo(flagDetailsEntity.getHearingRelevant()))
-                   .availableExternally(YesOrNoConverter.toYesOrNo(flagDetailsEntity.getAvailableExternally()))
+                   .hearingRelevant(YesOrNoConverter.toYesOrNo(refDataFlagsRepository.findByFlagCode(
+                       flagDetailsEntity.getFlagCode()).orElseThrow().getHearingRelevant()))
+                   .availableExternally(YesOrNoConverter.toYesOrNo(refDataFlagsRepository.findByFlagCode(
+                       flagDetailsEntity.getFlagCode()).orElseThrow().getAvailableExternally()))
                    .path(flagDetailsEntity.getPaths().stream()
                              .map(pathEntity -> ListValue.<String>builder()
                                 .id(pathEntity.getId().toString())

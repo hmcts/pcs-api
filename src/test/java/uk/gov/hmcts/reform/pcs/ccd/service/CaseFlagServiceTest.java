@@ -2,6 +2,10 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
@@ -13,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,13 +31,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(MockitoExtension.class)
 class CaseFlagServiceTest {
 
+    @Mock
+    private RefDataFlagsRepository refDataFlagsRepository;
+
+    @InjectMocks
     private CaseFlagService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseFlagService();
+        underTest = new CaseFlagService(refDataFlagsRepository);
     }
 
     @Test
@@ -56,7 +66,6 @@ class CaseFlagServiceTest {
         List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
         assertEquals("CF0002", savedFlags.getFirst().getFlagCode());
         assertEquals("Complicated case", savedFlags.getFirst().getFlagComment());
-        assertEquals("Complex Case", savedFlags.getFirst().getName());
         assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
         assertEquals(1, savedFlags.size());
 
@@ -127,7 +136,6 @@ class CaseFlagServiceTest {
         List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
         assertEquals("CF0002", savedFlags.getFirst().getFlagCode());
         assertEquals("Complicated case", savedFlags.getFirst().getFlagComment());
-        assertEquals("Complex Case", savedFlags.getFirst().getName());
         assertEquals(2, savedFlags.size());
         assertThat(savedFlags).extracting(FlagDetailsEntity::getFlagCode).containsExactly("CF0002", "CF0008");
         assertThat(savedFlags.getLast().getFlagComment()).isEqualTo("Police arrest inactive");
@@ -284,10 +292,7 @@ class CaseFlagServiceTest {
             .id(id)
             .defaultStatus("Active")
             .flagCode("CF0008")
-            .name("Power of arrest with Police")
             .flagComment("Police arrest inactive")
-            .availableExternally(YesOrNoConverter.toBoolean(YesOrNo.NO))
-            .hearingRelevant(YesOrNoConverter.toBoolean(YesOrNo.YES))
             .paths(createFlagPathEntity())
             .dateTimeCreated(LocalDateTime.now())
             .build();

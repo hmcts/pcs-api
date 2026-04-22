@@ -432,6 +432,9 @@ public class PCSCase {
     )
     private CompletionNextStep completionNextStep;
 
+    @CCD(searchable = false)
+    private String endButtonLabel;
+
     @JsonUnwrapped(prefix = "possessionGroundsWales_")
     private GroundsForPossessionWales groundsForPossessionWales;
 
@@ -503,7 +506,8 @@ public class PCSCase {
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
     @CCD(
-        access = {DefendantAccess.class}
+        access = {DefendantAccess.class},
+        searchable = false
     )
     private PossessionClaimResponse possessionClaimResponse;
 
@@ -523,7 +527,10 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
-    @CCD(access = DefendantAccess.class)
+    @CCD(
+        access = DefendantAccess.class,
+        searchable = false
+    )
     private CitizenGenAppRequest citizenGenAppRequest;
 
     @CCD(
@@ -563,6 +570,12 @@ public class PCSCase {
         access = {GlobalSearchAccess.class}
     )
     private DynamicList caseManagementCategory;
+
+    @CCD(searchable = false)
+    private String confirmEvictionSummaryMarkup;
+
+    @CCD(searchable = false, access = {ClaimantAccess.class})
+    private YesOrNo showConfirmEvictionJourney;
 
     @CCD(
         access = {InternalCaseFlagAccess.class},
