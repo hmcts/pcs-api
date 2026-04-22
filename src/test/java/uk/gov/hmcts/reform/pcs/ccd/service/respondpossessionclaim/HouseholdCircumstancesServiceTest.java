@@ -114,10 +114,10 @@ class HouseholdCircumstancesServiceTest {
     void shouldMapUniversalCreditAndPriorityDebtFields() {
         // Given
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .dependantChildren(YesOrNo.NO)
-            .universalCredit(YesOrNo.YES)
+            .dependantChildren(VerticalYesNo.NO)
+            .universalCredit(VerticalYesNo.YES)
             .ucApplicationDate(LocalDate.of(2024, 5, 12))
-            .priorityDebts(YesOrNo.YES)
+            .priorityDebts(VerticalYesNo.YES)
             .debtTotal(new BigDecimal("1500.00"))
             .debtContribution(new BigDecimal("200.00"))
             .debtContributionFrequency(RecurrenceFrequency.MONTHLY)
@@ -128,10 +128,10 @@ class HouseholdCircumstancesServiceTest {
 
         // Then
         assertThat(entity).isNotNull();
-        assertThat(entity.getDependantChildren()).isEqualTo(YesOrNo.NO);
-        assertThat(entity.getUniversalCredit()).isEqualTo(YesOrNo.YES);
+        assertThat(entity.getDependantChildren()).isEqualTo(VerticalYesNo.NO);
+        assertThat(entity.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
         assertThat(entity.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 5, 12));
-        assertThat(entity.getPriorityDebts()).isEqualTo(YesOrNo.YES);
+        assertThat(entity.getPriorityDebts()).isEqualTo(VerticalYesNo.YES);
         assertThat(entity.getDebtTotal()).isEqualByComparingTo("1500.00");
         assertThat(entity.getDebtContribution()).isEqualByComparingTo("200.00");
         assertThat(entity.getDebtContributionFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
