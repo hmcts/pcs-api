@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
@@ -88,7 +87,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -204,12 +202,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
         SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
         when(savingPageBuilderFactory.create(any(), any(EventId.class))).thenReturn(savingPageBuilder);
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
-
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
         when(userDetails.getUid()).thenReturn(USER_ID.toString());
-
-        PartyEntity claimant = mock(PartyEntity.class);
-        lenient().when(claimant.getOrgName()).thenReturn(RESPONSIBLE_PARTY_LTD);
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, securityContextService,

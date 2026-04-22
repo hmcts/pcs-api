@@ -99,6 +99,9 @@ public class PaymentService {
             feePaymentEntity.setExternalReference(serviceRequestUpdate.getPayment().getPaymentReference());
             feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(serviceRequestUpdate.getServiceRequestStatus()));
             feePaymentRepository.save(feePaymentEntity);
+        } else {
+            log.error("Unable to find a payment with the service request reference : {}",
+                      serviceRequestUpdate.getServiceRequestReference());
         }
     }
 

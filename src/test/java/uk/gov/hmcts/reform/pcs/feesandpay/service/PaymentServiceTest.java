@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
+import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,7 +85,7 @@ class PaymentServiceTest {
     @Test
     void shouldCreateServiceRequestSuccessfully() {
         // Given
-        FeeDetails feeDetails = mock(FeeDetails.class);
+        FeeDetails feeDetails = Instancio.create(FeeDetails.class);
         paymentsClientDependencies(feeDetails);
         ClaimPartyEntity claimPartyEntity = claimPartyEntity();
         PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity);
@@ -104,7 +105,7 @@ class PaymentServiceTest {
     @Test
     void shouldCreateServiceRequest_NoPCSCase() {
         // Given
-        FeeDetails feeDetails = mock(FeeDetails.class);
+        FeeDetails feeDetails = Instancio.create(FeeDetails.class);
         when(pcsCaseService.loadCase(anyLong())).thenThrow(new CaseNotFoundException(222L));
 
         // When
@@ -166,7 +167,7 @@ class PaymentServiceTest {
     @Test
     void shouldSaveNewFeePaymentWithExpectedFields() {
         // Given
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
+        ClaimEntity claimEntity = new ClaimEntity();
         FeeDto feeDto = createFeeDto();
 
         // When
@@ -185,7 +186,7 @@ class PaymentServiceTest {
     @Test
     void shouldPersistFeePaymentWhenCreatingServiceRequest() {
         // Given
-        FeeDetails feeDetails = mock(FeeDetails.class);
+        FeeDetails feeDetails = Instancio.create(FeeDetails.class);
         paymentsClientDependencies(feeDetails);
         PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity());
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
@@ -216,11 +217,10 @@ class PaymentServiceTest {
     }
 
     private PcsCaseEntity setupPcsCase(ClaimPartyEntity claimPartyEntity) {
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-        lenient().when(claimEntity.getClaimParties()).thenReturn(List.of(claimPartyEntity));
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
-        return pcsCaseEntity;
+        ClaimEntity claimEntity = ClaimEntity.builder()
+                .claimParties(List.of(claimPartyEntity)).build();
+        return PcsCaseEntity.builder()
+            .claims(List.of(claimEntity)).build();
     }
 
     private ClaimPartyEntity claimPartyEntity() {
