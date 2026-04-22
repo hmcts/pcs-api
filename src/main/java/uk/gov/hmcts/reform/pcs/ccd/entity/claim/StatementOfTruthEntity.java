@@ -21,6 +21,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
 import java.util.UUID;
@@ -49,6 +50,10 @@ public class StatementOfTruthEntity {
     @OneToOne(mappedBy = "statementOfTruth")
     @JsonManagedReference
     private EnforcementOrderEntity enforcementOrder;
+
+    @OneToOne(mappedBy = "statementOfTruth")
+    @JsonBackReference
+    private CounterClaimEntity counterClaim;
 
     @Enumerated(EnumType.STRING)
     private StatementOfTruthCompletedBy completedBy;

@@ -1,0 +1,23 @@
+CREATE TABLE counter_claim (
+  id                         UUID PRIMARY KEY,
+  version                    INTEGER,
+  sot_id                     UUID REFERENCES public.statement_of_truth (id),
+  pcs_case_id                UUID NOT NULL REFERENCES public.pcs_case (id),
+  party_id                   UUID NOT NULL REFERENCES public.party (id),
+  claim_type                 VARCHAR(50),
+  is_claim_amount_known      YES_NO,
+  claim_amount               DECIMAL(18,2),
+  estimated_max_claim_amount DECIMAL(18,2),
+  counterclaim_for           VARCHAR(6800),
+  counterclaim_reasons       VARCHAR(6800),
+  other_order_request_details VARCHAR(6800),
+  other_order_request_facts  VARCHAR(6800),
+  need_help_with_fees        YES_NO,
+  applied_for_hwf            YES_NO,
+  hwf_reference_number       VARCHAR(255),
+  status                     VARCHAR(30),
+  claim_submitted_date       TIMESTAMP,
+  claim_issued_date          TIMESTAMP,
+  last_modified_date         TIMESTAMP,
+  language_used              VARCHAR(30)
+);
