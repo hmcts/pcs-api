@@ -506,7 +506,8 @@ public class PCSCase {
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
     @CCD(
-        access = {DefendantAccess.class}
+        access = {DefendantAccess.class},
+        searchable = false
     )
     private PossessionClaimResponse possessionClaimResponse;
 
@@ -526,7 +527,10 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
-    @CCD(access = DefendantAccess.class)
+    @CCD(
+        access = DefendantAccess.class,
+        searchable = false
+    )
     private CitizenGenAppRequest citizenGenAppRequest;
 
     @CCD(
