@@ -98,5 +98,5 @@ public class DefendantResponses {
 
     private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
     @CCD
-    private YesOrNo makeCounterClaim;
+    private VerticalYesNo makeCounterClaim;
 }
