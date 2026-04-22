@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -59,10 +58,10 @@ public class DefendantResponses {
     private VerticalYesNo contactByPhone;
 
     @CCD
-    private YesOrNo contactByEmail;
+    private VerticalYesNo contactByEmail;
 
     @CCD
-    private YesOrNo contactByPost;
+    private VerticalYesNo contactByPost;
 
     @CCD
     private YesNoPreferNotToSay freeLegalAdvice;
@@ -80,7 +79,7 @@ public class DefendantResponses {
     private YesNoNotSure writtenTerms;
 
     @CCD
-    private YesOrNo disputeClaim;
+    private VerticalYesNo disputeClaim;
 
     @CCD
     private String disputeClaimDetails;

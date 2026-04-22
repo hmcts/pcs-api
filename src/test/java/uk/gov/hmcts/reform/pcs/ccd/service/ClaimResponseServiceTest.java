@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
@@ -80,8 +79,8 @@ class ClaimResponseServiceTest {
                 .address(TEST_ADDRESS)
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(YesOrNo.YES)
-                .contactByPost(YesOrNo.NO)
+                .contactByEmail(VerticalYesNo.YES)
+                .contactByPost(VerticalYesNo.NO)
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
                 .build()
@@ -105,8 +104,8 @@ class ClaimResponseServiceTest {
         ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByEmail()).isEqualTo(YesOrNo.YES);
-        assertThat(savedPrefs.getContactByPost()).isEqualTo(YesOrNo.NO);
+        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
@@ -143,7 +142,7 @@ class ClaimResponseServiceTest {
                 .emailAddress("defendant@example.com")
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(YesOrNo.YES)
+                .contactByEmail(VerticalYesNo.YES)
                 .build()
         );
 
@@ -169,7 +168,7 @@ class ClaimResponseServiceTest {
                 .emailAddress("   ")
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(YesOrNo.YES)
+                .contactByEmail(VerticalYesNo.YES)
                 .build()
         );
 
@@ -183,7 +182,7 @@ class ClaimResponseServiceTest {
         verify(partyRepository).save(partyCaptor.capture());
         PartyEntity savedParty = partyCaptor.getValue();
         assertThat(savedParty.getContactPreferences()).isNotNull();
-        assertThat(savedParty.getContactPreferences().getContactByEmail()).isEqualTo(YesOrNo.YES);
+        assertThat(savedParty.getContactPreferences().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
@@ -231,10 +230,10 @@ class ClaimResponseServiceTest {
         final PossessionClaimResponse response = buildResponse(Party.builder()
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(YesOrNo.YES)
+                .contactByEmail(VerticalYesNo.YES)
                 .contactByPhone(VerticalYesNo.NO)
                 //no text option is possible when contact by phone = no
-                .contactByPost(YesOrNo.YES)
+                .contactByPost(VerticalYesNo.YES)
                 .build()
         );
 
@@ -249,8 +248,8 @@ class ClaimResponseServiceTest {
         ContactPreferencesEntity savedPrefs = partyCaptor.getValue().getContactPreferences();
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
         assertThat(savedPrefs.getContactByText()).isEqualTo(null);
-        assertThat(savedPrefs.getContactByEmail()).isEqualTo(YesOrNo.YES);
-        assertThat(savedPrefs.getContactByPost()).isEqualTo(YesOrNo.YES);
+        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
@@ -263,10 +262,10 @@ class ClaimResponseServiceTest {
                 .address(TEST_ADDRESS)
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(YesOrNo.YES)
+                .contactByEmail(VerticalYesNo.YES)
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
-                .contactByPost(YesOrNo.YES)
+                .contactByPost(VerticalYesNo.YES)
                 .build()
         );
 
@@ -300,8 +299,8 @@ class ClaimResponseServiceTest {
         ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByEmail()).isEqualTo(YesOrNo.YES);
-        assertThat(savedPrefs.getContactByPost()).isEqualTo(YesOrNo.YES);
+        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
@@ -313,7 +312,7 @@ class ClaimResponseServiceTest {
                 .lastName("Doe")
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(YesOrNo.YES)
+                .contactByEmail(VerticalYesNo.YES)
                 .build()
         );
 
@@ -339,7 +338,7 @@ class ClaimResponseServiceTest {
                 .lastName("   ")
                 .build(),
             DefendantResponses.builder()
-                .contactByEmail(YesOrNo.YES)
+                .contactByEmail(VerticalYesNo.YES)
                 .build()
         );
 
