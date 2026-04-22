@@ -31,7 +31,8 @@ public class GenAppService {
             .appliedForHwf(citizenCreateGenApp.getAppliedForHwf())
             .build();
 
-        if (citizenCreateGenApp.getAppliedForHwf() == VerticalYesNo.YES && citizenCreateGenApp.getHwfReference() != null) {
+        if (citizenCreateGenApp.getAppliedForHwf() == VerticalYesNo.YES
+                && citizenCreateGenApp.getHwfReference() != null) {
             HelpWithFeesEntity helpWithFeesEntity = new HelpWithFeesEntity();
             helpWithFeesEntity.setHwfReference(citizenCreateGenApp.getHwfReference());
             genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
