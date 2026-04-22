@@ -98,7 +98,7 @@ public class DefendantResponses {
 
     private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
     @CCD
-    private YesOrNo otherConsiderations;
+    private VerticalYesNo otherConsiderations;
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;

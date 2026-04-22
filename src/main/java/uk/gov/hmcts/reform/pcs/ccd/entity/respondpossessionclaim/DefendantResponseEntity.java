@@ -126,7 +126,7 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo otherConsiderations;
+    private VerticalYesNo otherConsiderations;
 
     private String otherConsiderationsDetails;
 

@@ -810,7 +810,7 @@ class DefendantResponseServiceTest {
 
     @ParameterizedTest(name = "otherConsiderations={0}")
     @MethodSource("otherConsiderationsPersistenceScenarios")
-    void shouldPersistOtherConsiderations(YesOrNo otherConsiderations) {
+    void shouldPersistOtherConsiderations(VerticalYesNo otherConsiderations) {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
@@ -835,9 +835,9 @@ class DefendantResponseServiceTest {
 
     private static Stream<Arguments> otherConsiderationsPersistenceScenarios() {
         return Stream.of(
-            Arguments.of(YesOrNo.YES),
-            Arguments.of(YesOrNo.NO),
-            Arguments.of((YesOrNo) null)
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
         );
     }
 
