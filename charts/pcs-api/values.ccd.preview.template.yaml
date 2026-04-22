@@ -176,7 +176,7 @@ ccd:
     logstashJavaOpts: "-Xmx1g -Xms512M"
   am-role-assignment-service:
     java:
-      releaseNameOverride: ${SERVICE_NAME}-am-role-assignment-service
+      nameOverride: ${SERVICE_NAME}-am-role-assignment-service
       image: 'hmctsprod.azurecr.io/am/role-assignment-service:pr-2691-0ed5b7c-20260416122729'
       ingressHost: am-role-assignment-service-${SERVICE_FQDN}
       autoscaling:
