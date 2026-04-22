@@ -7,8 +7,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
-import java.util.List;
-
 /**
  * Page configuration for the Mediation and Settlement section.
  * Allows claimants to indicate whether they're willing to try mediation or settlement
