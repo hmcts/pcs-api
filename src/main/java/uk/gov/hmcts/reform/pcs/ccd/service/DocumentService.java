@@ -187,7 +187,7 @@ public class DocumentService {
                  INSPECTION_OR_REPORT -> CaseFileCategory.EVIDENCE;
             case CERTIFICATE_OF_SUITABILITY_AS_LF,
                  LEGAL_AID_CERTIFICATE -> CaseFileCategory.CORRESPONDENCE;
-            case NOTICE_SERVED ,
+            case NOTICE_SERVED,
                  POLICE_REPORT,
                  OTHER -> CaseFileCategory.UNCATEGORISED;
         };
