@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -15,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.UUID;
@@ -25,34 +26,32 @@ import java.util.UUID;
 @Slf4j
 public class LegalRepresentativePartyLinkService {
 
-    private final IdamService idamService;
     private final PcsCaseService pcsCaseService;
-    private final OrganisationDetailsService organisationDetailsService;
     private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final OrganisationDetailsService organisationDetailsService;
     private final AddressMapper addressMapper;
 
     @Transactional
-    public void linkLegalRepresentativeToParty(long caseReference, String authToken, String partyId) {
-        var user = idamService.validateAuthToken(authToken).getUserDetails();
-        String userUid = user.getUid();
+    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user,
+                                               OrganisationDetailsResponse organisationDetails) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
         if (legalRepresentativeRepository.isLegalRepresentativeLinkedToPartyAndActive(
-            UUID.fromString(userUid), UUID.fromString(partyId))) {
+            UUID.fromString(user.getUid()), UUID.fromString(partyId))) {
             throw new LegalRepresentativeAlreadyLinkedToPartyException(
-                "Legal Representative [" + userUid + "] already linked to Party [" + partyId + "]");
+                "Legal Representative [" + user.getUid() + "] already linked to Party [" + partyId + "]");
         }
 
         LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
-            .organisationName(organisationDetailsService.getOrganisationName(userUid))
-            .idamId(UUID.fromString(userUid))
+            .organisationName(organisationDetails.getName())
+            .idamId(UUID.fromString(user.getUid()))
             .firstName(user.getName())
             .lastName(user.getFamilyName())
             .email(user.getSub())
             .address(addressMapper.toAddressEntityAndNormalise(
-                organisationDetailsService.getOrganisationAddress(userUid)))
+                organisationDetailsService.getOrganisationAddress(organisationDetails)))
             .build();
 
         legalRepresentative.addParty(defendantPartyEntity);
@@ -73,8 +72,5 @@ public class LegalRepresentativePartyLinkService {
             });
     }
 
-    private void checkIfLegalRepresentativeAlreadyLinkedToParty(String legalRepresentativeIdamId, String partyId) {
-
-    }
 
 }

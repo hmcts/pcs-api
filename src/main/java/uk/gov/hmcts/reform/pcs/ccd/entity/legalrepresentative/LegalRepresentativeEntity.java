@@ -1,19 +1,19 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -24,7 +24,6 @@ import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 @Entity
 @Table(name = "legal_representative")
@@ -41,13 +40,10 @@ public class LegalRepresentativeEntity {
 
     private UUID idamId;
 
-    @Column(name = "organisation_name")
     private String organisationName;
 
-    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "last_name")
     private String lastName;
 
     private String email;

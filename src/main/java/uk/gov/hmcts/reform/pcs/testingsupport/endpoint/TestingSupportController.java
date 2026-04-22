@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -35,21 +36,24 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.net.URI;
-import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -71,8 +75,9 @@ public class TestingSupportController {
     private final PartyAccessCodeRepository partyAccessCodeRepository;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
-    private final SecureRandom secureRandom = new SecureRandom();
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
+    private final OrganisationDetailsService organisationDetailsService;
+    private final IdamService idamService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -436,7 +441,17 @@ public class TestingSupportController {
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
     ) {
 
-        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, authorization, partyId);
+        User user = idamService.validateAuthToken(authorization);
+        UserInfo userDetails = user.getUserDetails();
+        OrganisationDetailsResponse organisationDetails = organisationDetailsService
+            .getOrganisationDetails(userDetails.getUid());
+
+        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+            caseReference,
+            partyId,
+            userDetails,
+            organisationDetails
+        );
         return ResponseEntity.ok().build();
     }
 

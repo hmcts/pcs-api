@@ -17,9 +17,9 @@ public interface LegalRepresentativeRepository extends JpaRepository<LegalRepres
         JOIN lr.claimPartyLegalRepresentativeList cplr
         JOIN cplr.party p
         WHERE lr.idamId = :idamId
-        AND p.id = :id
+        AND p.id = :partyId
         AND cplr.active = 'YES'
         """)
-    boolean isLegalRepresentativeLinkedToPartyAndActive(@Param("idamId") UUID idamId, @Param("id") UUID id);
+    boolean isLegalRepresentativeLinkedToPartyAndActive(@Param("idamId") UUID idamId, @Param("partyId") UUID partyId);
 
 }

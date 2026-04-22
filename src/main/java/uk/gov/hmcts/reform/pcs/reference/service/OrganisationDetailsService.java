@@ -77,6 +77,15 @@ public class OrganisationDetailsService {
 
         OrganisationDetailsResponse organisationDetails = getOrganisationDetails(userId);
 
+        return getOrganisationAddress(organisationDetails);
+    }
+
+    /**
+     * Gets the organisation address extracted from a given organisation details response.
+     * @param organisationDetails The organisation details response get organisation address from
+     * @return Organisation address or null if no address information is available
+     */
+    public AddressUK getOrganisationAddress(OrganisationDetailsResponse organisationDetails) {
         if (organisationDetails == null || organisationDetails.getContactInformation().isEmpty()) {
             return null;
         }

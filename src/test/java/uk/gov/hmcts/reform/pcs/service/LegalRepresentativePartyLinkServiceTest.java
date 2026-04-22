@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -22,28 +21,25 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
-import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LegalRepresentativePartyLinkServiceTest {
 
     @InjectMocks
     private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
-
-    @Mock
-    private IdamService idamService;
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -58,9 +54,6 @@ class LegalRepresentativePartyLinkServiceTest {
     private AddressMapper addressMapper;
 
     @Mock
-    private User user;
-
-    @Mock
     private UserInfo userInfo;
 
     @Mock
@@ -69,13 +62,15 @@ class LegalRepresentativePartyLinkServiceTest {
     @Mock
     private AddressEntity addressEntity;
 
+    @Mock
+    private OrganisationDetailsResponse organisationDetails;
+
     @Captor
     private ArgumentCaptor<LegalRepresentativeEntity> legalRepresentativeEntityCaptor;
 
     @Test
     void linkLegalRepresentativeToParty_WithPartyFound_SavesLegalRepresentativeEntity() {
         // given
-        String authToken = "authToken";
         UUID userUid = UUID.randomUUID();
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
@@ -90,31 +85,31 @@ class LegalRepresentativePartyLinkServiceTest {
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .claims(List.of(ClaimEntity.builder()
-                        .claimParties(
-                            List.of(ClaimPartyEntity.builder()
-                                        .role(PartyRole.DEFENDANT)
-                                        .party(partyEntity)
-                                        .build()))
+                                .claimParties(
+                                    List.of(ClaimPartyEntity.builder()
+                                                .role(PartyRole.DEFENDANT)
+                                                .party(partyEntity)
+                                                .build()))
                                 .build()
             )).build();
 
-
-        when(idamService.validateAuthToken(authToken)).thenReturn(user);
-        when(user.getUserDetails()).thenReturn(userInfo);
+        when(organisationDetails.getName()).thenReturn(organisationName);
         when(userInfo.getUid()).thenReturn(userUid.toString());
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(organisationDetailsService.getOrganisationName(userUid.toString())).thenReturn(organisationName);
         when(userInfo.getName()).thenReturn(name);
         when(userInfo.getFamilyName()).thenReturn(familyName);
         when(userInfo.getSub()).thenReturn(email);
-        when(organisationDetailsService.getOrganisationAddress(userUid.toString()))
+        when(organisationDetailsService.getOrganisationAddress(organisationDetails))
             .thenReturn(addressUK);
         when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
 
         // when
-        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference,
-                                                                           authToken,
-                                                                           partyId.toString());
+        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+            caseReference,
+            partyId.toString(),
+            userInfo,
+            organisationDetails
+        );
 
         // then
         verify(legalRepresentativeRepository).save(legalRepresentativeEntityCaptor.capture());
@@ -133,7 +128,6 @@ class LegalRepresentativePartyLinkServiceTest {
     @Test
     void linkLegalRepresentativeToParty_WithLegalRepAlreadyLinkedToParty_ThrowsException() {
         // given
-        String authToken = "authToken";
         UUID userUid = UUID.randomUUID();
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
@@ -152,41 +146,32 @@ class LegalRepresentativePartyLinkServiceTest {
                                 .build()
             )).build();
 
-
-        when(idamService.validateAuthToken(authToken)).thenReturn(user);
-        when(user.getUserDetails()).thenReturn(userInfo);
         when(userInfo.getUid()).thenReturn(userUid.toString());
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
         when(legalRepresentativeRepository.isLegalRepresentativeLinkedToPartyAndActive(userUid, partyId))
             .thenReturn(true);
 
-        try {
-            // when
-            legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
-                caseReference,
-                authToken,
-                partyId.toString()
-            );
-        } catch (LegalRepresentativeAlreadyLinkedToPartyException e) {
-            // then
-            assertEquals("Legal Representative [" + userUid + "] already linked to Party [" + partyId + "]",
-                         e.getMessage());
+        // when / then
+        assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+            caseReference,
+            partyId.toString(),
+            userInfo,
+            organisationDetails
+        )).isInstanceOf(LegalRepresentativeAlreadyLinkedToPartyException.class)
+            .hasMessage("Legal Representative [" + userUid + "] already linked to Party [" + partyId + "]");
 
-            verify(organisationDetailsService, never()).getOrganisationName(anyString());
-            verify(userInfo, never()).getName();
-            verify(userInfo, never()).getFamilyName();
-            verify(userInfo, never()).getSub();
-            verify(organisationDetailsService, never()).getOrganisationAddress(anyString());
-            verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-            verify(legalRepresentativeRepository, never()).save(any());
-        }
+        verify(organisationDetailsService, never()).getOrganisationName(anyString());
+        verify(userInfo, never()).getName();
+        verify(userInfo, never()).getFamilyName();
+        verify(userInfo, never()).getSub();
+        verify(organisationDetailsService, never()).getOrganisationAddress(anyString());
+        verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
+        verify(legalRepresentativeRepository, never()).save(any());
     }
 
     @Test
     void linkLegalRepresentativeToParty_WithNoPartyFound_ThrowsException() {
         // given
-        String authToken = "authToken";
-        UUID userUid = UUID.randomUUID();
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
         UUID partyId2 = UUID.randomUUID();
@@ -204,38 +189,30 @@ class LegalRepresentativePartyLinkServiceTest {
                                 .build()
             )).build();
 
-
-        when(idamService.validateAuthToken(authToken)).thenReturn(user);
-        when(user.getUserDetails()).thenReturn(userInfo);
-        when(userInfo.getUid()).thenReturn(userUid.toString());
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
 
-        try {
-            // when
-            legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
-                caseReference,
-                authToken,
-                partyId.toString()
-            );
-        } catch (PartyNotFoundException e) {
-            // then
-            assertEquals("Unable to find Party with Id [" + partyId + "]", e.getMessage());
+        // when / then
+        assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+            caseReference,
+            partyId.toString(),
+            userInfo,
+            organisationDetails
+        )).isInstanceOf(PartyNotFoundException.class)
+            .hasMessage("Unable to find Party with Id [" + partyId + "]");
 
-            verify(organisationDetailsService, never()).getOrganisationName(anyString());
-            verify(userInfo, never()).getName();
-            verify(userInfo, never()).getFamilyName();
-            verify(userInfo, never()).getSub();
-            verify(organisationDetailsService, never()).getOrganisationAddress(anyString());
-            verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-            verify(legalRepresentativeRepository, never()).save(any());
-        }
+        verify(organisationDetailsService, never()).getOrganisationName(anyString());
+        verify(userInfo, never()).getName();
+        verify(userInfo, never()).getFamilyName();
+        verify(userInfo, never()).getSub();
+        verify(organisationDetailsService, never()).getOrganisationAddress(anyString());
+        verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
+        verify(legalRepresentativeRepository, never()).save(any());
+
     }
 
     @Test
     void linkLegalRepresentativeToParty_WithNoDefendantPartyFound_ThrowsException() {
         // given
-        String authToken = "authToken";
-        UUID userUid = UUID.randomUUID();
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
         PartyEntity partyEntity = PartyEntity.builder()
@@ -252,31 +229,24 @@ class LegalRepresentativePartyLinkServiceTest {
                                 .build()
             )).build();
 
-
-        when(idamService.validateAuthToken(authToken)).thenReturn(user);
-        when(user.getUserDetails()).thenReturn(userInfo);
-        when(userInfo.getUid()).thenReturn(userUid.toString());
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
 
-        try {
-            // when
-            legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
-                caseReference,
-                authToken,
-                partyId.toString()
-            );
-        } catch (PartyNotFoundException e) {
-            // then
-            assertEquals("Unable to find Party with Id [" + partyId + "]", e.getMessage());
+        // when / then
+        assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+            caseReference,
+            partyId.toString(),
+            userInfo,
+            organisationDetails
+        )).isInstanceOf(PartyNotFoundException.class)
+            .hasMessage("Unable to find Party with Id [" + partyId + "]");
 
-            verify(organisationDetailsService, never()).getOrganisationName(anyString());
-            verify(userInfo, never()).getName();
-            verify(userInfo, never()).getFamilyName();
-            verify(userInfo, never()).getSub();
-            verify(organisationDetailsService, never()).getOrganisationAddress(anyString());
-            verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-            verify(legalRepresentativeRepository, never()).save(any());
-        }
+        verify(organisationDetails, never()).getName();
+        verify(organisationDetailsService, never()).getOrganisationAddress(organisationDetails);
+        verify(userInfo, never()).getName();
+        verify(userInfo, never()).getFamilyName();
+        verify(userInfo, never()).getSub();
+        verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
+        verify(legalRepresentativeRepository, never()).save(any());
     }
 
 }

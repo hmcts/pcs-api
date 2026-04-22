@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -51,9 +50,7 @@ public class ClaimPartyLegalRepresentativeEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo active;
 
-    @Column(name = "start_date")
     private Instant startDate;
 
-    @Column(name = "end_date")
     private Instant endDate;
 }
