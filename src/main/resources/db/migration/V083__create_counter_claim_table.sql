@@ -21,3 +21,6 @@ CREATE TABLE counter_claim (
   last_modified_date         TIMESTAMP,
   language_used              VARCHAR(30)
 );
+
+ALTER TABLE document ADD COLUMN counter_claim_id UUID REFERENCES counter_claim(id);
+CREATE INDEX idx_document_counter_claim_id ON document(counter_claim_id);
