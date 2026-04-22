@@ -67,7 +67,7 @@ class PostcodeNotAssignedToCourtTest {
         underTest.addTo(pageBuilder);
 
         // Verify the main show condition is set
-        verify(fieldBuilder).showCondition(eq("showPostcodeNotAssignedToCourt=\"YES\""));
+        verify(fieldBuilder).showCondition(eq("showPostcodeNotAssignedToCourt=\"Yes\""));
 
         // Verify specific show conditions for each view are configured
         verify(fieldBuilder).label(eq(expectedLabelId), anyString(), eq(expectedShowCondition));
@@ -77,15 +77,15 @@ class PostcodeNotAssignedToCourtTest {
         return Stream.of(
             arguments(
                 // ENGLAND
-                "showPostcodeNotAssignedToCourt=\"YES\" AND postcodeNotAssignedView=\"ENGLAND\"",
+                "showPostcodeNotAssignedToCourt=\"Yes\" AND postcodeNotAssignedView=\"ENGLAND\"",
                 "postcodeNotAssignedToCourt-england"),
             arguments(
                 // WALES
-                "showPostcodeNotAssignedToCourt=\"YES\" AND postcodeNotAssignedView=\"WALES\"",
+                "showPostcodeNotAssignedToCourt=\"Yes\" AND postcodeNotAssignedView=\"WALES\"",
                 "postcodeNotAssignedToCourt-wales"),
             arguments(
                 // ALL_COUNTRIES
-                "showPostcodeNotAssignedToCourt=\"YES\" AND postcodeNotAssignedView=\"ALL_COUNTRIES\"",
+                "showPostcodeNotAssignedToCourt=\"Yes\" AND postcodeNotAssignedView=\"ALL_COUNTRIES\"",
                 "postcodeNotAssignedToCourt-all")
         );
     }
