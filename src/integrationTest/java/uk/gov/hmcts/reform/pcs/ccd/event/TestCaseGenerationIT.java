@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +44,17 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.ENFORCEMENT_C
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.MAKE_A_CLAIM_CASE_GENERATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.NO_NON_PROD_CASE_AVAILABLE;
 
+/**
+ * This is based on the test json sitting in src/main/java/resources/test-case-generation
+ * A change to the domain CAN lead to a failure here as the test json will need to be updated so to keep the test
+ * creation event working.   In order to update the json when you change the domain then a walk though the broken
+ * journey is required and a capture of the json from the draft_case_data BEFORE submit of that event need to be made
+ * and replace the existing json within the relevant file.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")
 @DisplayName("TestCaseGenerationIT Integration Tests")
-@Disabled
 public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
     private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
