@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
@@ -30,14 +29,15 @@ public class GenAppService {
         this.utcClock = utcClock;
     }
 
-    public GenAppEntity createGenAppEntity(PCSCase caseData, PcsCaseEntity pcsCaseEntity, PartyEntity applicantParty) {
-
-        CitizenGenAppRequest citizenCreateGenApp = caseData.getCitizenGenAppRequest();
+    public GenAppEntity createGenAppEntity(CitizenGenAppRequest citizenCreateGenApp,
+                                           PcsCaseEntity pcsCaseEntity,
+                                           PartyEntity applicantParty) {
 
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .type(citizenCreateGenApp.getApplicationType())
             .party(applicantParty)
             .state(GenAppState.SUBMITTED)
+            .clientReference(citizenCreateGenApp.getClientReference())
             .within14Days(citizenCreateGenApp.getWithin14Days())
             .needHwf(citizenCreateGenApp.getNeedHwf())
             .appliedForHwf(citizenCreateGenApp.getAppliedForHwf())

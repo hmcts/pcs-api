@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
@@ -71,15 +70,11 @@ class GenAppServiceTest {
             .applicationType(GenAppType.SOMETHING_ELSE)
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
-
         GenAppEntity savedGenAppEntity = mock(GenAppEntity.class);
         when(genAppRepository.save(isA(GenAppEntity.class))).thenReturn(savedGenAppEntity);
 
         // When
-        GenAppEntity returnedGenAppEntity = underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        GenAppEntity returnedGenAppEntity = underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(any(GenAppEntity.class));
@@ -94,12 +89,8 @@ class GenAppServiceTest {
             .applicationType(genAppType)
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
-
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -112,12 +103,8 @@ class GenAppServiceTest {
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
-
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -131,12 +118,8 @@ class GenAppServiceTest {
             .applicationType(GenAppType.SUSPEND)
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
-
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -151,12 +134,8 @@ class GenAppServiceTest {
             .within14Days(within14Days)
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
-
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -173,12 +152,8 @@ class GenAppServiceTest {
             .hwfReference(expectedHwfReference)
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
-
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -198,12 +173,8 @@ class GenAppServiceTest {
             .hwfReference("hwf-1234")
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
-
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -220,13 +191,9 @@ class GenAppServiceTest {
                                             VerticalYesNo expectedOtherPartiesAgreed,
                                             VerticalYesNo expectedWithoutNotice,
                                             String expectedWithoutNoticeReason) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
 
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -245,12 +212,8 @@ class GenAppServiceTest {
                 .languageUsed(languageUsed)
                 .build();
 
-        PCSCase caseData = PCSCase.builder()
-                .citizenGenAppRequest(genAppRequest)
-                .build();
-
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -263,12 +226,8 @@ class GenAppServiceTest {
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
-
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -284,12 +243,8 @@ class GenAppServiceTest {
             .sotFullName(expectedFullName)
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
-
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());

@@ -12,13 +12,16 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenCreateGenApp;
@@ -32,6 +35,7 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
     private final PartyService partyService;
     private final SecurityContextService securityContextService;
     private final GenAppService genAppService;
+    private final GenAppRepository genAppRepository;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -51,7 +55,18 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PartyEntity applicantParty = getCurrentPartyEntity(caseReference);
 
-        genAppService.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        CitizenGenAppRequest citizenCreateGenApp = caseData.getCitizenGenAppRequest();
+
+        String clientReference = citizenCreateGenApp.getClientReference();
+        if (clientReference == null) {
+            return errorResponse("No client reference in request");
+        }
+
+        if (genAppRepository.existsByClientReference(clientReference)) {
+            return errorResponse("Application alreadys exists for client reference");
+        }
+
+        genAppService.createGenAppEntity(citizenCreateGenApp, pcsCaseEntity, applicantParty);
 
         return SubmitResponse.<State>builder()
             .build();
@@ -60,6 +75,12 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
     private PartyEntity getCurrentPartyEntity(long caseReference) {
         UUID currentUserId = securityContextService.getCurrentUserId();
         return partyService.getPartyEntityByIdamId(currentUserId, caseReference);
+    }
+
+    private static SubmitResponse<State> errorResponse(String errorMessage) {
+        return SubmitResponse.<State>builder()
+            .errors(List.of(errorMessage))
+            .build();
     }
 
 }

@@ -58,6 +58,8 @@ public class GenAppEntity {
     @Enumerated(EnumType.STRING)
     private GenAppState state;
 
+    private String clientReference;
+
     @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "party_id")
     @JsonBackReference
