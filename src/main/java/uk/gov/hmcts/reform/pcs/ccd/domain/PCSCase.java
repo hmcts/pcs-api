@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
@@ -507,7 +508,8 @@ public class PCSCase {
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
     @CCD(
-        access = {DefendantAccess.class}
+        access = {DefendantAccess.class},
+        searchable = false
     )
     private PossessionClaimResponse possessionClaimResponse;
 
@@ -527,7 +529,10 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
-    @CCD(access = DefendantAccess.class)
+    @CCD(
+        access = DefendantAccess.class,
+        searchable = false
+    )
     private CitizenGenAppRequest citizenGenAppRequest;
 
     @CCD(
@@ -558,7 +563,7 @@ public class PCSCase {
 
     @CCD(
         label = "CaseManagementLocation",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, RasValidationAccess.class}
     )
     private CaseLocation caseManagementLocation;
 
