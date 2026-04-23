@@ -94,7 +94,7 @@ idam:
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
     microservice: ${S2S_SERVICE_NAME:pcs_api}
   s2s-authorised:
-    services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data}
+    services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data,payment_app}
   system-user:
     username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
     password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
@@ -185,14 +185,15 @@ fees:
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
 
 access-code:
+  hash-pins-enabled: ${HASH_PINS_ENABLED:false}
   request:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
 
 payments:
   api:
-    url: ${PAYMENT_API_URL:http://localhost:8083}
-    callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:8096/service-request-update}
+    url: ${PAYMENT_API_URL:http://localhost:8083/payments}
+    callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:3206/payment-update}
   params:
     organisationUrn: Mortgage and Landlord Possession Claims
     hmctsOrgId: ${hmcts.hmctsOrgId}
