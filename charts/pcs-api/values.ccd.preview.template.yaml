@@ -79,6 +79,7 @@ ccd:
         DEFINITION_STORE_DB_OPTIONS: ""
         ELASTIC_SEARCH_INDEX_SHARDS: 1
         ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
+        DEFINITION_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_admin,jui_webapp,pui_webapp,aac_manage_case_assignment,xui_webapp,am_org_role_mapping_service,pcs_api"
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
