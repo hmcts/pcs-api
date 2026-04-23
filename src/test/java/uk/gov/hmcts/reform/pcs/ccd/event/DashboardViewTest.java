@@ -44,7 +44,8 @@ class DashboardViewTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        dashboardJourneyService = new DashboardJourneyService(new ClaimTaskGroupEvaluator(), new DocumentsTaskGroupEvaluator());
+        dashboardJourneyService = new DashboardJourneyService(new ClaimTaskGroupEvaluator(), 
+            new DocumentsTaskGroupEvaluator());
         StartDashboardViewHandler startHandler = new StartDashboardViewHandler(
             pcsCaseService,
             accessValidator,

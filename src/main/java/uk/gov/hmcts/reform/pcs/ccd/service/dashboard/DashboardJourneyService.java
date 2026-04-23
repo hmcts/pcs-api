@@ -29,7 +29,10 @@ public class DashboardJourneyService {
     private final ClaimTaskGroupEvaluator claimTaskGroupEvaluator;
     private final DocumentsTaskGroupEvaluator documentsTaskGroupEvaluator;
 
-    public DashboardJourneyService(ClaimTaskGroupEvaluator claimTaskGroupEvaluator, DocumentsTaskGroupEvaluator documentsTaskGroupEvaluator) {
+    public DashboardJourneyService(
+        ClaimTaskGroupEvaluator claimTaskGroupEvaluator, 
+        DocumentsTaskGroupEvaluator documentsTaskGroupEvaluator
+    ) {
         this.claimTaskGroupEvaluator = claimTaskGroupEvaluator;
         this.documentsTaskGroupEvaluator = documentsTaskGroupEvaluator;
     }
