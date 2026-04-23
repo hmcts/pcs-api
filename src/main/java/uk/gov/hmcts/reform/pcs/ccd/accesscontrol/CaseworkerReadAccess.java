@@ -17,5 +17,4 @@ public class CaseworkerReadAccess implements HasAccessControl {
         grants.put(PCS_CASE_WORKER, Permission.R);
         return grants;
     }
-
 }
