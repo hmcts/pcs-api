@@ -40,7 +40,10 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -89,6 +92,9 @@ class DefendantResponseServiceTest {
     @Captor
     private ArgumentCaptor<CounterClaimEntity> counterClaimCaptor;
 
+    private static final Clock FIXED_UTC_CLOCK = Clock.fixed(
+        Instant.parse("2026-04-22T21:00:00Z"), ZoneOffset.UTC);
+
     private DefendantResponseService underTest;
 
     @BeforeEach
@@ -101,7 +107,8 @@ class DefendantResponseServiceTest {
             securityContextService,
             reasonableAdjustmentsService,
             householdCircumstancesService,
-            paymentAgreementService
+            paymentAgreementService,
+            FIXED_UTC_CLOCK
         );
     }
 
@@ -824,7 +831,7 @@ class DefendantResponseServiceTest {
         assertThat(saved.getNeedHelpWithFees()).isEqualTo(VerticalYesNo.YES);
         assertThat(saved.getAppliedForHwf()).isEqualTo(VerticalYesNo.NO);
         assertThat(saved.getHwfReferenceNumber()).isEqualTo("HWF-123-456");
-        assertThat(saved.getClaimSubmittedDate()).isNotNull();
+        assertThat(saved.getClaimSubmittedDate()).isEqualTo("2026-04-22T21:00");
         assertThat(saved.getParty()).isEqualTo(partyEntity);
     }
 

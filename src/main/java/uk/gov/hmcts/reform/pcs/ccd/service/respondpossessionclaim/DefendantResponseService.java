@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -34,7 +35,6 @@ import java.util.UUID;
  * </ul>
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class DefendantResponseService {
@@ -47,6 +47,27 @@ public class DefendantResponseService {
     private final ReasonableAdjustmentsService reasonableAdjustmentsService;
     private final HouseholdCircumstancesService householdCircumstancesService;
     private final PaymentAgreementService paymentAgreementService;
+    private final Clock utcClock;
+
+    public DefendantResponseService(PartyService partyService,
+                                    PartyRepository partyRepository,
+                                    ClaimRepository claimRepository,
+                                    DefendantResponseRepository defendantResponseRepository,
+                                    SecurityContextService securityContextService,
+                                    ReasonableAdjustmentsService reasonableAdjustmentsService,
+                                    HouseholdCircumstancesService householdCircumstancesService,
+                                    PaymentAgreementService paymentAgreementService,
+                                    @Qualifier("utcClock") Clock utcClock) {
+        this.partyService = partyService;
+        this.partyRepository = partyRepository;
+        this.claimRepository = claimRepository;
+        this.defendantResponseRepository = defendantResponseRepository;
+        this.securityContextService = securityContextService;
+        this.reasonableAdjustmentsService = reasonableAdjustmentsService;
+        this.householdCircumstancesService = householdCircumstancesService;
+        this.paymentAgreementService = paymentAgreementService;
+        this.utcClock = utcClock;
+    }
 
     /**
      * Saves a defendant's response to the defendant_response table
@@ -187,7 +208,7 @@ public class DefendantResponseService {
             .needHelpWithFees(counterClaim.getNeedHelpWithFees())
             .appliedForHwf(counterClaim.getAppliedForHwf())
             .hwfReferenceNumber(counterClaim.getHwfReferenceNumber())
-            .claimSubmittedDate(LocalDateTime.now())
+            .claimSubmittedDate(LocalDateTime.now(utcClock))
             .party(partyRef)
             .build();
 
