@@ -277,12 +277,12 @@ class SubmitEventHandlerTest {
     @Test
     void shouldSubmitRegularIncomeFieldsWhenFinalSubmit() {
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .shareIncomeExpenseDetails(YesOrNo.YES)
+            .shareIncomeExpenseDetails(VerticalYesNo.YES)
             .incomeFromJobs(YesOrNo.YES)
             .incomeFromJobsAmount(new BigDecimal("200000")) // £2000.00 in pence
             .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
             .pension(YesOrNo.NO)
-            .universalCredit(YesOrNo.YES)
+            .universalCredit(VerticalYesNo.YES)
             .ucApplicationDate(LocalDate.of(2024, 2, 10))
             .universalCreditAmount(new BigDecimal("100000")) // £1000.00 in pence
             .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
@@ -325,7 +325,7 @@ class SubmitEventHandlerTest {
             .getHouseholdCircumstances();
 
         // Assert all regular income fields are submitted correctly
-        assertThat(capturedHousehold.getShareIncomeExpenseDetails()).isEqualTo(YesOrNo.YES);
+        assertThat(capturedHousehold.getShareIncomeExpenseDetails()).isEqualTo(VerticalYesNo.YES);
 
         assertThat(capturedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
         assertThat(capturedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("200000");
@@ -333,7 +333,7 @@ class SubmitEventHandlerTest {
 
         assertThat(capturedHousehold.getPension()).isEqualTo(YesOrNo.NO);
 
-        assertThat(capturedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
+        assertThat(capturedHousehold.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 2, 10));
         assertThat(capturedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("100000");
         assertThat(capturedHousehold.getUniversalCreditFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);

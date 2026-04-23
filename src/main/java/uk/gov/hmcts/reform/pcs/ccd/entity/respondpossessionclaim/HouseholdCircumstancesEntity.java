@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
@@ -48,19 +48,19 @@ public class HouseholdCircumstancesEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo dependantChildren;
+    private VerticalYesNo dependantChildren;
 
     private String dependantChildrenDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo otherDependants;
+    private VerticalYesNo otherDependants;
 
     private String otherDependantDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo otherTenants;
+    private VerticalYesNo otherTenants;
 
     private String otherTenantsDetails;
 
@@ -72,23 +72,23 @@ public class HouseholdCircumstancesEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo shareAdditionalCircumstances;
+    private VerticalYesNo shareAdditionalCircumstances;
 
     private String additionalCircumstancesDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo exceptionalHardship;
+    private VerticalYesNo exceptionalHardship;
 
     private String exceptionalHardshipDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo shareIncomeExpenseDetails;
+    private VerticalYesNo shareIncomeExpenseDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo universalCredit;
+    private VerticalYesNo universalCredit;
 
     private LocalDate ucApplicationDate;
 
@@ -108,7 +108,7 @@ public class HouseholdCircumstancesEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo priorityDebts;
+    private VerticalYesNo priorityDebts;
 
     private BigDecimal debtTotal;
 

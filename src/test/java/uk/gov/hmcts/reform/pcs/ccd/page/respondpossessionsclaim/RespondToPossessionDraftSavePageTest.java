@@ -14,8 +14,8 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
@@ -252,11 +252,11 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .dependantChildren(YesOrNo.YES)
+            .dependantChildren(VerticalYesNo.YES)
             .build();
 
         PaymentAgreement paymentAgreement = PaymentAgreement.builder()
-            .anyPaymentsMade(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .anyPaymentsMade(VerticalYesNo.YES)
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -351,14 +351,14 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     @Test
     void shouldSaveRegularIncomeFieldsInDraft() {
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .shareIncomeExpenseDetails(YesOrNo.YES)
+            .shareIncomeExpenseDetails(VerticalYesNo.YES)
             .incomeFromJobs(YesOrNo.YES)
             .incomeFromJobsAmount(new BigDecimal("150000")) // £1500.00 in pence
             .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
             .pension(YesOrNo.YES)
             .pensionAmount(new BigDecimal("50000")) // £500.00 in pence
             .pensionFrequency(RecurrenceFrequency.MONTHLY)
-            .universalCredit(YesOrNo.YES)
+            .universalCredit(VerticalYesNo.YES)
             .ucApplicationDate(LocalDate.of(2024, 1, 15))
             .universalCreditAmount(new BigDecimal("80000")) // £800.00 in pence
             .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
@@ -392,7 +392,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .getHouseholdCircumstances();
 
         // Assert all regular income fields are saved correctly
-        assertThat(savedHousehold.getShareIncomeExpenseDetails()).isEqualTo(YesOrNo.YES);
+        assertThat(savedHousehold.getShareIncomeExpenseDetails()).isEqualTo(VerticalYesNo.YES);
 
         assertThat(savedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("150000");
@@ -402,7 +402,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedHousehold.getPensionAmount()).isEqualByComparingTo("50000");
         assertThat(savedHousehold.getPensionFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
 
-        assertThat(savedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
+        assertThat(savedHousehold.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 1, 15));
         assertThat(savedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("80000");
         assertThat(savedHousehold.getUniversalCreditFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
