@@ -16,24 +16,22 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
-import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
-import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
-import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.net.URI;
@@ -46,11 +44,11 @@ import java.util.Set;
 import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -70,23 +68,19 @@ class TestingSupportControllerTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
+    private PartyRepository partyRepository;
+    @Mock
     private PartyAccessCodeRepository partyAccessCodeRepository;
+    @Mock
+    private PcsCaseService pcsCaseService;
+    @Mock
+    private AccessCodeGenerationService accessCodeGenerationService;
     @Mock
     private CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
-    @Mock
-    private OrganisationDetailsService organisationDetailsService;
-    @Mock
-    private IdamService idamService;
-    @Mock
-    private User user;
-    @Mock
-    private UserInfo userInfo;
-    @Mock
-    private OrganisationDetailsResponse organisationDetails;
+    private CaseAssignmentService caseAssignmentService;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -96,10 +90,7 @@ class TestingSupportControllerTest {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  docAssemblyService, eligibilityService,
                                                  pcsCaseRepository, partyAccessCodeRepository,
-                                                 modelMapper, ccdTestCaseOrchestrator,
-                                                 legalRepresentativePartyLinkService,
-                                                 organisationDetailsService,
-                                                 idamService
+                                                 modelMapper, ccdTestCaseOrchestrator,caseAssignmentService
                 );
     }
 
@@ -780,63 +771,22 @@ class TestingSupportControllerTest {
     }
 
     @Test
-    void linkDefendantSolicitorToParty() {
+    void assignDefendantSolicitorRole() {
         // given
         long caseReference = 111111111111L;
-        String partyId = "abc";
-        String authToken = "testAuth";
-        String userUid = "userUid";
-        when(idamService.validateAuthToken(authToken)).thenReturn(user);
-        when(user.getUserDetails()).thenReturn(userInfo);
-        when(userInfo.getUid()).thenReturn(userUid);
-        when(organisationDetailsService.getOrganisationDetails(userUid)).thenReturn(organisationDetails);
+        String userId = "abc";
 
         // when
-        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
+        ResponseEntity<Void> response = underTest.assignDefendantSolicitorRole(
             caseReference,
-            partyId,
-            authToken,
+            userId,
+            "testAuth",
             "testS2S"
         );
 
         // then
-        verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo, organisationDetails);
-
+        verify(caseAssignmentService).assignDefendantSolicitorRole(caseReference, userId);
         assertThat(HttpStatus.OK.equals(response.getStatusCode()));
-    }
-
-    @Test
-    void createPCSCaseViaTestingSupport() {
-        // given
-        JsonNode formPayload = createJsonNodeFormPayload("John Smith");
-        String legislativeCountry = "England";
-        String authToken = "authToken";
-        String caseIdKey = "caseId";
-        String caseIdValue = "123";
-        String caseDetailsKey = "caseDetails";
-        String caseDetailsValue = "abc";
-
-        Map<String, Object> caseMap = Map.of(caseIdKey, caseIdValue, caseDetailsKey, caseDetailsValue);
-
-        when(ccdTestCaseOrchestrator.createCase(authToken, LegislativeCountry.ENGLAND, formPayload))
-            .thenReturn(caseMap);
-
-        // when
-        ResponseEntity<Map<String, Object>> response = underTest.createPCSCaseViaTestingSupport(
-            legislativeCountry,
-            authToken,
-            "s2sToken",
-            formPayload
-        );
-
-        // then
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-
-        Map<String, Object> body = response.getBody();
-        assertEquals("CREATED", body.get("status"));
-        assertEquals(caseIdValue, body.get(caseIdKey));
-        assertEquals(caseDetailsValue, body.get(caseDetailsKey));
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName) {
@@ -850,5 +800,30 @@ class TestingSupportControllerTest {
         }
     }
 
+    /**
+     * Stub the assigning of entity IDs on the repo flush, as would be done by the DB.
+     */
+    private void stubPartyEntityFlush() {
+        stubPartyEntityFlush(Map.of());
+    }
 
+    /**
+     * Stub the assigning of entity IDs on the repo flus, with the option to specify
+     * what party IDs should be assigned based on the IDAM ID, otherwise a random UUID
+     * will be assigned.
+     * @param idamIdToPartyIdMap Map from IDAM ID to Party ID to assign
+     */
+    private void stubPartyEntityFlush(Map<UUID, UUID> idamIdToPartyIdMap) {
+        doAnswer(invocationOnMock -> {
+            List<PartyEntity> parties = invocationOnMock.getArgument(0);
+            parties.forEach(party -> {
+                if (party.getIdamId() != null) {
+                    party.setId(idamIdToPartyIdMap.getOrDefault(party.getIdamId(), UUID.randomUUID()));
+                } else {
+                    party.setId(UUID.randomUUID());
+                }
+            });
+            return null;
+        }).when(partyRepository).saveAllAndFlush(any());
+    }
 }

@@ -221,7 +221,7 @@ public class TestingSupportController {
                                        "legislativeCountry": "England"
                                  }
                             """
-                            ),
+                        ),
                         @ExampleObject(
                             name = "Ineligible postcode",
                             description = "Result for a match with an ineligible postcode",
@@ -232,7 +232,7 @@ public class TestingSupportController {
                                   "legislativeCountry": "Wales"
                                 }
                             """
-                            ),
+                        ),
                         @ExampleObject(
                             name = "Postcode that is cross-border",
                             description = "Result for a match with a cross border postcode, that needs "
@@ -246,7 +246,7 @@ public class TestingSupportController {
                                     ]
                                 }
                             """
-                            ),
+                        ),
                         @ExampleObject(
                             name = "No match found for postcode",
                             description = "No match found in the DB for the provided postcode.",
@@ -255,7 +255,7 @@ public class TestingSupportController {
                                     "status": "NO_MATCH_FOUND"
                                 }
                             """
-                            ),
+                        ),
                         @ExampleObject(
                             name = "Multiple matches found for postcode",
                             description = "Multiple matches found in the DB for the provided postcode.",
@@ -264,28 +264,28 @@ public class TestingSupportController {
                                     "status": "MULTIPLE_MATCHES_FOUND"
                                 }
                             """
-                            ),
+                        ),
                     })
             }),
         @ApiResponse(responseCode = "400",
             description = "Missing or blank postcode query parameter",
             content = @Content()
-            ),
+        ),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized - Invalid or missing authorization token",
             content = @Content()
-            ),
+        ),
         @ApiResponse(
             responseCode = "403",
             description = "Forbidden - Invalid or missing service authorization token",
             content = @Content()
-            ),
+        ),
         @ApiResponse(
             responseCode = "500",
             description = "Internal server error",
             content = @Content()
-            )
+        )
     })
     @GetMapping(value = "/claim-eligibility", produces = MediaType.APPLICATION_JSON_VALUE)
     public EligibilityResult getPostcodeEligibility(
