@@ -19,14 +19,13 @@ public class JsonAssertUtils {
             JsonNode expected;
             JsonNode actual;
 
-            if (expectedPathOrJson.trim().startsWith("{") ||
-                expectedPathOrJson.trim().startsWith("[")) {
+            String trimmed = expectedPathOrJson.trim();
 
-                expected = MAPPER.readTree(expectedPathOrJson);
-
+            if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+                expected = MAPPER.readTree(trimmed);
             } else {
                 try (InputStream is = Objects.requireNonNull(
-                    JsonAssertUtils.class.getResourceAsStream(expectedPathOrJson)
+                    JsonAssertUtils.class.getResourceAsStream(trimmed)
                 )) {
                     expected = MAPPER.readTree(is);
                 }
