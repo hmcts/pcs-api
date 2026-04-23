@@ -139,7 +139,7 @@ class DraftCaseJsonMergerTest {
             }
           }
         }
-        """;
+            """;
 
         String patchJson = """
             {
@@ -180,7 +180,7 @@ class DraftCaseJsonMergerTest {
             }
           }
         }
-        """;
+            """;
 
         String patchJson = """
             {
