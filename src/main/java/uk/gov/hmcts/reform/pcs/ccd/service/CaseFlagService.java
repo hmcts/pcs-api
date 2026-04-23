@@ -173,10 +173,6 @@ public class CaseFlagService {
         }
     }
 
-    private Boolean getBooleanValue(YesOrNo yesOrNoValue) {
-        return YesOrNoConverter.toBoolean(yesOrNoValue);
-    }
-
     private List<String> getIncomingFlagPathIds(FlagDetail incomingFlagDetail) {
 
         return incomingFlagDetail.getPath().stream().map(ListValue::getId).toList();

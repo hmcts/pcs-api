@@ -357,7 +357,7 @@ class PcsCaseServiceTest {
         underTest.patchCaseFlags(CASE_REFERENCE, caseData);
 
         // Then
-        verify(pcsCaseRepository, never()).save(any());
+        assertThat(pcsCaseEntity.getCaseFlags().size()).isEqualTo(0);
     }
 
     private Flags createFlags(List<ListValue<FlagDetail>> flagDetails) {
