@@ -32,16 +32,16 @@ public class CounterClaim {
     @CCD(access = {CitizenAccess.class})
     private String claimType;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {CitizenAccess.class}, max = 6800)
     private String counterclaimFor;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {CitizenAccess.class}, max = 6800)
     private String counterclaimReasons;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {CitizenAccess.class}, max = 6800)
     private String otherOrderRequestDetails;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {CitizenAccess.class}, max = 6800)
     private String otherOrderRequestFacts;
 
     @CCD(access = {CitizenAccess.class})
