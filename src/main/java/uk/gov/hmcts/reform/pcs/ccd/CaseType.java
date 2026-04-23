@@ -94,5 +94,13 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .forRoles(UserRole.PCS_SOLICITOR)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
+
+        buildCasePartiesTab(builder);
+    }
+
+    private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.tab("caseParties", "Case Parties")
+            .label("Case Parties", null, "#### Case Parties")
+            .field("casePartiesTab_ClaimantDetails");
     }
 }
