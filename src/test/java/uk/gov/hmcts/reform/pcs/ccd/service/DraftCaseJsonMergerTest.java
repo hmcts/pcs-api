@@ -196,4 +196,48 @@ class DraftCaseJsonMergerTest {
         assertThat(address.get("PostCode").asText()).isEqualTo("ABC123");
     }
 
+    @Test
+    void shouldClearUniversalCreditIncomeFieldsWhenRegularIncomeSubmissionUnticksUniversalCredit() throws Exception {
+        String baseJson = """
+            {
+              "possessionClaimResponse": {
+                "defendantResponses": {
+                  "householdCircumstances": {
+                    "universalCredit": "YES",
+                    "ucApplicationDate": "2025-01-15",
+                    "universalCreditAmount": "20000",
+                    "universalCreditFrequency": "MONTHLY"
+                  }
+                }
+              }
+            }
+            """;
+
+        String patchJson = """
+            {
+              "possessionClaimResponse": {
+                "defendantResponses": {
+                  "householdCircumstances": {
+                    "incomeFromJobs": "NO",
+                    "pension": "NO",
+                    "otherBenefits": "NO",
+                    "moneyFromElsewhere": "NO"
+                  }
+                }
+              }
+            }
+            """;
+
+        String mergedJson = underTest.mergeJson(baseJson, patchJson);
+        JsonNode hc = objectMapper.readTree(mergedJson)
+            .at("/possessionClaimResponse/defendantResponses/householdCircumstances");
+
+        JsonNode amount = hc.get("universalCreditAmount");
+        JsonNode frequency = hc.get("universalCreditFrequency");
+        assertThat(amount == null || amount.isNull()).isTrue();
+        assertThat(frequency == null || frequency.isNull()).isTrue();
+        assertThat(hc.get("universalCredit").asText()).isEqualTo("YES");
+        assertThat(hc.get("ucApplicationDate").asText()).isEqualTo("2025-01-15");
+    }
+
 }
