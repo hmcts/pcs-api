@@ -127,7 +127,6 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
-      files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
       paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
@@ -237,7 +236,6 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
-      files: ['rentArrears.docx', 'rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
       paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
@@ -538,7 +536,6 @@ test.describe('[Create Case - Wales]', async () => {
       day: occupationLicenceDetailsWales.dayTextInput,
       month: occupationLicenceDetailsWales.monthTextInput,
       year: occupationLicenceDetailsWales.yearTextInput,
-      files: 'occupationContract.pdf'
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossessionWales.moreInfoLink, whatAreYourGroundsForPossessionWales.understandingThePossessionMainHeader);
@@ -568,7 +565,6 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
-      files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
       paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
@@ -786,7 +782,6 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
-      files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
       paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
