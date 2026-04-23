@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -191,23 +192,24 @@ public class DefendantResponseService {
     }
 
     private void saveCounterClaim(DefendantResponses responses, PartyEntity partyRef, ClaimEntity claimRef) {
-        CounterClaim counterClaim = responses.getCounterClaim();
-        if (counterClaim == null) {
+        CounterClaim cc = responses.getCounterClaim();
+        if (cc == null) {
             return;
         }
 
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
-            .isClaimAmountKnown(counterClaim.getIsClaimAmountKnown())
-            .claimAmount(counterClaim.getClaimAmount())
-            .estimatedMaxClaimAmount(counterClaim.getEstimatedMaxClaimAmount())
-            .claimType(counterClaim.getClaimType())
-            .counterclaimFor(counterClaim.getCounterclaimFor())
-            .counterclaimReasons(counterClaim.getCounterclaimReasons())
-            .otherOrderRequestDetails(counterClaim.getOtherOrderRequestDetails())
-            .otherOrderRequestFacts(counterClaim.getOtherOrderRequestFacts())
-            .needHelpWithFees(counterClaim.getNeedHelpWithFees())
-            .appliedForHwf(counterClaim.getAppliedForHwf())
-            .hwfReferenceNumber(counterClaim.getHwfReferenceNumber())
+            .claimType(cc.getClaimType())
+            .isClaimAmountKnown(cc.getIsClaimAmountKnown())
+            .claimAmount(cc.getIsClaimAmountKnown() == VerticalYesNo.YES ? cc.getClaimAmount() : null)
+            .estimatedMaxClaimAmount(cc.getIsClaimAmountKnown() == VerticalYesNo.NO
+                                         ? cc.getEstimatedMaxClaimAmount() : null)
+            .counterclaimFor(cc.getCounterclaimFor())
+            .counterclaimReasons(cc.getCounterclaimReasons())
+            .otherOrderRequestDetails(cc.getOtherOrderRequestDetails())
+            .otherOrderRequestFacts(cc.getOtherOrderRequestFacts())
+            .needHelpWithFees(cc.getNeedHelpWithFees())
+            .appliedForHwf(cc.getAppliedForHwf())
+            .hwfReferenceNumber(cc.getHwfReferenceNumber())
             .claimSubmittedDate(LocalDateTime.now(utcClock))
             .party(partyRef)
             .build();
