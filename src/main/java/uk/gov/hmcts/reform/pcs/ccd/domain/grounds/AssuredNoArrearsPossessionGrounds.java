@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Builder
 @Data
@@ -37,5 +38,18 @@ public class AssuredNoArrearsPossessionGrounds {
     private Set<AssuredDiscretionaryGround> discretionaryGrounds;
     private YesOrNo showGroundReasonPage;
 
+    @CCD(
+            label = "Additional grounds",
+            hint = "Select all that you allege apply",
+            typeOverride = MultiSelectList,
+            typeParameterOverride = "AssuredAdditionalOtherGround"
+    )
+    private Set<AssuredAdditionalOtherGround> otherGround;
+
+    @CCD(
+            label = "Give details of your other grounds for possession",
+            typeOverride = TextArea
+    )
+    private String otherGroundDescription;
 }
 

@@ -70,6 +70,10 @@ class DraftCaseJsonMergerTest {
         assertThat(mergedCaseData)
             .usingRecursiveComparison()
             .ignoringFields("introductoryDemotedOrOtherGroundsForPossession.otherGroundDescription",
+                            "noRentArrearsGroundsOptions.assuredCommonPossessionGrounds.additionalOtherGround",
+                            "assuredRentArrearsPossessionGrounds.assuredCommonPossessionGrounds.additionalOtherGround",
+                            "noRentArrearsGroundsOptions.assuredCommonPossessionGrounds.otherGroundDescription",
+                            "assuredRentArrearsPossessionGrounds.assuredCommonPossessionGrounds.otherGroundDescription",
                             "applicationWithClaim",
                             "claimantType",
                             "noRentArrearsReasonForGrounds.holidayLet",
@@ -135,7 +139,7 @@ class DraftCaseJsonMergerTest {
             }
           }
         }
-            """;
+        """;
 
         String patchJson = """
             {
@@ -176,7 +180,7 @@ class DraftCaseJsonMergerTest {
             }
           }
         }
-            """;
+        """;
 
         String patchJson = """
             {

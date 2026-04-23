@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Builder
 @Data
@@ -43,5 +44,18 @@ public class AssuredRentArrearsPossessionGrounds {
     )
     private Set<AssuredAdditionalDiscretionaryGrounds> additionalDiscretionaryGrounds;
 
+    @CCD(
+            label = "Additional grounds",
+            hint = "Select all that you allege apply",
+            typeOverride = MultiSelectList,
+            typeParameterOverride = "AssuredAdditionalOtherGround"
+    )
+    private Set<AssuredAdditionalOtherGround> additionalOtherGround;
+
+    @CCD(
+            label = "Give details of your other grounds for possession",
+            typeOverride = TextArea
+    )
+    private String additionalOtherGroundDescription;
 }
 
