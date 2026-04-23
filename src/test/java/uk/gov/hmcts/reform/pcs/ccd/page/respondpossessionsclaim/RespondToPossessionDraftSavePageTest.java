@@ -392,7 +392,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .getHouseholdCircumstances();
 
         // Assert all regular income fields are saved correctly
-        assertThat(savedHousehold.getShareIncomeExpenseDetails()).isEqualTo(YesOrNo.YES);
+        assertThat(savedHousehold.getShareIncomeExpenseDetails()).isEqualTo(VerticalYesNo.YES);
 
         assertThat(savedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("150000");
@@ -402,7 +402,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedHousehold.getPensionAmount()).isEqualByComparingTo("50000");
         assertThat(savedHousehold.getPensionFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
 
-        assertThat(savedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
+        assertThat(savedHousehold.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 1, 15));
         assertThat(savedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("80000");
         assertThat(savedHousehold.getUniversalCreditFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);

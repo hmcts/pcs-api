@@ -878,4 +878,5 @@ class DefendantResponseServiceTest {
             Arguments.of((YesNoNotSure) null)
         );
     }
+
 }
