@@ -6,5 +6,6 @@ export const caseSummary = {
   createFlagsEvent: 'Create flags',
   manageCaseFlagsEvent: 'Manage Flags',
   viewCaseFlagsLink: 'View case flags',
+  confirmEvictionEvent: 'Confirm the eviction details',
   go: "Go"
 };
