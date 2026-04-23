@@ -797,8 +797,8 @@ class DefendantResponseServiceTest {
             .claimAmount(new BigDecimal("250.00"))
             .estimatedMaxClaimAmount(new BigDecimal("500.00"))
             .claimType("MONEY")
-            .counterclaimFor("Damage to property")
-            .counterclaimReasons("Landlord failed to maintain property")
+            .counterClaimFor("Damage to property")
+            .counterClaimReasons("Landlord failed to maintain property")
             .otherOrderRequestDetails("Request for compensation")
             .otherOrderRequestFacts("Property was in disrepair for 6 months")
             .needHelpWithFees(VerticalYesNo.YES)
@@ -824,8 +824,8 @@ class DefendantResponseServiceTest {
         assertThat(saved.getClaimAmount()).isEqualByComparingTo(new BigDecimal("250.00"));
         assertThat(saved.getEstimatedMaxClaimAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
         assertThat(saved.getClaimType()).isEqualTo("MONEY");
-        assertThat(saved.getCounterclaimFor()).isEqualTo("Damage to property");
-        assertThat(saved.getCounterclaimReasons()).isEqualTo("Landlord failed to maintain property");
+        assertThat(saved.getCounterClaimFor()).isEqualTo("Damage to property");
+        assertThat(saved.getCounterClaimReasons()).isEqualTo("Landlord failed to maintain property");
         assertThat(saved.getOtherOrderRequestDetails()).isEqualTo("Request for compensation");
         assertThat(saved.getOtherOrderRequestFacts()).isEqualTo("Property was in disrepair for 6 months");
         assertThat(saved.getNeedHelpWithFees()).isEqualTo(VerticalYesNo.YES);
