@@ -33,7 +33,7 @@ export const tenancyLicenceDetails = {
   youCanEnterUpto500CharsHiddenHintText: `You can enter up to 500 characters`,
   youCanEitherUploadThisHiddenParagraph: `You can either upload this now or closer to the hearing date. Any documents you upload now will be included in the pack of documents a judge will receive before the hearing (the bundle)`,
   addDocumentHiddenSubHeader: `Add document`,
-  uploadADocumentParagraph: `Upload a document to the system`,
+  uploadADocumentHiddenParagraph: `Upload a document to the system`,
   addNewHiddenButton: `Add new`,
   documentHiddenTextLabel: `Document`,
   chooseFileHiddenButton: `Choose file`,
