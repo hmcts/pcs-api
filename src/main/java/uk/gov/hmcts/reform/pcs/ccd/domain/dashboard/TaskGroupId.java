@@ -4,6 +4,7 @@ public enum TaskGroupId {
     CLAIM,
     HEARING,
     JUDGEMENT,
+    DOCUMENTS,
     NOTICE,
     RESPONSE,
     APPLICATIONS

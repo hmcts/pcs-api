@@ -11,7 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
-import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;  
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -26,9 +27,11 @@ import java.util.Map;
 public class DashboardJourneyService {
 
     private final ClaimTaskGroupEvaluator claimTaskGroupEvaluator;
+    private final DocumentsTaskGroupEvaluator documentsTaskGroupEvaluator;
 
-    public DashboardJourneyService(ClaimTaskGroupEvaluator claimTaskGroupEvaluator) {
+    public DashboardJourneyService(ClaimTaskGroupEvaluator claimTaskGroupEvaluator, DocumentsTaskGroupEvaluator documentsTaskGroupEvaluator) {
         this.claimTaskGroupEvaluator = claimTaskGroupEvaluator;
+        this.documentsTaskGroupEvaluator = documentsTaskGroupEvaluator;
     }
 
 
@@ -68,6 +71,7 @@ public class DashboardJourneyService {
     private List<ListValue<TaskGroup>> computeTaskGroups() {
         return ListValueUtils.wrapListItems(List.of(
             claimTaskGroupEvaluator.evaluate(null),
+            documentsTaskGroupEvaluator.evaluate(null),
 
             TaskGroup.builder()
                 .groupId(TaskGroupId.RESPONSE)

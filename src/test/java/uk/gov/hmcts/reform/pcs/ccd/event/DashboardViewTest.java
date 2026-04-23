@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.SubmitDashboardViewHandler;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -43,7 +44,7 @@ class DashboardViewTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        dashboardJourneyService = new DashboardJourneyService(new ClaimTaskGroupEvaluator());
+        dashboardJourneyService = new DashboardJourneyService(new ClaimTaskGroupEvaluator(), new DocumentsTaskGroupEvaluator());
         StartDashboardViewHandler startHandler = new StartDashboardViewHandler(
             pcsCaseService,
             accessValidator,

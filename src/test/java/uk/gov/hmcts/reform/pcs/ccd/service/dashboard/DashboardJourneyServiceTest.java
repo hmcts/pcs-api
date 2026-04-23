@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -23,7 +24,7 @@ class DashboardJourneyServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DashboardJourneyService(new ClaimTaskGroupEvaluator());
+        underTest = new DashboardJourneyService(new ClaimTaskGroupEvaluator(), new DocumentsTaskGroupEvaluator());
     }
 
     @Test
@@ -36,7 +37,7 @@ class DashboardJourneyServiceTest {
         assertThat(result.getCaseId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(result.getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(result.getNotifications()).hasSize(2);
-        assertThat(result.getTaskGroups()).hasSize(2);
+        assertThat(result.getTaskGroups()).hasSize(3);
     }
 
     @Test
@@ -69,7 +70,8 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()))
             .extracting(g -> g.getGroupId(), g -> g.getTasks().size())
             .containsExactly(
-                tuple(TaskGroupId.CLAIM, 2),
+                tuple(TaskGroupId.CLAIM, 1),
+                tuple(TaskGroupId.DOCUMENTS, 2),
                 tuple(TaskGroupId.RESPONSE, 3)
             );
 
@@ -77,7 +79,9 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple("Defendant.ViewClaim", TaskStatus.AVAILABLE),
-                tuple("Defendant.ViewDocuments", TaskStatus.NOT_AVAILABLE)
+                tuple("Defendant.UploadDocuments", TaskStatus.AVAILABLE),
+                tuple("Defendant.ViewDocuments", TaskStatus.AVAILABLE)
+                
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
