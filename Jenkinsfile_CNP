@@ -173,6 +173,11 @@ def setPerftestEnvVars() {
 
 def triggerGlobalSearchIndex() {
   echo "Triggering global search index on ${env.DEFINITION_STORE_URL_BASE}"
+  sh """
+    echo "IDAM_SYSTEM_USERNAME set: \$([ -n "\${IDAM_SYSTEM_USERNAME}" ] && echo yes || echo no)"
+    echo "IDAM_SYSTEM_USER_PASSWORD set: \$([ -n "\${IDAM_SYSTEM_USER_PASSWORD}" ] && echo yes || echo no)"
+    echo "PCS_API_IDAM_SECRET set: \$([ -n "\${PCS_API_IDAM_SECRET}" ] && echo yes || echo no)"
+  """
 
   def s2sToken = sh(
     script: """curl -s -X POST ${env.IDAM_S2S_AUTH_URL}/testing-support/lease \
@@ -185,10 +190,10 @@ def triggerGlobalSearchIndex() {
     script: """curl -s -X POST '${env.IDAM_API_URL}/o/token' \
       -H 'Content-Type: application/x-www-form-urlencoded' \
       --data-urlencode 'grant_type=password' \
-      --data-urlencode 'username=${env.IDAM_SYSTEM_USERNAME}' \
-      --data-urlencode 'password=${env.IDAM_SYSTEM_USER_PASSWORD}' \
+      --data-urlencode "username=\${IDAM_SYSTEM_USERNAME}" \
+      --data-urlencode "password=\${IDAM_SYSTEM_USER_PASSWORD}" \
       --data-urlencode 'client_id=pcs_api' \
-      --data-urlencode 'client_secret=${env.PCS_API_IDAM_SECRET}' \
+      --data-urlencode "client_secret=\${PCS_API_IDAM_SECRET}" \
       --data-urlencode 'scope=openid profile roles' \
       | python3 -c \"import sys,json; print(json.load(sys.stdin)['access_token'])\" """,
     returnStdout: true
