@@ -102,15 +102,4 @@ public class CounterClaimEntity {
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
 
-    public void setStatementOfTruth(StatementOfTruthEntity statementOfTruth) {
-        if (this.statementOfTruth != null) {
-            this.statementOfTruth.setCounterClaim(null);
-        }
-
-        this.statementOfTruth = statementOfTruth;
-
-        if (this.statementOfTruth != null) {
-            this.statementOfTruth.setCounterClaim(this);
-        }
-    }
 }
