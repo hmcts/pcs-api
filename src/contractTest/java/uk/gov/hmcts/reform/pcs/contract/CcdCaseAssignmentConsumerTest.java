@@ -151,8 +151,6 @@ public class CcdCaseAssignmentConsumerTest {
         );
     }
 
-
-
     static PactDslJsonBody caseRoleBody() {
         return (PactDslJsonBody) new PactDslJsonBody()
             .minArrayLike("case_users", 1)
