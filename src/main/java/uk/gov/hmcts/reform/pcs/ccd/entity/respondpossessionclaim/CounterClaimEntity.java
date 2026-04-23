@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -75,9 +76,11 @@ public class CounterClaimEntity {
 
     private BigDecimal estimatedMaxClaimAmount;
 
-    private String counterclaimFor;
+    @Column(name = "counterclaim_for")
+    private String counterClaimFor;
 
-    private String counterclaimReasons;
+    @Column(name = "counterclaim_reasons")
+    private String counterClaimReasons;
 
     private String otherOrderRequestDetails;
 

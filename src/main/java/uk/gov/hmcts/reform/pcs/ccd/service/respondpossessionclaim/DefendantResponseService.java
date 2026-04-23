@@ -203,8 +203,8 @@ public class DefendantResponseService {
             .claimAmount(cc.getIsClaimAmountKnown() == VerticalYesNo.YES ? cc.getClaimAmount() : null)
             .estimatedMaxClaimAmount(cc.getIsClaimAmountKnown() == VerticalYesNo.NO
                                          ? cc.getEstimatedMaxClaimAmount() : null)
-            .counterclaimFor(cc.getCounterclaimFor())
-            .counterclaimReasons(cc.getCounterclaimReasons())
+            .counterClaimFor(cc.getCounterClaimFor())
+            .counterClaimReasons(cc.getCounterClaimReasons())
             .otherOrderRequestDetails(cc.getOtherOrderRequestDetails())
             .otherOrderRequestFacts(cc.getOtherOrderRequestFacts())
             .needHelpWithFees(cc.getNeedHelpWithFees())
