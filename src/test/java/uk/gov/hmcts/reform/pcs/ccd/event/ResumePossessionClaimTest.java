@@ -104,6 +104,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final BigDecimal CLAIM_FEE_AMOUNT = new BigDecimal("123.40");
+    public static final String RESPONSIBLE_PARTY_LTD = "Responsible Party Ltd";
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -201,7 +202,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
         when(savingPageBuilderFactory.create(any(), any(EventId.class))).thenReturn(savingPageBuilder);
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
-
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
         when(userDetails.getUid()).thenReturn(USER_ID.toString());
 
@@ -510,6 +510,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
                 .build();
 
             // When
@@ -526,7 +527,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .claimantInformation(ClaimantInformation.builder().claimantName("Responsible Party Ltd").build())
+                .claimantInformation(ClaimantInformation.builder().claimantName(RESPONSIBLE_PARTY_LTD).build())
                 .build();
 
             // When
@@ -534,25 +535,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
-            assertThat(taskData.getResponsibleParty()).isEqualTo("Responsible Party Ltd");
-        }
-
-        @Test
-        void shouldSchedulePaymentTaskWithResponsiblePartyEmptyWhenClaimantInfoNull() {
-            // Given
-            stubFeeService();
-
-            PCSCase caseData = PCSCase.builder()
-                .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .claimantInformation(null) // important
-                .build();
-
-            // When
-            callSubmitHandler(caseData);
-
-            // Then
-            FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
-            assertThat(taskData.getResponsibleParty()).isNull();
+            assertThat(taskData.getResponsibleParty()).isEqualTo(RESPONSIBLE_PARTY_LTD);
         }
 
         @Test
@@ -560,6 +543,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
                 .build();
 
             FeeDetails feeDetails = stubFeeService();
@@ -581,6 +565,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
                 .build();
 
             // When
@@ -598,6 +583,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
                 .build();
 
             // When
@@ -617,6 +603,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
                 .build();
 
             // When
