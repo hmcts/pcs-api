@@ -89,7 +89,7 @@ public class RentArrears implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
-            caseData.getRentArrears() != null ? caseData.getRentArrears().getRecoveryAttemptDetails() : null,
+            caseData.getRentArrears().getRecoveryAttemptDetails(),
             RECOVERY_ATTEMPT_DETAILS_LABEL,
             TextAreaValidationService.MEDIUM_TEXT_LIMIT
         );

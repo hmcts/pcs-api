@@ -77,22 +77,13 @@ public class RentDetailsPage implements CcdPageConfiguration {
     }
 
     private BigDecimal calculateDailyRent(BigDecimal rentAmount, RentPaymentFrequency frequency) {
-        BigDecimal divisor;
-
-        switch (frequency) {
-            case WEEKLY:
-                divisor = new BigDecimal("7.0");
-                break;
-            case FORTNIGHTLY:
-                divisor = new BigDecimal("14.0");
-                break;
-            case MONTHLY:
-                divisor = new BigDecimal("30.44");
-                break;
-            case OTHER:
-            default:
+        BigDecimal divisor = switch (frequency) {
+            case WEEKLY -> new BigDecimal("7.0");
+            case FORTNIGHTLY -> new BigDecimal("14.0");
+            case MONTHLY -> new BigDecimal("30.44");
+            default ->
                 throw new IllegalArgumentException("Daily rent calculation not supported for frequency: " + frequency);
-        }
+        };
 
         return rentAmount.divide(divisor, 2, RoundingMode.HALF_UP);
     }
