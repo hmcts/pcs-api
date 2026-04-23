@@ -32,11 +32,13 @@ java:
     SPRING_FLYWAY_LOCATIONS: "classpath:db/migration,classpath:db/testdata"
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
+    HASH_PINS_ENABLED: "false"
     DB_SCHEDULER_EXECUTOR_ENABLED: true
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     CCD_SDK_DECENTRALISED: "true"
+    PAY_CALLBACK_URL: "https://${SERVICE_FQDN}/payment-update"
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"

@@ -30,8 +30,8 @@ public class ContactPreferences implements CcdPageConfiguration {
     private final TextAreaValidationService textAreaValidationService;
     private static final String EMAIL_LABEL = "Enter email address";
 
-    private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"YES\"";
-    private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"NO\"";
+    private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
+    private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -70,11 +70,11 @@ public class ContactPreferences implements CcdPageConfiguration {
             .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
             .label("contactPreferences-address-info-yes", """
                     ----
-                    <h2 class="govuk-heading-m">Correspondence address</h2>
+                    <h2 class="govuk-heading-m">Service address</h2>
                     <p class="govuk-body-m">
                         Court documents like orders and notices will be sent by post to the address registered with
                         My HMCTS.<br><br>
-                        You can change this correspondence address if, for example, you work in a different office from
+                        You can change this service address if, for example, you work in a different office from
                         the address registered with My HMCTS.
                     </p>
                     """, ORG_ADDRESS_FOUND)
@@ -91,26 +91,29 @@ public class ContactPreferences implements CcdPageConfiguration {
             // Address not found
             .label("contactPreferences-address-info-no", """
                 ----
-                <h2 class="govuk-heading-m">Correspondence address</h2>
+                <h2 class="govuk-heading-m">Service address</h2>
                 <p class="govuk-body-m">
                     Court documents like orders and notices will be sent by post to the address registered with
                     My HMCTS.
                 </p>
+                <p class="govuk-body-m">
+                    You can change this service address if, for example, you work in a different address with My HMCTS.
+                </p>
                 """, ORG_ADDRESS_NOT_FOUND)
             .label("contactPreferences-address-missing", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
-                        We could not retrieve your organisation’s correspondence address that’s linked to your My
+                        We could not retrieve your organisation’s service address that’s linked to your My
                         HMCTS account
                     </h3>
                     <p class="govuk-hint govuk-!-margin-top-1">
-                        You must enter the correspondence address you’d like to receive documents to
+                        You must enter the service address you’d like to receive documents to
                     </p>
                     """, ORG_ADDRESS_NOT_FOUND)
 
             // Rest of address
             .complex(
                 ClaimantContactPreferences::getOverriddenClaimantContactAddress,
-                "isCorrectClaimantContactAddress=\"NO\" OR orgAddressFound=\"NO\""
+                "isCorrectClaimantContactAddress=\"NO\" OR orgAddressFound=\"No\""
             )
                 .mandatory(AddressUK::getAddressLine1)
                 .optional(AddressUK::getAddressLine2)
