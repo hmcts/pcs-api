@@ -73,7 +73,13 @@ public class DocumentEntity {
 
     private Long size;
 
+    private String displayFileName;
+
     private String description;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "claim_id")
+    private ClaimEntity claim;
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "document")
     @Builder.Default

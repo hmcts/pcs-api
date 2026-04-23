@@ -150,6 +150,7 @@ public class DocumentService {
                 .map(holder -> DocumentEntity.builder()
                         .url(holder.getDocument().getUrl())
                         .fileName(holder.getDocument().getFilename())
+                        .displayFileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
                         .categoryId(holder.getDocument().getCategoryId())
                         .type(holder.getType())
