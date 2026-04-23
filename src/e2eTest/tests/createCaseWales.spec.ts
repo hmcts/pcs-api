@@ -63,7 +63,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - Wales] @nightly', async () => {
-  test('Wales - Standard Contract - Rent arrears only @PR @regression', async () => {
+  test('Wales - Standard Contract - Rent arrears only @PR', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -168,7 +168,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + ASB + other options @regression', async () => {
+  test('Wales - Secure contract - Rent arrears + ASB + other options', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -237,7 +237,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
-      files: ['rentArrears.docx', 'rentArrears.pdf'],
+      files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
       paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
@@ -538,7 +538,6 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       day: occupationLicenceDetailsWales.dayTextInput,
       month: occupationLicenceDetailsWales.monthTextInput,
       year: occupationLicenceDetailsWales.yearTextInput,
-      files: 'occupationContract.pdf'
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossessionWales.moreInfoLink, whatAreYourGroundsForPossessionWales.understandingThePossessionMainHeader);
@@ -726,7 +725,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + Other options @regression', async () => {
+  test('Wales - Secure contract - Rent arrears + Other options', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
