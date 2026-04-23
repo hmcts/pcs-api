@@ -115,6 +115,10 @@ withPipeline(type, product, component) {
     generateDefinitions(builder)
   }
 
+  afterSuccess('highleveldatasetup') {
+    triggerGlobalSearchIndex()
+  }
+
   before('smoketest:aat') {
     env.CASE_TYPE_SUFFIX="staging"
     env.CCD_ENABLED = "true"
@@ -165,6 +169,43 @@ def setIthcEnvVars() {
 
 def setPerftestEnvVars() {
   env.ENVIRONMENT= "perftest"
+}
+
+def triggerGlobalSearchIndex() {
+  echo "Triggering global search index on ${env.DEFINITION_STORE_URL_BASE}"
+
+  def s2sToken = sh(
+    script: """curl -s -X POST ${env.IDAM_S2S_AUTH_URL}/testing-support/lease \
+      -H 'Content-Type: application/json' \
+      -d '{"microservice": "pcs_api"}'""",
+    returnStdout: true
+  ).trim()
+
+  def idamToken = sh(
+    script: """curl -s -X POST '${env.IDAM_API_URL}/o/token' \
+      -H 'Content-Type: application/x-www-form-urlencoded' \
+      --data-urlencode 'grant_type=password' \
+      --data-urlencode 'username=${env.IDAM_SYSTEM_USERNAME}' \
+      --data-urlencode 'password=${env.IDAM_SYSTEM_USER_PASSWORD}' \
+      --data-urlencode 'client_id=pcs_api' \
+      --data-urlencode 'client_secret=${env.PCS_API_IDAM_SECRET}' \
+      --data-urlencode 'scope=openid profile roles' \
+      | python3 -c \"import sys,json; print(json.load(sys.stdin)['access_token'])\" """,
+    returnStdout: true
+  ).trim()
+
+  def status = sh(
+    script: """curl -s -o /dev/null -w "%{http_code}" -X POST ${env.DEFINITION_STORE_URL_BASE}/elastic-support/global-search/index \
+      -H "Authorization: Bearer ${idamToken}" \
+      -H "ServiceAuthorization: Bearer ${s2sToken}" """,
+    returnStdout: true
+  ).trim()
+
+  if (status == "201") {
+    echo "Global search index created successfully"
+  } else {
+    error "Global search index returned status ${status}"
+  }
 }
 
 def generateDefinitions(builder) {
