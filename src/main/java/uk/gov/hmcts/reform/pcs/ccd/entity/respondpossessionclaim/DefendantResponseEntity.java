@@ -21,15 +21,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -105,7 +106,7 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo correspondenceAddressConfirmation;
+    private VerticalYesNo correspondenceAddressConfirmation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -119,7 +120,7 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo disputeClaim;
+    private VerticalYesNo disputeClaim;
 
     private String disputeClaimDetails;
 
@@ -138,7 +139,7 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo makeCounterClaim;
+    private VerticalYesNo makeCounterClaim;
 
     @Enumerated(EnumType.STRING)
     private DefendantResponseStatus status;
@@ -149,7 +150,8 @@ public class DefendantResponseEntity {
 
     private LocalDateTime responseReceivedDate;
 
-    private String languageUsed;
+    @Enumerated(EnumType.STRING)
+    private LanguageUsed languageUsed;
 
     private String channel;
 
