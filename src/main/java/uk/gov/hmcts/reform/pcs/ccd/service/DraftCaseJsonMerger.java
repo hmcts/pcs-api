@@ -119,7 +119,9 @@ public class DraftCaseJsonMerger {
 
     private boolean isUniversalCreditSelected(ObjectNode householdCircumstancesPatch) {
         JsonNode universalCredit = householdCircumstancesPatch.get("universalCredit");
-        return universalCredit != null && universalCredit.isTextual() && "YES".equalsIgnoreCase(universalCredit.asText());
+        return universalCredit != null
+            && universalCredit.isTextual()
+            && "YES".equalsIgnoreCase(universalCredit.asText());
     }
 
 }
