@@ -28,12 +28,14 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
@@ -75,6 +77,7 @@ public class TestingSupportController {
     private final PartyAccessCodeRepository partyAccessCodeRepository;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
+    private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final OrganisationDetailsService organisationDetailsService;
     private final IdamService idamService;
@@ -221,7 +224,7 @@ public class TestingSupportController {
                                        "legislativeCountry": "England"
                                  }
                             """
-                        ),
+                            ),
                         @ExampleObject(
                             name = "Ineligible postcode",
                             description = "Result for a match with an ineligible postcode",
@@ -232,7 +235,7 @@ public class TestingSupportController {
                                   "legislativeCountry": "Wales"
                                 }
                             """
-                        ),
+                            ),
                         @ExampleObject(
                             name = "Postcode that is cross-border",
                             description = "Result for a match with a cross border postcode, that needs "
@@ -246,7 +249,7 @@ public class TestingSupportController {
                                     ]
                                 }
                             """
-                        ),
+                            ),
                         @ExampleObject(
                             name = "No match found for postcode",
                             description = "No match found in the DB for the provided postcode.",
@@ -255,7 +258,7 @@ public class TestingSupportController {
                                     "status": "NO_MATCH_FOUND"
                                 }
                             """
-                        ),
+                            ),
                         @ExampleObject(
                             name = "Multiple matches found for postcode",
                             description = "Multiple matches found in the DB for the provided postcode.",
@@ -264,28 +267,28 @@ public class TestingSupportController {
                                     "status": "MULTIPLE_MATCHES_FOUND"
                                 }
                             """
-                        ),
+                            ),
                     })
             }),
         @ApiResponse(responseCode = "400",
             description = "Missing or blank postcode query parameter",
             content = @Content()
-        ),
+            ),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized - Invalid or missing authorization token",
             content = @Content()
-        ),
+            ),
         @ApiResponse(
             responseCode = "403",
             description = "Forbidden - Invalid or missing service authorization token",
             content = @Content()
-        ),
+            ),
         @ApiResponse(
             responseCode = "500",
             description = "Internal server error",
             content = @Content()
-        )
+            )
     })
     @GetMapping(value = "/claim-eligibility", produces = MediaType.APPLICATION_JSON_VALUE)
     public EligibilityResult getPostcodeEligibility(
@@ -445,6 +448,7 @@ public class TestingSupportController {
         UserInfo userDetails = user.getUserDetails();
         OrganisationDetailsResponse organisationDetails = organisationDetailsService
             .getOrganisationDetails(userDetails.getUid());
+        caseRoleAssignmentService.assignRasRole(caseReference, userDetails.getUid(), UserRole.DEFENDANT_SOLICITOR);
 
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
