@@ -10,6 +10,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -28,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.War
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -46,9 +49,11 @@ import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType;
@@ -378,6 +383,32 @@ class EnforceTheOrderTest extends BaseEventTest {
                 .anyMatch(item ->
                         item.getCode().equals(SelectEnforcementType.WARRANT_OF_RESTITUTION.name()));
         assertThat(warrantOfRestitutionOptionExists).isFalse();
+    }
+
+    @Test
+    void shouldNOTConfigurePages() {
+        try (MockedStatic<TestSupportEnvironment> mocked =
+                 Mockito.mockStatic(TestSupportEnvironment.class)) {
+            mocked.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(false);
+            clearInvocations(enforcementPageConfigurer);
+            clearInvocations(warrantPageConfigurer);
+            clearInvocations(writPageConfigurer);
+            clearInvocations(warrantOfRestitutionPageConfigurer);
+
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementOrder.builder().build())
+                .build();
+
+            // When
+            callStartHandler(caseData);
+
+            //Then
+            verifyNoInteractions(enforcementPageConfigurer);
+            verifyNoInteractions(warrantPageConfigurer);
+            verifyNoInteractions(writPageConfigurer);
+            verifyNoInteractions(warrantOfRestitutionPageConfigurer);
+        }
     }
 
     private static Stream<Arguments> enforcementFeeScenarios() {

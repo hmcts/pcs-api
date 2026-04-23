@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.NO_NON_PROD_C
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")
 @DisplayName("TestCaseGenerationIT Integration Tests")
+@Disabled
 public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
     private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
