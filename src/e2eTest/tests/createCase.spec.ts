@@ -148,7 +148,8 @@ test.describe('[Create Case - England]', async () => {
      });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
-       rentArrearsAmountOnStatement: '1000',
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
        rentPaidByOthersOption: rentArrears.yesRadioOption,
        paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
      });
@@ -761,6 +762,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.enterFrequencyHiddenTextInput,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
       paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
@@ -1096,6 +1098,7 @@ test.describe('[Create Case - England]', async () => {
     });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
       paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
