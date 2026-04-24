@@ -12,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toVerticalYesNo;
 
 @ExtendWith(MockitoExtension.class)
 class HouseholdCircumstancesServiceTest {
@@ -381,10 +381,4 @@ class HouseholdCircumstancesServiceTest {
         assertThat(entity.getRegularIncomeEntity()).isNull();
     }
 
-    private VerticalYesNo toVerticalYesNo(YesOrNo expected) {
-        if (expected == null) {
-            return null;
-        }
-        return expected == YesOrNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
-    }
 }
