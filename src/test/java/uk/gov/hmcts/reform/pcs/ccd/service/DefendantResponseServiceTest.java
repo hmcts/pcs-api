@@ -833,57 +833,12 @@ class DefendantResponseServiceTest {
     }
 
     @ParameterizedTest
-    @MethodSource("yesAmountScenario")
-    void shouldSetClaimAmountWhenKnown(
-        VerticalYesNo isKnown,
+    @MethodSource("amountSelectionScenarios")
+    void shouldPersistCorrectAmountsBasedOnSelection(
+        VerticalYesNo claimantAmountKnown,
         BigDecimal claimAmountInput,
-        BigDecimal expectedClaimAmount
-    ) {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-
-        stubPartyLookup();
-        stubClaimLookup();
-
-        CounterClaim counterClaim = CounterClaim.builder()
-            .isClaimAmountKnown(isKnown)
-            .claimAmount(claimAmountInput)
-            .build();
-
-        PossessionClaimResponse request = PossessionClaimResponse.builder()
-            .defendantResponses(DefendantResponses.builder()
-                                    .counterClaim(counterClaim)
-                                    .build())
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, request);
-
-        // Then
-        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
-        CounterClaimEntity saved = counterClaimCaptor.getValue();
-
-        assertThat(saved.getClaimAmount()).isEqualByComparingTo(expectedClaimAmount);
-        assertThat(saved.getEstimatedMaxClaimAmount()).isNull();
-    }
-
-    private static Stream<Arguments> yesAmountScenario() {
-        return Stream.of(
-            Arguments.of(
-                VerticalYesNo.YES,
-                new BigDecimal("250.00"),
-                new BigDecimal("250.00")
-            )
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("noAmountScenario")
-    void shouldSetEstimatedAmountWhenNotKnown(
-        VerticalYesNo isKnown,
         BigDecimal estimatedInput,
+        BigDecimal expectedClaimAmount,
         BigDecimal expectedEstimatedAmount
     ) {
         // Given
@@ -895,7 +850,8 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         CounterClaim counterClaim = CounterClaim.builder()
-            .isClaimAmountKnown(isKnown)
+            .isClaimAmountKnown(claimantAmountKnown)
+            .claimAmount(claimAmountInput)
             .estimatedMaxClaimAmount(estimatedInput)
             .build();
 
@@ -914,16 +870,37 @@ class DefendantResponseServiceTest {
         verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
         CounterClaimEntity saved = counterClaimCaptor.getValue();
 
-        assertThat(saved.getClaimAmount()).isNull();
-        assertThat(saved.getEstimatedMaxClaimAmount())
-            .isEqualByComparingTo(expectedEstimatedAmount);
+        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(claimantAmountKnown);
+        assertBigDecimalEquals(saved.getClaimAmount(), expectedClaimAmount);
+        assertBigDecimalEquals(saved.getEstimatedMaxClaimAmount(), expectedEstimatedAmount);
     }
 
-    private static Stream<Arguments> noAmountScenario() {
+    private void assertBigDecimalEquals(BigDecimal actual, BigDecimal expected) {
+        if (expected == null) {
+            assertThat(actual).isNull();
+        } else {
+            assertThat(actual).isEqualByComparingTo(expected);
+        }
+    }
+
+    private static Stream<Arguments> amountSelectionScenarios() {
         return Stream.of(
+
+            //YES selected > only claimAmount should be persisted
+            Arguments.of(
+                VerticalYesNo.YES,
+                new BigDecimal("250.00"),
+                new BigDecimal("999.00"),
+                new BigDecimal("250.00"),
+                null
+            ),
+
+            //NO selected > only estimatedMaxClaimAmount should be persisted
             Arguments.of(
                 VerticalYesNo.NO,
+                new BigDecimal("999.00"),
                 new BigDecimal("500.00"),
+                null,
                 new BigDecimal("500.00")
             )
         );
