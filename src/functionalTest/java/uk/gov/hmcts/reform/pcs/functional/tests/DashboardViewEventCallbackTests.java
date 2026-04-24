@@ -49,8 +49,6 @@ public class DashboardViewEventCallbackTests extends BaseApi {
     @Title("dashboardView start event callback test - returns 200")
     @Test
     void dashboardViewStartEventCallbackTest() {
-        Map<String, String> requestBody = Map.of("accessCode", accessCode);
-
         String dashboardViewRequestBody = PayloadLoader.load(
             "/payloads/dashboardView-startEventCallbackRequest.json",
             Map.of("caseTypeId", caseType, "caseId", caseReference)
@@ -62,7 +60,6 @@ public class DashboardViewEventCallbackTests extends BaseApi {
         );
 
         apiSteps.validateAccessCode(caseReference.toString(), accessCode);
-
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
