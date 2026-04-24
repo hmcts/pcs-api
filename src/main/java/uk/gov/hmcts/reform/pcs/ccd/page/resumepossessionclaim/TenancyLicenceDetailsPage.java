@@ -55,20 +55,18 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
             .complex(PCSCase::getTenancyLicenceDetails)
                 .optional(TenancyLicenceDetails::getTenancyLicenceDate)
             .done()
-            .label("tenancyLicenceDetails-doc-section", """
-               ---
-               <h2 class="govuk-heading-m">Upload tenancy or licence agreement</h2>
-               <h3>Do you want to upload a copy of the tenancy or licence agreement?
-               (Optional)</h3>
-               <p class="govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1">
-                You can either upload this now or closer to the hearing date. Any documents you upload now will be
-                included in the pack of documents a judge will receive before the hearing (the bundle)
-                </p>
-               """)
+            .label("tenancyLicenceDetails-doc-section", "---")
             .complex(PCSCase::getTenancyLicenceDetails)
-                .optional(TenancyLicenceDetails::getTenancyLicenceDocuments)
+                .mandatory(TenancyLicenceDetails::getHasCopyOfTenancyLicence)
+                .mandatory(
+                    TenancyLicenceDetails::getTenancyLicenceDocuments,
+                    "tenancy_HasCopyOfTenancyLicence=\"YES\""
+                )
+                .mandatory(
+                    TenancyLicenceDetails::getReasonsForNoTenancyLicenceDocuments,
+                    "tenancy_HasCopyOfTenancyLicence=\"NO\""
+                )
             .done()
-            .label("lineSeparator", "---")
             .label("tenancyLicenceDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -92,6 +90,16 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
                     ? caseData.getTenancyLicenceDetails().getDetailsOfOtherTypeOfTenancyLicence() : null,
             TenancyLicenceDetails.DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
             TextAreaValidationService.MEDIUM_TEXT_LIMIT
+        );
+
+        // Validate reasons for no tenancy licence character limit
+        validationErrors.addAll(
+            textAreaValidationService.validateSingleTextArea(
+                caseData.getTenancyLicenceDetails() != null
+                    ? caseData.getTenancyLicenceDetails().getReasonsForNoTenancyLicenceDocuments() : null,
+                TenancyLicenceDetails.REASONS_FOR_NO_TENANCY_LICENCE_DOCUMENTS_LABEL,
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
         );
 
         if (!validationErrors.isEmpty()) {

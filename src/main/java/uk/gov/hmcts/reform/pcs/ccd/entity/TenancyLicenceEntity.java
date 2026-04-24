@@ -63,4 +63,9 @@ public class TenancyLicenceEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo calculatedDailyRentCorrect;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo hasCopyOfTenancyLicence;
+
+    private String reasonsForNoTenancyLicence;
 }
