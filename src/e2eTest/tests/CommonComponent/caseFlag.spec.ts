@@ -3,11 +3,13 @@ import {
   performAction,
   performValidation
 } from '@utils/controller';
-import {
-  addFlagcomment,
+import {manageCaseFlags,
+  addCommentsForFlag,
   caseSummary,
   reviewFlagDetails,
   selectFlagType,
+  updateFlagComments,
+  viewCaseFlag,
   whereShouldThisFlagBeAdded
 } from '@data/page-data';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -15,7 +17,6 @@ import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { caseFlag } from '@data/page-data/caseFlag.page.data';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -41,46 +42,46 @@ test.describe('[Common Component Case Flags]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
-    await performAction('createFlag', {
+    await performAction('whereShouldThisFlagBeAdded', {
       flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
       flagLevelOption: whereShouldThisFlagBeAdded.caseLevelRadioOption,
       continueButton: whereShouldThisFlagBeAdded.continueButton
     });
     await performValidation('mainHeader', selectFlagType.mainHeader);
-    await performAction('selectFlag', {
-      selectFlagQuestion: selectFlagType.selectFlagTypeQuestion,
+    await performAction('selectFlagType', {
+      selectFlagQuestion: selectFlagType.selectFlagTypeLabel,
       selectFlagOption: selectFlagType.complexCaseRadioOption,
       continueButton: selectFlagType.continueButton
     });
-    await performValidation('mainHeader', addFlagcomment.mainHeader);
-    await performAction('addComment', {
-      label: addFlagcomment.addCommentsQuestion,
-      input: addFlagcomment.addCommentTextInput,
-      continueButton: addFlagcomment.continueButton
+    await performValidation('mainHeader', addCommentsForFlag.mainHeader);
+    await performAction('addCommentsForFlag', {
+      label: addCommentsForFlag.addCommentsLabel,
+      input: addCommentsForFlag.addCommentTextInput,
+      continueButton: addCommentsForFlag.continueButton
     });
     await performValidation('mainHeader', reviewFlagDetails.mainHeader);
-    await performAction('reviewFlag', {
+    await performAction('reviewFlagDetails', {
       saveButton: reviewFlagDetails.saveAndContinueButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Create flags');
-    await performAction('viewFlag', {
-      viewFlagLink: caseSummary.viewCaseFlagsLink
+    await performAction('viewCaseFlags', {
+      viewFlagLink: viewCaseFlag.viewFlagLink
     });
-    
-    await performAction('select', caseFlag.nextStepEventList, caseFlag.manageCaseFlagsEvent);
-    await performAction('clickButton', caseFlag.go);
-    await performAction('selectFlagFromManageCaseFlags', {
-      flagOptions: whereShouldThisFlagBeAdded.caseLevelComplexCaseRadioOption,
-      continueButton: whereShouldThisFlagBeAdded.continueButton
+    await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
+    await performAction('clickButton', manageCaseFlags.goButton);
+    await performAction('manageCaseFlags', {
+      flagOption: manageCaseFlags.caseLevelComplexCaseRadioOption,
+      continueButton: manageCaseFlags.continueButton
     }); 
-    await performAction('updateComment', {
-      updateLabel: addFlagcomment.updateFlagQuestion,
-      updateInput: addFlagcomment.updateFlagTextInput,
-      inactiveButton: addFlagcomment.makeInactiveButton,
-      continueButton: addFlagcomment.continueButton
+    await performAction('updateFlagComments', {
+      updateLabel: updateFlagComments.updateFlagLabel,
+      updateInput: updateFlagComments.updateFlagTextInput,
+      inactiveButton: updateFlagComments.makeInactiveButton,
+      continueButton: updateFlagComments.continueButton
     });
-    await performAction('reviewFlag', {
+    await performAction('reviewFlagDetails', {
       saveButton: reviewFlagDetails.saveAndContinueButton
     });
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage Flags');});
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage Flags');
+    });
 });

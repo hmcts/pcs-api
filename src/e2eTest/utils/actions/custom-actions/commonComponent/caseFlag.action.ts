@@ -1,18 +1,17 @@
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller';
-import { whereShouldThisFlagBeAdded } from '@data/page-data';
 
 export class CaseFlagAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['createFlag', () => this.createFlag(fieldName as actionRecord, page)],
-      ['selectFlag', () => this.selectFlag(fieldName as actionRecord, page)],
-      ['addComment', () => this.addComment(fieldName as actionRecord, page)],
-      ['reviewFlag', () => this.reviewFlag(fieldName as actionRecord, page)],
-      ['viewFlag',   () => this.viewFlag(fieldName as actionRecord, page)],
-      ['selectFlagFromManageCaseFlags', () => this.selectFlagFromManageCaseFlags(fieldName as actionRecord, page)],
-      ['updateComment', () => this.updateComment(fieldName as actionRecord, page)]
+      ['whereShouldThisFlagBeAdded', () => this.whereShouldThisFlagBeAdded(fieldName as actionRecord, page)],
+      ['selectFlagType', () => this.selectFlagType(fieldName as actionRecord, page)],
+      ['addCommentsForFlag', () => this.addCommentsForFlag(fieldName as actionRecord, page)],
+      ['reviewFlagDetails', () => this.reviewFlagDetails(fieldName as actionRecord, page)],
+      ['viewCaseFlags', () => this.viewCaseFlags(fieldName as actionRecord, page)],
+      ['manageCaseFlags', () => this.manageCaseFlags(fieldName as actionRecord, page)],
+      ['updateFlagComments', () => this.updateFlagComments(fieldName as actionRecord, page)]
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -20,41 +19,42 @@ export class CaseFlagAction implements IAction {
     await actionToPerform();
   }
 
-  private async createFlag(flagOptions: actionRecord, page: Page) {
+  private async whereShouldThisFlagBeAdded(flagOptions: actionRecord, page: Page) {
     const radio = page.locator(`label >> text=${flagOptions.flagLevelOption}`);
     await radio.waitFor({ state: 'visible' });
     await performAction('clickRadioButton', { question: flagOptions.flagLevelQuestion, option: flagOptions.flagLevelOption });
     await performAction('clickButton', flagOptions.continueButton);
   }
 
-  private async selectFlag(selectOptions: actionRecord, page: Page) {
+  private async selectFlagType(selectOptions: actionRecord, page: Page) {
     const radio = page.locator(`label >> text=${selectOptions.selectFlagOption}`);
     await radio.waitFor({ state: 'visible' });
     await performAction('clickRadioButton', { question: selectOptions.selectFlagQuestion, option: selectOptions.selectFlagOption });
     await performAction('clickButton', selectOptions.continueButton);
   }
 
-  private async addComment(commentadd: actionRecord, page: Page) {
-    await performAction('inputText', commentadd.label, commentadd.input);
-    await performAction('clickButton', commentadd.continueButton);
+  private async addCommentsForFlag(addComments: actionRecord, page: Page) {
+    await performAction('inputText', addComments.label, addComments.input);
+    await performAction('clickButton', addComments.continueButton);
   }
 
-  private async reviewFlag(reviewOptions: actionRecord, page: Page) {
+  private async reviewFlagDetails(reviewOptions: actionRecord, page: Page) {
+    //await performAction('clicklink', reviewOptions.changeLink);
     await performAction('clickButton', reviewOptions.saveButton);
   }
-  private async viewFlag(viewOptions: actionRecord, page: Page) {
+  private async viewCaseFlags(viewOptions: actionRecord, page: Page) {
     await page.waitForLoadState();
     await performAction('clickButton', viewOptions.viewFlagLink);
     }
 
-  private async selectFlagFromManageCaseFlags(selectOptions: actionRecord, page: Page) {
-    const radio = page.locator(`label >> text=${selectOptions.flagOptions}`);
+  private async manageCaseFlags(selectOptions: actionRecord, page: Page) {
+    const radio = page.locator(`label >> text=${selectOptions.flagOption}`);
     await radio.waitFor({ state: 'visible' });
-    await performAction('clickRadioButton', { option: selectOptions.flagOptions });
+    await performAction('clickRadioButton', { option: selectOptions.flagOption });
     await performAction('clickButton', selectOptions.continueButton);
   }
 
-  private async updateComment(commentUpdate: actionRecord, page: Page) {
+  private async updateFlagComments(commentUpdate: actionRecord, page: Page) {
     await performAction('inputText', commentUpdate.updateLabel, commentUpdate.updateInput);
     await performAction('clickButton', commentUpdate.inactiveButton);
     await performAction('clickButton', commentUpdate.continueButton);
