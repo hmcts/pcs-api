@@ -256,7 +256,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         PaymentAgreement paymentAgreement = PaymentAgreement.builder()
-            .anyPaymentsMade(uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES)
+            .anyPaymentsMade(VerticalYesNo.YES)
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()

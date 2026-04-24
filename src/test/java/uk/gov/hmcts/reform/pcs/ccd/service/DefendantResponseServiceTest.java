@@ -642,17 +642,17 @@ class DefendantResponseServiceTest {
             .dependantChildren(YesOrNo.YES)
             .build();
         PaymentAgreement paymentAgreement = PaymentAgreement.builder()
-            .anyPaymentsMade(YesOrNo.NO)
+            .anyPaymentsMade(VerticalYesNo.NO)
             .build();
 
         ReasonableAdjustmentEntity reasonableAdjustmentEntity = ReasonableAdjustmentEntity.builder()
             .reasonableAdjustmentsRequired("Wheelchair access")
             .build();
         HouseholdCircumstancesEntity householdCircumstancesEntity = HouseholdCircumstancesEntity.builder()
-            .dependantChildren(YesOrNo.YES)
+            .dependantChildren(VerticalYesNo.YES)
             .build();
         PaymentAgreementEntity paymentAgreementEntity = PaymentAgreementEntity.builder()
-            .anyPaymentsMade(YesOrNo.NO)
+            .anyPaymentsMade(VerticalYesNo.NO)
             .build();
 
         when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
@@ -702,7 +702,7 @@ class DefendantResponseServiceTest {
 
     @ParameterizedTest(name = "disputeClaim={0}")
     @MethodSource("disputeClaimPersistenceScenarios")
-    void shouldPersistDisputeClaim(YesOrNo disputeClaim) {
+    void shouldPersistDisputeClaim(VerticalYesNo disputeClaim) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
@@ -730,9 +730,9 @@ class DefendantResponseServiceTest {
 
     private static Stream<Arguments> disputeClaimPersistenceScenarios() {
         return Stream.of(
-            Arguments.of(YesOrNo.YES),
-            Arguments.of(YesOrNo.NO),
-            Arguments.of((YesOrNo) null)
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
         );
     }
 

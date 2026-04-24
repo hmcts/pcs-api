@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
@@ -47,7 +48,7 @@ class HouseholdCircumstancesServiceTest {
         HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
 
         // Then
-        assertThat(entity.getDependantChildren()).isEqualTo(expected);
+        assertThat(entity.getDependantChildren()).isEqualTo(toVerticalYesNo(expected));
     }
 
     @Test
@@ -78,7 +79,7 @@ class HouseholdCircumstancesServiceTest {
 
         //Then
         assertThat(entity).isNotNull();
-        assertThat(entity.getOtherDependants()).isEqualTo(expected);
+        assertThat(entity.getOtherDependants()).isEqualTo(toVerticalYesNo(expected));
     }
 
     private static Stream<Arguments> otherDependantsScenarios() {
@@ -126,7 +127,7 @@ class HouseholdCircumstancesServiceTest {
         HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
 
         // Then
-        assertThat(entity.getOtherTenants()).isEqualTo(expected);
+        assertThat(entity.getOtherTenants()).isEqualTo(toVerticalYesNo(expected));
     }
 
     @ParameterizedTest
@@ -146,7 +147,7 @@ class HouseholdCircumstancesServiceTest {
         HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
 
         // Then
-        assertThat(entity.getOtherTenants()).isEqualTo(expectedOtherTenants);
+        assertThat(entity.getOtherTenants()).isEqualTo(toVerticalYesNo(expectedOtherTenants));
         assertThat(entity.getOtherTenantsDetails()).isEqualTo(expectedDetailsOnEntity);
     }
 
@@ -378,5 +379,12 @@ class HouseholdCircumstancesServiceTest {
         HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(circumstances);
 
         assertThat(entity.getRegularIncomeEntity()).isNull();
+    }
+
+    private VerticalYesNo toVerticalYesNo(YesOrNo expected) {
+        if (expected == null) {
+            return null;
+        }
+        return expected == YesOrNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
     }
 }

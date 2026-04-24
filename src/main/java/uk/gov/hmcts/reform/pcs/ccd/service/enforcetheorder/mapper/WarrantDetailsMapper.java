@@ -2,9 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
@@ -19,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toVerticalYesNo;
 
 @Component
 @AllArgsConstructor
@@ -49,9 +49,9 @@ public class WarrantDetailsMapper {
 
     private void controlFlags(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
         warrantEntity.setShowPeopleWhoWillBeEvictedPage(
-            convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleWhoWillBeEvictedPage()));
+            toVerticalYesNo(warrantDetails.getShowPeopleWhoWillBeEvictedPage()));
         warrantEntity.setShowPeopleYouWantToEvictPage(
-            convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleYouWantToEvictPage()));
+            toVerticalYesNo(warrantDetails.getShowPeopleYouWantToEvictPage()));
     }
 
     private void statementOfTruth(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
@@ -180,7 +180,4 @@ public class WarrantDetailsMapper {
         }
     }
 
-    private VerticalYesNo convertYesOrNoToVerticalYesNo(YesOrNo yesOrNo) {
-        return yesOrNo == YesOrNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
-    }
 }

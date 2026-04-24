@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircum
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
 
+import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toVerticalYesNo;
+
 @Service
 public class HouseholdCircumstancesService {
 
@@ -21,21 +23,21 @@ public class HouseholdCircumstancesService {
         YesNoNotSure alternativeAccommodation = circumstances.getAlternativeAccommodation();
 
         HouseholdCircumstancesEntity entity = HouseholdCircumstancesEntity.builder()
-            .dependantChildren(circumstances.getDependantChildren())
-            .shareAdditionalCircumstances(circumstances.getShareAdditionalCircumstances())
+            .dependantChildren(toVerticalYesNo(circumstances.getDependantChildren()))
+            .shareAdditionalCircumstances(toVerticalYesNo(circumstances.getShareAdditionalCircumstances()))
             .additionalCircumstancesDetails(circumstances.getAdditionalCircumstancesDetails())
-            .exceptionalHardship(circumstances.getExceptionalHardship())
+            .exceptionalHardship(toVerticalYesNo(circumstances.getExceptionalHardship()))
             .exceptionalHardshipDetails(circumstances.getExceptionalHardshipDetails())
             .dependantChildrenDetails(circumstances.getDependantChildrenDetails())
-            .otherDependants(circumstances.getOtherDependants())
+            .otherDependants(toVerticalYesNo(circumstances.getOtherDependants()))
             .otherDependantDetails(circumstances.getOtherDependantDetails())
-            .otherTenants(otherTenants)
+            .otherTenants(toVerticalYesNo(otherTenants))
             .otherTenantsDetails(otherTenants == YesOrNo.YES ? circumstances.getOtherTenantsDetails() : null)
             .alternativeAccommodation(alternativeAccommodation)
             .alternativeAccommodationTransferDate(alternativeAccommodation == YesNoNotSure.YES
                                                       ? circumstances.getAlternativeAccommodationTransferDate() : null)
-            .shareIncomeExpenseDetails(circumstances.getShareIncomeExpenseDetails())
-            .universalCredit(circumstances.getUniversalCredit())
+            .shareIncomeExpenseDetails(toVerticalYesNo(circumstances.getShareIncomeExpenseDetails()))
+            .universalCredit(toVerticalYesNo(circumstances.getUniversalCredit()))
             .ucApplicationDate(circumstances.getUcApplicationDate())
             .build();
 

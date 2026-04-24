@@ -95,8 +95,8 @@ class WarrantDetailsMapperTest {
         WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.NO);
-        assertThat(result.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isNull();
+        assertThat(result.getShowPeopleYouWantToEvictPage()).isNull();
     }
 
     @Test
