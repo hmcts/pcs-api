@@ -187,7 +187,8 @@ public class ClaimGroundService {
         }
 
         if (!CollectionUtils.isEmpty(groundsForPossession.getAdditionalOtherGround())) {
-            addOtherGroundToClaimEntity(claimGroundEntities, groundsForPossession.getAdditionalOtherGroundDescription());
+            addOtherGroundToClaimEntity(claimGroundEntities,
+                    groundsForPossession.getAdditionalOtherGroundDescription());
         }
 
         return claimGroundEntities;
