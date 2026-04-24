@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -26,9 +25,9 @@ public class PaymentCallBackController {
     public void processPaymentCallback(
         @RequestHeader(value = AUTHORIZATION) String authorisation,
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
-        @RequestBody ServiceRequestUpdate serviceRequestUpdate) {
-        log.info("Payment Callback Received For Case: {}", serviceRequestUpdate.getCcdCaseNumber());
-        paymentService.processPaymentResponse(serviceRequestUpdate);
+        @RequestBody String serviceRequestUpdate) {
+        log.info("Payment Callback Received For Case: {}", serviceRequestUpdate);
+
     }
 
 }
