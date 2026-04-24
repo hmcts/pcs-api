@@ -74,7 +74,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - England] @nightly', async () => {
-  test('England - Assured tenancy with Rent arrears and other possession grounds @PR @regression', async () => {
+  test('England - Assured tenancy with Rent arrears and other possession grounds @PR', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -106,7 +106,8 @@ test.describe('[Create Case - England] @nightly', async () => {
       day: tenancyLicenceDetails.dayTextInput,
       month: tenancyLicenceDetails.monthTextInput,
       year: tenancyLicenceDetails.yearTextInput,
-      files: ['tenancyLicence.docx']
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.yesRadioOption,
     });
     await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yesRadioOption});
     await performAction('selectRentArrearsPossessionGround', {
@@ -138,7 +139,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
        howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
-       day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
+       day: '16', month: '07', year: '1985'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -149,8 +150,8 @@ test.describe('[Create Case - England] @nightly', async () => {
      });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
-       files: ['rentArrears.pdf'],
-       rentArrearsAmountOnStatement: '1000',
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
        rentPaidByOthersOption: rentArrears.yesRadioOption,
        paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
      });
@@ -227,7 +228,10 @@ test.describe('[Create Case - England] @nightly', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
     });
     await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yesRadioOption});
     await performAction('selectRentArrearsPossessionGround', {
@@ -254,7 +258,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
-      day: '16', month: '07', year: '1985'});
+      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -359,7 +363,11 @@ test.describe('[Create Case - England] @nightly', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText,
+      files: ['tenancyLicence.docx']
     });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
@@ -429,7 +437,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Other tenancy with grounds for possession - Demoted tenancy @regression', async () => {
+  test('England - Other tenancy with grounds for possession - Demoted tenancy', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -454,7 +462,11 @@ test.describe('[Create Case - England] @nightly', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancyRadioOption});
+      tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yesRadioOption,rentArrears: groundsForPossession.noRadioOption,
       grounds: [introductoryDemotedOrOtherGroundsForPossession.rentArrearsHiddenCheckbox, introductoryDemotedOrOtherGroundsForPossession.antisocialBehaviourHiddenCheckbox,
         introductoryDemotedOrOtherGroundsForPossession.breachOfTheTenancyHiddenCheckbox, introductoryDemotedOrOtherGroundsForPossession.absoluteGroundsHiddenCheckbox,introductoryDemotedOrOtherGroundsForPossession.otherHiddenCheckbox]});
@@ -538,7 +550,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Introductory tenancy with grounds for possession - excludes rent arrears @regression', async () => {
+  test('England - Introductory tenancy with grounds for possession - excludes rent arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -563,7 +575,11 @@ test.describe('[Create Case - England] @nightly', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancyRadioOption });
+      tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yesRadioOption,rentArrears: groundsForPossession.noRadioOption,
       grounds: [introductoryDemotedOrOtherGroundsForPossession.antisocialBehaviourHiddenCheckbox, introductoryDemotedOrOtherGroundsForPossession.breachOfTheTenancyHiddenCheckbox]});
     await performAction('enterReasonForPossession'
@@ -648,7 +664,11 @@ test.describe('[Create Case - England] @nightly', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.demotedTenancyRadioOption});
+      tenancyOrLicenceType: tenancyLicenceDetails.demotedTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption,rentArrears: groundsForPossession.noRadioOption});
     await performAction('enterReasonForPossession', [groundsForPossession.noRadioOption]);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
@@ -717,7 +737,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy @regression', async () => {
+  test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -742,7 +762,11 @@ test.describe('[Create Case - England] @nightly', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption});
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yesRadioOption});
     await performAction('selectRentArrearsPossessionGround', {
       rentArrears: [groundsForPossessionRentArrears.rentArrearsGround10Checkbox],
@@ -762,7 +786,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.enterFrequencyHiddenTextInput,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
-      files: ['rentArrears.docx', 'rentArrears.pdf'],
+      files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
       paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
@@ -839,7 +863,11 @@ test.describe('[Create Case - England] @nightly', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancyRadioOption});
+      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
     });
@@ -915,7 +943,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Secure tenancy with Rent and other grounds', async () => {
+  test('England - Secure tenancy with Rent and other grounds @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -940,7 +968,10 @@ test.describe('[Create Case - England] @nightly', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption
+      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -1063,7 +1094,11 @@ test.describe('[Create Case - England] @nightly', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption });
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossession.moreInfoLink, groundsForPossession.mainHeader);
@@ -1168,7 +1203,11 @@ test.describe('[Create Case - England] @nightly', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancyRadioOption});
+      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
     });
