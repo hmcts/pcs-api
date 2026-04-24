@@ -69,12 +69,9 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
         PCSCase caseData = details.getData();
         AssuredNoArrearsPossessionGrounds groundsForPossession = caseData.getNoRentArrearsGroundsOptions();
 
-        Set<AssuredMandatoryGround> mandatoryGrounds =
-            caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
-        Set<AssuredDiscretionaryGround> discretionaryGrounds =
-            caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
-        Set<AssuredAdditionalOtherGround> additionalOtherGrounds
-                = groundsForPossession.getOtherGround();
+        Set<AssuredMandatoryGround> mandatoryGrounds = groundsForPossession.getMandatoryGrounds();
+        Set<AssuredDiscretionaryGround> discretionaryGrounds = groundsForPossession.getDiscretionaryGrounds();
+        Set<AssuredAdditionalOtherGround> additionalOtherGrounds = groundsForPossession.getOtherGround();
 
         if (CollectionUtils.isEmpty(mandatoryGrounds) && CollectionUtils.isEmpty(discretionaryGrounds)
                 && CollectionUtils.isEmpty(additionalOtherGrounds)) {
@@ -94,15 +91,14 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
                 && ground != AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11);
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
-        caseData.getNoRentArrearsGroundsOptions()
-            .setShowGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
+        groundsForPossession.setShowGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
         if (!CollectionUtils.isEmpty(additionalOtherGrounds)
                 && groundsForPossession.getOtherGroundDescription() != null) {
             List<String> validationErrors = new ArrayList<>();
 
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                    caseData.getNoRentArrearsGroundsOptions().getOtherGroundDescription(),
+                    groundsForPossession.getOtherGroundDescription(),
                     PCSCase.OTHER_GROUND_DESCRIPTION_LABEL,
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ));

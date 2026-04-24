@@ -67,12 +67,10 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         PCSCase caseData = details.getData();
         AssuredRentArrearsPossessionGrounds groundsForPossession = caseData.getAssuredRentArrearsPossessionGrounds();
 
-        Set<AssuredAdditionalMandatoryGrounds> mandatoryGrounds
-            = groundsForPossession.getAdditionalMandatoryGrounds();
+        Set<AssuredAdditionalMandatoryGrounds> mandatoryGrounds = groundsForPossession.getAdditionalMandatoryGrounds();
         Set<AssuredAdditionalDiscretionaryGrounds> discretionaryGrounds
-            = groundsForPossession.getAdditionalDiscretionaryGrounds();
-        Set<AssuredAdditionalOtherGround> additionalOtherGrounds
-            = groundsForPossession.getAdditionalOtherGround();
+                = groundsForPossession.getAdditionalDiscretionaryGrounds();
+        Set<AssuredAdditionalOtherGround> additionalOtherGrounds = groundsForPossession.getAdditionalOtherGround();
 
         if (CollectionUtils.isEmpty(mandatoryGrounds) && CollectionUtils.isEmpty(discretionaryGrounds)
                 && CollectionUtils.isEmpty(additionalOtherGrounds)) {
@@ -86,7 +84,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             List<String> validationErrors = new ArrayList<>();
 
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                    caseData.getAssuredRentArrearsPossessionGrounds().getAdditionalOtherGroundDescription(),
+                    groundsForPossession.getAdditionalOtherGroundDescription(),
                     PCSCase.OTHER_GROUND_DESCRIPTION_LABEL,
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ));
