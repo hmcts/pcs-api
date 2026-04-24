@@ -27,8 +27,11 @@ public class TenancyLicenceDetails {
     public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
         "Give details of the type of tenancy or licence agreement that’s in place";
 
+    public static final String REASONS_FOR_NO_TENANCY_LICENCE_DOCUMENTS_LABEL =
+        "Explain why you do not have a copy of the tenancy or licence agreement";
+
     @CCD(
-        label = "What type of tenancy or licence is in place?",
+        label = "What type of tenancy or licence is in place, or was in place?",
         access = {CaseworkerReadAccess.class, CitizenAccess.class}
     )
     private TenancyLicenceType typeOfTenancyLicence;
@@ -49,8 +52,19 @@ public class TenancyLicenceDetails {
     private LocalDate tenancyLicenceDate;
 
     @CCD(
-        label = "Add document",
-        hint = "Upload a document to the system"
+        label = "Upload a copy of the tenancy or licence agreement"
     )
     private List<ListValue<Document>> tenancyLicenceDocuments;
+
+    @CCD(
+        label = "Do you have a copy of the tenancy or licence agreement?"
+    )
+    private VerticalYesNo  hasCopyOfTenancyLicence;
+
+    @CCD(
+        label = REASONS_FOR_NO_TENANCY_LICENCE_DOCUMENTS_LABEL,
+        hint = "You can enter up to 500 characters",
+        typeOverride = TextArea
+    )
+    private String reasonsForNoTenancyLicenceDocuments;
 }
