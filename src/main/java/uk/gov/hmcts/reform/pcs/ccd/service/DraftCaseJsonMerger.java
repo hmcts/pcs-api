@@ -15,12 +15,6 @@ import java.util.Set;
 public class DraftCaseJsonMerger {
 
     private static final Set<String> REPLACE_FIELDS = Set.of("address");
-    private static final Set<String> REGULAR_INCOME_KEYS = Set.of(
-        "incomeFromJobs",
-        "pension",
-        "otherBenefits",
-        "moneyFromElsewhere"
-    );
 
 
     private final ObjectMapper objectMapper;
@@ -42,7 +36,6 @@ public class DraftCaseJsonMerger {
         JsonNode patch = objectMapper.readValue(patchJson, JsonNode.class);
 
         applyReplaceRulesRecursively(base, patch);
-        applyRegularIncomeUniversalCreditClearRuleRecursively(base, patch);
 
         JsonNode merged = objectMapper.readerForUpdating(base)
             .readValue(patchJson);
@@ -79,47 +72,6 @@ public class DraftCaseJsonMerger {
                 }
             }
         }
-    }
-
-    private void applyRegularIncomeUniversalCreditClearRuleRecursively(JsonNode base, JsonNode patch) {
-        if (!patch.isObject() || !base.isObject()) {
-            return;
-        }
-
-        Iterator<Map.Entry<String, JsonNode>> fields = patch.properties().iterator();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> field = fields.next();
-            String fieldName = field.getKey();
-            JsonNode patchChild = field.getValue();
-
-            if ("householdCircumstances".equals(fieldName)
-                && patchChild.isObject()
-                && base.has(fieldName)
-                && base.get(fieldName).isObject()) {
-
-                ObjectNode patchHouseholdCircumstances = (ObjectNode) patchChild;
-                ObjectNode baseHouseholdCircumstances = (ObjectNode) base.get(fieldName);
-
-                if (isRegularIncomeSubmission(patchHouseholdCircumstances)
-                    && !isUniversalCreditSelected(patchHouseholdCircumstances)) {
-                    baseHouseholdCircumstances.putNull("universalCreditAmount");
-                    baseHouseholdCircumstances.putNull("universalCreditFrequency");
-                }
-            }
-
-            if (base.has(fieldName)) {
-                applyRegularIncomeUniversalCreditClearRuleRecursively(base.get(fieldName), patchChild);
-            }
-        }
-    }
-
-    private boolean isRegularIncomeSubmission(ObjectNode householdCircumstancesPatch) {
-        return REGULAR_INCOME_KEYS.stream().anyMatch(householdCircumstancesPatch::has);
-    }
-
-    private boolean isUniversalCreditSelected(ObjectNode householdCircumstancesPatch) {
-        JsonNode universalCredit = householdCircumstancesPatch.get("universalCredit");
-        return universalCredit != null && universalCredit.isTextual() && "YES".equalsIgnoreCase(universalCredit.asText());
     }
 
 }
