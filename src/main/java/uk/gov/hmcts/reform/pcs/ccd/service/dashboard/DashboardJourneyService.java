@@ -50,6 +50,10 @@ public class DashboardJourneyService {
     private List<ListValue<DashboardNotification>> computeNotifications() {
         return ListValueUtils.wrapListItems(List.of(
             DashboardNotification.builder()
+                .templateId("Defendant.NoHearingArranged")
+                .templateValues(toTemplateValues(Map.of()))
+                .build(),
+            DashboardNotification.builder()
                 .templateId("Defendant.CaseIssued")
                 .templateValues(toTemplateValues(Map.of(
                     "hearingDateTime", "2026-06-15T10:30:00Z",

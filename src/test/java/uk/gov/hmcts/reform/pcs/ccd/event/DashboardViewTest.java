@@ -73,7 +73,7 @@ class DashboardViewTest extends BaseEventTest {
         assertThat(result.getDashboardData().getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(ListValueUtils.unwrapListItems(result.getDashboardData().getNotifications()))
             .extracting(n -> n.getTemplateId())
-            .containsExactly("Defendant.CaseIssued", "Defendant.ResponseToClaim");
+            .containsExactly("Defendant.NoHearingArranged", "Defendant.CaseIssued", "Defendant.ResponseToClaim");
         verify(pcsCaseService).loadCase(TEST_CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(eq(caseEntity), eq(defendantUserId));
     }
