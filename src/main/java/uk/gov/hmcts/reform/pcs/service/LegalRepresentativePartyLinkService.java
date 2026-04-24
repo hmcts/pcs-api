@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -32,8 +33,7 @@ public class LegalRepresentativePartyLinkService {
     private final AddressMapper addressMapper;
 
     @Transactional
-    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user,
-                                               OrganisationDetailsResponse organisationDetails) {
+    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
@@ -44,19 +44,32 @@ public class LegalRepresentativePartyLinkService {
                 "Legal Representative [" + user.getUid() + "] already linked to Party [" + partyId + "]");
         }
 
-        LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
-            .organisationName(organisationDetails.getName())
-            .idamId(UUID.fromString(user.getUid()))
-            .firstName(user.getName())
-            .lastName(user.getFamilyName())
-            .email(user.getSub())
-            .address(addressMapper.toAddressEntityAndNormalise(
-                organisationDetailsService.getOrganisationAddress(organisationDetails)))
-            .build();
+        Optional<LegalRepresentativeEntity> legalRepresentativeEntity =
+            legalRepresentativeRepository.findByIdamId(UUID.fromString(user.getUid()));
+
+        LegalRepresentativeEntity legalRepresentative;
+
+        if (legalRepresentativeEntity.isPresent()) {
+            legalRepresentative = legalRepresentativeEntity.get();
+            legalRepresentative.addParty(defendantPartyEntity);
+        } else {
+            OrganisationDetailsResponse organisationDetails = organisationDetailsService
+                .getOrganisationDetails(user.getUid());
+
+            legalRepresentative = LegalRepresentativeEntity.builder()
+                .organisationName(organisationDetails.getName())
+                .idamId(UUID.fromString(user.getUid()))
+                .firstName(user.getName())
+                .lastName(user.getFamilyName())
+                .email(user.getSub())
+                .address(addressMapper.toAddressEntityAndNormalise(
+                    organisationDetailsService.getOrganisationAddress(organisationDetails)))
+                .build();
+        }
 
         legalRepresentative.addParty(defendantPartyEntity);
 
-        legalRepresentativeRepository.save(legalRepresentative);
+        legalRepresentativeRepository.saveAndFlush(legalRepresentative);
     }
 
     private PartyEntity getDefendantPartyEntity(PcsCaseEntity caseEntity, String partyId) {

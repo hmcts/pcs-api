@@ -59,6 +59,10 @@ public class LegalRepresentativeEntity {
     private List<ClaimPartyLegalRepresentativeEntity> claimPartyLegalRepresentativeList = new ArrayList<>();
 
     public void addParty(PartyEntity party) {
+        if (this.claimPartyLegalRepresentativeList.stream().anyMatch(e -> e.getParty().getId().equals(party.getId()))) {
+            return;
+        }
+
         ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentativeEntity =
             ClaimPartyLegalRepresentativeEntity.builder()
             .legalRepresentative(this)

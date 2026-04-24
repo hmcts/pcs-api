@@ -43,8 +43,6 @@ import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
-import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
@@ -79,7 +77,6 @@ public class TestingSupportController {
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
-    private final OrganisationDetailsService organisationDetailsService;
     private final IdamService idamService;
 
     @Operation(
@@ -446,15 +443,13 @@ public class TestingSupportController {
 
         User user = idamService.validateAuthToken(authorization);
         UserInfo userDetails = user.getUserDetails();
-        OrganisationDetailsResponse organisationDetails = organisationDetailsService
-            .getOrganisationDetails(userDetails.getUid());
+
         caseRoleAssignmentService.assignRasRole(caseReference, userDetails.getUid(), UserRole.DEFENDANT_SOLICITOR);
 
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId,
-            userDetails,
-            organisationDetails
+            userDetails
         );
         return ResponseEntity.ok().build();
     }

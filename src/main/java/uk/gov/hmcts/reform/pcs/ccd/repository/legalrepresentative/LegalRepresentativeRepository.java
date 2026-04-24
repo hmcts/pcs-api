@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -21,5 +22,8 @@ public interface LegalRepresentativeRepository extends JpaRepository<LegalRepres
         AND cplr.active = 'YES'
         """)
     boolean isLegalRepresentativeLinkedToPartyAndActive(@Param("idamId") UUID idamId, @Param("partyId") UUID partyId);
+
+    Optional<LegalRepresentativeEntity> findByIdamId(UUID idamUserId);
+
 
 }
