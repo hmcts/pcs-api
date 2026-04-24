@@ -28,9 +28,7 @@ public class CaseCreationHelper {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
-            .build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
 
         caseEntity.addClaim(claimEntity);
 
@@ -50,9 +48,7 @@ public class CaseCreationHelper {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
-            .build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
 
         caseEntity.addClaim(claimEntity);
 
