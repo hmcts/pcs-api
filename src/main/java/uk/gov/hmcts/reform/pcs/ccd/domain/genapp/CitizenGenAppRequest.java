@@ -24,4 +24,11 @@ public class CitizenGenAppRequest {
     @CCD(max = 16)
     private String hwfReference;
 
+    private VerticalYesNo otherPartiesAgreed;
+
+    private VerticalYesNo withoutNotice;
+
+    @CCD(max = 6800)
+    private String withoutNoticeReason;
+
 }
