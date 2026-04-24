@@ -1,13 +1,17 @@
 package uk.gov.hmcts.reform.pcs.globalsearch;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
-import uk.gov.hmcts.ccd.sdk.api.SearchCriteria.SearchCriteriaBuilder;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.SearchCriteria.SearchCriteriaBuilder;
+
+import java.util.Collections;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class SearchCriteriaTest {
 
@@ -30,6 +34,6 @@ class SearchCriteriaTest {
         underTest.configureDecentralised(configBuilder);
 
         verify(configBuilder).searchCriteria();
-        verify(searchCriteriaBuilder).fields(java.util.Collections.emptyList());
+        verify(searchCriteriaBuilder).fields(Collections.emptyList());
     }
 }
