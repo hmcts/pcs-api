@@ -60,6 +60,15 @@ test.describe('[Common Component Case Flags]', async () => {
       continueButton: addCommentsForFlag.continueButton
     });
     await performValidation('mainHeader', reviewFlagDetails.mainHeader);
+    await performAction('changeFlagProperty', {
+      propertyText: reviewFlagDetails.propertyText,
+      changeLinkText: reviewFlagDetails.changeLink
+    });
+     await performAction('selectFlagType', {
+      selectFlagQuestion: selectFlagType.selectFlagTypeLabel,
+      selectFlagOption: selectFlagType.urgentCaseRadioOption,
+      continueButton: selectFlagType.continueButton
+    });
     await performAction('reviewFlagDetails', {
       saveButton: reviewFlagDetails.saveAndContinueButton
     });
