@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
@@ -796,7 +797,7 @@ class DefendantResponseServiceTest {
             .isClaimAmountKnown(VerticalYesNo.YES)
             .claimAmount(new BigDecimal("250.00"))
             .estimatedMaxClaimAmount(new BigDecimal("500.00"))
-            .claimType("MONEY")
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .counterClaimFor("Damage to property")
             .counterClaimReasons("Landlord failed to maintain property")
             .otherOrderRequestDetails("Request for compensation")
@@ -821,9 +822,7 @@ class DefendantResponseServiceTest {
         verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
         CounterClaimEntity saved = counterClaimCaptor.getValue();
         assertThat(saved.getIsClaimAmountKnown()).isEqualTo(VerticalYesNo.YES);
-        assertThat(saved.getClaimAmount()).isEqualByComparingTo(new BigDecimal("250.00"));
-        assertThat(saved.getEstimatedMaxClaimAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
-        assertThat(saved.getClaimType()).isEqualTo("MONEY");
+        assertThat(saved.getClaimType()).isEqualTo(CounterClaimType.PAYMENT_OR_COMPENSATION);
         assertThat(saved.getCounterClaimFor()).isEqualTo("Damage to property");
         assertThat(saved.getCounterClaimReasons()).isEqualTo("Landlord failed to maintain property");
         assertThat(saved.getOtherOrderRequestDetails()).isEqualTo("Request for compensation");
@@ -833,6 +832,76 @@ class DefendantResponseServiceTest {
         assertThat(saved.getHwfReferenceNumber()).isEqualTo("HWF-123-456");
         assertThat(saved.getClaimSubmittedDate()).isEqualTo("2026-04-22T21:00");
         assertThat(saved.getParty()).isEqualTo(partyEntity);
+    }
+
+    @ParameterizedTest
+    @MethodSource("amountSelectionScenarios")
+    void shouldPersistCorrectAmountsBasedOnSelection(
+        VerticalYesNo claimantAmountKnown,
+        BigDecimal claimAmountInput,
+        BigDecimal estimatedInput,
+        BigDecimal expectedClaimAmount,
+        BigDecimal expectedEstimatedAmount
+    ) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+
+        stubPartyLookup();
+        stubClaimLookup();
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .isClaimAmountKnown(claimantAmountKnown)
+            .claimAmount(claimAmountInput)
+            .estimatedMaxClaimAmount(estimatedInput)
+            .build();
+
+        PossessionClaimResponse request = PossessionClaimResponse.builder()
+            .defendantResponses(
+                DefendantResponses.builder()
+                    .counterClaim(counterClaim)
+                    .build()
+            )
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, request);
+
+        // Then
+        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
+        CounterClaimEntity saved = counterClaimCaptor.getValue();
+
+        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(claimantAmountKnown);
+        assertBigDecimalEquals(saved.getClaimAmount(), expectedClaimAmount);
+        assertBigDecimalEquals(saved.getEstimatedMaxClaimAmount(), expectedEstimatedAmount);
+    }
+
+    private void assertBigDecimalEquals(BigDecimal actual, BigDecimal expected) {
+        if (expected == null) {
+            assertThat(actual).isNull();
+        } else {
+            assertThat(actual).isEqualByComparingTo(expected);
+        }
+    }
+
+    private static Stream<Arguments> amountSelectionScenarios() {
+        return Stream.of(
+            Arguments.of(
+                VerticalYesNo.YES,
+                new BigDecimal("250.00"),
+                new BigDecimal("999.00"),
+                new BigDecimal("250.00"),
+                null
+            ),
+            Arguments.of(
+                VerticalYesNo.NO,
+                new BigDecimal("999.00"),
+                new BigDecimal("500.00"),
+                null,
+                new BigDecimal("500.00")
+            )
+        );
     }
 
     @Test
@@ -869,6 +938,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         CounterClaim counterClaim = CounterClaim.builder()
+            .isClaimAmountKnown(VerticalYesNo.YES)
             .claimAmount(new BigDecimal("1000.50"))
             .build();
 
