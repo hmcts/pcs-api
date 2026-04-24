@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -221,6 +222,26 @@ class GenAppServiceTest {
         assertThat(genAppEntity.getOtherPartiesAgreed()).isEqualTo(expectedOtherPartiesAgreed);
         assertThat(genAppEntity.getWithoutNotice()).isEqualTo(expectedWithoutNotice);
         assertThat(genAppEntity.getWithoutNoticeReason()).isEqualTo(expectedWithoutNoticeReason);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = LanguageUsed.class)
+    void shouldSetLanguageUsed(LanguageUsed languageUsed) {
+        // Given
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+                .languageUsed(languageUsed)
+                .build();
+
+        PCSCase caseData = PCSCase.builder()
+                .citizenGenAppRequest(genAppRequest)
+                .build();
+
+        // When
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+
+        // Then
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        assertThat(genAppEntityCaptor.getValue().getLanguageUsed()).isEqualTo(languageUsed);
     }
 
     private static Stream<Arguments> otherPartiesAgreedScenarios() {
