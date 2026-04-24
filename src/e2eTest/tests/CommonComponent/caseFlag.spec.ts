@@ -60,7 +60,7 @@ test.describe('[Common Component Case Flags]', async () => {
       continueButton: addCommentsForFlag.continueButton
     });
     await performValidation('mainHeader', reviewFlagDetails.mainHeader);
-    await performAction('changeFlagProperty', {
+    await performAction('clickChangeLinkForRow', {
       rowLabel: reviewFlagDetails.rowLabel,
       changeLinkText: reviewFlagDetails.changeLink
     });
