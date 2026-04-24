@@ -8,10 +8,9 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 @Getter
 public enum CounterClaimType implements HasLabel {
 
-    PAYMENT_OR_COMPENSATION("a sum of money or compensation "),
+    PAYMENT_OR_COMPENSATION("A sum of money or compensation"),
     SOMETHING_ELSE("Something else"),
     BOTH("Both");
-
 
     private String label;
 }
