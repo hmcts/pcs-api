@@ -89,13 +89,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
-        pcsCase.setSearchCriteria(SearchCriteria.builder()
-            .otherCaseReferences(List.of(
-                ListValue.<String>builder()
-                    .id(UUID.randomUUID().toString())
-                    .value(caseReference + "-search")
-                    .build()))
-            .build());
+
+        //allows indexing for Global Search
+        pcsCase.setSearchCriteria(new SearchCriteria());
 
         return pcsCase;
     }
