@@ -53,8 +53,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
-        // TODO: This is Civil jurisdiction service id for testing, and to be replaced with PCS service id before merge
-        builder.hmctsServiceId("AAA7");
+        builder.hmctsServiceId(hmctsServiceId);
 
         builder.searchInputFields()
             .caseReferenceField();
