@@ -26,7 +26,7 @@ public class RentArrears implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("rentArrears", this::midEvent)
-                .showCondition("showRentSectionPage=\"YES\"")
+                .showCondition("showRentSectionPage=\"Yes\"")
                 .pageLabel("Details of rent arrears")
 
                 .complex(PCSCase::getRentArrears)
