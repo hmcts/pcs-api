@@ -4,8 +4,8 @@ export const manageCaseFlags = {
     manageCaseFlagsEvent: `Manage Flags`,
     nextStepEventList: `Next step`,
     goButton: `Go`,
-    //mainHeader: `Manage case flags`,
     caseLevelComplexCaseRadioOption: `Case level - Complex case (Test)`,
+    caseLevelUrgentCaseRadioOption: `Case level - Urgent case (Test)`,
     continueButton: `Continue`,
     cancelButton: `Cancel`
 };

@@ -61,7 +61,7 @@ test.describe('[Common Component Case Flags]', async () => {
     });
     await performValidation('mainHeader', reviewFlagDetails.mainHeader);
     await performAction('changeFlagProperty', {
-      propertyText: reviewFlagDetails.propertyText,
+      rowLabel: reviewFlagDetails.rowLabel,
       changeLinkText: reviewFlagDetails.changeLink
     });
      await performAction('selectFlagType', {
@@ -69,6 +69,7 @@ test.describe('[Common Component Case Flags]', async () => {
       selectFlagOption: selectFlagType.urgentCaseRadioOption,
       continueButton: selectFlagType.continueButton
     });
+    await performAction('clickButton', addCommentsForFlag.continueButton);
     await performAction('reviewFlagDetails', {
       saveButton: reviewFlagDetails.saveAndContinueButton
     });
@@ -79,12 +80,10 @@ test.describe('[Common Component Case Flags]', async () => {
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
     await performAction('manageCaseFlags', {
-      flagOption: manageCaseFlags.caseLevelComplexCaseRadioOption,
+      flagOption: manageCaseFlags.caseLevelUrgentCaseRadioOption,
       continueButton: manageCaseFlags.continueButton
     }); 
-    await performAction('updateFlagComments', {
-      updateLabel: updateFlagComments.updateFlagLabel,
-      updateInput: updateFlagComments.updateFlagTextInput,
+    await performAction('makeFlagInactive', {
       inactiveButton: updateFlagComments.makeInactiveButton,
       continueButton: updateFlagComments.continueButton
     });

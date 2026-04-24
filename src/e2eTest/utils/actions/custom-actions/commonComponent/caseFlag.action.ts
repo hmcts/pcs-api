@@ -8,11 +8,11 @@ export class CaseFlagAction implements IAction {
       ['whereShouldThisFlagBeAdded', () => this.whereShouldThisFlagBeAdded(fieldName as actionRecord, page)],
       ['selectFlagType', () => this.selectFlagType(fieldName as actionRecord, page)],
       ['addCommentsForFlag', () => this.addCommentsForFlag(fieldName as actionRecord, page)],
-      ['changeFlagProperty', () => this.changeFlagProperty(fieldName as actionRecord, page)],
+      ['clickChangeLinkForRow', () => this.clickChangeLinkForRow(fieldName as actionRecord, page)],
       ['reviewFlagDetails', () => this.reviewFlagDetails(fieldName as actionRecord, page)],
       ['viewCaseFlags', () => this.viewCaseFlags(fieldName as actionRecord, page)],
       ['manageCaseFlags', () => this.manageCaseFlags(fieldName as actionRecord, page)],
-      ['updateFlagComments', () => this.updateFlagComments(fieldName as actionRecord, page)]
+      ['makeFlagInactive', () => this.makeFlagInactive(fieldName as actionRecord, page)]
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -39,30 +39,30 @@ export class CaseFlagAction implements IAction {
     await performAction('clickButton', addComments.continueButton);
   }
 
-  private async changeFlagProperty(changeOptions: actionRecord, page: Page) {
-    const propertyText = String(changeOptions.propertyText ?? '').trim();
-    if (!propertyText) {
-      throw new Error('changeFlagProperty requires propertyText');
+  private async clickChangeLinkForRow(changeOptions: actionRecord, page: Page) {
+    const rowLabel = String(changeOptions.rowLabel ?? '').trim();
+    if (!rowLabel) {
+      throw new Error('clickChangeLinkForRow requires rowLabel');
     }
 
     const changeLinkText = String(changeOptions.changeLinkText ?? 'Change').trim();
     const propertyChangeLink = page
-      .locator('div.govuk-summary-list__row', { hasText: propertyText })
+      .locator('div.govuk-summary-list__row', { hasText: rowLabel })
       .locator('a.govuk-link', { hasText: changeLinkText })
       .first();
 
     await propertyChangeLink.waitFor({ state: 'visible' });
-    await performAction('clickButton', propertyChangeLink);
+    await propertyChangeLink.click();
   }
 
   private async reviewFlagDetails(reviewOptions: actionRecord, page: Page) {
-    //await performAction('clicklink', reviewOptions.changeLink);
     await performAction('clickButton', reviewOptions.saveButton);
   }
+
   private async viewCaseFlags(viewOptions: actionRecord, page: Page) {
     await page.waitForLoadState();
     await performAction('clickButton', viewOptions.viewFlagLink);
-    }
+  }
 
   private async manageCaseFlags(selectOptions: actionRecord, page: Page) {
     const radio = page.locator(`label >> text=${selectOptions.flagOption}`);
@@ -71,8 +71,7 @@ export class CaseFlagAction implements IAction {
     await performAction('clickButton', selectOptions.continueButton);
   }
 
-  private async updateFlagComments(commentUpdate: actionRecord, page: Page) {
-    await performAction('inputText', commentUpdate.updateLabel, commentUpdate.updateInput);
+  private async makeFlagInactive(commentUpdate: actionRecord, page: Page) {
     await performAction('clickButton', commentUpdate.inactiveButton);
     await performAction('clickButton', commentUpdate.continueButton);
   }

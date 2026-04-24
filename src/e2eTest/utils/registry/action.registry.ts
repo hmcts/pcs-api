@@ -102,11 +102,11 @@ export class ActionRegistry {
     ['whereShouldThisFlagBeAdded', new CaseFlagAction()],
     ['selectFlagType', new CaseFlagAction()],
     ['addCommentsForFlag', new CaseFlagAction()],
-    ['changeFlagProperty', new CaseFlagAction()],
+    ['clickChangeLinkForRow', new CaseFlagAction()],
     ['reviewFlagDetails', new CaseFlagAction()],
     ['viewCaseFlags', new CaseFlagAction()],
     ['manageCaseFlags', new CaseFlagAction()],
-    ['updateFlagComments', new CaseFlagAction()]
+    ['makeFlagInactive', new CaseFlagAction()]
   ]);
 
   static getAction(actionName: string): IAction {
