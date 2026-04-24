@@ -203,6 +203,7 @@ public class CaseTabViewTest {
 
     @Test
     void shouldNotSetCasePartiesTabWithNoData() {
+        // Given
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When

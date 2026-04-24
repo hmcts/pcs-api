@@ -19,29 +19,29 @@ public class CaseTabView {
     private static final String NAME_UNKNOWN = "Person unknown";
 
     public void setCaseTabFields(PCSCase pcsCase) {
-        setCasePartiesTabFields(pcsCase);
+        setCasePartiesTabDetails(pcsCase);
     }
 
-    private void setCasePartiesTabFields(PCSCase pcsCase) {
+    private void setCasePartiesTabDetails(PCSCase pcsCase) {
         CasePartiesTab tab = CasePartiesTab.builder().build();
 
         if (pcsCase.getAllClaimants() != null && !pcsCase.getAllClaimants().isEmpty()) {
             Party claimant = pcsCase.getAllClaimants().getFirst().getValue();
-            ClaimantTabDetails claimantTabDetails = setClaimantTabDetails(claimant, pcsCase);
+            ClaimantTabDetails claimantTabDetails = createClaimantTabDetails(claimant, pcsCase);
             tab.setClaimantDetails(claimantTabDetails);
         }
 
         if (pcsCase.getAllDefendants() != null && !pcsCase.getAllDefendants().isEmpty()) {
             List<ListValue<Party>> allDefendants = new ArrayList<>(pcsCase.getAllDefendants());
             Party defendant1 = allDefendants.removeFirst().getValue();
-            DefendantTabDetails defendant1TabDetails = setDefendantTabDetails(defendant1, pcsCase);
+            DefendantTabDetails defendant1TabDetails = createDefendantTabDetails(defendant1, pcsCase);
             tab.setDefendantOneDetails(defendant1TabDetails);
 
             if (!allDefendants.isEmpty()) {
                 List<ListValue<DefendantTabDetails>> additionalDefendants = allDefendants
                     .stream().map(partyListValue -> {
                         Party defendant = partyListValue.getValue();
-                        DefendantTabDetails defendantTabDetails = setDefendantTabDetails(defendant, pcsCase);
+                        DefendantTabDetails defendantTabDetails = createDefendantTabDetails(defendant, pcsCase);
                         return ListValue.<DefendantTabDetails>builder().value(defendantTabDetails).build();
                     }).toList();
 
@@ -52,7 +52,7 @@ public class CaseTabView {
         pcsCase.setCasePartiesTab(tab);
     }
 
-    private ClaimantTabDetails setClaimantTabDetails(Party claimant, PCSCase pcsCase) {
+    private ClaimantTabDetails createClaimantTabDetails(Party claimant, PCSCase pcsCase) {
         return ClaimantTabDetails.builder()
             .name(claimant.getOrgName())
             .emailAddress(claimant.getEmailAddress())
@@ -61,7 +61,7 @@ public class CaseTabView {
             .build();
     }
 
-    private DefendantTabDetails setDefendantTabDetails(Party defendant, PCSCase pcsCase) {
+    private DefendantTabDetails createDefendantTabDetails(Party defendant, PCSCase pcsCase) {
         AddressUK defendantAddress = defendant.getAddress() != null
             ? defendant.getAddress() : pcsCase.getPropertyAddress();
         String defendantFirstName = NAME_UNKNOWN;
