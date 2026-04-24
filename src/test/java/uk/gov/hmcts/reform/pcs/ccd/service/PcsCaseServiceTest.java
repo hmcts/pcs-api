@@ -337,7 +337,7 @@ class PcsCaseServiceTest {
         underTest.patchCaseFlags(CASE_REFERENCE, caseData);
 
         // Then
-        assertThat(pcsCaseEntity.getCaseFlags()).hasSize(0);
+        assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
         verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties);
     }
 
@@ -356,7 +356,7 @@ class PcsCaseServiceTest {
         underTest.patchCaseFlags(CASE_REFERENCE, caseData);
 
         // Then
-        assertThat(pcsCaseEntity.getCaseFlags().size()).isEqualTo(0);
+        assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
     }
 
     private Flags createFlags(List<ListValue<FlagDetail>> flagDetails) {

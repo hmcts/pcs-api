@@ -16,6 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
+
 
 @Component
 @Slf4j
@@ -27,7 +30,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.amendFlags.name(), this::submit)
-                            .forAllStates()
+                            .forStates(CASE_ISSUED, PENDING_CASE_ISSUED)
                             .name("Manage Flags")
                             .description("To manage flags")
                             .showSummary()
