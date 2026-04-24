@@ -187,12 +187,7 @@ public class ClaimGroundService {
         }
 
         if (!CollectionUtils.isEmpty(groundsForPossession.getAdditionalOtherGround())) {
-            claimGroundEntities.add(ClaimGroundEntity.builder()
-                .category(ClaimGroundCategory.ASSURED_OTHER)
-                .code(AssuredAdditionalOtherGround.OTHER.name())
-                .reason(groundsForPossession.getAdditionalOtherGroundDescription())
-                .isRentArrears(false)
-                .build());
+            addOtherGroundToClaimEntity(claimGroundEntities, groundsForPossession.getAdditionalOtherGroundDescription());
         }
 
         return claimGroundEntities;
@@ -260,12 +255,7 @@ public class ClaimGroundService {
         }
 
         if (!CollectionUtils.isEmpty(groundsForPossession.getOtherGround())) {
-            entities.add(ClaimGroundEntity.builder()
-                .category(ClaimGroundCategory.ASSURED_OTHER)
-                .code(AssuredAdditionalOtherGround.OTHER.name())
-                .reason(groundsForPossession.getOtherGroundDescription())
-                .isRentArrears(false)
-                .build());
+            addOtherGroundToClaimEntity(entities, groundsForPossession.getOtherGroundDescription());
         }
 
         return entities;
@@ -422,4 +412,12 @@ public class ClaimGroundService {
         return claimGroundEntities;
     }
 
+    private void addOtherGroundToClaimEntity(List<ClaimGroundEntity> entities, String otherGroundDescription) {
+        entities.add(ClaimGroundEntity.builder()
+            .category(ClaimGroundCategory.ASSURED_OTHER)
+            .code(AssuredAdditionalOtherGround.OTHER.name())
+            .reason(otherGroundDescription)
+            .isRentArrears(false)
+            .build());
+    }
 }
