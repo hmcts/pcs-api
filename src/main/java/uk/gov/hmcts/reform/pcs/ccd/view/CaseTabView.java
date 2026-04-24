@@ -16,7 +16,7 @@ import java.util.List;
 @Component
 public class CaseTabView {
 
-    private final String NAME_UNKNOWN = "Person unknown";
+    private static final String NAME_UNKNOWN = "Person unknown";
 
     public void setCaseTabFields(PCSCase pcsCase) {
         setCasePartiesTabFields(pcsCase);
@@ -32,12 +32,13 @@ public class CaseTabView {
         }
 
         if (pcsCase.getAllDefendants() != null && !pcsCase.getAllDefendants().isEmpty()) {
-            Party defendant1 = pcsCase.getAllDefendants().removeFirst().getValue();
+            List<ListValue<Party>> allDefendants = new ArrayList<>(pcsCase.getAllDefendants());
+            Party defendant1 = allDefendants.removeFirst().getValue();
             DefendantTabDetails defendant1TabDetails = setDefendantTabDetails(defendant1, pcsCase);
             tab.setDefendantOneDetails(defendant1TabDetails);
 
-            if (!pcsCase.getAllDefendants().isEmpty()) {
-                List<ListValue<DefendantTabDetails>> additionalDefendants = pcsCase.getAllDefendants()
+            if (!allDefendants.isEmpty()) {
+                List<ListValue<DefendantTabDetails>> additionalDefendants = allDefendants
                     .stream().map(partyListValue -> {
                         Party defendant = partyListValue.getValue();
                         DefendantTabDetails defendantTabDetails = setDefendantTabDetails(defendant, pcsCase);
@@ -61,8 +62,8 @@ public class CaseTabView {
     }
 
     private DefendantTabDetails setDefendantTabDetails(Party defendant, PCSCase pcsCase) {
-        AddressUK defendantAddress = defendant.getAddress() != null ?
-            defendant.getAddress() : pcsCase.getPropertyAddress();
+        AddressUK defendantAddress = defendant.getAddress() != null
+            ? defendant.getAddress() : pcsCase.getPropertyAddress();
         String defendantFirstName = NAME_UNKNOWN;
         String defendantLastName = NAME_UNKNOWN;
 
