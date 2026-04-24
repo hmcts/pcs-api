@@ -38,7 +38,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Case Flags]', async () => {
-  test('Case Flags - Create New Case Flag @PR @regression @nightly', async () => {
+  test('Case Flags - Create New Case Flag @nightly', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
