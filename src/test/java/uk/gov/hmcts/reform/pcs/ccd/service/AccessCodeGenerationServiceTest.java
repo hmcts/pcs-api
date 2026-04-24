@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -43,6 +45,9 @@ class AccessCodeGenerationServiceTest {
     @Mock(strictness = LENIENT)
     private AccessCodeGenerator accessCodeGenerator;
 
+    @Mock
+    private PartyAccessCodeHashingService hashingService;
+
     private AccessCodeGenerationService underTest;
 
     @Captor
@@ -50,8 +55,14 @@ class AccessCodeGenerationServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new AccessCodeGenerationService(partyAccessCodeRepo, pcsCaseService, accessCodeGenerator);
+        underTest = new AccessCodeGenerationService(
+            partyAccessCodeRepo,
+            pcsCaseService,
+            accessCodeGenerator,
+            hashingService
+        );
         when(accessCodeGenerator.generateAccessCode()).thenCallRealMethod();
+        lenient().when(hashingService.encodeForStorage(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
