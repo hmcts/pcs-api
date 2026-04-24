@@ -81,6 +81,25 @@ class GenAppServiceTest {
         assertThat(returnedGenAppEntity).isSameAs(savedGenAppEntity);
     }
 
+    @Test
+    void shouldAddSavedEntityToPcsCaseEntity() {
+        // Given
+        GenAppType genAppType = GenAppType.SOMETHING_ELSE;
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .applicationType(genAppType)
+            .build();
+
+        GenAppEntity savedGenAppEntity = mock(GenAppEntity.class);
+        when(genAppRepository.save(isA(GenAppEntity.class))).thenReturn(savedGenAppEntity);
+
+        // When
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+
+        // Then
+        verify(pcsCaseEntity).addGenApp(genAppEntityCaptor.capture());
+        assertThat(genAppEntityCaptor.getValue().getType()).isEqualTo(genAppType);
+    }
+
     @ParameterizedTest
     @EnumSource(value = GenAppType.class)
     void shouldSetGeneralApplicationType(GenAppType genAppType) {

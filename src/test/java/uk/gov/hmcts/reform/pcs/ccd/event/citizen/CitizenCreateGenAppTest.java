@@ -132,7 +132,7 @@ class CitizenCreateGenAppTest extends BaseEventTest {
 
             // Then
             assertThat(submitResponse.getErrors())
-                .containsExactly("Application alreadys exists for client reference");
+                .containsExactly("Application already exists for client reference");
 
             verify(genAppService, never()).createGenAppEntity(any(), any(), any());
         }
