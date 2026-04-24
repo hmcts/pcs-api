@@ -116,7 +116,9 @@ withPipeline(type, product, component) {
   }
 
   afterSuccess('highleveldatasetup') {
-    triggerGlobalSearchIndex()
+    onPR {
+      triggerGlobalSearchIndex()
+    }
   }
 
   before('smoketest:aat') {
