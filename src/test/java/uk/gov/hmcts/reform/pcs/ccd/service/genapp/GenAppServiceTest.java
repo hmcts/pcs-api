@@ -4,7 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -19,7 +21,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 
+import java.util.stream.Stream;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
@@ -193,6 +198,61 @@ class GenAppServiceTest {
         assertThat(genAppEntity.getNeedHwf()).isEqualTo(VerticalYesNo.YES);
         assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(VerticalYesNo.NO);
         assertThat(genAppEntity.getHelpWithFeesEntity()).isNull();
+    }
+
+    @ParameterizedTest
+    @MethodSource("otherPartiesAgreedScenarios")
+    void shouldSetOtherPartiesAgreedDetails(CitizenGenAppRequest genAppRequest,
+                                            VerticalYesNo expectedOtherPartiesAgreed,
+                                            VerticalYesNo expectedWithoutNotice,
+                                            String expectedWithoutNoticeReason) {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .citizenGenAppRequest(genAppRequest)
+            .build();
+
+        // When
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+
+        // Then
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
+
+        assertThat(genAppEntity.getOtherPartiesAgreed()).isEqualTo(expectedOtherPartiesAgreed);
+        assertThat(genAppEntity.getWithoutNotice()).isEqualTo(expectedWithoutNotice);
+        assertThat(genAppEntity.getWithoutNoticeReason()).isEqualTo(expectedWithoutNoticeReason);
+    }
+
+    private static Stream<Arguments> otherPartiesAgreedScenarios() {
+        return Stream.of(
+            argumentSet("Parties agreed", CitizenGenAppRequest.builder()
+                            .otherPartiesAgreed(VerticalYesNo.YES)
+                            .withoutNotice(VerticalYesNo.YES)         // Should be ignored
+                            .withoutNoticeReason("some reason") // Should be ignored
+                            .build(),
+                        VerticalYesNo.YES,    // Expected otherPartiesAgreed
+                        null,           // Expected withoutNotice
+                        null            // Expected withoutNoticeReason
+            ),
+            argumentSet("Parties not agreed, without notice", CitizenGenAppRequest.builder()
+                            .otherPartiesAgreed(VerticalYesNo.NO)
+                            .withoutNotice(VerticalYesNo.YES)
+                            .withoutNoticeReason("some reason")
+                            .build(),
+                        VerticalYesNo.NO,     // Expected otherPartiesAgreed
+                        VerticalYesNo.YES,    // Expected withoutNotice
+                        "some reason"   // Expected withoutNoticeReason
+            ),
+            argumentSet("Parties not agreed, not without notice", CitizenGenAppRequest.builder()
+                            .otherPartiesAgreed(VerticalYesNo.NO)
+                            .withoutNotice(VerticalYesNo.NO)
+                            .withoutNoticeReason("some reason") // Should be ignored
+                            .build(),
+                        VerticalYesNo.NO,     // Expected otherPartiesAgreed
+                        VerticalYesNo.NO,     // Expected withoutNotice
+                        null            // Expected withoutNoticeReason
+            )
+        );
     }
 
 }
