@@ -15,37 +15,18 @@ export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
 
-/** Allow only safe path fragments for E2E_SPEC glob segments (no slashes or glob metacharacters). */
-function sanitizeSpecKeyword(k: string): string {
-  return k.replace(/[^\w.-]/g, '');
-}
-
-/** Build test file globs from E2E_SPEC (comma or semicolon keywords). Empty = run all specs under testDir. */
-function testMatchFromE2eSpec(raw: string | undefined): string[] | undefined {
-  const keys = raw
-    ?.split(/[,;]/)
-    .map(k => sanitizeSpecKeyword(k.trim()))
-    .filter(Boolean);
-  return keys?.length ? keys.map(k => `**/*${k}*.spec.ts`) : undefined;
-}
-
-/** Title grep from E2E_TEST_SCOPE (nightly Jenkins or local). Invalid regex is escaped. */
-function grepFromTestScope(raw: string): RegExp {
-  try {
-    return new RegExp(raw);
-  } catch {
-    return new RegExp(raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  }
-}
-
-const e2eSpecTestMatch = testMatchFromE2eSpec(process.env.E2E_SPEC);
-const rawScope = process.env.E2E_TEST_SCOPE;
-const e2eGrep =
-  rawScope !== undefined && rawScope !== '' ? grepFromTestScope(rawScope) : undefined;
+// Nightly (or local): E2E_TEST_SCOPE = title grep (literal @tag from Jenkins); E2E_SPEC = comma/semicolon path keywords → globs.
+const specKeys = (process.env.E2E_SPEC ?? '')
+  .split(/[,;]/)
+  .map(s => s.trim().replace(/[^\w.-]/g, ''))
+  .filter(Boolean);
+const e2eTestMatch = specKeys.length ? specKeys.map(k => `**/*${k}*.spec.ts`) : undefined;
+const scope = process.env.E2E_TEST_SCOPE?.trim();
+const e2eGrep = scope ? new RegExp(scope.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) : undefined;
 
 export default defineConfig({
   testDir: 'tests/',
-  ...(e2eSpecTestMatch?.length ? { testMatch: e2eSpecTestMatch } : {}),
+  ...(e2eTestMatch?.length ? { testMatch: e2eTestMatch } : {}),
   ...(e2eGrep ? { grep: e2eGrep } : {}),
   /* Run tests in files in parallel */
   fullyParallel: true,
