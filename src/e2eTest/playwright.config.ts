@@ -14,25 +14,39 @@ export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
-const e2eTag = process.env.E2E_TEST_SCOPE;
 
-/** Build test file globs from E2E_SPEC (comma or semicolon keywords). Empty = run all specs. */
+/** Allow only safe path fragments for E2E_SPEC glob segments (no slashes or glob metacharacters). */
+function sanitizeSpecKeyword(k: string): string {
+  return k.replace(/[^\w.-]/g, '');
+}
+
+/** Build test file globs from E2E_SPEC (comma or semicolon keywords). Empty = run all specs under testDir. */
 function testMatchFromE2eSpec(raw: string | undefined): string[] | undefined {
   const keys = raw
     ?.split(/[,;]/)
-    .map(k => k.trim())
+    .map(k => sanitizeSpecKeyword(k.trim()))
     .filter(Boolean);
   return keys?.length ? keys.map(k => `**/*${k}*.spec.ts`) : undefined;
 }
 
+/** E2E_TEST_SCOPE is user-controlled (PR labels / Jenkins); avoid throwing on invalid RegExp. */
+function grepFromTestScope(raw: string): RegExp {
+  try {
+    return new RegExp(raw);
+  } catch {
+    return new RegExp(raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  }
+}
+
 const e2eSpecTestMatch = testMatchFromE2eSpec(process.env.E2E_SPEC);
-// Aligned with pcs-frontend HDPI-6105: unset -> @nightly; empty string -> no grep (e.g. nightly “all tests”).
-const e2eTag = process.env.E2E_TEST_SCOPE ?? '@nightly';
+const rawScope = process.env.E2E_TEST_SCOPE;
+const e2eGrep =
+  rawScope !== undefined && rawScope !== '' ? grepFromTestScope(rawScope) : undefined;
 
 export default defineConfig({
   testDir: 'tests/',
   ...(e2eSpecTestMatch?.length ? { testMatch: e2eSpecTestMatch } : {}),
-  ...(e2eTag ? { grep: new RegExp(e2eTag) } : {}),
+  ...(e2eGrep ? { grep: e2eGrep } : {}),
   /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

@@ -133,6 +133,12 @@ await performValidationGroup(
 
 ## 7. Execution
 
+### Jenkins (CNP and nightly)
+
+- **CNP (`Jenkinsfile_CNP`):** E2E runs when the shared library adds the stage (typically **`enable_e2e_test`**). Suite labels set `E2E_SUITE` (`enable_e2e_full_regression` → full `chrome`; `enable_e2e_regression` / `enable_e2e_enforcement_test` / `enable_e2e_commoncomp` → tagged runs). Optional PR labels **`e2e-tag:`** / **`e2e-spec:`** set `E2E_TEST_SCOPE` / `E2E_SPEC`. Full `chrome` clears tag/spec. Master sets `@regression` for AAT E2E.
+- **Nightly (`Jenkinsfile_nightly`):** Parameters above; supplementary browser stages pass `E2E_TEST_SCOPE` / `E2E_SPEC` into Gradle. **`@commoncomp`** must appear in test titles for that filter to match.
+- **Gradle:** `./gradlew runE2eTests` runs `src/e2eTest/bin/run-e2e-suite.sh` (respects `E2E_SUITE`, `E2E_TEST_SCOPE`, `E2E_SPEC`).
+
 ### The following environment variables are needed to run the tests:
 
 - MANAGE_CASE_BASE_URL (base URL for the manage-case UI; pipeline sets this from CHANGE_ID on Preview)

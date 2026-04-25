@@ -58,14 +58,41 @@ withPipeline(type, product, component) {
     } else {
       env.CCD_ENABLED = "false"
     }
-
-    def e2eGrep = prLabelSuffix(githubApi, 'e2e-tag:')
-    if (e2eGrep?.trim()) {
-      env.E2E_TEST_SCOPE = e2eGrep.trim()
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
+      env.E2E_SUITE = "chrome"
     }
-    def e2eSpec = prLabelSuffix(githubApi, 'e2e-spec:')
-    if (e2eSpec?.trim()) {
-      env.E2E_SPEC = e2eSpec.trim()
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
+      env.E2E_SUITE = "regression"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_enforcement_test").size() > 0) {
+      env.E2E_SUITE = "enforcement"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_commoncomp").size() > 0) {
+      env.E2E_SUITE = "commoncomp"
+    }
+    // E2E runs on PR when enable_e2e_test is present (shared library). E2E_TEST_SCOPE / E2E_SPEC feed Playwright (see playwright.config.ts).
+    if (env.E2E_SUITE == "chrome") {
+      env.E2E_TEST_SCOPE = ""
+      env.E2E_SPEC = ""
+    } else {
+      def defaultTag = "@PR"
+      if (env.E2E_SUITE == "regression") {
+        defaultTag = "@regression"
+      } else if (env.E2E_SUITE == "enforcement") {
+        defaultTag = "@enforcement"
+      } else if (env.E2E_SUITE == "commoncomp") {
+        defaultTag = "@commoncomp"
+      }
+      env.E2E_TEST_SCOPE = defaultTag
+      env.E2E_SPEC = ""
+      def e2eTag = prLabelSuffix(githubApi, 'e2e-tag:')
+      if (e2eTag?.trim()) {
+        env.E2E_TEST_SCOPE = e2eTag.trim()
+      }
+      def e2eSpec = prLabelSuffix(githubApi, 'e2e-spec:')
+      if (e2eSpec?.trim()) {
+        env.E2E_SPEC = e2eSpec.trim()
+      }
     }
   }
 
@@ -146,7 +173,11 @@ withPipeline(type, product, component) {
 /** First PR label matching prefix → value after prefix (e.g. e2e-tag:@smoke → @smoke), or null if none. */
 def prLabelSuffix(githubApi, String prefix) {
   def labels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, prefix)
-  return (labels && labels.size() > 0) ? labels[0].replaceFirst('^' + prefix, '') : null
+  if (!labels || labels.size() == 0) {
+    return null
+  }
+  def quoted = java.util.regex.Pattern.quote(prefix)
+  return labels[0].replaceFirst("^${quoted}", '')
 }
 
 def setPreviewEnvVars() {
@@ -159,6 +190,8 @@ def setAatEnvVars() {
   env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net"
   env.ENVIRONMENT= "aat"
   env.E2E_SUITE= "regression"
+  env.E2E_TEST_SCOPE = "@regression"
+  env.E2E_SPEC = ""
 }
 
 def setDemoEnvVars() {

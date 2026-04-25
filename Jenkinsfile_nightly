@@ -4,40 +4,20 @@ properties([
   // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
   pipelineTriggers([cron('H 07 * * 1-5')]),
   parameters([
-    booleanParam(
-      name: 'CHROME_TESTS',
-      defaultValue: true,
-      description: 'Run E2E tests in Chrome (on by default).'
+    text(
+      name: 'MANUAL_BUILD_REASON',
+      defaultValue: 'Daily nightly schedule run',
+      description: 'Why this build was triggered. For manual runs, enter a short note (e.g. verify a fix, extra browser coverage). Scheduled runs keep the default.'
     ),
-    booleanParam(
-      name: 'FIREFOX_TESTS',
-      defaultValue: false,
-      description: 'Run E2E tests in Firefox (off by default; enable when needed).'
+    choice(
+      name: 'ENVIRONMENT',
+      choices: ['aat', 'preview'],
+      description: 'Environment to run the test.'
     ),
-    booleanParam(
-      name: 'WEBKIT_TESTS',
-      defaultValue: false,
-      description: 'Run E2E tests in WebKit (off by default; enable when needed).'
-    ),
-    booleanParam(
-      name: 'EDGE_TESTS',
-      defaultValue: false,
-      description: 'Run E2E tests in Microsoft Edge (off by default; enable when needed).'
-    ),
-    booleanParam(
-      name: 'MOBILE_ANDROID_TESTS',
-      defaultValue: false,
-      description: 'Run E2E tests on the Android (Pixel 5) profile (off by default; enable when needed).'
-    ),
-    booleanParam(
-      name: 'MOBILE_IOS_TESTS',
-      defaultValue: false,
-      description: 'Run E2E tests on the iOS (iPhone 12) WebKit profile (off by default; enable when needed).'
-    ),
-    booleanParam(
-      name: 'MOBILE_IPAD_TESTS',
-      defaultValue: false,
-      description: 'Run E2E tests on the iPad (iPad Pro 11) WebKit profile (off by default; enable when needed).'
+    string(
+      name: 'PR_NUMBER',
+      defaultValue: '',
+      description: 'PR number (REQUIRED if environment is preview, leave blank otherwise).'
     ),
     booleanParam(
       name: 'CHROME_TESTS',
@@ -76,13 +56,13 @@ properties([
     ),
     choice(
       name: 'PLAYWRIGHT_GREP_TAG',
-      choices: ['@nightly', '@smoke', '@e2e', '@crossbrowser', '(all tests)'],
+      choices: ['@nightly', '@smoke', '@e2e', '@crossbrowser', '@regression', '@PR', '@enforcement', '@commoncomp', '(all tests)'],
       description: 'Test title grep. (all tests) = no grep. Default: @nightly.'
     ),
     string(
       name: 'PLAYWRIGHT_SPEC',
       defaultValue: '',
-      description: 'Optional: comma-separated spec path keywords (e.g. searchCase,createCase). Blank = all specs under tests/.'
+      description: 'Optional: spec path keywords (e.g. searchCase,createCase). Comma or semicolon between keywords. Blank = all specs under tests/.'
     ),
   ])
 ])
@@ -120,16 +100,24 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
+  enableE2eTest()
 
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-    runE2eMatrix()
+  }
+
+  afterAlways('E2eTest') {
+    postPrimaryE2eSlack()
+    runE2eSupplementaryMatrix()
   }
 }
 
 def validateInputs() {
-  if (!getE2eMatrix().any { params[it.flag] }) {
-    error('E2E matrix: enable at least one browser/device option (e.g. CHROME_TESTS).')
+  if (params.ENVIRONMENT == 'preview' && (!params.PR_NUMBER?.trim())) {
+    error("Validation Failed: PR number is required when environment is 'preview'")
+  }
+  if (params.ENVIRONMENT == 'preview' && !params.PR_NUMBER.trim().matches("^\\d+\$")) {
+    error("Validation Failed: PR number must contain only numerical values")
   }
   if (params.ENVIRONMENT == 'aat' && !getE2eMatrix().any { row -> params[row.flag] }) {
     error('E2E matrix: enable at least one browser/device option (e.g. CHROME_TESTS).')
@@ -137,35 +125,17 @@ def validateInputs() {
 }
 
 def handleEnvironmentSetting() {
-  def tag = params.PLAYWRIGHT_GREP_TAG ?: '@nightly'
+  def tag = (params.PLAYWRIGHT_GREP_TAG ?: '@nightly').toString().trim()
   env.E2E_TEST_SCOPE = (tag == '(all tests)') ? '' : tag
   env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
+  env.ENVIRONMENT = params.ENVIRONMENT
   env.MANAGE_CASE_BASE_URL = (params.ENVIRONMENT == 'preview')
     ? "https://xui-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
     : "https://manage-case.${params.ENVIRONMENT}.platform.hmcts.net"
-  env.ENVIRONMENT = 'aat'
-  env.MANAGE_CASE_BASE_URL = 'https://manage-case.aat.platform.hmcts.net'
-  env.DATA_STORE_URL_BASE = 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
-}
 
-def getE2eMatrix() {
-  [
-    [flag: 'CHROME_TESTS', suite: 'chrome', browser: 'Chrome', label: 'Desktop Chrome'],
-    [flag: 'FIREFOX_TESTS', suite: 'firefox', browser: 'Firefox', label: 'Desktop Firefox'],
-    [flag: 'WEBKIT_TESTS', suite: 'webkit', browser: 'Safari', label: 'Desktop Safari (WebKit)'],
-    [flag: 'EDGE_TESTS', suite: 'edge', browser: 'Edge', label: 'Desktop Edge'],
-    [flag: 'MOBILE_ANDROID_TESTS', suite: 'mobile-android', browser: 'MobileAndroid', label: 'Mobile Android (Pixel 5)'],
-    [flag: 'MOBILE_IOS_TESTS', suite: 'mobile-ios', browser: 'MobileIos', label: 'Mobile iOS (WebKit)'],
-    [flag: 'MOBILE_IPAD_TESTS', suite: 'mobile-ipad', browser: 'MobileIpad', label: 'Mobile iPad (WebKit)'],
-  ]
-}
-
-def runE2eMatrix() {
-  def gradleBuilder = new uk.gov.hmcts.contino.GradleBuilder(this, product)
-  getE2eMatrix().findAll { params[it.flag] }.each { row ->
-    runE2eStage(gradleBuilder, row)
-  }
-}
+  env.DATA_STORE_URL_BASE = (params.ENVIRONMENT == 'preview')
+    ? "https://ccd-data-store-api-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
+    : "http://ccd-data-store-api-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
 
   env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
     ? 'pr'
@@ -178,7 +148,7 @@ def getE2eMatrix() {
     [flag: 'CHROME_TESTS', project: 'chrome', browser: 'Chrome', label: 'Desktop Chrome'],
     [flag: 'FIREFOX_TESTS', project: 'firefox', browser: 'Firefox', label: 'Desktop Firefox'],
     [flag: 'WEBKIT_TESTS', project: 'webkit', browser: 'Safari', label: 'Desktop Safari (WebKit)'],
-    [flag: 'MICROSOFT_EDGE_TESTS', project: 'edge', browser: 'Edge', label: 'Desktop Edge'],
+    [flag: 'EDGE_TESTS', project: 'edge', browser: 'Edge', label: 'Desktop Edge'],
     [flag: 'MOBILE_ANDROID_TESTS', project: 'mobile-android', browser: 'MobileAndroid', label: 'Mobile Android (Pixel 5)'],
     [flag: 'MOBILE_IOS_TESTS', project: 'mobile-ios', browser: 'MobileIos', label: 'Mobile iOS (WebKit)'],
     [flag: 'MOBILE_IPAD_TESTS', project: 'mobile-ipad', browser: 'MobileIpad', label: 'Mobile iPad (WebKit)'],
@@ -218,21 +188,22 @@ def runE2eSupplementaryMatrix() {
 
 def runE2eStage(gradleBuilder, String e2eSuite, String browser, String stageLabel) {
   stage("${stageLabel}") {
-def runE2eStage(gradleBuilder, Map row) {
-  stage("E2E - ${row.label}") {
     node {
       checkout scm
       sh 'rm -rf e2e-output allure-report src/e2eTest/allure-results src/e2eTest/.auth/storage-state.json || true'
       catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-        withEnv(["E2E_SUITE=${e2eSuite}"]) {
+        // Preserve empty E2E_TEST_SCOPE for "(all tests)" nightly runs; null → default @nightly
+        def scope = (env.E2E_TEST_SCOPE != null) ? env.E2E_TEST_SCOPE : '@nightly'
+        def spec = env.E2E_SPEC != null ? env.E2E_SPEC : ''
+        withEnv([
+          "E2E_SUITE=${e2eSuite}",
+          "E2E_TEST_SCOPE=${scope}",
+          "E2E_SPEC=${spec}"
+        ]) {
           gradleBuilder.gradle('runE2eTests')
         }
       }
       def reportPathSuffix = "Full_20${browser}_20E2E_20Test_20Report/"
-        withEnv(["E2E_SUITE=${row.suite}"]) {
-          gradleBuilder.gradle('runE2eTests')
-        }
-      }
       publishHTML([
         allowMissing: true,
         alwaysLinkToLastBuild: true,
@@ -250,17 +221,6 @@ def runE2eStage(gradleBuilder, Map row) {
 def sendAllureReportToSlack(String stageLabel, String reportPathSuffix) {
   env.E2E_BROWSER = stageLabel
   env.ALLURE_REPORT_PATH_SUFFIX = reportPathSuffix
-        reportName: "Full ${row.browser} E2E Test Report"
-      ])
-      steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
-      sendAllureReportToSlack(row.label, "Full_20${row.browser}_20E2E_20Test_20Report/")
-    }
-  }
-}
-
-def sendAllureReportToSlack(String stageLabel, String reportSuffix) {
-  env.E2E_BROWSER = stageLabel
-  env.ALLURE_REPORT_PATH_SUFFIX = reportSuffix
   env.E2E_SERVICE_NAME = 'pcs-api'
   def pipelineType = 'nightly'
   env.E2E_PIPELINE_TYPE = pipelineType
@@ -274,15 +234,6 @@ def sendAllureReportToSlack(String stageLabel, String reportSuffix) {
   try {
     slackSend(channel: '#qa-pipeline-status', message: msg)
     echo "E2E Slack notification sent to #qa-pipeline-status (${stageLabel})"
-    script: 'cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=nightly ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true',
-    returnStdout: true
-  ).trim()
-  if (!msg) {
-    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* nightly\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}${reportSuffix}"
-  }
-  try {
-    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
-    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results (${stageLabel})"
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
