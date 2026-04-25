@@ -350,7 +350,7 @@ export function buildSlackMessage(
         const truncated = msg.length > 120 ? msg.slice(0, 120) + '…' : msg;
         lines.push(
           `• \`${t.status}\` ${t.name} (${t.duration_seconds}s)` +
-            (truncated ? ` — ${truncated}` : '')
+          (truncated ? ` — ${truncated}` : '')
         );
       }
       if (fails.length > maxFailuresToList) {

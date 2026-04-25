@@ -14,6 +14,7 @@ export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
+const e2eTag = process.env.E2E_TEST_SCOPE;
 
 /** Build test file globs from E2E_SPEC (comma or semicolon keywords). Empty = run all specs. */
 function testMatchFromE2eSpec(raw: string | undefined): string[] | undefined {
@@ -36,9 +37,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 3 : 0,
+  retries: process.env.CI ? 2 : 0,
   //Configure workers by environment: AAT is fixed at 4 workers; preview worker count can be adjusted based on preview performance
-  workers: process.env.ENVIRONMENT === 'preview' ? 2 : 4,
+  workers: process.env.ENVIRONMENT === 'preview' ? 1 : 4,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, ...storageStateConfig },

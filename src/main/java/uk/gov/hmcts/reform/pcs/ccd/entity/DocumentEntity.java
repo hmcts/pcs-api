@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +55,15 @@ public class DocumentEntity {
     @Enumerated(EnumType.STRING)
     private DocumentType type;
 
+    private String description;
+
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "document")
     @Builder.Default
     @JsonManagedReference
     private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "enf_case_id")
+    @JsonBackReference
+    private EnforcementOrderEntity enfCase;
 }

@@ -7,7 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
@@ -28,7 +28,7 @@ class PaymentAgreementServiceTest {
 
     @ParameterizedTest
     @MethodSource("paymentsMadeScenarios")
-    void shouldMapAnyPaymentsMadeField(YesOrNo expected) {
+    void shouldMapAnyPaymentsMadeField(VerticalYesNo expected) {
         //Given
         PaymentAgreement paymentAgreement = PaymentAgreement.builder()
             .anyPaymentsMade(expected)
@@ -44,9 +44,9 @@ class PaymentAgreementServiceTest {
 
     private static Stream<Arguments> paymentsMadeScenarios() {
         return Stream.of(
-            Arguments.of(YesOrNo.YES),
-            Arguments.of(YesOrNo.NO),
-            Arguments.of((YesOrNo) null)
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
         );
     }
 
@@ -103,6 +103,30 @@ class PaymentAgreementServiceTest {
     private static Stream<Arguments> repaymentAgreedDetailsScenarios() {
         return Stream.of(
                 Arguments.of("Monthly installments"),
+                Arguments.of(""),
+                Arguments.of((String) null)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("paymentDetailsScenarios")
+    void shouldMapPaymentDetailsField(String expected) {
+        // Given
+        PaymentAgreement model = PaymentAgreement.builder()
+                .paymentDetails(expected)
+                .build();
+
+        // When
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
+
+        // Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getPaymentDetails()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> paymentDetailsScenarios() {
+        return Stream.of(
+                Arguments.of("Paid £500 on 01/01/2024"),
                 Arguments.of(""),
                 Arguments.of((String) null)
         );

@@ -313,7 +313,7 @@ export class CreateCaseAction implements IAction {
     });
     if (defendantData.correspondenceAddressOption === defendantDetails.yesRadioOption) {
       await performAction('clickRadioButton', {
-        question: defendantDetails.isTheDefendantsCorrespondenceAddressHiddenQuestion,
+        question: defendantDetails.isTheDefendantsAddressForServiceHiddenQuestion,
         option: defendantData.correspondenceAddressSameOption,
       });
       if (defendantData.correspondenceAddressSameOption === defendantDetails.noRadioOption) {
@@ -363,7 +363,7 @@ export class CreateCaseAction implements IAction {
           defendantData[`correspondenceAddressSame${index}Option`] || defendantDetails.noRadioOption;
         if (correspondenceAddressOption === defendantDetails.yesRadioOption) {
           await performAction('clickRadioButton', {
-            question: defendantDetails.isTheDefendantsCorrespondenceAddressHiddenQuestion,
+            question: defendantDetails.isTheDefendantsAddressForServiceHiddenQuestion,
             option: correspondenceAddressSameOption,
             index,
           });
@@ -395,8 +395,12 @@ export class CreateCaseAction implements IAction {
         ['inputText', tenancyLicenceDetails.monthTextLabel, tenancyData.month],
         ['inputText', tenancyLicenceDetails.yearTextLabel, tenancyData.year]);
     }
+    await performAction('clickRadioButton', {question: tenancyData.question, option: tenancyData.option});
     if (tenancyData.files) {
       await performAction('uploadFile', tenancyData.files);
+    }
+    if (tenancyData.reason) {
+      await performAction('inputText', tenancyLicenceDetails.explainWhyHiddenTextLabel, tenancyData.reason);
     }
     await performAction('clickButton', tenancyLicenceDetails.continueButton);
   }
