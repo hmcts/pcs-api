@@ -44,15 +44,15 @@ properties([
       defaultValue: false,
       description: 'Run E2E tests on the iPad (iPad Pro 11) WebKit profile (off by default; enable when needed).'
     ),
-    choice(
-      name: 'PLAYWRIGHT_GREP_TAG',
-      choices: ['@nightly', '@smoke', '@e2e', '@crossbrowser', '@regression', '@PR', '@enforcement', '@commoncomp', '(all tests)'],
-      description: 'Test title grep. (all tests) = no grep. Default: @nightly.'
-    ),
     string(
       name: 'PLAYWRIGHT_SPEC',
       defaultValue: '',
-      description: 'Optional: spec path keywords (e.g. searchCase,createCase). Comma or semicolon between keywords. Blank = all specs under tests/.'
+      description: 'Spec file filter: each keyword must appear in the path of a *.spec.ts under src/e2eTest/tests (case-sensitive). Separate keywords with comma or semicolon. Ex.: respondToAClaim | respondToAClaim,makeAnApplication. Blank = all specs. Default: empty.'
+    ),
+    choice(
+      name: 'PLAYWRIGHT_GREP_TAG',
+      choices: ['@nightly', '@smoke', '@e2e', '@regression'],
+      description: 'Playwright title grep (E2E_TEST_SCOPE). First option is the default for scheduled runs.'
     ),
   ])
 ])
@@ -109,8 +109,8 @@ def validateInputs() {
 }
 
 def handleEnvironmentSetting() {
-  def tag = (params.PLAYWRIGHT_GREP_TAG ?: '@nightly').toString().trim()
-  env.E2E_TEST_SCOPE = (tag == '(all tests)') ? '' : tag
+  def tag = params.PLAYWRIGHT_GREP_TAG?.trim() ?: '@nightly'
+  env.E2E_TEST_SCOPE = tag
   env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
   env.ENVIRONMENT = 'aat'
   env.MANAGE_CASE_BASE_URL = 'https://manage-case.aat.platform.hmcts.net'
@@ -161,7 +161,7 @@ def runE2eStage(gradleBuilder, String e2eSuite, String browser, String stageLabe
       checkout scm
       sh 'rm -rf e2e-output allure-report src/e2eTest/allure-results src/e2eTest/.auth/storage-state.json || true'
       catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-        // Preserve empty E2E_TEST_SCOPE for "(all tests)" nightly runs; null → default @nightly
+        // null E2E_TEST_SCOPE → default @nightly for supplementary matrix runs
         def scope = (env.E2E_TEST_SCOPE != null) ? env.E2E_TEST_SCOPE : '@nightly'
         def spec = env.E2E_SPEC != null ? env.E2E_SPEC : ''
         withEnv([

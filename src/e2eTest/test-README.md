@@ -136,7 +136,7 @@ await performValidationGroup(
 ### Jenkins (CNP and nightly)
 
 - **CNP (`Jenkinsfile_CNP`):** E2E runs when the shared library adds the stage (typically **`enable_e2e_test`**). Suite labels set `E2E_SUITE` (`enable_e2e_full_regression` → full `chrome`; `enable_e2e_regression` / `enable_e2e_enforcement_test` / `enable_e2e_commoncomp` → tagged runs). Optional PR labels **`e2e-tag:`** / **`e2e-spec:`** set `E2E_TEST_SCOPE` / `E2E_SPEC`. Full `chrome` clears tag/spec. Master sets `@regression` for AAT E2E.
-- **Nightly (`Jenkinsfile_nightly`):** Runs against **AAT** only; build parameters include grep/spec filters; supplementary browser stages pass `E2E_TEST_SCOPE` / `E2E_SPEC` into Gradle. **`@commoncomp`** must appear in test titles for that filter to match.
+- **Nightly (`Jenkinsfile_nightly`):** Runs against **AAT** only; `PLAYWRIGHT_GREP_TAG` / `PLAYWRIGHT_SPEC` set `E2E_TEST_SCOPE` / `E2E_SPEC`; the primary E2E stage and any extra browser stages reuse those values.
 - **Gradle:** `./gradlew runE2eTests` runs `src/e2eTest/bin/run-e2e-suite.sh` (respects `E2E_SUITE`, `E2E_TEST_SCOPE`, `E2E_SPEC`).
 
 ### The following environment variables are needed to run the tests:
