@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Gradle/Jenkins entry: E2E_SUITE maps to Playwright project; tag/spec filtering is in playwright.config.ts
-# via E2E_TEST_SCOPE and E2E_SPEC (aligned with pcs-frontend HDPI-6105 / HDPI-6106).
-# Legacy: if only PLAYWRIGHT_GREP is set, it is copied into E2E_TEST_SCOPE before defaults run.
+# Gradle entry: E2E_SUITE → Playwright --project. Nightly sets E2E_TEST_SCOPE / E2E_SPEC (playwright.config.ts).
+# When those are unset, default title grep for pr / regression / enforcement matches CNP yarn scripts.
 set -euo pipefail
 
 SUITE="${1:?E2E_SUITE required}"
@@ -22,9 +21,6 @@ case "${SUITE}" in
   enforcement)
     PROJECT="chrome"
     ;;
-  commoncomp)
-    PROJECT="chrome"
-    ;;
   chrome|firefox|webkit|edge|mobile-android|mobile-ios|mobile-ipad)
     PROJECT="${SUITE}"
     ;;
@@ -34,18 +30,11 @@ case "${SUITE}" in
     ;;
 esac
 
-# Prefer E2E_TEST_SCOPE from Jenkins/local; map legacy PLAYWRIGHT_GREP when E2E_TEST_SCOPE is unset.
-if [ -z "${E2E_TEST_SCOPE+x}" ] && [ "${PLAYWRIGHT_GREP+x}" = x ]; then
-  export E2E_TEST_SCOPE="${PLAYWRIGHT_GREP}"
-fi
-
-# CNP-style suites: default tag scope when E2E_TEST_SCOPE is still unset.
 if [ -z "${E2E_TEST_SCOPE+x}" ]; then
   case "${SUITE}" in
     pr) export E2E_TEST_SCOPE="@PR" ;;
     regression) export E2E_TEST_SCOPE="@regression" ;;
     enforcement) export E2E_TEST_SCOPE="@enforcement" ;;
-    commoncomp) export E2E_TEST_SCOPE="@commoncomp" ;;
   esac
 fi
 

@@ -3,7 +3,6 @@ import * as path from 'path';
 
 const testCasesPath = path.join(__dirname, '../../../e2e-output/data/test-cases');
 if (!fs.existsSync(testCasesPath)) {
-  console.log(`Skipping attachment cleanup: path does not exist (${testCasesPath})`);
   process.exit(0);
 }
 
@@ -45,6 +44,6 @@ for (const file of files) {
       fs.writeFileSync(filePath, JSON.stringify(cleanedData, null, 2));
     }
   } catch (error) {
-    console.log(error instanceof Error ? error.message : String(error));
+    // Ignore errors
   }
 }

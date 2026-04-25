@@ -103,9 +103,7 @@ withNightlyPipeline(type, product, component) {
 }
 
 def validateInputs() {
-  if (!getE2eMatrix().any { row -> params[row.flag] }) {
-    error('E2E matrix: enable at least one browser/device option (e.g. CHROME_TESTS).')
-  }
+  resolvePrimaryE2eRow()
 }
 
 def handleEnvironmentSetting() {
@@ -161,13 +159,10 @@ def runE2eStage(gradleBuilder, String e2eSuite, String browser, String stageLabe
       checkout scm
       sh 'rm -rf e2e-output allure-report src/e2eTest/allure-results src/e2eTest/.auth/storage-state.json || true'
       catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-        // null E2E_TEST_SCOPE → default @nightly for supplementary matrix runs
-        def scope = (env.E2E_TEST_SCOPE != null) ? env.E2E_TEST_SCOPE : '@nightly'
-        def spec = env.E2E_SPEC != null ? env.E2E_SPEC : ''
         withEnv([
           "E2E_SUITE=${e2eSuite}",
-          "E2E_TEST_SCOPE=${scope}",
-          "E2E_SPEC=${spec}"
+          "E2E_TEST_SCOPE=${env.E2E_TEST_SCOPE ?: '@nightly'}",
+          "E2E_SPEC=${env.E2E_SPEC ?: ''}"
         ]) {
           gradleBuilder.gradle('runE2eTests')
         }
@@ -191,18 +186,17 @@ def sendAllureReportToSlack(String stageLabel, String reportPathSuffix) {
   env.E2E_BROWSER = stageLabel
   env.ALLURE_REPORT_PATH_SUFFIX = reportPathSuffix
   env.E2E_SERVICE_NAME = 'pcs-api'
-  def pipelineType = 'nightly'
-  env.E2E_PIPELINE_TYPE = pipelineType
+  env.E2E_PIPELINE_TYPE = 'nightly'
   def msg = sh(
-    script: "cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=${pipelineType} ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true",
+    script: 'cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=nightly ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true',
     returnStdout: true
   ).trim()
   if (!msg) {
-    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}${reportPathSuffix}"
+    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* nightly\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}${reportPathSuffix}"
   }
   try {
-    slackSend(channel: '#qa-pipeline-status', message: msg)
-    echo "E2E Slack notification sent to #qa-pipeline-status (${stageLabel})"
+    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
+    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results (${stageLabel})"
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
