@@ -133,11 +133,9 @@ await performValidationGroup(
 
 ## 7. Execution
 
-### Jenkins (CNP and nightly)
+### Jenkins (nightly filters)
 
-- **CNP (`Jenkinsfile_CNP`):** Same as before this work: `enable_e2e_*` labels choose the suite; Gradle runs E2E through `run-e2e-suite.sh` (which mirrors the `yarn test:pr` / `test:regression` / … defaults when tag env is not set).
-- **Nightly (`Jenkinsfile_nightly`):** `PLAYWRIGHT_GREP_TAG` and `PLAYWRIGHT_SPEC` set `E2E_TEST_SCOPE` and `E2E_SPEC` for the primary and supplementary browser stages.
-- **Gradle:** `./gradlew runE2eTests` invokes `src/e2eTest/bin/run-e2e-suite.sh`.
+On the **nightly** job, parameters `PLAYWRIGHT_GREP_TAG` and `PLAYWRIGHT_SPEC` become `E2E_TEST_SCOPE` and `E2E_SPEC` for Gradle → `yarn test:<browser>`. `playwright.config.ts` reads those env vars for grep and `testMatch`.
 
 ### The following environment variables are needed to run the tests:
 

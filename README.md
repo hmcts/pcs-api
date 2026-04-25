@@ -169,7 +169,7 @@ There are also several custom test scripts available:
 
 Locally, `playwright.config.ts` registers Firefox, WebKit, Edge, and mobile projects only when `CI` is set (as on Jenkins). For a local multi-browser run, set `CI=true` or pass `--project <name>` for a project that is defined in config.
 
-The nightly Jenkins job (`Jenkinsfile_nightly`) runs against **AAT** and exposes `PLAYWRIGHT_GREP_TAG` (`@nightly`, `@smoke`, `@e2e`, `@regression`; first is the scheduled default) and `PLAYWRIGHT_SPEC` → `E2E_SPEC` (see the job parameter text for path rules under `src/e2eTest/tests`). Those map to `E2E_TEST_SCOPE` / `E2E_SPEC` in `src/e2eTest/playwright.config.ts`. PR and master E2E on `Jenkinsfile_CNP` are unchanged from the usual `enable_e2e_*` labels and `yarn test:*` behaviour; `./gradlew runE2eTests` uses `src/e2eTest/bin/run-e2e-suite.sh` so nightly filters are applied when the pipeline sets the env vars.
+The nightly Jenkins job (`Jenkinsfile_nightly`) runs against **AAT** and offers `PLAYWRIGHT_GREP_TAG` (choice) and `PLAYWRIGHT_SPEC` (text). The pipeline sets `E2E_TEST_SCOPE` and `E2E_SPEC` for each browser stage; `src/e2eTest/playwright.config.ts` applies title grep and spec path filters. `./gradlew runE2eTests` runs `yarn test:<suite>` (same as PR/master when the library invokes Gradle).
 
 To open generated Allure report
 

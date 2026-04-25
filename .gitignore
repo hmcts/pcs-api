@@ -4,7 +4,6 @@
 *.class
 bin/main/application.yaml
 bin/
-!src/e2eTest/bin/
 BOOT-INF/
 
 ### STS ###

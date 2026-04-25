@@ -247,8 +247,7 @@ tasks.register('runE2eTests', Exec) {
     dependsOn yarnInstall
     workingDir = file("${project.projectDir}/src/e2eTest")
     def suite = System.getenv('E2E_SUITE') ?: 'pr'
-    def runner = file("${project.projectDir}/src/e2eTest/bin/run-e2e-suite.sh")
-    commandLine 'bash', runner.absolutePath, suite
+    commandLine 'yarn', "test:${suite}"
 }
 
 tasks.register('contract', Test) {

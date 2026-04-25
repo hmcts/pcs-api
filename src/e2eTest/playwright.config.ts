@@ -29,7 +29,7 @@ function testMatchFromE2eSpec(raw: string | undefined): string[] | undefined {
   return keys?.length ? keys.map(k => `**/*${k}*.spec.ts`) : undefined;
 }
 
-/** E2E_TEST_SCOPE from Jenkins nightly (or local); avoid throwing on invalid RegExp. */
+/** Title grep from E2E_TEST_SCOPE (nightly Jenkins or local). Invalid regex is escaped. */
 function grepFromTestScope(raw: string): RegExp {
   try {
     return new RegExp(raw);
