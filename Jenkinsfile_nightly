@@ -136,11 +136,7 @@ def runE2eStage(gradleBuilder, Map row) {
       checkout scm
       sh 'rm -rf e2e-output allure-report src/e2eTest/allure-results src/e2eTest/.auth/storage-state.json || true'
       catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-        withEnv([
-          "E2E_SUITE=${row.suite}",
-          "E2E_TEST_SCOPE=${env.E2E_TEST_SCOPE}",
-          "E2E_SPEC=${env.E2E_SPEC ?: ''}"
-        ]) {
+        withEnv(["E2E_SUITE=${row.suite}"]) {
           gradleBuilder.gradle('runE2eTests')
         }
       }
