@@ -9,11 +9,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
@@ -22,11 +23,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircum
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -342,6 +346,74 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails()).isNull();
         assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses()).isEqualTo(responses);
+    }
+
+    @Test
+    void shouldSaveRegularIncomeFieldsInDraft() {
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .shareIncomeExpenseDetails(VerticalYesNo.YES)
+            .incomeFromJobs(YesOrNo.YES)
+            .incomeFromJobsAmount(new BigDecimal("150000")) // £1500.00 in pence
+            .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
+            .pension(YesOrNo.YES)
+            .pensionAmount(new BigDecimal("50000")) // £500.00 in pence
+            .pensionFrequency(RecurrenceFrequency.MONTHLY)
+            .universalCredit(VerticalYesNo.YES)
+            .ucApplicationDate(LocalDate.of(2024, 1, 15))
+            .universalCreditAmount(new BigDecimal("80000")) // £800.00 in pence
+            .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
+            .otherBenefits(YesOrNo.YES)
+            .otherBenefitsAmount(new BigDecimal("20000")) // £200.00 in pence
+            .otherBenefitsFrequency(RecurrenceFrequency.WEEKLY)
+            .moneyFromElsewhere(YesOrNo.YES)
+            .moneyFromElsewhereDetails("Child maintenance payments of £100 per week")
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .householdCircumstances(householdCircumstances)
+            .build();
+
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantResponses(responses)
+                                             .build());
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        HouseholdCircumstances savedHousehold = savedDraft.getPossessionClaimResponse()
+            .getDefendantResponses()
+            .getHouseholdCircumstances();
+
+        // Assert all regular income fields are saved correctly
+        assertThat(savedHousehold.getShareIncomeExpenseDetails()).isEqualTo(VerticalYesNo.YES);
+
+        assertThat(savedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
+        assertThat(savedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("150000");
+        assertThat(savedHousehold.getIncomeFromJobsFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+
+        assertThat(savedHousehold.getPension()).isEqualTo(YesOrNo.YES);
+        assertThat(savedHousehold.getPensionAmount()).isEqualByComparingTo("50000");
+        assertThat(savedHousehold.getPensionFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+
+        assertThat(savedHousehold.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 1, 15));
+        assertThat(savedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("80000");
+        assertThat(savedHousehold.getUniversalCreditFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+
+        assertThat(savedHousehold.getOtherBenefits()).isEqualTo(YesOrNo.YES);
+        assertThat(savedHousehold.getOtherBenefitsAmount()).isEqualByComparingTo("20000");
+        assertThat(savedHousehold.getOtherBenefitsFrequency()).isEqualTo(RecurrenceFrequency.WEEKLY);
+
+        assertThat(savedHousehold.getMoneyFromElsewhere()).isEqualTo(YesOrNo.YES);
+        assertThat(savedHousehold.getMoneyFromElsewhereDetails())
+            .isEqualTo("Child maintenance payments of £100 per week");
     }
 
     @Test

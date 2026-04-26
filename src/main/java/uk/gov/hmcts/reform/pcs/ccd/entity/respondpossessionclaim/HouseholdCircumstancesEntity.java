@@ -94,13 +94,25 @@ public class HouseholdCircumstancesEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo shareIncomeExpenseDetails;
 
-    private String regularIncome;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo universalCredit;
 
     private LocalDate ucApplicationDate;
+
+    @OneToOne(cascade = ALL, mappedBy = "householdCircumstances", orphanRemoval = true)
+    @JsonManagedReference
+    private RegularIncomeEntity regularIncomeEntity;
+
+    public void setRegularIncomeEntity(RegularIncomeEntity regularIncomeEntity) {
+        if (this.regularIncomeEntity != null) {
+            this.regularIncomeEntity.setHouseholdCircumstances(null);
+        }
+        this.regularIncomeEntity = regularIncomeEntity;
+        if (this.regularIncomeEntity != null) {
+            this.regularIncomeEntity.setHouseholdCircumstances(this);
+        }
+    }
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
