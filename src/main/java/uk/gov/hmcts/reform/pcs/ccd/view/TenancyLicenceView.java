@@ -34,6 +34,8 @@ public class TenancyLicenceView {
             .typeOfTenancyLicence(TenancyLicenceType.from(combinedLicenceType))
             .tenancyLicenceDate(tenancyLicence.getStartDate())
             .detailsOfOtherTypeOfTenancyLicence(tenancyLicence.getOtherTypeDetails())
+            .hasCopyOfTenancyLicence(tenancyLicence.getHasCopyOfTenancyLicence())
+            .reasonsForNoTenancyLicenceDocuments(tenancyLicence.getReasonsForNoTenancyLicence())
             .build();
 
         pcsCase.setTenancyLicenceDetails(tenancyLicenceDetails);
