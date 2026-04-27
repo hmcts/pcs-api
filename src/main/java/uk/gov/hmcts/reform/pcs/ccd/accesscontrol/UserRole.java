@@ -23,7 +23,8 @@ public enum UserRole implements HasRole {
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
     PCS_SOLICITOR("caseworker-pcs-solicitor", Permission.CRU, IDAM),
     HMCTS_STAFF("GS_profile", Set.of(R), RAS, "hmcts-staff"),
-    HMCTS_JUDICIARY("GS_profile", Set.of(R), RAS, "hmcts-judiciary");
+    HMCTS_JUDICIARY("GS_profile", Set.of(R), RAS, "hmcts-judiciary"),
+    RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM);
 
     @JsonValue
     private final String role;
