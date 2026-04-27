@@ -28,13 +28,29 @@ export class CaseLinking implements IAction {
      
   }
 
-  private async selectCasesToUnLink(caseData: actionRecord, page: Page) {
+  /*private async selectCasesToUnLink(caseData: actionRecord, page: Page) {
     const caseRefs = String(caseData.caseRefInput).split(',');   
-     for (let i = 0; i < 3; i++) {     
+     for (let i = 0; i < caseRefs.length; i++) {     
       console.log(`UNselected Case ${i}: ${caseRefs[i]}`);
-      await performAction('inputText', selectCasesToLink.caseRefLabel, caseRefs[i]);
-      await performAction('check', caseRefs[i])
+      const selectBox = page.locator(`input[type="checkbox"][value="${caseRefs[i]}"]`);
+      await performAction('check', selectBox);
       }
-     await performAction('clickButton', selectCasesToUnLink.submitButton);
+     //await performAction('clickButton', selectCasesToUnLink.submitButton);
+  }*/
+
+  private async selectCasesToUnLink(caseData: actionRecord, page: Page) {
+  const caseRefs = String(caseData.caseRefInput).split(',');
+
+  for (let i = 0; i < (caseRefs.length-2); i++) {
+    console.log(`UNselected Case ${i}: ${caseRefs[i]}`);
+
+    const selectBox = page.locator(
+      `input[type="checkbox"][value="${caseRefs[i]}"]`
+    );
+
+    await selectBox.check();
   }
+
+  await performAction('clickButton', selectCasesToUnLink.submitButton);;
+}
 }

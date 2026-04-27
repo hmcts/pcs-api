@@ -73,8 +73,7 @@ test.describe('[Common Component Case Linking]', async () => {
       await performAction('clickButton', beforeYouStart.submitButton);
       await performValidation('mainHeader', selectCasesToUnLink.mainHeader);
       await performAction('selectCasesToUnLink', {
-       caseRefInput: caseNumbers,
-       submitButton: selectCasesToUnLink.submitButton
+       caseRefInput: caseNumbers
     });
      
       
