@@ -1,4 +1,4 @@
-# pcs-api - HDPI-6053
+# pcs-api
 
 ## Building and deploying the application
 
