@@ -7,5 +7,4 @@ export const addCommentsForFlag = {
     continueButton: `Continue`,
     previousButton: `Previous`,
     cancelButton: `Cancel`,
-   
 };
