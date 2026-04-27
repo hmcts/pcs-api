@@ -334,7 +334,7 @@ public class NotificationService {
     }
 
     /**
-     * Builds EmailNotificationRequest object for the corresponding template
+     * Builds EmailNotificationRequest object for the corresponding template.
      *
      * @param templateId the gov notify template id for the notification you are sending
      * @param email the email address you are sending the notification to

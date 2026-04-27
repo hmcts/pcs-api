@@ -67,7 +67,8 @@ public class NotifyController {
         log.info("Received request to send all defendant response emails for {}", defendantResponseId);
         // temporary endpoint to test sending emails
 
-        Optional<DefendantResponseEntity> optDefendantResponse = defendantResponseRepository.findById(defendantResponseId);
+        Optional<DefendantResponseEntity> optDefendantResponse =
+            defendantResponseRepository.findById(defendantResponseId);
 
         if (optDefendantResponse.isEmpty()) {
             return ResponseEntity.notFound().build();
