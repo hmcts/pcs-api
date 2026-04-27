@@ -29,6 +29,10 @@ public class PaymentCallBackController {
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
         @RequestBody String serviceRequestUpdate) {
         log.info("Payment Callback Received For Case: {}", serviceRequestUpdate);
+        processRequestBody(serviceRequestUpdate);
+    }
+
+    void processRequestBody(String serviceRequestUpdate) {
         try {
             ServiceRequestUpdate update = objectMapper.readValue(serviceRequestUpdate, ServiceRequestUpdate.class);
             paymentService.processPaymentResponse(update);

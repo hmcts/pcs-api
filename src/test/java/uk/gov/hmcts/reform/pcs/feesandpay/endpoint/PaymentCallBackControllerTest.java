@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import java.math.BigDecimal;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,7 +24,7 @@ class PaymentCallBackControllerTest {
     @Mock
     private PaymentService paymentService;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
@@ -57,4 +58,45 @@ class PaymentCallBackControllerTest {
         // Then
         verify(paymentService).processPaymentResponse(any(ServiceRequestUpdate.class));
     }
+
+    @Test
+    void shouldProcessRequestBody() throws Exception {
+        // Given
+        String ccdCaseNumber = "123123123123";
+        BigDecimal amount = new BigDecimal("123.11");
+        ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
+            .serviceRequestReference("SR-123")
+            .ccdCaseNumber(ccdCaseNumber)
+            .serviceRequestAmount(amount)
+            .serviceRequestStatus("Paid")
+            .payment(Payment.builder()
+                         .paymentReference("123")
+                         .paymentAmount(amount)
+                         .paymentMethod("Card")
+                         .accountNumber("123123123")
+                         .caseReference(ccdCaseNumber)
+                         .build())
+            .build();
+
+        String requestBody = objectMapper.writeValueAsString(serviceRequestUpdate);
+
+        // When
+        underTest.processRequestBody(requestBody);
+
+        // Then
+        verify(paymentService).processPaymentResponse(any(ServiceRequestUpdate.class));
+    }
+
+    @Test
+    void shouldNotProcessPaymentCallbackWhenRequestBodyIsInvalidJson() {
+        // Given
+        String invalidRequestBody = "{ test";
+
+        // When
+        underTest.processPaymentCallback("s2s", invalidRequestBody);
+
+        // Then
+        verify(paymentService, never()).processPaymentResponse(any(ServiceRequestUpdate.class));
+    }
+
 }
