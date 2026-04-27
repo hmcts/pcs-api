@@ -283,9 +283,9 @@ class DocumentServiceTest {
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
         DocumentEntity entity = entities.getFirst();
-        assertThat(entity.getType()).isEqualTo(DocumentType.NOTICE_SERVED);
+        assertThat(entity.getType()).isEqualTo(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION);
         assertThat(entity.getFileName()).isEqualTo("file4");
-        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED.getId());
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
     }
 
     @Test
@@ -496,7 +496,7 @@ class DocumentServiceTest {
             .containsExactlyInAnyOrder(
                 DocumentType.RENT_STATEMENT,
                 DocumentType.TENANCY_LICENCE,
-                DocumentType.NOTICE_SERVED
+                DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION
             );
 
         assertThat(entities)
