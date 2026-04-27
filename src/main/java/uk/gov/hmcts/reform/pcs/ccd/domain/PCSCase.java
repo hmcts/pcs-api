@@ -575,5 +575,4 @@ public class PCSCase {
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
 
-
 }

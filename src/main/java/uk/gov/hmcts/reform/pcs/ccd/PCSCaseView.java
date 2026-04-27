@@ -90,8 +90,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         caseFieldsView.setCaseFields(pcsCase);
 
-        caseFieldsView.setCaseFields(pcsCase);
-
         //allows indexing for Global Search
         pcsCase.setSearchCriteria(new SearchCriteria());
 
