@@ -87,7 +87,8 @@ class NotificationServiceTest {
             when(notificationRepository.save(any(CaseNotification.class))).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            EmailNotificationResponse response = notificationService.scheduleEmailNotification(request, UUID.randomUUID());
+            EmailNotificationResponse response =
+                notificationService.scheduleEmailNotification(request, UUID.randomUUID());
 
             assertThat(response).isNotNull();
             assertThat(response.getTaskId()).isNotNull();
@@ -107,7 +108,8 @@ class NotificationServiceTest {
             when(notificationRepository.save(any(CaseNotification.class))).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(false);
 
-            EmailNotificationResponse response = notificationService.scheduleEmailNotification(request, UUID.randomUUID());
+            EmailNotificationResponse response =
+                notificationService.scheduleEmailNotification(request, UUID.randomUUID());
 
             assertThat(response).isNotNull();
             assertThat(response.getTaskId()).isNotNull();
@@ -130,7 +132,9 @@ class NotificationServiceTest {
             when(notificationRepository.save(any(CaseNotification.class))).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            EmailNotificationResponse response = notificationService.scheduleEmailNotification(request, UUID.randomUUID());
+            EmailNotificationResponse response = notificationService.scheduleEmailNotification(
+                request, UUID.randomUUID()
+            );
 
             assertThat(response).isNotNull();
             assertThat(response.getTaskId()).isNotNull();
@@ -304,7 +308,9 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should create service with dependencies")
         void shouldCreateServiceWithDependencies() {
-            NotificationService service = new NotificationService(notificationRepository, schedulerClient, templateConfiguration);
+            NotificationService service = new NotificationService(
+                notificationRepository, schedulerClient, templateConfiguration
+            );
 
             assertThat(service).isNotNull();
         }
@@ -419,7 +425,9 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse);
+                notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(
+                    defendantResponse
+                );
 
             assertThat(response).isNotNull();
 
@@ -469,7 +477,9 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
+                notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(
+                    defendantResponse
+                );
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());

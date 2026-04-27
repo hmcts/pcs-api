@@ -262,8 +262,6 @@ class NotifyControllerTest {
         @Test
         @DisplayName("Should return all email responses when defendant response exists")
         void shouldReturnAllEmailResponsesWhenDefendantResponseExists() {
-            UUID defendantResponseId = UUID.randomUUID();
-
             PartyEntity party = new PartyEntity();
             party.setEmailAddress(TEST_EMAIL);
             party.setFirstName("John");
@@ -281,6 +279,7 @@ class NotifyControllerTest {
             defendantResponse.setPcsCase(pcsCase);
             defendantResponse.setPaymentAgreement(paymentAgreement);
 
+            UUID defendantResponseId = UUID.randomUUID();
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.of(defendantResponse));
 
@@ -288,12 +287,15 @@ class NotifyControllerTest {
 
             when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse))
                 .thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse))
-                .thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse))
-                .thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse))
-                .thenReturn(response);
+            when(notificationService
+                     .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse)
+            ).thenReturn(response);
+            when(notificationService
+                     .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse)
+            ).thenReturn(response);
+            when(notificationService
+                     .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
+            ).thenReturn(response);
 
             ResponseEntity<List<EmailNotificationResponse>> result =
                 notifyController.sendDefendantResponseEmails(
@@ -304,9 +306,12 @@ class NotifyControllerTest {
 
             verify(defendantResponseRepository).findById(defendantResponseId);
             verify(notificationService).sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
-            verify(notificationService).sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse);
-            verify(notificationService).sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
-            verify(notificationService).sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
+            verify(notificationService)
+                .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse);
+            verify(notificationService)
+                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+            verify(notificationService)
+                .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
         }
 
         @Test

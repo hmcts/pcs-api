@@ -326,8 +326,6 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
         @Test
         @DisplayName("Should send all defendant response emails successfully")
         void shouldSendAllDefendantResponseEmailsSuccessfully() throws Exception {
-            UUID defendantResponseId = UUID.randomUUID();
-
             PartyEntity party = new PartyEntity();
             party.setEmailAddress("test@example.com");
             party.setFirstName("John");
@@ -345,6 +343,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
             defendantResponse.setPcsCase(pcsCase);
             defendantResponse.setPaymentAgreement(paymentAgreement);
 
+            UUID defendantResponseId = UUID.randomUUID();
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.of(defendantResponse));
 
@@ -355,12 +354,14 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
 
             when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse))
                 .thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse))
-                .thenReturn(response);
+            when(notificationService
+                     .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse)
+            ).thenReturn(response);
             when(notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse)
             ).thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse))
-                .thenReturn(response);
+            when(notificationService
+                     .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
+            ).thenReturn(response);
 
             mockMvc.perform(post("/testing-support/send-defendant-response-emails")
                                 .param("defendantResponseId", defendantResponseId.toString())
