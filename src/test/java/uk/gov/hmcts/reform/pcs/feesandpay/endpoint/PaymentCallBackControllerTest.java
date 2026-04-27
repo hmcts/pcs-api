@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.endpoint;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,8 +13,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.math.BigDecimal;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -92,11 +93,9 @@ class PaymentCallBackControllerTest {
         // Given
         String invalidRequestBody = "{ test";
 
-        // When
-        underTest.processPaymentCallback("s2s", invalidRequestBody);
-
-        // Then
-        verify(paymentService, never()).processPaymentResponse(any(ServiceRequestUpdate.class));
+        // When // Then
+        assertThatThrownBy(() -> underTest.processPaymentCallback("s2s", invalidRequestBody))
+            .isInstanceOf(JsonProcessingException.class);
     }
 
 }

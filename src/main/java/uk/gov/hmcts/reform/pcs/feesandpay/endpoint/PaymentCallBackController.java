@@ -27,17 +27,18 @@ public class PaymentCallBackController {
     @PutMapping(path = PAYMENT_UPDATE_PATH, consumes = APPLICATION_JSON_VALUE)
     public void processPaymentCallback(
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
-        @RequestBody String serviceRequestUpdate) {
+        @RequestBody String serviceRequestUpdate) throws JsonProcessingException {
         log.info("Payment Callback Received For Case: {}", serviceRequestUpdate);
         processRequestBody(serviceRequestUpdate);
     }
 
-    void processRequestBody(String serviceRequestUpdate) {
+    void processRequestBody(String serviceRequestUpdate) throws JsonProcessingException {
         try {
             ServiceRequestUpdate update = objectMapper.readValue(serviceRequestUpdate, ServiceRequestUpdate.class);
             paymentService.processPaymentResponse(update);
         } catch (JsonProcessingException e) {
             log.error("Failed to process payment update request message", e);
+            throw e;
         }
     }
 
