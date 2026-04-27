@@ -73,7 +73,7 @@ test.describe('[Common Component Case Flags]', async () => {
     await performAction('reviewFlagDetails', {
       saveButton: reviewFlagDetails.saveAndContinueButton
     });
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Create flags');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
     await performAction('viewCaseFlags', {
       viewFlagLink: viewCaseFlag.viewFlagLink
     });
@@ -90,6 +90,6 @@ test.describe('[Common Component Case Flags]', async () => {
     await performAction('reviewFlagDetails', {
       saveButton: reviewFlagDetails.saveAndContinueButton
     });
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage Flags');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
     });
 });
