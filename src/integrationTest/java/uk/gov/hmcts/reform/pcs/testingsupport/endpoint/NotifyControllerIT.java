@@ -15,6 +15,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
@@ -24,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
@@ -69,6 +75,8 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
     private IdamClient idamClient;
     @MockitoBean
     private NotificationService notificationService;
+    @MockitoBean
+    private DefendantResponseRepository defendantResponseRepository;
 
     public NotifyControllerIT(MockMvc mockMvc, ObjectMapper objectMapper) {
         this.mockMvc = mockMvc;
@@ -84,7 +92,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
         mockResponse.setStatus(SCHEDULED_STATUS);
         mockResponse.setNotificationId(UUID.randomUUID());
 
-        when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+        when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
             .thenReturn(mockResponse);
     }
 
@@ -189,7 +197,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
         @Test
         @DisplayName("Should return 500 when service throws exception")
         void shouldReturn500WhenServiceThrowsException() throws Exception {
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
                 .thenThrow(new NotificationException("Database error", new RuntimeException()));
 
             EmailNotificationRequest request = createValidEmailRequest();
@@ -205,7 +213,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
         @Test
         @DisplayName("Should return 500 when service throws runtime exception")
         void shouldReturn500WhenServiceThrowsRuntimeException() throws Exception {
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
                 .thenThrow(new RuntimeException("Unexpected error"));
 
             EmailNotificationRequest request = createValidEmailRequest();
@@ -308,6 +316,76 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                 .andExpect(status().is(ACCEPTED_STATUS))
                 .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
                 .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
+    }
+
+    @Nested
+    @DisplayName("Defendant Response Email Notifications")
+    class DefendantResponseNotificationsTest {
+
+        @Test
+        @DisplayName("Should send all defendant response emails successfully")
+        void shouldSendAllDefendantResponseEmailsSuccessfully() throws Exception {
+            UUID defendantResponseId = UUID.randomUUID();
+
+            PartyEntity party = new PartyEntity();
+            party.setEmailAddress("test@example.com");
+            party.setFirstName("John");
+            party.setLastName("Doe");
+
+            PcsCaseEntity pcsCase = new PcsCaseEntity();
+            pcsCase.setId(UUID.randomUUID());
+            pcsCase.setCaseReference(1234567890L);
+
+            PaymentAgreementEntity paymentAgreement = new PaymentAgreementEntity();
+            paymentAgreement.setId(UUID.randomUUID());
+
+            DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
+            defendantResponse.setParty(party);
+            defendantResponse.setPcsCase(pcsCase);
+            defendantResponse.setPaymentAgreement(paymentAgreement);
+
+            when(defendantResponseRepository.findById(defendantResponseId))
+                .thenReturn(Optional.of(defendantResponse));
+
+            EmailNotificationResponse response = new EmailNotificationResponse();
+            response.setTaskId("task-123");
+            response.setStatus(SCHEDULED_STATUS);
+            response.setNotificationId(UUID.randomUUID());
+
+            when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(party, pcsCase))
+                .thenReturn(response);
+            when(notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(party, pcsCase))
+                .thenReturn(response);
+            when(notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
+                party, pcsCase, paymentAgreement)
+            ).thenReturn(response);
+            when(notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(party, pcsCase))
+                .thenReturn(response);
+
+            mockMvc.perform(post("/testing-support/send-defendant-response-emails")
+                                .param("defendantResponseId", defendantResponseId.toString())
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", is(4)))
+                .andExpect(jsonPath("$[0].taskId", is(notNullValue())))
+                .andExpect(jsonPath("$[0].status", is(SCHEDULED_STATUS)));
+        }
+
+        @Test
+        @DisplayName("Should return 404 when defendant response not found")
+        void shouldReturn404WhenDefendantResponseNotFound() throws Exception {
+            UUID defendantResponseId = UUID.randomUUID();
+
+            when(defendantResponseRepository.findById(defendantResponseId))
+                .thenReturn(Optional.empty());
+
+            mockMvc.perform(post("/testing-support/send-defendant-response-emails")
+                                .param("defendantResponseId", defendantResponseId.toString())
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER))
+                .andExpect(status().isNotFound());
         }
     }
 

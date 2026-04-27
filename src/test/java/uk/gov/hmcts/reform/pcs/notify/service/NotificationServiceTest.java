@@ -10,12 +10,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
+import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
+import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -44,6 +50,9 @@ class NotificationServiceTest {
     @Mock
     private SchedulerClient schedulerClient;
 
+    @Mock
+    private NotificationTemplateConfiguration templateConfiguration;
+
     private NotificationService notificationService;
 
     private static final String TEST_EMAIL = "test@example.com";
@@ -54,7 +63,7 @@ class NotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationService(notificationRepository, schedulerClient);
+        notificationService = new NotificationService(notificationRepository, schedulerClient, templateConfiguration);
     }
 
     @Nested
@@ -70,7 +79,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any(CaseNotification.class))).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            EmailNotificationResponse response = notificationService.scheduleEmailNotification(request);
+            EmailNotificationResponse response = notificationService.scheduleEmailNotification(request, UUID.randomUUID());
 
             assertThat(response).isNotNull();
             assertThat(response.getTaskId()).isNotNull();
@@ -90,7 +99,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any(CaseNotification.class))).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(false);
 
-            EmailNotificationResponse response = notificationService.scheduleEmailNotification(request);
+            EmailNotificationResponse response = notificationService.scheduleEmailNotification(request, UUID.randomUUID());
 
             assertThat(response).isNotNull();
             assertThat(response.getTaskId()).isNotNull();
@@ -113,7 +122,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any(CaseNotification.class))).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            EmailNotificationResponse response = notificationService.scheduleEmailNotification(request);
+            EmailNotificationResponse response = notificationService.scheduleEmailNotification(request, UUID.randomUUID());
 
             assertThat(response).isNotNull();
             assertThat(response.getTaskId()).isNotNull();
@@ -130,7 +139,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any(CaseNotification.class)))
                 .thenThrow(new DataAccessException("Database error") {});
 
-            assertThatThrownBy(() -> notificationService.scheduleEmailNotification(request))
+            assertThatThrownBy(() -> notificationService.scheduleEmailNotification(request, UUID.randomUUID()))
                 .isInstanceOf(NotificationException.class)
                 .hasMessage("Failed to save Case Notification.");
 
@@ -146,7 +155,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any(CaseNotification.class))).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            notificationService.scheduleEmailNotification(request);
+            notificationService.scheduleEmailNotification(request, UUID.randomUUID());
 
             ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
             verify(notificationRepository, times(2)).save(notificationCaptor.capture());
@@ -287,7 +296,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should create service with dependencies")
         void shouldCreateServiceWithDependencies() {
-            NotificationService service = new NotificationService(notificationRepository, schedulerClient);
+            NotificationService service = new NotificationService(notificationRepository, schedulerClient, templateConfiguration);
 
             assertThat(service).isNotNull();
         }
@@ -330,6 +339,188 @@ class NotificationServiceTest {
         verify(notificationRepository).save(any(CaseNotification.class));
     }
 
+    @Nested
+    @DisplayName("Wrapper Email Notification Methods Tests")
+    class WrapperEmailNotificationTests {
+
+        private PartyEntity party;
+        private PcsCaseEntity pcsCase;
+        private PaymentAgreementEntity paymentAgreement;
+
+        @BeforeEach
+        void setUp() {
+            party = new PartyEntity();
+            party.setEmailAddress(TEST_EMAIL);
+            party.setFirstName("John");
+            party.setLastName("Doe");
+
+            pcsCase = new PcsCaseEntity();
+            pcsCase.setId(UUID.randomUUID());
+            pcsCase.setCaseReference(1234567890L);
+
+            paymentAgreement = new PaymentAgreementEntity();
+            paymentAgreement.setId(UUID.randomUUID());
+        }
+
+        @Test
+        @DisplayName("Should send defendant response no counterclaim email")
+        void shouldSendDefendantResponseNoCounterclaimEmail() {
+            when(templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(party, pcsCase);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration).getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM);
+
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should send counterclaim payment required email")
+        void shouldSendCounterclaimPaymentRequiredEmail() {
+            when(templateConfiguration.getTemplateId(
+                EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(party, pcsCase);
+
+            assertThat(response).isNotNull();
+
+            verify(templateConfiguration)
+                .getTemplateId(EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED);
+        }
+
+        @Test
+        @DisplayName("Should send counterclaim payment success email")
+        void shouldSendCounterclaimPaymentSuccessEmail() {
+            when(templateConfiguration.getTemplateId(
+                EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
+                    party, pcsCase, paymentAgreement
+                );
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration)
+                .getTemplateId(EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS);
+
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should send counterclaim no payment required email")
+        void shouldSendCounterclaimNoPaymentRequiredEmail() {
+            when(templateConfiguration.getTemplateId(
+                EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(party, pcsCase);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration)
+                .getTemplateId(EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED);
+
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("buildBasePersonalisation")
+    class BuildBasePersonalisationTests {
+        @Test
+        @DisplayName("Should build correct base personalisation")
+        void shouldBuildBasePersonalisation() {
+            PartyEntity party = createParty();
+            PcsCaseEntity pcsCase = createCase();
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(party, pcsCase);
+
+            assertThat(result)
+                .hasSize(5)
+                .containsEntry("firstName", "John")
+                .containsEntry("lastName", "Doe")
+                .containsEntry("caseNumber", 1234567890L)
+                .containsEntry("claimantName", "")
+                .containsEntry("primaryDefendantName", "");
+        }
+
+        @Test
+        @DisplayName("Should include base fields and paymentReferenceNumber")
+        void shouldIncludePaymentReferenceNumber() {
+            Map<String, Object> result =
+                NotificationService.buildCounterclaimPaymentSuccessPersonalisation(
+                    createParty(), createCase(), createPaymentAgreement());
+
+            assertThat(result)
+                .containsKey("paymentReferenceNumber")
+                .containsEntry("firstName", "John")
+                .hasSize(6);
+        }
+
+        @Test
+        @DisplayName("Should build request with all fields")
+        void shouldBuildRequest() {
+            Map<String, Object> personalisation = Map.of("key", "value");
+
+            EmailNotificationRequest request =
+                NotificationService.buildRequest("template-1", "test@example.com", personalisation);
+
+            assertThat(request.getTemplateId()).isEqualTo("template-1");
+            assertThat(request.getEmailAddress()).isEqualTo("test@example.com");
+            assertThat(request.getPersonalisation()).isEqualTo(personalisation);
+        }
+
+        @Test
+        @DisplayName("Should allow null personalisation")
+        void shouldAllowNullPersonalisation() {
+            EmailNotificationRequest request =
+                NotificationService.buildRequest("template-1", "test@example.com", null);
+
+            assertThat(request.getPersonalisation()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should allow empty personalisation")
+        void shouldAllowEmptyPersonalisation() {
+            EmailNotificationRequest request =
+                NotificationService.buildRequest("template-1", "test@example.com", Map.of());
+
+            assertThat(request.getPersonalisation()).isEmpty();
+        }
+    }
+
     private EmailNotificationRequest createValidEmailRequest() {
         Map<String, Object> personalisation = new HashMap<>();
         personalisation.put("name", "Test User");
@@ -352,5 +543,26 @@ class NotificationServiceTest {
         notification.setType("Email");
         notification.setStatus(NotificationStatus.PENDING_SCHEDULE);
         return notification;
+    }
+
+    private PartyEntity createParty() {
+        PartyEntity party = new PartyEntity();
+        party.setFirstName("John");
+        party.setLastName("Doe");
+        party.setEmailAddress("test@example.com");
+        return party;
+    }
+
+    private PcsCaseEntity createCase() {
+        PcsCaseEntity pcsCase = new PcsCaseEntity();
+        pcsCase.setCaseReference(1234567890L);
+        return pcsCase;
+    }
+
+    private PaymentAgreementEntity createPaymentAgreement() {
+        PaymentAgreementEntity paymentAgreement = new PaymentAgreementEntity();
+        paymentAgreement.setId(UUID.randomUUID());
+        paymentAgreement.setAnyPaymentsMade(VerticalYesNo.YES);
+        return paymentAgreement;
     }
 }
