@@ -463,7 +463,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 arguments(true, YesOrNo.YES)
             );
         }
-
     }
 
     @Nested
