@@ -22,7 +22,7 @@ public class DocumentsTaskGroupEvaluator implements TaskGroupEvaluator {
     @Override
     public TaskGroup evaluate(DashboardContext ctx) {
         return TaskGroup.builder()
-            .groupId(TaskGroupId.DOCUMENTS)
+            .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
                     .templateId("Defendant.UploadDocuments")
