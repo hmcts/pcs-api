@@ -131,6 +131,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectJurisdictionCaseTypeEvent(page: Page) {
+    console.log('createCase.possessionsJurisdiction '+createCase.possessionsJurisdiction)
     await performActions('Case option selection'
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
