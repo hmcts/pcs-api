@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -179,6 +180,10 @@ public class ClaimEntity {
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
     @JsonManagedReference
     private StatementOfTruthEntity statementOfTruth;
+
+    @OneToMany(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<FeePaymentEntity> feePayments;
 
     public void setHousingActWales(HousingActWalesEntity housingActWales) {
         if (this.housingActWales != null) {

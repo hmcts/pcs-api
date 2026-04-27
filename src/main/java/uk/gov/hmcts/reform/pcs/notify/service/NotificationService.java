@@ -4,9 +4,15 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
+import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
@@ -19,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -285,12 +292,28 @@ public class NotificationService {
     protected static Map<String, Object> buildBasePersonalisation(DefendantResponseEntity defendantResponse) {
         PartyEntity to = defendantResponse.getParty();
 
+        Optional<PartyEntity> optClaimant = defendantResponse.getClaim().getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole().equals(PartyRole.CLAIMANT))
+            .map(ClaimPartyEntity::getParty)
+            .findFirst();
+
+        if (optClaimant.isEmpty()) {
+            throw new PartyNotFoundException(
+                "No claimant party found for defendant response: " + defendantResponse.getId());
+        }
+
+        PartyEntity claimant = optClaimant.get();
+        String claimantName = String.format("%s %s", claimant.getFirstName(), claimant.getLastName())
+            .toUpperCase(Locale.ROOT);
+        String primaryDefendantName = String.format("%s %s", to.getFirstName(), to.getLastName())
+            .toUpperCase(Locale.ROOT);
+
         return Map.of(
             "firstName", to.getFirstName(),
             "lastName", to.getLastName(),
-            "caseNumber", defendantResponse.getPcsCase().getCaseReference(),
-            "claimantName", "",
-            "primaryDefendantName", ""
+            "caseNumber", defendantResponse.getPcsCase().getCaseReference().toString(),
+            "claimantName", claimantName,
+            "primaryDefendantName", primaryDefendantName
         );
     }
 
@@ -298,8 +321,15 @@ public class NotificationService {
         DefendantResponseEntity defendantResponse) {
 
         Map<String, Object> base = new HashMap<>(buildBasePersonalisation(defendantResponse));
-        // todo change this
-        base.put("paymentReferenceNumber", defendantResponse.getPaymentAgreement().getId());
+        base.put("paymentReferenceNumber",
+                 defendantResponse.getClaim().getFeePayments()
+                     .stream()
+                     .filter(p -> p.getPaymentStatus() == PaymentStatus.PAID)
+                     .findFirst()
+                     .map(FeePaymentEntity::getExternalReference)
+                     .orElseThrow(
+                         () -> new FeePaymentNotFoundException(
+                             "Paid fee payment not found for defendant response: " + defendantResponse.getId())));
         return base;
     }
 
