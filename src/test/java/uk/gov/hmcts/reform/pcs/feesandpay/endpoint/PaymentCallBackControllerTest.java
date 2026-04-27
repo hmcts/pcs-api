@@ -3,24 +3,17 @@ package uk.gov.hmcts.reform.pcs.feesandpay.endpoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
-
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentCallBackControllerTest {
 
     private PaymentCallBackController underTest;
 
-    @Mock
-    private PaymentService paymentService;
-
     @BeforeEach
     void setUp() {
-        underTest = new PaymentCallBackController(paymentService);
+        underTest = new PaymentCallBackController();
     }
 
     @Test
@@ -32,9 +25,7 @@ class PaymentCallBackControllerTest {
             .build();
 
         // When
-        underTest.processPaymentCallback("auth", "s2s", serviceRequestUpdate);
+        underTest.processPaymentCallback("auth", "s2s", serviceRequestUpdate.toString());
 
-        // Then
-        verify(paymentService).processPaymentResponse(serviceRequestUpdate);
     }
 }
