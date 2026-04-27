@@ -38,7 +38,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
             .page("caseworkerCaseFlag")
             .pageLabel("Case Flags")
             .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
-            .optional(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW, true, true)
+            .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
             .page("respondentFlags")
             .list(PCSCase::getParties, ShowConditions.NEVER_SHOW)
                 .optional(Party::getRespondentFlags, ShowConditions.NEVER_SHOW,  true)

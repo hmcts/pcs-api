@@ -46,7 +46,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
                 .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
                 .page("respondentFlags")
-                .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
+                .list(PCSCase::getParties, ShowConditions.NEVER_SHOW)
                     .optional(Party::getRespondentFlags, ShowConditions.NEVER_SHOW,  true)
                 .done()
                 .optional(PCSCase::getFlagLauncherInternal,
