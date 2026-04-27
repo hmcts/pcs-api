@@ -123,7 +123,10 @@ test.describe('[Create Case - With resume claim options] @nightly', async () => 
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
       day: tenancyLicenceDetails.dayTextInput,
       month: tenancyLicenceDetails.monthTextInput,
-      year: tenancyLicenceDetails.yearTextInput
+      year: tenancyLicenceDetails.yearTextInput,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
     });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
     await performAction('selectYourPossessionGrounds', {
@@ -243,7 +246,11 @@ test.describe('[Create Case - With resume claim options] @nightly', async () => 
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption});
+      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
