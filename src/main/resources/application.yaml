@@ -129,6 +129,11 @@ notify:
     max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
     task-delay-seconds: ${NOTIFY_CHECK_STATUS_DELAY_SECONDS:60s}
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
+  templates:
+    response-no-counterclaim: 8ecf44d2-860f-44e3-a891-c82745f79645
+    counterclaim-payment-required: 258081b1-786d-4c20-9793-b45c0a1b029b
+    counterclaim-payment-success: 8d726681-78a7-4ed5-9201-4354bb04f8ad
+    counterclaim-no-payment-required: a6a6e7ce-e47f-4a85-9d98-cc9c924bdb5e
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}
