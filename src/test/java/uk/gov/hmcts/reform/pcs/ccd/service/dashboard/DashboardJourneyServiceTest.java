@@ -25,11 +25,11 @@ class DashboardJourneyServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DashboardJourneyService(
+        underTest = new DashboardJourneyService(List.of(
             new ClaimTaskGroupEvaluator(),
             new HearingsTaskGroupEvaluator(),
             new NoticesTaskGroupEvaluator()
-        );
+        ));
     }
 
     @Test

@@ -22,7 +22,7 @@ public class NoticesTaskGroupEvaluator implements TaskGroupEvaluator {
     @Override
     public TaskGroup evaluate(DashboardContext ctx) {
         return TaskGroup.builder()
-            .groupId(TaskGroupId.NOTICE)
+            .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
                     .templateId("Defendant.ViewOrdersAndNotices")
