@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public enum CaseFileCategory {
 
-    STATEMENTS_OF_CASE("statementsOfCase", "Statements of Case", 1),
+    STATEMENTS_OF_CASE("statementsOfCase", "Statements of case", 1),
     PROPERTY_DOCUMENTS("propertyDocuments", "Property documents", 2),
     EVIDENCE("evidence", "Evidence", 3),
     HEARING_DOCUMENTS("hearingDocuments", "Hearing documents", 4),
