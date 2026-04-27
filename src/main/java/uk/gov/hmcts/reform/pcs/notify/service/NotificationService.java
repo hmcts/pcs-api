@@ -4,9 +4,8 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
@@ -40,92 +39,55 @@ public class NotificationService {
         this.templateConfiguration = templateConfiguration;
     }
 
-    /**
-     * Schedules a defendant response no counterclaim email notification
-     *
-     * @param to the party you are sending the email notification to
-     * @param pcsCase the associated case for the notification
-     * @return an instance of EmailNotificationResponse containing the task ID, notification status,
-     *         and notification ID associated with the scheduled email notification
-     */
     public EmailNotificationResponse sendDefendantResponseNoCounterclaimEmailNotification(
-        PartyEntity to,
-        PcsCaseEntity pcsCase
+        DefendantResponseEntity defendantResponse
     ) {
         return scheduleEmailNotification(
             buildRequest(
                 templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM),
-                to.getEmailAddress(),
-                buildBasePersonalisation(to, pcsCase)
+                defendantResponse.getParty().getEmailAddress(),
+                buildBasePersonalisation(defendantResponse)
             ),
-            pcsCase.getId()
+            defendantResponse.getPcsCase().getId()
         );
     }
 
-    /**
-     * Schedules a defendant response counterclaim payment required email notification
-     *
-     * @param to the party you are sending the email notification to
-     * @param pcsCase the associated case for the notification
-     * @return an instance of EmailNotificationResponse containing the task ID, notification status,
-     *         and notification ID associated with the scheduled email notification
-     */
     public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(
-        PartyEntity to,
-        PcsCaseEntity pcsCase
+        DefendantResponseEntity defendantResponse
     ) {
         return scheduleEmailNotification(
             buildRequest(
                 templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED),
-                to.getEmailAddress(),
-                buildBasePersonalisation(to, pcsCase)
+                defendantResponse.getParty().getEmailAddress(),
+                buildBasePersonalisation(defendantResponse)
             ),
-            pcsCase.getId()
+            defendantResponse.getPcsCase().getId()
         );
     }
 
-    /**
-     * Schedules a defendant response counterclaim payment success email notification
-     *
-     * @param to the party you are sending the email notification to
-     * @param pcsCase the associated case for the notification
-     * @return an instance of EmailNotificationResponse containing the task ID, notification status,
-     *         and notification ID associated with the scheduled email notification
-     */
     public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
-        PartyEntity to,
-        PcsCaseEntity pcsCase,
-        PaymentAgreementEntity paymentAgreement
+        DefendantResponseEntity defendantResponse
     ) {
         return scheduleEmailNotification(
             buildRequest(
                 templateConfiguration.getTemplateId(EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS),
-                to.getEmailAddress(),
-                buildCounterclaimPaymentSuccessPersonalisation(to, pcsCase, paymentAgreement)
+                defendantResponse.getParty().getEmailAddress(),
+                buildCounterclaimPaymentSuccessPersonalisation(defendantResponse)
             ),
-            pcsCase.getId()
+            defendantResponse.getPcsCase().getId()
         );
     }
 
-    /**
-     * Schedules a defendant response counterclaim no payment required email notification
-     *
-     * @param to the party you are sending the email notification to
-     * @param pcsCase the associated case for the notification
-     * @return an instance of EmailNotificationResponse containing the task ID, notification status,
-     *         and notification ID associated with the scheduled email notification
-     */
     public EmailNotificationResponse sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(
-        PartyEntity to,
-        PcsCaseEntity pcsCase
+        DefendantResponseEntity defendantResponse
     ) {
         return scheduleEmailNotification(
             buildRequest(
                 templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED),
-                to.getEmailAddress(),
-                buildBasePersonalisation(to, pcsCase)
+                defendantResponse.getParty().getEmailAddress(),
+                buildBasePersonalisation(defendantResponse)
             ),
-            pcsCase.getId()
+            defendantResponse.getPcsCase().getId()
         );
     }
 
@@ -320,50 +282,24 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Creates a personalization map for a basic email template.
-     * A basic email template has the following personalizations:
-     *  - firstName: the first name of the email recipient
-     *  - lastName: the last name of the email recipient
-     *  - caseNumber: the case number for the associated case
-     *  - claimantName: the name of the claimant in the associated case
-     *  - primaryDefendantName: the name of the primary defendant in the associated case
-     *
-     * @param to the party you are sending the email notification to
-     * @param pcsCase the associated case for the notification
-     * @return a personalization map for the template
-     */
-    protected static Map<String, Object> buildBasePersonalisation(PartyEntity to, PcsCaseEntity pcsCase) {
+    protected static Map<String, Object> buildBasePersonalisation(DefendantResponseEntity defendantResponse) {
+        PartyEntity to = defendantResponse.getParty();
 
         return Map.of(
             "firstName", to.getFirstName(),
             "lastName", to.getLastName(),
-            "caseNumber", pcsCase.getCaseReference(),
+            "caseNumber", defendantResponse.getPcsCase().getCaseReference(),
             "claimantName", "",
             "primaryDefendantName", ""
         );
     }
 
-    /**
-     * Creates a personalization map for a counterclaim payment success email template.
-     * A basic email template has the following personalizations:
-     *  - firstName: the first name of the email recipient
-     *  - lastName: the last name of the email recipient
-     *  - caseNumber: the case number for the associated case
-     *  - claimantName: the name of the claimant in the associated case
-     *  - primaryDefendantName: the name of the primary defendant in the associated case
-     *  - paymentReferenceNumber: the associated payment reference number
-     *
-     * @param to the party you are sending the email notification to
-     * @param pcsCase the associated case for the notification
-     * @return a personalization map for the template
-     */
     protected static Map<String, Object> buildCounterclaimPaymentSuccessPersonalisation(
-        PartyEntity to, PcsCaseEntity pcsCase, PaymentAgreementEntity paymentAgreement) {
+        DefendantResponseEntity defendantResponse) {
 
-        Map<String, Object> base = new HashMap<>(buildBasePersonalisation(to, pcsCase));
+        Map<String, Object> base = new HashMap<>(buildBasePersonalisation(defendantResponse));
         // todo change this
-        base.put("paymentReferenceNumber", paymentAgreement.getId());
+        base.put("paymentReferenceNumber", defendantResponse.getPaymentAgreement().getId());
         return base;
     }
 

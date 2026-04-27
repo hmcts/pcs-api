@@ -353,14 +353,13 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
             response.setStatus(SCHEDULED_STATUS);
             response.setNotificationId(UUID.randomUUID());
 
-            when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(party, pcsCase))
+            when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse))
                 .thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(party, pcsCase))
+            when(notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse))
                 .thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
-                party, pcsCase, paymentAgreement)
+            when(notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse)
             ).thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(party, pcsCase))
+            when(notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse))
                 .thenReturn(response);
 
             mockMvc.perform(post("/testing-support/send-defendant-response-emails")

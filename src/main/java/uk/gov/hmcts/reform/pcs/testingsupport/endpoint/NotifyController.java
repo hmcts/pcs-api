@@ -77,14 +77,11 @@ public class NotifyController {
         }
 
         DefendantResponseEntity defendantResponse = optDefendantResponse.get();
-        PartyEntity party = defendantResponse.getParty();
-        PcsCaseEntity pcsCase = defendantResponse.getPcsCase();
-        PaymentAgreementEntity paymentAgreement = defendantResponse.getPaymentAgreement();
         List<EmailNotificationResponse> responses = List.of(
-            notificationService.sendDefendantResponseNoCounterclaimEmailNotification(party, pcsCase),
-            notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(party, pcsCase),
-            notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(party, pcsCase, paymentAgreement),
-            notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(party, pcsCase)
+            notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse),
+            notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse),
+            notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse),
+            notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
         );
 
         return ResponseEntity.ok(responses);

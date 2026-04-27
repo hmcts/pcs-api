@@ -13,6 +13,7 @@ import org.springframework.dao.DataAccessException;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
@@ -343,6 +344,7 @@ class NotificationServiceTest {
     @DisplayName("Wrapper Email Notification Methods Tests")
     class WrapperEmailNotificationTests {
 
+        private DefendantResponseEntity defendantResponse;
         private PartyEntity party;
         private PcsCaseEntity pcsCase;
         private PaymentAgreementEntity paymentAgreement;
@@ -360,6 +362,11 @@ class NotificationServiceTest {
 
             paymentAgreement = new PaymentAgreementEntity();
             paymentAgreement.setId(UUID.randomUUID());
+
+            defendantResponse = new DefendantResponseEntity();
+            defendantResponse.setParty(party);
+            defendantResponse.setPcsCase(pcsCase);
+            defendantResponse.setPaymentAgreement(paymentAgreement);
         }
 
         @Test
@@ -373,7 +380,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(party, pcsCase);
+                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
@@ -396,7 +403,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(party, pcsCase);
+                notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse);
 
             assertThat(response).isNotNull();
 
@@ -416,9 +423,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
-                    party, pcsCase, paymentAgreement
-                );
+                notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
@@ -442,7 +447,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(party, pcsCase);
+                notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
@@ -461,11 +466,8 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should build correct base personalisation")
         void shouldBuildBasePersonalisation() {
-            PartyEntity party = createParty();
-            PcsCaseEntity pcsCase = createCase();
-
             Map<String, Object> result =
-                NotificationService.buildBasePersonalisation(party, pcsCase);
+                NotificationService.buildBasePersonalisation(createDefendantResponse());
 
             assertThat(result)
                 .hasSize(5)
@@ -480,8 +482,7 @@ class NotificationServiceTest {
         @DisplayName("Should include base fields and paymentReferenceNumber")
         void shouldIncludePaymentReferenceNumber() {
             Map<String, Object> result =
-                NotificationService.buildCounterclaimPaymentSuccessPersonalisation(
-                    createParty(), createCase(), createPaymentAgreement());
+                NotificationService.buildCounterclaimPaymentSuccessPersonalisation(createDefendantResponse());
 
             assertThat(result)
                 .containsKey("paymentReferenceNumber")
@@ -564,5 +565,14 @@ class NotificationServiceTest {
         paymentAgreement.setId(UUID.randomUUID());
         paymentAgreement.setAnyPaymentsMade(VerticalYesNo.YES);
         return paymentAgreement;
+    }
+
+    private DefendantResponseEntity createDefendantResponse() {
+        DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
+        defendantResponse.setId(UUID.randomUUID());
+        defendantResponse.setParty(createParty());
+        defendantResponse.setPcsCase(createCase());
+        defendantResponse.setPaymentAgreement(createPaymentAgreement());
+        return defendantResponse;
     }
 }

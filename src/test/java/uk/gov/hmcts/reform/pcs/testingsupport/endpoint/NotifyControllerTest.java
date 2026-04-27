@@ -286,13 +286,13 @@ class NotifyControllerTest {
 
             EmailNotificationResponse response = createEmailResponse();
 
-            when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(party, pcsCase))
+            when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse))
                 .thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(party, pcsCase))
+            when(notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse))
                 .thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(party, pcsCase, paymentAgreement))
+            when(notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse))
                 .thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(party, pcsCase))
+            when(notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse))
                 .thenReturn(response);
 
             ResponseEntity<List<EmailNotificationResponse>> result =
@@ -303,10 +303,10 @@ class NotifyControllerTest {
             assertThat(result.getBody()).hasSize(4);
 
             verify(defendantResponseRepository).findById(defendantResponseId);
-            verify(notificationService).sendDefendantResponseNoCounterclaimEmailNotification(party, pcsCase);
-            verify(notificationService).sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(party, pcsCase);
-            verify(notificationService).sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(party, pcsCase, paymentAgreement);
-            verify(notificationService).sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(party, pcsCase);
+            verify(notificationService).sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
+            verify(notificationService).sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse);
+            verify(notificationService).sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+            verify(notificationService).sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
         }
 
         @Test
