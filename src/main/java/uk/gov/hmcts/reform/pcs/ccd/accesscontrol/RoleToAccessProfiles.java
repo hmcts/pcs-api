@@ -13,13 +13,13 @@ public class RoleToAccessProfiles implements CCDConfig<PCSCase, State, ExternalU
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, ExternalUserRole> configBuilder) {
-        Arrays.stream(UserRole.values()).forEach(
-            userRole -> {
-                configBuilder.caseRoleToAccessProfile(ExternalUserRole.forCcdRole(userRole))
-                    .accessProfiles(userRole.getRole()).build();
-            }
-        );
-
+        Arrays.stream(UserRole.values())
+            .forEach(userRole ->
+                         configBuilder
+                             .caseRoleToAccessProfile(ExternalUserRole.forCcdRole(userRole))
+                             .accessProfiles(userRole.getRole())
+                             .build()
+            );
     }
 
 }
