@@ -7,8 +7,3 @@ CREATE TABLE regular_expenses(
  CONSTRAINT chk_regular_expense_amount_positive
    CHECK (amount >= 0)
 );
-
-ALTER TABLE household_circumstances
-  DROP COLUMN IF EXISTS regular_expenses,
-  DROP COLUMN IF EXISTS expense_amount,
-  DROP COLUMN IF EXISTS expense_frequency;
