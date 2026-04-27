@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,8 +45,11 @@ class DashboardViewTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        dashboardJourneyService = new DashboardJourneyService(new ClaimTaskGroupEvaluator(), 
-            new DocumentsTaskGroupEvaluator());
+        dashboardJourneyService = new DashboardJourneyService(List.of(
+            new ClaimTaskGroupEvaluator(),
+            new DocumentsTaskGroupEvaluator()
+        ));
+
         StartDashboardViewHandler startHandler = new StartDashboardViewHandler(
             pcsCaseService,
             accessValidator,
