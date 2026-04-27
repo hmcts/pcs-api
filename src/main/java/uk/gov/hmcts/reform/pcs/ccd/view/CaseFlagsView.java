@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 public class CaseFlagsView {
 
     private static final String RESPONDENT = "respondent";
+    private static final String CLAIMANT = "claimant";
+
 
     private final RefDataFlagsRepository refDataFlagsRepository;
 
@@ -83,7 +85,6 @@ public class CaseFlagsView {
 
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<ListValue<Party>> mappedParties = pcsCaseEntity.getParties().stream()
-            .filter(partyEntity -> partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty())
             .map(this::mapPartyWithRespondentFlags)
             .toList();
 
@@ -95,7 +96,8 @@ public class CaseFlagsView {
             .id(partyEntity.getId().toString())
             .value(
                 Party.builder()
-                    .firstName(partyEntity.getFirstName())
+                    .firstName(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
+                                   ? partyEntity.getFirstName() : partyEntity.getOrgName())
                     .lastName(partyEntity.getLastName())
                     .respondentFlags(mapRespondentFlags(partyEntity))
                     .build()
@@ -106,8 +108,11 @@ public class CaseFlagsView {
     private Flags mapRespondentFlags(PartyEntity partyEntity) {
         if (partyEntity.getRespondentFlags() == null || partyEntity.getRespondentFlags().isEmpty()) {
             return Flags.builder()
-                .partyName(partyEntity.getFirstName() + " " + partyEntity.getLastName())
-                .roleOnCase(RESPONDENT)
+                .partyName(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
+                               ? partyEntity.getFirstName() + " " + partyEntity.getLastName()
+                               : partyEntity.getOrgName())
+                .roleOnCase(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
+                                ? RESPONDENT : CLAIMANT)
                 .details(new ArrayList<>())
                 .build();
         }
@@ -118,7 +123,8 @@ public class CaseFlagsView {
             .partyName(Stream.of(partyEntity.getFirstName(), partyEntity.getLastName(),
                                  partyEntity.getOrgName()).filter(
                 Objects::nonNull).collect(Collectors.joining(" ")))
-            .roleOnCase(RESPONDENT)
+            .roleOnCase(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
+                            ? RESPONDENT : CLAIMANT)
             .details(mapFlagDetails(respondentFlags))
             .visibility(FlagVisibility.INTERNAL)
             .build();
