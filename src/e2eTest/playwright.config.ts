@@ -15,14 +15,14 @@ export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
 
-// Nightly: E2E_TEST_SCOPE from Jenkins choice (@nightly, …); E2E_SPEC = comma/semicolon path keywords → globs.
-const specKeys = (process.env.E2E_SPEC ?? '')
+// Nightly (Jenkins): E2E_TEST_SCOPE = tag grep; E2E_SPEC = comma/semicolon path keywords → testMatch globs.
+const e2eSpecKeys = (process.env.E2E_SPEC ?? '')
   .split(/[,;]/)
   .map(s => s.trim().replace(/[^\w.-]/g, ''))
   .filter(Boolean);
-const e2eTestMatch = specKeys.length ? specKeys.map(k => `**/*${k}*.spec.ts`) : undefined;
-const scope = process.env.E2E_TEST_SCOPE?.trim();
-const e2eGrep = scope ? new RegExp(scope) : undefined;
+const e2eTestMatch = e2eSpecKeys.length ? e2eSpecKeys.map(k => `**/*${k}*.spec.ts`) : undefined;
+const e2eScope = process.env.E2E_TEST_SCOPE?.trim();
+const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 
 export default defineConfig({
   testDir: 'tests/',
