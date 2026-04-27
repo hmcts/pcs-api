@@ -399,7 +399,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Other - No Rent arrears,  ASB + other options', async () => {
+  test('Wales - Other - No Rent arrears,  ASB + other options @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
