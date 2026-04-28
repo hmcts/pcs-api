@@ -91,6 +91,9 @@ public class DefendantResponses {
     private YesNoNotSure landlordLicensed;
 
     @CCD(access = {CitizenAccess.class})
+    private CounterClaim counterClaim;
+
+    @CCD(access = {CitizenAccess.class})
     private ReasonableAdjustments reasonableAdjustments;
 
     @CCD(access = {CitizenAccess.class})
