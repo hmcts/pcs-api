@@ -46,7 +46,7 @@ public class DashboardJourneyService {
 
     private static int orderIndex(TaskGroupId id) {
         int idx = TASK_GROUP_ORDER.indexOf(id);
-        return idx >= 0 ? idx : Integer.MAX_VALUE;
+        return idx >= 0 ? idx : TASK_GROUP_ORDER.size();
     }
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
