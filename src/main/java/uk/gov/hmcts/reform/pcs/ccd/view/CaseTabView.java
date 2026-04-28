@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -26,14 +27,14 @@ public class CaseTabView {
     private CasePartiesTab buildCasePartiesTab(PCSCase pcsCase) {
         CasePartiesTab tab = CasePartiesTab.builder().build();
 
-        List<ListValue<Party>> claimants = pcsCase.getAllClaimants();
-        if (claimants != null && !claimants.isEmpty()) {
-            Party claimant = claimants.getFirst().getValue();
+        List<ListValue<Party>> allClaimants = pcsCase.getAllClaimants();
+        if (!CollectionUtils.isEmpty(allClaimants)) {
+            Party claimant = allClaimants.getFirst().getValue();
             ClaimantTabDetails claimantTabDetails = createClaimantTabDetails(claimant);
             tab.setClaimantDetails(claimantTabDetails);
         }
 
-        if (pcsCase.getAllDefendants() != null && !pcsCase.getAllDefendants().isEmpty()) {
+        if (!CollectionUtils.isEmpty(pcsCase.getAllDefendants())) {
             List<ListValue<Party>> allDefendants = new ArrayList<>(pcsCase.getAllDefendants());
             Party defendant1 = allDefendants.removeFirst().getValue();
             DefendantTabDetails defendant1TabDetails = createDefendantTabDetails(defendant1, pcsCase);

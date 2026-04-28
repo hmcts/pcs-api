@@ -202,6 +202,46 @@ public class CaseTabViewTest {
     }
 
     @Test
+    void shouldSetDefaultDefendantAddressToPropertyAddressIfNotKnown() {
+        // Given
+        String firstName = "defendant";
+        String lastName = "One";
+        AddressUK address = AddressUK.builder().build();
+        Party defendant = Party.builder()
+            .firstName(firstName)
+            .lastName(lastName)
+            .nameKnown(VerticalYesNo.YES)
+            .address(null)
+            .build();
+
+        ListValue<Party> defendantListValue = ListValue.<Party>builder()
+            .value(defendant)
+            .build();
+
+        List<ListValue<Party>> defendants = new ArrayList<>();
+        defendants.add(defendantListValue);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(defendants)
+            .propertyAddress(address)
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getCasePartiesTab()).isNotNull();
+        DefendantTabDetails defendant1TabDetails = pcsCase.getCasePartiesTab().getDefendantOneDetails();
+        List<ListValue<DefendantTabDetails>> additionalDefendantsTabDetails =
+            pcsCase.getCasePartiesTab().getDefendantsDetails();
+
+        assertThat(defendant1TabDetails.getFirstName()).isEqualTo(firstName);
+        assertThat(defendant1TabDetails.getLastName()).isEqualTo(lastName);
+        assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address);
+        assertThat(additionalDefendantsTabDetails).isNull();
+    }
+
+    @Test
     void shouldNotSetCasePartiesTabWithNoData() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
