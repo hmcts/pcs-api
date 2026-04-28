@@ -21,6 +21,16 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
+/**
+ * Start event handler for RespondPossessionClaim Citizen Users.
+ *
+ * <p>Two flows:
+ * - First time: Use view-populated PCSCase (claim data), load defendant entity for matching, create draft
+ * - Second time: Load saved draft, merge with view-populated PCSCase, return to UI
+ *
+ * <p>Claim data (tenancy, rent, notices) comes from view classes (TenancyLicenceView, RentDetailsView, etc.)
+ * and is already in eventPayload.caseData(). Only defendant's editable contact details need initialization.
+ */
 @Component
 @AllArgsConstructor
 @Slf4j

@@ -14,11 +14,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
  * Start event handler for RespondPossessionClaim.
  *
  * <p>Two flows:
- * - First time: Use view-populated PCSCase (claim data), load defendant entity for matching, create draft
- * - Second time: Load saved draft, merge with view-populated PCSCase, return to UI
- *
- * <p>Claim data (tenancy, rent, notices) comes from view classes (TenancyLicenceView, RentDetailsView, etc.)
- * and is already in eventPayload.caseData(). Only defendant's editable contact details need initialization.
+ * - Citizen journey: Create draft or load existing draft for CITIZEN User role.
+ * - Legal Representative journey: Create draft per active linked defendants or load specific defendant draft.
  */
 @Component
 @Slf4j
