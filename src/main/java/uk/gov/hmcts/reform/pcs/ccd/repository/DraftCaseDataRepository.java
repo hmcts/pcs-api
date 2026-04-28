@@ -18,4 +18,10 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     void deleteByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
 
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
+
+    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+        long caseReference, EventId eventId, UUID idamUserId, UUID partId);
+
 }
