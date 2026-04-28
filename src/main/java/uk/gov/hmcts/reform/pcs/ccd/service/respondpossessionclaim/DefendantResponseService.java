@@ -134,6 +134,8 @@ public class DefendantResponseService {
             .noticeReceivedDate(responses.getNoticeReceivedDate())
             .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
             .languageUsed(responses.getLanguageUsed())
+            .otherConsiderations(responses.getOtherConsiderations())
+            .otherConsiderationsDetails(responses.getOtherConsiderationsDetails())
             .build();
 
         //set bidirectional relationship with the pcs case
