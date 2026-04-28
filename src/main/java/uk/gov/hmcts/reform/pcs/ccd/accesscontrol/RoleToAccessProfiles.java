@@ -9,14 +9,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import java.util.Arrays;
 
 @Component
-public class RoleToAccessProfiles implements CCDConfig<PCSCase, State, CcdRole> {
+public class RoleToAccessProfiles implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
-    public void configure(ConfigBuilder<PCSCase, State, CcdRole> configBuilder) {
+    public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Arrays.stream(UserRole.values())
             .forEach(userRole ->
                          configBuilder
-                             .caseRoleToAccessProfile(CcdRole.forCcdRole(userRole))
+                             .caseRoleToAccessProfile(userRole)
                              .accessProfiles(userRole.getRole())
                              .build()
             );
