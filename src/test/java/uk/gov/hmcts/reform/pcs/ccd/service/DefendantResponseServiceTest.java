@@ -986,4 +986,69 @@ class DefendantResponseServiceTest {
             Arguments.of((LanguageUsed) null)
         );
     }
+
+    @ParameterizedTest(name = "otherConsiderations={0}")
+    @MethodSource("otherConsiderationsPersistenceScenarios")
+    void shouldPersistOtherConsiderations(VerticalYesNo otherConsiderations) {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .otherConsiderations(otherConsiderations)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getOtherConsiderations()).isEqualTo(otherConsiderations);
+    }
+
+    private static Stream<Arguments> otherConsiderationsPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
+        );
+    }
+
+    @ParameterizedTest(name = "otherConsiderationsDetails={0}")
+    @MethodSource("otherConsiderationsDetailsPersistenceScenarios")
+    void shouldPersistOtherConsiderationsDetails(String otherConsiderationsDetails) {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .otherConsiderationsDetails(otherConsiderationsDetails)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getOtherConsiderationsDetails()).isEqualTo(otherConsiderationsDetails);
+    }
+
+    private static Stream<Arguments> otherConsiderationsDetailsPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of("Need adjustments for court attendance"),
+            Arguments.of((String) null)
+        );
+    }
 }
