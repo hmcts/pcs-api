@@ -146,6 +146,7 @@ public class DefendantResponseService {
             .freeLegalAdvice(responses.getFreeLegalAdvice())
             .possessionNoticeReceived(responses.getPossessionNoticeReceived())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
+            .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
             .writtenTerms(responses.getWrittenTerms())
             .disputeClaim(responses.getDisputeClaim())
