@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
@@ -27,6 +28,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+
+    private static final String MATCHING_PARTY_ENTITY_NOT_FOUND = "Matching PartyEntity not found";
 
     private final PaymentsClient paymentsClient;
     private final PaymentRequestMapper paymentRequestMapper;
@@ -83,7 +86,8 @@ public class PaymentService {
 
         ClaimEntity claimEntity = retrieveClaimEntity(Long.parseLong(caseReference));
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
-        saveNewFeePayment(caseReference, claimEntity, feeDto,
+        ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(claimEntity, responsibleParty);
+        saveNewFeePayment(caseReference, claimEntity, feeDto, claimPartyEntity,
                           paymentServiceResponse.getServiceRequestReference());
 
         return paymentServiceResponse;
@@ -106,12 +110,13 @@ public class PaymentService {
     }
 
     @Transactional
-    public void saveNewFeePayment(String caseReference, ClaimEntity claimEntity,
-                                   FeeDto feeDto, String serviceRequestReference) {
+    public void saveNewFeePayment(String caseReference, ClaimEntity claimEntity, FeeDto feeDto,
+                                  ClaimPartyEntity claimPartyEntity, String serviceRequestReference) {
         log.info("Saving New Fee Payment for the case: {} with serviceRequestReference: {}", caseReference,
                  serviceRequestReference);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
+            .party(claimPartyEntity.getParty())
             .requestReference(serviceRequestReference)
             .amount(feeDto.getCalculatedAmount())
             .build();
@@ -122,6 +127,14 @@ public class PaymentService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         // Assuming 1 claim per PcsCase
         return pcsCaseEntity.getClaims().getFirst();
+    }
+
+    private ClaimPartyEntity retrieveClaimPartyEntity(ClaimEntity claimEntity, String responsibleParty) {
+        return claimEntity.getClaimParties()
+            .stream()
+            .filter(party -> responsibleParty.equals(party.getParty().getOrgName()))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(MATCHING_PARTY_ENTITY_NOT_FOUND));
     }
 
 }

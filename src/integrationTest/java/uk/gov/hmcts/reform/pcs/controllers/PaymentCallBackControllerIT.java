@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
@@ -67,7 +68,7 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
         feeDto = Instancio.create(FeeDto.class);
         feeDto.setCcdCaseNumber(String.valueOf(caseReference));
         PcsCaseEntity pcsCaseEntity = establishTestCase(caseReference);
-        establishFeePayment(pcsCaseEntity, serviceCaseReference, feeDto);
+        establishFeePayment(pcsCaseEntity, serviceCaseReference);
     }
 
     @Test
@@ -100,9 +101,10 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
             .createTestCaseWithParty(caseReference, null, PartyRole.DEFENDANT);
     }
 
-    void establishFeePayment(PcsCaseEntity pcsCaseEntity, String serviceCaseReference, FeeDto feeDto) {
+    void establishFeePayment(PcsCaseEntity pcsCaseEntity, String serviceCaseReference) {
         ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
+        ClaimPartyEntity claimPartyEntity = claimEntity.getClaimParties().get(0);
         paymentService.saveNewFeePayment(String.valueOf(caseReference),
-                                         claimEntity, feeDto, serviceCaseReference);
+                                         claimEntity, feeDto, claimPartyEntity, serviceCaseReference);
     }
 }

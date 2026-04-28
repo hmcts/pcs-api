@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -43,6 +45,11 @@ public class FeePaymentEntity {
     @JoinColumn(name = "claim_id", nullable = false)
     @JsonBackReference
     private ClaimEntity claim;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "party_id", nullable = false)
+    @JsonBackReference
+    private PartyEntity party;
 
     @CreationTimestamp
     @Column(updatable = false, nullable = false)

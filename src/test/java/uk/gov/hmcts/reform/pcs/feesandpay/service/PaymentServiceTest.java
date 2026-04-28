@@ -168,10 +168,14 @@ class PaymentServiceTest {
     void shouldSaveNewFeePaymentWithExpectedFields() {
         // Given
         ClaimEntity claimEntity = new ClaimEntity();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName("Test").build();
+        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder().claim(claimEntity).party(partyEntity).build();
         FeeDto feeDto = createFeeDto();
 
+
         // When
-        underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto, SERVICE_REQUEST_REFERENCE);
+        underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto, claimPartyEntity,
+                                    SERVICE_REQUEST_REFERENCE);
 
         // Then
         ArgumentCaptor<FeePaymentEntity> captor = ArgumentCaptor.forClass(FeePaymentEntity.class);
