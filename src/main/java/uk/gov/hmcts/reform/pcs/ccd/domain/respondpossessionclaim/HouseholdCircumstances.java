@@ -135,4 +135,18 @@ public class HouseholdCircumstances {
     @Size(max = 500)
     private String moneyFromElsewhereDetails;
 
+    @CCD
+    private YesOrNo priorityDebts;
+
+    @CCD(typeOverride = FieldType.MoneyGBP)
+    @JacksonMoneyGBP
+    private BigDecimal debtTotal;
+
+    @CCD(typeOverride = FieldType.MoneyGBP)
+    @JacksonMoneyGBP
+    private BigDecimal debtContribution;
+
+    @CCD
+    private RecurrenceFrequency debtContributionFrequency;
+
 }

@@ -465,4 +465,64 @@ class HouseholdCircumstancesServiceTest {
         assertThat(entity.getRegularIncomeEntity()).isNull();
     }
 
+    @ParameterizedTest
+    @NullSource
+    @EnumSource(YesOrNo.class)
+    void shouldMapPriorityDebtsField(YesOrNo expected) {
+        // Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .priorityDebts(expected)
+            .build();
+
+        // When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        // Then
+        assertThat(entity.getPriorityDebts()).isEqualTo(toVerticalYesNo(expected));
+    }
+
+    @Test
+    void shouldMapDebtTotalField() {
+        // Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .debtTotal(new BigDecimal("150000"))
+            .build();
+
+        // When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        // Then
+        assertThat(entity.getDebtTotal()).isEqualByComparingTo("150000");
+    }
+
+    @Test
+    void shouldMapDebtContributionField() {
+        // Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .debtContribution(new BigDecimal("25000"))
+            .build();
+
+        // When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        // Then
+        assertThat(entity.getDebtContribution()).isEqualByComparingTo("25000");
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EnumSource(RecurrenceFrequency.class)
+    void shouldMapDebtContributionFrequencyField(RecurrenceFrequency expected) {
+        // Given
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .debtContributionFrequency(expected)
+            .build();
+
+        // When
+        HouseholdCircumstancesEntity entity = underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        // Then
+        assertThat(entity.getDebtContributionFrequency()).isEqualTo(expected);
+    }
+
 }

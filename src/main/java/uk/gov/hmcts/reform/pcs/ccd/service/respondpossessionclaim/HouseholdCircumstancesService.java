@@ -44,10 +44,13 @@ public class HouseholdCircumstancesService {
             .alternativeAccommodation(alternativeAccommodation)
             .alternativeAccommodationTransferDate(alternativeAccommodation == YesNoNotSure.YES
                                                       ? hc.getAlternativeAccommodationTransferDate() : null)
-
             .shareIncomeExpenseDetails(toVerticalYesNo(hc.getShareIncomeExpenseDetails()))
             .universalCredit(toVerticalYesNo(hc.getUniversalCredit()))
             .ucApplicationDate(hc.getUcApplicationDate())
+            .priorityDebts(toVerticalYesNo(hc.getPriorityDebts()))
+            .debtTotal(hc.getDebtTotal())
+            .debtContribution(hc.getDebtContribution())
+            .debtContributionFrequency(hc.getDebtContributionFrequency())
             .build();
 
         RegularIncomeEntity regularIncome = buildRegularIncome(hc);
