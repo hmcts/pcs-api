@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
@@ -889,6 +890,182 @@ class DefendantResponseServiceTest {
             Arguments.of(YesNoNotSure.NOT_SURE),
             Arguments.of((YesNoNotSure) null)
         );
+    }
+
+    @Test
+    void shouldSaveCounterClaimWithAllFields() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .isClaimAmountKnown(VerticalYesNo.YES)
+            .claimAmount(new BigDecimal("250.00"))
+            .estimatedMaxClaimAmount(new BigDecimal("500.00"))
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .counterClaimFor("Damage to property")
+            .counterClaimReasons("Landlord failed to maintain property")
+            .otherOrderRequestDetails("Request for compensation")
+            .otherOrderRequestFacts("Property was in disrepair for 6 months")
+            .needHelpWithFees(VerticalYesNo.YES)
+            .appliedForHwf(VerticalYesNo.NO)
+            .hwfReferenceNumber("HWF-123-456")
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaim(counterClaim)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
+        CounterClaimEntity saved = counterClaimCaptor.getValue();
+        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(saved.getClaimType()).isEqualTo(CounterClaimType.PAYMENT_OR_COMPENSATION);
+        assertThat(saved.getCounterClaimFor()).isEqualTo("Damage to property");
+        assertThat(saved.getCounterClaimReasons()).isEqualTo("Landlord failed to maintain property");
+        assertThat(saved.getOtherOrderRequestDetails()).isEqualTo("Request for compensation");
+        assertThat(saved.getOtherOrderRequestFacts()).isEqualTo("Property was in disrepair for 6 months");
+        assertThat(saved.getNeedHelpWithFees()).isEqualTo(VerticalYesNo.YES);
+        assertThat(saved.getAppliedForHwf()).isEqualTo(VerticalYesNo.NO);
+        assertThat(saved.getHwfReferenceNumber()).isEqualTo("HWF-123-456");
+        assertThat(saved.getClaimSubmittedDate()).isEqualTo("2026-04-22T21:00");
+        assertThat(saved.getParty()).isEqualTo(partyEntity);
+    }
+
+    @ParameterizedTest
+    @MethodSource("amountSelectionScenarios")
+    void shouldPersistCorrectAmountsBasedOnSelection(
+        VerticalYesNo claimantAmountKnown,
+        BigDecimal claimAmountInput,
+        BigDecimal estimatedInput,
+        BigDecimal expectedClaimAmount,
+        BigDecimal expectedEstimatedAmount
+    ) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+
+        stubPartyLookup();
+        stubClaimLookup();
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .isClaimAmountKnown(claimantAmountKnown)
+            .claimAmount(claimAmountInput)
+            .estimatedMaxClaimAmount(estimatedInput)
+            .build();
+
+        PossessionClaimResponse request = PossessionClaimResponse.builder()
+            .defendantResponses(
+                DefendantResponses.builder()
+                    .counterClaim(counterClaim)
+                    .build()
+            )
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, request);
+
+        // Then
+        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
+        CounterClaimEntity saved = counterClaimCaptor.getValue();
+
+        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(claimantAmountKnown);
+        assertBigDecimalEquals(saved.getClaimAmount(), expectedClaimAmount);
+        assertBigDecimalEquals(saved.getEstimatedMaxClaimAmount(), expectedEstimatedAmount);
+    }
+
+    private void assertBigDecimalEquals(BigDecimal actual, BigDecimal expected) {
+        if (expected == null) {
+            assertThat(actual).isNull();
+        } else {
+            assertThat(actual).isEqualByComparingTo(expected);
+        }
+    }
+
+    private static Stream<Arguments> amountSelectionScenarios() {
+        return Stream.of(
+            Arguments.of(
+                VerticalYesNo.YES,
+                new BigDecimal("250.00"),
+                new BigDecimal("999.00"),
+                new BigDecimal("250.00"),
+                null
+            ),
+            Arguments.of(
+                VerticalYesNo.NO,
+                new BigDecimal("999.00"),
+                new BigDecimal("500.00"),
+                null,
+                new BigDecimal("500.00")
+            )
+        );
+    }
+
+    @Test
+    void shouldNotSaveCounterClaimWhenNull() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaim(null)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(pcsCaseEntity, never()).addCounterClaim(any(CounterClaimEntity.class));
+    }
+
+    @Test
+    void shouldSaveCounterClaimWithOnlyClaimAmount() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .isClaimAmountKnown(VerticalYesNo.YES)
+            .claimAmount(new BigDecimal("1000.50"))
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaim(counterClaim)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
+        CounterClaimEntity saved = counterClaimCaptor.getValue();
+        assertThat(saved.getClaimAmount()).isEqualByComparingTo(new BigDecimal("1000.50"));
+        assertThat(saved.getEstimatedMaxClaimAmount()).isNull();
     }
 
     @ParameterizedTest(name = "languageUsed={0}")

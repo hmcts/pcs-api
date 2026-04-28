@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,6 +23,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -63,7 +65,8 @@ public class CounterClaimEntity {
     @JoinColumn(name = "party_id", nullable = false)
     private PartyEntity party;
 
-    private String claimType;
+    @Enumerated(EnumType.STRING)
+    private CounterClaimType claimType;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -73,9 +76,11 @@ public class CounterClaimEntity {
 
     private BigDecimal estimatedMaxClaimAmount;
 
-    private String counterclaimFor;
+    @Column(name = "counterclaim_for")
+    private String counterClaimFor;
 
-    private String counterclaimReasons;
+    @Column(name = "counterclaim_reasons")
+    private String counterClaimReasons;
 
     private String otherOrderRequestDetails;
 

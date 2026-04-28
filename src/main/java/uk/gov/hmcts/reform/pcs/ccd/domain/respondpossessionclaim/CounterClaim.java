@@ -30,13 +30,13 @@ public class CounterClaim {
     private BigDecimal estimatedMaxClaimAmount;
 
     @CCD(access = {CitizenAccess.class})
-    private String claimType;
+    private CounterClaimType claimType;
 
     @CCD(access = {CitizenAccess.class}, max = 6800)
-    private String counterclaimFor;
+    private String counterClaimFor;
 
     @CCD(access = {CitizenAccess.class}, max = 6800)
-    private String counterclaimReasons;
+    private String counterClaimReasons;
 
     @CCD(access = {CitizenAccess.class}, max = 6800)
     private String otherOrderRequestDetails;
