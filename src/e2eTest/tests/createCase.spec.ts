@@ -639,7 +639,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Demoted tenancy with no grounds for possession @regression', async () => {
+  test('England - Demoted tenancy with no grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
