@@ -1,16 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim;
 
 
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.Size;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
@@ -58,6 +57,33 @@ public class HouseholdCircumstances {
 
     @CCD
     private LocalDate alternativeAccommodationTransferDate;
+
+    @CCD
+    private IncomeExpenseDetails householdBills;
+
+    @CCD
+    private IncomeExpenseDetails loanPayments;
+
+    @CCD
+    private IncomeExpenseDetails childSpousalMaintenance;
+
+    @CCD
+    private IncomeExpenseDetails mobilePhone;
+
+    @CCD
+    private IncomeExpenseDetails groceryShopping;
+
+    @CCD
+    private IncomeExpenseDetails fuelParkingTransport;
+
+    @CCD
+    private IncomeExpenseDetails schoolCosts;
+
+    @CCD
+    private IncomeExpenseDetails clothing;
+
+    @CCD
+    private IncomeExpenseDetails otherExpenses;
 
     @CCD
     private VerticalYesNo shareIncomeExpenseDetails;
