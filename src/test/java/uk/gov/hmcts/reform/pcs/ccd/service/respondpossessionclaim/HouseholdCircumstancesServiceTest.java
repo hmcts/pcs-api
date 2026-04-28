@@ -11,11 +11,14 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.IncomeExpenseDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RegularExpenseType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularExpenseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
 
 import java.math.BigDecimal;
@@ -112,6 +115,87 @@ class HouseholdCircumstancesServiceTest {
 
         // Then
         assertThat(entity).isNull();
+    }
+
+    @Test
+    void shouldMapExpenseAmountsAndFrequenciesWhenAnswerIsYes() {
+
+        HouseholdCircumstances householdCircumstances = buildExpenseFields(YesOrNo.YES);
+
+        HouseholdCircumstancesEntity entity =
+            underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        List<RegularExpenseEntity> expenses = entity.getRegularExpenses();
+
+        assertThat(expenses).hasSize(9);
+
+        assertExpense(expenses, RegularExpenseType.HOUSEHOLD_BILLS, new BigDecimal("100.00"),
+                      RecurrenceFrequency.MONTHLY);
+        assertExpense(expenses, RegularExpenseType.LOAN_PAYMENTS, new BigDecimal("200.00"),
+                      RecurrenceFrequency.WEEKLY);
+        assertExpense(expenses, RegularExpenseType.CHILD_SPOUSAL_MAINTENANCE, new BigDecimal("300.00"),
+                      RecurrenceFrequency.MONTHLY);
+        assertExpense(expenses, RegularExpenseType.MOBILE_PHONE, new BigDecimal("400.00"),
+                      RecurrenceFrequency.WEEKLY);
+        assertExpense(expenses, RegularExpenseType.GROCERY_SHOPPING, new BigDecimal("500.00"),
+                      RecurrenceFrequency.MONTHLY);
+        assertExpense(expenses, RegularExpenseType.FUEL_PARKING_TRANSPORT, new BigDecimal("600.00"),
+                      RecurrenceFrequency.WEEKLY);
+        assertExpense(expenses, RegularExpenseType.SCHOOL_COSTS, new BigDecimal("700.00"),
+                      RecurrenceFrequency.MONTHLY);
+        assertExpense(expenses, RegularExpenseType.CLOTHING, new BigDecimal("800.00"),
+                      RecurrenceFrequency.WEEKLY);
+        assertExpense(expenses, RegularExpenseType.OTHER, new BigDecimal("900.00"),
+                      RecurrenceFrequency.MONTHLY);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @EnumSource(value = YesOrNo.class, names = "NO")
+    void shouldNotMapExpenseAmountsAndFrequenciesWhenAnswerIsNotYes(YesOrNo answer) {
+        HouseholdCircumstances householdCircumstances = buildExpenseFields(answer);
+
+        HouseholdCircumstancesEntity entity =
+            underTest.createHouseholdCircumstancesEntity(householdCircumstances);
+
+        assertThat(entity.getRegularExpenses()).isNullOrEmpty();
+    }
+
+    private void assertExpense(
+        List<RegularExpenseEntity> expenses,
+        RegularExpenseType type,
+        BigDecimal expectedAmount,
+        RecurrenceFrequency expectedFrequency
+    ) {
+        RegularExpenseEntity expense = expenses.stream()
+            .filter(e -> e.getExpenseType() == type)
+            .findFirst()
+            .orElseThrow();
+
+        assertThat(expense.getAmount()).isEqualByComparingTo(expectedAmount);
+        assertThat(expense.getExpenseFrequency()).isEqualTo(expectedFrequency);
+    }
+
+    private static HouseholdCircumstances buildExpenseFields(YesOrNo answer) {
+        return HouseholdCircumstances.builder()
+            .householdBills(buildExpense(answer, "100.00", RecurrenceFrequency.MONTHLY))
+            .loanPayments(buildExpense(answer, "200.00", RecurrenceFrequency.WEEKLY))
+            .childSpousalMaintenance(buildExpense(answer, "300.00", RecurrenceFrequency.MONTHLY))
+            .mobilePhone(buildExpense(answer, "400.00", RecurrenceFrequency.WEEKLY))
+            .groceryShopping(buildExpense(answer, "500.00", RecurrenceFrequency.MONTHLY))
+            .fuelParkingTransport(buildExpense(answer, "600.00", RecurrenceFrequency.WEEKLY))
+            .schoolCosts(buildExpense(answer, "700.00", RecurrenceFrequency.MONTHLY))
+            .clothing(buildExpense(answer, "800.00", RecurrenceFrequency.WEEKLY))
+            .otherExpenses(buildExpense(answer, "900.00", RecurrenceFrequency.MONTHLY))
+            .build();
+    }
+
+    private static IncomeExpenseDetails buildExpense(YesOrNo applies, String amount, RecurrenceFrequency frequency) {
+        return IncomeExpenseDetails.builder()
+            .applies(applies)
+            .amount(new BigDecimal(amount))
+            .frequency(frequency)
+            .build();
     }
 
     @ParameterizedTest
