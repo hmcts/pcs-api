@@ -85,6 +85,7 @@ public class CaseFlagsView {
 
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<ListValue<Party>> mappedParties = pcsCaseEntity.getParties().stream()
+            .filter(partyEntity -> partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty())
             .map(this::mapPartyWithRespondentFlags)
             .toList();
 
@@ -96,8 +97,12 @@ public class CaseFlagsView {
             .id(partyEntity.getId().toString())
             .value(
                 Party.builder()
+                    .nameKnown(partyEntity.getNameKnown())
+                    .addressKnown(partyEntity.getAddressKnown())
+                    .phoneNumberProvided(partyEntity.getPhoneNumberProvided())
+                    .emailAddress(partyEntity.getEmailAddress())
                     .firstName(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
-                                   ? partyEntity.getFirstName() : partyEntity.getOrgName())
+                                 ? partyEntity.getFirstName() : partyEntity.getOrgName())
                     .lastName(partyEntity.getLastName())
                     .respondentFlags(mapRespondentFlags(partyEntity))
                     .build()
