@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimParty;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -138,6 +139,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
     /**
      * Merges latest case data with saved defendant responses.
      * Takes fresh claimant organisations from latest case and combines with saved defendant answers.
+     * Builds a list of claim parties with their roles.
      *
      * @param latestCase Latest case data from CCD (has up-to-date claimant info)
      * @param savedResponses Saved defendant responses from draft
@@ -146,9 +148,11 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private PossessionClaimResponse mergeLatestCaseData(PCSCase latestCase,
                                                          PossessionClaimResponse savedResponses) {
         List<ListValue<String>> latestClaimantOrgs = createClaimantOrgNameList(latestCase);
+        List<ListValue<ClaimParty>> latestClaimParties = responseMapper.buildClaimParties(latestCase);
 
         return savedResponses.toBuilder()
             .claimantOrganisations(latestClaimantOrgs)
+            .claimParties(latestClaimParties)
             .build();
     }
 
