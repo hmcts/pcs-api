@@ -57,7 +57,7 @@ public class CounterClaimEntity {
     private StatementOfTruthEntity statementOfTruth;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "pcs_case_id", nullable = false)
+    @JoinColumn(name = "case_id", nullable = false)
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 

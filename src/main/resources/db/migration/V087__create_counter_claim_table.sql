@@ -2,7 +2,7 @@ CREATE TABLE counter_claim (
   id                         UUID PRIMARY KEY,
   version                    INTEGER,
   sot_id                     UUID REFERENCES statement_of_truth(id),
-  pcs_case_id                UUID NOT NULL REFERENCES pcs_case(id),
+  case_id                    UUID NOT NULL REFERENCES pcs_case(id),
   party_id                   UUID NOT NULL REFERENCES party(id),
   claim_type                 VARCHAR(50),
   is_claim_amount_known      YES_NO,
@@ -15,11 +15,11 @@ CREATE TABLE counter_claim (
   need_help_with_fees        YES_NO,
   applied_for_hwf            YES_NO,
   hwf_reference_number       VARCHAR(255),
-  status                     VARCHAR(30),
+  status                     VARCHAR,
   claim_submitted_date       TIMESTAMP,
   claim_issued_date          TIMESTAMP,
   last_modified_date         TIMESTAMP,
-  language_used              VARCHAR(30)
+  language_used              TEXT
 );
 
 ALTER TABLE document ADD COLUMN counter_claim_id UUID REFERENCES counter_claim(id);
