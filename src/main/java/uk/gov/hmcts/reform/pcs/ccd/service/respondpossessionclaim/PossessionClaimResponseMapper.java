@@ -8,11 +8,14 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimParty;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,10 +47,13 @@ public class PossessionClaimResponseMapper {
         // Extract org names from CLAIMANT-role parties (pre-filtered by PCSCaseView.getPartyMap)
         List<ListValue<String>> claimantOrgs = extractClaimantOrganisations(pcsCase);
 
+        List<ListValue<ClaimParty>> claimParties = buildClaimParties(pcsCase);
+
         return PossessionClaimResponse.builder()
             .claimantOrganisations(claimantOrgs)
             .defendantContactDetails(contactDetails)
             .claimantEnteredDefendantDetails(claimantEnteredDetails)
+            .claimParties(claimParties)
             .build();
     }
 
@@ -97,6 +103,43 @@ public class PossessionClaimResponseMapper {
                 .map(addressMapper::toAddressUK)
                 .orElse(AddressUK.builder().build());
         }
+    }
+
+    /*
+     * Builds a combined list of all named parties (claimants + defendants) with their roles.
+     * Used for multi-party routing and display in the counterclaim journey.
+     */
+    private List<ListValue<ClaimParty>> buildClaimParties(PCSCase pcsCase) {
+        List<ListValue<ClaimParty>> parties = new ArrayList<>();
+
+        if (pcsCase.getAllClaimants() != null) {
+            pcsCase.getAllClaimants().forEach(claimant -> parties.add(
+                ListValue.<ClaimParty>builder()
+                    .id(claimant.getId())
+                    .value(toClaimParty(claimant.getValue(), PartyRole.CLAIMANT))
+                    .build()
+            ));
+        }
+
+        if (pcsCase.getAllDefendants() != null) {
+            pcsCase.getAllDefendants().forEach(defendant -> parties.add(
+                ListValue.<ClaimParty>builder()
+                    .id(defendant.getId())
+                    .value(toClaimParty(defendant.getValue(), PartyRole.DEFENDANT))
+                    .build()
+            ));
+        }
+
+        return parties;
+    }
+
+    private ClaimParty toClaimParty(Party party, PartyRole role) {
+        return ClaimParty.builder()
+            .firstName(party.getFirstName())
+            .lastName(party.getLastName())
+            .orgName(party.getOrgName())
+            .role(role.name())
+            .build();
     }
 
     /*
