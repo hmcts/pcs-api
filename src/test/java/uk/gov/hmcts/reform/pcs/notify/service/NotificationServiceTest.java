@@ -511,6 +511,19 @@ class NotificationServiceTest {
         }
 
         @Test
+        @DisplayName("Should build base personalisation with organisation name for claimant")
+        void shouldBuildBasePersonalisationWithOrgName() {
+            DefendantResponseEntity response = createDefendantResponse();
+            response.getClaim().getClaimParties().get(0).getParty().setOrgName("Claimant Corp");
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(response);
+
+            assertThat(result)
+                .containsEntry("claimantName", "CLAIMANT CORP");
+        }
+
+        @Test
         @DisplayName("Should throw PartyNotFoundException when no claimant found")
         void shouldThrowExceptionWhenNoClaimantFound() {
             DefendantResponseEntity response = createDefendantResponse();

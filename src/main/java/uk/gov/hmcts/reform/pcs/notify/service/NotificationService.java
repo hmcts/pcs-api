@@ -303,7 +303,9 @@ public class NotificationService {
         }
 
         PartyEntity claimant = optClaimant.get();
-        String claimantName = String.format("%s %s", claimant.getFirstName(), claimant.getLastName())
+        String claimantName = (claimant.getOrgName() != null
+            ? claimant.getOrgName()
+            : String.format("%s %s", claimant.getFirstName(), claimant.getLastName()))
             .toUpperCase(Locale.ROOT);
         String primaryDefendantName = String.format("%s %s", to.getFirstName(), to.getLastName())
             .toUpperCase(Locale.ROOT);
