@@ -5,5 +5,6 @@ export const caseSummary = {
   linkCaseEvent: 'Link cases',
   manageCaseEvent: 'Manage case links',
   enforceTheOrderEvent: 'Enforce the order',
+  confirmEvictionEvent: 'Confirm the eviction details',
   go: "Go"
 }

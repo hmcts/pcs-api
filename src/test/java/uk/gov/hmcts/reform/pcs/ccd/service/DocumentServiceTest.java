@@ -18,10 +18,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -261,6 +266,61 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(anyList());
     }
 
+    @ParameterizedTest
+    @EnumSource(EvidenceDocumentType.class)
+    void shouldMapAllEvidenceDocumentTypes(EvidenceDocumentType evidenceDocumentType) {
+        // Given
+        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
+                .document(Document.builder()
+                        .url("url-WITNESS_STATEMENT")
+                        .filename("file-WITNESS_STATEMENT")
+                        .binaryUrl("bin-WITNESS_STATEMENT")
+                        .categoryId("cat-WITNESS_STATEMENT")
+                        .build())
+                .documentType(evidenceDocumentType)
+                .build();
+
+        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
+                List.of(ListValue.<EvidenceOfDefendants>builder()
+                        .id("1").value(evidenceDocument).build());
+
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                        .additionalDocuments(evidenceDocuments)
+                        .build())
+                .build();
+
+        // When
+        underTest.createAllDocuments(enforcementOrder);
+
+        // Then
+        DocumentType expectedDocumentType = DocumentType.valueOf(evidenceDocumentType.name());
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+                .extracting(DocumentEntity::getType)
+                .containsExactly(expectedDocumentType);
+    }
+
+    @Test
+    void shouldHandleEmptyEvidenceDocument() {
+        List<ListValue<EvidenceOfDefendants>> evidenceDocuments =
+                new ArrayList<>();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                        .additionalDocuments(evidenceDocuments)
+                        .build())
+                .build();
+
+        // When
+        underTest.createAllDocuments(enforcementOrder);
+
+        // Then
+        verify(documentRepository).saveAll(List.of());
+    }
+
     @Test
     void shouldSaveDescriptionForAdditionalDocuments() {
         // Given
@@ -297,6 +357,115 @@ class DocumentServiceTest {
         assertThat(capturedEntities)
                 .extracting(DocumentEntity::getDescription)
                 .containsExactly(description);
+    }
+
+    @Test
+    void shouldConvertEmptyDescriptionToNull() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+                .document(Document.builder()
+                        .url("url1")
+                        .filename("file1")
+                        .binaryUrl("bin1")
+                        .categoryId("cat1")
+                        .build())
+                .documentType(AdditionalDocumentType.WITNESS_STATEMENT)
+                .description("")
+                .build();
+
+        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        );
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+        assertThat(capturedEntities.getFirst().getDescription()).isNull();
+    }
+
+    @Test
+    void shouldFilterOutNullValuesFromListValueDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document validDoc = Document.builder()
+                .url("url1")
+                .filename("file1")
+                .binaryUrl("bin1")
+                .categoryId("cat1")
+                .build();
+
+        List<ListValue<Document>> docsWithNull = List.of(
+                ListValue.<Document>builder().id("1").value(validDoc).build(),
+                ListValue.<Document>builder().id("2").value(null).build()
+        );
+
+        RentArrearsSection rentArrearsSection = RentArrearsSection.builder()
+                .statementDocuments(docsWithNull)
+                .build();
+
+        when(pcsCase.getRentArrears()).thenReturn(rentArrearsSection);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        assertThat(entities.getFirst().getFileName()).isEqualTo("file1");
+    }
+
+    @Test
+    void shouldSaveMultipleDocumentTypesInSingleCall() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document rentDoc = Document.builder()
+                .url("url-rent").filename("file-rent").binaryUrl("bin-rent").categoryId("cat-rent").build();
+        Document tenancyDoc = Document.builder()
+                .url("url-tenancy").filename("file-tenancy").binaryUrl("bin-tenancy").categoryId("cat-tenancy").build();
+        Document noticeDoc = Document.builder()
+                .url("url-notice").filename("file-notice").binaryUrl("bin-notice").categoryId("cat-notice").build();
+
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .statementDocuments(List.of(ListValue.<Document>builder().id("1").value(rentDoc).build()))
+                .build());
+        when(pcsCase.getTenancyLicenceDetails()).thenReturn(TenancyLicenceDetails.builder()
+                .tenancyLicenceDocuments(List.of(ListValue.<Document>builder().id("2").value(tenancyDoc).build()))
+                .build());
+        when(pcsCase.getNoticeServedDetails()).thenReturn(NoticeServedDetails.builder()
+                .noticeDocuments(List.of(ListValue.<Document>builder().id("3").value(noticeDoc).build()))
+                .build());
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(3);
+
+        assertThat(entities)
+            .extracting(DocumentEntity::getType)
+            .containsExactlyInAnyOrder(
+                DocumentType.RENT_STATEMENT,
+                DocumentType.TENANCY_LICENCE,
+                DocumentType.NOTICE_SERVED
+            );
+
+        assertThat(entities)
+            .extracting(DocumentEntity::getFileName)
+            .containsExactlyInAnyOrder("file-rent", "file-tenancy", "file-notice");
     }
 
     @Test

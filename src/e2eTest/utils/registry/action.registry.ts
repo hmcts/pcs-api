@@ -101,6 +101,7 @@ export class ActionRegistry {
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()]
+    ['enterPaymentDetails', new FeeAndPayAction()]
   ]);
 
   static getAction(actionName: string): IAction {
