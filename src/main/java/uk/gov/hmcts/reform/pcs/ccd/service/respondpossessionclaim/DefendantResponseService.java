@@ -119,6 +119,7 @@ public class DefendantResponseService {
             .freeLegalAdvice(responses.getFreeLegalAdvice())
             .possessionNoticeReceived(responses.getPossessionNoticeReceived())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
+            .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
             .writtenTerms(responses.getWrittenTerms())
             .disputeClaim(responses.getDisputeClaim())
@@ -133,6 +134,8 @@ public class DefendantResponseService {
             .noticeReceivedDate(responses.getNoticeReceivedDate())
             .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
             .languageUsed(responses.getLanguageUsed())
+            .otherConsiderations(responses.getOtherConsiderations())
+            .otherConsiderationsDetails(responses.getOtherConsiderationsDetails())
             .build();
 
         //set bidirectional relationship with the pcs case
