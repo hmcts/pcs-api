@@ -44,7 +44,7 @@ class ManageFlagsTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
+        verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase, EventFlow.UPDATE.name());
     }
 
     private List<ListValue<FlagDetail>> createFlagDetails() {

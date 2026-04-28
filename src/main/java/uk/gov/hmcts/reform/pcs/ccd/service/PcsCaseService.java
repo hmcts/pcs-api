@@ -60,14 +60,14 @@ public class PcsCaseService {
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
     }
 
-    public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
+    public void patchCaseFlags(long caseReference, PCSCase pcsCase, String flow) {
         if (pcsCase == null) {
             throw new IllegalArgumentException("PCSCase cannot be null");
         }
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
         if (pcsCase.getCaseFlags() != null && pcsCase.getCaseFlags().getDetails() != null) {
-            caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(), pcsCaseEntity);
+            caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(), pcsCaseEntity, flow);
         }
     }
 

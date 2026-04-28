@@ -50,7 +50,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("Caseworker created case flag for {}", caseReference);
 
-        pcsCaseService.patchCaseFlags(caseReference, pcsCase);
+        pcsCaseService.patchCaseFlags(caseReference, pcsCase, EventFlow.CREATE.name());
 
         return SubmitResponse.defaultResponse();
     }
