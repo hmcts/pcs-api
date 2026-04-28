@@ -37,10 +37,10 @@ class RoleToAccessProfilesTest {
     @Test
     void shouldRegisterAccessProfileForEveryUserRole() {
         underTest.configure(configBuilder);
-
         stream(UserRole.values()).forEach(userRole -> {
+            String expectedExternalRole = ExternalUserRole.forCcdRole(userRole).getRole();
             verify(configBuilder).caseRoleToAccessProfile(argThat(
-                externalRole -> externalRole.getRole().endsWith(userRole.getRole())
+                externalRole -> externalRole.getRole().equals(expectedExternalRole)
             ));
             verify(accessProfileBuilder).accessProfiles(userRole.getRole());
         });
