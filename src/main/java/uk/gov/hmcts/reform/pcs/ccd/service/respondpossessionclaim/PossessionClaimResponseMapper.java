@@ -109,7 +109,7 @@ public class PossessionClaimResponseMapper {
      * Builds a combined list of all named parties (claimants + defendants) with their roles.
      * Used for multi-party routing and display in the counterclaim journey.
      */
-    private List<ListValue<ClaimParty>> buildClaimParties(PCSCase pcsCase) {
+    public List<ListValue<ClaimParty>> buildClaimParties(PCSCase pcsCase) {
         List<ListValue<ClaimParty>> parties = new ArrayList<>();
 
         if (pcsCase.getAllClaimants() != null) {
