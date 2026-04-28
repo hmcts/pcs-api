@@ -108,6 +108,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       year: tenancyLicenceDetails.yearTextInput,
       question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
       option: tenancyLicenceDetails.yesRadioOption,
+      files: ['tenancyLicence.docx'],
     });
     await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yesRadioOption});
     await performAction('selectRentArrearsPossessionGround', {
@@ -367,7 +368,6 @@ test.describe('[Create Case - England] @nightly', async () => {
       question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
       option: tenancyLicenceDetails.noRadioOption,
       reason: tenancyLicenceDetails.reasonForNoCopyInputText,
-      files: ['tenancyLicence.docx']
     });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
