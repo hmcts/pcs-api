@@ -8,7 +8,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -59,7 +58,10 @@ public class DefendantResponses {
     private VerticalYesNo contactByPhone;
 
     @CCD
-    private ContactPreferenceType preferenceType;
+    private VerticalYesNo contactByEmail;
+
+    @CCD
+    private VerticalYesNo contactByPost;
 
     @CCD
     private YesNoPreferNotToSay freeLegalAdvice;
@@ -69,6 +71,9 @@ public class DefendantResponses {
 
     @CCD
     private VerticalYesNo defendantNameConfirmation;
+
+    @CCD
+    private VerticalYesNo correspondenceAddressConfirmation;
 
     @CCD
     private YesNoNotSure landlordRegistered;
@@ -97,4 +102,9 @@ public class DefendantResponses {
     private LanguageUsed languageUsed;
 
     private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
+    @CCD
+    private VerticalYesNo otherConsiderations;
+
+    @CCD(max = 6400)
+    private String otherConsiderationsDetails;
 }
