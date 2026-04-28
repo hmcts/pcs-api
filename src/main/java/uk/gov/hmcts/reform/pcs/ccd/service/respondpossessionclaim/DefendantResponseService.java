@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -13,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -44,6 +46,7 @@ public class DefendantResponseService {
     private final ReasonableAdjustmentsService reasonableAdjustmentsService;
     private final HouseholdCircumstancesService householdCircumstancesService;
     private final PaymentAgreementService paymentAgreementService;
+    private final DocumentService documentService;
 
     /**
      * Saves a defendant's response to the defendant_response table
@@ -94,16 +97,23 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
+        DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
+
         DefendantResponseEntity responseEntity =
-            buildDefendantResponseEntity(
-                claimRef,
-                partyRef,
-                possessionClaimResponse.getDefendantResponses()
+            buildDefendantResponseEntity(claimRef, partyRef, responses);
+
+        buildAndLinkChildEntities(responseEntity, responses);
+
+        DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
+
+        if (!CollectionUtils.isEmpty(responses.getDefendantDocuments())) {
+            documentService.createDefendantEvidenceDocuments(
+                responses.getDefendantDocuments(),
+                savedResponse,
+                claimRef.getPcsCase(),
+                partyRef
             );
-
-        buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
-
-        defendantResponseRepository.save(responseEntity);
+        }
 
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
     }
