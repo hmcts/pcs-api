@@ -102,4 +102,9 @@ public class DefendantResponses {
     private LanguageUsed languageUsed;
 
     private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
+    @CCD
+    private VerticalYesNo otherConsiderations;
+
+    @CCD(max = 6400)
+    private String otherConsiderationsDetails;
 }
