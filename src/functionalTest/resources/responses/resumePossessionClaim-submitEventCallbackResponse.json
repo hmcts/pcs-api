@@ -14,14 +14,7 @@
         {
           "value": {
             "nameKnown": "NO",
-            "addressKnown": "NO",
-            "respondentFlags": {
-              "partyName": "",
-              "roleOnCase": "",
-              "details": [],
-              "visibility": "Internal",
-              "groupId": "[[IGNORE_VALUE]]"
-            }
+            "addressKnown": "NO"
           }
         },
         {

@@ -18,9 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
-
 
 @Component
 @Slf4j
@@ -34,7 +31,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(EventId.createFlags.name(), this::submit)
-                .forStates(CASE_ISSUED, PENDING_CASE_ISSUED)
+                .forAllStates()
                 .name("Create Flag")
                 .description("To create flags")
                 .showSummary()
