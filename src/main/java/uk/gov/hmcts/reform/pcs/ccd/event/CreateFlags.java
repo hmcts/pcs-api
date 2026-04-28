@@ -32,7 +32,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
             configBuilder
                 .decentralisedEvent(EventId.createFlags.name(), this::submit)
                 .forAllStates()
-                .name("Create Flag")
+                .name("Create case flags")
                 .description("To create flags")
                 .showSummary()
                 .grant(Permission.CRU, UserRole.PCS_CASE_WORKER);
