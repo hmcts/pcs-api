@@ -17,39 +17,39 @@ export class CaseLinking implements IAction {
   }
 
   private async selectCasesToLink(caseData: actionRecord, page: Page) {
-    const caseRefs = String(caseData.caseRefInput).split(',');   
-     for (let i = 0; i < 4; i++) {     
+    const caseRefs = String(caseData.caseRefInput).split(',');
+    for (let i = 0; i < 4; i++) {
       await performAction('inputText', selectCasesToLink.caseRefLabel, caseRefs[i]);
       await performAction('check', { question: caseData.question, option: caseData.option });
       await performAction('clickButton', caseData.proposeButton);
-        console.log(`selected Case ${i}: ${caseRefs[i]}`);
-      }
-     await performAction('clickButton', selectCasesToLink.submitButton);
-     
+      console.log(`selected Case ${i}: ${caseRefs[i]}`);
+    }
+    await performAction('clickButton', selectCasesToLink.submitButton);
+
   }
 
   private async selectCasesToUnLink(caseData: actionRecord, page: Page) {
-  const caseRefs = String(caseData.caseRefInput).split(',');
-  for (let i = 0; i < (caseRefs.length-3); i++) {
-    console.log(`UNselected Case ${i}: ${caseRefs[i]}`);
-    const selectBox = page.locator(
-      `input[type="checkbox"][value="${caseRefs[i]}"]`
-    );
-    await selectBox.check();
+    const caseRefs = String(caseData.caseRefInput).split(',');
+    for (let i = 0; i < (caseRefs.length - 3); i++) {
+      console.log(`UNselected Case ${i}: ${caseRefs[i]}`);
+      const selectBox = page.locator(
+        `input[type="checkbox"][value="${caseRefs[i]}"]`
+      );
+      await selectBox.check();
+    }
+    await performAction('clickButton', selectCasesToUnLink.submitButton);;
   }
-  await performAction('clickButton', selectCasesToUnLink.submitButton);;
-}
 
-private async verifyLinkedCases(caseData: actionRecord, page: Page) {
-  const caseRefs = String(caseData.caseRefInput).split(',');
-  await page.locator('div[role="tab"]:has-text("Linked cases")').click();
-  for (let i = 2; i < (caseRefs.length-1); i++) {
-    await expect(page.locator(`a[href*="${caseRefs[i]}"]`).first()).toBeVisible();
-    console.log(`Found Linked Case ${i}: ${caseRefs[i]}`);
-}
- for (let i = 0; i < (caseRefs.length-3); i++) {
-    await expect(page.locator(`a[href*="${caseRefs[i]}"]`).first()).toHaveCount(0);
-    console.log(`NotFound unLinked Case ${i}: ${caseRefs[i]}`);
-}
-}
+  private async verifyLinkedCases(caseData: actionRecord, page: Page) {
+    const caseRefs = String(caseData.caseRefInput).split(',');
+    await page.locator('div[role="tab"]:has-text("Linked cases")').click();
+    for (let i = 2; i < (caseRefs.length - 1); i++) {
+      await expect(page.locator(`a[href*="${caseRefs[i]}"]`).first()).toBeVisible();
+      console.log(`Found Linked Case ${i}: ${caseRefs[i]}`);
+    }
+    for (let i = 0; i < (caseRefs.length - 3); i++) {
+      await expect(page.locator(`a[href*="${caseRefs[i]}"]`).first()).toHaveCount(0);
+      console.log(`NotFound unLinked Case ${i}: ${caseRefs[i]}`);
+    }
+  }
 }

@@ -1,5 +1,3 @@
-import { label } from "allure-js-commons";
-
 export const selectCasesToLink = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Select a case you want to link to this case',

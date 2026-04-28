@@ -46,35 +46,34 @@ test.afterEach(async () => {
 
 test.describe('[Common Component Case Linking]', async () => {
   test('Case Linking @PR @regression @nightly', async () => {
-
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
-      await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', beforeYouStart.mainHeader);
-      await performAction('clickButton', beforeYouStart.submitButton);
-      await performValidation('mainHeader', selectCasesToLink.mainHeader);
-      await performAction('selectCasesToLink', {
-       caseRefInput: caseNumbers,
-        question: selectCasesToLink.whyToLinkQuestion,
-        option: [
-          selectCasesToLink.caseConsolidateCheckbox,
-          selectCasesToLink.progressedCheckbox,
-          selectCasesToLink.relatedAppealCheckbx,
-          selectCasesToLink.samePartyCheckbox,
-        ],
-        proposeButton: selectCasesToLink.proposeLinkButton
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', beforeYouStart.mainHeader);
+    await performAction('clickButton', beforeYouStart.submitButton);
+    await performValidation('mainHeader', selectCasesToLink.mainHeader);
+    await performAction('selectCasesToLink', {
+      caseRefInput: caseNumbers,
+      question: selectCasesToLink.whyToLinkQuestion,
+      option: [
+        selectCasesToLink.caseConsolidateCheckbox,
+        selectCasesToLink.progressedCheckbox,
+        selectCasesToLink.relatedAppealCheckbx,
+        selectCasesToLink.samePartyCheckbox,
+      ],
+      proposeButton: selectCasesToLink.proposeLinkButton
     });
-      await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
-      await performAction('clickButton', checkYourAnswersCaseLinking.submitButton); 
-      await performValidation('bannerAlert', 'Case #.* has been updated with event: Link cases');
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.manageCaseEvent);
-      await performAction('clickButton', caseSummary.go);
-      await performValidation('mainHeader', beforeYouStart.mainHeader);
-      await performAction('clickButton', beforeYouStart.submitButton);
-      await performValidation('mainHeader', selectCasesToUnLink.mainHeader);
-      await performAction('selectCasesToUnLink', { caseRefInput: caseNumbers });
-      await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
-      await performAction('clickButton', checkYourAnswersCaseLinking.submitButton); 
-      await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case links');
-      await performAction('verifyLinkedCases', { caseRefInput: caseNumbers });
+    await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
+    await performAction('clickButton', checkYourAnswersCaseLinking.submitButton);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Link cases');
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageCaseEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', beforeYouStart.mainHeader);
+    await performAction('clickButton', beforeYouStart.submitButton);
+    await performValidation('mainHeader', selectCasesToUnLink.mainHeader);
+    await performAction('selectCasesToUnLink', { caseRefInput: caseNumbers });
+    await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
+    await performAction('clickButton', checkYourAnswersCaseLinking.submitButton);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case links');
+    await performAction('verifyLinkedCases', { caseRefInput: caseNumbers });
   });
 });
