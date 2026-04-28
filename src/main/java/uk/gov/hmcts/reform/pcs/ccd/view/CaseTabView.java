@@ -19,15 +19,17 @@ public class CaseTabView {
     private static final String NAME_UNKNOWN = "Person unknown";
 
     public void setCaseTabFields(PCSCase pcsCase) {
-        setCasePartiesTabDetails(pcsCase);
+        CasePartiesTab casePartiesTab = buildCasePartiesTab(pcsCase);
+        pcsCase.setCasePartiesTab(casePartiesTab);
     }
 
-    private void setCasePartiesTabDetails(PCSCase pcsCase) {
+    private CasePartiesTab buildCasePartiesTab(PCSCase pcsCase) {
         CasePartiesTab tab = CasePartiesTab.builder().build();
 
-        if (pcsCase.getAllClaimants() != null && !pcsCase.getAllClaimants().isEmpty()) {
-            Party claimant = pcsCase.getAllClaimants().getFirst().getValue();
-            ClaimantTabDetails claimantTabDetails = createClaimantTabDetails(claimant, pcsCase);
+        List<ListValue<Party>> claimants = pcsCase.getAllClaimants();
+        if (claimants != null && !claimants.isEmpty()) {
+            Party claimant = claimants.getFirst().getValue();
+            ClaimantTabDetails claimantTabDetails = createClaimantTabDetails(claimant);
             tab.setClaimantDetails(claimantTabDetails);
         }
 
@@ -49,10 +51,10 @@ public class CaseTabView {
             }
         }
 
-        pcsCase.setCasePartiesTab(tab);
+        return tab;
     }
 
-    private ClaimantTabDetails createClaimantTabDetails(Party claimant, PCSCase pcsCase) {
+    private ClaimantTabDetails createClaimantTabDetails(Party claimant) {
         return ClaimantTabDetails.builder()
             .name(claimant.getOrgName())
             .emailAddress(claimant.getEmailAddress())
