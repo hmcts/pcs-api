@@ -36,17 +36,17 @@ public class DashboardJourneyService {
         TaskGroupId.APPLICATIONS
     );
 
-    private static int orderIndex(TaskGroupId id) {
-        int idx = TASK_GROUP_ORDER.indexOf(id);
-        return idx >= 0 ? idx : Integer.MAX_VALUE; 
-    }
-
     private final List<TaskGroupEvaluator> evaluatorsInOrder;
 
     public DashboardJourneyService(List<TaskGroupEvaluator> evaluators) {
         this.evaluatorsInOrder = evaluators.stream()
             .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
             .toList();
+    }
+
+    private static int orderIndex(TaskGroupId id) {
+        int idx = TASK_GROUP_ORDER.indexOf(id);
+        return idx >= 0 ? idx : Integer.MAX_VALUE;
     }
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
