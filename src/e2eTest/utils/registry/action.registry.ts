@@ -100,7 +100,8 @@ export class ActionRegistry {
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['selectCasesToLink', new CaseLinking()],
-    ['selectCasesToUnLink', new CaseLinking()]
+    ['selectCasesToUnLink', new CaseLinking()],
+    ['verifyLinkedCases', new CaseLinking()],
     ['enterPaymentDetails', new FeeAndPayAction()]
   ]);
 

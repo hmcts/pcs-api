@@ -18,7 +18,6 @@ let caseNumbers: string[] = [];
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
-
   //await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   for (let i = 0; i < 5; i++) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -72,11 +71,10 @@ test.describe('[Common Component Case Linking]', async () => {
       await performValidation('mainHeader', beforeYouStart.mainHeader);
       await performAction('clickButton', beforeYouStart.submitButton);
       await performValidation('mainHeader', selectCasesToUnLink.mainHeader);
-      await performAction('selectCasesToUnLink', {
-       caseRefInput: caseNumbers
-    });
-     
-      
-
+      await performAction('selectCasesToUnLink', { caseRefInput: caseNumbers });
+      await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
+      await performAction('clickButton', checkYourAnswersCaseLinking.submitButton); 
+      await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case links');
+      await performAction('verifyLinkedCases', { caseRefInput: caseNumbers });
   });
 });
