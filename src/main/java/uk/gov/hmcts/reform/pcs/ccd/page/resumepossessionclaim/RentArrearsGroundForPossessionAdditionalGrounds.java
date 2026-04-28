@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -15,10 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGr
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGroundsValidationUtil;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,7 +26,7 @@ import java.util.Set;
 @Component
 public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final PossessionGroundsValidationUtil possessionGroundsValidationUtil;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -72,29 +69,14 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                 = groundsForPossession.getAdditionalDiscretionaryGrounds();
         Set<AssuredAdditionalOtherGround> additionalOtherGrounds = groundsForPossession.getAdditionalOtherGround();
 
-        if (CollectionUtils.isEmpty(mandatoryGrounds) && CollectionUtils.isEmpty(discretionaryGrounds)
-                && CollectionUtils.isEmpty(additionalOtherGrounds)) {
+        if (!PossessionGroundsValidationUtil.hasAtLeastOneGround(mandatoryGrounds, discretionaryGrounds,
+                additionalOtherGrounds)) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errorMessageOverride("Please select at least one ground")
                 .build();
         }
 
-        if (!CollectionUtils.isEmpty(additionalOtherGrounds)
-            && groundsForPossession.getAdditionalOtherGroundDescription() != null) {
-            List<String> validationErrors = new ArrayList<>();
-
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                    groundsForPossession.getAdditionalOtherGroundDescription(),
-                    PCSCase.OTHER_GROUND_DESCRIPTION_LABEL,
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-            ));
-            if (!validationErrors.isEmpty()) {
-                return textAreaValidationService.createValidationResponse(caseData, validationErrors);
-            }
-        }
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+        return possessionGroundsValidationUtil.validateOtherGroundDescription(caseData,
+                groundsForPossession.getAdditionalOtherGroundDescription());
     }
 }

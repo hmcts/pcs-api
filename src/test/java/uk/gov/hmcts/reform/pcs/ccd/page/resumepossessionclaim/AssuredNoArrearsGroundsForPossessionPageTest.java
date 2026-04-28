@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,38 +18,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGroundsValidationUtil;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
 
     @Mock
-    private TextAreaValidationService textAreaValidationService;
+    private PossessionGroundsValidationUtil possessionGroundsValidationUtil;
 
     @BeforeEach
     void setUp() {
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
-            .validateSingleTextArea(any(), any(), anyInt());
-        lenient().doAnswer(invocation -> {
-            Object caseData = invocation.getArgument(0);
-            List<String> errors = invocation.getArgument(1);
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data((PCSCase) caseData)
-                .errors(errors.isEmpty() ? null : errors)
-                .build();
-        }).when(textAreaValidationService).createValidationResponse(any(), any());
-
-        setPageUnderTest(new AssuredNoArrearsGroundsForPossessionPage(textAreaValidationService));
+        setPageUnderTest(new AssuredNoArrearsGroundsForPossessionPage(possessionGroundsValidationUtil));
     }
 
     @Test
@@ -76,6 +61,11 @@ class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
                     .build()
             )
             .build();
+
+        when(possessionGroundsValidationUtil.validateOtherGroundDescription(any(), any()))
+                .thenReturn(AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                        .data(caseData)
+                        .build());
 
         // When: Mid event is executed
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -144,6 +134,11 @@ class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
             )
             .build();
 
+        when(possessionGroundsValidationUtil.validateOtherGroundDescription(any(), any()))
+            .thenReturn(AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(caseData)
+                .build());
+
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
@@ -174,79 +169,28 @@ class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
     }
 
     @Test
-    @DisplayName("Should validate otherGroundDescription when provided")
-    void shouldValidateOtherGroundDescriptionWhenProvided() {
+    void shouldNotErrorWhenOtherGroundsSelected() {
         // Given
-        AssuredNoArrearsPossessionGrounds assuredNoArrearsPossessionGrounds =
-                AssuredNoArrearsPossessionGrounds.builder()
-                    .mandatoryGrounds(Set.of())
-                    .discretionaryGrounds(Set.of())
-                    .otherGround(Set.of(AssuredAdditionalOtherGround.OTHER))
-                    .otherGroundDescription("Valid ground description")
-                    .build();
-
         PCSCase caseData = PCSCase.builder()
-                .noRentArrearsGroundsOptions(assuredNoArrearsPossessionGrounds)
+                .noRentArrearsGroundsOptions(
+                        AssuredNoArrearsPossessionGrounds.builder()
+                                .mandatoryGrounds(Set.of())
+                                .discretionaryGrounds(Set.of())
+                                .otherGround(Set.of(AssuredAdditionalOtherGround.OTHER))
+                                .build()
+                )
                 .build();
+
+        when(possessionGroundsValidationUtil.validateOtherGroundDescription(any(), any()))
+                .thenReturn(AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                        .data(caseData)
+                        .build());
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData()).isEqualTo(caseData);
         assertThat(response.getErrors()).isNullOrEmpty();
-    }
-
-    @Test
-    @DisplayName("Should handle null otherGroundDescription gracefully")
-    void shouldHandleNullOtherGroundDescriptionGracefully() {
-        // Given
-        AssuredNoArrearsPossessionGrounds assuredNoArrearsPossessionGrounds =
-                AssuredNoArrearsPossessionGrounds.builder()
-                    .mandatoryGrounds(Set.of())
-                    .discretionaryGrounds(Set.of())
-                    .otherGround(Set.of(AssuredAdditionalOtherGround.OTHER))
-                    .otherGroundDescription(null)
-                    .build();
-
-        PCSCase caseData = PCSCase.builder()
-                .noRentArrearsGroundsOptions(assuredNoArrearsPossessionGrounds)
-                .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getData()).isEqualTo(caseData);
-        assertThat(response.getErrors()).isNullOrEmpty();
-    }
-
-    @Test
-    @DisplayName("Should return validation errors when otherGroundDescription exceeds limit")
-    void shouldReturnValidationErrorsWhenOtherGroundDescriptionExceedsLimit() {
-        // Given
-        String longText = "a".repeat(501); // Exceeds MEDIUM_TEXT_LIMIT (500)
-        List<String> validationErrors = List.of("Error message");
-
-        lenient().doReturn(validationErrors).when(textAreaValidationService)
-                .validateSingleTextArea(any(), any(), anyInt());
-
-        AssuredNoArrearsPossessionGrounds assuredNoArrearsPossessionGrounds =
-                AssuredNoArrearsPossessionGrounds.builder()
-                    .otherGround(Set.of(AssuredAdditionalOtherGround.OTHER))
-                    .otherGroundDescription(longText)
-                    .build();
-
-        PCSCase caseData = PCSCase.builder()
-                .noRentArrearsGroundsOptions(assuredNoArrearsPossessionGrounds)
-                .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).isNotNull();
-        assertThat(response.getErrors()).isNotEmpty();
     }
 
     private static Stream<Arguments> provideRentArrearsScenarios() {

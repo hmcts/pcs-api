@@ -16,10 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGroundsValidationUtil;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -30,7 +28,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Component
 public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final PossessionGroundsValidationUtil possessionGroundsValidationUtil;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -73,8 +71,8 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
         Set<AssuredDiscretionaryGround> discretionaryGrounds = groundsForPossession.getDiscretionaryGrounds();
         Set<AssuredAdditionalOtherGround> additionalOtherGrounds = groundsForPossession.getOtherGround();
 
-        if (CollectionUtils.isEmpty(mandatoryGrounds) && CollectionUtils.isEmpty(discretionaryGrounds)
-                && CollectionUtils.isEmpty(additionalOtherGrounds)) {
+        if (!PossessionGroundsValidationUtil.hasAtLeastOneGround(mandatoryGrounds, discretionaryGrounds,
+                additionalOtherGrounds)) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errorMessageOverride("Please select at least one ground")
                 .build();
@@ -93,22 +91,7 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
         groundsForPossession.setShowGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
-        if (!CollectionUtils.isEmpty(additionalOtherGrounds)
-                && groundsForPossession.getOtherGroundDescription() != null) {
-            List<String> validationErrors = new ArrayList<>();
-
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                    groundsForPossession.getOtherGroundDescription(),
-                    PCSCase.OTHER_GROUND_DESCRIPTION_LABEL,
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-            ));
-            if (!validationErrors.isEmpty()) {
-                return textAreaValidationService.createValidationResponse(caseData, validationErrors);
-            }
-        }
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+        return possessionGroundsValidationUtil.validateOtherGroundDescription(caseData,
+                groundsForPossession.getOtherGroundDescription());
     }
 }
