@@ -12,7 +12,11 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.LinkReason;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -26,17 +30,22 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.doNothing;
+
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseServiceTest {
@@ -57,6 +66,8 @@ class PcsCaseServiceTest {
     private AddressMapper addressMapper;
     @Mock
     private CaseLinkService caseLinkService;
+    @Mock
+    private CaseFlagService caseFlagService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -73,7 +84,8 @@ class PcsCaseServiceTest {
             documentService,
             tenancyLicenceService,
             addressMapper,
-            caseLinkService
+            caseLinkService,
+            caseFlagService
         );
     }
 
@@ -238,6 +250,134 @@ class PcsCaseServiceTest {
         verify(caseLinkService, times(1)).mergeCaseLinks(caseLinks, pcsCaseEntity);
     }
 
+
+    @Test
+    void shouldThrowExceptionWhenCaseDataIsNull() {
+        // Given
+        PCSCase caseData = null;
+
+        // When
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData));
+
+        // Then
+        assertEquals("PCSCase cannot be null", exception.getMessage());
+    }
+
+    @Test
+    void shouldPatchCaseDataWithCaseFlags() {
+        // Given
+        PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .build();
+
+        List<ListValue<FlagDetail>> details = List.of(createFlagDetails());
+
+        Flags flags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(details)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .caseFlags(flags)
+            .build();
+
+        List<ListValue<Party>> parties = createParties();
+        caseData.setParties(parties);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties);
+
+        // When
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
+
+        // Then
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties);
+        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity, parties);
+    }
+
+    private List<ListValue<Party>> createParties() {
+        List<ListValue<Party>> parties = new ArrayList<>();
+        parties.add(ListValue.<Party>builder().value(Party.builder().build()).build());
+
+        return parties;
+    }
+
+    private ListValue<FlagDetail> createFlagDetails() {
+
+        return ListValue.<FlagDetail>builder()
+            .id(UUID.randomUUID().toString())
+            .value(FlagDetail.builder()
+                .flagCode("CF0007")
+                .name("Urgent case")
+                .flagComment("Needs to be handled ASAP")
+                .build())
+            .build();
+    }
+
+    @Test
+    void shouldPatchCaseFlagsWithCaseData() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+
+        List<ListValue<FlagDetail>> flagDetails = List.of(createFlagDetail());
+        Flags flags = createFlags(flagDetails);
+
+        PCSCase caseData = PCSCase.builder()
+            .caseFlags(flags)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        List<ListValue<Party>> parties = createParties();
+
+        caseData.setParties(parties);
+
+        // When
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
+
+        // Then
+        assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties);
+    }
+
+    @Test
+    void shouldGracefullyThrowErrorWhenNoCaseFlags() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        Flags flags = Flags.builder().build();
+
+        PCSCase caseData = PCSCase.builder()
+                .caseFlags(flags)
+                .build();
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
+
+        // Then
+        assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
+    }
+
+    private Flags createFlags(List<ListValue<FlagDetail>> flagDetails) {
+
+        return Flags.builder()
+            .details(flagDetails)
+            .visibility(FlagVisibility.INTERNAL)
+            .build();
+    }
+
+    private ListValue<FlagDetail> createFlagDetail() {
+
+        return ListValue.<FlagDetail>builder()
+            .id(UUID.randomUUID().toString())
+            .value(FlagDetail.builder()
+                .flagCode("CF002")
+                .flagComment("Complex case")
+                .name("Complex Case")
+                .build())
+            .build();
+    }
 
     private PcsCaseEntity stubFindCase() {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
