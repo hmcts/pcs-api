@@ -18,7 +18,7 @@ export class CaseLinking implements IAction {
 
   private async selectCasesToLink(caseData: actionRecord, page: Page) {
     const caseRefs = String(caseData.caseRefInput).split(',');
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < caseRefs.length-1; i++) {
       await performAction('inputText', selectCasesToLink.caseRefLabel, caseRefs[i]);
       await performAction('check', { question: caseData.question, option: caseData.option });
       await performAction('clickButton', caseData.proposeButton);
