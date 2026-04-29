@@ -10,17 +10,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.RequestHolder;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.SolicitorForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -34,34 +31,18 @@ public class LegalRepresentativeCaseDraftLoader {
     private final DraftCaseDataService draftCaseDataService;
     private final SolicitorForDefendantAccessValidator solicitorForDefendantAccessValidator;
     private final SecurityContextService securityContextService;
-    private final RequestHolder requestHolder;
-
-    private final DraftCaseDataRepository draftCaseDataRepository;
 
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
         List<PartyEntity> parties = loadAndValidateDefendantForSolicitor(caseReference);
-        String partyId = requestHolder.getHeader("Client-context");
 
-        boolean isSpecificDefendant = partyId != null;
-
-
-        // refactor to make a specific party via FE
-        PartyEntity matchedDefendant = parties.getFirst();
-        isSpecificDefendant = draftCaseDataService.hasUnsubmittedCaseData(caseReference,
-                                                                          respondPossessionClaim,
-                                                                          matchedDefendant.getId());
-
-        if (isSpecificDefendant) {
-            // PartyEntity matchedDefendant = parties.stream().filter(p ->
-            // p.getId().toString().equals(partyId)).findFirst()
-            // .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
-
-            return restoreSavedDraftAnswersForLegalRepresentative(caseReference, pcsCase, matchedDefendant);
-        } else {
-            initializeDraftForAllDefendants(caseReference, pcsCase, parties);
+        if (hasDraftInProgress(caseReference)) {
+            return restoreSavedDraftAnswersForLegalRepresentative(caseReference, pcsCase, parties.getFirst());
         }
+        return initializeDraftForFirstDefendant(caseReference, pcsCase, parties.getFirst());
+    }
 
-        return pcsCase;
+    private boolean hasDraftInProgress(long caseReference) {
+        return draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim);
     }
 
     private List<PartyEntity> loadAndValidateDefendantForSolicitor(long caseReference) {
@@ -70,18 +51,18 @@ public class LegalRepresentativeCaseDraftLoader {
                                                                              securityContextService.getCurrentUserId());
     }
 
-    private void initializeDraftForAllDefendants(long caseReference, PCSCase pcsCase, List<PartyEntity> parties) {
-        parties.forEach(party -> initializeDraftForDefendant(caseReference, pcsCase, party));
-    }
-
-    private void initializeDraftForDefendant(long caseReference, PCSCase pcsCase, PartyEntity party) {
+    private PCSCase initializeDraftForFirstDefendant(long caseReference, PCSCase pcsCase, PartyEntity party) {
         PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, party);
-        createInitialDraft(caseReference, party.getId(), response);
+        createInitialDraft(caseReference, response);
+
+        return pcsCase.toBuilder()
+            .possessionClaimResponse(response)
+            .build();
     }
 
     private PCSCase restoreSavedDraftAnswersForLegalRepresentative(long caseReference, PCSCase pcsCase,
                                                                    PartyEntity matchedDefendant) {
-        PCSCase savedDraft = loadSavedDraft(caseReference, matchedDefendant.getId());
+        PCSCase savedDraft = loadSavedDraft(caseReference);
         Party claimantEnteredDetails = responseMapper.buildPartyFromEntity(matchedDefendant, pcsCase);
 
         PossessionClaimResponse mergedResponse = buildMergedResponse(
@@ -100,8 +81,8 @@ public class LegalRepresentativeCaseDraftLoader {
             .build();
     }
 
-    private PCSCase loadSavedDraft(long caseReference, UUID partyId) {
-        return draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId)
+    private PCSCase loadSavedDraft(long caseReference) {
+        return draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
             .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
     }
 
@@ -154,7 +135,7 @@ public class LegalRepresentativeCaseDraftLoader {
             .build();
     }
 
-    private void createInitialDraft(long caseReference, UUID partyId, PossessionClaimResponse response) {
+    private void createInitialDraft(long caseReference, PossessionClaimResponse response) {
         // Filter to ONLY defendant's editable fields (exclude claimantOrganisations)
         PossessionClaimResponse defendantFieldsOnly = PossessionClaimResponse.builder()
             .defendantContactDetails(response.getDefendantContactDetails())
@@ -164,11 +145,10 @@ public class LegalRepresentativeCaseDraftLoader {
             .possessionClaimResponse(defendantFieldsOnly)
             .build();
 
-        draftCaseDataService.patchUnsubmittedEventDataForLegalRepresentativeDefendant(
+        draftCaseDataService.patchUnsubmittedEventData(
             caseReference,
             draftWithOnlyResponseData,
-            respondPossessionClaim,
-            partyId
+            respondPossessionClaim
         );
     }
 }
