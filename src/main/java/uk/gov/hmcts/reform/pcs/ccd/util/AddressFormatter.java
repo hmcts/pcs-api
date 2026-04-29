@@ -13,6 +13,7 @@ public class AddressFormatter {
 
     public static final String COMMA_DELIMITER = ", ";
     public static final String BR_DELIMITER = "<br>";
+    public static final String NEWLINE_DELIMITER = "\n";
 
     /**
      * Formats an {@link AddressUK} with the mandatory address fields, (address line 1, post-town and postcode).
@@ -48,6 +49,27 @@ public class AddressFormatter {
 
         return Stream.of(address.getAddressLine1(), address.getAddressLine2(),
                          address.getPostTown(), address.getPostCode())
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.joining(delimiter));
+    }
+
+    /**
+     * Formats an {@link AddressUK} with the all address fields.
+     * @param address The address to format
+     * @param delimiter The delimiter with which to join each part of the address
+     * @return A formatted address String
+     */
+    public String formatFullAddress(AddressUK address, String delimiter) {
+        Objects.requireNonNull(delimiter, "Delimiter must not be null");
+
+        if (address == null) {
+            return null;
+        }
+
+        return Stream.of(address.getAddressLine1(), address.getAddressLine2(),
+                         address.getAddressLine3(),
+                         address.getPostTown(), address.getCounty(), address.getPostCode(),
+                         address.getCountry())
             .filter(StringUtils::isNotBlank)
             .collect(Collectors.joining(delimiter));
     }

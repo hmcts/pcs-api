@@ -13,11 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -36,6 +39,8 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
     private final SecurityContextService securityContextService;
     private final GenAppService genAppService;
     private final GenAppRepository genAppRepository;
+    private final GenAppDocumentGenerator genAppDocumentGenerator;
+    private final DocumentImportService documentImportService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -66,7 +71,11 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
             return errorResponse("Application already exists for client reference");
         }
 
-        genAppService.createGenAppEntity(citizenCreateGenApp, pcsCaseEntity, applicantParty);
+        GenAppEntity genAppEntity = genAppService.createGenAppEntity(caseData.getCitizenGenAppRequest(),
+                                                                     pcsCaseEntity,
+                                                                     applicantParty);
+
+        createSubmissionDocument(caseReference, caseData.getCitizenGenAppRequest(), genAppEntity);
 
         return SubmitResponse.<State>builder()
             .build();
@@ -75,6 +84,18 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
     private PartyEntity getCurrentPartyEntity(long caseReference) {
         UUID currentUserId = securityContextService.getCurrentUserId();
         return partyService.getPartyEntityByIdamId(currentUserId, caseReference);
+    }
+
+    private void createSubmissionDocument(long caseReference,
+                                          CitizenGenAppRequest citizenGenAppRequest,
+                                          GenAppEntity genAppEntity) {
+        String documentUrl = genAppDocumentGenerator.generateSubmissionDocument(
+            caseReference,
+            citizenGenAppRequest,
+            genAppEntity
+        );
+
+        documentImportService.addDocumentToCase(caseReference, documentUrl);
     }
 
     private static SubmitResponse<State> errorResponse(String errorMessage) {

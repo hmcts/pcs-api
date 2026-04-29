@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -77,6 +78,7 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    @OrderBy("rank ASC")
     private Set<GenAppEntity> genApps = new HashSet<>();
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
@@ -118,6 +120,7 @@ public class PcsCaseEntity {
     }
 
     public void addGenApp(GenAppEntity genApp) {
+        genApp.setRank(genApps.size() + 1);
         genApps.add(genApp);
         genApp.setPcsCase(this);
     }

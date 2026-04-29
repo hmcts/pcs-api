@@ -15,11 +15,9 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.docassembly.DocAssemblyClient;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyResponse;
+import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import uk.gov.hmcts.reform.pcs.document.model.JsonNodeFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
@@ -47,15 +45,12 @@ class DocAssemblyServiceTest {
     private AuthTokenGenerator authTokenGenerator;
 
     private DocAssemblyService docAssemblyService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String SYSTEM_USER_TOKEN = "Bearer system-user-token";
     private static final String SERVICE_AUTH_TOKEN = "service-auth-token";
     private static final String EXPECTED_DOCUMENT_URL = "http://dm-store/documents/123";
     private static final String TEMPLATE_ID = "CV-SPC-CLM-ENG-01356.docx";
     private static final String OUTPUT_FILENAME = "generated-document.pdf";
-    private static final String APPLICANT_NAME = "John Doe";
-    private static final String CASE_NUMBER = "PCS-123456789";
 
     @BeforeEach
     void setUp() {
@@ -68,8 +63,8 @@ class DocAssemblyServiceTest {
 
         @Test
         @DisplayName("Should successfully generate document with JsonNode")
-        void shouldSuccessfullyGenerateDocumentWithJsonNode() {
-            final JsonNode formPayload = createValidJsonNode();
+        void shouldSuccessfullyGenerateDocumentAndReturnUrl() {
+            final FormPayload formPayload = mock(FormPayload.class);
             DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
 
             when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
@@ -95,46 +90,15 @@ class DocAssemblyServiceTest {
         }
 
         @Test
-        @DisplayName("Should create JsonNodeFormPayload wrapper correctly")
-        void shouldCreateJsonNodeFormPayloadWrapperCorrectly() {
-            final JsonNode formPayload = createValidJsonNode();
-            DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
-
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenReturn(mockResponse);
-
-            docAssemblyService.generateDocument(
-                formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME);
-
-            ArgumentCaptor<DocAssemblyRequest> requestCaptor = ArgumentCaptor.forClass(DocAssemblyRequest.class);
-            verify(docAssemblyClient).generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                requestCaptor.capture());
-
-            DocAssemblyRequest capturedRequest = requestCaptor.getValue();
-            assertThat(capturedRequest.getFormPayload()).isInstanceOf(JsonNodeFormPayload.class);
-            
-            JsonNodeFormPayload wrapper = (JsonNodeFormPayload) capturedRequest.getFormPayload();
-            assertThat(wrapper.getData()).isEqualTo(formPayload);
-        }
-
-        @Test
-        @DisplayName("Should throw DocAssemblyException when JsonNode is null")
-        void shouldThrowDocAssemblyExceptionWhenJsonNodeIsNull() {
+        @DisplayName("Should throw IllegalArgumentException when form payload is null")
+        void shouldThrowIllegalArgumentExceptionWhenFormPayloadIsNull() {
             assertThatThrownBy(() ->
-                docAssemblyService.generateDocument(
-                    (JsonNode) null, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
+                                   docAssemblyService.generateDocument(
+                                       null, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
                 .isInstanceOf(DocAssemblyException.class)
                 .hasMessage("Unexpected error occurred during document generation")
                 .hasCauseInstanceOf(IllegalArgumentException.class)
-                .hasRootCauseMessage("JsonNode formPayload cannot be null");
+                .hasRootCauseMessage("formPayload cannot be null");
 
             verify(docAssemblyClient, never()).generateOrder(any(), any(), any());
             verify(idamService, never()).getSystemUserAuthorisation();
@@ -142,9 +106,9 @@ class DocAssemblyServiceTest {
         }
 
         @Test
-        @DisplayName("Should handle DocumentGenerationFailedException for JsonNode")
-        void shouldHandleDocumentGenerationFailedExceptionForJsonNode() {
-            final JsonNode formPayload = createValidJsonNode();
+        @DisplayName("Should handle DocumentGenerationFailedException")
+        void shouldHandleDocumentGenerationFailedException() {
+            final FormPayload formPayload = mock(FormPayload.class);
             DocumentGenerationFailedException docException =
                 new DocumentGenerationFailedException(new RuntimeException("Document generation failed"));
 
@@ -158,395 +122,379 @@ class DocAssemblyServiceTest {
                 .thenThrow(docException);
 
             assertThatThrownBy(() ->
-                docAssemblyService.generateDocument(formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
+                                   docAssemblyService.generateDocument(
+                                       formPayload,
+                                       TEMPLATE_ID,
+                                       OutputType.PDF,
+                                       OUTPUT_FILENAME
+                                   ))
                 .isInstanceOf(DocAssemblyException.class)
                 .hasMessage("Document generation failed")
                 .hasCause(docException);
         }
 
-        @Test
-        @DisplayName("Should handle complex JsonNode structure")
-        void shouldHandleComplexJsonNodeStructure() {
-            final JsonNode complexPayload = createComplexJsonNode();
-            DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
+        @Nested
+        @DisplayName("Common Functionality Tests")
+        class CommonFunctionalityTests {
 
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenReturn(mockResponse);
+            @ParameterizedTest
+            @ValueSource(strings = {"PDF", "DOCX"})
+            @DisplayName("Should handle different output types")
+            void shouldHandleDifferentOutputTypes(String outputTypeStr) {
+                final FormPayload formPayload = mock(FormPayload.class);
+                DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
+                OutputType outputType = OutputType.valueOf(outputTypeStr);
 
-            String result = docAssemblyService.generateDocument(
-                complexPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME);
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+                when(docAssemblyClient.generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                ))
+                    .thenReturn(mockResponse);
 
-            assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
-        }
-    }
+                String result = docAssemblyService.generateDocument(
+                    formPayload, TEMPLATE_ID, outputType, OUTPUT_FILENAME);
 
-    @Nested
-    @DisplayName("Common Functionality Tests")
-    class CommonFunctionalityTests {
+                assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
 
-        @ParameterizedTest
-        @ValueSource(strings = {"PDF", "DOCX"})
-        @DisplayName("Should handle different output types")
-        void shouldHandleDifferentOutputTypes(String outputTypeStr) {
-            final JsonNode formPayload = createValidJsonNode();
-            DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
-            OutputType outputType = OutputType.valueOf(outputTypeStr);
+                ArgumentCaptor<DocAssemblyRequest> requestCaptor = ArgumentCaptor.forClass(DocAssemblyRequest.class);
+                verify(docAssemblyClient).generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    requestCaptor.capture()
+                );
+                assertThat(requestCaptor.getValue().getOutputType()).isEqualTo(outputType);
+            }
 
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenReturn(mockResponse);
+            @ParameterizedTest
+            @NullAndEmptySource
+            @ValueSource(strings = {"   "})
+            @DisplayName("Should handle null, empty and blank output filenames")
+            void shouldHandleInvalidOutputFilenames(String outputFilename) {
+                final FormPayload formPayload = mock(FormPayload.class);
+                DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
 
-            String result = docAssemblyService.generateDocument(
-                formPayload, TEMPLATE_ID, outputType, OUTPUT_FILENAME);
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+                when(docAssemblyClient.generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                ))
+                    .thenReturn(mockResponse);
 
-            assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
+                String result = docAssemblyService.generateDocument(
+                    formPayload, TEMPLATE_ID, OutputType.PDF, outputFilename);
 
-            ArgumentCaptor<DocAssemblyRequest> requestCaptor = ArgumentCaptor.forClass(DocAssemblyRequest.class);
-            verify(docAssemblyClient).generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                requestCaptor.capture());
-            assertThat(requestCaptor.getValue().getOutputType()).isEqualTo(outputType);
-        }
+                assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
 
-        @ParameterizedTest
-        @NullAndEmptySource
-        @ValueSource(strings = {"   "})
-        @DisplayName("Should handle null, empty and blank output filenames")
-        void shouldHandleInvalidOutputFilenames(String outputFilename) {
-            final JsonNode formPayload = createValidJsonNode();
-            DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
+                ArgumentCaptor<DocAssemblyRequest> requestCaptor = ArgumentCaptor.forClass(DocAssemblyRequest.class);
+                verify(docAssemblyClient).generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    requestCaptor.capture()
+                );
+                assertThat(requestCaptor.getValue().getOutputFilename()).isEqualTo(outputFilename);
+            }
 
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenReturn(mockResponse);
+            @Test
+            @DisplayName("Should handle empty template ID")
+            void shouldHandleEmptyTemplateId() {
+                final FormPayload formPayload = mock(FormPayload.class);
+                DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
+                String emptyTemplateId = "";
 
-            String result = docAssemblyService.generateDocument(
-                formPayload, TEMPLATE_ID, OutputType.PDF, outputFilename);
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+                when(docAssemblyClient.generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                ))
+                    .thenReturn(mockResponse);
 
-            assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
+                String result = docAssemblyService.generateDocument(
+                    formPayload, emptyTemplateId, OutputType.PDF, OUTPUT_FILENAME);
 
-            ArgumentCaptor<DocAssemblyRequest> requestCaptor = ArgumentCaptor.forClass(DocAssemblyRequest.class);
-            verify(docAssemblyClient).generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                requestCaptor.capture());
-            assertThat(requestCaptor.getValue().getOutputFilename()).isEqualTo(outputFilename);
-        }
+                assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
+                verify(docAssemblyClient).generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                );
+            }
 
-        @Test
-        @DisplayName("Should handle empty template ID")
-        void shouldHandleEmptyTemplateId() {
-            final JsonNode formPayload = createValidJsonNode();
-            DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
-            String emptyTemplateId = "";
+            @Test
+            @DisplayName("Should handle valid template ID")
+            void shouldHandleValidTemplateId() {
+                final FormPayload formPayload = mock(FormPayload.class);
+                DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
+                String validTemplateId = "valid-template.docx";
 
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenReturn(mockResponse);
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+                when(docAssemblyClient.generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                ))
+                    .thenReturn(mockResponse);
 
-            String result = docAssemblyService.generateDocument(
-                formPayload, emptyTemplateId, OutputType.PDF, OUTPUT_FILENAME);
+                String result = docAssemblyService.generateDocument(
+                    formPayload, validTemplateId, OutputType.PDF, OUTPUT_FILENAME);
 
-            assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
-            verify(docAssemblyClient).generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            );
-        }
-
-        @Test
-        @DisplayName("Should handle valid template ID")
-        void shouldHandleValidTemplateId() {
-            final JsonNode formPayload = createValidJsonNode();
-            DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
-            String validTemplateId = "valid-template.docx";
-
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenReturn(mockResponse);
-
-            String result = docAssemblyService.generateDocument(
-                formPayload, validTemplateId, OutputType.PDF, OUTPUT_FILENAME);
-
-            assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
-            verify(docAssemblyClient).generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            );
-        }
-    }
-
-    @Nested
-    @DisplayName("Exception Handling Tests")
-    class ExceptionHandlingTests {
-
-        @Test
-        @DisplayName("Should throw DocAssemblyException when rendition output location is null")
-        void shouldThrowDocAssemblyExceptionWhenRenditionOutputLocationIsNull() {
-            final JsonNode formPayload = createValidJsonNode();
-            DocAssemblyResponse mockResponse = createMockResponse(null);
-
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenReturn(mockResponse);
-
-            assertThatThrownBy(() ->
-                docAssemblyService.generateDocument(formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
-                .isInstanceOf(DocAssemblyException.class)
-                .hasMessage("No document URL returned from Doc Assembly service");
+                assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
+                verify(docAssemblyClient).generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                );
+            }
         }
 
-        @Test
-        @DisplayName("Should throw DocAssemblyException when rendition output location is empty")
-        void shouldThrowDocAssemblyExceptionWhenRenditionOutputLocationIsEmpty() {
-            final JsonNode formPayload = createValidJsonNode();
-            DocAssemblyResponse mockResponse = createMockResponse("");
+        @Nested
+        @DisplayName("Exception Handling Tests")
+        class ExceptionHandlingTests {
 
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenReturn(mockResponse);
+            @Test
+            @DisplayName("Should throw DocAssemblyException when rendition output location is null")
+            void shouldThrowDocAssemblyExceptionWhenRenditionOutputLocationIsNull() {
+                final FormPayload formPayload = mock(FormPayload.class);
+                DocAssemblyResponse mockResponse = createMockResponse(null);
 
-            assertThatThrownBy(() ->
-                docAssemblyService.generateDocument(formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
-                .isInstanceOf(DocAssemblyException.class)
-                .hasMessage("No document URL returned from Doc Assembly service");
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+                when(docAssemblyClient.generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                ))
+                    .thenReturn(mockResponse);
+
+                assertThatThrownBy(() ->
+                                       docAssemblyService.generateDocument(
+                                           formPayload,
+                                           TEMPLATE_ID,
+                                           OutputType.PDF,
+                                           OUTPUT_FILENAME
+                                       ))
+                    .isInstanceOf(DocAssemblyException.class)
+                    .hasMessage("No document URL returned from Doc Assembly service");
+            }
+
+            @Test
+            @DisplayName("Should throw DocAssemblyException when rendition output location is empty")
+            void shouldThrowDocAssemblyExceptionWhenRenditionOutputLocationIsEmpty() {
+                final FormPayload formPayload = mock(FormPayload.class);
+                DocAssemblyResponse mockResponse = createMockResponse("");
+
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+                when(docAssemblyClient.generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                ))
+                    .thenReturn(mockResponse);
+
+                assertThatThrownBy(() ->
+                                       docAssemblyService.generateDocument(
+                                           formPayload,
+                                           TEMPLATE_ID,
+                                           OutputType.PDF,
+                                           OUTPUT_FILENAME
+                                       ))
+                    .isInstanceOf(DocAssemblyException.class)
+                    .hasMessage("No document URL returned from Doc Assembly service");
+            }
+
+            @Test
+            @DisplayName("Should throw DocAssemblyException when unexpected exception occurs")
+            void shouldThrowDocAssemblyExceptionWhenUnexpectedExceptionOccurs() {
+                final FormPayload formPayload = mock(FormPayload.class);
+                RuntimeException unexpectedException = new RuntimeException("Unexpected network error");
+
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+                when(docAssemblyClient.generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                ))
+                    .thenThrow(unexpectedException);
+
+                assertThatThrownBy(() ->
+                                       docAssemblyService.generateDocument(
+                                           formPayload,
+                                           TEMPLATE_ID,
+                                           OutputType.PDF,
+                                           OUTPUT_FILENAME
+                                       ))
+                    .isInstanceOf(DocAssemblyException.class)
+                    .hasMessage("Unexpected error occurred during document generation")
+                    .hasCause(unexpectedException);
+            }
+
+            @Test
+            @DisplayName("Should not rethrow DocAssemblyException when it's already a DocAssemblyException")
+            void shouldNotRethrowDocAssemblyExceptionWhenAlreadyThrown() {
+                final FormPayload formPayload = mock(FormPayload.class);
+                DocAssemblyException originalException = new DocAssemblyException("Original error");
+
+                when(idamService.getSystemUserAuthorisation()).thenThrow(originalException);
+
+                assertThatThrownBy(() ->
+                                       docAssemblyService.generateDocument(
+                                           formPayload,
+                                           TEMPLATE_ID,
+                                           OutputType.PDF,
+                                           OUTPUT_FILENAME
+                                       ))
+                    .isInstanceOf(DocAssemblyException.class)
+                    .hasMessage("Original error")
+                    .isSameAs(originalException);
+            }
+
+            @Test
+            @DisplayName("Should handle exception gracefully and not throw unexpected exceptions")
+            void shouldHandleExceptionGracefullyAndNotThrowUnexpectedExceptions() {
+                final FormPayload formPayload = mock(FormPayload.class);
+                RuntimeException unexpectedException = new RuntimeException("Network timeout");
+
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+                when(docAssemblyClient.generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                ))
+                    .thenThrow(unexpectedException);
+
+                assertThatCode(() ->
+                                   docAssemblyService.generateDocument(
+                                       formPayload,
+                                       TEMPLATE_ID,
+                                       OutputType.PDF,
+                                       OUTPUT_FILENAME
+                                   ))
+                    .isInstanceOf(DocAssemblyException.class);
+            }
+
+            @Test
+            @DisplayName("Should handle IdamService exception")
+            void shouldHandleIdamServiceException() {
+                final FormPayload formPayload = mock(FormPayload.class);
+                RuntimeException idamException = new RuntimeException("IDAM service unavailable");
+
+                when(idamService.getSystemUserAuthorisation()).thenThrow(idamException);
+
+                assertThatThrownBy(() ->
+                                       docAssemblyService.generateDocument(
+                                           formPayload,
+                                           TEMPLATE_ID,
+                                           OutputType.PDF,
+                                           OUTPUT_FILENAME
+                                       ))
+                    .isInstanceOf(DocAssemblyException.class)
+                    .hasMessage("Unexpected error occurred during document generation")
+                    .hasCause(idamException);
+            }
+
+            @Test
+            @DisplayName("Should handle AuthTokenGenerator exception")
+            void shouldHandleAuthTokenGeneratorException() {
+                final FormPayload formPayload = mock(FormPayload.class);
+                RuntimeException authException = new RuntimeException("Auth token generation failed");
+
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenThrow(authException);
+
+                assertThatThrownBy(() ->
+                                       docAssemblyService.generateDocument(
+                                           formPayload,
+                                           TEMPLATE_ID,
+                                           OutputType.PDF,
+                                           OUTPUT_FILENAME
+                                       ))
+                    .isInstanceOf(DocAssemblyException.class)
+                    .hasMessage("Unexpected error occurred during document generation")
+                    .hasCause(authException);
+            }
         }
 
-        @Test
-        @DisplayName("Should throw DocAssemblyException when unexpected exception occurs")
-        void shouldThrowDocAssemblyExceptionWhenUnexpectedExceptionOccurs() {
-            final JsonNode formPayload = createValidJsonNode();
-            RuntimeException unexpectedException = new RuntimeException("Unexpected network error");
+        @Nested
+        @DisplayName("Response Processing Tests")
+        class ResponseProcessingTests {
 
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenThrow(unexpectedException);
+            @Test
+            @DisplayName("Should extract document URL correctly from response")
+            void shouldExtractDocumentUrlCorrectlyFromResponse() {
+                final FormPayload formPayload = mock(FormPayload.class);
+                String expectedUrl = "http://different-dm-store/documents/456";
+                DocAssemblyResponse mockResponse = createMockResponse(expectedUrl);
 
-            assertThatThrownBy(() ->
-                docAssemblyService.generateDocument(formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
-                .isInstanceOf(DocAssemblyException.class)
-                .hasMessage("Unexpected error occurred during document generation")
-                .hasCause(unexpectedException);
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+                when(docAssemblyClient.generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                ))
+                    .thenReturn(mockResponse);
+
+                String result = docAssemblyService.generateDocument(
+                    formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME);
+
+                assertThat(result).isEqualTo(expectedUrl);
+            }
+
+            @ParameterizedTest
+            @ValueSource(strings = {
+                "http://dm-store/documents/123",
+                "https://secure-dm-store/docs/abc-def-ghi",
+                "/local/path/document.pdf"
+            })
+            @DisplayName("Should handle various document URL formats")
+            void shouldHandleVariousDocumentUrlFormats(String documentUrl) {
+                final FormPayload formPayload = mock(FormPayload.class);
+                DocAssemblyResponse mockResponse = createMockResponse(documentUrl);
+
+                when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+                when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+                when(docAssemblyClient.generateOrder(
+                    eq(SYSTEM_USER_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    any(DocAssemblyRequest.class)
+                ))
+                    .thenReturn(mockResponse);
+
+                String result = docAssemblyService.generateDocument(
+                    formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME);
+
+                assertThat(result).isEqualTo(documentUrl);
+            }
         }
 
-        @Test
-        @DisplayName("Should not rethrow DocAssemblyException when it's already a DocAssemblyException")
-        void shouldNotRethrowDocAssemblyExceptionWhenAlreadyThrown() {
-            final JsonNode formPayload = createValidJsonNode();
-            DocAssemblyException originalException = new DocAssemblyException("Original error");
+        @Nested
+        @DisplayName("Constructor Tests")
+        class ConstructorTests {
 
-            when(idamService.getSystemUserAuthorisation()).thenThrow(originalException);
+            @Test
+            @DisplayName("Should create service with dependencies")
+            void shouldCreateServiceWithDependencies() {
+                DocAssemblyService service = new DocAssemblyService(docAssemblyClient, idamService, authTokenGenerator);
 
-            assertThatThrownBy(() ->
-                docAssemblyService.generateDocument(formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
-                .isInstanceOf(DocAssemblyException.class)
-                .hasMessage("Original error")
-                .isSameAs(originalException);
+                assertThat(service).isNotNull();
+            }
         }
 
-        @Test
-        @DisplayName("Should handle exception gracefully and not throw unexpected exceptions")
-        void shouldHandleExceptionGracefullyAndNotThrowUnexpectedExceptions() {
-            final JsonNode formPayload = createValidJsonNode();
-            RuntimeException unexpectedException = new RuntimeException("Network timeout");
 
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenThrow(unexpectedException);
-
-            assertThatCode(() ->
-                docAssemblyService.generateDocument(formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
-                .isInstanceOf(DocAssemblyException.class);
+        private DocAssemblyResponse createMockResponse(String documentUrl) {
+            DocAssemblyResponse mockResponse = mock(DocAssemblyResponse.class);
+            when(mockResponse.getRenditionOutputLocation()).thenReturn(documentUrl);
+            return mockResponse;
         }
-
-        @Test
-        @DisplayName("Should handle IdamService exception")
-        void shouldHandleIdamServiceException() {
-            final JsonNode formPayload = createValidJsonNode();
-            RuntimeException idamException = new RuntimeException("IDAM service unavailable");
-
-            when(idamService.getSystemUserAuthorisation()).thenThrow(idamException);
-
-            assertThatThrownBy(() ->
-                docAssemblyService.generateDocument(formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
-                .isInstanceOf(DocAssemblyException.class)
-                .hasMessage("Unexpected error occurred during document generation")
-                .hasCause(idamException);
-        }
-
-        @Test
-        @DisplayName("Should handle AuthTokenGenerator exception")
-        void shouldHandleAuthTokenGeneratorException() {
-            final JsonNode formPayload = createValidJsonNode();
-            RuntimeException authException = new RuntimeException("Auth token generation failed");
-
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenThrow(authException);
-
-            assertThatThrownBy(() ->
-                docAssemblyService.generateDocument(formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
-                .isInstanceOf(DocAssemblyException.class)
-                .hasMessage("Unexpected error occurred during document generation")
-                .hasCause(authException);
-        }
-    }
-
-    @Nested
-    @DisplayName("Response Processing Tests")
-    class ResponseProcessingTests {
-
-        @Test
-        @DisplayName("Should extract document URL correctly from response")
-        void shouldExtractDocumentUrlCorrectlyFromResponse() {
-            final JsonNode formPayload = createValidJsonNode();
-            String expectedUrl = "http://different-dm-store/documents/456";
-            DocAssemblyResponse mockResponse = createMockResponse(expectedUrl);
-
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenReturn(mockResponse);
-
-            String result = docAssemblyService.generateDocument(
-                formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME);
-
-            assertThat(result).isEqualTo(expectedUrl);
-        }
-
-        @ParameterizedTest
-        @ValueSource(strings = {
-            "http://dm-store/documents/123",
-            "https://secure-dm-store/docs/abc-def-ghi",
-            "/local/path/document.pdf"
-        })
-        @DisplayName("Should handle various document URL formats")
-        void shouldHandleVariousDocumentUrlFormats(String documentUrl) {
-            final JsonNode formPayload = createValidJsonNode();
-            DocAssemblyResponse mockResponse = createMockResponse(documentUrl);
-
-            when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
-            when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-            when(docAssemblyClient.generateOrder(
-                eq(SYSTEM_USER_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                any(DocAssemblyRequest.class)
-            ))
-                .thenReturn(mockResponse);
-
-            String result = docAssemblyService.generateDocument(
-                formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME);
-
-            assertThat(result).isEqualTo(documentUrl);
-        }
-    }
-
-    @Nested
-    @DisplayName("Constructor Tests")
-    class ConstructorTests {
-
-        @Test
-        @DisplayName("Should create service with dependencies")
-        void shouldCreateServiceWithDependencies() {
-            DocAssemblyService service = new DocAssemblyService(docAssemblyClient, idamService, authTokenGenerator);
-
-            assertThat(service).isNotNull();
-        }
-    }
-
-
-    private JsonNode createValidJsonNode() {
-        try {
-            String json = String.format("{\"applicantName\":\"%s\",\"caseNumber\":\"%s\"}",
-                                      APPLICANT_NAME, CASE_NUMBER);
-            return objectMapper.readTree(json);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create JsonNode", e);
-        }
-    }
-
-    private JsonNode createComplexJsonNode() {
-        try {
-            String json = """
-                {
-                    "applicantName": "John Doe",
-                    "caseNumber": "PCS-123456789",
-                    "address": {
-                        "street": "123 Main St",
-                        "city": "London",
-                        "postcode": "SW1A 1AA"
-                    },
-                    "documents": [
-                        {"name": "passport", "type": "identity"},
-                        {"name": "utility_bill", "type": "address_proof"}
-                    ],
-                    "metadata": {
-                        "submissionDate": "2024-01-15",
-                        "priority": "high"
-                    }
-                }
-                """;
-            return objectMapper.readTree(json);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create complex JsonNode", e);
-        }
-    }
-
-    private DocAssemblyResponse createMockResponse(String documentUrl) {
-        DocAssemblyResponse mockResponse = mock(DocAssemblyResponse.class);
-        when(mockResponse.getRenditionOutputLocation()).thenReturn(documentUrl);
-        return mockResponse;
     }
 }

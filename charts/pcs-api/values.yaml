@@ -36,6 +36,7 @@ java:
     IDAM_CLIENT_ID: "pcs-api"
     DRAFT_STORE_DB_CONN_OPTIONS: "?sslmode=require&gssEncMode=disable"
     PCS_DB_HOST: "pcs-{{ .Values.global.environment }}.postgres.database.azure.com"
+    DOC_ASSEMBLY_URL: "http://dg-docassembly-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     IDAM_S2S_AUTH_URL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     IDAM_API_URL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net"
     HMC_API_URL: "http://hmc-cft-hearing-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
@@ -55,6 +56,8 @@ ccd:
 xui-webapp:
   enabled: false
 wiremock:
+  enabled: false
+ccd-case-document-am-api:
   enabled: false
 ccd-case-document-am-api:
   enabled: false

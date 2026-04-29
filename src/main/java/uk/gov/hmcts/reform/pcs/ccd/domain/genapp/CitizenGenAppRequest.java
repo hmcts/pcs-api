@@ -32,6 +32,9 @@ public class CitizenGenAppRequest {
     @CCD(max = 6800)
     private String withoutNoticeReason;
 
+    @CCD(max = 6800)
+    private String whatOrderWanted;
+
     private LanguageUsed languageUsed;
 
     private VerticalYesNo sotAccepted;
