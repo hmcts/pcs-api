@@ -46,7 +46,7 @@ class PossessionGroundsValidationUtilTest {
         }).when(textAreaValidationService).createValidationResponse(any(), any());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     @DisplayName("Should validate otherGroundDescription when provided")
     void shouldValidateOtherGroundDescriptionWhenProvided() {
         // Given
@@ -71,7 +71,7 @@ class PossessionGroundsValidationUtilTest {
         assertThat(response.getErrors()).isNullOrEmpty();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     @DisplayName("Should handle null otherGroundDescription gracefully")
     void shouldHandleNullOtherGroundDescriptionGracefully() {
         // Given
