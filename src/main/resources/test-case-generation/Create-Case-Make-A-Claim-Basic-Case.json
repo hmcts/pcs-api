@@ -1,13 +1,11 @@
 {
   "parties": [],
+  "caseLinks": [],
   "defendant1": {
-    "lastName": "HN",
-    "firstName": "TVR",
-    "nameKnown": "YES",
+    "nameKnown": "NO",
     "addressKnown": "NO"
   },
   "allDocuments": [],
-  "claimantName": "pcs-solicitor1@test.com",
   "claimantType": {
     "value": {
       "code": "PROVIDER_OF_SOCIAL_HOUSING",
@@ -34,9 +32,13 @@
     ]
   },
   "languageUsed": "ENGLISH",
-  "noticeServed": "No",
-  "userPcqIdSet": "No",
-  "orgAddressFound": "No",
+  "noticeServed": "NO",
+  "orgNameFound": "NO",
+  "userPcqIdSet": "NO",
+  "SearchCriteria": {},
+  "caseNamePublic": "null vs persons unknown",
+  "endButtonLabel": "Submit claim",
+  "orgAddressFound": "NO",
   "propertyAddress": {
     "County": "",
     "Country": "United Kingdom",
@@ -48,8 +50,8 @@
   },
   "statementOfTruth": {
     "completedBy": "CLAIMANT",
-    "fullNameClaimant": "wert",
-    "positionClaimant": "ewrt",
+    "fullNameClaimant": "asdfasdf",
+    "positionClaimant": "asdfasdf",
     "agreementClaimant": [
       "BELIEVE_TRUE"
     ]
@@ -57,49 +59,54 @@
   "completionNextStep": "SUBMIT_AND_PAY_NOW",
   "legislativeCountry": "England",
   "mediationAttempted": "NO",
-  "addAnotherDefendant": "YES",
+  "addAnotherDefendant": "NO",
   "claimingCostsWanted": "NO",
   "settlementAttempted": "NO",
-  "showRentSectionPage": "No",
-  "additionalDefendants": [
-    {
-      "id": "48f21da0-c44f-40fe-bd78-00d57b3001aa",
-      "value": {
-        "lastName": "Testing1",
-        "firstName": "Test1",
-        "nameKnown": "YES",
-        "addressKnown": "NO"
-      }
-    }
-  ],
+  "showRentSectionPage": "NO",
   "applicationWithClaim": "NO",
   "claimantContactEmail": "pcs-solicitor1@test.com",
-  "isClaimantNameCorrect": "YES",
+  "fallbackClaimantName": "TVR",
+  "caseNameHmctsInternal": "null vs persons unknown",
   "wantToUploadDocuments": "NO",
-  "suspensionOfRTB_Reason": "asdfasdf",
+  "caseManagementCategory": {
+    "value": {
+      "code": "b8fd9fb2-782a-4aad-85b0-03ee8f71970a",
+      "label": "Property Possession Claims"
+    },
+    "valueCode": "b8fd9fb2-782a-4aad-85b0-03ee8f71970a",
+    "list_items": [
+      {
+        "code": "b8fd9fb2-782a-4aad-85b0-03ee8f71970a",
+        "label": "Property Possession Claims"
+      }
+    ],
+    "valueLabel": "Property Possession Claims"
+  },
+  "caseNameHmctsRestricted": "null vs persons unknown",
   "claimAgainstTrespassers": "NO",
-  "defendantTermPossessive": "defendants’",
+  "defendantTermPossessive": "defendant’s",
   "alternativesToPossession": [
-    "SUSPENSION_OF_RIGHT_TO_BUY"
+    "DEMOTION_OF_TENANCY"
   ],
+  "demotionOfTenancy_Reason": "asdfasdf",
   "hasUnderlesseeOrMortgagee": "NO",
-  "showReasonsForGroundsPage": "Yes",
-  "claimantNamePossessiveForm": "pcs-solicitor1@test.com’s",
+  "showReasonsForGroundsPage": "YES",
+  "claimantNamePossessiveForm": "TVR’s",
   "claimantProvidePhoneNumber": "NO",
-  "nuisanceOrImmoralUseGround": "sfgsdfgsdfg",
+  "nuisanceOrImmoralUseGround": "sfdgsdfg",
   "preActionProtocolCompleted": "NO",
-  "suspensionOfRTB_HousingAct": "SECTION_6A_2",
   "claimantCircumstancesSelect": "NO",
+  "demotionOfTenancy_HousingAct": "SECTION_6A_2",
   "rentArrearsOrBreachOfTenancy": [],
   "tenancy_TypeOfTenancyLicence": "SECURE_TENANCY",
   "hasDefendantCircumstancesInfo": "NO",
   "isCorrectClaimantContactEmail": "YES",
-  "showClaimTypeNotEligibleWales": "No",
+  "showClaimTypeNotEligibleWales": "NO",
   "additionalReasonsForPossession": {
     "hasReasons": "NO"
   },
-  "showClaimTypeNotEligibleEngland": "No",
-  "tenancy_TenancyLicenceDocuments": [],
+  "showClaimTypeNotEligibleEngland": "NO",
+  "tenancy_HasCopyOfTenancyLicence": "NO",
   "overriddenClaimantContactAddress": {
     "County": "",
     "Country": "United Kingdom",
@@ -110,14 +117,16 @@
     "AddressLine3": ""
   },
   "secureOrFlexibleMandatoryGrounds": [],
-  "showClaimantTypeNotEligibleWales": "No",
-  "showClaimantTypeNotEligibleEngland": "No",
+  "showClaimantTypeNotEligibleWales": "NO",
+  "showClaimantTypeNotEligibleEngland": "NO",
   "secureOrFlexibleMandatoryGroundsAlt": [],
-  "suspensionOfRTB_ShowHousingActsPage": "Yes",
+  "suspensionOfRTB_ShowHousingActsPage": "NO",
   "secureOrFlexibleDiscretionaryGrounds": [
     "NUISANCE_OR_IMMORAL_USE"
   ],
-  "demotionOfTenancy_ShowHousingActsPage": "No",
-  "suspensionToBuyDemotionOfTenancyPages": "No",
-  "secureOrFlexibleDiscretionaryGroundsAlt": []
+  "demotionOfTenancy_ShowHousingActsPage": "YES",
+  "suspensionToBuyDemotionOfTenancyPages": "NO",
+  "secureOrFlexibleDiscretionaryGroundsAlt": [],
+  "tenancy_ReasonsForNoTenancyLicenceDocuments": "sfgsdfgsdfg",
+  "demotionOfTenancy_StatementOfExpressTermsServed": "NO"
 }
