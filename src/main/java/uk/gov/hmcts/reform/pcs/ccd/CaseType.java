@@ -56,7 +56,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
-        builder.hmctsServiceId(hmctsServiceId);
+        builder.hmctsServiceId(alternativeHmctsOrgId);
 
         builder.searchInputFields()
             .caseReferenceField();
