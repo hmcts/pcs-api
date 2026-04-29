@@ -112,6 +112,13 @@ class StartEventHandlerTest {
     void shouldLoadExistingDraftWhenDraftAlreadyExists() {
         // Given
         UUID defendantUserId = UUID.randomUUID();
+        UUID defendantPartyId = UUID.randomUUID();
+        PartyEntity matchedDefendant = PartyEntity.builder()
+            .id(defendantPartyId)
+            .idamId(defendantUserId)
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        Party originalParty = Party.builder().firstName("Saved").lastName("Defendant").build();
 
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(null).defendantResponses(null)
@@ -126,6 +133,9 @@ class StartEventHandlerTest {
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(true);
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
             .thenReturn(Optional.of(savedDraft));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(matchedDefendant);
+        when(responseMapper.buildPartyFromEntity(eq(matchedDefendant), any(PCSCase.class))).thenReturn(originalParty);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -139,6 +149,7 @@ class StartEventHandlerTest {
         assertThat(result.getPossessionClaimResponse().getClaimantOrganisations())
             .as("Should return empty list when no claimants in incoming case")
             .isEmpty();
+        assertThat(result.getPossessionClaimResponse().getCurrentDefendantPartyId()).isEqualTo(defendantPartyId.toString());
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
@@ -337,6 +348,7 @@ class StartEventHandlerTest {
 
         // Original party data from party table
         PartyEntity matchedDefendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
             .idamId(defendantUserId)
             .firstName("Arun")
             .lastName("Kumar")
@@ -386,6 +398,8 @@ class StartEventHandlerTest {
         // Verify different (comparison possible)
         assertThat(result.getPossessionClaimResponse().getClaimantEnteredDefendantDetails().getFirstName())
             .isNotEqualTo(result.getPossessionClaimResponse().getDefendantContactDetails().getParty().getFirstName());
+        assertThat(result.getPossessionClaimResponse().getCurrentDefendantPartyId())
+            .isEqualTo(matchedDefendant.getId().toString());
 
         verify(pcsCaseService).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
