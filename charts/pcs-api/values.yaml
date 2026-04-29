@@ -56,6 +56,8 @@ xui-webapp:
   enabled: false
 wiremock:
   enabled: false
+ccd-case-document-am-api:
+  enabled: false
 aac-manage-case-assignment:
   enabled: false
 am-org-role-mapping-service:

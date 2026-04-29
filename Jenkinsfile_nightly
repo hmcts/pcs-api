@@ -4,6 +4,11 @@ properties([
   // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
   pipelineTriggers([cron('H 07 * * 1-5')]),
   parameters([
+    text(
+      name: 'MANUAL_BUILD_REASON',
+      defaultValue: 'Daily nightly schedule run',
+      description: 'Why this build was triggered. For manual runs, enter a short note (e.g. verify a fix, extra browser coverage). Scheduled runs keep the default.'
+    ),
     booleanParam(
       name: 'CHROME_TESTS',
       defaultValue: true,
@@ -38,6 +43,16 @@ properties([
       name: 'MOBILE_IPAD_TESTS',
       defaultValue: false,
       description: 'Run E2E tests on the iPad (iPad Pro 11) WebKit profile (off by default; enable when needed).'
+    ),
+    string(
+      name: 'PLAYWRIGHT_SPEC',
+      defaultValue: '',
+      description: 'Optional spec path keywords (comma or semicolon). Each must appear in a *.spec.ts path under src/e2eTest/tests. Blank = all specs.'
+    ),
+    choice(
+      name: 'PLAYWRIGHT_GREP_TAG',
+      choices: ['@nightly', '@smoke', '@e2e', '@regression'],
+      description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default.'
     ),
   ])
 ])
@@ -89,7 +104,8 @@ def validateInputs() {
 }
 
 def handleEnvironmentSetting() {
-  env.E2E_TEST_SCOPE = '@nightly'
+  env.E2E_TEST_SCOPE = params.PLAYWRIGHT_GREP_TAG?.trim() ?: '@nightly'
+  env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
   env.ENVIRONMENT = 'aat'
   env.MANAGE_CASE_BASE_URL = 'https://manage-case.aat.platform.hmcts.net'
   env.DATA_STORE_URL_BASE = 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
