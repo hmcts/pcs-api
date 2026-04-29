@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
@@ -320,14 +321,23 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulePartyAccessCodeGeneration(caseReference);
 
-        String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
-        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
+        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference,
+                                                            getResponsiblePartyName(pcsCase.getClaimantInformation()));
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
             .build();
+    }
+
+    private String getResponsiblePartyName(ClaimantInformation claimantInformation) {
+        if (claimantInformation.getOrgNameFound() == YesOrNo.NO) {
+            return claimantInformation.getFallbackClaimantName();
+        } else if (claimantInformation.getIsClaimantNameCorrect() == VerticalYesNo.NO) {
+            return claimantInformation.getOverriddenClaimantName();
+        }
+        return claimantInformation.getClaimantName();
     }
 
     private SubmitResponse<State> saveForLater() {

@@ -69,6 +69,7 @@ public class CftlibConfig implements CFTLibConfigurer {
             .collect(toCollection(ArrayList::new));
 
         roleNames.add("caseworker");
+        roleNames.add("caseworker-ras-validation");
 
         lib.createRoles(roleNames.toArray(new String[0]));
     }
