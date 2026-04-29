@@ -52,7 +52,7 @@ public class NoticeOfPossessionView {
                 }
                 case EMAIL -> {
                     noticeServedDetails.setNoticeEmailSentDateTime(noticeOfPossessionEntity.getNoticeDateTime());
-                    noticeServedDetails.setNoticeEmailExplanation(noticeOfPossessionEntity.getNoticeDetails());
+                    noticeServedDetails.setNoticeEmailAddress(noticeOfPossessionEntity.getNoticeDetails());
                 }
                 case OTHER_ELECTRONIC -> {
                     noticeServedDetails.setNoticeOtherElectronicDateTime(noticeOfPossessionEntity.getNoticeDateTime());

@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
@@ -517,6 +518,12 @@ public class PCSCase {
     @CCD(access = ClaimantAccess.class)
     private List<ListValue<Document>> allDocuments;
 
+    @CCD(
+        label = "Case file view",
+        access = {ClaimantAccess.class}
+    )
+    private ComponentLauncher caseFileView;
+
     @CCD(searchable = false)
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
@@ -558,7 +565,7 @@ public class PCSCase {
 
     @CCD(
         label = "CaseManagementLocation",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, RasValidationAccess.class}
     )
     private CaseLocation caseManagementLocation;
 
