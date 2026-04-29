@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
@@ -36,15 +37,18 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
             Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> discretionaryGroundsAlt,
             Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds,
             Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> mandatoryGroundsAlt,
-            boolean expectError,
+            Set<SecureAntisocialAdditionalGrounds> secureAntisocialAdditionalGrounds,
+            boolean expectNoGroundsSelectedError,
+            boolean expectAntisocialAdditionalGroundsError,
             YesOrNo expectedShowReasonsPage) {
 
         SecureOrFlexiblePossessionGrounds secureOrFlexibleGrounds = SecureOrFlexiblePossessionGrounds.builder()
-            .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
-            .secureOrFlexibleDiscretionaryGroundsAlt(discretionaryGroundsAlt)
-            .secureOrFlexibleMandatoryGrounds(mandatoryGrounds)
-            .secureOrFlexibleMandatoryGroundsAlt(mandatoryGroundsAlt)
-            .build();
+                .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
+                .secureOrFlexibleDiscretionaryGroundsAlt(discretionaryGroundsAlt)
+                .secureOrFlexibleMandatoryGrounds(mandatoryGrounds)
+                .secureOrFlexibleMandatoryGroundsAlt(mandatoryGroundsAlt)
+                .secureAntisocialAdditionalGrounds(secureAntisocialAdditionalGrounds)
+                .build();
         // Given
         PCSCase caseData = PCSCase.builder()
                 .secureOrFlexiblePossessionGrounds(secureOrFlexibleGrounds)
@@ -56,10 +60,12 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
         PCSCase updatedCaseData = response.getData();
 
         // Then
-        if (expectError) {
-            assertThat(response.getErrorMessageOverride()).isEqualTo("Please select at least one ground");
+        if (expectNoGroundsSelectedError) {
+            assertThat(response.getErrorMessageOverride()).contains("Please select at least one ground");
+        } else if (expectAntisocialAdditionalGroundsError) {
+            assertThat(response.getErrorMessageOverride())
+                    .contains("Please select at least one absolute ground for possession for antisocial");
         } else {
-
             assertThat(updatedCaseData.getShowReasonsForGroundsPage()).isEqualTo(expectedShowReasonsPage);
 
             if (!discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
@@ -70,12 +76,36 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
 
     private static Stream<Arguments> groundsScenarios() {
         return Stream.of(
-                //Only one discretionary ground
+                //Discretionary ground
                 arguments(
                         Set.of(SecureOrFlexibleDiscretionaryGrounds.RIOT_OFFENCE),
                         Set.of(),
                         Set.of(),
                         Set.of(),
+                        Set.of(),
+                        false,
+                        false,
+                        YesOrNo.YES
+                ),
+                //Discretionary Alt ground
+                arguments(
+                        Set.of(),
+                        Set.of(SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.ADAPTED_ACCOMMODATION),
+                        Set.of(),
+                        Set.of(),
+                        Set.of(),
+                        false,
+                        false,
+                        YesOrNo.YES
+                ),
+                //Mandatory Alt ground
+                arguments(
+                        Set.of(),
+                        Set.of(),
+                        Set.of(),
+                        Set.of(SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD),
+                        Set.of(),
+                        false,
                         false,
                         YesOrNo.YES
                 ),
@@ -85,7 +115,9 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
                         Set.of(),
                         Set.of(),
                         Set.of(),
+                        Set.of(),
                         true,
+                        false,
                         null
                 ),
                 // Mixed discretionary and mandatory grounds
@@ -94,6 +126,8 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
                         Set.of(SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD),
                         Set.of(),
                         Set.of(SecureOrFlexibleMandatoryGroundsAlternativeAccomm.OVERCROWDING),
+                        Set.of(),
+                        false,
                         false,
                         YesOrNo.YES
                 ),
@@ -103,7 +137,20 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
                         Set.of(),
                         Set.of(SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL),
                         Set.of(SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD),
+                        Set.of(SecureAntisocialAdditionalGrounds.S84A_CONDITION_1),
                         false,
+                        false,
+                        YesOrNo.YES
+                ),
+                // Only mandatory grounds with no absolute additional ground
+                arguments(
+                        Set.of(),
+                        Set.of(),
+                        Set.of(SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL),
+                        Set.of(SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD),
+                        Set.of(),
+                        false,
+                        true,
                         YesOrNo.YES
                 ),
                 // Only RENT_ARREARS_OR_BREACH_OF_TENANCY > showReasonsForGroundsPage = NO
@@ -112,6 +159,8 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
                         Set.of(),
                         Set.of(),
                         Set.of(),
+                        Set.of(),
+                        false,
                         false,
                         YesOrNo.NO
                 )
