@@ -15,41 +15,35 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RegularExpenseType;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import static jakarta.persistence.FetchType.LAZY;
-
 @Entity
-@Builder
+@Table(name = "regular_expenses")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "regular_income_item")
-public class RegularIncomeItemEntity {
+public class RegularExpenseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "regular_income_id")
+    @ManyToOne
+    @JoinColumn(name = "hc_id")
     @JsonBackReference
-    private RegularIncomeEntity regularIncome;
+    private HouseholdCircumstancesEntity householdCircumstances;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private IncomeType incomeType;
+    private RegularExpenseType expenseType;
 
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private RecurrenceFrequency frequency;
+    private RecurrenceFrequency expenseFrequency;
 }
