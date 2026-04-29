@@ -367,7 +367,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
       question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
       option: tenancyLicenceDetails.noRadioOption,
-      reason: tenancyLicenceDetails.reasonForNoCopyInputText,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
     });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
