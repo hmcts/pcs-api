@@ -46,11 +46,24 @@
                   "templateId": "Defendant.ViewClaim",
                   "status": "AVAILABLE"
                 }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "DOCUMENTS",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "Defendant.UploadDocuments",
+                  "status": "AVAILABLE"
+                }
               },
               {
                 "value": {
                   "templateId": "Defendant.ViewDocuments",
-                  "status": "NOT_AVAILABLE"
+                  "status": "AVAILABLE"
                 }
               }
             ]
