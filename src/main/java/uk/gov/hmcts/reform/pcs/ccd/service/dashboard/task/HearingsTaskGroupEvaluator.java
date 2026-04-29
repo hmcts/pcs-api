@@ -12,11 +12,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 @Component
-public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
+public class HearingsTaskGroupEvaluator implements TaskGroupEvaluator {
 
     @Override
     public TaskGroupId groupId() {
-        return TaskGroupId.CLAIM;
+        return TaskGroupId.HEARING;
     }
 
     @Override
@@ -25,12 +25,8 @@ public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
             .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
-                    .templateId("Defendant.ViewClaim")
+                    .templateId("Defendant.ViewHearingDocuments")
                     .status(TaskStatus.AVAILABLE)
-                    .build(),
-                Task.builder()
-                    .templateId("Defendant.ViewDocuments")
-                    .status(TaskStatus.NOT_AVAILABLE)
                     .build()
             )))
             .build();

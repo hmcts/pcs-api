@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -23,7 +25,11 @@ class DashboardJourneyServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DashboardJourneyService(new ClaimTaskGroupEvaluator());
+        underTest = new DashboardJourneyService(List.of(
+            new ClaimTaskGroupEvaluator(),
+            new HearingsTaskGroupEvaluator(),
+            new NoticesTaskGroupEvaluator()
+        ));
     }
 
     @Test
@@ -36,7 +42,7 @@ class DashboardJourneyServiceTest {
         assertThat(result.getCaseId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(result.getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(result.getNotifications()).hasSize(2);
-        assertThat(result.getTaskGroups()).hasSize(2);
+        assertThat(result.getTaskGroups()).hasSize(4);
     }
 
     @Test
@@ -70,6 +76,8 @@ class DashboardJourneyServiceTest {
             .extracting(g -> g.getGroupId(), g -> g.getTasks().size())
             .containsExactly(
                 tuple(TaskGroupId.CLAIM, 2),
+                tuple(TaskGroupId.HEARING, 1),
+                tuple(TaskGroupId.NOTICE, 1),
                 tuple(TaskGroupId.RESPONSE, 3)
             );
 
@@ -81,6 +89,18 @@ class DashboardJourneyServiceTest {
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple("Defendant.ViewHearingDocuments", TaskStatus.AVAILABLE)
+            );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple("Defendant.ViewOrdersAndNotices", TaskStatus.AVAILABLE)
+            );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(3).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple("Defendant.RespondToClaim", TaskStatus.NOT_STARTED),

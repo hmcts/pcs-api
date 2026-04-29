@@ -58,6 +58,32 @@
         },
         {
           "value": {
+            "groupId": "HEARING",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "Defendant.ViewHearingDocuments",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "NOTICE",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "Defendant.ViewOrdersAndNotices",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
             "groupId": "RESPONSE",
             "tasks": [
               {
