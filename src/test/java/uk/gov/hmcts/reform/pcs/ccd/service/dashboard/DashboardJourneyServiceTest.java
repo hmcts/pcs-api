@@ -35,7 +35,7 @@ class DashboardJourneyServiceTest {
 
         assertThat(result.getCaseId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(result.getPropertyAddress()).isEqualTo(propertyAddress);
-        assertThat(result.getNotifications()).hasSize(2);
+        assertThat(result.getNotifications()).hasSize(3);
         assertThat(result.getTaskGroups()).hasSize(2);
     }
 
@@ -48,11 +48,12 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
             .extracting(n -> n.getTemplateId(), n -> n.getTemplateValues().size())
             .containsExactly(
+                tuple("Defendant.NoHearingArranged", 0),
                 tuple("Defendant.CaseIssued", 2),
                 tuple("Defendant.ResponseToClaim", 1)
             );
 
-        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()).getFirst().getTemplateValues())
+        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()).get(1).getTemplateValues())
             .extracting(lv -> lv.getValue().getKey(), lv -> lv.getValue().getValue())
             .contains(
                 tuple("hearingDateTime", "2026-06-15T10:30:00Z"),
