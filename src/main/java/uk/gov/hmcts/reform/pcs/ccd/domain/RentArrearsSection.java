@@ -49,7 +49,8 @@ public class RentArrearsSection {
     private BigDecimal total;
 
     @CCD(
-        label = "Have there been previous steps taken to recover rent arrears?"
+        label = "Have there been previous steps taken to recover rent arrears?",
+        hint = "This includes court proceedings"
     )
     private VerticalYesNo recoveryAttempted;
 
