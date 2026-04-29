@@ -29,4 +29,8 @@ public class ServiceRequestUpdate {
     @JsonProperty("payment")
     private Payment payment;
 
+    public String getPaymentReference() {
+        return null != payment ? payment.getPaymentReference() : null;
+    }
+
 }

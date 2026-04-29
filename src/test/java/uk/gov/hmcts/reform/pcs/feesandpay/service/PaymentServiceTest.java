@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
@@ -35,6 +36,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -42,6 +44,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -167,14 +170,15 @@ class PaymentServiceTest {
     @Test
     void shouldSaveNewFeePaymentWithExpectedFields() {
         // Given
+        String responsibleParty = "Test";
         ClaimEntity claimEntity = new ClaimEntity();
-        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName("Test").build();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(responsibleParty).build();
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder().claim(claimEntity).party(partyEntity).build();
+        claimEntity.setClaimParties(List.of(claimPartyEntity));
         FeeDto feeDto = createFeeDto();
 
-
         // When
-        underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto, claimPartyEntity,
+        underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto, responsibleParty,
                                     SERVICE_REQUEST_REFERENCE);
 
         // Then
@@ -185,6 +189,42 @@ class PaymentServiceTest {
         assertThat(saved.getClaim()).isSameAs(claimEntity);
         assertThat(saved.getRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
         assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
+    }
+
+    @Test
+    void shouldFailSaveNewFeePaymentWithNoParty() {
+        // Given
+        String responsibleParty = "Test";
+        ClaimEntity claimEntity = new ClaimEntity();
+        FeeDto feeDto = createFeeDto();
+
+        // When
+        assertThatExceptionOfType(PartyNotFoundException.class)
+            .isThrownBy(() -> underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto,
+                                                          responsibleParty, SERVICE_REQUEST_REFERENCE));
+
+        // Then
+        verifyNoInteractions(feePaymentRepository);
+    }
+
+    @Test
+    void shouldFailSaveNewFeePaymentWithIncorrectResponsibleParty() {
+        // Given
+        String responsibleParty = "Test";
+        ClaimEntity claimEntity = new ClaimEntity();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(responsibleParty).build();
+        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder().claim(claimEntity).party(partyEntity).build();
+        claimEntity.setClaimParties(List.of(claimPartyEntity));
+        FeeDto feeDto = createFeeDto();
+
+        // When
+        assertThatExceptionOfType(PartyNotFoundException.class)
+            .isThrownBy(() -> underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto,
+                                                          "Different",
+                                                          SERVICE_REQUEST_REFERENCE));
+
+        // Then
+        verifyNoInteractions(feePaymentRepository);
     }
 
     @Test

@@ -98,13 +98,14 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
 
     PcsCaseEntity establishTestCase(long caseReference) {
         return caseCreationHelper
-            .createTestCaseWithParty(caseReference, null, PartyRole.DEFENDANT);
+            .createTestCaseWithParty(caseReference, null, PartyRole.CLAIMANT);
     }
 
     void establishFeePayment(PcsCaseEntity pcsCaseEntity, String serviceCaseReference) {
         ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
         ClaimPartyEntity claimPartyEntity = claimEntity.getClaimParties().get(0);
+        String orgName = claimPartyEntity.getParty().getOrgName();
         paymentService.saveNewFeePayment(String.valueOf(caseReference),
-                                         claimEntity, feeDto, claimPartyEntity, serviceCaseReference);
+                                         claimEntity, feeDto, orgName, serviceCaseReference);
     }
 }
