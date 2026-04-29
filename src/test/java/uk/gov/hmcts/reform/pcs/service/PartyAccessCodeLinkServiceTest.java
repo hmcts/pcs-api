@@ -25,8 +25,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -86,8 +88,6 @@ class PartyAccessCodeLinkServiceTest {
         // GIVEN
         UUID caseId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
-        CaseAssignmentUserRolesResponse caseAssignmentUserRolesResponse =
-            CaseAssignmentUserRolesResponse.builder().build();
 
         PartyEntity defendantEntity = createParty(partyId, null);
         PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(defendantEntity));
@@ -98,10 +98,8 @@ class PartyAccessCodeLinkServiceTest {
             .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(caseRoleAssignmentService.assignRasRole(Mockito.anyLong(),
-                                                     Mockito.anyString(),
-                                                     Mockito.any(UserRole.class)))
-            .thenReturn(caseAssignmentUserRolesResponse);
+        when(caseRoleAssignmentService.assignRasRole(Mockito.anyLong(), Mockito.anyString(), eq(UserRole.DEFENDANT)))
+            .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
         when(validator.validatePartyIsADefendant(List.of(defendantEntity), partyId))
             .thenReturn(defendantEntity);
