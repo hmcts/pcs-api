@@ -8,28 +8,30 @@ import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CaseAssignmentService {
+public class CaseRoleAssignmentService {
 
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamService idamService;
     private final CaseAssignmentApi caseAssignmentApi;
 
-    public CaseAssignmentUserRolesResponse assignDefendantRole(long caseReference, String userId) {
+    public CaseAssignmentUserRolesResponse assignRasRole(long caseReference, String userId,
+                                                         UserRole role) {
         String s2s = authTokenGenerator.generate();
         String userToken = idamService.getSystemUserAuthorisation();
 
-        //we want to do this without org. SO may need to update the client.
         CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
             = CaseAssignmentUserRoleWithOrganisation.builder()
             .caseDataId(String.valueOf(caseReference))
-            .caseRole("[DEFENDANT]")
+            .caseRole(role.getRole())
             .userId(userId)
             .build();
 
@@ -42,5 +44,27 @@ public class CaseAssignmentService {
                         .build();
 
         return caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
+    }
+
+    public CaseAssignmentUserRolesResponse revokeRasRole(long caseReference, String userId, UserRole role) {
+        String s2s = authTokenGenerator.generate();
+        String userToken = idamService.getSystemUserAuthorisation();
+
+        CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
+            = CaseAssignmentUserRoleWithOrganisation.builder()
+            .caseDataId(String.valueOf(caseReference))
+            .caseRole(role.getRole())
+            .userId(userId)
+            .build();
+
+        List<CaseAssignmentUserRoleWithOrganisation> caseAssignmentList = new ArrayList<>();
+        caseAssignmentList.add(caseAssignmentUserRoleWithOrganisation);
+
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
+            CaseAssignmentUserRolesRequest.builder()
+                    .caseAssignmentUserRolesWithOrganisation(caseAssignmentList)
+                        .build();
+
+        return caseAssignmentApi.removeCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
     }
 }
