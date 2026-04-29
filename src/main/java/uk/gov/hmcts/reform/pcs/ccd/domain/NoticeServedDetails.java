@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Email;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Builder
@@ -55,14 +56,14 @@ public class NoticeServedDetails {
     private LocalDateTime noticeHandedOverDateTime;
 
     @CCD(
-            label = "Date and time the email was sent",
+            label = "Date and time the document was emailed",
             hint = "For example, 16 4 2021, 11 15",
             access = {CitizenAccess.class}
     )
     private LocalDateTime noticeEmailSentDateTime;
 
     @CCD(
-            label = "Date and time the electronic message was sent",
+            label = "Date and time the message was sent",
             hint = "For example, 16 4 2021, 11 15",
             access = {CitizenAccess.class}
     )
@@ -80,18 +81,25 @@ public class NoticeServedDetails {
     private String noticePersonName;
 
     @CCD(
-            label = "Explain how it was served by email",
-            hint = "You can enter up to 250 characters",
-            typeOverride = TextArea
+            label = "What email address was the document sent to?",
+            hint = "For example, name@example.com",
+            typeOverride = Email,
+            max = 60
     )
-    private String noticeEmailExplanation;
+    private String noticeEmailAddress;
 
     @CCD(
-            label = "Explain what the other means were",
-            hint = "You can enter up to 250 characters",
+            hint = "Give details of how the notice was served. You can enter up to 250 characters",
             typeOverride = TextArea
     )
     private String noticeOtherExplanation;
+
+    @CCD(
+        label = "Give details of how the notice was served",
+        hint = "You can enter up to 250 characters",
+        typeOverride = TextArea
+    )
+    private String noticeOtherElectronicMethodExplanation;
 
     @CCD(
             label = "Add document",

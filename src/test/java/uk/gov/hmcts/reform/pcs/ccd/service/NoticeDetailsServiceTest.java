@@ -358,53 +358,6 @@ class NoticeDetailsServiceTest {
     class EmailValidation {
 
         @Test
-        void shouldValidateEmailWithValidExplanation() {
-            // Given
-            LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                    .noticeEmailSentDateTime(pastDateTime)
-                    .noticeEmailExplanation("Sent to tenant@example.com") // Valid explanation
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors).isEmpty();
-        }
-
-        @Test
-        void shouldValidateEmailWithTooLongExplanation() {
-            // Given
-            LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
-
-            // Create a string that exceeds 250 characters
-            String longText = "0123456789".repeat(26); // 10 chars x 26 = 260 chars
-
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                    .noticeEmailSentDateTime(pastDateTime)
-                    .noticeEmailExplanation(longText) // Too long explanation
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            // Text area length validation is now handled by TextAreaValidationService in NoticeDetailsService
-            assertThat(errors)
-                .isNotEmpty()
-                .anyMatch(error -> error.contains("more than the maximum number of characters"));
-        }
-
-        @Test
         void shouldValidateEmailWithFutureDateTime() {
             // Given
             LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
@@ -413,7 +366,7 @@ class NoticeDetailsServiceTest {
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .noticeEmailSentDateTime(futureDateTime)
-                    .noticeEmailExplanation("Valid explanation")
+                    .noticeEmailAddress("test@example.com")
                     .build())
                 .build();
 
@@ -424,6 +377,49 @@ class NoticeDetailsServiceTest {
             assertThat(errors)
                 .isNotEmpty()
                 .contains("The date and time cannot be today or in the future");
+        }
+    }
+
+    @Nested
+    class OtherElectronicMethodValidation {
+        @Test
+        void shouldValidateOtherElectronicMethodWithValidExplanation() {
+            // Given
+            String validText = "x".repeat(250);
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                                         .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
+                                         .noticeOtherElectronicMethodExplanation(validText)
+                                         .build())
+                .build();
+
+            // When
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+
+            // Then
+            assertThat(errors).isEmpty();
+        }
+
+        @Test
+        void shouldValidateOtherElectronicMethodWithInvalidExplanation() {
+            // Given
+            String invalidText = "x".repeat(251);
+            PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                                         .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
+                                         .noticeOtherElectronicMethodExplanation(invalidText)
+                                         .build())
+                .build();
+
+            // When
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+
+            // Then
+            assertThat(errors)
+                .isNotEmpty()
+                .anyMatch(error -> error.contains("more than the maximum number of characters"));
         }
     }
 
