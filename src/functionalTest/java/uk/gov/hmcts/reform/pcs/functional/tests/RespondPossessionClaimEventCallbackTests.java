@@ -30,7 +30,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class RespondPossessionClaimEvents extends BaseApi {
+public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
     @Steps
     ApiSteps apiSteps;

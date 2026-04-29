@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -17,11 +17,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,8 +58,6 @@ class SubmitEventHandlerTest {
     void setUp() {
         underTest = new SubmitEventHandler(draftCaseDataService, claimResponseService, defendantResponseService);
     }
-
-    // ========== VALIDATION ERROR CASES ==========
 
     @Test
     void shouldReturnErrorWhenPossessionClaimResponseIsNull() {
@@ -114,8 +116,6 @@ class SubmitEventHandlerTest {
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), eq(respondPossessionClaim));
     }
 
-    // ========== INDEPENDENT FIELD SUBMISSION TESTS ==========
-
     @Test
     void shouldAllowSubmitWithOnlyDefendantResponses() {
         DefendantResponses responses = DefendantResponses.builder()
@@ -155,7 +155,7 @@ class SubmitEventHandlerTest {
 
         DefendantResponses defendantResponses =
             DefendantResponses.builder()
-                .preferenceType(ContactPreferenceType.EMAIL)
+                .contactByEmail(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPhone(VerticalYesNo.YES)
                 .build();
@@ -186,7 +186,7 @@ class SubmitEventHandlerTest {
         verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
 
         PossessionClaimResponse capturedResponse = responseCaptor.getValue();
-        assertThat(capturedResponse.getDefendantResponses().getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
+        assertThat(capturedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantResponses().getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantResponses().getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantContactDetails().getParty().getPhoneNumber())
@@ -203,7 +203,6 @@ class SubmitEventHandlerTest {
 
         DefendantResponses defendantResponses =
             DefendantResponses.builder()
-                .preferenceType(null)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPhone(VerticalYesNo.YES)
                 .build();
@@ -271,6 +270,79 @@ class SubmitEventHandlerTest {
         )).hasMessage("No party found for IDAM ID");
 
         verify(claimResponseService).saveDraftData(response, CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldSubmitRegularIncomeFieldsWhenFinalSubmit() {
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .shareIncomeExpenseDetails(VerticalYesNo.YES)
+            .incomeFromJobs(YesOrNo.YES)
+            .incomeFromJobsAmount(new BigDecimal("200000")) // £2000.00 in pence
+            .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
+            .pension(YesOrNo.NO)
+            .universalCredit(VerticalYesNo.YES)
+            .ucApplicationDate(LocalDate.of(2024, 2, 10))
+            .universalCreditAmount(new BigDecimal("100000")) // £1000.00 in pence
+            .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
+            .otherBenefits(YesOrNo.NO)
+            .moneyFromElsewhere(YesOrNo.YES)
+            .moneyFromElsewhereDetails("Receive child support payments")
+            .build();
+
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .householdCircumstances(householdCircumstances)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .build();
+
+        stubDraft(caseData);
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(eventPayload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        // Verify the response object with household circumstances is passed to the service
+        ArgumentCaptor<PossessionClaimResponse> responseCaptor =
+            ArgumentCaptor.forClass(PossessionClaimResponse.class);
+        verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
+
+        PossessionClaimResponse capturedResponse = responseCaptor.getValue();
+        HouseholdCircumstances capturedHousehold = capturedResponse.getDefendantResponses()
+            .getHouseholdCircumstances();
+
+        // Assert all regular income fields are submitted correctly
+        assertThat(capturedHousehold.getShareIncomeExpenseDetails()).isEqualTo(VerticalYesNo.YES);
+
+        assertThat(capturedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
+        assertThat(capturedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("200000");
+        assertThat(capturedHousehold.getIncomeFromJobsFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+
+        assertThat(capturedHousehold.getPension()).isEqualTo(YesOrNo.NO);
+
+        assertThat(capturedHousehold.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
+        assertThat(capturedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 2, 10));
+        assertThat(capturedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("100000");
+        assertThat(capturedHousehold.getUniversalCreditFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+
+        assertThat(capturedHousehold.getOtherBenefits()).isEqualTo(YesOrNo.NO);
+
+        assertThat(capturedHousehold.getMoneyFromElsewhere()).isEqualTo(YesOrNo.YES);
+        assertThat(capturedHousehold.getMoneyFromElsewhereDetails())
+            .isEqualTo("Receive child support payments");
+
+        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, capturedResponse);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
     @Test
