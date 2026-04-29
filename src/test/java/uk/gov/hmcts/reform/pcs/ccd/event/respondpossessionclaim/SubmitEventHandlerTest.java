@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -425,8 +424,10 @@ class SubmitEventHandlerTest {
 
         assertThat(result.getErrors()).isNullOrEmpty();
         verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE, representedPartyId);
-        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, representedPartyId);
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId);
+        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
+                                                               representedPartyId);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
+                                                               representedPartyId);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 

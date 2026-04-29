@@ -108,7 +108,8 @@ public class DefendantResponseService {
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
     }
 
-    public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse, UUID partyId) {
+    public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse,
+                                      UUID partyId) {
         UUID userId = securityContextService.getCurrentUserId();
 
         if (userId == null) {

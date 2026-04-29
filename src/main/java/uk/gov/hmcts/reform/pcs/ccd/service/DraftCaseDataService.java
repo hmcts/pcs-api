@@ -126,11 +126,6 @@ public class DraftCaseDataService {
         patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson);
     }
 
-    public <T> void patchUnsubmittedEventDataForLegalRepresentativeDefendant(long caseReference, T eventData,
-                                                                             EventId eventId, UUID partyId) {
-        patchUnsubmittedEventData(caseReference, eventData, eventId, partyId);
-    }
-
     public <T> void patchUnsubmittedEventData(long caseReference, T eventData,
                                               EventId eventId, UUID partyId) {
         Objects.requireNonNull(eventData, "eventData must not be null");

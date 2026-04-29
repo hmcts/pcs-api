@@ -49,7 +49,8 @@ public class LegalRepresentativeCaseDraftLoader {
         PartyEntity matchedDefendant = findMatchedDefendant(parties, selectedPartyId.get());
         validateResponseNotAlreadySubmitted(caseReference, matchedDefendant.getId());
 
-        if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, matchedDefendant.getId())) {
+        if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim,
+                                                        matchedDefendant.getId())) {
             return restoreSavedDraftAnswersForLegalRepresentative(caseReference, pcsCase, matchedDefendant);
         }
 

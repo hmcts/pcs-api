@@ -41,7 +41,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private SubmitResponse<State> processFinalSubmit(long caseReference, PCSCase caseData) {
         log.info("Processing final submission for case {}", caseReference);
-        boolean citizenUser = securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole());
+        boolean citizenUser = securityContextService.getCurrentUserDetails().getRoles()
+            .contains(UserRole.CITIZEN.getRole());
         UUID representedPartyId = citizenUser ? null : getRequiredPartyId(caseData);
 
         //load draft data

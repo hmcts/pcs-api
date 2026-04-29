@@ -90,7 +90,8 @@ class LegalRepresentativeCaseDraftLoaderTest {
         assertThat(result.getParties().getFirst().getId()).isEqualTo(representedPartyId.toString());
         assertThat(returnedParty.getFirstName()).isEqualTo("Sam");
         assertThat(returnedParty.getLastName()).isEqualTo("Defendant");
-        verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId);
+        verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
+                                                                     representedPartyId);
     }
 
     @Test
@@ -99,20 +100,20 @@ class LegalRepresentativeCaseDraftLoaderTest {
         UUID representedPartyId = UUID.randomUUID();
 
         PCSCase caseData = PCSCase.builder().build();
-        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
-        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
         PossessionClaimResponse response = PossessionClaimResponse.builder().build();
         caseData.setSelectedRespondingPartyId(representedPartyId.toString());
-
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        when(responseMapper.mapFrom(caseData, representedParty)).thenReturn(response);
         when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, legalRepUserId))
             .thenReturn(List.of(representedParty));
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, representedPartyId))
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE,
+                                                                                     representedPartyId))
             .thenReturn(false);
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
             .thenReturn(false);
-        when(responseMapper.mapFrom(caseData, representedParty)).thenReturn(response);
 
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
 
@@ -127,21 +128,25 @@ class LegalRepresentativeCaseDraftLoaderTest {
         UUID legalRepUserId = UUID.randomUUID();
         UUID representedPartyId = UUID.randomUUID();
 
-        PCSCase caseData = PCSCase.builder().build();
-        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
-        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+
         PossessionClaimResponse savedResponse = PossessionClaimResponse.builder().build();
         PCSCase savedDraft = PCSCase.builder()
             .possessionClaimResponse(savedResponse)
             .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
+        PCSCase caseData = PCSCase.builder().build();
         caseData.setSelectedRespondingPartyId(representedPartyId.toString());
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
 
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+            .thenReturn(Optional.of(savedDraft));
         when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, legalRepUserId))
             .thenReturn(List.of(representedParty));
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, representedPartyId))
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE,
+                                                                                     representedPartyId))
             .thenReturn(false);
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
             .thenReturn(true);
@@ -195,7 +200,8 @@ class LegalRepresentativeCaseDraftLoaderTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, legalRepUserId))
             .thenReturn(List.of(representedParty));
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, representedPartyId))
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE,
+                                                                                     representedPartyId))
             .thenReturn(true);
 
         assertThatThrownBy(() -> underTest.loadDraft(CASE_REFERENCE, caseData))

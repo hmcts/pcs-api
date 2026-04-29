@@ -41,7 +41,8 @@ public class LegalRepresentativePartyLinkService {
     public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
-        OrganisationDetailsResponse organisationDetails = organisationDetailsService.getOrganisationDetails(user.getUid());
+        OrganisationDetailsResponse organisationDetails = organisationDetailsService
+            .getOrganisationDetails(user.getUid());
         String organisationId = organisationDetails.getOrganisationIdentifier();
 
         if (isAlreadyLinkedToParty(user, partyId, organisationId)) {

@@ -72,7 +72,8 @@ public class ClaimResponseService {
             ));
 
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
-        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
+        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
+            .getDefendantResponses());
 
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
