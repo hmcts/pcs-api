@@ -39,4 +39,7 @@ public class CitizenGenAppRequest {
     @CCD(max = 60)
     private String sotFullName;
 
+    @CCD(max = 60)
+    private String clientReference;
+
 }

@@ -33,9 +33,10 @@ public class GeneralApplication implements CcdPageConfiguration {
                     </ul>
 
                     <p class="govuk-body">
-                    After you submit and pay for your claim, you’ll have until the end of the
-                    next working day to make your application. If you do it any later, your application
-                    will not be considered and a hearing will be scheduled as normal.
+                    After you submit and pay for your claim, you’ll have 24 hours to make your application.
+                    If you do it any later, a hearing date might be scheduled automatically and your application
+                    will be considered by the court separately. It might not be considered or listed before the
+                    scheduled first hearing date.
                     </p>
 
                     <p class="govuk-body">
