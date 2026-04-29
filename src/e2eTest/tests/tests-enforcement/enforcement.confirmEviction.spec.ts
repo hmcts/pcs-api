@@ -38,7 +38,7 @@ test.afterEach(async () => {
   moneyMap.clear();
   fieldsMap.clear();
   if (caseInfo.id) {
-    await performAction('deleteCaseRole', '[CREATOR]');
+    await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
   PageContentValidation.finaliseTest();
 });

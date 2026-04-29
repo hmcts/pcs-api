@@ -30,7 +30,7 @@ test.beforeEach(async ({ page }) => {
 
 test.afterEach(async () => {
   if (caseNumber) {
-    await performAction('deleteCaseRole', '[CREATOR]');
+    await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
   PageContentValidation.finaliseTest();
 });
