@@ -11,9 +11,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
-import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -25,12 +27,27 @@ import java.util.Map;
 @Slf4j
 public class DashboardJourneyService {
 
-    private final ClaimTaskGroupEvaluator claimTaskGroupEvaluator;
+    private static final List<TaskGroupId> TASK_GROUP_ORDER = List.of(
+        TaskGroupId.CLAIM,
+        TaskGroupId.RESPONSE,
+        TaskGroupId.DOCUMENTS,
+        TaskGroupId.HEARING,
+        TaskGroupId.NOTICE,
+        TaskGroupId.APPLICATIONS
+    );
 
-    public DashboardJourneyService(ClaimTaskGroupEvaluator claimTaskGroupEvaluator) {
-        this.claimTaskGroupEvaluator = claimTaskGroupEvaluator;
+    private final List<TaskGroupEvaluator> evaluatorsInOrder;
+
+    public DashboardJourneyService(List<TaskGroupEvaluator> evaluators) {
+        this.evaluatorsInOrder = evaluators.stream()
+            .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
+            .toList();
     }
 
+    private static int orderIndex(TaskGroupId id) {
+        int idx = TASK_GROUP_ORDER.indexOf(id);
+        return idx >= 0 ? idx : TASK_GROUP_ORDER.size();
+    }
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
         List<ListValue<DashboardNotification>> notifications = computeNotifications();
@@ -66,9 +83,15 @@ public class DashboardJourneyService {
     }
 
     private List<ListValue<TaskGroup>> computeTaskGroups() {
-        return ListValueUtils.wrapListItems(List.of(
-            claimTaskGroupEvaluator.evaluate(null),
+        DashboardContext ctx = null;
 
+        List<TaskGroup> groups = new ArrayList<>(
+            evaluatorsInOrder.stream()
+                .map(e -> e.evaluate(ctx))
+                .toList()
+        );
+
+        groups.add(
             TaskGroup.builder()
                 .groupId(TaskGroupId.RESPONSE)
                 .tasks(ListValueUtils.wrapListItems(List.of(
@@ -86,7 +109,9 @@ public class DashboardJourneyService {
                         .build()
                 )))
                 .build()
-        ));
+        );
+
+        return ListValueUtils.wrapListItems(groups);
     }
 
     /**

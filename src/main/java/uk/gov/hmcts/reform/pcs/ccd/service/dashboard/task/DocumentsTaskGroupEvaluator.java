@@ -12,20 +12,24 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 @Component
-public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
+public class DocumentsTaskGroupEvaluator implements TaskGroupEvaluator {
 
     @Override
     public TaskGroupId groupId() {
-        return TaskGroupId.CLAIM;
+        return TaskGroupId.DOCUMENTS;
     }
 
     @Override
     public TaskGroup evaluate(DashboardContext ctx) {
         return TaskGroup.builder()
-            .groupId(groupId()) 
+            .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
-                    .templateId("Defendant.ViewClaim")
+                    .templateId("Defendant.UploadDocuments")
+                    .status(TaskStatus.AVAILABLE)
+                    .build(),
+                Task.builder()
+                    .templateId("Defendant.ViewDocuments")
                     .status(TaskStatus.AVAILABLE)
                     .build()
             )))
