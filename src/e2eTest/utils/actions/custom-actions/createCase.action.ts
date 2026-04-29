@@ -426,6 +426,9 @@ export class CreateCaseAction implements IAction {
           break;
         case 'mandatory':
           await performAction('check', {question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory});
+          if (String(possessionGrounds.mandatory) === 'Antisocial behaviour') {
+            await performAction('check', {question: whatAreYourGroundsForPossession.mandatoryAbsoluteGrounds.absoluteGroundQuestion, option: possessionGrounds.mandatoryAbsolute});
+          }
           break;
         case 'mandatoryAccommodation':
           await performAction('check', {question: whatAreYourGroundsForPossession.mandatoryWithAccommodation.mandatoryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.mandatoryAccommodation});
