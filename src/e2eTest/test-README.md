@@ -133,6 +133,10 @@ await performValidationGroup(
 
 ## 7. Execution
 
+### Jenkins (nightly filters)
+
+On the **nightly** job, parameters `PLAYWRIGHT_GREP_TAG` and `PLAYWRIGHT_SPEC` become `E2E_TEST_SCOPE` and `E2E_SPEC` for Gradle → `yarn test:<browser>`. `playwright.config.ts` reads those env vars for grep and `testMatch`.
+
 ### The following environment variables are needed to run the tests:
 
 - MANAGE_CASE_BASE_URL (base URL for the manage-case UI; pipeline sets this from CHANGE_ID on Preview)
