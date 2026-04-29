@@ -149,7 +149,8 @@ class StartEventHandlerTest {
         assertThat(result.getPossessionClaimResponse().getClaimantOrganisations())
             .as("Should return empty list when no claimants in incoming case")
             .isEmpty();
-        assertThat(result.getPossessionClaimResponse().getCurrentDefendantPartyId()).isEqualTo(defendantPartyId.toString());
+        assertThat(result.getPossessionClaimResponse().getCurrentDefendantPartyId())
+            .isEqualTo(defendantPartyId.toString());
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
