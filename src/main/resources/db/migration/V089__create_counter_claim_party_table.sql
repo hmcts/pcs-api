@@ -4,7 +4,7 @@ CREATE TABLE counter_claim_party (
   party_id UUID NOT NULL REFERENCES party(id)
 );
 
-CREATE UNIQUE INDEX ux_counter_claim_party_unique
+CREATE UNIQUE INDEX ux_counter_claim_party
   ON counter_claim_party(cc_id, party_id);
 
 CREATE INDEX idx_counter_claim_party_party_id

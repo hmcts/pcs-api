@@ -113,6 +113,6 @@ public class CounterClaimEntity {
     @OneToMany(mappedBy = "counterClaim", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     @Builder.Default
-    private List<CounterClaimPartyEntity> targetParties = new ArrayList<>();
+    private List<CounterClaimPartyEntity> counterClaimParties = new ArrayList<>();
 
 }
