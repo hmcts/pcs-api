@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
@@ -30,6 +31,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -106,5 +109,10 @@ public class CounterClaimEntity {
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
+
+    @OneToMany(mappedBy = "counterClaim", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    @Builder.Default
+    private List<CounterClaimPartyEntity> targetParties = new ArrayList<>();
 
 }
