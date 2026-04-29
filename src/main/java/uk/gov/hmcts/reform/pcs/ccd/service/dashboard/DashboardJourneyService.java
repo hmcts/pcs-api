@@ -6,12 +6,14 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.ResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -26,9 +28,13 @@ import java.util.Map;
 public class DashboardJourneyService {
 
     private final ClaimTaskGroupEvaluator claimTaskGroupEvaluator;
+    private final DefendantResponseService defendantResponseService;
 
-    public DashboardJourneyService(ClaimTaskGroupEvaluator claimTaskGroupEvaluator) {
+
+    public DashboardJourneyService(
+        ClaimTaskGroupEvaluator claimTaskGroupEvaluator, DefendantResponseService defendantResponseService) {
         this.claimTaskGroupEvaluator = claimTaskGroupEvaluator;
+        this.defendantResponseService = defendantResponseService;
     }
 
 
@@ -63,7 +69,7 @@ public class DashboardJourneyService {
             DashboardNotification.builder()
                 .templateId("Defendant.ResponseToClaim")
                 .templateValues(toTemplateValues(Map.of(
-                    "ctaLabel", "Start your response."
+                    "ctaLabel", "Start your response"
                 )))
                 .build()
         ));
@@ -91,6 +97,19 @@ public class DashboardJourneyService {
                 )))
                 .build()
         ));
+    }
+
+    private ResponseStatus getResponseStatus(long caseReference) {
+        boolean hasSubmitted = defendantResponseService.hasSubmittedResponse(caseReference);
+    
+        if (!hasSubmitted) {
+            return ResponseStatus.NOT_STARTED;
+        }
+       
+        if (hasSubmitted) {
+            return ResponseStatus.SUBMITTED;
+        }
+        return ResponseStatus.UNKNOWN; 
     }
 
     /**
