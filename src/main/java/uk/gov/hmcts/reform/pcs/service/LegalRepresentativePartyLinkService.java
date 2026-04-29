@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -19,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,6 +46,8 @@ public class LegalRepresentativePartyLinkService {
             throw new LegalRepresentativeAlreadyLinkedToPartyException(
                 "Legal Representative [" + user.getUid() + "] already linked to Party [" + partyId + "]");
         }
+
+        unlinkExistingRepresentation(UUID.fromString(partyId));
 
         Optional<LegalRepresentativeEntity> legalRepresentativeEntity =
             legalRepresentativeRepository.findByIdamId(UUID.fromString(user.getUid()));
@@ -85,5 +90,25 @@ public class LegalRepresentativePartyLinkService {
             });
     }
 
+    private void unlinkExistingRepresentation(UUID partyId) {
+        Optional<LegalRepresentativeEntity> partyLinkedToLegalRepresentativeAndActive =
+            legalRepresentativeRepository.isPartyLinkedToLegalRepresentativeAndActive(partyId);
+
+        if (partyLinkedToLegalRepresentativeAndActive.isPresent()) {
+            LegalRepresentativeEntity existingLegalRepresentative = partyLinkedToLegalRepresentativeAndActive.get();
+
+            existingLegalRepresentative.getClaimPartyLegalRepresentativeList().stream()
+                .filter(claimPartyLegalRepresentative ->
+                            claimPartyLegalRepresentative.getParty().getId().equals(partyId))
+                .forEach(this::invalidateLegalRepresentativeClaimParty);
+
+            legalRepresentativeRepository.saveAndFlush(existingLegalRepresentative);
+        }
+    }
+
+    private void invalidateLegalRepresentativeClaimParty(ClaimPartyLegalRepresentativeEntity claimParty) {
+        claimParty.setActive(YesOrNo.NO);
+        claimParty.setEndDate(Instant.now());
+    }
 
 }

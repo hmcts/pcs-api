@@ -8,10 +8,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -24,15 +26,18 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -302,6 +307,87 @@ class LegalRepresentativePartyLinkServiceTest {
         verify(userInfo, never()).getSub();
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(legalRepresentativeRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void linkLegalRepresentativeToParty_WithExistingLinkedLegalRepresentative_SavesNewLegalRepresentativeEntity() {
+        // given
+        UUID userUid = UUID.randomUUID();
+        long caseReference = 1L;
+        UUID partyId = UUID.randomUUID();
+        String organisationName = "orgName";
+        String name = "name";
+        String familyName = "familyName";
+        String email = "email";
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(partyId)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .claims(List.of(ClaimEntity.builder()
+                                .claimParties(
+                                    List.of(ClaimPartyEntity.builder()
+                                                .role(PartyRole.DEFENDANT)
+                                                .party(partyEntity)
+                                                .build()))
+                                .build()
+            )).build();
+
+        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentativeEntity =
+            ClaimPartyLegalRepresentativeEntity.builder()
+            .active(YesOrNo.NO)
+            .party(partyEntity)
+                .endDate(Instant.now())
+            .build();
+
+        LegalRepresentativeEntity existingLinkedLegalRep = LegalRepresentativeEntity.builder()
+                .claimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentativeEntity))
+            .build();
+
+        when(legalRepresentativeRepository.isPartyLinkedToLegalRepresentativeAndActive(partyId))
+            .thenReturn(Optional.of(existingLinkedLegalRep));
+
+        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
+        when(organisationDetails.getName()).thenReturn(organisationName);
+        when(userInfo.getUid()).thenReturn(userUid.toString());
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(userInfo.getName()).thenReturn(name);
+        when(userInfo.getFamilyName()).thenReturn(familyName);
+        when(userInfo.getSub()).thenReturn(email);
+        when(organisationDetailsService.getOrganisationAddress(organisationDetails))
+            .thenReturn(addressUK);
+        when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
+        when(legalRepresentativeRepository.findByIdamId(userUid)).thenReturn(Optional.empty());
+
+        // when
+        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+            caseReference,
+            partyId.toString(),
+            userInfo
+        );
+
+        // then
+        verify(legalRepresentativeRepository, times(2)).saveAndFlush(legalRepresentativeEntityCaptor.capture());
+
+        List<LegalRepresentativeEntity> actualList = legalRepresentativeEntityCaptor.getAllValues();
+
+        LegalRepresentativeEntity unlinked = actualList.getFirst();
+        ClaimPartyLegalRepresentativeEntity unlinkedClaimParty =
+            unlinked.getClaimPartyLegalRepresentativeList().getFirst();
+
+        assertEquals(YesOrNo.NO, unlinkedClaimParty.getActive());
+        assertNotNull(unlinkedClaimParty.getEndDate());
+
+        LegalRepresentativeEntity actual = actualList.get(1);
+
+        assertEquals(organisationName, actual.getOrganisationName());
+        assertEquals(userUid, actual.getIdamId());
+        assertEquals(name, actual.getFirstName());
+        assertEquals(familyName, actual.getLastName());
+        assertEquals(email, actual.getEmail());
+        assertEquals(addressEntity, actual.getAddress());
+        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeList().getFirst().getParty());
     }
 
 }
