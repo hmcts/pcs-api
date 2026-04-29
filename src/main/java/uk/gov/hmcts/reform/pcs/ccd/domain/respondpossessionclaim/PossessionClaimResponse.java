@@ -51,5 +51,8 @@ public class PossessionClaimResponse {
     )
     private List<ListValue<ClaimParty>> claimParties;
 
+    @CCD(access = {CitizenAccess.class})
+    private String currentDefendantPartyId;
+
 }
 
