@@ -25,13 +25,13 @@ import java.util.UUID;
 import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
-@Table(name = "flag_details")
+@Table(name = "case_flag")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FlagDetailsEntity {
+public class CaseFlagEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -41,7 +41,7 @@ public class FlagDetailsEntity {
     @JoinColumn(name = "case_id")
     private PcsCaseEntity pcsCase;
 
-    @OneToMany(mappedBy = "flagDetails", cascade = ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "caseFlagEntity", cascade = ALL, orphanRemoval = true)
     @Builder.Default
     private List<FlagPathEntity> paths = new ArrayList<>();
 

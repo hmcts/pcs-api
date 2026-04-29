@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagsEntity;
@@ -59,7 +59,7 @@ class CaseFlagsViewTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();
 
-        pcsCaseEntity.setCaseFlags(List.of(createMockFlagsEntity()));
+        pcsCaseEntity.setCaseFlags(List.of(createMockCaseFlagsEntity()));
 
         when(refDataFlagsRepository.findByFlagCode(any())).thenReturn(Optional.of(createMockRefDataFlagsEntity()));
 
@@ -85,9 +85,9 @@ class CaseFlagsViewTest {
         assertNull(pcsCase.getCaseFlags().getDetails());
     }
 
-    private FlagDetailsEntity createMockFlagsEntity() {
+    private CaseFlagEntity createMockCaseFlagsEntity() {
 
-        return FlagDetailsEntity.builder()
+        return CaseFlagEntity.builder()
             .id(UUID.randomUUID())
             .flagCode("CF0007")
             .flagComment("Urgent case")

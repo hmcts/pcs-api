@@ -31,7 +31,7 @@ public class FlagPathEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "flag_details_id")
-    private FlagDetailsEntity flagDetails;
+    private CaseFlagEntity caseFlagEntity;
 
     private String path;
 }

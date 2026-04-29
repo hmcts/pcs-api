@@ -1,4 +1,4 @@
-CREATE TABLE flag_details (
+CREATE TABLE case_flag (
                             id UUID PRIMARY KEY,
                             case_id UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
                             flag_code VARCHAR(6) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE flag_details (
 
 CREATE TABLE flag_path(
                         id UUID PRIMARY KEY,
-                        flag_details_id UUID NOT NULL REFERENCES flag_details (id) ON DELETE CASCADE,
+                        flag_details_id UUID NOT NULL REFERENCES case_flag (id) ON DELETE CASCADE,
                         path VARCHAR(255) NOT NULL
                       );
 
