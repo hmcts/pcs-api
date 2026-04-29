@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -21,8 +23,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,12 +52,23 @@ class SubmitEventHandlerTest {
     private ClaimResponseService claimResponseService;
     @Mock
     private DefendantResponseService defendantResponseService;
+    @Mock
+    private SecurityContextService securityContextService;
+    @Mock
+    private UserInfo userInfo;
 
     private SubmitEventHandler underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(draftCaseDataService, claimResponseService, defendantResponseService);
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+        underTest = new SubmitEventHandler(
+            draftCaseDataService,
+            claimResponseService,
+            defendantResponseService,
+            securityContextService
+        );
     }
 
     // ========== VALIDATION ERROR CASES ==========
@@ -311,6 +327,36 @@ class SubmitEventHandlerTest {
         assertThat(result.getState()).isNull(); // Default response has null state
     }
 
+    @Test
+    void shouldSubmitLegalRepresentativeDraftForSelectedParty() {
+        UUID representedPartyId = UUID.randomUUID();
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .selectedRespondingPartyId(representedPartyId.toString())
+            .build();
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+            .thenReturn(Optional.of(caseData));
+
+        SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
+
+        assertThat(result.getErrors()).isNullOrEmpty();
+        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE, representedPartyId);
+        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, representedPartyId);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId);
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+    }
+
     private void stubDraft(PCSCase draft) {
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
             .thenReturn(Optional.of(draft));
@@ -318,6 +364,7 @@ class SubmitEventHandlerTest {
 
     private EventPayload<PCSCase, State> createEventPayload(PCSCase caseData) {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(caseData);
         return eventPayload;
     }
 

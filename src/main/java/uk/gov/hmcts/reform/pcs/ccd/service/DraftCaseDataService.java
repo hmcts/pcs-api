@@ -128,6 +128,11 @@ public class DraftCaseDataService {
 
     public <T> void patchUnsubmittedEventDataForLegalRepresentativeDefendant(long caseReference, T eventData,
                                                                              EventId eventId, UUID partyId) {
+        patchUnsubmittedEventData(caseReference, eventData, eventId, partyId);
+    }
+
+    public <T> void patchUnsubmittedEventData(long caseReference, T eventData,
+                                              EventId eventId, UUID partyId) {
         Objects.requireNonNull(eventData, "eventData must not be null");
         Objects.requireNonNull(eventId, "eventId must not be null");
         Objects.requireNonNull(partyId, "partyId must not be null");
@@ -194,6 +199,17 @@ public class DraftCaseDataService {
         log.info("Deleting draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
         draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId);
         log.debug("Draft deleted successfully for userId={}", userId);
+    }
+
+    @Transactional
+    public void deleteUnsubmittedCaseData(long caseReference, EventId eventId, UUID partyId) {
+        UUID userId = getCurrentUserId();
+        log.info("Deleting draft: caseReference={}, eventId={}, userId={}, partyId={}",
+            caseReference, eventId, userId, partyId);
+        draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+            caseReference, eventId, userId, partyId
+        );
+        log.debug("Draft deleted successfully for userId={} and partyId={}", userId, partyId);
     }
 
     public PCSCase parseCaseDataJson(String caseDataJson) {

@@ -108,6 +108,45 @@ public class DefendantResponseService {
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
     }
 
+    public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse, UUID partyId) {
+        UUID userId = securityContextService.getCurrentUserId();
+
+        if (userId == null) {
+            log.error("Cannot save defendant response: current user IDAM ID is null");
+            throw new IllegalStateException("Current user IDAM ID is null");
+        }
+
+        if (defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(caseReference, partyId)) {
+            log.warn("Duplicate defendant response attempt for case {} party {}", caseReference, partyId);
+            throw new IllegalStateException("A response has already been submitted for this case.");
+        }
+
+        UUID claimId = claimRepository.findIdByCaseReference(caseReference)
+            .orElseThrow(() -> {
+                log.error("No claim found for case: {}", caseReference);
+                return new IllegalStateException(String.format("No claim found for case: %d", caseReference));
+            });
+
+        PartyEntity partyRef = partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
+            .orElseThrow(() -> new IllegalStateException(
+                "No party found for party ID: " + partyId + " and case reference: " + caseReference
+            ));
+        ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
+
+        DefendantResponseEntity responseEntity =
+            buildDefendantResponseEntity(
+                claimRef,
+                partyRef,
+                possessionClaimResponse.getDefendantResponses()
+            );
+
+        buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
+
+        defendantResponseRepository.save(responseEntity);
+
+        log.info("Successfully saved defendant response for case {} represented party {}", caseReference, partyId);
+    }
+
     private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
                                                                 PartyEntity partyRef,
                                                                 DefendantResponses responses) {

@@ -10,18 +10,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.RequestHolder;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.SolicitorForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @Component
@@ -32,51 +34,53 @@ public class LegalRepresentativeCaseDraftLoader {
     private final PcsCaseService pcsCaseService;
     private final PossessionClaimResponseMapper responseMapper;
     private final DraftCaseDataService draftCaseDataService;
-    private final SolicitorForDefendantAccessValidator solicitorForDefendantAccessValidator;
+    private final DefendantResponseRepository defendantResponseRepository;
+    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
     private final SecurityContextService securityContextService;
-    private final RequestHolder requestHolder;
-
-    private final DraftCaseDataRepository draftCaseDataRepository;
 
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
-        List<PartyEntity> parties = loadAndValidateDefendantForSolicitor(caseReference);
-        String partyId = requestHolder.getHeader("Client-context");
+        List<PartyEntity> parties = loadAndValidateDefendantsForLegalRep(caseReference);
+        Optional<UUID> selectedPartyId = getSelectedPartyId(pcsCase);
 
-        boolean isSpecificDefendant = partyId != null;
-
-
-        // refactor to make a specific party via FE
-        PartyEntity matchedDefendant = parties.getFirst();
-        isSpecificDefendant = draftCaseDataService.hasUnsubmittedCaseData(caseReference,
-                                                                          respondPossessionClaim,
-                                                                          matchedDefendant.getId());
-
-        if (isSpecificDefendant) {
-            // PartyEntity matchedDefendant = parties.stream().filter(p ->
-            // p.getId().toString().equals(partyId)).findFirst()
-            // .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
-
-            return restoreSavedDraftAnswersForLegalRepresentative(caseReference, pcsCase, matchedDefendant);
-        } else {
-            initializeDraftForAllDefendants(caseReference, pcsCase, parties);
+        if (selectedPartyId.isEmpty()) {
+            return buildCaseWithRepresentedPartiesOnly(pcsCase, parties);
         }
 
-        return pcsCase;
+        PartyEntity matchedDefendant = findMatchedDefendant(parties, selectedPartyId.get());
+        validateResponseNotAlreadySubmitted(caseReference, matchedDefendant.getId());
+
+        if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, matchedDefendant.getId())) {
+            return restoreSavedDraftAnswersForLegalRepresentative(caseReference, pcsCase, matchedDefendant);
+        }
+
+        return initializeFirstTimeResponse(caseReference, pcsCase, matchedDefendant);
     }
 
-    private List<PartyEntity> loadAndValidateDefendantForSolicitor(long caseReference) {
+    private List<PartyEntity> loadAndValidateDefendantsForLegalRep(long caseReference) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
-        return solicitorForDefendantAccessValidator.validateAndGetDefendants(caseEntity,
-                                                                             securityContextService.getCurrentUserId());
+        return legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity,
+            securityContextService.getCurrentUserId());
     }
 
-    private void initializeDraftForAllDefendants(long caseReference, PCSCase pcsCase, List<PartyEntity> parties) {
-        parties.forEach(party -> initializeDraftForDefendant(caseReference, pcsCase, party));
+    private PCSCase buildCaseWithRepresentedPartiesOnly(PCSCase pcsCase, List<PartyEntity> representedParties) {
+        List<ListValue<Party>> representedPartyList = representedParties.stream()
+            .map(this::toRepresentedPartyListValue)
+            .toList();
+
+        return pcsCase.toBuilder()
+            .parties(representedPartyList)
+            .allDefendants(representedPartyList)
+            .possessionClaimResponse(null)
+            .hasUnsubmittedCaseData(null)
+            .build();
     }
 
-    private void initializeDraftForDefendant(long caseReference, PCSCase pcsCase, PartyEntity party) {
+    private PCSCase initializeFirstTimeResponse(long caseReference, PCSCase pcsCase, PartyEntity party) {
         PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, party);
         createInitialDraft(caseReference, party.getId(), response);
+        return pcsCase.toBuilder()
+            .possessionClaimResponse(response)
+            .build();
     }
 
     private PCSCase restoreSavedDraftAnswersForLegalRepresentative(long caseReference, PCSCase pcsCase,
@@ -97,6 +101,19 @@ public class LegalRepresentativeCaseDraftLoader {
         return pcsCase.toBuilder()
             .possessionClaimResponse(response)
             .hasUnsubmittedCaseData(YesOrNo.YES)
+            .build();
+    }
+
+    private ListValue<Party> toRepresentedPartyListValue(PartyEntity partyEntity) {
+        Party party = Party.builder()
+            .firstName(partyEntity.getFirstName())
+            .lastName(partyEntity.getLastName())
+            .orgName(partyEntity.getOrgName())
+            .build();
+
+        return ListValue.<Party>builder()
+            .id(partyEntity.getId().toString())
+            .value(party)
             .build();
     }
 
@@ -164,11 +181,37 @@ public class LegalRepresentativeCaseDraftLoader {
             .possessionClaimResponse(defendantFieldsOnly)
             .build();
 
-        draftCaseDataService.patchUnsubmittedEventDataForLegalRepresentativeDefendant(
+        draftCaseDataService.patchUnsubmittedEventData(
             caseReference,
             draftWithOnlyResponseData,
             respondPossessionClaim,
             partyId
         );
+    }
+
+    private void validateResponseNotAlreadySubmitted(long caseReference, UUID partyId) {
+        if (defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(caseReference, partyId)) {
+            throw new IllegalStateException("A response has already been submitted for this case.");
+        }
+    }
+
+    private Optional<UUID> getSelectedPartyId(PCSCase pcsCase) {
+        String selectedPartyId = pcsCase.getSelectedRespondingPartyId();
+        if (isBlank(selectedPartyId)) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(UUID.fromString(selectedPartyId));
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalStateException("Invalid selected responding party id for respond to claim", ex);
+        }
+    }
+
+    private PartyEntity findMatchedDefendant(List<PartyEntity> parties, UUID selectedPartyId) {
+        return parties.stream()
+            .filter(party -> party.getId().equals(selectedPartyId))
+            .findFirst()
+            .orElseThrow(() -> new CaseAccessException("User is not linked as a defendant on this case"));
     }
 }

@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -26,14 +28,17 @@ import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -47,12 +52,22 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     private ImmutablePartyFieldValidator immutableFieldValidator;
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private SecurityContextService securityContextService;
+    @Mock
+    private UserInfo userInfo;
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RespondToPossessionDraftSavePage(immutableFieldValidator, draftCaseDataService));
+        lenient().when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        lenient().when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+        setPageUnderTest(new RespondToPossessionDraftSavePage(
+            immutableFieldValidator,
+            draftCaseDataService,
+            securityContextService
+        ));
     }
 
     @Test
@@ -373,6 +388,30 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(response.getData()).isNull();
     }
 
+    @Test
+    void shouldSaveDraftByPartyForLegalRepresentative() {
+        UUID representedPartyId = UUID.randomUUID();
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(Party.builder().firstName("Jack").lastName("Smith").build())
+            .build();
+
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+            .defendantContactDetails(contactDetails)
+            .build());
+        caseData.setSelectedRespondingPartyId(representedPartyId.toString());
+
+        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
+            .thenReturn(List.of());
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        assertThat(response.getErrors()).isNull();
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId)
+        );
+    }
+
     private PCSCase buildCaseData(PossessionClaimResponse possessionClaimResponse) {
         return PCSCase.builder()
             .possessionClaimResponse(possessionClaimResponse)
@@ -380,4 +419,3 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
     }
 }
-

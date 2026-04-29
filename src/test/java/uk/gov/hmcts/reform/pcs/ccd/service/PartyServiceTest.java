@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +57,8 @@ class PartyServiceTest {
     private PartyRepository partyRepository;
     @Mock
     private AddressMapper addressMapper;
+    @Mock
+    private OrganisationService organisationService;
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
     @Mock
@@ -71,7 +74,7 @@ class PartyServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new PartyService(partyRepository, addressMapper);
+        underTest = new PartyService(partyRepository, addressMapper, organisationService);
     }
 
     @Nested
@@ -145,6 +148,7 @@ class PartyServiceTest {
         void shouldSaveCreatedClaimant() {
             // Given
             String expectedClaimantName = "Claimant name";
+            String organisationId = "ORG-123";
 
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantContactEmail("test@test.com")
@@ -158,6 +162,7 @@ class PartyServiceTest {
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
@@ -167,6 +172,7 @@ class PartyServiceTest {
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
 
             assertThat(createdClaimant.getOrgName()).isEqualTo(expectedClaimantName);
+            assertThat(createdClaimant.getOrganisationId()).isEqualTo(organisationId);
         }
 
         @ParameterizedTest

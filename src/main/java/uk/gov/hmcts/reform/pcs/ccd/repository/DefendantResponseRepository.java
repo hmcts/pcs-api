@@ -22,4 +22,6 @@ public interface DefendantResponseRepository extends JpaRepository<DefendantResp
      * @return true if a response exists, false otherwise
      */
     boolean existsByClaimPcsCaseCaseReferenceAndPartyIdamId(Long caseReference, UUID partyIdamId);
+
+    boolean existsByClaimPcsCaseCaseReferenceAndPartyId(Long caseReference, UUID partyId);
 }

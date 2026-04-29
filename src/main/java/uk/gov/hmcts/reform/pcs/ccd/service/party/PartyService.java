@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ public class PartyService {
 
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
+    private final OrganisationService organisationService;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
         PartyEntity claimant = createClaimant(pcsCase);
@@ -70,6 +72,7 @@ public class PartyService {
         PartyEntity claimantParty = new PartyEntity();
 
         setClaimantOrgName(claimantInformation, claimantParty);
+        claimantParty.setOrganisationId(organisationService.getOrganisationIdForCurrentUser());
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);

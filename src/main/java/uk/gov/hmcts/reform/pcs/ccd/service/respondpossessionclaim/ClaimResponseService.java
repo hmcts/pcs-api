@@ -67,6 +67,22 @@ public class ClaimResponseService {
         log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
 
+    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, long caseReference, UUID partyId) {
+        PartyEntity defendant = partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
+            .orElseThrow(() -> new IllegalStateException(
+                "No party found for party ID: " + partyId + " and case reference: " + caseReference
+            ));
+
+        saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
+        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
+
+        if (dataFromDraftTable.getDefendantResponses() != null
+            && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
+            defendant.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
+            log.debug("Updated date of birth from defendantResponses for party ID: {}", defendant.getId());
+        }
+    }
+
     /**
      * Updates party's contact details (phone number, email address, first name, and last name).
      * Only updates if the values are provided (non-blank).
