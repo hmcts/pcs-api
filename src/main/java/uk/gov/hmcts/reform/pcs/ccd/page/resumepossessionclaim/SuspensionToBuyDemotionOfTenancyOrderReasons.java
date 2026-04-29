@@ -28,7 +28,7 @@ public class SuspensionToBuyDemotionOfTenancyOrderReasons implements CcdPageConf
         pageBuilder
             .page("suspensionToBuyDemotionOfTenancyOrderReasons", this::midEvent)
             .pageLabel("Reasons for requesting a suspension of right to buy and demotion of tenancy")
-            .showCondition("suspensionToBuyDemotionOfTenancyPages=\"YES\"")
+            .showCondition("suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
             .label("suspensionToBuyDemotionOfTenancyOrderReasons-info", "---")
             .complex(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy)
                 .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionOrderReason)
