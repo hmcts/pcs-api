@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -71,11 +72,11 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
             return errorResponse("Application already exists for client reference");
         }
 
-        GenAppEntity genAppEntity = genAppService.createGenAppEntity(caseData.getCitizenGenAppRequest(),
+        GenAppEntity genAppEntity = genAppService.createGenAppEntity(citizenCreateGenApp,
                                                                      pcsCaseEntity,
                                                                      applicantParty);
 
-        createSubmissionDocument(caseReference, caseData.getCitizenGenAppRequest(), genAppEntity);
+        createSubmissionDocument(caseReference, citizenCreateGenApp, genAppEntity);
 
         return SubmitResponse.<State>builder()
             .build();
@@ -95,7 +96,7 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
             genAppEntity
         );
 
-        documentImportService.addDocumentToCase(caseReference, documentUrl);
+        documentImportService.addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
     }
 
     private static SubmitResponse<State> errorResponse(String errorMessage) {

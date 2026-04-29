@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -44,7 +43,6 @@ public class GenAppDocumentGenerator {
     private final PartyService partyService;
     private final SecurityContextService securityContextService;
     private final DocAssemblyService docAssemblyService;
-    private final DocumentImportService documentImportService;
     private final AddressMapper addressMapper;
     private final AddressFormatter addressFormatter;
     private final CaseNameFormatter caseNameFormatter;
@@ -57,7 +55,6 @@ public class GenAppDocumentGenerator {
                                    PartyService partyService,
                                    SecurityContextService securityContextService,
                                    DocAssemblyService docAssemblyService,
-                                   DocumentImportService documentImportService,
                                    AddressMapper addressMapper,
                                    AddressFormatter addressFormatter,
                                    CaseNameFormatter caseNameFormatter,
@@ -67,7 +64,6 @@ public class GenAppDocumentGenerator {
         this.partyService = partyService;
         this.securityContextService = securityContextService;
         this.docAssemblyService = docAssemblyService;
-        this.documentImportService = documentImportService;
         this.addressMapper = addressMapper;
         this.addressFormatter = addressFormatter;
         this.caseNameFormatter = caseNameFormatter;
@@ -80,35 +76,33 @@ public class GenAppDocumentGenerator {
                                              GenAppEntity genAppEntity) {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-        Map<PartyRole, List<Party>> partyMap = getPartyMap(mainClaim);
+        UUID applicantUserId = securityContextService.getCurrentUserId();
+        String outputFilename = getDocumentFilename(mainClaim, genAppEntity, applicantUserId);
 
-        List<Party> claimants = partyMap.get(PartyRole.CLAIMANT);
-        List<Party> defendants = partyMap.get(PartyRole.DEFENDANT);
+        GenAppFormPayload genAppFormPayload
+            = createGenAppFormPayload(caseReference, pcsCaseEntity, mainClaim, citizenGenAppRequest, applicantUserId);
 
-        String caseName = caseNameFormatter.formatCaseName(claimants, defendants);
+        return docAssemblyService
+            .generateDocument(genAppFormPayload, TEMPLATE_ID, OutputType.PDF, outputFilename);
+    }
 
-        AddressEntity propertyAddress = pcsCaseEntity.getPropertyAddress();
-        String formattedPropertyAddress = formatAddress(propertyAddress);
-
-        UUID currentUserId = securityContextService.getCurrentUserId();
-
-        PartyEntity applicantPartyEntity = partyService.getPartyEntityByIdamId(currentUserId, caseReference);
+    private GenAppFormPayload createGenAppFormPayload(long caseReference,
+                                                      PcsCaseEntity pcsCaseEntity,
+                                                      ClaimEntity mainClaim,
+                                                      CitizenGenAppRequest citizenGenAppRequest,
+                                                      UUID applicantUserId) {
 
         LocalDate currentUkDate = LocalDate.now(ukClock);
 
-        String formattedApplicantAddress = "";
-        if (applicantPartyEntity.getAddressKnown() == VerticalYesNo.YES) {
-            if (applicantPartyEntity.getAddressSameAsProperty() == VerticalYesNo.YES) {
-                formattedApplicantAddress = formattedPropertyAddress;
-            } else {
-                formattedApplicantAddress = formatAddress(applicantPartyEntity.getAddress());
-            }
-        }
+        String caseName = buildCaseName(mainClaim);
 
+        PartyEntity applicantPartyEntity = partyService.getPartyEntityByIdamId(applicantUserId, caseReference);
         String applicantName = applicantPartyEntity.getFirstName() + " " + applicantPartyEntity.getLastName();
-        GenAppFormPayload genAppFormPayload = GenAppFormPayload.builder()
+        String formattedPropertyAddress = getFormattedPropertyAddress(pcsCaseEntity);
+        String formattedApplicantAddress = getFormattedApplicantAddress(applicantPartyEntity, formattedPropertyAddress);
+
+        return GenAppFormPayload.builder()
             .caseReference(Long.toString(caseReference))
             .caseName(caseName)
             .submittedOn(currentUkDate)
@@ -132,18 +126,32 @@ public class GenAppDocumentGenerator {
                                   .build()
             )
             .build();
+    }
 
-        String outputFilename = getDocumentFilename(mainClaim, genAppEntity, currentUserId);
+    private String buildCaseName(ClaimEntity mainClaim) {
+        Map<PartyRole, List<Party>> partyMap = getPartyMap(mainClaim);
 
-        String documentUrl = docAssemblyService.generateDocument(genAppFormPayload,
-                                                                 TEMPLATE_ID,
-                                                                 OutputType.PDF,
-                                                                 outputFilename
-        );
+        List<Party> claimants = partyMap.get(PartyRole.CLAIMANT);
+        List<Party> defendants = partyMap.get(PartyRole.DEFENDANT);
 
-        documentImportService.addDocumentToCase(caseReference, documentUrl);
+        return caseNameFormatter.formatCaseName(claimants, defendants);
+    }
 
-        return documentUrl;
+    private String getFormattedPropertyAddress(PcsCaseEntity pcsCaseEntity) {
+        AddressEntity propertyAddress = pcsCaseEntity.getPropertyAddress();
+        return formatAddress(propertyAddress);
+    }
+
+    private String getFormattedApplicantAddress(PartyEntity partyEntity, String formattedPropertyAddress) {
+        String formattedPartyAddress = "";
+        if (partyEntity.getAddressKnown() == VerticalYesNo.YES) {
+            if (partyEntity.getAddressSameAsProperty() == VerticalYesNo.YES) {
+                formattedPartyAddress = formattedPropertyAddress;
+            } else {
+                formattedPartyAddress = formatAddress(partyEntity.getAddress());
+            }
+        }
+        return formattedPartyAddress;
     }
 
     private String formatAddress(AddressEntity propertyAddress) {
@@ -164,11 +172,10 @@ public class GenAppDocumentGenerator {
     }
 
     private String getDocumentFilename(ClaimEntity mainClaim, GenAppEntity genAppEntity, UUID applicantIdamId) {
-
-        ClaimPartyEntity applicantClaimParty = getApplicantClaimParty(mainClaim, applicantIdamId);
+        ClaimPartyEntity applicantClaimParty = getClaimParty(mainClaim, applicantIdamId);
 
         // Example label: General Application (GA2) - Defendant 1.pdf
-        String applicantLabel = getApplicantLabel(applicantClaimParty);
+        String applicantLabel = getPartyLabel(applicantClaimParty);
         String filename = "%s (GA%d)".formatted(OUTPUT_FILENAME_PREFIX, genAppEntity.getRank());
         if (applicantLabel != null) {
             filename += " - " + applicantLabel;
@@ -177,14 +184,14 @@ public class GenAppDocumentGenerator {
         return filename;
     }
 
-    private static ClaimPartyEntity getApplicantClaimParty(ClaimEntity mainClaim, UUID applicantIdamId) {
-        return mainClaim.getClaimParties().stream()
-            .filter(claimPartyEntity -> applicantIdamId.equals(claimPartyEntity.getParty().getIdamId()))
+    private static ClaimPartyEntity getClaimParty(ClaimEntity claim, UUID partyIdamId) {
+        return claim.getClaimParties().stream()
+            .filter(claimPartyEntity -> partyIdamId.equals(claimPartyEntity.getParty().getIdamId()))
             .findFirst()
-            .orElseThrow(() -> new PartyNotFoundException("Applicant party not found"));
+            .orElseThrow(() -> new PartyNotFoundException("Party not found"));
     }
 
-    private static String getApplicantLabel(ClaimPartyEntity applicantClaimParty) {
+    private static String getPartyLabel(ClaimPartyEntity applicantClaimParty) {
         if (applicantClaimParty.getRole() == PartyRole.CLAIMANT) {
             return "Claimant %d".formatted(applicantClaimParty.getRank());
         } else if (applicantClaimParty.getRole() == PartyRole.DEFENDANT) {

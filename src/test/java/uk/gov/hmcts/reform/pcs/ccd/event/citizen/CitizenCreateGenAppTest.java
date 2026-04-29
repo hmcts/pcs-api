@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -165,7 +166,9 @@ class CitizenCreateGenAppTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            verify(documentImportService).addDocumentToCase(TEST_CASE_REFERENCE, documentUrl);
+            verify(documentImportService).addDocumentToCase(TEST_CASE_REFERENCE, documentUrl,
+                                                            CaseFileCategory.APPLICATIONS
+            );
         }
 
         private PartyEntity stubCurrentUserParty() {
