@@ -14,11 +14,20 @@ export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
-const e2eTag = process.env.E2E_TEST_SCOPE;
+
+// Nightly (Jenkins): E2E_TEST_SCOPE = tag grep; E2E_SPEC = comma/semicolon path keywords → testMatch globs.
+const e2eSpecKeys = (process.env.E2E_SPEC ?? '')
+  .split(/[,;]/)
+  .map(s => s.trim().replace(/[^\w.-]/g, ''))
+  .filter(Boolean);
+const e2eTestMatch = e2eSpecKeys.length ? e2eSpecKeys.map(k => `**/*${k}*.spec.ts`) : undefined;
+const e2eScope = process.env.E2E_TEST_SCOPE?.trim();
+const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 
 export default defineConfig({
   testDir: 'tests/',
-  ...(e2eTag ? { grep: new RegExp(e2eTag) } : {}),
+  ...(e2eTestMatch?.length ? { testMatch: e2eTestMatch } : {}),
+  ...(e2eGrep ? { grep: e2eGrep } : {}),
   /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
