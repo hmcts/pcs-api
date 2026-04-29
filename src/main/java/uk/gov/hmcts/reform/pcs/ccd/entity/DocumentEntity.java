@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,4 +67,8 @@ public class DocumentEntity {
     @JoinColumn(name = "enf_case_id")
     @JsonBackReference
     private EnforcementOrderEntity enfCase;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "counter_claim_id")
+    private CounterClaimEntity counterClaim;
 }
