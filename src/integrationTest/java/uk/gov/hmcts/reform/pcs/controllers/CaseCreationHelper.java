@@ -34,13 +34,15 @@ public class CaseCreationHelper {
 
         caseEntity.addClaim(claimEntity);
 
-        PartyEntity defendant = new PartyEntity();
-        defendant.setIdamId(idamUserId);
-        defendant.setFirstName("John");
-        defendant.setLastName("Doe");
-
-        caseEntity.addParty(defendant);
-        claimEntity.addParty(defendant, partyRole);
+        PartyEntity party = new PartyEntity();
+        party.setIdamId(idamUserId);
+        party.setFirstName("John");
+        party.setLastName("Doe");
+        if (PartyRole.CLAIMANT == partyRole) {
+            party.setOrgName("Test Claimant");
+        }
+        caseEntity.addParty(party);
+        claimEntity.addParty(party, partyRole);
 
         return pcsCaseRepository.save(caseEntity);
     }
