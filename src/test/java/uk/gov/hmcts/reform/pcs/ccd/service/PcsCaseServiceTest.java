@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -256,7 +257,9 @@ class PcsCaseServiceTest {
 
         // When
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData));
+                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData,
+                                                                                         EventFlow.CREATE.name()
+                                                          ));
 
         // Then
         assertEquals("PCSCase cannot be null", exception.getMessage());
@@ -281,14 +284,14 @@ class PcsCaseServiceTest {
             .build();
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
+        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
 
         // When
-        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.UPDATE.name());
 
         // Then
-        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity);
-        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity);
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
+        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
     }
 
     private ListValue<FlagDetail> createFlagDetails() {

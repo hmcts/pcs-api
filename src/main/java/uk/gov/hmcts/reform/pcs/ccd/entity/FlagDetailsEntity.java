@@ -66,6 +66,9 @@ public class FlagDetailsEntity {
 
     private String flagUpdateComment;
 
+    @Column(name = "flag_update_comment_cy")
+    private String flagUpdateCommentWelsh;
+
     private LocalDateTime dateTimeCreated;
 
     private LocalDateTime dateTimeModified;

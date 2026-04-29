@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 
 import java.time.LocalDateTime;
@@ -51,7 +52,7 @@ class CaseFlagServiceTest {
             .build();
 
         // When
-        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, EventFlow.CREATE.name());
 
         // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
@@ -78,7 +79,7 @@ class CaseFlagServiceTest {
             .build();
 
         // When
-        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, EventFlow.CREATE.name());
 
         // Then
         List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
@@ -96,9 +97,6 @@ class CaseFlagServiceTest {
         UUID id = UUID.randomUUID();
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity(id);
         List<ListValue<FlagDetail>> flagDetails = new ArrayList<>();
-        flagDetails.addAll(createFlagDetail(null, "CF0002", "Complex Case",
-                                            "Complicated case", "Active", false
-        ));
         flagDetails.addAll(createFlagDetail(id.toString(),"CF0008", "Power of arrest with Police ",
                                             "Police arrest inactive", "Inactive", false));
         Flags incomingFlags = Flags.builder()
@@ -107,15 +105,13 @@ class CaseFlagServiceTest {
             .build();
 
         // When
-        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, EventFlow.UPDATE.name());
 
         // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
         List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
-        assertEquals("CF0002", savedFlags.getFirst().getFlagCode());
-        assertEquals("Complicated case", savedFlags.getFirst().getFlagComment());
-        assertEquals(2, savedFlags.size());
-        assertThat(savedFlags).extracting(FlagDetailsEntity::getFlagCode).containsExactly("CF0002", "CF0008");
+        assertEquals(1, savedFlags.size());
+        assertThat(savedFlags).extracting(FlagDetailsEntity::getFlagCode).containsExactly("CF0008");
         assertThat(savedFlags.getLast().getFlagComment()).isEqualTo("Police arrest inactive");
         assertThat(savedFlags.getLast().getFlagCode()).isEqualTo("CF0008");
     }

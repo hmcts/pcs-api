@@ -29,7 +29,7 @@ public class CaseFlagService {
 
     private RefDataFlagsRepository refDataFlagsRepository;
 
-    public void mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
+    public void mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity, String flow) {
 
         Map<UUID, FlagDetailsEntity> existingFlagDetails =
             pcsCaseEntity.getCaseFlags().stream()
@@ -70,8 +70,10 @@ public class CaseFlagService {
 
             flagDetailsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
 
-            flagDetailsEntity.setFlagComment(incomingFlagDetail.getFlagComment());
-            flagDetailsEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+            if (flow.equals("CREATE")) {
+                flagDetailsEntity.setFlagComment(incomingFlagDetail.getFlagComment());
+                flagDetailsEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+            }
 
             flagDetailsEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
             flagDetailsEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
@@ -81,7 +83,10 @@ public class CaseFlagService {
             flagDetailsEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
             flagDetailsEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
 
-            flagDetailsEntity.setFlagUpdateComment(incomingFlagDetail.getFlagUpdateComment());
+            if (flow.equals("UPDATE")) {
+                flagDetailsEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
+                flagDetailsEntity.setFlagUpdateCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+            }
 
             flagDetailsEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagDetailsEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
