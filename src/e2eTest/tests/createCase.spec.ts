@@ -108,7 +108,11 @@ test.describe('[Create Case - England] @nightly', async () => {
       year: tenancyLicenceDetails.yearTextInput,
       question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
       option: tenancyLicenceDetails.yesRadioOption,
+<<<<<<< HDPI-5743-content-changes-to-make-a-claim
       files: ['tenancyLicence.docx'],
+=======
+      files: ['tenancyLicence.docx']
+>>>>>>> master
     });
     await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yesRadioOption});
     await performAction('selectRentArrearsPossessionGround', {
@@ -367,7 +371,11 @@ test.describe('[Create Case - England] @nightly', async () => {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
       question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
       option: tenancyLicenceDetails.noRadioOption,
+<<<<<<< HDPI-5743-content-changes-to-make-a-claim
       reason: tenancyLicenceDetails.reasonForNoCopyInputText,
+=======
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+>>>>>>> master
     });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
