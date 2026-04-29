@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.confirmeviction;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,11 +31,6 @@ class ConfirmEvictionTest extends BaseEventTest {
     @Mock
     private ConfirmEvictionConfigurer confirmEvictionConfigurer;
 
-    @BeforeEach
-    void setUp() {
-        setEventUnderTest(underTest);
-    }
-
     @Test
     void shouldConfigureDecentralisedWhenNonProdSupportEnabled() {
         // Given
@@ -45,7 +39,8 @@ class ConfirmEvictionTest extends BaseEventTest {
             .build();
 
         try (MockedStatic<TestSupportEnvironment> mocked = mockStatic(TestSupportEnvironment.class)) {
-            mocked.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(true);
+            mocked.when(TestSupportEnvironment::isDev).thenReturn(true);
+            setEventUnderTest(underTest);
 
             // When
             callSubmitHandler(caseData);
@@ -59,7 +54,7 @@ class ConfirmEvictionTest extends BaseEventTest {
     void shouldNotConfigureDecentralisedWhenNonProdSupportDisabled() {
         try (MockedStatic<TestSupportEnvironment> mocked =
                  Mockito.mockStatic(TestSupportEnvironment.class)) {
-            mocked.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(false);
+            mocked.when(TestSupportEnvironment::isDev).thenReturn(false);
 
             clearInvocations(confirmEvictionConfigurer);
 

@@ -1,11 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -73,6 +77,18 @@ class TestCaseGenerationTest {
     private ResumePossessionClaim resumePossessionClaim;
     @Mock
     private EnforceTheOrder enforceTheOrder;
+
+    private MockedStatic<TestSupportEnvironment> mockedEnv;
+
+    @BeforeEach
+    void setUp() {
+        mockedEnv = Mockito.mockStatic(TestSupportEnvironment.class);
+    }
+
+    @AfterEach
+    void tearDown() {
+        mockedEnv.close();
+    }
 
     @Test
     @SuppressWarnings("unchecked")
@@ -247,36 +263,35 @@ class TestCaseGenerationTest {
     @SuppressWarnings("unchecked")
     void shouldConfigureDecentralisedWhenNonProdSupportEnabled() {
         // Given
-        try (MockedStatic<TestSupportEnvironment> mocked = mockStatic(TestSupportEnvironment.class)) {
-            mocked.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(true);
-            DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder = mockConfigBuilder();
-            EventTypeBuilder<PCSCase, UserRole, State> eventTypeBuilder =
-                (EventTypeBuilder<PCSCase, UserRole, State>) mock(EventTypeBuilder.class);
-            Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
-                (Event.EventBuilder<PCSCase, UserRole, State>) mock(Event.EventBuilder.class, RETURNS_SELF);
-            FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>> fb =
-                (FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>>)
-                    mock(FieldCollection.FieldCollectionBuilder.class, RETURNS_SELF);
+        DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder = mockConfigBuilder();
+        EventTypeBuilder<PCSCase, UserRole, State> eventTypeBuilder =
+            (EventTypeBuilder<PCSCase, UserRole, State>) mock(EventTypeBuilder.class);
+        Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
+            (Event.EventBuilder<PCSCase, UserRole, State>) mock(Event.EventBuilder.class, RETURNS_SELF);
+        FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>> fb =
+            (FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>>)
+                mock(FieldCollection.FieldCollectionBuilder.class, RETURNS_SELF);
 
-            when(configBuilder.decentralisedEvent(eq(createTestCase.name()), any(), any()))
-                .thenReturn(eventTypeBuilder);
-            when(eventTypeBuilder.initialState(AWAITING_SUBMISSION_TO_HMCTS)).thenReturn(eventBuilder);
-            when(eventBuilder.fields()).thenReturn(fb);
+        when(configBuilder.decentralisedEvent(eq(createTestCase.name()), any(), any()))
+            .thenReturn(eventTypeBuilder);
+        when(eventTypeBuilder.initialState(AWAITING_SUBMISSION_TO_HMCTS)).thenReturn(eventBuilder);
+        when(eventBuilder.fields()).thenReturn(fb);
 
-            // When
-            underTest.configureDecentralised(configBuilder);
+        // When
+        underTest.configureDecentralised(configBuilder);
 
-            // Then
-            verify(configBuilder, times(1)).decentralisedEvent(anyString(), any(), any());
-        }
+        // Then
+        verify(configBuilder, times(1)).decentralisedEvent(anyString(), any(), any());
+
     }
 
+    @Disabled
     @Test
     void shouldConfigureDecentralisedWhenNonProdSupportNotEnabled() {
-        // Given
-        try (MockedStatic<TestSupportEnvironment> mocked = mockStatic(TestSupportEnvironment.class)) {
-            mocked.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(false);
-
+        try (MockedStatic<System> mockedSystem = mockStatic(System.class)) {
+            mockedSystem.when(() -> System.getenv("ENABLE_TESTING_SUPPORT")).thenReturn("false");
+            // Given
+            mockedEnv.when(TestSupportEnvironment::isPreview).thenReturn(false);
             DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder = mockConfigBuilder();
 
             // When

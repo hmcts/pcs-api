@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +31,6 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
-import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isNonProdTestSupportEnabled;
 
 @Component
 @Slf4j
@@ -53,7 +53,9 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        if (isNonProdTestSupportEnabled()) {
+        log.info("Configuring non-production support event: {}", EVENT_NAME);
+        if (TestSupportEnvironment.isPreview()
+            || Boolean.parseBoolean(System.getenv().get("ENABLE_TESTING_SUPPORT"))) {
             log.info("Test support enabled, configuring event: {}", EVENT_NAME);
             configure(configBuilder);
         }

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -87,12 +88,21 @@ class EnforceTheOrderTest extends BaseEventTest {
     @Mock
     private SavingPageBuilder savingPageBuilder;
 
+    private MockedStatic<TestSupportEnvironment> mockedEnv;
+
     @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
+        mockedEnv = Mockito.mockStatic(TestSupportEnvironment.class);
+        mockedEnv.when(TestSupportEnvironment::isDev).thenReturn(true);
         when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(EventId.enforceTheOrder)))
                 .thenReturn(savingPageBuilder);
         setEventUnderTest(enforceTheOrder);
+    }
+
+    @AfterEach
+    void tearDown() {
+        mockedEnv.close();
     }
 
     @Test
@@ -387,28 +397,25 @@ class EnforceTheOrderTest extends BaseEventTest {
 
     @Test
     void shouldNOTConfigurePages() {
-        try (MockedStatic<TestSupportEnvironment> mocked =
-                 Mockito.mockStatic(TestSupportEnvironment.class)) {
-            mocked.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(false);
-            clearInvocations(enforcementPageConfigurer);
-            clearInvocations(warrantPageConfigurer);
-            clearInvocations(writPageConfigurer);
-            clearInvocations(warrantOfRestitutionPageConfigurer);
+        mockedEnv.when(TestSupportEnvironment::isDev).thenReturn(false);
+        clearInvocations(enforcementPageConfigurer);
+        clearInvocations(warrantPageConfigurer);
+        clearInvocations(writPageConfigurer);
+        clearInvocations(warrantOfRestitutionPageConfigurer);
 
-            // Given
-            PCSCase caseData = PCSCase.builder()
-                .enforcementOrder(EnforcementOrder.builder().build())
-                .build();
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build())
+            .build();
 
-            // When
-            callStartHandler(caseData);
+        // When
+        callStartHandler(caseData);
 
-            //Then
-            verifyNoInteractions(enforcementPageConfigurer);
-            verifyNoInteractions(warrantPageConfigurer);
-            verifyNoInteractions(writPageConfigurer);
-            verifyNoInteractions(warrantOfRestitutionPageConfigurer);
-        }
+        //Then
+        verifyNoInteractions(enforcementPageConfigurer);
+        verifyNoInteractions(warrantPageConfigurer);
+        verifyNoInteractions(writPageConfigurer);
+        verifyNoInteractions(warrantOfRestitutionPageConfigurer);
     }
 
     private static Stream<Arguments> enforcementFeeScenarios() {
