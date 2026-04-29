@@ -21,10 +21,10 @@ import static org.mockito.Mockito.when;
 class RoleToAccessProfilesTest {
 
     @Mock
-    private ConfigBuilder<PCSCase, State, UserRole> configBuilder;
+    private ConfigBuilder<PCSCase, State, CcdRole> configBuilder;
 
     @Mock
-    private CaseRoleToAccessProfileBuilder<UserRole> accessProfileBuilder;
+    private CaseRoleToAccessProfileBuilder<CcdRole> accessProfileBuilder;
 
     private final RoleToAccessProfiles underTest = new RoleToAccessProfiles();
 
