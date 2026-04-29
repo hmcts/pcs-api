@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.confirmeviction;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -15,15 +16,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.ConfirmEvictionConfigurer;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmEviction;
+import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isNonProdTestSupportEnabled;
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
 
     private final ConfirmEvictionConfigurer confirmEvictionConfigurer;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+        if (isNonProdTestSupportEnabled()) {
+            log.info("Configuring event: {}", confirmEviction.name());
+            configure(configBuilder);
+        }
+    }
+
+    void configure(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(confirmEviction.name(), this::submit)

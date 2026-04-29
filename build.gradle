@@ -126,6 +126,10 @@ test {
   }
 }
 
+tasks.withType(Test).configureEach {
+  environment "ENABLE_TESTING_SUPPORT", "true"
+}
+
 tasks.register('architectureValidation', Test) {
   description = "Runs architecture validation tests (domain-entity alignment checks)"
   group = "verification"
