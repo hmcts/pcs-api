@@ -18,7 +18,6 @@ let caseNumbers: string[] = [];
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
-  //await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   for (let i = 0; i < 5; i++) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
@@ -45,7 +44,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Case Linking]', async () => {
-  test('Case Linking @PR @regression @nightly', async () => {
+  test('Case Linking @nightly', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', beforeYouStart.mainHeader);
