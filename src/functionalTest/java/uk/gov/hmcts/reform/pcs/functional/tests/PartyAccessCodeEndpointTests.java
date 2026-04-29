@@ -38,9 +38,8 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @AfterEach
     void cleanUp() {
         CaseRoleCleanUp.cleanUpCaseRole(caseReference.toString(), TestConstants.PCS_SOLICITOR_AUTOMATION_IDAM_UID,
-                                        "[CREATOR]");
+                                        "[CLAIMANTSOLICITOR]");
     }
-
 
     @Title("Party Access Code Endpoint Tests - should return 200 when successfully link user with valid access code")
     @Test
