@@ -34,9 +34,6 @@ public class ClaimResponseService {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
-    //when contact by phone = no, we MUST skip saving contact_by_text and phone number.
-    private boolean shouldSavePhoneNumAndTextPreference;
-
     /**
      * Saves defendant's contact preferences and contact details.
      * Finds the defendant party by the current user's IDAM ID and case reference updates their information.
@@ -55,7 +52,8 @@ public class ClaimResponseService {
 
         //save to relevant tables
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
-        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
+        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(),
+                                  dataFromDraftTable.getDefendantResponses());
 
         // Copy dateOfBirth from defendantResponses to party entity if present
         if (dataFromDraftTable.getDefendantResponses() != null
@@ -87,35 +85,35 @@ public class ClaimResponseService {
      * Updates party's contact details (phone number, email address, first name, and last name).
      * Only updates if the values are provided (non-blank).
      */
-    private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantResponse) {
-
-        if (StringUtils.isNotBlank(defendantResponse.getParty().getFirstName())) {
-            party.setFirstName(defendantResponse.getParty().getFirstName());
+    private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantContactDetails,
+                                           DefendantResponses defendantResponses) {
+        if (StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())) {
+            party.setFirstName(defendantContactDetails.getParty().getFirstName());
             log.debug("Updated first name for party ID: {}", party.getId());
         }
 
-        if (StringUtils.isNotBlank(defendantResponse.getParty().getLastName())) {
-            party.setLastName(defendantResponse.getParty().getLastName());
+        if (StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName())) {
+            party.setLastName(defendantContactDetails.getParty().getLastName());
             log.debug("Updated last name for party ID: {}", party.getId());
         }
 
-        if (defendantResponse.getParty().getDateOfBirth() != null) {
-            party.setDateOfBirth(defendantResponse.getParty().getDateOfBirth());
+        if (defendantContactDetails.getParty().getDateOfBirth() != null) {
+            party.setDateOfBirth(defendantContactDetails.getParty().getDateOfBirth());
             log.debug("Updated date of birth for party ID: {}", party.getId());
         }
 
-        if (shouldSavePhoneNumAndTextPreference
-            && StringUtils.isNotBlank(defendantResponse.getParty().getPhoneNumber())) {
-            party.setPhoneNumber(defendantResponse.getParty().getPhoneNumber());
+        if (isContactByPhoneSelected(defendantResponses.getContactByPhone())
+            && StringUtils.isNotBlank(defendantContactDetails.getParty().getPhoneNumber())) {
+            party.setPhoneNumber(defendantContactDetails.getParty().getPhoneNumber());
             log.debug("Updated phone number for party ID: {}", party.getId());
         }
 
-        if (StringUtils.isNotBlank(defendantResponse.getParty().getEmailAddress())) {
-            party.setEmailAddress(defendantResponse.getParty().getEmailAddress());
+        if (StringUtils.isNotBlank(defendantContactDetails.getParty().getEmailAddress())) {
+            party.setEmailAddress(defendantContactDetails.getParty().getEmailAddress());
             log.debug("Updated email address for party ID: {}", party.getId());
         }
 
-        AddressUK newAddress = defendantResponse.getParty().getAddress();
+        AddressUK newAddress = defendantContactDetails.getParty().getAddress();
 
         if (newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
             AddressEntity existingAddress = party.getAddress();
@@ -150,13 +148,11 @@ public class ClaimResponseService {
             saveNeeded = true;
         }
 
-        contactPrefs.setPreferenceType(defendantResponse.getPreferenceType());
+        contactPrefs.setContactByEmail(defendantResponse.getContactByEmail());
+        contactPrefs.setContactByPost(defendantResponse.getContactByPost());
         contactPrefs.setContactByPhone(defendantResponse.getContactByPhone());
 
-        shouldSavePhoneNumAndTextPreference = Optional.ofNullable(defendantResponse.getContactByPhone())
-            .map(VerticalYesNo::toBoolean)
-            .orElse(false);
-        if (shouldSavePhoneNumAndTextPreference) {
+        if (isContactByPhoneSelected(defendantResponse.getContactByPhone())) {
             contactPrefs.setContactByText(defendantResponse.getContactByText());
         }
 
@@ -166,5 +162,11 @@ public class ClaimResponseService {
         }
 
         log.debug("Saved contact preferences for party ID: {}", party.getId());
+    }
+
+    private boolean isContactByPhoneSelected(VerticalYesNo contactByPhone) {
+        return Optional.ofNullable(contactByPhone)
+            .map(VerticalYesNo::toBoolean)
+            .orElse(false);
     }
 }
