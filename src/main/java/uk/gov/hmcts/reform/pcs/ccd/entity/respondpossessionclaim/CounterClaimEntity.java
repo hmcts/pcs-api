@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity;
+package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,73 +23,88 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
-import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Builder
+@Table(name = "counter_claim")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "general_application")
-public class GenAppEntity {
+public class CounterClaimEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Version
+    private Integer version;
+
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "sot_id")
+    @JsonManagedReference
+    private StatementOfTruthEntity statementOfTruth;
+
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "case_id")
+    @JoinColumn(name = "case_id", nullable = false)
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
-    @Enumerated(EnumType.STRING)
-    private GenAppType type;
-
-    @Enumerated(EnumType.STRING)
-    private GenAppState state;
-
-    @ManyToOne(fetch = EAGER)
-    @JoinColumn(name = "party_id")
-    @JsonBackReference
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "party_id", nullable = false)
     private PartyEntity party;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "within_14_days")
-    private VerticalYesNo within14Days;
+    private CounterClaimType claimType;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo needHwf;
+    private VerticalYesNo isClaimAmountKnown;
+
+    private BigDecimal claimAmount;
+
+    private BigDecimal estimatedMaxClaimAmount;
+
+    @Column(name = "counterclaim_for")
+    private String counterClaimFor;
+
+    @Column(name = "counterclaim_reasons")
+    private String counterClaimReasons;
+
+    private String otherOrderRequestDetails;
+
+    private String otherOrderRequestFacts;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo needHelpWithFees;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo appliedForHwf;
 
-    @OneToOne(cascade = ALL, orphanRemoval = true)
-    @JoinColumn(name = "hwf_id")
-    @JsonManagedReference
-    private HelpWithFeesEntity helpWithFeesEntity;
+    private String hwfReferenceNumber;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo otherPartiesAgreed;
+    private String status;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo withoutNotice;
+    private LocalDateTime claimSubmittedDate;
 
-    private String withoutNoticeReason;
+    private LocalDateTime claimIssuedDate;
+
+    private LocalDateTime lastModifiedDate;
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
+
 }
