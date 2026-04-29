@@ -5,7 +5,7 @@ export const claimantType = {
   whoIsTheClaimantQuestion: `Who is the claimant in this case?`,
   typeOfClaimantYouAreRepresentingHintText: `If you’re a legal representative, you should select the type of claimant you’re representing`,
   privateLandlordRadioOption: `Private landlord`,
-  englandRegisteredProviderForSocialHousingDynamicRadioOption: `Registered provider of social housing`,
+  englandRegisteredProviderForSocialHousingDynamicRadioOption: `Registered provider of social housing or local authority`,
   walesCommunityLandlordDynamicRadioOption: `Community landlord`,
   mortgageLenderRadioOption: `Mortgage lender`,
   otherRadioOption: `Other`,

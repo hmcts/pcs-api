@@ -27,8 +27,9 @@ public class NoticeDetailsService {
     private static final String FUTURE_DATETIME_ERROR = "The date and time cannot be today or in the future";
     private static final String FUTURE_DATE_ERROR = "The date cannot be today or in the future";
     private static final String NOTICE_SERVICE_METHOD_REQUIRED = "You must select how you served the notice";
-    private static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
-    private static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
+    private static final String NOTICE_OTHER_ELECTRONIC_METHOD_EXPLANATION_LABEL =
+        "Give details of how the notice was served";
+    private static final String NOTICE_OTHER_EXPLANATION_LABEL = "Other";
     private static final String NAME_OF_PERSON_DOCUMENT_LEFT_WITH = "Name of person the document was left with";
 
 
@@ -78,11 +79,6 @@ public class NoticeDetailsService {
         // Validate textarea fields for character limits
         errors.addAll(textAreaValidationService.validateMultipleTextAreas(
             TextAreaValidationService.FieldValidation.of(
-                noticeServedDetails.getNoticeEmailExplanation(),
-                NOTICE_EMAIL_EXPLANATION_LABEL,
-                TextAreaValidationService.SHORT_TEXT_LIMIT
-            ),
-            TextAreaValidationService.FieldValidation.of(
                 noticeServedDetails.getNoticeOtherExplanation(),
                 NOTICE_OTHER_EXPLANATION_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
@@ -91,8 +87,12 @@ public class NoticeDetailsService {
                 noticeServedDetails.getNoticePersonName(),
                 NAME_OF_PERSON_DOCUMENT_LEFT_WITH,
                 TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                noticeServedDetails.getNoticeOtherElectronicMethodExplanation(),
+                NOTICE_OTHER_ELECTRONIC_METHOD_EXPLANATION_LABEL,
+                TextAreaValidationService.SHORT_TEXT_LIMIT
             )
-
         ));
 
         return errors;

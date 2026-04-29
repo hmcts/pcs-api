@@ -46,6 +46,7 @@ public class CcdCaseAssignmentConsumerTest {
     private static final String CASE_ID = "1764062392941112";
     private static final String USER_ID = "9a2d861a-6264-4765-9f61-1d403079f71b";
     private static final String CASE_ROLE = "[DEFENDANT]";
+    private static final String DELETE_ROLE = "[CLAIMANTSOLICITOR]";
 
     @Autowired
     private CaseAssignmentApi caseAssignmentService;
@@ -84,8 +85,25 @@ public class CcdCaseAssignmentConsumerTest {
             .toPact(V4Pact.class);
     }
 
+    @Pact(provider = "ccdDataStoreAPI_caseAssignedUserRoles", consumer = "pcs_api")
+    public V4Pact deleteCaseRole(PactDslWithProvider builder) throws JsonProcessingException {
+
+        return builder
+            .given("A User Role exists for a Case")
+            .uponReceiving("a request to remove a user role")
+            .path("/case-users")
+            .method("DELETE")
+            .headers("ServiceAuthorization", SERVICE_AUTH_TOKEN,
+                     "Authorization", AUTHORIZATION_TOKEN,
+                     "Content-Type", "application/json")
+            .body(deleteRoleBody())
+            .willRespondWith()
+            .status(200)
+            .toPact(V4Pact.class);
+    }
+
     @Test
-    @PactTestFor(pactMethods = {"assignCaseRole", "fetchCaseRole"})
+    @PactTestFor(pactMethods = {"assignCaseRole", "fetchCaseRole", "deleteCaseRole"})
     void verifyAllPacts() {
         CaseAssignmentUserRolesRequest request =
             CaseAssignmentUserRolesRequest.builder()
@@ -113,6 +131,24 @@ public class CcdCaseAssignmentConsumerTest {
         assertThat(response.getCaseAssignmentUserRoles().get(0).getUserId()).isEqualTo(USER_ID);
         assertThat(response.getCaseAssignmentUserRoles().get(0).getCaseRole()).isEqualTo(CASE_ROLE);
         assertThat(response.getCaseAssignmentUserRoles().get(0).getCaseDataId()).isEqualTo(CASE_ID);
+
+        CaseAssignmentUserRolesRequest deleteRequest =
+            CaseAssignmentUserRolesRequest.builder()
+                .caseAssignmentUserRolesWithOrganisation(
+                    List.of(CaseAssignmentUserRoleWithOrganisation.builder()
+                                .caseDataId(CASE_ID)
+                                .userId(USER_ID)
+                                .caseRole(DELETE_ROLE)
+                                .build()
+                    )
+                )
+                .build();
+
+        caseAssignmentService.removeCaseUserRoles(
+            AUTHORIZATION_TOKEN,
+            SERVICE_AUTH_TOKEN,
+            deleteRequest
+        );
     }
 
     static PactDslJsonBody caseRoleBody() {
@@ -120,6 +156,16 @@ public class CcdCaseAssignmentConsumerTest {
             .minArrayLike("case_users", 1)
             .stringType("case_id", CASE_ID)
             .stringType("case_role", CASE_ROLE)
+            .stringType("user_id", USER_ID)
+            .closeObject()
+            .closeArray();
+    }
+
+    static PactDslJsonBody deleteRoleBody() {
+        return (PactDslJsonBody) new PactDslJsonBody()
+            .minArrayLike("case_users", 1)
+            .stringType("case_id", CASE_ID)
+            .stringType("case_role", DELETE_ROLE)
             .stringType("user_id", USER_ID)
             .closeObject()
             .closeArray();
