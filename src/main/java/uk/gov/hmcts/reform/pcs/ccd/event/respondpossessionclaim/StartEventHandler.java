@@ -86,7 +86,8 @@ public class StartEventHandler implements Start<PCSCase, State> {
         PossessionClaimResponse mergedResponse = buildMergedResponse(
             pcsCase,
             savedDraft.getPossessionClaimResponse(),
-            claimantEnteredDetails
+            claimantEnteredDetails,
+            matchedDefendant
         );
 
         return buildCaseWithDraft(pcsCase, mergedResponse);
@@ -99,10 +100,13 @@ public class StartEventHandler implements Start<PCSCase, State> {
 
     private PossessionClaimResponse buildMergedResponse(PCSCase latestCase,
                                                          PossessionClaimResponse savedResponses,
-                                                         Party claimantEnteredDetails) {
+                                                         Party claimantEnteredDetails,
+                                                         PartyEntity matchedDefendant) {
+        String currentDefendantPartyId = matchedDefendant.getId() != null ? matchedDefendant.getId().toString() : null;
         return mergeLatestCaseData(latestCase, savedResponses)
             .toBuilder()
             .claimantEnteredDefendantDetails(claimantEnteredDetails)
+            .currentDefendantPartyId(currentDefendantPartyId)
             .build();
     }
 
