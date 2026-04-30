@@ -246,7 +246,7 @@ public class PCSCase {
     private YesOrNo showClaimantTypeNotEligibleWales;
 
     @CCD(
-        label = "Is this a claim against trespassers?"
+        label = "Is your claim a trespass claim?"
     )
     private VerticalYesNo claimAgainstTrespassers;
 
@@ -387,8 +387,8 @@ public class PCSCase {
     private DefendantCircumstances defendantCircumstances;
 
     @CCD(
-        label = "In the alternative to possession, would you like to claim suspension of right to buy"
-            + " or demotion of tenancy?",
+        label = "In the alternative to possession, do you want the court to order a suspension of right to buy "
+            + "and/or demotion of tenancy?",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "AlternativesToPossession"
@@ -521,6 +521,12 @@ public class PCSCase {
 
     @CCD(access = ClaimantAccess.class)
     private List<ListValue<Document>> allDocuments;
+
+    @CCD(
+        label = "Case file view",
+        access = {ClaimantAccess.class}
+    )
+    private ComponentLauncher caseFileView;
 
     @CCD(searchable = false)
     private String formattedDefendantNames;

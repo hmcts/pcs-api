@@ -6,7 +6,7 @@ export const generalApplication = {
   permissionList: `permission to make your claim`,
   permissionToSendList: `permission to send papers to a defendant outside England or Wales`,
   aRequestForList: `a request for a hearing without notifying the defendants`,
-  afterYouSubmitParagraph: `After you submit and pay for your claim, you’ll have until the end of the next working day to make your application. If you do it any later, your application will not be considered and a hearing will be scheduled as normal.`,
+  afterYouSubmitParagraph: `After you submit and pay for your claim, you’ll have 24 hours to make your application. If you do it any later, a hearing date might be scheduled automatically and your application will be considered by the court separately. It might not be considered or listed before the scheduled first hearing date.`,
   ifYouAreNotSureParagraph: `If you’re not sure whether you need to make an application as part of your claim, you should get legal advice.`,
   areYouPlanningToMakeQuestion: `Are you planning to make an application at the same time as your claim?`,
   afterYouHaveSubmittedYourClaimHintText: `After you’ve submitted your claim, there will be instructions on how to make an application`,
