@@ -22,7 +22,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,7 +62,7 @@ class CaseFlagsViewTest {
 
         pcsCaseEntity.setCaseFlags(List.of(createMockCaseFlagsEntity()));
 
-        when(refDataFlagsRepository.findByFlagCode(any())).thenReturn(createMockRefDataFlagsEntity());
+        when(refDataFlagsRepository.findAll()).thenReturn(List.of(createMockRefDataFlagsEntity()));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -87,7 +86,7 @@ class CaseFlagsViewTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
         pcsCaseEntity.setParties(Set.of(partyEntity));
-        when(refDataFlagsRepository.findByFlagCode(any())).thenReturn(createMockRefDataFlagsEntity());
+        when(refDataFlagsRepository.findAll()).thenReturn(List.of(createMockRefDataFlagsEntity()));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);

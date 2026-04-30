@@ -10,13 +10,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,15 +51,19 @@ public class CaseFlagsView {
 
     private List<ListValue<FlagDetail>> mapFlagDetails(List<CaseFlagEntity> flagsEntities) {
 
+        Map<String, RefDataFlagsEntity> refDataFlagsEntitiesMap = refDataFlagsRepository.findAll().stream()
+            .collect(Collectors.toMap(
+                RefDataFlagsEntity::getFlagCode,
+                Function.identity()
+            ));
+
         return flagsEntities.stream()
             .map(caseFlagEntity -> ListValue.<FlagDetail>builder()
                 .id(caseFlagEntity.getId().toString())
                 .value(FlagDetail.builder()
                    .flagCode(caseFlagEntity.getFlagCode())
-                   .name(refDataFlagsRepository.findByFlagCode(
-                       caseFlagEntity.getFlagCode()).getFlagName())
-                   .nameCy(refDataFlagsRepository.findByFlagCode(
-                       caseFlagEntity.getFlagCode()).getFlagNameWelsh())
+                   .name(refDataFlagsEntitiesMap.get(caseFlagEntity.getFlagCode()).getFlagName())
+                   .nameCy(refDataFlagsEntitiesMap.get(caseFlagEntity.getFlagCode()).getFlagNameWelsh())
                    .flagComment(caseFlagEntity.getFlagComment())
                    .flagCommentCy(caseFlagEntity.getFlagCommentWelsh())
                    .status(caseFlagEntity.getDefaultStatus())
@@ -70,17 +77,21 @@ public class CaseFlagsView {
                    .dateTimeModified(caseFlagEntity.getDateTimeModified())
                    .otherDescription(caseFlagEntity.getOtherDescription())
                    .otherDescriptionCy(caseFlagEntity.getOtherDescriptionWelsh())
-                   .hearingRelevant(YesOrNoConverter.toYesOrNo(refDataFlagsRepository.findByFlagCode(
-                       caseFlagEntity.getFlagCode()).getHearingRelevant()))
-                   .availableExternally(YesOrNoConverter.toYesOrNo(refDataFlagsRepository.findByFlagCode(
-                       caseFlagEntity.getFlagCode()).getAvailableExternally()))
-                   .path(caseFlagEntity.getPaths().stream()
-                             .map(pathEntity -> ListValue.<String>builder()
-                                .id(pathEntity.getId().toString())
-                                .value(pathEntity.getPath())
-                                .build())
-                             .toList())
+                   .hearingRelevant(YesOrNoConverter.toYesOrNo(
+                       refDataFlagsEntitiesMap.get(caseFlagEntity.getFlagCode()).getHearingRelevant()))
+                   .availableExternally(YesOrNoConverter.toYesOrNo(
+                       refDataFlagsEntitiesMap.get(caseFlagEntity.getFlagCode()).getAvailableExternally()))
+                   .path(getPath(caseFlagEntity))
                    .build())
+                .build())
+            .toList();
+    }
+
+    private List<ListValue<String>> getPath(CaseFlagEntity caseFlagEntity) {
+        return caseFlagEntity.getPaths().stream()
+            .map(pathEntity -> ListValue.<String>builder()
+                .id(pathEntity.getId().toString())
+                .value(pathEntity.getPath())
                 .build())
             .toList();
     }
