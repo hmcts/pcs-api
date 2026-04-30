@@ -6,28 +6,36 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGroundsValidationUtil;
 
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
 
+    @Mock
+    private PossessionGroundsValidationUtil possessionGroundsValidationUtil;
+
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new AssuredNoArrearsGroundsForPossessionPage());
+        setPageUnderTest(new AssuredNoArrearsGroundsForPossessionPage(possessionGroundsValidationUtil));
     }
 
     @Test
@@ -49,9 +57,15 @@ class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
                 AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(expectedMandatory)
                     .discretionaryGrounds(expectedDiscretionary)
+                    .otherGround(Set.of())
                     .build()
             )
             .build();
+
+        when(possessionGroundsValidationUtil.validateOtherGroundDescription(any(), any()))
+                .thenReturn(AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                        .data(caseData)
+                        .build());
 
         // When: Mid event is executed
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -83,6 +97,7 @@ class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
                 AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(expectedMandatory)
                     .discretionaryGrounds(expectedDiscretionary)
+                    .otherGround(Set.of())
                     .build()
             )
             .build();
@@ -114,9 +129,15 @@ class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
                 AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(mandatoryGrounds)
                     .discretionaryGrounds(discretionaryGrounds)
+                    .otherGround(Set.of())
                     .build()
             )
             .build();
+
+        when(possessionGroundsValidationUtil.validateOtherGroundDescription(any(), any()))
+            .thenReturn(AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(caseData)
+                .build());
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -125,6 +146,51 @@ class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
 
         assertThat(updatedCaseData.getNoRentArrearsGroundsOptions().getShowGroundReasonPage())
             .isEqualTo(expectedShowFlag);
+    }
+
+    @Test
+    void shouldErrorWhenNoAdditionalGroundsSelected() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .noRentArrearsGroundsOptions(
+                    AssuredNoArrearsPossessionGrounds.builder()
+                        .mandatoryGrounds(Set.of())
+                        .discretionaryGrounds(Set.of())
+                        .otherGround(Set.of())
+                        .build()
+                )
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isEqualTo("Please select at least one ground");
+    }
+
+    @Test
+    void shouldNotErrorWhenOtherGroundsSelected() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .noRentArrearsGroundsOptions(
+                        AssuredNoArrearsPossessionGrounds.builder()
+                                .mandatoryGrounds(Set.of())
+                                .discretionaryGrounds(Set.of())
+                                .otherGround(Set.of(AssuredAdditionalOtherGround.OTHER))
+                                .build()
+                )
+                .build();
+
+        when(possessionGroundsValidationUtil.validateOtherGroundDescription(any(), any()))
+                .thenReturn(AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                        .data(caseData)
+                        .build());
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNullOrEmpty();
     }
 
     private static Stream<Arguments> provideRentArrearsScenarios() {

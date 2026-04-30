@@ -3,11 +3,14 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
@@ -183,14 +186,19 @@ public class ClaimGroundService {
                                         .build());
         }
 
+        if (!CollectionUtils.isEmpty(groundsForPossession.getAdditionalOtherGround())) {
+            addOtherGroundToClaimEntity(claimGroundEntities,
+                    groundsForPossession.getAdditionalOtherGroundDescription());
+        }
+
         return claimGroundEntities;
     }
 
     private List<ClaimGroundEntity> assuredTenancyNoRentArrearsGroundsWithReason(PCSCase pcsCase) {
 
-        Set<AssuredMandatoryGround> mandatoryGrounds = pcsCase.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
-        Set<AssuredDiscretionaryGround> discretionaryGrounds = pcsCase
-                .getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
+        AssuredNoArrearsPossessionGrounds groundsForPossession = pcsCase.getNoRentArrearsGroundsOptions();
+        Set<AssuredMandatoryGround> mandatoryGrounds = groundsForPossession.getMandatoryGrounds();
+        Set<AssuredDiscretionaryGround> discretionaryGrounds = groundsForPossession.getDiscretionaryGrounds();
         NoRentArrearsReasonForGrounds reasons = pcsCase.getNoRentArrearsReasonForGrounds();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
@@ -245,6 +253,10 @@ public class ClaimGroundService {
                                  .isRentArrears(isRentArrearsGround)
                                  .build());
             }
+        }
+
+        if (!CollectionUtils.isEmpty(groundsForPossession.getOtherGround())) {
+            addOtherGroundToClaimEntity(entities, groundsForPossession.getOtherGroundDescription());
         }
 
         return entities;
@@ -401,4 +413,12 @@ public class ClaimGroundService {
         return claimGroundEntities;
     }
 
+    private void addOtherGroundToClaimEntity(List<ClaimGroundEntity> entities, String otherGroundDescription) {
+        entities.add(ClaimGroundEntity.builder()
+            .category(ClaimGroundCategory.ASSURED_OTHER)
+            .code(AssuredAdditionalOtherGround.OTHER.name())
+            .reason(otherGroundDescription)
+            .isRentArrears(false)
+            .build());
+    }
 }

@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
@@ -205,6 +206,7 @@ class ClaimGroundServiceTest {
 
         Set<AssuredMandatoryGround> mandatory = EnumSet.allOf(AssuredMandatoryGround.class);
         Set<AssuredDiscretionaryGround> discretionary = EnumSet.allOf(AssuredDiscretionaryGround.class);
+        Set<AssuredAdditionalOtherGround> other = EnumSet.allOf(AssuredAdditionalOtherGround.class);
 
         PCSCase caseData = PCSCase.builder()
             .claimDueToRentArrears(YesOrNo.NO)
@@ -212,6 +214,8 @@ class ClaimGroundServiceTest {
                 AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(mandatory)
                     .discretionaryGrounds(discretionary)
+                    .otherGround(other)
+                    .otherGroundDescription("Other ground description")
                     .build()
             )
             .noRentArrearsReasonForGrounds(reasons)
@@ -354,9 +358,14 @@ class ClaimGroundServiceTest {
                     .code("FALSE_STATEMENT_GROUND17")
                     .reason("Reason from getFalseStatement")
                     .isRentArrears(false)
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.ASSURED_OTHER)
+                    .code("OTHER")
+                    .reason("Other ground description")
+                    .isRentArrears(false)
                     .build()
             );
-
     }
 
     @Test
@@ -374,6 +383,7 @@ class ClaimGroundServiceTest {
                     .rentArrearsGrounds(Set.of(AssuredRentArrearsGround.RENT_ARREARS_GROUND10))
                     .additionalMandatoryGrounds(null)
                     .additionalDiscretionaryGrounds(null)
+                    .additionalOtherGround(null)
                     .build()
             )
             .build();
@@ -400,6 +410,7 @@ class ClaimGroundServiceTest {
                 AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(null)
                     .discretionaryGrounds(null)
+                    .otherGround(null)
                     .build()
             )
             .build();
@@ -428,6 +439,8 @@ class ClaimGroundServiceTest {
             AssuredAdditionalDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14
         );
 
+        Set<AssuredAdditionalOtherGround> other = EnumSet.allOf(AssuredAdditionalOtherGround.class);
+
         RentArrearsGroundsReasons reasons = RentArrearsGroundsReasons.builder()
             .ownerOccupierReason("Owner occupier needs the property")
             .redevelopmentReason("Redevelopment planned")
@@ -447,6 +460,8 @@ class ClaimGroundServiceTest {
                     .rentArrearsGrounds(rentArrearsGrounds)
                     .additionalMandatoryGrounds(mandatoryGrounds)
                     .additionalDiscretionaryGrounds(discretionaryGrounds)
+                    .additionalOtherGround(other)
+                    .additionalOtherGroundDescription("Other ground description")
                     .build()
             )
             .rentArrearsGroundsReasons(reasons)
@@ -487,6 +502,12 @@ class ClaimGroundServiceTest {
                     .code("NUISANCE_ANNOYANCE_GROUND14")
                     .reason("Tenant caused nuisance")
                     .isRentArrears(false)
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.ASSURED_OTHER)
+                    .code("OTHER")
+                    .reason("Other ground description")
+                    .isRentArrears(false)
                     .build()
             );
     }
@@ -512,6 +533,7 @@ class ClaimGroundServiceTest {
                     .rentArrearsGrounds(rentArrearsGrounds)
                     .additionalMandatoryGrounds(Set.of())
                     .additionalDiscretionaryGrounds(Set.of())
+                    .additionalOtherGround(Set.of())
                     .build()
             )
             .build();
@@ -818,5 +840,4 @@ class ClaimGroundServiceTest {
         // Then
         assertThat(actualClaimGroundEntities).isEqualTo(expectedClaimGroundEntities);
     }
-
 }

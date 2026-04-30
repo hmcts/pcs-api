@@ -1,18 +1,22 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGroundsValidationUtil;
 
 import java.util.Set;
 
@@ -20,8 +24,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 
 @Slf4j
+@AllArgsConstructor
 @Component
 public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfiguration {
+
+    private final PossessionGroundsValidationUtil possessionGroundsValidationUtil;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -47,6 +54,10 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
             )
             .optional(AssuredNoArrearsPossessionGrounds::getMandatoryGrounds)
             .optional(AssuredNoArrearsPossessionGrounds::getDiscretionaryGrounds)
+            .optional(AssuredNoArrearsPossessionGrounds::getOtherGround)
+            .mandatory(AssuredNoArrearsPossessionGrounds::getOtherGroundDescription,
+                    "noRentArrears_"
+                            + "OtherGroundCONTAINS\"OTHER\"")
             .done()
             .label("assuredNoArrearsGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -54,31 +65,33 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        Set<AssuredMandatoryGround> mandatoryGrounds =
-            caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
-        Set<AssuredDiscretionaryGround> discretionaryGrounds =
-            caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
+        AssuredNoArrearsPossessionGrounds groundsForPossession = caseData.getNoRentArrearsGroundsOptions();
 
-        if (mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty()) {
+        Set<AssuredMandatoryGround> mandatoryGrounds = groundsForPossession.getMandatoryGrounds();
+        Set<AssuredDiscretionaryGround> discretionaryGrounds = groundsForPossession.getDiscretionaryGrounds();
+        Set<AssuredAdditionalOtherGround> additionalOtherGrounds = groundsForPossession.getOtherGround();
+
+        if (!PossessionGroundsValidationUtil.hasAtLeastOneGround(mandatoryGrounds, discretionaryGrounds,
+                additionalOtherGrounds)) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errorMessageOverride("Please select at least one ground")
                 .build();
         }
 
-        boolean hasOtherMandatoryGrounds = mandatoryGrounds.stream()
+        boolean hasOtherMandatoryGrounds = !CollectionUtils.isEmpty(mandatoryGrounds)
+                && mandatoryGrounds.stream()
             .anyMatch(ground -> ground
                 != AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
 
-        boolean hasOtherDiscretionaryGrounds =  discretionaryGrounds.stream()
+        boolean hasOtherDiscretionaryGrounds =  !CollectionUtils.isEmpty(discretionaryGrounds)
+                && discretionaryGrounds.stream()
             .anyMatch(ground -> ground != AssuredDiscretionaryGround.RENT_ARREARS_GROUND10
                 && ground != AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11);
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
-        caseData.getNoRentArrearsGroundsOptions()
-            .setShowGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
+        groundsForPossession.setShowGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+        return possessionGroundsValidationUtil.validateOtherGroundDescription(caseData,
+                groundsForPossession.getOtherGroundDescription());
     }
 }
