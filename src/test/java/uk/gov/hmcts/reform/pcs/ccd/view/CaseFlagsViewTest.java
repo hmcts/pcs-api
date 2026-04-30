@@ -102,6 +102,27 @@ class CaseFlagsViewTest {
     }
 
     @Test
+    void shouldMapComplexPartyFlagFieldsWhenPartiesExistsWithNoFlags() {
+        // Given
+        PartyEntity partyEntity = new PartyEntity();
+        partyEntity.setId(UUID.randomUUID());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(partyEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertNotNull(pcsCase.getParties());
+        assertEquals(1, pcsCase.getParties().size());
+        Party party = pcsCase.getParties().getFirst().getValue();
+        assertNotNull(party.getRespondentFlags());
+        assertEquals(0, party.getRespondentFlags().getDetails().size());
+    }
+
+    @Test
     void shouldHandleNullCaseFlagsGracefully() {
         // Given
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();

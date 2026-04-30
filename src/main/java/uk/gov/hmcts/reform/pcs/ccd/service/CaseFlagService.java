@@ -37,12 +37,15 @@ public class CaseFlagService {
 
         List<String> existingFlagPathIds = getExistingPathIds(existingFlagDetailsMap);
 
-        List<FlagDetailsEntity> mergedFlagDetails = mergeFlagDetails(
-            existingFlagDetailsMap, incomingCaseFlags, pcsCaseEntity, existingFlagPathIds,
-            null);
+        if (incomingCaseFlags != null && incomingCaseFlags.getDetails() != null) {
+            List<FlagDetailsEntity> mergedFlagDetails = mergeFlagDetails(
+                existingFlagDetailsMap, incomingCaseFlags, pcsCaseEntity, existingFlagPathIds,
+                null
+            );
 
-        pcsCaseEntity.getCaseFlags().clear();
-        pcsCaseEntity.getCaseFlags().addAll(mergedFlagDetails);
+            pcsCaseEntity.getCaseFlags().clear();
+            pcsCaseEntity.getCaseFlags().addAll(mergedFlagDetails);
+        }
 
         if (parties != null) {
             List<PartyEntity> mergedPartyEntities = mergePartyFlags(parties, pcsCaseEntity);
