@@ -16,7 +16,10 @@ import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.SubmitDashboardViewHandler;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -41,9 +44,20 @@ class DashboardViewTest extends BaseEventTest {
 
     private DashboardJourneyService dashboardJourneyService;
 
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
+
+    @Mock
+    private DefendantResponseService defendantResponseService;
+
     @BeforeEach
     void setUp() {
-        dashboardJourneyService = new DashboardJourneyService(new ClaimTaskGroupEvaluator());
+        dashboardJourneyService = new DashboardJourneyService(
+            draftCaseDataService,
+            new ClaimTaskGroupEvaluator(),
+            new ResponseTaskGroupEvaluator(),
+            defendantResponseService
+        );
         StartDashboardViewHandler startHandler = new StartDashboardViewHandler(
             pcsCaseService,
             accessValidator,
@@ -66,6 +80,11 @@ class DashboardViewTest extends BaseEventTest {
         when(accessValidator.validateAndGetDefendant(caseEntity, defendantUserId))
             .thenReturn(PartyEntity.builder().idamId(defendantUserId).build());
 
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(false);
+        when(defendantResponseService.hasSubmittedResponse(TEST_CASE_REFERENCE))
+            .thenReturn(false);
+
         PCSCase result = callStartHandler(caseData);
 
         assertThat(result.getDashboardData()).isNotNull();
@@ -73,7 +92,8 @@ class DashboardViewTest extends BaseEventTest {
         assertThat(result.getDashboardData().getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(ListValueUtils.unwrapListItems(result.getDashboardData().getNotifications()))
             .extracting(n -> n.getTemplateId())
-            .containsExactly("Defendant.NoHearingArranged", "Defendant.CaseIssued", "Defendant.ResponseToClaim");
+            .containsExactly("Defendant.NoHearingArranged", "Defendant.CaseIssued", 
+                                        "Defendant.ResponseToClaim","Defendant.ResponseNotStarted");
         verify(pcsCaseService).loadCase(TEST_CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(eq(caseEntity), eq(defendantUserId));
     }
