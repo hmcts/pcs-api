@@ -68,6 +68,12 @@
               },
               {
                 "value": {
+                  "templateId": "Defendant.ViewResponse",
+                  "status": "NOT_AVAILABLE"
+                }
+              },
+              {
+                "value": {
                   "templateId": "Defendant.ReviewResponse",
                   "status": "IN_PROGRESS"
                 }

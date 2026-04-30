@@ -7,21 +7,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.ResponseStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
 import java.util.Map;
-
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 /**
  * Computes dashboard data (notifications + task groups) from submitted case data.
@@ -34,24 +30,34 @@ public class DashboardJourneyService {
     private final DraftCaseDataService draftCaseDataService;
     private final DefendantResponseService defendantResponseService;
     private final ClaimTaskGroupEvaluator claimTaskGroupEvaluator;
+    private final ResponseTaskGroupEvaluator responseTaskGroupEvaluator;
 
 
     public DashboardJourneyService(
         DraftCaseDataService draftCaseDataService,
         ClaimTaskGroupEvaluator claimTaskGroupEvaluator, 
+        ResponseTaskGroupEvaluator responseTaskGroupEvaluator,
         DefendantResponseService defendantResponseService
     ) {
         this.draftCaseDataService = draftCaseDataService;
         this.claimTaskGroupEvaluator = claimTaskGroupEvaluator;
+        this.responseTaskGroupEvaluator = responseTaskGroupEvaluator;
         this.defendantResponseService = defendantResponseService;
     }
 
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
-        ResponseStatus responseStatus = getResponseStatus(caseReference);
+
+        boolean hasDraftResponse = draftCaseDataService.hasUnsubmittedCaseData(
+            caseReference, EventId.respondPossessionClaim);
+        boolean hasSubmittedResponse = defendantResponseService.hasSubmittedResponse(caseReference);
+        
+        DashboardContext ctx = new DashboardContext(caseReference, hasDraftResponse, hasSubmittedResponse);
+
+        ResponseStatus responseStatus = getResponseStatus(hasDraftResponse, hasSubmittedResponse);
 
         List<ListValue<DashboardNotification>> notifications = computeNotifications(responseStatus);
-        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups();
+        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(ctx);
 
         log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for case={}",
                  notifications.size(), taskGroups.size(), caseReference);
@@ -97,35 +103,15 @@ public class DashboardJourneyService {
         ));
     }
 
-    private List<ListValue<TaskGroup>> computeTaskGroups() {
+    private List<ListValue<TaskGroup>> computeTaskGroups(DashboardContext ctx) {
         return ListValueUtils.wrapListItems(List.of(
-            claimTaskGroupEvaluator.evaluate(null),
-
-            TaskGroup.builder()
-                .groupId(TaskGroupId.RESPONSE)
-                .tasks(ListValueUtils.wrapListItems(List.of(
-                    Task.builder()
-                        .templateId("Defendant.RespondToClaim")
-                        .status(TaskStatus.NOT_STARTED)
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.ReviewResponse")
-                        .status(TaskStatus.IN_PROGRESS)
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.SubmitResponse")
-                        .status(TaskStatus.COMPLETED)
-                        .build()
-                )))
-                .build()
+            claimTaskGroupEvaluator.evaluate(ctx),
+            responseTaskGroupEvaluator.evaluate(ctx)
         ));
     }
 
-    private ResponseStatus getResponseStatus(long caseReference) {
-        boolean hasDraft = draftCaseDataService.hasUnsubmittedCaseData(caseReference, EventId.respondPossessionClaim);
-        boolean hasSubmitted = defendantResponseService.hasSubmittedResponse(caseReference);
-    
-        if (!hasDraft & !hasSubmitted) {
+    private ResponseStatus getResponseStatus(boolean hasDraft, boolean hasSubmitted) {
+        if (!hasDraft && !hasSubmitted) {
             return ResponseStatus.NOT_STARTED;
         }
         if (hasDraft && !hasSubmitted) {
