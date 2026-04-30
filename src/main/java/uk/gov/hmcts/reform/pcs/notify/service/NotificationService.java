@@ -4,6 +4,15 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
+import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
@@ -12,8 +21,12 @@ import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
+import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,12 +35,67 @@ import java.util.UUID;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final SchedulerClient schedulerClient;
+    private final NotificationTemplateConfiguration templateConfiguration;
 
     public NotificationService(
         NotificationRepository notificationRepository,
-        SchedulerClient schedulerClient) {
+        SchedulerClient schedulerClient,
+        NotificationTemplateConfiguration templateConfiguration) {
         this.notificationRepository = notificationRepository;
         this.schedulerClient = schedulerClient;
+        this.templateConfiguration = templateConfiguration;
+    }
+
+    public EmailNotificationResponse sendDefendantResponseNoCounterclaimEmailNotification(
+        DefendantResponseEntity defendantResponse
+    ) {
+        return scheduleEmailNotification(
+            buildRequest(
+                templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM),
+                defendantResponse.getParty().getEmailAddress(),
+                buildBasePersonalisation(defendantResponse)
+            ),
+            defendantResponse.getPcsCase().getId()
+        );
+    }
+
+    public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(
+        DefendantResponseEntity defendantResponse
+    ) {
+        return scheduleEmailNotification(
+            buildRequest(
+                templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED),
+                defendantResponse.getParty().getEmailAddress(),
+                buildBasePersonalisation(defendantResponse)
+            ),
+            defendantResponse.getPcsCase().getId()
+        );
+    }
+
+    public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
+        DefendantResponseEntity defendantResponse
+    ) {
+        return scheduleEmailNotification(
+            buildRequest(
+                templateConfiguration.getTemplateId(EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS),
+                defendantResponse.getParty().getEmailAddress(),
+                buildCounterclaimPaymentSuccessPersonalisation(defendantResponse)
+            ),
+            defendantResponse.getPcsCase().getId()
+        );
+    }
+
+    public EmailNotificationResponse sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(
+        DefendantResponseEntity defendantResponse
+    ) {
+        return scheduleEmailNotification(
+            buildRequest(
+                templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED),
+                defendantResponse.getParty().getEmailAddress(),
+                buildBasePersonalisation(defendantResponse)
+            ),
+            defendantResponse.getPcsCase().getId()
+        );
     }
 
     /**
@@ -39,15 +107,16 @@ public class NotificationService {
      * @param emailRequest the request object containing details needed to send the email,
      *                     such as email address, template ID, personalisation details,
      *                     reference, and email reply-to ID
+     * @param caseId the id for the associated case
      * @return an instance of EmailNotificationResponse containing the task ID, notification status,
      *         and notification ID associated with the scheduled email notification
      */
-    public EmailNotificationResponse scheduleEmailNotification(EmailNotificationRequest emailRequest) {
+    public EmailNotificationResponse scheduleEmailNotification(EmailNotificationRequest emailRequest, UUID caseId) {
         String taskId = UUID.randomUUID().toString();
 
         CaseNotification caseNotification = createCaseNotification(
             emailRequest.getEmailAddress(),
-            UUID.randomUUID(),
+            caseId,
             taskId
         );
 
@@ -218,5 +287,71 @@ public class NotificationService {
             log.error("Error updating notification status to {}: {}",
                         status, e.getMessage(), e);
         }
+    }
+
+    protected static Map<String, Object> buildBasePersonalisation(DefendantResponseEntity defendantResponse) {
+        PartyEntity to = defendantResponse.getParty();
+
+        Optional<PartyEntity> optClaimant = defendantResponse.getClaim().getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole().equals(PartyRole.CLAIMANT))
+            .map(ClaimPartyEntity::getParty)
+            .findFirst();
+
+        if (optClaimant.isEmpty()) {
+            throw new PartyNotFoundException(
+                "No claimant party found for defendant response: " + defendantResponse.getId());
+        }
+
+        PartyEntity claimant = optClaimant.get();
+        String claimantName = (claimant.getOrgName() != null
+            ? claimant.getOrgName()
+            : String.format("%s %s", claimant.getFirstName(), claimant.getLastName()))
+            .toUpperCase(Locale.ROOT);
+        String primaryDefendantName = String.format("%s %s", to.getFirstName(), to.getLastName())
+            .toUpperCase(Locale.ROOT);
+
+        return Map.of(
+            "firstName", to.getFirstName(),
+            "lastName", to.getLastName(),
+            "caseNumber", defendantResponse.getPcsCase().getCaseReference().toString(),
+            "claimantName", claimantName,
+            "primaryDefendantName", primaryDefendantName
+        );
+    }
+
+    protected static Map<String, Object> buildCounterclaimPaymentSuccessPersonalisation(
+        DefendantResponseEntity defendantResponse) {
+
+        Map<String, Object> base = new HashMap<>(buildBasePersonalisation(defendantResponse));
+        base.put("paymentReferenceNumber",
+                 defendantResponse.getClaim().getFeePayments()
+                     .stream()
+                     .filter(p -> p.getPaymentStatus() == PaymentStatus.PAID)
+                     .findFirst()
+                     .map(FeePaymentEntity::getExternalReference)
+                     .orElseThrow(
+                         () -> new FeePaymentNotFoundException(
+                             "Paid fee payment not found for defendant response: " + defendantResponse.getId())));
+        return base;
+    }
+
+    /**
+     * Builds EmailNotificationRequest object for the corresponding template.
+     *
+     * @param templateId the gov notify template id for the notification you are sending
+     * @param email the email address you are sending the notification to
+     * @param personalisation the personalization you are inserting into the template
+     * @return the EmailNotificationRequest object built from the three inputs
+     */
+    protected static EmailNotificationRequest buildRequest(
+        String templateId,
+        String email,
+        Map<String, Object> personalisation
+    ) {
+        return EmailNotificationRequest.builder()
+            .templateId(templateId)
+            .emailAddress(email)
+            .personalisation(personalisation)
+            .build();
     }
 }
