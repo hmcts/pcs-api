@@ -27,6 +27,10 @@ public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
                 Task.builder()
                     .templateId("Defendant.ViewClaim")
                     .status(TaskStatus.AVAILABLE)
+                    .build(),
+                Task.builder()
+                    .templateId("Defendant.ViewDocuments")
+                    .status(TaskStatus.NOT_AVAILABLE)
                     .build()
             )))
             .build();
