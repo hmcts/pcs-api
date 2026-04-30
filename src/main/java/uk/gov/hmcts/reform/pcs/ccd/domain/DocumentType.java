@@ -14,7 +14,6 @@ public enum DocumentType implements HasLabel {
     NOTICE_SERVED("Notice served"),
     WITNESS_STATEMENT("Witness statement"),
     TENANCY_AGREEMENT("Tenancy agreement"),
-    LETTER_FROM_CLAIMANT("Letter from claimant"),
     CERTIFICATE_OF_SERVICE("Certificate of service"),
     CORRESPONDENCE_FROM_DEFENDANT("Correspondence from defendant"),
     CORRESPONDENCE_FROM_CLAIMANT("Correspondence from claimant"),
