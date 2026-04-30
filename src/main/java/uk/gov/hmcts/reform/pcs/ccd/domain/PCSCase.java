@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -228,6 +229,9 @@ public class PCSCase {
 
     private String caseTitleMarkdown;
 
+    @CCD(access = {DefendantAccess.class})
+    private DashboardData dashboardData;
+
     @CCD(access = {CitizenAccess.class})
     private LegislativeCountry legislativeCountry;
 
@@ -245,7 +249,7 @@ public class PCSCase {
     private YesOrNo showClaimantTypeNotEligibleWales;
 
     @CCD(
-        label = "Is this a claim against trespassers?"
+        label = "Is your claim a trespass claim?"
     )
     private VerticalYesNo claimAgainstTrespassers;
 
@@ -386,8 +390,8 @@ public class PCSCase {
     private DefendantCircumstances defendantCircumstances;
 
     @CCD(
-        label = "In the alternative to possession, would you like to claim suspension of right to buy"
-            + " or demotion of tenancy?",
+        label = "In the alternative to possession, do you want the court to order a suspension of right to buy "
+            + "and/or demotion of tenancy?",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "AlternativesToPossession"
@@ -520,6 +524,12 @@ public class PCSCase {
 
     @CCD(access = ClaimantAccess.class)
     private List<ListValue<Document>> allDocuments;
+
+    @CCD(
+        label = "Case file view",
+        access = {ClaimantAccess.class}
+    )
+    private ComponentLauncher caseFileView;
 
     @CCD(searchable = false)
     private String formattedDefendantNames;
