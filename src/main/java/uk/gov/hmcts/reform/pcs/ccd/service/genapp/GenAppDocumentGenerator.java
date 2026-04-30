@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -45,6 +46,7 @@ public class GenAppDocumentGenerator {
     private final DocAssemblyService docAssemblyService;
     private final AddressMapper addressMapper;
     private final AddressFormatter addressFormatter;
+    private final CaseReferenceFormatter caseReferenceFormatter;
     private final CaseNameFormatter caseNameFormatter;
     private final ModelMapper modelMapper;
     private final Clock ukClock;
@@ -55,6 +57,7 @@ public class GenAppDocumentGenerator {
                                    DocAssemblyService docAssemblyService,
                                    AddressMapper addressMapper,
                                    AddressFormatter addressFormatter,
+                                   CaseReferenceFormatter caseReferenceFormatter,
                                    CaseNameFormatter caseNameFormatter,
                                    ModelMapper modelMapper,
                                    @Qualifier("ukClock") Clock ukClock) {
@@ -64,6 +67,7 @@ public class GenAppDocumentGenerator {
         this.docAssemblyService = docAssemblyService;
         this.addressMapper = addressMapper;
         this.addressFormatter = addressFormatter;
+        this.caseReferenceFormatter = caseReferenceFormatter;
         this.caseNameFormatter = caseNameFormatter;
         this.modelMapper = modelMapper;
         this.ukClock = ukClock;
@@ -101,7 +105,7 @@ public class GenAppDocumentGenerator {
         String formattedApplicantAddress = getFormattedApplicantAddress(applicantPartyEntity, formattedPropertyAddress);
 
         return GenAppFormPayload.builder()
-            .caseReference(Long.toString(caseReference))
+            .caseReference(caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference))
             .caseName(caseName)
             .submittedOn(currentUkDate)
             .propertyAddress(formattedPropertyAddress)

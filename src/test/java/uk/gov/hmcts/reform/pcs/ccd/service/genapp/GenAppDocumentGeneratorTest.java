@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -67,6 +68,8 @@ class GenAppDocumentGeneratorTest {
     @Mock
     private AddressFormatter addressFormatter;
     @Mock
+    private CaseReferenceFormatter caseReferenceFormatter;
+    @Mock
     private CaseNameFormatter caseNameFormatter;
     @Mock
     private ModelMapper modelMapper;
@@ -93,7 +96,7 @@ class GenAppDocumentGeneratorTest {
 
         underTest = new GenAppDocumentGenerator(pcsCaseService, partyService, securityContextService,
                                                 docAssemblyService, addressMapper, addressFormatter,
-                                                caseNameFormatter, modelMapper, ukClock);
+                                                caseReferenceFormatter, caseNameFormatter, modelMapper, ukClock);
     }
 
     private void stubUKClock() {
@@ -133,12 +136,17 @@ class GenAppDocumentGeneratorTest {
 
     @Test
     void shouldSetCaseReferenceInFormPayload() {
+        // Given
+        String expectedFormattedCaseReference = "formatted case reference";
+        when(caseReferenceFormatter.formatCaseReferenceWithDashes(CASE_REFERENCE))
+            .thenReturn(expectedFormattedCaseReference);
+
         // When
         underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
-        assertThat(formPayload.getCaseReference()).isEqualTo(Long.toString(CASE_REFERENCE));
+        assertThat(formPayload.getCaseReference()).isEqualTo(expectedFormattedCaseReference);
     }
 
     @Test
