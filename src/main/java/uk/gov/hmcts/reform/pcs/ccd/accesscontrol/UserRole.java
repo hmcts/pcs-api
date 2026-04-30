@@ -23,10 +23,10 @@ public enum UserRole implements HasRole {
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", Permission.CRU, RAS),
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
     PCS_SOLICITOR("caseworker-pcs-solicitor", Permission.CRU, IDAM),
+    RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM),
+    DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", Permission.CRU, RAS),
     HMCTS_STAFF("GS_profile", Set.of(R), RAS, "hmcts-staff"),
-    HMCTS_JUDICIARY("GS_profile", Set.of(R), RAS, "hmcts-judiciary"),
-    RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM);
-
+    HMCTS_JUDICIARY("GS_profile", Set.of(R), RAS, "hmcts-judiciary");
     @JsonValue
     private final String role;
     private final Set<Permission> caseTypePermissions;
