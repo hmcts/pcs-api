@@ -144,13 +144,59 @@ public class SecureOrFlexibleGroundsReasons {
     )
     private String underOccupancySuccessionGround;
 
+    @Deprecated
     @CCD(
-        label = "Give details about your reasons for claiming possession (Antisocial behaviour)",
-        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
-            + "You can enter up to 500 characters",
-        typeOverride = TextArea
+            label = "Give details about your reasons for claiming possession (Antisocial behaviour)",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                    + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
     private String antiSocialGround;
+
+    @CCD(
+        label = "Give details about your reasons for claiming possession "
+                + "(Condition 1 of Section 84A of the Housing Act 1985)",
+        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+        typeOverride = TextArea
+    )
+    private String antiSocialCondition1OfS84AGround;
+
+    @CCD(
+        label = "Give details about your reasons for claiming possession "
+                + "(Condition 2 of Section 84A of the Housing Act 1985)",
+        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+        typeOverride = TextArea
+    )
+    private String antiSocialCondition2OfS84AGround;
+
+    @CCD(
+        label = "Give details about your reasons for claiming possession "
+                + "(Condition 3 of Section 84A of the Housing Act 1985)",
+        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+        typeOverride = TextArea
+    )
+    private String antiSocialCondition3OfS84AGround;
+
+    @CCD(
+        label = "Give details about your reasons for claiming possession "
+                + "(Condition 4 of Section 84A of the Housing Act 1985)",
+        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+        typeOverride = TextArea
+    )
+    private String antiSocialCondition4OfS84AGround;
+
+    @CCD(
+        label = "Give details about your reasons for claiming possession "
+                + "(Condition 5 of Section 84A of the Housing Act 1985)",
+        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+        typeOverride = TextArea
+    )
+    private String antiSocialCondition5OfS84AGround;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Overcrowding (ground 9))",
