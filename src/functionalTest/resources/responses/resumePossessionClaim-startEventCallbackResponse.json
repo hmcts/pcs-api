@@ -30,7 +30,7 @@
         },
         {
           "code": "PROVIDER_OF_SOCIAL_HOUSING",
-          "label": "Registered provider of social housing"
+          "label": "Registered provider of social housing or local authority"
         },
         {
           "code": "MORTGAGE_LENDER",

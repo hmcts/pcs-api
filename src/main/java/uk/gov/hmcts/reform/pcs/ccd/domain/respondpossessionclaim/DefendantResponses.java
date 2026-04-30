@@ -91,6 +91,9 @@ public class DefendantResponses {
     private YesNoNotSure landlordLicensed;
 
     @CCD(access = {CitizenAccess.class})
+    private CounterClaim counterClaim;
+
+    @CCD(access = {CitizenAccess.class})
     private ReasonableAdjustments reasonableAdjustments;
 
     @CCD(access = {CitizenAccess.class})
@@ -102,4 +105,9 @@ public class DefendantResponses {
     private LanguageUsed languageUsed;
 
     private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
+    @CCD
+    private VerticalYesNo otherConsiderations;
+
+    @CCD(max = 6400)
+    private String otherConsiderationsDetails;
 }
