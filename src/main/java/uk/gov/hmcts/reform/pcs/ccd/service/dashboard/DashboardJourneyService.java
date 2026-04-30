@@ -1,17 +1,16 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.dashboard;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -26,15 +25,19 @@ import java.util.Map;
 public class DashboardJourneyService {
 
     private final ClaimTaskGroupEvaluator claimTaskGroupEvaluator;
+    private final ResponseTaskGroupEvaluator responseTaskGroupEvaluator;
 
-    public DashboardJourneyService(ClaimTaskGroupEvaluator claimTaskGroupEvaluator) {
+    @Autowired
+    public DashboardJourneyService(ClaimTaskGroupEvaluator claimTaskGroupEvaluator,
+                                   ResponseTaskGroupEvaluator responseTaskGroupEvaluator) {
         this.claimTaskGroupEvaluator = claimTaskGroupEvaluator;
+        this.responseTaskGroupEvaluator = responseTaskGroupEvaluator;
     }
 
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
         List<ListValue<DashboardNotification>> notifications = computeNotifications();
-        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups();
+        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(caseReference, submittedCaseData);
 
         log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for case={}",
                  notifications.size(), taskGroups.size(), caseReference);
@@ -65,27 +68,12 @@ public class DashboardJourneyService {
         ));
     }
 
-    private List<ListValue<TaskGroup>> computeTaskGroups() {
-        return ListValueUtils.wrapListItems(List.of(
-            claimTaskGroupEvaluator.evaluate(null),
+    private List<ListValue<TaskGroup>> computeTaskGroups(long caseReference, PCSCase submittedCaseData) {
+        DashboardContext context = new DashboardContext(caseReference, submittedCaseData);
 
-            TaskGroup.builder()
-                .groupId(TaskGroupId.RESPONSE)
-                .tasks(ListValueUtils.wrapListItems(List.of(
-                    Task.builder()
-                        .templateId("Defendant.RespondToClaim")
-                        .status(TaskStatus.NOT_STARTED)
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.ReviewResponse")
-                        .status(TaskStatus.IN_PROGRESS)
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.SubmitResponse")
-                        .status(TaskStatus.COMPLETED)
-                        .build()
-                )))
-                .build()
+        return ListValueUtils.wrapListItems(List.of(
+            claimTaskGroupEvaluator.evaluate(context),
+            responseTaskGroupEvaluator.evaluate(context)
         ));
     }
 

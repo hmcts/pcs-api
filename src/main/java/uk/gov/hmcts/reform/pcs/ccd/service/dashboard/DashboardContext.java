@@ -1,11 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.dashboard;
 
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 
 public record DashboardContext(
     long caseReference,
-    PcsCaseEntity caseEntity,
-    PartyEntity defendant
+    PCSCase submittedCaseData
 ) {}
