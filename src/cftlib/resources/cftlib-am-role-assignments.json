@@ -15,5 +15,18 @@
         "authorisations": []
       }
     ]
+  },
+  {
+    "email": "ctsc-admin@pcs.com",
+    "id": "3eb42aca-7f4f-4a34-b97c-9a9656f881d5",
+    "roleType": "ORGANISATION",
+    "roleName": "ctsc",
+    "grantType": "BASIC",
+    "roleCategory": "ADMIN",
+    "classification": "PRIVATE",
+    "readOnly": true,
+    "attributes": {
+      "substantive": "N"
+    }
   }
 ]

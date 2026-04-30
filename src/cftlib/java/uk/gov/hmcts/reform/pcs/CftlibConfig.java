@@ -40,6 +40,7 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         var users = Map.of(
             "caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"),
+            "ctsc-admin@pcs.com", List.of("caseworker"),
             "pcs-solicitor1@test.com", List.of("caseworker", "caseworker-pcs-solicitor"),
             "pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker", "caseworker-pcs-solicitor"),
             "citizen@pcs.com", List.of("citizen"),
