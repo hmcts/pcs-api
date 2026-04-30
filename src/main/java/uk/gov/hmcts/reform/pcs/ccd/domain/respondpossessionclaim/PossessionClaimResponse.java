@@ -44,5 +44,15 @@ public class PossessionClaimResponse {
     @CCD(access = {CitizenAccess.class})
     private DefendantResponses defendantResponses;
 
+    @CCD(
+        access = {CitizenAccess.class},
+        typeOverride = FieldType.Collection,
+        typeParameterOverride = "ClaimParty"
+    )
+    private List<ListValue<ClaimParty>> claimParties;
+
+    @CCD(access = {CitizenAccess.class})
+    private String currentDefendantPartyId;
+
 }
 

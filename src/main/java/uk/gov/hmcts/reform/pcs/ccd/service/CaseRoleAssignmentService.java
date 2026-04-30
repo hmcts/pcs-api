@@ -35,7 +35,7 @@ public class CaseRoleAssignmentService {
             .userId(userId)
             .build();
 
-        ArrayList<CaseAssignmentUserRoleWithOrganisation> caseAssignmentList = new ArrayList<>();
+        List<CaseAssignmentUserRoleWithOrganisation> caseAssignmentList = new ArrayList<>();
         caseAssignmentList.add(caseAssignmentUserRoleWithOrganisation);
 
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
