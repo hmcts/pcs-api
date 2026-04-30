@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+
 /**
  * CCD domain complex type for rent arrears details.
  */
@@ -25,6 +27,9 @@ import java.util.List;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class RentArrearsSection {
+
+    public static final String RECOVERY_ATTEMPT_DETAILS_LABEL =
+        "Give details of previous steps taken to recover rent arrears";
 
     @CCD(
         label = "Add document",
@@ -44,25 +49,16 @@ public class RentArrearsSection {
     private BigDecimal total;
 
     @CCD(
-        label = "For the period shown on the rent statement, have any rent payments been paid by someone "
-            + "other than the defendants?",
-        hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
-            + "made by a government department, like the Department for Work and Pensions (DWP)"
+        label = "Have there been previous steps taken to recover rent arrears?",
+        hint = "This includes court proceedings"
     )
-    private VerticalYesNo thirdPartyPayments;
+    private VerticalYesNo recoveryAttempted;
 
     @CCD(
-        label = "Where have the payments come from?",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "ThirdPartyPaymentSource"
+        label = RECOVERY_ATTEMPT_DETAILS_LABEL,
+        hint = "Include any case numbers if there were previous court proceedings. You can enter up to 500 characters.",
+        typeOverride = TextArea
     )
-    private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
-
-    @CCD(
-        label = "Payment source",
-        max = 60
-    )
-    private String paymentSourceOther;
+    private String recoveryAttemptDetails;
 }
 
