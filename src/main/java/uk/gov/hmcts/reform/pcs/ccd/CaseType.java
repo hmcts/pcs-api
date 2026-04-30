@@ -106,7 +106,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, UserRole> builder) {
         for (CaseFileCategory category : CaseFileCategory.values()) {
-            builder.categories(UserRole.CTSC_ADMIN)
+            builder.categories(UserRole.PCS_SOLICITOR)
                 .categoryID(category.getId())
                 .categoryLabel(category.getLabel())
                 .displayOrder(category.getDisplayOrder())
