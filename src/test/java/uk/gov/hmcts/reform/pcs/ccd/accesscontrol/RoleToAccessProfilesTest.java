@@ -21,10 +21,10 @@ import static org.mockito.Mockito.when;
 class RoleToAccessProfilesTest {
 
     @Mock
-    private ConfigBuilder<PCSCase, State, CcdRole> configBuilder;
+    private ConfigBuilder<PCSCase, State, ExternalUserRole> configBuilder;
 
     @Mock
-    private CaseRoleToAccessProfileBuilder<CcdRole> accessProfileBuilder;
+    private CaseRoleToAccessProfileBuilder<ExternalUserRole> accessProfileBuilder;
 
     private final RoleToAccessProfiles underTest = new RoleToAccessProfiles();
 
@@ -38,7 +38,7 @@ class RoleToAccessProfilesTest {
     void shouldRegisterAccessProfileForEveryUserRole() {
         underTest.configure(configBuilder);
         stream(UserRole.values()).forEach(userRole -> {
-            String expectedExternalRole = CcdRole.forCcdRole(userRole).getRole();
+            String expectedExternalRole = ExternalUserRole.forCcdRole(userRole).getRole();
             verify(configBuilder).caseRoleToAccessProfile(argThat(
                 externalRole -> externalRole.getRole().equals(expectedExternalRole)
             ));
