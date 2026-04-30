@@ -20,13 +20,13 @@ public final class TestSupportEnvironment {
         return isProfile(PREVIEW);
     }
 
-    private static boolean isProfile(String preview) {
+    private static boolean isProfile(String name) {
         String value = System.getenv(SPRING_PROFILES_ACTIVE);
         if (value == null || value.isBlank()) {
             return false;
         }
         String lower = value.toLowerCase(Locale.UK);
-        return lower.contains(preview);
+        return lower.contains(name);
     }
 
     public static boolean isNonProdTestSupportEnabled() {
