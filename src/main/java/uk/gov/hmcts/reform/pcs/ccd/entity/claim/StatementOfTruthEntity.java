@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -62,5 +63,7 @@ public class StatementOfTruthEntity {
     private String firmName;
 
     private String positionHeld;
+
+    private LocalDateTime completedDate;
 
 }

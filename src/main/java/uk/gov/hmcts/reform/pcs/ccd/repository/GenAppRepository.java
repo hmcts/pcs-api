@@ -9,4 +9,6 @@ import java.util.UUID;
 @Repository
 public interface GenAppRepository extends JpaRepository<GenAppEntity, UUID> {
 
+    boolean existsByClientReference(String clientReference);
+
 }

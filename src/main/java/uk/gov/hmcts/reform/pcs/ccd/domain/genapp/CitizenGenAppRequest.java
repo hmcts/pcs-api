@@ -34,4 +34,12 @@ public class CitizenGenAppRequest {
 
     private LanguageUsed languageUsed;
 
+    private VerticalYesNo sotAccepted;
+
+    @CCD(max = 60)
+    private String sotFullName;
+
+    @CCD(max = 60)
+    private String clientReference;
+
 }
