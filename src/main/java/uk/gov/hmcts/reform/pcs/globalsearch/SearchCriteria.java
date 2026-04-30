@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import java.util.Collections;
 import java.util.List;
 
-
 @Slf4j
 @Component
 @AllArgsConstructor
