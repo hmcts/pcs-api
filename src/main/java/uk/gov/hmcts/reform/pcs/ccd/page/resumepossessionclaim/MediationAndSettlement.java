@@ -47,7 +47,7 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         <section tabindex="0">
                             <p class="govuk-body">
                                 If your claim is on the grounds of rent arrears, this includes any steps you’ve taken \
-                                to recover the arrears or to agree a repayment plan.
+                                to agree a repayment plan.
                             </p>
                         </section>
                         """)
