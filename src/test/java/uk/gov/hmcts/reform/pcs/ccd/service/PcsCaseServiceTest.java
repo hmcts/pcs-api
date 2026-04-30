@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -258,7 +259,9 @@ class PcsCaseServiceTest {
 
         // When
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData));
+                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData,
+                                                                                         EventFlow.CREATE.name()
+                                                          ));
 
         // Then
         assertEquals("PCSCase cannot be null", exception.getMessage());
@@ -286,14 +289,14 @@ class PcsCaseServiceTest {
         caseData.setParties(parties);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties);
+        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties, EventFlow.UPDATE.name());
 
         // When
-        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.UPDATE.name());
 
         // Then
-        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties);
-        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity, parties);
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties, EventFlow.UPDATE.name());
+        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity, parties, EventFlow.UPDATE.name());
     }
 
     private List<ListValue<Party>> createParties() {
@@ -334,11 +337,11 @@ class PcsCaseServiceTest {
         caseData.setParties(parties);
 
         // When
-        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.UPDATE.name());
 
         // Then
         assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
-        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties);
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties, EventFlow.UPDATE.name());
     }
 
     @Test
@@ -353,7 +356,7 @@ class PcsCaseServiceTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        underTest.patchCaseFlags(CASE_REFERENCE, caseData);
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.CREATE.name());
 
         // Then
         assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();

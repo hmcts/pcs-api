@@ -50,7 +50,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("Caseworker updated case flag for {}", caseReference);
 
-        pcsCaseService.patchCaseFlags(caseReference, pcsCase);
+        pcsCaseService.patchCaseFlags(caseReference, pcsCase, EventFlow.UPDATE.name());
 
         return SubmitResponse.defaultResponse();
     }

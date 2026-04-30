@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -61,7 +61,7 @@ class CaseFlagsViewTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();
 
-        pcsCaseEntity.setCaseFlags(List.of(createMockFlagsEntity()));
+        pcsCaseEntity.setCaseFlags(List.of(createMockCaseFlagsEntity()));
 
         when(refDataFlagsRepository.findByFlagCode(any())).thenReturn(createMockRefDataFlagsEntity());
 
@@ -80,7 +80,7 @@ class CaseFlagsViewTest {
         PartyEntity partyEntity = new PartyEntity();
         partyEntity.setId(UUID.randomUUID());
 
-        FlagDetailsEntity appellantFlags = createMockFlagsEntity();
+        CaseFlagEntity appellantFlags = createMockCaseFlagsEntity();
         partyEntity.setRespondentFlags(List.of(appellantFlags));
 
         PCSCase pcsCase = PCSCase.builder().build();
@@ -148,9 +148,9 @@ class CaseFlagsViewTest {
         assertEquals(0, pcsCase.getParties().size());
     }
 
-    private FlagDetailsEntity createMockFlagsEntity() {
+    private CaseFlagEntity createMockCaseFlagsEntity() {
 
-        return FlagDetailsEntity.builder()
+        return CaseFlagEntity.builder()
             .id(UUID.randomUUID())
             .flagCode("CF0007")
             .flagComment("Urgent case")

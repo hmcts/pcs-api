@@ -16,4 +16,9 @@ public class ClockConfiguration {
         return Clock.system(UK_ZONE_ID);
     }
 
+    @Bean
+    public Clock utcClock() {
+        return Clock.systemUTC();
+    }
+
 }
