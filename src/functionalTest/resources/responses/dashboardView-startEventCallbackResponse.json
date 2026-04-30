@@ -43,13 +43,13 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.ViewClaim",
+                  "templateId": "ViewClaim",
                   "status": "AVAILABLE"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.ViewDocuments",
+                  "templateId": "ViewDocuments",
                   "status": "NOT_AVAILABLE"
                 }
               }
@@ -76,6 +76,25 @@
                 "value": {
                   "templateId": "Defendant.SubmitResponse",
                   "status": "COMPLETED"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "APPLICATIONS",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "MakeGeneralApplication",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ViewAllApplications",
+                  "status": "AVAILABLE"
                 }
               }
             ]

@@ -6,16 +6,14 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
-import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
 
 /**
  * Computes dashboard data (notifications + task groups) from submitted case data.
@@ -25,16 +23,26 @@ import java.util.Map;
 @Slf4j
 public class DashboardJourneyService {
 
-    private final ClaimTaskGroupEvaluator claimTaskGroupEvaluator;
+    private final List<TaskGroupEvaluator> taskGroupEvaluators;
 
-    public DashboardJourneyService(ClaimTaskGroupEvaluator claimTaskGroupEvaluator) {
-        this.claimTaskGroupEvaluator = claimTaskGroupEvaluator;
+    public DashboardJourneyService(List<TaskGroupEvaluator> taskGroupEvaluators) {
+        this.taskGroupEvaluators = taskGroupEvaluators.stream()
+            .sorted(Comparator.comparingInt(evaluator -> evaluator.groupId().ordinal()))
+            .toList();
     }
 
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
+        return computeDashboardData(caseReference, submittedCaseData, null);
+    }
+
+    public DashboardData computeDashboardData(
+        long caseReference,
+        PCSCase submittedCaseData,
+        DashboardContext dashboardContext
+    ) {
         List<ListValue<DashboardNotification>> notifications = computeNotifications();
-        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups();
+        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(dashboardContext);
 
         log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for case={}",
                  notifications.size(), taskGroups.size(), caseReference);
@@ -65,28 +73,12 @@ public class DashboardJourneyService {
         ));
     }
 
-    private List<ListValue<TaskGroup>> computeTaskGroups() {
-        return ListValueUtils.wrapListItems(List.of(
-            claimTaskGroupEvaluator.evaluate(null),
-
-            TaskGroup.builder()
-                .groupId(TaskGroupId.RESPONSE)
-                .tasks(ListValueUtils.wrapListItems(List.of(
-                    Task.builder()
-                        .templateId("Defendant.RespondToClaim")
-                        .status(TaskStatus.NOT_STARTED)
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.ReviewResponse")
-                        .status(TaskStatus.IN_PROGRESS)
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.SubmitResponse")
-                        .status(TaskStatus.COMPLETED)
-                        .build()
-                )))
-                .build()
-        ));
+    private List<ListValue<TaskGroup>> computeTaskGroups(DashboardContext dashboardContext) {
+        return ListValueUtils.wrapListItems(
+            taskGroupEvaluators.stream()
+                .map(evaluator -> evaluator.evaluate(dashboardContext))
+                .toList()
+        );
     }
 
     /**

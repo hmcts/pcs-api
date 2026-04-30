@@ -11,29 +11,34 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_CLAIM;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_DOCUMENTS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.DEFENDANT_RESPOND_TO_CLAIM;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.DEFENDANT_REVIEW_RESPONSE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.DEFENDANT_SUBMIT_RESPONSE;
 
 @Component
-public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
+public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
 
     @Override
     public TaskGroupId groupId() {
-        return TaskGroupId.CLAIM;
+        return TaskGroupId.RESPONSE;
     }
 
     @Override
     public TaskGroup evaluate(DashboardContext ctx) {
         return TaskGroup.builder()
-            .groupId(TaskGroupId.CLAIM)
+            .groupId(TaskGroupId.RESPONSE)
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
-                    .templateId(VIEW_CLAIM)
-                    .status(TaskStatus.AVAILABLE)
+                    .templateId(DEFENDANT_RESPOND_TO_CLAIM)
+                    .status(TaskStatus.NOT_STARTED)
                     .build(),
                 Task.builder()
-                    .templateId(VIEW_DOCUMENTS)
-                    .status(TaskStatus.NOT_AVAILABLE)
+                    .templateId(DEFENDANT_REVIEW_RESPONSE)
+                    .status(TaskStatus.IN_PROGRESS)
+                    .build(),
+                Task.builder()
+                    .templateId(DEFENDANT_SUBMIT_RESPONSE)
+                    .status(TaskStatus.COMPLETED)
                     .build()
             )))
             .build();
