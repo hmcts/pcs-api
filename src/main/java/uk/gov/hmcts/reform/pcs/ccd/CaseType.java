@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
@@ -84,15 +85,32 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
-            .field(PCSCase::getCaseTitleMarkdown);
+            .field(PCSCase::getCaseTitleMarkdown)
+            .field(PCSCase::getDashboardData);
 
         builder.tab("serviceRequest", "Service Request")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
-        builder.tab("caseLinks", "Linked cases")
+        builder.tab("caseFileView", "Case File View")
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
+
+        builder.tab("caseLinks", "Linked Cases")
             .forRoles(UserRole.PCS_SOLICITOR)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
+
+        configureCaseFileCategories(builder);
+    }
+
+    private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        for (CaseFileCategory category : CaseFileCategory.values()) {
+            builder.categories(UserRole.PCS_SOLICITOR)
+                .categoryID(category.getId())
+                .categoryLabel(category.getLabel())
+                .displayOrder(category.getDisplayOrder())
+                .build();
+        }
     }
 }
