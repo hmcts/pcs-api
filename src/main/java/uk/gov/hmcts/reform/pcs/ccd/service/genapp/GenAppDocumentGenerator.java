@@ -47,10 +47,8 @@ public class GenAppDocumentGenerator {
     private final AddressFormatter addressFormatter;
     private final CaseNameFormatter caseNameFormatter;
     private final ModelMapper modelMapper;
-
     private final Clock ukClock;
 
-    // TODO: Tests
     public GenAppDocumentGenerator(PcsCaseService pcsCaseService,
                                    PartyService partyService,
                                    SecurityContextService securityContextService,
@@ -106,7 +104,6 @@ public class GenAppDocumentGenerator {
             .caseReference(Long.toString(caseReference))
             .caseName(caseName)
             .submittedOn(currentUkDate)
-            .issuedOn(currentUkDate)
             .propertyAddress(formattedPropertyAddress)
             .applicant(uk.gov.hmcts.reform.pcs.document.model.Party.builder()
                            .name(applicantName)
@@ -143,7 +140,7 @@ public class GenAppDocumentGenerator {
     }
 
     private String getFormattedApplicantAddress(PartyEntity partyEntity, String formattedPropertyAddress) {
-        String formattedPartyAddress = "";
+        String formattedPartyAddress = null;
         if (partyEntity.getAddressKnown() == VerticalYesNo.YES) {
             if (partyEntity.getAddressSameAsProperty() == VerticalYesNo.YES) {
                 formattedPartyAddress = formattedPropertyAddress;
