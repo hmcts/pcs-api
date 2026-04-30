@@ -26,4 +26,7 @@ public class PaymentAgreement {
     @CCD
     private String repaymentAgreedDetails;
 
+    @CCD
+    private VerticalYesNo repayArrearsInstalments;
+
 }
