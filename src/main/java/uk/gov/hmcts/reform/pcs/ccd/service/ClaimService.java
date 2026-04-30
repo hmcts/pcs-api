@@ -41,7 +41,6 @@ public class ClaimService {
                               ? ClaimantType.fromName(pcsCase.getClaimantType().getValueCode()) : null)
             .againstTrespassers(pcsCase.getClaimAgainstTrespassers())
             .dueToRentArrears(pcsCase.getClaimDueToRentArrears())
-            .claimCosts(pcsCase.getClaimingCostsWanted())
             .preActionProtocolFollowed(pcsCase.getPreActionProtocolCompleted())
             .mediationAttempted(pcsCase.getMediationAttempted())
             .mediationDetails(pcsCase.getMediationAttemptedDetails())

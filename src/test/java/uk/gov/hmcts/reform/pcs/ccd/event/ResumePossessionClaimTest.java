@@ -27,41 +27,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -112,115 +77,37 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private SecurityContextService securityContextService;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
-    @Mock
-    private ResumeClaim resumeClaim;
-    @Mock
-    private SelectClaimantType selectClaimantType;
-    @Mock
-    private ContactPreferences contactPreferences;
-    @Mock
-    private DefendantsDetails defendantsDetails;
-    @Mock
-    private NoticeDetails noticeDetails;
     @Mock(strictness = LENIENT)
     private UserInfo userDetails;
     @Mock
-    private TenancyLicenceDetailsPage tenancyLicenceDetails;
-    @Mock
-    private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
-    @Mock
-    private NoRentArrearsGroundsForPossessionReason noRentArrearsGroundsForPossessionReason;
-    @Mock
-    private AdditionalReasonsForPossession additionalReasonsForPossession;
-    @Mock
-    private SecureOrFlexibleGroundsForPossessionReasons secureOrFlexibleGroundsForPossessionReasons;
-    @Mock
-    private MediationAndSettlement mediationAndSettlement;
-    @Mock
-    private ClaimantCircumstancesPage claimantCircumstancesPage;
-    @Mock
-    private IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
-    @Mock
-    private IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
-    @Mock
-    private RentArrearsGroundsForPossessionReasons rentArrearsGroundsForPossessionReasons;
-    @Mock
-    private SuspensionToBuyDemotionOfTenancyOrderReasons suspensionToBuyDemotionOfTenancyOrderReasons;
-    @Mock
-    private DefendantCircumstancesPage defendantCircumstancesPage;
-    @Mock
-    private SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
-    @Mock
-    private StatementOfExpressTerms statementOfExpressTerms;
-    @Mock
-    private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
-    @Mock
     private OrganisationService organisationService;
-    @Mock
-    private ClaimantInformationPage claimantInformationPage;
-    @Mock
-    private ClaimantDetailsWalesPage claimantDetailsWalesPage;
-    @Mock
-    private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageePage;
-    @Mock
-    private ProhibitedConductWales prohibitedConductWalesPage;
     @Mock
     private SchedulerClient schedulerClient;
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
-    private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
-    @Mock
-    private GroundsForPossessionWalesPage groundsForPossessionWales;
-    @Mock
-    private SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
-    @Mock
-    private ReasonsForPossessionWales reasonsForPossessionWales;
-    @Mock
     private AddressFormatter addressFormatter;
-    @Mock
-    private RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
-    @Mock
-    private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
-    @Mock
-    private AssuredNoArrearsGroundsForPossessionPage noRentArrearsGroundsForPossessionOptions;
-    @Mock
-    private CheckingNotice checkingNotice;
-    @Mock
-    private WalesCheckingNotice walesCheckingNotice;
-    @Mock
-    private ASBQuestionsWales asbQuestionsWales;
     @Mock
     private FeeService feeService;
     @Mock
-    private MoneyFormatter feeFormatter;
+    private MoneyFormatter moneyFormatter;
+
     @Mock
-    private RentDetailsPage rentDetailsPage;
+    private ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
 
     @BeforeEach
     void setUp() {
         SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
         when(savingPageBuilderFactory.create(any(), any(EventId.class))).thenReturn(savingPageBuilder);
-        when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
+
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
         when(userDetails.getUid()).thenReturn(USER_ID.toString());
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, securityContextService,
-            savingPageBuilderFactory, resumeClaim,
-            selectClaimantType, noticeDetails,
-            uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
-            secureOrFlexibleGroundsForPossessionReasons, mediationAndSettlement, claimantCircumstancesPage,
-            introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
-            rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
-            defendantCircumstancesPage, suspensionOfRightToBuyOrderReason, statementOfExpressTerms,
-            demotionOfTenancyOrderReason, organisationService, claimantInformationPage, claimantDetailsWalesPage,
-            prohibitedConductWalesPage, schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage,
-            groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
-            addressFormatter, rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
-            noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage
+            savingPageBuilderFactory,
+            organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
+            moneyFormatter, resumePossessionClaimConfigurer
         );
 
         setEventUnderTest(underTest);
@@ -598,7 +485,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             stubFeeService();
 
             String formattedFee = "some formatted fee";
-            when(feeFormatter.formatFee(CLAIM_FEE_AMOUNT)).thenReturn(formattedFee);
+            when(moneyFormatter.formatFee(CLAIM_FEE_AMOUNT)).thenReturn(formattedFee);
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)

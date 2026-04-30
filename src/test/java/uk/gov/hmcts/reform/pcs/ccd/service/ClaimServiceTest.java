@@ -76,7 +76,6 @@ class ClaimServiceTest {
         // Given
         when(pcsCase.getClaimAgainstTrespassers()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getClaimDueToRentArrears()).thenReturn(YesOrNo.NO);
-        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getPreActionProtocolCompleted()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getMediationAttempted()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getMediationAttemptedDetails()).thenReturn("mediation details");
@@ -98,7 +97,6 @@ class ClaimServiceTest {
         // Then
         assertThat(createdClaimEntity.getAgainstTrespassers()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getDueToRentArrears()).isEqualTo(YesOrNo.NO);
-        assertThat(createdClaimEntity.getClaimCosts()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getPreActionProtocolFollowed()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getMediationAttempted()).isEqualTo(VerticalYesNo.NO);
         assertThat(createdClaimEntity.getMediationDetails()).isEqualTo("mediation details");

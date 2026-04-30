@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -28,9 +27,7 @@ public class CaseCreationHelper {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
-            .build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
 
         caseEntity.addClaim(claimEntity);
 
@@ -50,9 +47,7 @@ public class CaseCreationHelper {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
-            .build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
 
         caseEntity.addClaim(claimEntity);
 

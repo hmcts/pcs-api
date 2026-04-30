@@ -166,6 +166,7 @@ public class PCSCase {
         hint = "You do not need to provide the exact amount at this stage, but a judge will request a schedule "
             + "of costs at the hearing"
     )
+    @Deprecated
     private VerticalYesNo claimingCostsWanted;
 
     @CCD(
