@@ -19,5 +19,5 @@ ALTER TABLE claim_party
 
 ALTER TABLE general_application
   ALTER COLUMN rank SET NOT NULL,
-  ADD CONSTRAINT uq_case_rank UNIQUE (case_id, rank);
+  ADD CONSTRAINT uq_case_party_rank UNIQUE (case_id, party_id, rank);
 
