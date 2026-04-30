@@ -28,7 +28,6 @@ import {
   preactionProtocol,
   alternativesToPossession,
   claimantCircumstances,
-  claimingCosts,
   dailyRentAmount,
   defendantCircumstances,
   mediationAndSettlement,
@@ -177,8 +176,6 @@ test.describe('[Create Case - With resume claim options] @nightly', async () => 
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -295,8 +292,6 @@ test.describe('[Create Case - With resume claim options] @nightly', async () => 
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
