@@ -6,11 +6,10 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.docassembly.DocAssemblyClient;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyResponse;
+import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
+import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-import com.fasterxml.jackson.databind.JsonNode;
-import uk.gov.hmcts.reform.pcs.document.model.JsonNodeFormPayload;
-import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
@@ -32,25 +31,23 @@ public class DocAssemblyService {
     }
 
     public String generateDocument(
-            JsonNode formPayload,
+            FormPayload formPayload,
             String templateId,
             OutputType outputType,
             String outputFilename
     ) {
         try {
             if (formPayload == null) {
-                throw new IllegalArgumentException("JsonNode formPayload cannot be null");
+                throw new IllegalArgumentException("formPayload cannot be null");
             }
 
             String authorization = idamService.getSystemUserAuthorisation();
             String serviceAuthorization = authTokenGenerator.generate();
 
-            JsonNodeFormPayload formPayloadWrapper = new JsonNodeFormPayload(formPayload);
-
             DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
                 .templateId(templateId)
                 .outputType(outputType)
-                .formPayload(formPayloadWrapper)
+                .formPayload(formPayload)
                 .outputFilename(outputFilename)
                 .caseTypeId(CaseType.getCaseType())
                 .jurisdictionId(CaseType.getJurisdictionId())

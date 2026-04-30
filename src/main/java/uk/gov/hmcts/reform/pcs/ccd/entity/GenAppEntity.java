@@ -47,6 +47,8 @@ public class GenAppEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    private Integer rank;
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
     @JsonBackReference

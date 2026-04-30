@@ -29,4 +29,23 @@ class PcsCaseEntityTest {
         verify(existingTenancyLicence).setPcsCase(null);
         verify(updatedTenancyLicence).setPcsCase(underTest);
     }
+
+    @Test
+    void shouldAddGenAppEntityAndSetRank() {
+        // Given
+        GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
+        GenAppEntity genAppEntity2 = mock(GenAppEntity.class);
+
+        // When
+        underTest.addGenApp(genAppEntity1);
+        underTest.addGenApp(genAppEntity2);
+
+        // Then
+        verify(genAppEntity1).setRank(1);
+        verify(genAppEntity1).setPcsCase(underTest);
+
+        verify(genAppEntity2).setRank(2);
+        verify(genAppEntity2).setPcsCase(underTest);
+    }
+
 }

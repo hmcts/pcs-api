@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
