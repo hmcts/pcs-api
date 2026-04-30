@@ -2,22 +2,25 @@ package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 
-public final class ExternalUserRole implements HasRole {
+public final class CcdRole implements HasRole {
 
     private final UserRole ccdUserRole;
 
-    private ExternalUserRole(UserRole ccdUserRole) {
+    private CcdRole(UserRole ccdUserRole) {
         this.ccdUserRole = ccdUserRole;
     }
 
-    public static ExternalUserRole forCcdRole(UserRole ccdRole) {
-        return new ExternalUserRole(ccdRole);
+    public static CcdRole forCcdRole(UserRole ccdRole) {
+        return new CcdRole(ccdRole);
     }
 
     @Override
     public String getRole() {
+        String name = ccdUserRole.getExternalRoleName() != null
+            ? ccdUserRole.getExternalRoleName()
+            : ccdUserRole.getRole();
         String rolePrefix = (ccdUserRole.getRoleType() == RoleType.IDAM) ? "idam:" : "";
-        return rolePrefix + ccdUserRole.getRole();
+        return rolePrefix + name;
     }
 
     @Override
