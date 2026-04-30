@@ -109,6 +109,7 @@ ccd:
         ELASTIC_SEARCH_DATA_NODES_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
         ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
         CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: "aac_manage_case_assignment,pcs_api,pcs_frontend"
+        CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
@@ -186,6 +187,7 @@ xui-webapp:
     devmemoryLimits: 4Gi
     devcpuLimits: 1
     environment:
+      SERVICES_DOCUMENTS_API_V2: http://${SERVICE_NAME}-cdam
       HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
       HEALTH_CCD_DATA_API: http://${SERVICE_NAME}-ccd-data-store-api/health
       HEALTH_TERMS_AND_CONDITIONS_API: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal/health
@@ -212,3 +214,22 @@ xui-webapp:
           - mc-idam-client-secret
           - system-user-name
           - system-user-password
+ccd-case-document-am-api:
+  enabled: true
+  java:
+    releaseNameOverride: ${SERVICE_NAME}-cdam
+    imagePullPolicy: Always
+    image: hmctsprod.azurecr.io/ccd/case-document-am-api:latest
+    ingressHost: ccd-case-document-am-api-${SERVICE_FQDN}
+    environment:
+      IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
+      IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
+      OIDC_ISSUER: https://forgerock-am.service.core-compute-idam-aat.internal:8443/openam/oauth2/hmcts
+      S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+      DM_STORE_BASE_URL: http://dm-store-aat.service.core-compute-aat.internal
+      CCD_DATA_STORE_API_BASE_URL: http://${SERVICE_NAME}-ccd-data-store-api
+    keyVaults:
+      ccd:
+        secrets:
+          - name: ccd-case-document-am-api-s2s-secret
+            alias: CASE_DOCUMENT_AM_API_S2S_SECRET
