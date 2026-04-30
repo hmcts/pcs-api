@@ -1,0 +1,87 @@
+{
+  "data": {
+    "dashboardData": {
+      "caseId": "${caseId}",
+      "notifications": [
+        {
+          "value": {
+            "templateId": "Defendant.CaseIssued",
+            "templateValues": [
+              {
+                "value": {
+                  "key": "responseEndDate",
+                  "value": "2026-05-15"
+                }
+              },
+              {
+                "value": {
+                  "key": "hearingDateTime",
+                  "value": "2026-06-15T10:30:00Z"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "templateId": "Defendant.ResponseToClaim",
+            "templateValues": [
+              {
+                "value": {
+                  "key": "ctaLabel",
+                  "value": "Start your response."
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "taskGroups": [
+        {
+          "value": {
+            "groupId": "CLAIM",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "Defendant.ViewClaim",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "Defendant.ViewDocuments",
+                  "status": "NOT_AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "RESPONSE",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "Defendant.RespondToClaim",
+                  "status": "NOT_STARTED"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "Defendant.ReviewResponse",
+                  "status": "IN_PROGRESS"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "Defendant.SubmitResponse",
+                  "status": "COMPLETED"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
