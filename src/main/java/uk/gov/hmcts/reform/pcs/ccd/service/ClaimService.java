@@ -43,10 +43,9 @@ public class ClaimService {
             .dueToRentArrears(pcsCase.getClaimDueToRentArrears())
             .claimCosts(pcsCase.getClaimingCostsWanted())
             .preActionProtocolFollowed(pcsCase.getPreActionProtocolCompleted())
+            .preActionProtocolIncompleteExplanation(pcsCase.getPreActionProtocolIncompleteExplanation())
             .mediationAttempted(pcsCase.getMediationAttempted())
-            .mediationDetails(pcsCase.getMediationAttemptedDetails())
             .settlementAttempted(pcsCase.getSettlementAttempted())
-            .settlementDetails(pcsCase.getSettlementAttemptedDetails())
             .claimantCircumstancesProvided(claimantCircumstances != null
                                                ? claimantCircumstances.getClaimantCircumstancesSelect() : null)
             .claimantCircumstances(claimantCircumstances != null
