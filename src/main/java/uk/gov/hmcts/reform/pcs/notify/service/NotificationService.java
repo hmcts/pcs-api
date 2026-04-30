@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Service
 @Slf4j
@@ -49,52 +50,40 @@ public class NotificationService {
     public EmailNotificationResponse sendDefendantResponseNoCounterclaimEmailNotification(
         DefendantResponseEntity defendantResponse
     ) {
-        return scheduleEmailNotification(
-            buildRequest(
-                templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM),
-                defendantResponse.getParty().getEmailAddress(),
-                buildBasePersonalisation(defendantResponse)
-            ),
-            defendantResponse.getPcsCase().getId()
+        return sendDefendantEmail(
+            defendantResponse,
+            EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
+            NotificationService::buildBasePersonalisation
         );
     }
 
     public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(
         DefendantResponseEntity defendantResponse
     ) {
-        return scheduleEmailNotification(
-            buildRequest(
-                templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED),
-                defendantResponse.getParty().getEmailAddress(),
-                buildBasePersonalisation(defendantResponse)
-            ),
-            defendantResponse.getPcsCase().getId()
+        return sendDefendantEmail(
+            defendantResponse,
+            EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
+            NotificationService::buildBasePersonalisation
         );
     }
 
     public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
         DefendantResponseEntity defendantResponse
     ) {
-        return scheduleEmailNotification(
-            buildRequest(
-                templateConfiguration.getTemplateId(EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS),
-                defendantResponse.getParty().getEmailAddress(),
-                buildCounterclaimPaymentSuccessPersonalisation(defendantResponse)
-            ),
-            defendantResponse.getPcsCase().getId()
+        return sendDefendantEmail(
+            defendantResponse,
+            EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS,
+            NotificationService::buildCounterclaimPaymentSuccessPersonalisation
         );
     }
 
     public EmailNotificationResponse sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(
         DefendantResponseEntity defendantResponse
     ) {
-        return scheduleEmailNotification(
-            buildRequest(
-                templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED),
-                defendantResponse.getParty().getEmailAddress(),
-                buildBasePersonalisation(defendantResponse)
-            ),
-            defendantResponse.getPcsCase().getId()
+        return sendDefendantEmail(
+            defendantResponse,
+            EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
+            NotificationService::buildBasePersonalisation
         );
     }
 
@@ -290,7 +279,7 @@ public class NotificationService {
     }
 
     protected static Map<String, Object> buildBasePersonalisation(DefendantResponseEntity defendantResponse) {
-        PartyEntity to = defendantResponse.getParty();
+        PartyEntity defendant = defendantResponse.getParty();
 
         Optional<PartyEntity> optClaimant = defendantResponse.getClaim().getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole().equals(PartyRole.CLAIMANT))
@@ -307,12 +296,12 @@ public class NotificationService {
             ? claimant.getOrgName()
             : String.format("%s %s", claimant.getFirstName(), claimant.getLastName()))
             .toUpperCase(Locale.ROOT);
-        String primaryDefendantName = String.format("%s %s", to.getFirstName(), to.getLastName())
+        String primaryDefendantName = String.format("%s %s", defendant.getFirstName(), defendant.getLastName())
             .toUpperCase(Locale.ROOT);
 
         return Map.of(
-            "firstName", to.getFirstName(),
-            "lastName", to.getLastName(),
+            "firstName", defendant.getFirstName(),
+            "lastName", defendant.getLastName(),
             "caseNumber", defendantResponse.getPcsCase().getCaseReference().toString(),
             "claimantName", claimantName,
             "primaryDefendantName", primaryDefendantName
@@ -335,14 +324,21 @@ public class NotificationService {
         return base;
     }
 
-    /**
-     * Builds EmailNotificationRequest object for the corresponding template.
-     *
-     * @param templateId the gov notify template id for the notification you are sending
-     * @param email the email address you are sending the notification to
-     * @param personalisation the personalization you are inserting into the template
-     * @return the EmailNotificationRequest object built from the three inputs
-     */
+    private EmailNotificationResponse sendDefendantEmail(
+        DefendantResponseEntity defendantResponse,
+        EmailTemplate template,
+        Function<DefendantResponseEntity, Map<String, Object>> personalisationBuilder
+    ) {
+        return scheduleEmailNotification(
+            buildRequest(
+                templateConfiguration.getTemplateId(template),
+                defendantResponse.getParty().getEmailAddress(),
+                personalisationBuilder.apply(defendantResponse)
+            ),
+            defendantResponse.getPcsCase().getId()
+        );
+    }
+
     protected static EmailNotificationRequest buildRequest(
         String templateId,
         String email,
