@@ -78,6 +78,30 @@ public class DraftCaseDataService {
         return exists;
     }
 
+    @Transactional
+    public <T> void saveUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
+        Objects.requireNonNull(eventData, "eventData must not be null");
+        Objects.requireNonNull(eventId, "eventId must not be null");
+
+        UUID userId = getCurrentUserId();
+        log.info("Saving draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
+
+        String eventDataJson = writeCaseDataJson(eventData);
+
+        DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
+            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
+            .orElseThrow(() -> new UnsubmittedDataException(
+                "No draft found for caseReference=" + caseReference
+                    + ", eventId=" + eventId + ", userId=" + userId));
+
+        log.debug("Replacing existing draft for userId={}", userId);
+        draftCaseDataEntity.setCaseData(eventDataJson);
+
+        DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
+        log.debug("Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
+            saved.getId(), saved.getCaseReference(), saved.getEventId(), saved.getIdamUserId());
+    }
+
     public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
         Objects.requireNonNull(eventData, "eventData must not be null");
         Objects.requireNonNull(eventId, "eventId must not be null");
