@@ -11,7 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
@@ -56,7 +56,7 @@ class CaseFlagServiceTest {
 
         // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
-        List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
+        List<CaseFlagEntity> savedFlags = pcsCaseEntity.getCaseFlags();
         assertEquals("CF0002", savedFlags.getFirst().getFlagCode());
         assertEquals("Complicated case", savedFlags.getFirst().getFlagComment());
         assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
@@ -82,7 +82,7 @@ class CaseFlagServiceTest {
         underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, EventFlow.CREATE.name());
 
         // Then
-        List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
+        List<CaseFlagEntity> savedFlags = pcsCaseEntity.getCaseFlags();
         List<FlagPathEntity> savedPaths = savedFlags.getFirst().getPaths();
         assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
         assertEquals(1, savedFlags.size());
@@ -109,9 +109,9 @@ class CaseFlagServiceTest {
 
         // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
-        List<FlagDetailsEntity> savedFlags = pcsCaseEntity.getCaseFlags();
+        List<CaseFlagEntity> savedFlags = pcsCaseEntity.getCaseFlags();
         assertEquals(1, savedFlags.size());
-        assertThat(savedFlags).extracting(FlagDetailsEntity::getFlagCode).containsExactly("CF0008");
+        assertThat(savedFlags).extracting(CaseFlagEntity::getFlagCode).containsExactly("CF0008");
         assertThat(savedFlags.getLast().getFlagComment()).isEqualTo("Police arrest inactive");
         assertThat(savedFlags.getLast().getFlagCode()).isEqualTo("CF0008");
     }
@@ -120,7 +120,7 @@ class CaseFlagServiceTest {
         return PcsCaseEntity.builder()
             .id(UUID.randomUUID())
             .caseReference(1234L)
-            .caseFlags(createFlagDetailsEntity(id))
+            .caseFlags(createCaseFlagEntity(id))
             .build();
     }
 
@@ -157,10 +157,10 @@ class CaseFlagServiceTest {
         return isPathEmpty ? null : paths;
     }
 
-    private List<FlagDetailsEntity> createFlagDetailsEntity(UUID id) {
-        List<FlagDetailsEntity> flagDetailsEntities = new ArrayList<>();
+    private List<CaseFlagEntity> createCaseFlagEntity(UUID id) {
+        List<CaseFlagEntity> caseFlagEntities = new ArrayList<>();
 
-        FlagDetailsEntity flagDetailsEntity = FlagDetailsEntity.builder()
+        CaseFlagEntity caseFlagEntity = CaseFlagEntity.builder()
             .id(id)
             .defaultStatus("Active")
             .flagCode("CF0008")
@@ -168,9 +168,9 @@ class CaseFlagServiceTest {
             .paths(createFlagPathEntity())
             .dateTimeCreated(LocalDateTime.now())
             .build();
-        flagDetailsEntities.add(flagDetailsEntity);
+        caseFlagEntities.add(caseFlagEntity);
 
-        return flagDetailsEntities;
+        return caseFlagEntities;
     }
 
     private List<FlagPathEntity> createFlagPathEntity() {

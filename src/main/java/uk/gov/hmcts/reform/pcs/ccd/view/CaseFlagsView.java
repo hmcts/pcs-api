@@ -7,7 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
@@ -35,35 +35,35 @@ public class CaseFlagsView {
         pcsCase.setCaseFlags(caseFlags);
     }
 
-    private List<ListValue<FlagDetail>> mapFlagDetails(List<FlagDetailsEntity> flagsEntities) {
+    private List<ListValue<FlagDetail>> mapFlagDetails(List<CaseFlagEntity> flagsEntities) {
 
         return flagsEntities.stream()
-            .map(flagDetailsEntity -> ListValue.<FlagDetail>builder()
-                .id(flagDetailsEntity.getId().toString())
+            .map(caseFlagEntity -> ListValue.<FlagDetail>builder()
+                .id(caseFlagEntity.getId().toString())
                 .value(FlagDetail.builder()
-                   .flagCode(flagDetailsEntity.getFlagCode())
+                   .flagCode(caseFlagEntity.getFlagCode())
                    .name(refDataFlagsRepository.findByFlagCode(
-                       flagDetailsEntity.getFlagCode()).orElseThrow().getFlagName())
+                       caseFlagEntity.getFlagCode()).orElseThrow().getFlagName())
                    .nameCy(refDataFlagsRepository.findByFlagCode(
-                       flagDetailsEntity.getFlagCode()).orElseThrow().getFlagNameWelsh())
-                   .flagComment(flagDetailsEntity.getFlagComment())
-                   .flagCommentCy(flagDetailsEntity.getFlagCommentWelsh())
-                   .status(flagDetailsEntity.getDefaultStatus())
-                   .subTypeKey(flagDetailsEntity.getSubTypeKey())
-                   .subTypeValue(flagDetailsEntity.getSubTypeValue())
-                   .subTypeValueCy(flagDetailsEntity.getSubTypeValueWelsh())
-                   .flagUpdateComment(flagDetailsEntity.getFlagUpdateComment() != null
-                                      ? flagDetailsEntity.getFlagUpdateComment()
-                                      : flagDetailsEntity.getFlagUpdateCommentWelsh())
-                   .dateTimeCreated(flagDetailsEntity.getDateTimeCreated())
-                   .dateTimeModified(flagDetailsEntity.getDateTimeModified())
-                   .otherDescription(flagDetailsEntity.getOtherDescription())
-                   .otherDescriptionCy(flagDetailsEntity.getOtherDescriptionWelsh())
+                       caseFlagEntity.getFlagCode()).orElseThrow().getFlagNameWelsh())
+                   .flagComment(caseFlagEntity.getFlagComment())
+                   .flagCommentCy(caseFlagEntity.getFlagCommentWelsh())
+                   .status(caseFlagEntity.getDefaultStatus())
+                   .subTypeKey(caseFlagEntity.getSubTypeKey())
+                   .subTypeValue(caseFlagEntity.getSubTypeValue())
+                   .subTypeValueCy(caseFlagEntity.getSubTypeValueWelsh())
+                   .flagUpdateComment(caseFlagEntity.getFlagUpdateComment() != null
+                                      ? caseFlagEntity.getFlagUpdateComment()
+                                      : caseFlagEntity.getFlagUpdateCommentWelsh())
+                   .dateTimeCreated(caseFlagEntity.getDateTimeCreated())
+                   .dateTimeModified(caseFlagEntity.getDateTimeModified())
+                   .otherDescription(caseFlagEntity.getOtherDescription())
+                   .otherDescriptionCy(caseFlagEntity.getOtherDescriptionWelsh())
                    .hearingRelevant(YesOrNoConverter.toYesOrNo(refDataFlagsRepository.findByFlagCode(
-                       flagDetailsEntity.getFlagCode()).orElseThrow().getHearingRelevant()))
+                       caseFlagEntity.getFlagCode()).orElseThrow().getHearingRelevant()))
                    .availableExternally(YesOrNoConverter.toYesOrNo(refDataFlagsRepository.findByFlagCode(
-                       flagDetailsEntity.getFlagCode()).orElseThrow().getAvailableExternally()))
-                   .path(flagDetailsEntity.getPaths().stream()
+                       caseFlagEntity.getFlagCode()).orElseThrow().getAvailableExternally()))
+                   .path(caseFlagEntity.getPaths().stream()
                              .map(pathEntity -> ListValue.<String>builder()
                                 .id(pathEntity.getId().toString())
                                 .value(pathEntity.getPath())
