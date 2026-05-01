@@ -136,7 +136,7 @@ public class DefendantResponseService {
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
         if (!CollectionUtils.isEmpty(responses.getDefendantDocuments())) {
-            documentService.createDefendantEvidenceDocuments(
+            documentService.createDefendantUploadedDocuments(
                 responses.getDefendantDocuments(),
                 savedResponse,
                 claimRef.getPcsCase(),

@@ -178,7 +178,7 @@ public class DocumentService {
         };
     }
 
-    public List<DocumentEntity> createDefendantEvidenceDocuments(
+    public List<DocumentEntity> createDefendantUploadedDocuments(
         List<ListValue<UploadedDocument>> defendantDocuments,
         DefendantResponseEntity defendantResponse,
         PcsCaseEntity pcsCase,
@@ -199,8 +199,7 @@ public class DocumentService {
                 .url(defDoc.getDocument().getUrl())
                 .fileName(defDoc.getDocument().getFilename())
                 .binaryUrl(defDoc.getDocument().getBinaryUrl())
-                .categoryId(defDoc.getDocument().getCategoryId())
-                .type(DocumentType.DEFENDANT_EVIDENCE)
+                .categoryId(CaseFileCategory.UNCATEGORISED.getId())
                 .contentType(defDoc.getContentType())
                 .size(defDoc.getSize())
                 .build())
@@ -232,7 +231,6 @@ public class DocumentService {
                  LEGAL_AID_CERTIFICATE -> CaseFileCategory.CORRESPONDENCE;
             case NOTICE_SERVED,
                  POLICE_REPORT,
-                 DEFENDANT_EVIDENCE,
                  OTHER -> CaseFileCategory.UNCATEGORISED;
         };
     }

@@ -566,7 +566,7 @@ class DocumentServiceTest {
 
         // When
         List<DocumentEntity> result =
-            underTest.createDefendantEvidenceDocuments(uploadedDocs, response, pcsCase, party);
+            underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -574,7 +574,8 @@ class DocumentServiceTest {
         assertThat(entities).hasSize(2);
 
         assertThat(entities).allSatisfy(entity -> {
-            assertThat(entity.getType()).isEqualTo(DocumentType.DEFENDANT_EVIDENCE);
+            assertThat(entity.getType()).isNull();
+            assertThat(entity.getCategoryId()).isEqualTo("uncategorised");
             assertThat(entity.getDefendantResponse()).isEqualTo(response);
             assertThat(entity.getPcsCase()).isEqualTo(pcsCase);
             assertThat(entity.getParty()).isEqualTo(party);
@@ -604,7 +605,7 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
 
         // When
-        List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(null, response, pcsCase, party);
+        List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(null, response, pcsCase, party);
 
         // Then
         assertThat(result).isEmpty();
@@ -619,7 +620,7 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
 
         // When
-        List<DocumentEntity> result = underTest.createDefendantEvidenceDocuments(
+        List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(
             Collections.emptyList(), response, pcsCase, party);
 
         // Then
@@ -650,7 +651,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createDefendantEvidenceDocuments(uploadedDocs, response, pcsCase, party);
+        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -679,7 +680,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createDefendantEvidenceDocuments(uploadedDocs, response, pcsCase, party);
+        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
