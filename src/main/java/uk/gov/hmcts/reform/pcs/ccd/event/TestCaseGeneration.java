@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
-import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -54,7 +53,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         log.info("Configuring non-production support event: {}", EVENT_NAME);
-        if (TestSupportEnvironment.isPreview()
+        if ("preview".equalsIgnoreCase(System.getenv().get("ENVIRONMENT"))
             || Boolean.parseBoolean(System.getenv().get("ENABLE_TESTING_SUPPORT"))) {
             log.info("Test support enabled, configuring event: {}", EVENT_NAME);
             configure(configBuilder);
