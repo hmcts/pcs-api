@@ -177,7 +177,7 @@ public class GenAppDocumentGenerator {
 
         // Example label: General Application (GA2) - Defendant 1.pdf
         String applicantLabel = getPartyLabel(applicantClaimParty);
-        String filename = "%s (GA%d)".formatted(OUTPUT_FILENAME_PREFIX, genAppEntity.getRank());
+        String filename = "%s GA%d".formatted(OUTPUT_FILENAME_PREFIX, genAppEntity.getRank());
         if (applicantLabel != null) {
             filename += " - " + applicantLabel;
         }
