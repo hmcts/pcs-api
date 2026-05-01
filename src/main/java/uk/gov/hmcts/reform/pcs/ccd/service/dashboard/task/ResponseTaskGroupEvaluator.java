@@ -42,14 +42,6 @@ public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
                 Task.builder()
                     .templateId("Defendant.ViewResponse")
                     .status(viewResponseStatus)
-                    .build(),
-                Task.builder()
-                    .templateId("Defendant.ReviewResponse")
-                    .status(TaskStatus.IN_PROGRESS)
-                    .build(),
-                Task.builder()
-                    .templateId("Defendant.SubmitResponse")
-                    .status(TaskStatus.COMPLETED)
                     .build()
             )))
             .build();
