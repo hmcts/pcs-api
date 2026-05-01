@@ -125,7 +125,8 @@ class CitizenCreateGenAppTest extends BaseEventTest {
                 .citizenGenAppRequest(genAppRequest)
                 .build();
 
-            when(genAppRepository.existsByClientReference(existingClientReference)).thenReturn(true);
+            when(genAppRepository.existsByPcsCaseAndClientReference(pcsCaseEntity, existingClientReference))
+                .thenReturn(true);
 
             // When
             SubmitResponse<State> submitResponse = callSubmitHandler(caseData);

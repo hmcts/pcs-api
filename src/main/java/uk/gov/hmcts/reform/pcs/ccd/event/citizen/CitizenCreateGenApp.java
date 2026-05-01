@@ -62,7 +62,7 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
             return errorResponse("No client reference in request");
         }
 
-        if (genAppRepository.existsByClientReference(clientReference)) {
+        if (genAppRepository.existsByPcsCaseAndClientReference(pcsCaseEntity, clientReference)) {
             return errorResponse("Application already exists for client reference");
         }
 
