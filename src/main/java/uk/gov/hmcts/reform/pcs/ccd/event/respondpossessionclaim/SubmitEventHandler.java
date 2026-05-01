@@ -13,13 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @Component
@@ -31,6 +32,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final ClaimResponseService claimResponseService;
     private final DefendantResponseService defendantResponseService;
     private final SecurityContextService securityContextService;
+    private final SelectedPartyRetriever selectedPartyRetriever;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -43,7 +45,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         log.info("Processing final submission for case {}", caseReference);
         boolean citizenUser = securityContextService.getCurrentUserDetails().getRoles()
             .contains(UserRole.CITIZEN.getRole());
-        UUID representedPartyId = citizenUser ? null : getRequiredPartyId(caseData);
+
+        UUID representedPartyId = citizenUser ? null : getSelectedPartyId(caseData);
 
         //load draft data
         PCSCase draftData = (representedPartyId == null
@@ -99,16 +102,11 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .build();
     }
 
-    private UUID getRequiredPartyId(PCSCase caseData) {
-        String selectedPartyId = caseData.getSelectedRespondingPartyId();
-        if (isBlank(selectedPartyId)) {
-            throw new IllegalStateException("Missing required represented party context for respond to claim");
+    private UUID getSelectedPartyId(PCSCase pcsCase) {
+        Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
+        if (selectedPartyId.isEmpty()) {
+            throw new IllegalStateException("No selected responding party id for respond to claim");
         }
-
-        try {
-            return UUID.fromString(selectedPartyId);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException("Invalid selected responding party id for respond to claim", ex);
-        }
+        return selectedPartyId.get();
     }
 }

@@ -29,11 +29,13 @@ import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,6 +61,8 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     private SecurityContextService securityContextService;
     @Mock
     private UserInfo userInfo;
+    @Mock
+    private SelectedPartyRetriever selectedPartyRetriever;
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
 
@@ -69,7 +73,9 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         setPageUnderTest(new RespondToPossessionDraftSavePage(
             immutableFieldValidator,
             draftCaseDataService,
-            securityContextService
+            securityContextService,
+            selectedPartyRetriever
+
         ));
     }
 
@@ -466,12 +472,11 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(Party.builder().firstName("Jack").lastName("Smith").build())
             .build();
-
         PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
             .build());
-        caseData.setSelectedRespondingPartyId(representedPartyId.toString());
 
+        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
             .thenReturn(List.of());
 

@@ -157,9 +157,6 @@ public class PCSCase {
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
 
-    @CCD(searchable = false)
-    private String selectedRespondingPartyId;
-
     @JsonUnwrapped
     private ClaimantContactPreferences claimantContactPreferences;
 

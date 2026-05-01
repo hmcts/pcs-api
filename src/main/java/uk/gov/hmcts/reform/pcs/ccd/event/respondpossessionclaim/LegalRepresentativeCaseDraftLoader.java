@@ -14,8 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @Component
@@ -37,18 +37,28 @@ public class LegalRepresentativeCaseDraftLoader {
     private final DefendantResponseRepository defendantResponseRepository;
     private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
     private final SecurityContextService securityContextService;
+    private final SelectedPartyRetriever selectedPartyRetriever;
 
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
-        List<PartyEntity> parties = loadAndValidateDefendantsForLegalRep(caseReference);
-        Optional<UUID> selectedPartyId = getSelectedPartyId(pcsCase);
+        List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendantsForLegalRep(caseReference);
 
-        if (selectedPartyId.isEmpty()) {
-            return buildCaseWithRepresentedPartiesOnly(pcsCase, parties);
+        if (defendantPartiesLinkedAndActive.size() == 1) {
+            return getDraftCaseData(caseReference, pcsCase, defendantPartiesLinkedAndActive.getFirst());
         }
 
-        PartyEntity matchedDefendant = findMatchedDefendant(parties, selectedPartyId.get());
+        Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
+
+        if (selectedPartyId.isEmpty()) {
+            return buildCaseWithRepresentedPartiesOnly(pcsCase, defendantPartiesLinkedAndActive);
+        }
+
+        PartyEntity matchedDefendant = findMatchedDefendant(defendantPartiesLinkedAndActive, selectedPartyId.get());
         validateResponseNotAlreadySubmitted(caseReference, matchedDefendant.getId());
 
+        return getDraftCaseData(caseReference, pcsCase, matchedDefendant);
+    }
+
+    private PCSCase getDraftCaseData(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant) {
         if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim,
                                                         matchedDefendant.getId())) {
             return restoreSavedDraftAnswersForLegalRepresentative(caseReference, pcsCase, matchedDefendant);
@@ -193,19 +203,6 @@ public class LegalRepresentativeCaseDraftLoader {
     private void validateResponseNotAlreadySubmitted(long caseReference, UUID partyId) {
         if (defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(caseReference, partyId)) {
             throw new IllegalStateException("A response has already been submitted for this case.");
-        }
-    }
-
-    private Optional<UUID> getSelectedPartyId(PCSCase pcsCase) {
-        String selectedPartyId = pcsCase.getSelectedRespondingPartyId();
-        if (isBlank(selectedPartyId)) {
-            return Optional.empty();
-        }
-
-        try {
-            return Optional.of(UUID.fromString(selectedPartyId));
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException("Invalid selected responding party id for respond to claim", ex);
         }
     }
 

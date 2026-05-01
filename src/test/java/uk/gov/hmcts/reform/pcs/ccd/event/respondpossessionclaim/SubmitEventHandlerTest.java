@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequ
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -53,6 +54,8 @@ class SubmitEventHandlerTest {
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
+    private PCSCase pcsCase;
+    @Mock
     private ClaimResponseService claimResponseService;
     @Mock
     private DefendantResponseService defendantResponseService;
@@ -60,6 +63,8 @@ class SubmitEventHandlerTest {
     private SecurityContextService securityContextService;
     @Mock
     private UserInfo userInfo;
+    @Mock
+    private SelectedPartyRetriever selectedPartyRetriever;
 
     private SubmitEventHandler underTest;
 
@@ -71,7 +76,8 @@ class SubmitEventHandlerTest {
             draftCaseDataService,
             claimResponseService,
             defendantResponseService,
-            securityContextService
+            securityContextService,
+            selectedPartyRetriever
         );
     }
 
@@ -134,6 +140,7 @@ class SubmitEventHandlerTest {
 
     @Test
     void shouldAllowSubmitWithOnlyDefendantResponses() {
+        // given
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
@@ -143,8 +150,10 @@ class SubmitEventHandlerTest {
 
         stubDraft(caseData);
 
+        // when
         SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
 
+        // then
         assertThat(result.getErrors()).isNullOrEmpty();
         verify(claimResponseService).saveDraftData(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
         verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, caseData.getPossessionClaimResponse());
@@ -401,6 +410,7 @@ class SubmitEventHandlerTest {
 
     @Test
     void shouldSubmitLegalRepresentativeDraftForSelectedParty() {
+        // given
         UUID representedPartyId = UUID.randomUUID();
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
 
@@ -414,19 +424,53 @@ class SubmitEventHandlerTest {
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(possessionClaimResponse)
-            .selectedRespondingPartyId(representedPartyId.toString())
             .build();
 
+        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
             .thenReturn(Optional.of(caseData));
 
+        // when
         SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
 
+        // then
         assertThat(result.getErrors()).isNullOrEmpty();
         verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE, representedPartyId);
         verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
                                                                representedPartyId);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
+                                                               representedPartyId);
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+    }
+
+    @Test
+    void shouldThrowExceptionForNoSelectedParty() {
+        // given
+        UUID representedPartyId = UUID.randomUUID();
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(eventPayload.caseData()).thenReturn(pcsCase);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.empty());
+
+        // when / then
+        assertThat(org.junit.jupiter.api.Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> underTest.submit(eventPayload)
+        )).hasMessage("No selected responding party id for respond to claim");
+
+        verify(claimResponseService, never())
+            .saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE, representedPartyId);
+        verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
+                                                               representedPartyId);
+        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
                                                                representedPartyId);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
