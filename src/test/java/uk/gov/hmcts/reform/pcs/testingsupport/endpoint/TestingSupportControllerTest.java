@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
@@ -78,6 +80,7 @@ class TestingSupportControllerTest {
     private UserInfo userInfo;
 
     private TestingSupportController underTest;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
