@@ -16,14 +16,17 @@ import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.SubmitDashboardViewHandler;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -39,11 +42,20 @@ class DashboardViewTest extends BaseEventTest {
     @Mock
     private SecurityContextService securityContextService;
 
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
+
+    @Mock
+    private DefendantResponseRepository defendantResponseRepository;
+
     private DashboardJourneyService dashboardJourneyService;
 
     @BeforeEach
     void setUp() {
-        dashboardJourneyService = new DashboardJourneyService(new ClaimTaskGroupEvaluator());
+        dashboardJourneyService = new DashboardJourneyService(
+            new ClaimTaskGroupEvaluator(),
+            new ResponseTaskGroupEvaluator(draftCaseDataService, defendantResponseRepository, securityContextService)
+        );
         StartDashboardViewHandler startHandler = new StartDashboardViewHandler(
             pcsCaseService,
             accessValidator,
@@ -61,6 +73,12 @@ class DashboardViewTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder().propertyAddress(propertyAddress).build();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
 
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(Optional.empty());
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            TEST_CASE_REFERENCE,
+            defendantUserId
+        )).thenReturn(false);
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
         when(accessValidator.validateAndGetDefendant(caseEntity, defendantUserId))
@@ -75,7 +93,7 @@ class DashboardViewTest extends BaseEventTest {
             .extracting(n -> n.getTemplateId())
             .containsExactly("Defendant.CaseIssued", "Defendant.ResponseToClaim");
         verify(pcsCaseService).loadCase(TEST_CASE_REFERENCE);
-        verify(accessValidator).validateAndGetDefendant(eq(caseEntity), eq(defendantUserId));
+        verify(accessValidator).validateAndGetDefendant(caseEntity, defendantUserId);
     }
 
     @Test

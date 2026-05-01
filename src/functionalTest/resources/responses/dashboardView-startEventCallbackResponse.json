@@ -62,20 +62,44 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.RespondToClaim",
-                  "status": "NOT_STARTED"
+                  "templateId": "Defendant.RTC.StartNowAndDetails",
+                  "status": "AVAILABLE"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.ReviewResponse",
-                  "status": "IN_PROGRESS"
+                  "templateId": "Defendant.RTC.PersonalDetails",
+                  "status": "AVAILABLE"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.SubmitResponse",
-                  "status": "COMPLETED"
+                  "templateId": "Defendant.RTC.DisputeAndTenancy",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "Defendant.RTC.SituationAndCircumstances",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "Defendant.RTC.IncomeAndExpenditure",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "Defendant.RTC.UploadFiles",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "Defendant.RTC.CheckYourAnswersAndSubmit",
+                  "status": "NOT_AVAILABLE"
                 }
               }
             ]
