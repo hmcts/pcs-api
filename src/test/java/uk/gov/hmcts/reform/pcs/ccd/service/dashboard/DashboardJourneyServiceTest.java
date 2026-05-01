@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -32,6 +34,8 @@ class DashboardJourneyServiceTest {
             new ClaimTaskGroupEvaluator(),
             new ResponseTaskGroupEvaluator(),
             new ApplicationsTaskGroupEvaluator()
+            new HearingsTaskGroupEvaluator(),
+            new NoticesTaskGroupEvaluator()
         ));
     }
 
@@ -45,7 +49,7 @@ class DashboardJourneyServiceTest {
         assertThat(result.getCaseId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(result.getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(result.getNotifications()).hasSize(2);
-        assertThat(result.getTaskGroups()).hasSize(3);
+        assertThat(result.getTaskGroups()).hasSize(4);
     }
 
     @Test
@@ -81,6 +85,9 @@ class DashboardJourneyServiceTest {
                 tuple(TaskGroupId.CLAIM, 2),
                 tuple(TaskGroupId.RESPONSE, 3),
                 tuple(TaskGroupId.APPLICATIONS, 2)
+                tuple(TaskGroupId.HEARING, 1),
+                tuple(TaskGroupId.NOTICE, 1),
+                tuple(TaskGroupId.RESPONSE, 3)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).getFirst().getTasks())
@@ -96,6 +103,7 @@ class DashboardJourneyServiceTest {
                 tuple(DashboardTaskTemplateIds.DEFENDANT_RESPOND_TO_CLAIM, TaskStatus.NOT_STARTED),
                 tuple(DashboardTaskTemplateIds.DEFENDANT_REVIEW_RESPONSE, TaskStatus.IN_PROGRESS),
                 tuple(DashboardTaskTemplateIds.DEFENDANT_SUBMIT_RESPONSE, TaskStatus.COMPLETED)
+                tuple("Defendant.ViewHearingDocuments", TaskStatus.AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
@@ -124,6 +132,15 @@ class DashboardJourneyServiceTest {
             .containsExactly(
                 tuple(DashboardTaskTemplateIds.MAKE_GENERAL_APPLICATION, TaskStatus.AVAILABLE),
                 tuple(DashboardTaskTemplateIds.VIEW_ALL_APPLICATIONS, TaskStatus.AVAILABLE)
+                tuple("Defendant.ViewOrdersAndNotices", TaskStatus.AVAILABLE)
+            );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(3).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple("Defendant.RespondToClaim", TaskStatus.NOT_STARTED),
+                tuple("Defendant.ReviewResponse", TaskStatus.IN_PROGRESS),
+                tuple("Defendant.SubmitResponse", TaskStatus.COMPLETED)
             );
     }
 

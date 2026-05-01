@@ -11,6 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
@@ -28,6 +31,26 @@ public class DashboardJourneyService {
     public DashboardJourneyService(List<TaskGroupEvaluator> taskGroupEvaluators) {
         this.taskGroupEvaluators = taskGroupEvaluators.stream()
             .sorted(Comparator.comparingInt(evaluator -> evaluator.groupId().ordinal()))
+    private static final List<TaskGroupId> TASK_GROUP_ORDER = List.of(
+        TaskGroupId.CLAIM,
+        TaskGroupId.RESPONSE,
+        TaskGroupId.HEARING,
+        TaskGroupId.NOTICE,
+        TaskGroupId.APPLICATIONS
+    );
+
+    private static int orderIndex(TaskGroupId id) {
+        int idx = TASK_GROUP_ORDER.indexOf(id);
+        return idx >= 0 ? idx : Integer.MAX_VALUE; 
+    }
+
+    private final List<TaskGroupEvaluator> evaluatorsInOrder;
+
+    public DashboardJourneyService(
+        List<TaskGroupEvaluator> evaluators
+    ) {
+        this.evaluatorsInOrder = evaluators.stream()
+            .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
             .toList();
     }
 
@@ -79,6 +102,36 @@ public class DashboardJourneyService {
                 .map(evaluator -> evaluator.evaluate(dashboardContext))
                 .toList()
         );
+    private List<ListValue<TaskGroup>> computeTaskGroups() {
+        DashboardContext ctx = null;
+
+        List<TaskGroup> groups = new ArrayList<>(
+            evaluatorsInOrder.stream()
+                .map(e -> e.evaluate(ctx))
+                .toList()
+        );
+
+        groups.add(
+            TaskGroup.builder()
+                .groupId(TaskGroupId.RESPONSE)
+                .tasks(ListValueUtils.wrapListItems(List.of(
+                    Task.builder()
+                        .templateId("Defendant.RespondToClaim")
+                        .status(TaskStatus.NOT_STARTED)
+                        .build(),
+                    Task.builder()
+                        .templateId("Defendant.ReviewResponse")
+                        .status(TaskStatus.IN_PROGRESS)
+                        .build(),
+                    Task.builder()
+                        .templateId("Defendant.SubmitResponse")
+                        .status(TaskStatus.COMPLETED)
+                        .build()
+                )))
+                .build()
+        );
+        
+        return ListValueUtils.wrapListItems(groups);
     }
 
     /**
