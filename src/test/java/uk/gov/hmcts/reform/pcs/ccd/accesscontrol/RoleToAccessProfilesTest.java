@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -29,12 +28,6 @@ class RoleToAccessProfilesTest {
 
     private final RoleToAccessProfiles underTest = new RoleToAccessProfiles();
 
-    @BeforeEach
-    void setUp() {
-        when(configBuilder.caseRoleToAccessProfile(any())).thenReturn(accessProfileBuilder);
-        when(accessProfileBuilder.accessProfiles(any(String.class))).thenReturn(accessProfileBuilder);
-    }
-
     //Tests that accessing UserRoles via ExternalRole wrapper uses prefix for Idam roles
     @Test
     void shouldAddIdamPrefixForIdamRolesOnly() {
@@ -50,6 +43,8 @@ class RoleToAccessProfilesTest {
 
     @Test
     void shouldRegisterAccessProfileForEveryUserRole() {
+        when(configBuilder.caseRoleToAccessProfile(any())).thenReturn(accessProfileBuilder);
+        when(accessProfileBuilder.accessProfiles(any(String.class))).thenReturn(accessProfileBuilder);
         underTest.configure(configBuilder);
         stream(UserRole.values()).forEach(userRole -> {
             String expectedExternalRole = ExternalUserRole.forCcdRole(userRole).getRole();
