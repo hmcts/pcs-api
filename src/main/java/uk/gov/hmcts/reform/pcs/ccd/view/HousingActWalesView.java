@@ -25,15 +25,7 @@ public class HousingActWalesView {
 
     private static void setHousingActWalesFields(PCSCase pcsCase, HousingActWalesEntity housingActWalesEntity) {
         WalesHousingAct housingActWales = WalesHousingAct.builder()
-            .registered(housingActWalesEntity.getRegistered())
-            .registrationNumber(housingActWalesEntity.getRegistrationNumber())
-            .licensed(housingActWalesEntity.getLicensed())
-            .licenceNumber(housingActWalesEntity.getLicenceNumber())
-            .licensedAgentAppointed(housingActWalesEntity.getAgentAppointed())
-            .agentFirstName(housingActWalesEntity.getAgentFirstName())
-            .agentLastName(housingActWalesEntity.getAgentLastName())
-            .agentLicenceNumber(housingActWalesEntity.getAgentLicenceNumber())
-            .agentAppointmentDate(housingActWalesEntity.getAgentAppointmentDate())
+            .isExemptLandlord(housingActWalesEntity.getIsExemptLandlord())
             .build();
 
         pcsCase.setWalesHousingAct(housingActWales);

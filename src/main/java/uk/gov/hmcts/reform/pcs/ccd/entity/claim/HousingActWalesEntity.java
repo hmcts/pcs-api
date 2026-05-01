@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
@@ -41,23 +42,5 @@ public class HousingActWalesEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesNoNotApplicable registered;
-
-    private String registrationNumber;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesNoNotApplicable licensed;
-
-    private String licenceNumber;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesNoNotApplicable agentAppointed;
-
-    private String agentFirstName;
-    private String agentLastName;
-    private String agentLicenceNumber;
-    private LocalDate agentAppointmentDate;
-
+    private VerticalYesNo isExemptLandlord;
 }
