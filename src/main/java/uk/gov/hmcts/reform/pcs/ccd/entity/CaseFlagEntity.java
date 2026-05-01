@@ -39,7 +39,7 @@ public class CaseFlagEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id")
+    @JoinColumn(name = "pcs_case_id")
     private PcsCaseEntity pcsCase;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,6 +49,10 @@ public class CaseFlagEntity {
     @OneToMany(mappedBy = "caseFlagEntity", cascade = ALL, orphanRemoval = true)
     @Builder.Default
     private List<FlagPathEntity> paths = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ref_data_flag_id")
+    private RefDataFlagEntity refDataFlag;
 
     private String flagCode;
 

@@ -1,7 +1,18 @@
+CREATE TABLE ref_data_flag(
+                            id UUID PRIMARY KEY,
+                            flag_code VARCHAR(10),
+                            name VARCHAR(255),
+                            name_cy VARCHAR(255),
+                            hearing_relevant BOOLEAN,
+                            available_externally BOOLEAN,
+                            visibility VARCHAR(20)
+);
+
 CREATE TABLE case_flag (
                             id UUID PRIMARY KEY,
-                            case_id UUID REFERENCES pcs_case(id) ON DELETE CASCADE,
+                            pcs_case_id UUID REFERENCES pcs_case(id) ON DELETE CASCADE,
                             party_id UUID REFERENCES party(id) ON DELETE CASCADE,
+                            ref_data_flag_id UUID NOT NULL REFERENCES ref_data_flag(id) ON DELETE CASCADE,
                             flag_code VARCHAR(6) NOT NULL,
                             sub_type_key VARCHAR(50),
                             sub_type_value VARCHAR(50),
@@ -19,16 +30,7 @@ CREATE TABLE case_flag (
 
 CREATE TABLE flag_path(
                         id UUID PRIMARY KEY,
-                        flag_details_id UUID NOT NULL REFERENCES case_flag (id) ON DELETE CASCADE,
+                        case_flag_id UUID NOT NULL REFERENCES case_flag (id) ON DELETE CASCADE,
                         path VARCHAR(255) NOT NULL
                       );
 
-CREATE TABLE ref_data_flags(
-                             id UUID PRIMARY KEY,
-                             flag_code VARCHAR(10),
-                             name VARCHAR(255),
-                             name_cy VARCHAR(255),
-                             hearing_relevant BOOLEAN,
-                             available_externally BOOLEAN,
-                             visibility VARCHAR(20)
-);

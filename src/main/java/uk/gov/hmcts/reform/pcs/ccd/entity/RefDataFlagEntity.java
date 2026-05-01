@@ -6,22 +6,27 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import static jakarta.persistence.CascadeType.ALL;
+
 @Entity
-@Table(name = "ref_data_flags")
+@Table(name = "ref_data_flag")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RefDataFlagsEntity {
+public class RefDataFlagEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -32,6 +37,10 @@ public class RefDataFlagsEntity {
 
     @Column(name = "name_cy")
     private String flagNameWelsh;
+
+    @OneToMany(mappedBy = "refDataFlag", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CaseFlagEntity> caseFlags = new ArrayList<>();
 
     private String flagCode;
 

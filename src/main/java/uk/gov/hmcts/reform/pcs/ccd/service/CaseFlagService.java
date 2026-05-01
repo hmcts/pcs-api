@@ -10,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -108,13 +108,13 @@ public class CaseFlagService {
                                                   PartyEntity partyEntity, String flow) {
 
         List<CaseFlagEntity> mergedFlagDetails = new ArrayList<>();
-        List<RefDataFlagsEntity> refDataFlagsEntities = new ArrayList<>();
+        List<RefDataFlagEntity> refDataFlagEntities = new ArrayList<>();
 
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
-            RefDataFlagsEntity refDataFlagsEntity = getRefDataEntity(incomingCaseFlags, incomingFlagDetail);
-            refDataFlagsEntities.add(refDataFlagsEntity);
+            RefDataFlagEntity refDataFlagEntity = getRefDataEntity(incomingCaseFlags, incomingFlagDetail);
+            refDataFlagEntities.add(refDataFlagEntity);
 
             String flagId = incomingFlagDetailListValue.getId();
             CaseFlagEntity caseFlagEntity = existingCaseFlagEntitiesMap.remove(UUID.fromString(flagId));
@@ -141,6 +141,7 @@ public class CaseFlagService {
             caseFlagEntity.setSubTypeKey(incomingFlagDetail.getSubTypeKey());
             caseFlagEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
             caseFlagEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
+            caseFlagEntity.setRefDataFlag(refDataFlagEntity);
 
             if (flow.equals("UPDATE")) {
                 caseFlagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
@@ -155,20 +156,20 @@ public class CaseFlagService {
             mergedFlagDetails.add(caseFlagEntity);
         }
 
-        if (!refDataFlagsEntities.isEmpty()) {
-            refDataFlagsRepository.saveAll(refDataFlagsEntities);
+        if (!refDataFlagEntities.isEmpty()) {
+            refDataFlagsRepository.saveAll(refDataFlagEntities);
         }
 
         return mergedFlagDetails;
     }
 
-    private RefDataFlagsEntity getRefDataEntity(Flags incomingCaseFlags, FlagDetail incomingFlagDetail) {
+    private RefDataFlagEntity getRefDataEntity(Flags incomingCaseFlags, FlagDetail incomingFlagDetail) {
 
-        RefDataFlagsEntity refDataFlagsEntity = refDataFlagsRepository.findByFlagCode(
+        RefDataFlagEntity refDataFlagsEntity = refDataFlagsRepository.findByFlagCode(
             incomingFlagDetail.getFlagCode()).orElse(null);
 
         if (refDataFlagsEntity == null) {
-            refDataFlagsEntity = new RefDataFlagsEntity();
+            refDataFlagsEntity = new RefDataFlagEntity();
         }
         refDataFlagsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
         refDataFlagsEntity.setFlagName(incomingFlagDetail.getName());
@@ -182,7 +183,6 @@ public class CaseFlagService {
 
         return refDataFlagsEntity;
     }
-
 
     private void setFlagPath(FlagDetail incomingFlagDetail, Set<String> existingFlagPathIds,
                                              CaseFlagEntity caseFlagEntity) {

@@ -3,17 +3,14 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 
 import java.util.List;
 import java.util.Set;
@@ -22,20 +19,15 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagsViewTest {
 
-    @Mock
-    private RefDataFlagsRepository refDataFlagsRepository;
-
-    @InjectMocks
     private CaseFlagsView underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseFlagsView(refDataFlagsRepository);
+        underTest = new CaseFlagsView();
     }
 
     @Test
@@ -62,8 +54,6 @@ class CaseFlagsViewTest {
 
         pcsCaseEntity.setCaseFlags(List.of(createMockCaseFlagsEntity()));
 
-        when(refDataFlagsRepository.findAll()).thenReturn(List.of(createMockRefDataFlagsEntity()));
-
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
@@ -86,7 +76,7 @@ class CaseFlagsViewTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
         pcsCaseEntity.setParties(Set.of(partyEntity));
-        when(refDataFlagsRepository.findAll()).thenReturn(List.of(createMockRefDataFlagsEntity()));
+        //when(refDataFlagsRepository.findAll()).thenReturn(List.of(createMockRefDataFlagsEntity()));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -154,6 +144,7 @@ class CaseFlagsViewTest {
             .flagCode("CF0007")
             .flagComment("Urgent case")
             .paths(List.of(createMockFlagPathEntity()))
+            .refDataFlag(createMockRefDataFlagsEntity())
             .build();
     }
 
@@ -164,9 +155,9 @@ class CaseFlagsViewTest {
             .build();
     }
 
-    private RefDataFlagsEntity createMockRefDataFlagsEntity() {
+    private RefDataFlagEntity createMockRefDataFlagsEntity() {
 
-        return RefDataFlagsEntity.builder()
+        return RefDataFlagEntity.builder()
             .flagCode("CF0007")
             .flagName("Urgent case")
             .build();
