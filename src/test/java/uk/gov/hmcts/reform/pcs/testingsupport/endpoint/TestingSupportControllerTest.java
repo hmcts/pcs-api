@@ -13,6 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -20,9 +22,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.time.Instant;
@@ -34,6 +40,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -59,7 +66,16 @@ class TestingSupportControllerTest {
     private CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     @Mock
     private ModelMapper modelMapper;
-
+    @Mock
+    private CaseRoleAssignmentService caseRoleAssignmentService;
+    @Mock
+    private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
+    @Mock
+    private IdamService idamService;
+    @Mock
+    private User user;
+    @Mock
+    private UserInfo userInfo;
 
     private TestingSupportController underTest;
 
@@ -68,8 +84,11 @@ class TestingSupportControllerTest {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  eligibilityService,
                                                  pcsCaseRepository, partyAccessCodeRepository,
-                                                 modelMapper, ccdTestCaseOrchestrator
-                );
+                                                 modelMapper, ccdTestCaseOrchestrator,
+                                                 caseRoleAssignmentService,
+                                                 legalRepresentativePartyLinkService,
+                                                 idamService
+        );
     }
 
     @SuppressWarnings("unchecked")
@@ -208,8 +227,8 @@ class TestingSupportControllerTest {
 
         // When/Then
         Assertions.assertThatThrownBy(() ->
-            underTest.getPostcodeEligibility(serviceAuth, postcode, null)
-        ).isInstanceOf(RuntimeException.class)
+                                          underTest.getPostcodeEligibility(serviceAuth, postcode, null)
+            ).isInstanceOf(RuntimeException.class)
             .hasMessageContaining("Service error");
 
         verify(eligibilityService).checkEligibility(postcode, null);
@@ -317,5 +336,78 @@ class TestingSupportControllerTest {
         // Then
         assertThat(HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode()));
     }
+
+    @Test
+    void linkDefendantSolicitorToParty() {
+        // given
+        long caseReference = 111111111111L;
+        String partyId = "abc";
+        String authToken = "testAuth";
+        String userUid = "userUid";
+        when(idamService.validateAuthToken(authToken)).thenReturn(user);
+        when(user.getUserDetails()).thenReturn(userInfo);
+        when(userInfo.getUid()).thenReturn(userUid);
+
+        // when
+        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
+            caseReference,
+            partyId,
+            authToken,
+            "testS2S"
+        );
+
+        // then
+        verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid, UserRole.DEFENDANT_SOLICITOR);
+
+        verify(legalRepresentativePartyLinkService)
+            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo);
+
+        assertThat(HttpStatus.OK.equals(response.getStatusCode()));
+    }
+
+    @Test
+    void createPCSCaseViaTestingSupport() {
+        // given
+        JsonNode formPayload = createJsonNodeFormPayload("John Smith");
+        String legislativeCountry = "England";
+        String authToken = "authToken";
+        String caseIdKey = "caseId";
+        String caseIdValue = "123";
+        String caseDetailsKey = "caseDetails";
+        String caseDetailsValue = "abc";
+
+        Map<String, Object> caseMap = Map.of(caseIdKey, caseIdValue, caseDetailsKey, caseDetailsValue);
+
+        when(ccdTestCaseOrchestrator.createCase(authToken, LegislativeCountry.ENGLAND, formPayload))
+            .thenReturn(caseMap);
+
+        // when
+        ResponseEntity<Map<String, Object>> response = underTest.createPCSCaseViaTestingSupport(
+            legislativeCountry,
+            authToken,
+            "s2sToken",
+            formPayload
+        );
+
+        // then
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+
+        Map<String, Object> body = response.getBody();
+        assertEquals("CREATED", body.get("status"));
+        assertEquals(caseIdValue, body.get(caseIdKey));
+        assertEquals(caseDetailsValue, body.get(caseDetailsKey));
+    }
+
+    private JsonNode createJsonNodeFormPayload(String applicantName) {
+        try {
+            String json = String.format("{\"applicantName\":\"%s\",\"caseNumber\":\"%s\"}",
+                                        applicantName, "PCS-123456789"
+            );
+            return objectMapper.readTree(json);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create JsonNode", e);
+        }
+    }
+
 
 }

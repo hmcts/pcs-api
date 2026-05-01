@@ -95,6 +95,8 @@ public class GenAppEntity {
 
     private String withoutNoticeReason;
 
+    private String whatOrderWanted;
+
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
 

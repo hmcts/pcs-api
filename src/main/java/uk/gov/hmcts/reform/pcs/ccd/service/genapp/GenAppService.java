@@ -58,6 +58,8 @@ public class GenAppService {
             }
         }
 
+        genAppEntity.setWhatOrderWanted(citizenCreateGenApp.getWhatOrderWanted());
+
         genAppEntity.setLanguageUsed(citizenCreateGenApp.getLanguageUsed());
         genAppEntity.setApplicationSubmittedDate(LocalDateTime.now(utcClock));
 

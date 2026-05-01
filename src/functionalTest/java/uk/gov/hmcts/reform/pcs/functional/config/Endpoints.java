@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.pcs.functional.config;
 
 public enum Endpoints {
 
-    DashboardNotifications("/dashboard/{caseReference}/notifications"),
-    DashboardTasks("/dashboard/{caseReference}/tasks"),
     ClaimEligibility("/testing-support/claim-eligibility"),
     CreateTestCase("/testing-support/{legislativeCountry}/create-case"),
     GetPins("/testing-support/pins/{caseReference}"),
