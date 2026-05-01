@@ -14,15 +14,21 @@ public class JsonAssertUtils {
     private static final String IGNORE_VALUE = "[[IGNORE_VALUE]]";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    public static void assertEqualsIgnoreFields(String expectedPath, String actualJson) {
+    public static void assertEqualsIgnoreFields(String expectedPathOrJson, String actualJson) {
         try {
             JsonNode expected;
             JsonNode actual;
 
-            try (InputStream is = Objects.requireNonNull(
-                JsonAssertUtils.class.getResourceAsStream(expectedPath)
-            )) {
-                expected = MAPPER.readTree(is);
+            String trimmed = expectedPathOrJson.trim();
+
+            if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+                expected = MAPPER.readTree(trimmed);
+            } else {
+                try (InputStream is = Objects.requireNonNull(
+                    JsonAssertUtils.class.getResourceAsStream(trimmed)
+                )) {
+                    expected = MAPPER.readTree(is);
+                }
             }
 
             actual = MAPPER.readTree(actualJson);
@@ -34,8 +40,9 @@ public class JsonAssertUtils {
                 MAPPER.writeValueAsString(actual),
                 JSONCompareMode.LENIENT
             );
+
         } catch (Exception e) {
-            throw new RuntimeException("JSON comparison failed for " + expectedPath, e);
+            throw new RuntimeException("JSON comparison failed for " + expectedPathOrJson, e);
         }
     }
 
