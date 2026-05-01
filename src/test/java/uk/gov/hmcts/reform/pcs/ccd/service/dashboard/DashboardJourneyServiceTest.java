@@ -93,7 +93,7 @@ class DashboardJourneyServiceTest {
             .extracting(g -> g.getGroupId(), g -> g.getTasks().size())
             .containsExactly(
                 tuple(TaskGroupId.CLAIM, 2),
-                tuple(TaskGroupId.RESPONSE, 4)
+                tuple(TaskGroupId.RESPONSE, 2)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).getFirst().getTasks())
