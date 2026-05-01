@@ -46,6 +46,12 @@
                   "templateId": "Defendant.ViewClaim",
                   "status": "AVAILABLE"
                 }
+              },
+              {
+                "value": {
+                  "templateId": "Defendant.ViewDocuments",
+                  "status": "NOT_AVAILABLE"
+                }
               }
             ]
           }
