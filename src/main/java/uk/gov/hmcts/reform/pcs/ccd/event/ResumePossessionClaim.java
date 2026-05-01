@@ -166,6 +166,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CTSC_ADMIN)
                 .showSummary()
                 .endButtonLabel("${endButtonLabel}");
 

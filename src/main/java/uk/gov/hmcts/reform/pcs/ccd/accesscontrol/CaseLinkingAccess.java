@@ -19,7 +19,6 @@ public class CaseLinkingAccess implements HasAccessControl {
         grants.put(PCS_CASE_WORKER, Permission.R);
         grants.putAll(PCS_SOLICITOR, Permission.CRU);
         grants.putAll(CTSC_ADMIN, Permission.CRU);
-
         return grants;
     }
 }
