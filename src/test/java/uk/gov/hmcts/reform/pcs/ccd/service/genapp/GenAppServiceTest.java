@@ -12,6 +12,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -285,7 +286,7 @@ class GenAppServiceTest {
 
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
             .hasSupportingDocuments(VerticalYesNo.YES)
-            .uploadedDocuments(List.of(uploadedDocument))
+            .uploadedDocuments(List.of(ListValue.<UploadedDocument>builder().value(uploadedDocument).build()))
             .build();
 
         List<DocumentEntity> savedDocumentEntities = List.of(mock(DocumentEntity.class));
@@ -328,7 +329,7 @@ class GenAppServiceTest {
 
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
             .hasSupportingDocuments(VerticalYesNo.NO)
-            .uploadedDocuments(List.of(uploadedDocument))
+            .uploadedDocuments(List.of(ListValue.<UploadedDocument>builder().value(uploadedDocument).build()))
             .build();
 
         List<DocumentEntity> savedDocumentEntities = List.of(mock(DocumentEntity.class));

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -93,7 +94,7 @@ public class GenAppService {
         return genAppRepository.save(genAppEntity);
     }
 
-    public List<DocumentEntity> createDocumentEntities(List<UploadedDocument> uploadedDocuments,
+    public List<DocumentEntity> createDocumentEntities(List<ListValue<UploadedDocument>> uploadedDocuments,
                                                        PcsCaseEntity pcsCaseEntity,
                                                        GenAppEntity genAppEntity) {
 
@@ -102,6 +103,7 @@ public class GenAppService {
         }
 
         List<DocumentEntity> documentEntities = uploadedDocuments.stream()
+            .map(ListValue::getValue)
             .map(defDoc -> DocumentEntity.builder()
                 .pcsCase(pcsCaseEntity)
                 .generalApplication(genAppEntity)
