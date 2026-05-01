@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
@@ -18,21 +17,6 @@ class ClaimEntityTest {
     @BeforeEach
     void setUp() {
         underTest = new ClaimEntity();
-    }
-
-    @Test
-    void shouldUpdateExistingHousingActWales() {
-        // Given
-        HousingActWalesEntity existingHousingActWales = mock(HousingActWalesEntity.class);
-        HousingActWalesEntity updatedHousingActWales = mock(HousingActWalesEntity.class);
-        underTest.setHousingActWales(existingHousingActWales);
-
-        // When
-        underTest.setHousingActWales(updatedHousingActWales);
-
-        // Then
-        verify(existingHousingActWales).setClaim(null);
-        verify(updatedHousingActWales).setClaim(underTest);
     }
 
     @Test

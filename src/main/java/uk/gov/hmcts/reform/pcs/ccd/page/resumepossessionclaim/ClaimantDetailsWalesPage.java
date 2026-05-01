@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 @Component
@@ -17,9 +16,7 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
             .pageLabel("Exempt Landlord")
             .showCondition("legislativeCountry=\"Wales\"")
             .label("claimantDetailsWales-info", "---")
-            .complex(PCSCase::getWalesHousingAct)
-                .mandatory(WalesHousingAct::getIsExemptLandlord)
-            .done()
+            .mandatory(PCSCase::getIsExemptLandlord)
             .label("claimantDetailsWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

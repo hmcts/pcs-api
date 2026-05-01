@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
-import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
@@ -82,8 +81,6 @@ class PCSCaseViewTest {
     @Mock
     private AlternativesToPossessionView alternativesToPossessionView;
     @Mock
-    private HousingActWalesView housingActWalesView;
-    @Mock
     private AsbProhibitedConductView asbProhibitedConductView;
     @Mock
     private RentArrearsView rentArrearsView;
@@ -112,7 +109,7 @@ class PCSCaseViewTest {
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
-                                    alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
+                                    alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator
         );
@@ -333,7 +330,6 @@ class PCSCaseViewTest {
         verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(alternativesToPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(housingActWalesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(asbProhibitedConductView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);

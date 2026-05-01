@@ -22,7 +22,6 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
     private final ClaimGroundService claimGroundService;
     private final PossessionAlternativesService possessionAlternativesService;
-    private final HousingActWalesService housingActWalesService;
     private final AsbProhibitedConductService asbProhibitedConductService;
     private final RentArrearsService rentArrearsService;
     private final NoticeOfPossessionService noticeOfPossessionService;
@@ -65,6 +64,7 @@ public class ClaimService {
             .additionalDocsProvided(pcsCase.getWantToUploadDocuments())
             .genAppExpected(pcsCase.getApplicationWithClaim())
             .languageUsed(pcsCase.getLanguageUsed())
+            .isExemptLandlord(pcsCase.getIsExemptLandlord())
             .build();
 
         claimEntity.addClaimGrounds(claimGrounds);
@@ -73,7 +73,6 @@ public class ClaimService {
             possessionAlternativesService.createPossessionAlternativesEntity(pcsCase));
 
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
-            claimEntity.setHousingActWales(housingActWalesService.createHousingActWalesEntity(pcsCase));
             claimEntity
                 .setAsbProhibitedConductEntity(asbProhibitedConductService.createAsbProhibitedConductEntity(pcsCase));
         }

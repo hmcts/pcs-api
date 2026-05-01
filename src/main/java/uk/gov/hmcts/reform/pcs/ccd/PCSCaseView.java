@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
-import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
@@ -65,7 +64,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final ClaimGroundsView claimGroundsView;
     private final RentDetailsView rentDetailsView;
     private final AlternativesToPossessionView alternativesToPossessionView;
-    private final HousingActWalesView housingActWalesView;
     private final AsbProhibitedConductView asbProhibitedConductView;
     private final RentArrearsView rentArrearsView;
     private final NoticeOfPossessionView noticeOfPossessionView;
@@ -126,7 +124,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         claimGroundsView.setCaseFields(pcsCase, pcsCaseEntity);
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
         alternativesToPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
-        housingActWalesView.setCaseFields(pcsCase, pcsCaseEntity);
         asbProhibitedConductView.setCaseFields(pcsCase, pcsCaseEntity);
 
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);

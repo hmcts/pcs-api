@@ -36,6 +36,7 @@ public class ClaimView {
         pcsCase.setApplicationWithClaim(claim.getGenAppExpected());
         pcsCase.setLanguageUsed(claim.getLanguageUsed());
         pcsCase.setWantToUploadDocuments(claim.getAdditionalDocsProvided());
+        pcsCase.setIsExemptLandlord(claim.getIsExemptLandlord());
     }
 
     private void mapComplexClaimFields(PCSCase pcsCase, ClaimEntity claim) {
