@@ -47,6 +47,10 @@ public class DocumentEntity {
 
     private String url;
 
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "general_application_id")
+    private GenAppEntity generalApplication;
+
     private String fileName;
 
     private String binaryUrl;
@@ -55,6 +59,12 @@ public class DocumentEntity {
 
     @Enumerated(EnumType.STRING)
     private DocumentType type;
+
+    private String contentType;
+
+    private Long size;
+
+    private String displayFileName;
 
     private String description;
 
