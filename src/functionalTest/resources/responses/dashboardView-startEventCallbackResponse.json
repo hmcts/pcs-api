@@ -94,7 +94,7 @@
               {
                 "value": {
                   "templateId": "ViewAllApplications",
-                  "status": "AVAILABLE"
+                  "status": "NOT_AVAILABLE"
                 }
               }
             ]
