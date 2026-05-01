@@ -232,12 +232,8 @@ class GenAppServiceTest {
             .whatOrderWanted(expectedOrder)
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .citizenGenAppRequest(genAppRequest)
-            .build();
-
         // When
-        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
