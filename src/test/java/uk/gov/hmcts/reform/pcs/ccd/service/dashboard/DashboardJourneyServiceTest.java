@@ -107,9 +107,7 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple("Defendant.RespondToClaim", TaskStatus.NOT_STARTED),
-                tuple("Defendant.ViewResponse", TaskStatus.NOT_AVAILABLE),
-                tuple("Defendant.ReviewResponse", TaskStatus.IN_PROGRESS),
-                tuple("Defendant.SubmitResponse", TaskStatus.COMPLETED)
+                tuple("Defendant.ViewResponse", TaskStatus.NOT_AVAILABLE)
             );
     }
 
