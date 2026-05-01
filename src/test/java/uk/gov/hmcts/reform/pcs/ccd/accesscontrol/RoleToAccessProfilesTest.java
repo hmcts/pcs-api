@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static java.util.Arrays.stream;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
@@ -32,6 +33,19 @@ class RoleToAccessProfilesTest {
     void setUp() {
         when(configBuilder.caseRoleToAccessProfile(any())).thenReturn(accessProfileBuilder);
         when(accessProfileBuilder.accessProfiles(any(String.class))).thenReturn(accessProfileBuilder);
+    }
+
+    //Tests that accessing UserRoles via ExternalRole wrapper uses prefix for Idam roles
+    @Test
+    void shouldAddIdamPrefixForIdamRolesOnly() {
+        stream(UserRole.values()).forEach(role -> {
+            String ccdRole = ExternalUserRole.forCcdRole(role).getRole();
+            if (role.getRoleType() == RoleType.IDAM) {
+                assertThat(ccdRole).startsWith("idam:");
+            } else {
+                assertThat(ccdRole).doesNotStartWith("idam:");
+            }
+        });
     }
 
     @Test
