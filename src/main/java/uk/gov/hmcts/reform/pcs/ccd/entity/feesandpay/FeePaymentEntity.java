@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
@@ -63,5 +64,9 @@ public class FeePaymentEntity {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "hwf_id")
+    private HelpWithFeesEntity helpWithFees;
 
 }
