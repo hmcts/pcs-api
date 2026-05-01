@@ -1,11 +1,12 @@
-package uk.gov.hmcts.reform.pcs.dashboard.model;
+package uk.gov.hmcts.reform.pcs.ccd.domain.dashboard;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
-import java.util.Map;
+import java.util.List;
 
 @Data
 @Builder
@@ -13,6 +14,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class Task {
     private String templateId;
-    private Map<String, Object> templateValues;
-    private String status;
+    private List<ListValue<TemplateValue>> templateValues;
+    private TaskStatus status;
 }
