@@ -214,7 +214,7 @@ class NoticeOfPossessionViewTest {
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
         assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(EMAIL);
         assertThat(noticeServedDetails.getNoticeEmailSentDateTime()).isSameAs(emailSentDateTime);
-        assertThat(noticeServedDetails.getNoticeEmailExplanation()).isEqualTo(emailExplanation);
+        assertThat(noticeServedDetails.getNoticeEmailAddress()).isEqualTo(emailExplanation);
     }
 
     @Test

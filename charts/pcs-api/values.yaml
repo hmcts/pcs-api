@@ -56,3 +56,5 @@ xui-webapp:
   enabled: false
 wiremock:
   enabled: false
+ccd-case-document-am-api:
+  enabled: false
