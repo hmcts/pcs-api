@@ -30,7 +30,7 @@ public class PaymentAgreement {
     @CCD
     private String repaymentAgreedDetails;
 
-    @CCD
+    @CCD(searchable = false)
     private VerticalYesNo repayArrearsInstalments;
 
     @CCD(typeOverride = FieldType.MoneyGBP)
