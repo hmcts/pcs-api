@@ -1,11 +1,13 @@
 {
   "parties": [],
-  "caseLinks": [],
   "defendant1": {
-    "nameKnown": "NO",
+    "lastName": "HN",
+    "firstName": "TVR",
+    "nameKnown": "YES",
     "addressKnown": "NO"
   },
   "allDocuments": [],
+  "claimantName": "pcs-solicitor1@test.com",
   "claimantType": {
     "value": {
       "code": "PROVIDER_OF_SOCIAL_HOUSING",
@@ -33,11 +35,7 @@
   },
   "languageUsed": "ENGLISH",
   "noticeServed": "NO",
-  "orgNameFound": "NO",
   "userPcqIdSet": "NO",
-  "SearchCriteria": {},
-  "caseNamePublic": "null vs persons unknown",
-  "endButtonLabel": "Submit claim",
   "orgAddressFound": "NO",
   "propertyAddress": {
     "County": "",
@@ -50,8 +48,8 @@
   },
   "statementOfTruth": {
     "completedBy": "CLAIMANT",
-    "fullNameClaimant": "asdfasdf",
-    "positionClaimant": "asdfasdf",
+    "fullNameClaimant": "wert",
+    "positionClaimant": "ewrt",
     "agreementClaimant": [
       "BELIEVE_TRUE"
     ]
@@ -59,44 +57,39 @@
   "completionNextStep": "SUBMIT_AND_PAY_NOW",
   "legislativeCountry": "England",
   "mediationAttempted": "NO",
-  "addAnotherDefendant": "NO",
+  "addAnotherDefendant": "YES",
   "claimingCostsWanted": "NO",
   "settlementAttempted": "NO",
   "showRentSectionPage": "NO",
+  "additionalDefendants": [
+    {
+      "id": "48f21da0-c44f-40fe-bd78-00d57b3001aa",
+      "value": {
+        "lastName": "Testing1",
+        "firstName": "Test1",
+        "nameKnown": "YES",
+        "addressKnown": "NO"
+      }
+    }
+  ],
   "applicationWithClaim": "NO",
   "claimantContactEmail": "pcs-solicitor1@test.com",
-  "fallbackClaimantName": "TVR",
-  "caseNameHmctsInternal": "null vs persons unknown",
+  "isClaimantNameCorrect": "YES",
   "wantToUploadDocuments": "NO",
-  "caseManagementCategory": {
-    "value": {
-      "code": "b8fd9fb2-782a-4aad-85b0-03ee8f71970a",
-      "label": "Property Possession Claims"
-    },
-    "valueCode": "b8fd9fb2-782a-4aad-85b0-03ee8f71970a",
-    "list_items": [
-      {
-        "code": "b8fd9fb2-782a-4aad-85b0-03ee8f71970a",
-        "label": "Property Possession Claims"
-      }
-    ],
-    "valueLabel": "Property Possession Claims"
-  },
-  "caseNameHmctsRestricted": "null vs persons unknown",
+  "suspensionOfRTB_Reason": "asdfasdf",
   "claimAgainstTrespassers": "NO",
-  "defendantTermPossessive": "defendant’s",
+  "defendantTermPossessive": "defendants’",
   "alternativesToPossession": [
-    "DEMOTION_OF_TENANCY"
+    "SUSPENSION_OF_RIGHT_TO_BUY"
   ],
-  "demotionOfTenancy_Reason": "asdfasdf",
   "hasUnderlesseeOrMortgagee": "NO",
   "showReasonsForGroundsPage": "YES",
-  "claimantNamePossessiveForm": "TVR’s",
+  "claimantNamePossessiveForm": "pcs-solicitor1@test.com’s",
   "claimantProvidePhoneNumber": "NO",
-  "nuisanceOrImmoralUseGround": "sfdgsdfg",
+  "nuisanceOrImmoralUseGround": "sfgsdfgsdfg",
   "preActionProtocolCompleted": "NO",
+  "suspensionOfRTB_HousingAct": "SECTION_6A_2",
   "claimantCircumstancesSelect": "NO",
-  "demotionOfTenancy_HousingAct": "SECTION_6A_2",
   "rentArrearsOrBreachOfTenancy": [],
   "tenancy_TypeOfTenancyLicence": "SECURE_TENANCY",
   "hasDefendantCircumstancesInfo": "NO",
@@ -106,7 +99,7 @@
     "hasReasons": "NO"
   },
   "showClaimTypeNotEligibleEngland": "NO",
-  "tenancy_HasCopyOfTenancyLicence": "NO",
+  "tenancy_TenancyLicenceDocuments": [],
   "overriddenClaimantContactAddress": {
     "County": "",
     "Country": "United Kingdom",
@@ -117,16 +110,15 @@
     "AddressLine3": ""
   },
   "secureOrFlexibleMandatoryGrounds": [],
+  "secureAntisocialAdditionalGrounds": [],
   "showClaimantTypeNotEligibleWales": "NO",
   "showClaimantTypeNotEligibleEngland": "NO",
   "secureOrFlexibleMandatoryGroundsAlt": [],
-  "suspensionOfRTB_ShowHousingActsPage": "NO",
+  "suspensionOfRTB_ShowHousingActsPage": "YES",
   "secureOrFlexibleDiscretionaryGrounds": [
     "NUISANCE_OR_IMMORAL_USE"
   ],
-  "demotionOfTenancy_ShowHousingActsPage": "YES",
+  "demotionOfTenancy_ShowHousingActsPage": "NO",
   "suspensionToBuyDemotionOfTenancyPages": "NO",
-  "secureOrFlexibleDiscretionaryGroundsAlt": [],
-  "tenancy_ReasonsForNoTenancyLicenceDocuments": "sfgsdfgsdfg",
-  "demotionOfTenancy_StatementOfExpressTermsServed": "NO"
+  "secureOrFlexibleDiscretionaryGroundsAlt": []
 }
