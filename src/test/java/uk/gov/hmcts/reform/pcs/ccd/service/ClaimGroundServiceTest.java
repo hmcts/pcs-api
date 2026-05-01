@@ -34,7 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
@@ -202,7 +202,7 @@ class ClaimGroundServiceTest {
     @Test
     void shouldReturnClaimGroundEntities_WhenAssuredTenancyNoRentArrears() {
         Answer<String> defaultReasonAnswer = invocation -> "Reason from " + invocation.getMethod().getName();
-        NoRentArrearsReasonForGrounds reasons = mock(NoRentArrearsReasonForGrounds.class, defaultReasonAnswer);
+        NoRentArrearsGroundsReasons reasons = mock(NoRentArrearsGroundsReasons.class, defaultReasonAnswer);
 
         Set<AssuredMandatoryGround> mandatory = EnumSet.allOf(AssuredMandatoryGround.class);
         Set<AssuredDiscretionaryGround> discretionary = EnumSet.allOf(AssuredDiscretionaryGround.class);
@@ -218,7 +218,7 @@ class ClaimGroundServiceTest {
                     .otherGroundDescription("Other ground description")
                     .build()
             )
-            .noRentArrearsReasonForGrounds(reasons)
+            .noRentArrearsGroundsReasons(reasons)
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
                     .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
@@ -362,7 +362,8 @@ class ClaimGroundServiceTest {
                 ClaimGroundEntity.builder()
                     .category(ClaimGroundCategory.ASSURED_OTHER)
                     .code("OTHER")
-                    .reason("Other ground description")
+                    .reason("Reason from getOtherGround")
+                    .description("Other ground description")
                     .isRentArrears(false)
                     .build()
             );
@@ -446,6 +447,7 @@ class ClaimGroundServiceTest {
             .redevelopmentReason("Redevelopment planned")
             .breachOfTenancyConditionsReason("Tenant breached agreement")
             .nuisanceAnnoyanceReason("Tenant caused nuisance")
+            .otherGroundReason("Other reasons")
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -506,7 +508,8 @@ class ClaimGroundServiceTest {
                 ClaimGroundEntity.builder()
                     .category(ClaimGroundCategory.ASSURED_OTHER)
                     .code("OTHER")
-                    .reason("Other ground description")
+                    .description("Other ground description")
+                    .reason("Other reasons")
                     .isRentArrears(false)
                     .build()
             );

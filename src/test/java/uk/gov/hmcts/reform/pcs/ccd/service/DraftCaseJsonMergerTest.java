@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
@@ -54,7 +54,7 @@ class DraftCaseJsonMergerTest {
             .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .applicationWithClaim(VerticalYesNo.YES)
             .claimantType(claimantTypeList)
-            .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+            .noRentArrearsGroundsReasons(NoRentArrearsGroundsReasons.builder()
                                                 .holidayLet("some holiday let details")
                                                 .build())
             .build();
@@ -72,7 +72,8 @@ class DraftCaseJsonMergerTest {
             .ignoringFields("introductoryDemotedOrOtherGroundsForPossession.otherGroundDescription",
                             "applicationWithClaim",
                             "claimantType",
-                            "noRentArrearsReasonForGrounds.holidayLet",
+                            "noRentArrearsGroundsReasons.holidayLet",
+                            "rentArrearsGroundsReasons.otherGround",
                             "waysToPay",
                             "caseLinks",
                             "claimGroundSummaries",
@@ -97,7 +98,7 @@ class DraftCaseJsonMergerTest {
                         .getOtherGroundDescription()).isEqualTo("some other ground description");
         assertThat(mergedCaseData.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
         assertThat(mergedCaseData.getClaimantType()).isEqualTo(claimantTypeList);
-        assertThat(mergedCaseData.getNoRentArrearsReasonForGrounds().getHolidayLet())
+        assertThat(mergedCaseData.getNoRentArrearsGroundsReasons().getHolidayLet())
             .isEqualTo("some holiday let details");
 
     }

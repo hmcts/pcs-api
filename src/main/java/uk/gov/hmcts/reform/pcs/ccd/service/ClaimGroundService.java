@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
@@ -188,7 +188,7 @@ public class ClaimGroundService {
 
         if (!CollectionUtils.isEmpty(groundsForPossession.getAdditionalOtherGround())) {
             addOtherGroundToClaimEntity(claimGroundEntities,
-                    groundsForPossession.getAdditionalOtherGroundDescription());
+                    groundsForPossession.getAdditionalOtherGroundDescription(), reasons.getOtherGroundReason());
         }
 
         return claimGroundEntities;
@@ -199,7 +199,7 @@ public class ClaimGroundService {
         AssuredNoArrearsPossessionGrounds groundsForPossession = pcsCase.getNoRentArrearsGroundsOptions();
         Set<AssuredMandatoryGround> mandatoryGrounds = groundsForPossession.getMandatoryGrounds();
         Set<AssuredDiscretionaryGround> discretionaryGrounds = groundsForPossession.getDiscretionaryGrounds();
-        NoRentArrearsReasonForGrounds reasons = pcsCase.getNoRentArrearsReasonForGrounds();
+        NoRentArrearsGroundsReasons reasons = pcsCase.getNoRentArrearsGroundsReasons();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
 
@@ -256,7 +256,8 @@ public class ClaimGroundService {
         }
 
         if (!CollectionUtils.isEmpty(groundsForPossession.getOtherGround())) {
-            addOtherGroundToClaimEntity(entities, groundsForPossession.getOtherGroundDescription());
+            addOtherGroundToClaimEntity(entities, groundsForPossession.getOtherGroundDescription(),
+                    reasons.getOtherGround());
         }
 
         return entities;
@@ -413,11 +414,13 @@ public class ClaimGroundService {
         return claimGroundEntities;
     }
 
-    private void addOtherGroundToClaimEntity(List<ClaimGroundEntity> entities, String otherGroundDescription) {
+    private void addOtherGroundToClaimEntity(List<ClaimGroundEntity> entities, String otherGroundDescription,
+                                             String reasonsTxt) {
         entities.add(ClaimGroundEntity.builder()
             .category(ClaimGroundCategory.ASSURED_OTHER)
             .code(AssuredAdditionalOtherGround.OTHER.name())
-            .reason(otherGroundDescription)
+            .description(otherGroundDescription)
+            .reason(reasonsTxt)
             .isRentArrears(false)
             .build());
     }
