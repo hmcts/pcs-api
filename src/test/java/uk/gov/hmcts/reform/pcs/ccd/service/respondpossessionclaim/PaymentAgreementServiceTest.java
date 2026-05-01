@@ -132,6 +132,30 @@ class PaymentAgreementServiceTest {
         );
     }
 
+    @ParameterizedTest
+    @MethodSource("repayArrearsInstalmentsScenarios")
+    void shouldMapRepayArrearsInstalmentsField(VerticalYesNo expected) {
+        // Given
+        PaymentAgreement model = PaymentAgreement.builder()
+                .repayArrearsInstalments(expected)
+                .build();
+
+        // When
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
+
+        // Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getRepayArrearsInstalments()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> repayArrearsInstalmentsScenarios() {
+        return Stream.of(
+                Arguments.of(VerticalYesNo.YES),
+                Arguments.of(VerticalYesNo.NO),
+                Arguments.of((VerticalYesNo) null)
+        );
+    }
+
 
 }
 
