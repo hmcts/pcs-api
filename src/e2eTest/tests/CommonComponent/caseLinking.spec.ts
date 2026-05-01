@@ -44,7 +44,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Case Linking]', async () => {
-  test('Case Linking @nightly', async () => {
+  test('Case Linking @nightly @caseLinking', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', beforeYouStart.mainHeader);
