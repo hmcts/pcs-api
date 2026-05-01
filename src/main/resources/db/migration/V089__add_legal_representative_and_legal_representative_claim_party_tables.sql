@@ -18,5 +18,3 @@ create table claim_party_legal_representative (
 
   primary key (party_id, legal_representative_id)
 );
-
-

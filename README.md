@@ -163,6 +163,13 @@ There are also several custom test scripts available:
 - `yarn test:regression` - runs regression tagged tests
 - `yarn test:chrome` - runs the full E2E suite in Chrome
 - `yarn test:firefox` - runs the full E2E suite in Firefox
+- `yarn test:webkit` - runs the full E2E suite in WebKit (Safari engine)
+- `yarn test:edge` - runs the full E2E suite in Microsoft Edge
+- `yarn test:mobile-android` / `yarn test:mobile-ios` / `yarn test:mobile-ipad` - run the full suite on the matching Playwright device profile
+
+Locally, `playwright.config.ts` registers Firefox, WebKit, Edge, and mobile projects only when `CI` is set (as on Jenkins). For a local multi-browser run, set `CI=true` or pass `--project <name>` for a project that is defined in config.
+
+The nightly Jenkins job (`Jenkinsfile_nightly`) runs against **AAT** and offers `PLAYWRIGHT_GREP_TAG` (choice) and `PLAYWRIGHT_SPEC` (text). `handleEnvironmentSetting()` sets `E2E_TEST_SCOPE` and `E2E_SPEC` on the run; each matrix stage sets only `E2E_SUITE` in `withEnv` before `./gradlew runE2eTests` → `yarn test:<suite>`. `src/e2eTest/playwright.config.ts` reads those env vars for grep and `testMatch`.
 
 To open generated Allure report
 

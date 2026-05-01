@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -12,8 +13,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -24,6 +29,8 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
 
     private final ImmutablePartyFieldValidator immutableFieldValidator;
     private final DraftCaseDataService draftCaseDataService;
+    private final SecurityContextService securityContextService;
+    private final SelectedPartyRetriever selectedPartyRetriever;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -66,7 +73,21 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
         }
 
         try {
-            draftCaseDataService.patchUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
+            if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
+                draftCaseDataService.patchUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
+            } else {
+                Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseData);
+                if (selectedPartyId.isEmpty()) {
+                    throw new IllegalStateException("No selected responding party id for respond to claim");
+                }
+                UUID representedPartyId = selectedPartyId.get();
+                draftCaseDataService.patchUnsubmittedEventData(
+                    caseRef,
+                    partialUpdate,
+                    respondPossessionClaim,
+                    representedPartyId
+                );
+            }
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(partialUpdate)
                 .build();
@@ -82,5 +103,6 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .errors(errorMessages)
             .build();
     }
+
 
 }

@@ -23,7 +23,31 @@ public interface LegalRepresentativeRepository extends JpaRepository<LegalRepres
         """)
     boolean isLegalRepresentativeLinkedToPartyAndActive(@Param("idamId") UUID idamId, @Param("partyId") UUID partyId);
 
+    @Query("""
+        SELECT lr
+        FROM LegalRepresentativeEntity lr
+        JOIN lr.claimPartyLegalRepresentativeList cplr
+        JOIN cplr.party p
+        WHERE p.id = :partyId
+        AND cplr.active = 'YES'
+        """)
+    Optional<LegalRepresentativeEntity> isPartyLinkedToLegalRepresentativeAndActive(@Param("partyId") UUID partyId);
+
+    @Query("""
+        SELECT COUNT(lr) > 0
+        FROM LegalRepresentativeEntity lr
+        JOIN lr.claimPartyLegalRepresentativeList cplr
+        JOIN cplr.party p
+        WHERE lr.organisationId = :organisationId
+        AND p.id = :partyId
+        AND cplr.active = 'YES'
+        """)
+    boolean isRepresentativeOrganisationLinkedToPartyAndActive(@Param("organisationId") String organisationId,
+                                                               @Param("partyId") UUID partyId);
+
     Optional<LegalRepresentativeEntity> findByIdamId(UUID idamUserId);
+
+    Optional<LegalRepresentativeEntity> findByOrganisationId(String organisationId);
 
 
 }

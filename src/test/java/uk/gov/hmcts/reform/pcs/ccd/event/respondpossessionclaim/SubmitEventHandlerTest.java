@@ -9,7 +9,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -17,12 +19,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,18 +54,32 @@ class SubmitEventHandlerTest {
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
+    private PCSCase pcsCase;
+    @Mock
     private ClaimResponseService claimResponseService;
     @Mock
     private DefendantResponseService defendantResponseService;
+    @Mock
+    private SecurityContextService securityContextService;
+    @Mock
+    private UserInfo userInfo;
+    @Mock
+    private SelectedPartyRetriever selectedPartyRetriever;
 
     private SubmitEventHandler underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(draftCaseDataService, claimResponseService, defendantResponseService);
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+        underTest = new SubmitEventHandler(
+            draftCaseDataService,
+            claimResponseService,
+            defendantResponseService,
+            securityContextService,
+            selectedPartyRetriever
+        );
     }
-
-    // ========== VALIDATION ERROR CASES ==========
 
     @Test
     void shouldReturnErrorWhenPossessionClaimResponseIsNull() {
@@ -114,10 +138,9 @@ class SubmitEventHandlerTest {
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), eq(respondPossessionClaim));
     }
 
-    // ========== INDEPENDENT FIELD SUBMISSION TESTS ==========
-
     @Test
     void shouldAllowSubmitWithOnlyDefendantResponses() {
+        // given
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
@@ -127,8 +150,10 @@ class SubmitEventHandlerTest {
 
         stubDraft(caseData);
 
+        // when
         SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
 
+        // then
         assertThat(result.getErrors()).isNullOrEmpty();
         verify(claimResponseService).saveDraftData(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
         verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, caseData.getPossessionClaimResponse());
@@ -155,7 +180,7 @@ class SubmitEventHandlerTest {
 
         DefendantResponses defendantResponses =
             DefendantResponses.builder()
-                .preferenceType(ContactPreferenceType.EMAIL)
+                .contactByEmail(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPhone(VerticalYesNo.YES)
                 .build();
@@ -186,7 +211,7 @@ class SubmitEventHandlerTest {
         verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
 
         PossessionClaimResponse capturedResponse = responseCaptor.getValue();
-        assertThat(capturedResponse.getDefendantResponses().getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
+        assertThat(capturedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantResponses().getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantResponses().getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantContactDetails().getParty().getPhoneNumber())
@@ -203,7 +228,6 @@ class SubmitEventHandlerTest {
 
         DefendantResponses defendantResponses =
             DefendantResponses.builder()
-                .preferenceType(null)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPhone(VerticalYesNo.YES)
                 .build();
@@ -274,6 +298,79 @@ class SubmitEventHandlerTest {
     }
 
     @Test
+    void shouldSubmitRegularIncomeFieldsWhenFinalSubmit() {
+        HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
+            .shareIncomeExpenseDetails(VerticalYesNo.YES)
+            .incomeFromJobs(YesOrNo.YES)
+            .incomeFromJobsAmount(new BigDecimal("200000")) // £2000.00 in pence
+            .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
+            .pension(YesOrNo.NO)
+            .universalCredit(VerticalYesNo.YES)
+            .ucApplicationDate(LocalDate.of(2024, 2, 10))
+            .universalCreditAmount(new BigDecimal("100000")) // £1000.00 in pence
+            .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
+            .otherBenefits(YesOrNo.NO)
+            .moneyFromElsewhere(YesOrNo.YES)
+            .moneyFromElsewhereDetails("Receive child support payments")
+            .build();
+
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .householdCircumstances(householdCircumstances)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .build();
+
+        stubDraft(caseData);
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(eventPayload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        // Verify the response object with household circumstances is passed to the service
+        ArgumentCaptor<PossessionClaimResponse> responseCaptor =
+            ArgumentCaptor.forClass(PossessionClaimResponse.class);
+        verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
+
+        PossessionClaimResponse capturedResponse = responseCaptor.getValue();
+        HouseholdCircumstances capturedHousehold = capturedResponse.getDefendantResponses()
+            .getHouseholdCircumstances();
+
+        // Assert all regular income fields are submitted correctly
+        assertThat(capturedHousehold.getShareIncomeExpenseDetails()).isEqualTo(VerticalYesNo.YES);
+
+        assertThat(capturedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
+        assertThat(capturedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("200000");
+        assertThat(capturedHousehold.getIncomeFromJobsFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+
+        assertThat(capturedHousehold.getPension()).isEqualTo(YesOrNo.NO);
+
+        assertThat(capturedHousehold.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
+        assertThat(capturedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 2, 10));
+        assertThat(capturedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("100000");
+        assertThat(capturedHousehold.getUniversalCreditFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
+
+        assertThat(capturedHousehold.getOtherBenefits()).isEqualTo(YesOrNo.NO);
+
+        assertThat(capturedHousehold.getMoneyFromElsewhere()).isEqualTo(YesOrNo.YES);
+        assertThat(capturedHousehold.getMoneyFromElsewhereDetails())
+            .isEqualTo("Receive child support payments");
+
+        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, capturedResponse);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+    }
+
+    @Test
     void shouldCallContactPreferencesServiceBeforeReturningSuccess() {
         // Given
         Party party = Party.builder()
@@ -311,6 +408,73 @@ class SubmitEventHandlerTest {
         assertThat(result.getState()).isNull(); // Default response has null state
     }
 
+    @Test
+    void shouldSubmitLegalRepresentativeDraftForSelectedParty() {
+        // given
+        UUID representedPartyId = UUID.randomUUID();
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .build();
+
+        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+            .thenReturn(Optional.of(caseData));
+
+        // when
+        SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
+
+        // then
+        assertThat(result.getErrors()).isNullOrEmpty();
+        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE, representedPartyId);
+        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
+                                                               representedPartyId);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
+                                                               representedPartyId);
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+    }
+
+    @Test
+    void shouldThrowExceptionForNoSelectedParty() {
+        // given
+        UUID representedPartyId = UUID.randomUUID();
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(eventPayload.caseData()).thenReturn(pcsCase);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.empty());
+
+        // when / then
+        assertThat(org.junit.jupiter.api.Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> underTest.submit(eventPayload)
+        )).hasMessage("No selected responding party id for respond to claim");
+
+        verify(claimResponseService, never())
+            .saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE, representedPartyId);
+        verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
+                                                               representedPartyId);
+        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
+                                                               representedPartyId);
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+    }
+
     private void stubDraft(PCSCase draft) {
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
             .thenReturn(Optional.of(draft));
@@ -318,6 +482,7 @@ class SubmitEventHandlerTest {
 
     private EventPayload<PCSCase, State> createEventPayload(PCSCase caseData) {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(caseData);
         return eventPayload;
     }
 

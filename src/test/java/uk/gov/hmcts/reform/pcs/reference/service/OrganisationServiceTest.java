@@ -21,6 +21,7 @@ class OrganisationServiceTest {
 
     private static final UUID USER_ID = UUID.fromString("dc3f786d-4ad4-4b5d-a79f-6e35a6520ace");
     private static final String ORGANISATION_NAME = "Possession Claims Solicitor Org";
+    private static final String ORGANISATION_IDENTIFIER = "ORG-123";
 
     @Mock
     private SecurityContextService securityContextService;
@@ -53,6 +54,19 @@ class OrganisationServiceTest {
         assertThat(result).isEqualTo(ORGANISATION_NAME);
         verify(securityContextService).getCurrentUserId();
         verify(organisationDetailsService).getOrganisationName(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should successfully retrieve organisation ID for current user")
+    void shouldSuccessfullyRetrieveOrganisationIdForCurrentUser() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationIdentifier(USER_ID.toString()))
+            .thenReturn(ORGANISATION_IDENTIFIER);
+
+        String result = organisationService.getOrganisationIdForCurrentUser();
+
+        assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
+        verify(organisationDetailsService).getOrganisationIdentifier(USER_ID.toString());
     }
 
     @Test

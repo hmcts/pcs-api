@@ -52,7 +52,7 @@ public class RespondPossessionClaimEvents extends BaseApi {
             CaseRoleCleanUp.cleanUpCaseRole(
                 caseReference.toString(),
                 TestConstants.PCS_SOLICITOR_AUTOMATION_IDAM_UID,
-                "[CREATOR]"
+                "[CLAIMANTSOLICITOR]"
             );
         }
     }

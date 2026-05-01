@@ -6,15 +6,20 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -26,19 +31,27 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final DraftCaseDataService draftCaseDataService;
     private final ClaimResponseService claimResponseService;
     private final DefendantResponseService defendantResponseService;
+    private final SecurityContextService securityContextService;
+    private final SelectedPartyRetriever selectedPartyRetriever;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         log.info("RespondPossessionClaim submit callback invoked for Case Reference: {}", caseReference);
-        return processFinalSubmit(caseReference);
+        return processFinalSubmit(caseReference, eventPayload.caseData());
     }
 
-    private SubmitResponse<State> processFinalSubmit(long caseReference) {
+    private SubmitResponse<State> processFinalSubmit(long caseReference, PCSCase caseData) {
         log.info("Processing final submission for case {}", caseReference);
+        boolean citizenUser = securityContextService.getCurrentUserDetails().getRoles()
+            .contains(UserRole.CITIZEN.getRole());
+
+        UUID representedPartyId = citizenUser ? null : getSelectedPartyId(caseData);
 
         //load draft data
-        PCSCase draftData = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
+        PCSCase draftData = (representedPartyId == null
+            ? draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
+            : draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId))
             .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
         //get only possession response from draft
@@ -51,12 +64,15 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         }
 
         //call services to save to relevant tables
-        claimResponseService.saveDraftData(responseDraftData, caseReference);
-
-        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
-
-        //delete draft as it's no longer needed
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
+        if (representedPartyId == null) {
+            claimResponseService.saveDraftData(responseDraftData, caseReference);
+            defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
+            draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
+        } else {
+            claimResponseService.saveDraftDataForParty(responseDraftData, caseReference, representedPartyId);
+            defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, representedPartyId);
+            draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId);
+        }
 
         log.info("Successfully saved defendant response for case: {}", caseReference);
         return success();
@@ -84,5 +100,13 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         return SubmitResponse.<State>builder()
             .errors(List.of(errorMessage))
             .build();
+    }
+
+    private UUID getSelectedPartyId(PCSCase pcsCase) {
+        Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
+        if (selectedPartyId.isEmpty()) {
+            throw new IllegalStateException("No selected responding party id for respond to claim");
+        }
+        return selectedPartyId.get();
     }
 }
