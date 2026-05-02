@@ -11,8 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 @Component
-public class ClaimView {
+public class ClaimView implements ViewComponent {
 
+    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (!pcsCaseEntity.getClaims().isEmpty()) {
             ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
