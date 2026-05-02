@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
@@ -31,55 +32,55 @@ public class CaseFlagService {
 
     public void mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity, String flow) {
 
-        Map<UUID, CaseFlagEntity> existingCaseFlagEntities =
-            pcsCaseEntity.getCaseFlags().stream()
-                .collect(Collectors.toMap(CaseFlagEntity::getId, Function.identity()));
-
-        List<CaseFlagEntity> mergedFlagDetails = new ArrayList<>();
+        List<BaseCaseFlag> mergedFlagDetails = new ArrayList<>();
         List<RefDataFlagEntity> refDataFlagEntities = new ArrayList<>();
-        List<String> existingFlagPathIds = getExistingPathIds(existingCaseFlagEntities);
 
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
+            Map<UUID, BaseCaseFlag> existingFlagEntities =
+                pcsCaseEntity.getCaseFlags().stream()
+                    .collect(Collectors.toMap(BaseCaseFlag::getId, Function.identity()));
+
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
             RefDataFlagEntity refDataFlagEntity = getRefDataEntity(incomingCaseFlags, incomingFlagDetail);
             refDataFlagEntities.add(refDataFlagEntity);
 
             String flagId = incomingFlagDetailListValue.getId();
-            CaseFlagEntity caseFlagEntity = existingCaseFlagEntities.remove(UUID.fromString(flagId));
+            BaseCaseFlag flagEntity = existingFlagEntities.remove(UUID.fromString(flagId));
 
-            if (caseFlagEntity == null) {
-                caseFlagEntity = new CaseFlagEntity();
-                caseFlagEntity.setPcsCase(pcsCaseEntity);
+            if (flagEntity == null) {
+                flagEntity = new CaseFlagEntity();
+                flagEntity.setPcsCase(pcsCaseEntity);
             }
 
-            caseFlagEntity.setFlagCode(incomingFlagDetail.getFlagCode());
+            flagEntity.setFlagCode(incomingFlagDetail.getFlagCode());
 
             if (flow.equals("CREATE")) {
-                caseFlagEntity.setFlagComment(incomingFlagDetail.getFlagComment());
-                caseFlagEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+                flagEntity.setFlagComment(incomingFlagDetail.getFlagComment());
+                flagEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
             }
 
-            caseFlagEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
-            caseFlagEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
+            flagEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
+            flagEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
 
-            caseFlagEntity.setDefaultStatus(incomingFlagDetail.getStatus());
-            caseFlagEntity.setSubTypeKey(incomingFlagDetail.getSubTypeKey());
-            caseFlagEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
-            caseFlagEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
-            caseFlagEntity.setRefDataFlag(refDataFlagEntity);
+            flagEntity.setDefaultStatus(incomingFlagDetail.getStatus());
+            flagEntity.setSubTypeKey(incomingFlagDetail.getSubTypeKey());
+            flagEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
+            flagEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
+            flagEntity.setRefDataFlag(refDataFlagEntity);
 
             if (flow.equals("UPDATE")) {
-                caseFlagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
-                caseFlagEntity.setFlagUpdateCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+                flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
+                flagEntity.setFlagUpdateCommentWelsh(incomingFlagDetail.getFlagCommentCy());
             }
 
-            caseFlagEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
-            caseFlagEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
+            flagEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
+            flagEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
 
-            setFlagPath(incomingFlagDetail, existingFlagPathIds, caseFlagEntity);
+            List<String> existingFlagPathIds = getExistingPathIds(existingFlagEntities);
+            setFlagPath(incomingFlagDetail, existingFlagPathIds, flagEntity);
 
-            mergedFlagDetails.add(caseFlagEntity);
+            mergedFlagDetails.add(flagEntity);
         }
         refDataFlagsRepository.saveAll(refDataFlagEntities);
         pcsCaseEntity.getCaseFlags().clear();
@@ -108,15 +109,15 @@ public class CaseFlagService {
     }
 
     private void setFlagPath(FlagDetail incomingFlagDetail, List<String> existingFlagPathIds,
-                                             CaseFlagEntity caseFlagEntity) {
+                                             BaseCaseFlag flagEntity) {
         if (incomingFlagDetail.getPath() != null
             && !(new HashSet<>(existingFlagPathIds).containsAll(getIncomingFlagPathIds(incomingFlagDetail)))) {
             for (ListValue<String> path : incomingFlagDetail.getPath()) {
                 FlagPathEntity flagPathEntity = FlagPathEntity.builder()
-                    .caseFlagEntity(caseFlagEntity)
+                    .caseFlagEntity(flagEntity)
                     .path(path.getValue())
                     .build();
-                caseFlagEntity.getPaths().add(flagPathEntity);
+                flagEntity.getPaths().add(flagPathEntity);
             }
         }
     }
@@ -130,9 +131,9 @@ public class CaseFlagService {
         return incomingFlagDetail.getPath().stream().map(ListValue::getId).toList();
     }
 
-    private List<String> getExistingPathIds(Map<UUID, CaseFlagEntity> existingCaseFlagEntities) {
+    private List<String> getExistingPathIds(Map<UUID, BaseCaseFlag> existingFlagEntities) {
         List<String> list = new ArrayList<>();
-        for (CaseFlagEntity flagDetails : existingCaseFlagEntities.values()) {
+        for (BaseCaseFlag flagDetails : existingFlagEntities.values()) {
             for (FlagPathEntity flagPathEntity : flagDetails.getPaths()) {
                 list.add(flagPathEntity.getId().toString());
             }
