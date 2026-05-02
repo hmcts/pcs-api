@@ -15,8 +15,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class StatementOfTruthView {
+public class StatementOfTruthView implements ViewComponent {
 
+    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
             .map(ClaimEntity::getStatementOfTruth)
