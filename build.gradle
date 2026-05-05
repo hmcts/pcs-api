@@ -41,6 +41,14 @@ java {
   }
 }
 
+gradle.projectsEvaluated {
+  println "Repositories for ${project.path}:"
+  project.repositories.eachWithIndex { repo, i ->
+    def location = repo.hasProperty('url') ? repo.url : '(non-url repo)'
+    println "  ${i + 1}. ${repo.name} -> ${location}"
+  }
+}
+
 sourceSets {
   functionalTest {
     java {
