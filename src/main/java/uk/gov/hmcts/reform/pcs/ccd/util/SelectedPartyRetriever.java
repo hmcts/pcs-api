@@ -22,7 +22,7 @@ public class SelectedPartyRetriever {
     private Optional<UUID> getRequiredPartyId() {
         ClientContext clientContext = clientContextRetriever.getClientContext();
         if (clientContext == null) {
-            throw new IllegalStateException("Missing required represented party context for respond to claim");
+            return Optional.empty();
         }
         String selectedPartyId = clientContext.getSelectedPartyId();
         if (isBlank(selectedPartyId)) {

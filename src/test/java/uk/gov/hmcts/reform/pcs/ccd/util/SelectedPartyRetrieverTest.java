@@ -103,7 +103,7 @@ class SelectedPartyRetrieverTest {
     }
 
     @Test
-    void getRequiredPartyId_WithMissingClientContext_ThrowsException() {
+    void getRequiredPartyId_WithMissingClientContext_ReturnsEmpty() {
         // given
         Party party = Party.builder()
             .build();
@@ -116,11 +116,11 @@ class SelectedPartyRetrieverTest {
 
         when(clientContextRetriever.getClientContext()).thenReturn(null);
 
-        // when / then
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            selectedPartyRetriever.getSelectedPartyId(pcsCase);
-        });
-        assertEquals("Missing required represented party context for respond to claim", exception.getMessage());
+        // when
+        Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
+
+        // then
+        assertTrue(selectedPartyId.isEmpty());
     }
 
     @Test
