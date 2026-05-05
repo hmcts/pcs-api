@@ -53,10 +53,12 @@ public class NoticeOfPossessionService {
             }
             case EMAIL -> {
                 noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getNoticeEmailSentDateTime());
-                noticeOfPossessionEntity.setNoticeDetails(noticeServedDetails.getNoticeEmailExplanation());
+                noticeOfPossessionEntity.setNoticeDetails(noticeServedDetails.getNoticeEmailAddress());
             }
             case OTHER_ELECTRONIC -> {
                 noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime());
+                noticeOfPossessionEntity
+                    .setNoticeDetails(noticeServedDetails.getNoticeOtherElectronicMethodExplanation());
             }
             case OTHER -> {
                 noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getNoticeOtherDateTime());
