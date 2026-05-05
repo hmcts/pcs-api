@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ServiceRequestUpdate {
+public class PaymentStatusCallback {
 
     @JsonProperty("service_request_reference")
     private String serviceRequestReference;

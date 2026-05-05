@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.util.Optional;
@@ -94,18 +94,18 @@ public class PaymentService {
     }
 
     @Transactional
-    public void processPaymentResponse(ServiceRequestUpdate serviceRequestUpdate) {
-        log.info("ServiceRequestUpdate status: {}", serviceRequestUpdate.getServiceRequestStatus());
+    public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback) {
+        log.info("PaymentStatusCallback status: {}", paymentStatusCallback.getServiceRequestStatus());
         Optional<FeePaymentEntity> byCaseReference = feePaymentRepository
-            .findByRequestReference(serviceRequestUpdate.getServiceRequestReference());
+            .findByRequestReference(paymentStatusCallback.getServiceRequestReference());
         if (byCaseReference.isPresent()) {
             FeePaymentEntity feePaymentEntity = byCaseReference.get();
-            feePaymentEntity.setExternalReference(serviceRequestUpdate.getPaymentReference());
-            feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(serviceRequestUpdate.getServiceRequestStatus()));
+            feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
+            feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
             feePaymentRepository.save(feePaymentEntity);
         } else {
             log.error("Unable to find a payment with the service request reference : {}",
-                      serviceRequestUpdate.getServiceRequestReference());
+                      paymentStatusCallback.getServiceRequestReference());
         }
     }
 

@@ -22,8 +22,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.util.Optional;
@@ -75,18 +75,18 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     @Transactional
     void shouldProcessPaymentCallback() throws Exception {
         // Given
-        ServiceRequestUpdate serviceRequestUpdate = Instancio.create(ServiceRequestUpdate.class);
-        serviceRequestUpdate.setCcdCaseNumber(String.valueOf(caseReference));
-        serviceRequestUpdate.setServiceRequestReference(serviceCaseReference);
-        serviceRequestUpdate.setServiceRequestStatus(PaymentStatus.PAID.getValue());
+        PaymentStatusCallback paymentStatusCallback = Instancio.create(PaymentStatusCallback.class);
+        paymentStatusCallback.setCcdCaseNumber(String.valueOf(caseReference));
+        paymentStatusCallback.setServiceRequestReference(serviceCaseReference);
+        paymentStatusCallback.setServiceRequestStatus(PaymentStatus.PAID.getValue());
 
         // When
         mockMvc.perform(put(PAYMENT_UPDATE_PATH)
                             .header(AUTHORIZATION, AUTH_HEADER)
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(serviceRequestUpdate)))
-            .andExpect(status().isOk());
+                            .content(objectMapper.writeValueAsString(paymentStatusCallback)))
+            .andExpect(status().isNoContent());
 
         // Then
         Optional<FeePaymentEntity> byRequestReference = feePaymentRepository

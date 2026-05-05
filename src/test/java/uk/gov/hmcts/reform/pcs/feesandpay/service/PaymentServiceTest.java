@@ -26,8 +26,8 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.math.BigDecimal;
@@ -123,7 +123,7 @@ class PaymentServiceTest {
         String requestReference = UUID.randomUUID().toString();
         String paymentReference = UUID.randomUUID().toString();
         Payment payment = Payment.builder().paymentReference(paymentReference).build();
-        ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
+        PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
             .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
             .payment(payment)
             .build();
@@ -135,7 +135,7 @@ class PaymentServiceTest {
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
 
         // When
-        underTest.processPaymentResponse(serviceRequestUpdate);
+        underTest.processPaymentResponse(paymentStatusCallback);
 
         // Then
         verify(feePaymentRepository).findByRequestReference(requestReference);
@@ -152,7 +152,7 @@ class PaymentServiceTest {
     void shouldNotUpdateFeePaymentWhenRequestReferenceNotFound() {
         // Given
         String requestReference = UUID.randomUUID().toString();
-        ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
+        PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
             .serviceRequestReference(requestReference)
             .serviceRequestStatus(PaymentStatus.PAID.getValue())
             .payment(Payment.builder().paymentReference(UUID.randomUUID().toString()).build())
@@ -160,7 +160,7 @@ class PaymentServiceTest {
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.empty());
 
         // When
-        underTest.processPaymentResponse(serviceRequestUpdate);
+        underTest.processPaymentResponse(paymentStatusCallback);
 
         // Then
         verify(feePaymentRepository).findByRequestReference(requestReference);
