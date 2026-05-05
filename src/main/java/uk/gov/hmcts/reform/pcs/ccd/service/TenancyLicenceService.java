@@ -84,6 +84,14 @@ public class TenancyLicenceService {
             tenancyLicenceEntity.setOtherTypeDetails(tenancyLicenceDetails.getDetailsOfOtherTypeOfTenancyLicence());
         }
 
+        VerticalYesNo hasCopyOfTenancyLicence = tenancyLicenceDetails.getHasCopyOfTenancyLicence();
+        tenancyLicenceEntity.setHasCopyOfTenancyLicence(hasCopyOfTenancyLicence);
+        if (hasCopyOfTenancyLicence == VerticalYesNo.NO) {
+            tenancyLicenceEntity.setReasonsForNoTenancyLicence(
+                tenancyLicenceDetails.getReasonsForNoTenancyLicenceDocuments()
+            );
+        }
+
         tenancyLicenceEntity.setStartDate(tenancyLicenceDetails.getTenancyLicenceDate());
     }
 

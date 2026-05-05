@@ -82,6 +82,8 @@ class TenancyLicenceServiceTest {
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
             .tenancyLicenceDate(tenancyLicenceDate)
             .detailsOfOtherTypeOfTenancyLicence("should be ignored")
+            .hasCopyOfTenancyLicence(VerticalYesNo.YES)
+            .reasonsForNoTenancyLicenceDocuments("should be ignored")
             .build();
 
         when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyLicenceDetails);
@@ -93,6 +95,8 @@ class TenancyLicenceServiceTest {
         assertThat(tenancyLicenceEntity.getType()).isEqualTo(CombinedLicenceType.ASSURED_TENANCY);
         assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isNull();
         assertThat(tenancyLicenceEntity.getStartDate()).isEqualTo(tenancyLicenceDate);
+        assertThat(tenancyLicenceEntity.getHasCopyOfTenancyLicence()).isEqualTo(VerticalYesNo.YES);
+        assertThat(tenancyLicenceEntity.getReasonsForNoTenancyLicence()).isNull();
     }
 
     @Test
@@ -115,6 +119,31 @@ class TenancyLicenceServiceTest {
         // Then
         assertThat(tenancyLicenceEntity.getType()).isEqualTo(CombinedLicenceType.OTHER);
         assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isEqualTo(otherTenancyType);
+        assertThat(tenancyLicenceEntity.getStartDate()).isEqualTo(tenancyLicenceDate);
+    }
+
+    @Test
+    void shouldSetTenancyLicenceDetailsForDoesNotHaveTenancyLicenceDocument() {
+        // Given
+        LocalDate tenancyLicenceDate = mock(LocalDate.class);
+        String reasonsForNoTenancyDocument = "reasons for no tenancy document";
+
+        TenancyLicenceDetails tenancyLicenceDetails = TenancyLicenceDetails.builder()
+            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDate(tenancyLicenceDate)
+            .hasCopyOfTenancyLicence(VerticalYesNo.NO)
+            .reasonsForNoTenancyLicenceDocuments(reasonsForNoTenancyDocument)
+            .build();
+
+        when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyLicenceDetails);
+
+        // When
+        TenancyLicenceEntity tenancyLicenceEntity = underTest.createTenancyLicenceEntity(pcsCase);
+
+        // Then
+        assertThat(tenancyLicenceEntity.getType()).isEqualTo(CombinedLicenceType.ASSURED_TENANCY);
+        assertThat(tenancyLicenceEntity.getHasCopyOfTenancyLicence()).isEqualTo(VerticalYesNo.NO);
+        assertThat(tenancyLicenceEntity.getReasonsForNoTenancyLicence()).isEqualTo(reasonsForNoTenancyDocument);
         assertThat(tenancyLicenceEntity.getStartDate()).isEqualTo(tenancyLicenceDate);
     }
 

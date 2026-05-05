@@ -395,8 +395,12 @@ export class CreateCaseAction implements IAction {
         ['inputText', tenancyLicenceDetails.monthTextLabel, tenancyData.month],
         ['inputText', tenancyLicenceDetails.yearTextLabel, tenancyData.year]);
     }
+    await performAction('clickRadioButton', {question: tenancyData.question, option: tenancyData.option});
     if (tenancyData.files) {
       await performAction('uploadFile', tenancyData.files);
+    }
+    if (tenancyData.reason) {
+      await performAction('inputText', tenancyLicenceDetails.explainWhyHiddenTextLabel, tenancyData.reason);
     }
     await performAction('clickButton', tenancyLicenceDetails.continueButton);
   }
@@ -422,6 +426,9 @@ export class CreateCaseAction implements IAction {
           break;
         case 'mandatory':
           await performAction('check', {question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory});
+          if (String(possessionGrounds.mandatory) === 'Antisocial behaviour') {
+            await performAction('check', {question: whatAreYourGroundsForPossession.mandatoryAbsoluteGrounds.absoluteGroundQuestion, option: possessionGrounds.mandatoryAbsolute});
+          }
           break;
         case 'mandatoryAccommodation':
           await performAction('check', {question: whatAreYourGroundsForPossession.mandatoryWithAccommodation.mandatoryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.mandatoryAccommodation});

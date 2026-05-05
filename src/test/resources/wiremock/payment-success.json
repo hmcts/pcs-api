@@ -1,0 +1,34 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/payments/service-request",
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.ccd_case_number" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "service_request_reference": "SR-{{{jsonPath request.body '$.ccd_case_number'}}}"
+    },
+    "transformers": ["response-template"]
+  },
+  "serveEventListeners": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "PUT",
+        "url": "{{{jsonPath originalRequest.body '$.call_back_url'}}}",
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "{{{originalRequest.headers.Authorization}}}",
+          "ServiceAuthorization": "{{{originalRequest.headers.ServiceAuthorization}}}"
+        },
+        "body": "{\"service_request_reference\": \"SR-{{{jsonPath originalRequest.body '$.ccd_case_number'}}}\", \"ccd_case_number\": \"{{{jsonPath originalRequest.body '$.ccd_case_number'}}}\", \"service_request_amount\": 2500, \"service_request_status\": \"Paid\", \"payment\": { \"payment_amount\": 2500, \"payment_reference\": \"RC-{{date format='yyyy'}}-{{randomValue length=4 type='NUMERIC'}}\", \"payment_method\": \"payment by account\", \"case_reference\": \"{{{jsonPath originalRequest.body '$.case_reference'}}}\", \"account_number\": \"PBA{{randomValue length=7 type='NUMERIC'}}\" }}"
+      }
+    }
+  ]
+}

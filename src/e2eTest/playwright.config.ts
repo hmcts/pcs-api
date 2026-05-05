@@ -15,13 +15,24 @@ export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
 
+// Nightly (Jenkins): E2E_TEST_SCOPE = tag grep; E2E_SPEC = comma/semicolon path keywords → testMatch globs.
+const e2eSpecKeys = (process.env.E2E_SPEC ?? '')
+  .split(/[,;]/)
+  .map(s => s.trim().replace(/[^\w.-]/g, ''))
+  .filter(Boolean);
+const e2eTestMatch = e2eSpecKeys.length ? e2eSpecKeys.map(k => `**/*${k}*.spec.ts`) : undefined;
+const e2eScope = process.env.E2E_TEST_SCOPE?.trim();
+const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
+
 export default defineConfig({
   testDir: 'tests/',
+  ...(e2eTestMatch?.length ? { testMatch: e2eTestMatch } : {}),
+  ...(e2eGrep ? { grep: e2eGrep } : {}),
   /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 1 : 0,
+  retries: process.env.CI ? 2 : 0,
   //Configure workers by environment: AAT is fixed at 4 workers; preview worker count can be adjusted based on preview performance
   workers: process.env.ENVIRONMENT === 'preview' ? 1 : 4,
   timeout: 600 * 1000,
@@ -58,20 +69,80 @@ export default defineConfig({
         headless: !!process.env.CI,
       },
     },
-    ...(process.env.CI ? [
-      {
-        name: 'firefox',
-        use: {
-          ...devices["Desktop Firefox"],
-          channel: 'firefox',
-          screenshot: 'only-on-failure' as const,
-          video: 'retain-on-failure' as const,
-          trace: 'on-first-retry' as const,
-          javaScriptEnabled: true,
-          viewport: DEFAULT_VIEWPORT,
-          headless: !!process.env.CI,
-        }
-      }
-    ] : [])
-  ]
+    ...(process.env.CI
+      ? [
+          {
+            name: 'firefox',
+            use: {
+              ...devices['Desktop Firefox'],
+              channel: 'firefox',
+              screenshot: 'only-on-failure' as const,
+              video: 'retain-on-failure' as const,
+              trace: 'on-first-retry' as const,
+              javaScriptEnabled: true,
+              viewport: DEFAULT_VIEWPORT,
+              headless: !!process.env.CI,
+            },
+          },
+          {
+            name: 'webkit',
+            use: {
+              ...devices['Desktop Safari'],
+              screenshot: 'only-on-failure' as const,
+              video: 'retain-on-failure' as const,
+              trace: 'on-first-retry' as const,
+              javaScriptEnabled: true,
+              viewport: DEFAULT_VIEWPORT,
+              headless: !!process.env.CI,
+            },
+          },
+          {
+            name: 'edge',
+            use: {
+              ...devices['Desktop Edge'],
+              channel: 'msedge',
+              screenshot: 'only-on-failure' as const,
+              video: 'retain-on-failure' as const,
+              trace: 'on-first-retry' as const,
+              javaScriptEnabled: true,
+              viewport: DEFAULT_VIEWPORT,
+              headless: !!process.env.CI,
+            },
+          },
+          {
+            name: 'mobile-android',
+            use: {
+              ...devices['Pixel 5'],
+              screenshot: 'only-on-failure' as const,
+              video: 'retain-on-failure' as const,
+              trace: 'on-first-retry' as const,
+              javaScriptEnabled: true,
+              headless: !!process.env.CI,
+            },
+          },
+          {
+            name: 'mobile-ios',
+            use: {
+              ...devices['iPhone 12'],
+              screenshot: 'only-on-failure' as const,
+              video: 'retain-on-failure' as const,
+              trace: 'on-first-retry' as const,
+              javaScriptEnabled: true,
+              headless: !!process.env.CI,
+            },
+          },
+          {
+            name: 'mobile-ipad',
+            use: {
+              ...devices['iPad Pro 11'],
+              screenshot: 'only-on-failure' as const,
+              video: 'retain-on-failure' as const,
+              trace: 'on-first-retry' as const,
+              javaScriptEnabled: true,
+              headless: !!process.env.CI,
+            },
+          },
+        ]
+      : []),
+  ],
 });

@@ -38,6 +38,18 @@ public class GenAppService {
             genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
         }
 
+        genAppEntity.setOtherPartiesAgreed(citizenCreateGenApp.getOtherPartiesAgreed());
+        if (citizenCreateGenApp.getOtherPartiesAgreed() == VerticalYesNo.NO) {
+            genAppEntity.setWithoutNotice(citizenCreateGenApp.getWithoutNotice());
+            if (citizenCreateGenApp.getWithoutNotice() == VerticalYesNo.YES) {
+                genAppEntity.setWithoutNoticeReason(citizenCreateGenApp.getWithoutNoticeReason());
+            }
+        }
+
+        genAppEntity.setWhatOrderWanted(citizenCreateGenApp.getWhatOrderWanted());
+
+        genAppEntity.setLanguageUsed(citizenCreateGenApp.getLanguageUsed());
+
         pcsCaseEntity.addGenApp(genAppEntity);
 
         return genAppRepository.save(genAppEntity);
