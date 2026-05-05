@@ -519,12 +519,12 @@ public class PCSCase {
     )
     private DynamicList testCaseSupportFileList;
 
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
     @CCD(
         label = "Case file view",
-        access = {ClaimantAccess.class}
+        access = {DocumentAccess.class}
     )
     private ComponentLauncher caseFileView;
 
