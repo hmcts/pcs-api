@@ -5,15 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.Event;
-import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
@@ -49,7 +46,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -103,8 +99,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
         // Create handlers with real dependencies
         StartEventHandler startEventHandler = new StartEventHandler(
             securityContextService,
-            new CitizenCaseDraftLoader(pcsCaseService, securityContextService, accessValidator, responseMapper, draftCaseDataService),
-            new LegalRepresentativeCaseDraftLoader(pcsCaseService, responseMapper, draftCaseDataService, defendantResponseRepository, legalRepForDefendantAccessValidator, securityContextService, selectedPartyRetriever)
+            new CitizenCaseDraftLoader(pcsCaseService, securityContextService, accessValidator, responseMapper,
+                                       draftCaseDataService),
+            new LegalRepresentativeCaseDraftLoader(pcsCaseService, responseMapper, draftCaseDataService,
+                                                   defendantResponseRepository, legalRepForDefendantAccessValidator,
+                                                   securityContextService, selectedPartyRetriever)
         );
 
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
@@ -664,7 +663,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(TEST_CASE_REFERENCE,
                                                                                      representedPartyId))
             .thenReturn(false);
-        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId))
             .thenReturn(false);
 
         // when
@@ -697,7 +697,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
-        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId))
             .thenReturn(Optional.of(savedDraft));
         when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
@@ -706,9 +707,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(TEST_CASE_REFERENCE,
                                                                                      representedPartyId))
             .thenReturn(false);
-        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId))
             .thenReturn(true);
-        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId))
             .thenReturn(Optional.of(savedDraft));
         when(responseMapper.buildPartyFromEntity(representedParty, caseData))
             .thenReturn(uk.gov.hmcts.reform.pcs.ccd.domain.Party.builder().build());
@@ -799,7 +802,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, legalRepUserId))
             .thenReturn(List.of(representedParty));
-        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId))
             .thenReturn(false);
 
         // when
@@ -811,7 +815,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             eq(TEST_CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId)
         );
         verify(selectedPartyRetriever, never()).getSelectedPartyId(any(PCSCase.class));
-        verify(defendantResponseRepository, never()).existsByClaimPcsCaseCaseReferenceAndPartyId(TEST_CASE_REFERENCE, representedPartyId);
+        verify(defendantResponseRepository, never()).existsByClaimPcsCaseCaseReferenceAndPartyId(TEST_CASE_REFERENCE,
+                                                                                                 representedPartyId);
     }
 
     @Test
@@ -834,7 +839,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
 
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
-        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId))
             .thenReturn(Optional.of(caseData));
 
         // when
@@ -842,7 +848,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         // then
         assertThat(response.getErrors()).isNullOrEmpty();
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, TEST_CASE_REFERENCE, representedPartyId);
+        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, TEST_CASE_REFERENCE,
+                                                           representedPartyId);
         verify(defendantResponseService).saveDefendantResponse(TEST_CASE_REFERENCE, possessionClaimResponse,
                                                                representedPartyId);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
