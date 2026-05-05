@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Text;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Builder
 @Data
@@ -17,6 +18,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.Text;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class WalesNoticeDetails {
+
+    public static final String NOTICE_STATEMENT_LABEL = "Enter Statement";
 
     @CCD(label = "Have you served notice to the defendants?")
     private YesOrNo noticeServed;
@@ -28,4 +31,12 @@ public class WalesNoticeDetails {
         max = 10
     )
     private String typeOfNoticeServed;
+
+    @CCD(
+        label = "Enter Statement",
+        hint = "You can enter up to 500 characters",
+        typeOverride = TextArea
+    )
+    private String noticeStatement;
+
 }
