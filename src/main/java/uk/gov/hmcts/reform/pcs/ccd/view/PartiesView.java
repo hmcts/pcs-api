@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
-public class PartyView implements ViewComponent {
+public class PartiesView implements ViewComponent {
 
     private final ModelMapper modelMapper;
 

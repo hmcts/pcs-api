@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
-import uk.gov.hmcts.reform.pcs.ccd.view.PartyView;
+import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
@@ -51,7 +51,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final DraftCaseDataService draftCaseDataService;
     private final CaseTitleService caseTitleService;
     private final ClaimView claimView;
-    private final PartyView partyView;
+    private final PartiesView partiesView;
     private final DocumentsView documentsView;
     private final TenancyLicenceView tenancyLicenceView;
     private final ClaimGroundsView claimGroundsView;
@@ -103,7 +103,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         setDerivedProperties(pcsCase, pcsCaseEntity);
 
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
-        partyView.setCaseFields(pcsCase, pcsCaseEntity);
+        partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         documentsView.setCaseFields(pcsCase, pcsCaseEntity);
         tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
         claimGroundsView.setCaseFields(pcsCase, pcsCaseEntity);

@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PartyViewTest {
+class PartiesViewTest {
 
     @Mock
     private ModelMapper modelMapper;
@@ -34,13 +34,13 @@ class PartyViewTest {
     @Mock
     private ClaimEntity claimEntity;
 
-    private PartyView underTest;
+    private PartiesView underTest;
 
     @BeforeEach
     void setUp() {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
-        underTest = new PartyView(modelMapper);
+        underTest = new PartiesView(modelMapper);
     }
 
     @Test
