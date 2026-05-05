@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isDev;
-
 @Component
 @AllArgsConstructor
 @Slf4j
@@ -33,8 +31,8 @@ public class TestCaseSupportHelper {
             List<DynamicListElement> listItems = Arrays.stream(resources)
                 .map(Resource::getFilename)
                 .filter(Objects::nonNull)
-                .filter(name -> !name.contains("Enforcement") || isDev()
-                    || Boolean.parseBoolean(System.getenv().get("ENABLE_TESTING_SUPPORT")))
+                .filter(name -> !name.contains("Enforcement")
+                    || Boolean.parseBoolean(System.getenv().get("ENABLE_ENFORCEMENT")))
                 .distinct()
                 .map(name -> DynamicListElement.builder().code(UUID.nameUUIDFromBytes(name.getBytes()))
                     .label(generateLabelFromFilename(name)).build())

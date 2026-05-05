@@ -27,7 +27,7 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        if (isDev()) {
+        if (isDev() && Boolean.parseBoolean(System.getenv().get("ENABLE_ENFORCEMENT"))) {
             log.info("Configuring event: {}", confirmEviction.name());
             configure(configBuilder);
         }

@@ -128,6 +128,7 @@ test {
 
 tasks.withType(Test).configureEach {
   environment "ENABLE_TESTING_SUPPORT", "true"
+  environment "ENABLE_ENFORCEMENT", "true"
 }
 
 tasks.register('architectureValidation', Test) {

@@ -53,7 +53,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.NO_NON_PROD_C
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("integration")
+@ActiveProfiles({"integration"})
 @DisplayName("TestCaseGenerationIT Integration Tests")
 public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
