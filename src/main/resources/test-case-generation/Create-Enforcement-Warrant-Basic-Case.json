@@ -2,7 +2,17 @@
   "parties": [
     {
       "value": {
-        "nameKnown": "NO",
+        "lastName": "HN",
+        "firstName": "TVR",
+        "nameKnown": "YES",
+        "addressKnown": "NO"
+      }
+    },
+    {
+      "value": {
+        "lastName": "Testing1",
+        "firstName": "Test1",
+        "nameKnown": "YES",
         "addressKnown": "NO"
       }
     },
@@ -17,16 +27,15 @@
           "AddressLine2": "",
           "AddressLine3": ""
         },
-        "orgName": "TVR",
+        "orgName": "pcs-solicitor1@test.com",
         "emailAddress": "pcs-solicitor1@test.com",
         "phoneNumberProvided": "NO"
       }
     }
   ],
-  "caseLinks": [],
   "allClaimants": [
     {
-      "id": "d7aeee5e-eea8-4c43-9dae-8f581f671c3b",
+      "id": "99816c04-7aa5-4e0b-b509-5fda878403c2",
       "value": {
         "address": {
           "County": "",
@@ -37,7 +46,7 @@
           "AddressLine2": "",
           "AddressLine3": ""
         },
-        "orgName": "TVR",
+        "orgName": "pcs-solicitor1@test.com",
         "emailAddress": "pcs-solicitor1@test.com",
         "phoneNumberProvided": "NO"
       }
@@ -56,16 +65,26 @@
   "userPcqIdSet": "NO",
   "allDefendants": [
     {
-      "id": "730e36df-cd23-44d2-b4e2-a647ea94d1b9",
+      "id": "7abd474a-6e4e-48e4-b2bc-a1a3afb14bb4",
       "value": {
-        "nameKnown": "NO",
+        "lastName": "HN",
+        "firstName": "TVR",
+        "nameKnown": "YES",
+        "addressKnown": "NO"
+      }
+    },
+    {
+      "id": "758e4317-31ee-4e3b-b3e6-928cc48b0a73",
+      "value": {
+        "lastName": "Testing1",
+        "firstName": "Test1",
+        "nameKnown": "YES",
         "addressKnown": "NO"
       }
     }
   ],
   "writFeeAmount": "£999999.99",
   "SearchCriteria": {},
-  "caseNamePublic": "TVR vs persons unknown",
   "propertyAddress": {
     "County": "",
     "Country": "United Kingdom",
@@ -77,42 +96,46 @@
   },
   "statementOfTruth": {
     "completedBy": "CLAIMANT",
-    "fullNameClaimant": "asdfdsasdf",
-    "positionClaimant": "fdsasdffdsa",
+    "fullNameClaimant": "wert",
+    "positionClaimant": "ewrt",
     "agreementClaimant": [
       "BELIEVE_TRUE"
     ]
   },
   "warrantFeeAmount": "£999999.99",
-  "warrantAmountOwed": "12300",
+  "warrantAmountOwed": "123300",
   "legislativeCountry": "England",
   "mediationAttempted": "NO",
   "selectedDefendants": {
     "value": [
       {
-        "code": "730e36df-cd23-44d2-b4e2-a647ea94d1b9",
-        "label": "Name not known"
+        "code": "7abd474a-6e4e-48e4-b2bc-a1a3afb14bb4",
+        "label": "TVR HN"
       }
     ],
     "list_items": [
       {
-        "code": "730e36df-cd23-44d2-b4e2-a647ea94d1b9",
-        "label": "Name not known"
+        "code": "7abd474a-6e4e-48e4-b2bc-a1a3afb14bb4",
+        "label": "TVR HN"
+      },
+      {
+        "code": "758e4317-31ee-4e3b-b3e6-928cc48b0a73",
+        "label": "Test1 Testing1"
       }
     ]
   },
   "warrantCompletedBy": "CLAIMANT",
-  "addAnotherDefendant": "NO",
+  "addAnotherDefendant": "YES",
   "claimingCostsWanted": "NO",
   "settlementAttempted": "NO",
   "applicationWithClaim": "NO",
   "claimGroundSummaries": [
     {
-      "id": "0e4f11ed-f82b-425d-ae6b-dbb0c46d2fb6",
+      "id": "1483147f-6c07-4d40-811a-5c09fa8e5ee8",
       "value": {
         "code": "NUISANCE_OR_IMMORAL_USE",
         "label": "Nuisance, annoyance, illegal or immoral use of the property (ground 2)",
-        "reason": "fasfasdfsdf",
+        "reason": "sfgsdfgsdfg",
         "category": "SECURE_OR_FLEXIBLE_DISCRETIONARY",
         "isRentArrears": "NO"
       }
@@ -122,7 +145,6 @@
     "CERTIFY"
   ],
   "warrantEvictEveryone": "NO",
-  "caseNameHmctsInternal": "TVR vs persons unknown",
   "chooseEnforcementType": {
     "value": {
       "code": "WARRANT",
@@ -141,30 +163,15 @@
     ]
   },
   "wantToUploadDocuments": "NO",
-  "caseManagementCategory": {
-    "value": {
-      "code": "e1e4a755-3100-4e95-824e-373aef4976d2",
-      "label": "Property Possession Claims"
-    },
-    "valueCode": "e1e4a755-3100-4e95-824e-373aef4976d2",
-    "list_items": [
-      {
-        "code": "e1e4a755-3100-4e95-824e-373aef4976d2",
-        "label": "Property Possession Claims"
-      }
-    ],
-    "valueLabel": "Property Possession Claims"
-  },
-  "suspensionOfRTB_Reason": "asdfasdfasdf",
+  "suspensionOfRTB_Reason": "asdfasdf",
   "warrantRepaymentChoice": "ALL",
-  "caseNameHmctsRestricted": "TVR vs persons unknown",
   "claimAgainstTrespassers": "NO",
-  "formattedDefendantNames": "null null<br>",
+  "formattedDefendantNames": "TVR HN<br>\nTest1 Testing1<br>",
   "vulnerablePeoplePresent": "NO",
   "warrantAnyRiskToBailiff": "NO",
-  "warrantFullNameClaimant": "sdfggfd",
+  "warrantFullNameClaimant": "fgsdfg",
   "warrantIsSuspendedOrder": "NO",
-  "warrantPositionClaimant": "gfdsfgsdfg",
+  "warrantPositionClaimant": "sdfgsdfgsdfg",
   "formattedPropertyAddress": "1 Rse Way<br>London<br>SW11 1PD",
   "warrantAgreementClaimant": [
     "BELIEVE_TRUE"
@@ -183,12 +190,12 @@
   },
   "warrantEnforcementLanguageUsed": "ENGLISH",
   "warrantAreLegalCostsToBeClaimed": "NO",
-  "warrantRepaymentSummaryMarkdown": "<table class=\"govuk-table\">\n  <caption class=\"govuk-table__caption govuk-table__caption--m govuk-!-font-size-19\">Total amount that can be repaid</caption>\n  <thead class=\"govuk-table__head\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"col\" class=\"govuk-table__header\">Repayment for</th>\n     <th scope=\"col\" class=\"govuk-table__header\">Amount</th>\n    </tr>\n  </thead>\n  <tbody class=\"govuk-table__body\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Arrears and other costs\n     </th>\n     <td class=\"govuk-table__cell\">£123</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Legal costs</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Land Registry fees</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Warrant of possession fee</th>\n     <td class=\"govuk-table__cell\">£999999.99</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Total</th>\n     <td class=\"govuk-table__cell\">£1,000,122.99</td>\n    </tr>\n  </tbody>\n</table>",
+  "warrantRepaymentSummaryMarkdown": "<table class=\"govuk-table\">\n  <caption class=\"govuk-table__caption govuk-table__caption--m govuk-!-font-size-19\">Total amount that can be repaid</caption>\n  <thead class=\"govuk-table__head\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"col\" class=\"govuk-table__header\">Repayment for</th>\n     <th scope=\"col\" class=\"govuk-table__header\">Amount</th>\n    </tr>\n  </thead>\n  <tbody class=\"govuk-table__body\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Arrears and other costs\n     </th>\n     <td class=\"govuk-table__cell\">£1,233</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Legal costs</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Land Registry fees</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Warrant of possession fee</th>\n     <td class=\"govuk-table__cell\">£999999.99</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Total</th>\n     <td class=\"govuk-table__cell\">£1,001,232.99</td>\n    </tr>\n  </tbody>\n</table>",
   "warrantShowChangeNameAddressPage": "NO",
   "warrantAdditionalInformationSelect": "NO",
   "warrantIsDifficultToAccessProperty": "NO",
   "warrantHaveLandRegistryFeesBeenPaid": "NO",
   "warrantShowPeopleYouWantToEvictPage": "YES",
   "warrantShowPeopleWhoWillBeEvictedPage": "YES",
-  "warrantStatementOfTruthRepaymentSummaryMarkdown": "<table class=\"govuk-table\">\n  <caption class=\"govuk-table__caption govuk-table__caption--m govuk-!-font-size-19\">The payments due</caption>\n  <thead class=\"govuk-table__head\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"col\" class=\"govuk-table__header\">Repayment for</th>\n     <th scope=\"col\" class=\"govuk-table__header\">Amount</th>\n    </tr>\n  </thead>\n  <tbody class=\"govuk-table__body\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Arrears and other costs\n     </th>\n     <td class=\"govuk-table__cell\">£123</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Legal costs</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Land Registry fees</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Warrant of possession fee</th>\n     <td class=\"govuk-table__cell\">£999999.99</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Total</th>\n     <td class=\"govuk-table__cell\">£1,000,122.99</td>\n    </tr>\n  </tbody>\n</table>"
+  "warrantStatementOfTruthRepaymentSummaryMarkdown": "<table class=\"govuk-table\">\n  <caption class=\"govuk-table__caption govuk-table__caption--m govuk-!-font-size-19\">The payments due</caption>\n  <thead class=\"govuk-table__head\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"col\" class=\"govuk-table__header\">Repayment for</th>\n     <th scope=\"col\" class=\"govuk-table__header\">Amount</th>\n    </tr>\n  </thead>\n  <tbody class=\"govuk-table__body\">\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Arrears and other costs\n     </th>\n     <td class=\"govuk-table__cell\">£1,233</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Legal costs</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Land Registry fees</th>\n     <td class=\"govuk-table__cell\">£0</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Warrant of possession fee</th>\n     <td class=\"govuk-table__cell\">£999999.99</td>\n    </tr>\n    <tr class=\"govuk-table__row\">\n     <th scope=\"row\" class=\"govuk-table__header govuk-body govuk-!-font-weight-regular\">Total</th>\n     <td class=\"govuk-table__cell\">£1,001,232.99</td>\n    </tr>\n  </tbody>\n</table>"
 }

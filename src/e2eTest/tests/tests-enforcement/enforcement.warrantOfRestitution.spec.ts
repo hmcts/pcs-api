@@ -12,7 +12,7 @@ import { createCaseApiData, enforceWarrantApiData, submitCaseApiData } from '@da
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { additionalInformation, enforcementApplication, evictionRisksPosed, livingInTheProperty, peopleWhoWillBeEvicted, peopleYouWantToEvict, propertyAccessDetails, shareEvidenceWithJudge, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
+import { additionalInformation, enforcementApplication, evictionRisksPosed, livingInTheProperty, peopleYouWantToEvict, propertyAccessDetails, shareEvidenceWithJudge, vulnerableAdultsChildren } from '@data/page-data-figma/page-data-enforcement-figma';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 import { explainHowDefendantsReturned } from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefendantsReturned.page.data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
@@ -97,7 +97,7 @@ test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
         option: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,
-        nextPage: peopleWhoWillBeEvicted.mainHeaderWarrantOfRestitutionDynamic
+        nextPage: peopleYouWantToEvict.mainHeaderWarrantOfRestitutionDynamic
       });
       await performAction('reTryOnCallBackError', peopleYouWantToEvict.continueButton, shareEvidenceWithJudge.mainHeader);
       await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
@@ -190,7 +190,7 @@ test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
         option: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,
-        nextPage: peopleWhoWillBeEvicted.mainHeaderWarrantOfRestitutionDynamic
+        nextPage: peopleYouWantToEvict.mainHeaderWarrantOfRestitutionDynamic
       });
       await performAction('reTryOnCallBackError', peopleYouWantToEvict.continueButton, shareEvidenceWithJudge.mainHeader);
       await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);

@@ -13,7 +13,7 @@ public class DemotionOfTenancyHousingActOptions implements CcdPageConfiguration 
         pageBuilder
             .page("demotionOfTenancyHousingActOptions")
             .pageLabel("Housing Act")
-            .showCondition("demotionOfTenancy_ShowHousingActsPage=\"YES\"")
+            .showCondition("demotionOfTenancy_ShowHousingActsPage=\"Yes\"")
             .label("demotionOfTenancyHousingActOptions-info", """
                 ---
                   <ul tabindex="0">

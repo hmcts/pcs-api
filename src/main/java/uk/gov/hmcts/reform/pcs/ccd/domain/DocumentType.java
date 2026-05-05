@@ -14,7 +14,6 @@ public enum DocumentType implements HasLabel {
     NOTICE_SERVED("Notice served"),
     WITNESS_STATEMENT("Witness statement"),
     TENANCY_AGREEMENT("Tenancy agreement"),
-    LETTER_FROM_CLAIMANT("Letter from claimant"),
     CERTIFICATE_OF_SERVICE("Certificate of service"),
     CORRESPONDENCE_FROM_DEFENDANT("Correspondence from defendant"),
     CORRESPONDENCE_FROM_CLAIMANT("Correspondence from claimant"),
@@ -24,6 +23,7 @@ public enum DocumentType implements HasLabel {
     INSPECTION_OR_REPORT("Inspection or report"),
     CERTIFICATE_OF_SUITABILITY_AS_LF("Certificate of suitability as litigation friend"),
     LEGAL_AID_CERTIFICATE("Legal aid certificate"),
+    POLICE_REPORT("Police report"),
     OTHER("Other document");
 
     private final String label;

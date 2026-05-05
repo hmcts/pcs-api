@@ -43,7 +43,7 @@ class MediationAndSettlementTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
+
         setPageUnderTest(new MediationAndSettlement(textAreaValidationService));
     }
 

@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -61,10 +62,14 @@ class TenancyLicenceViewTest {
 
         String otherTypeDetails = "other type details";
         LocalDate tenancyStartDate = mock(LocalDate.class);
+        VerticalYesNo hasCopyOfTenancyLicence = VerticalYesNo.NO;
+        String reasonsForNoTenancyLicence = "reasons for no tenancy licence";
 
         when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_TENANCY);
         when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
+        when(tenancyLicenceEntity.getHasCopyOfTenancyLicence()).thenReturn(hasCopyOfTenancyLicence);
+        when(tenancyLicenceEntity.getReasonsForNoTenancyLicence()).thenReturn(reasonsForNoTenancyLicence);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -80,6 +85,9 @@ class TenancyLicenceViewTest {
         assertThat(tenancyLicenceDetails.getTypeOfTenancyLicence()).isEqualTo(TenancyLicenceType.SECURE_TENANCY);
         assertThat(tenancyLicenceDetails.getDetailsOfOtherTypeOfTenancyLicence()).isEqualTo(otherTypeDetails);
         assertThat(tenancyLicenceDetails.getTenancyLicenceDate()).isEqualTo(tenancyStartDate);
+        assertThat(tenancyLicenceDetails.getHasCopyOfTenancyLicence()).isEqualTo(hasCopyOfTenancyLicence);
+        assertThat(tenancyLicenceDetails.getReasonsForNoTenancyLicenceDocuments())
+            .isEqualTo(reasonsForNoTenancyLicence);
     }
 
     @Test

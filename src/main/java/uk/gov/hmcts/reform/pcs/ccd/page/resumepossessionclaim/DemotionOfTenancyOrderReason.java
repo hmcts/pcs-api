@@ -26,7 +26,7 @@ public class DemotionOfTenancyOrderReason implements CcdPageConfiguration {
         pageBuilder
             .page("demotionOfTenancyOrderReason", this::midEvent)
             .pageLabel("Reasons for requesting a demotion order")
-            .showCondition("demotionOfTenancy_ShowHousingActsPage=\"YES\"")
+            .showCondition("demotionOfTenancy_ShowHousingActsPage=\"Yes\"")
             .label("demotionOfTenancyOrderReason-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
                 .mandatory(DemotionOfTenancy::getReason)

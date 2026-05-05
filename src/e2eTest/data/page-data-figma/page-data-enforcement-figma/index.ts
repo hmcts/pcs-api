@@ -33,3 +33,5 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/languageUsed.pa
 export * from '@data/page-data-figma/page-data-enforcement-figma/vulnerableAdultsChildren.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefendantsReturned.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/shareEvidenceWithJudge.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/confirmEvictionDetails.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/evictionDate.page.data';

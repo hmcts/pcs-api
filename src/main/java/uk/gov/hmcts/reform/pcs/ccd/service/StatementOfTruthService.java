@@ -59,4 +59,3 @@ public class StatementOfTruthService {
             .orElse(false);
     }
 }
-
