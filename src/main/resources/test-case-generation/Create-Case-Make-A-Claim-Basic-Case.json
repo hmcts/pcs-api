@@ -34,9 +34,9 @@
     ]
   },
   "languageUsed": "ENGLISH",
-  "noticeServed": "No",
-  "userPcqIdSet": "No",
-  "orgAddressFound": "No",
+  "noticeServed": "NO",
+  "userPcqIdSet": "NO",
+  "orgAddressFound": "NO",
   "propertyAddress": {
     "County": "",
     "Country": "United Kingdom",
@@ -60,7 +60,7 @@
   "addAnotherDefendant": "YES",
   "claimingCostsWanted": "NO",
   "settlementAttempted": "NO",
-  "showRentSectionPage": "No",
+  "showRentSectionPage": "NO",
   "additionalDefendants": [
     {
       "id": "48f21da0-c44f-40fe-bd78-00d57b3001aa",
@@ -83,7 +83,7 @@
     "SUSPENSION_OF_RIGHT_TO_BUY"
   ],
   "hasUnderlesseeOrMortgagee": "NO",
-  "showReasonsForGroundsPage": "Yes",
+  "showReasonsForGroundsPage": "YES",
   "claimantNamePossessiveForm": "pcs-solicitor1@test.com’s",
   "claimantProvidePhoneNumber": "NO",
   "nuisanceOrImmoralUseGround": "sfgsdfgsdfg",
@@ -94,11 +94,11 @@
   "tenancy_TypeOfTenancyLicence": "SECURE_TENANCY",
   "hasDefendantCircumstancesInfo": "NO",
   "isCorrectClaimantContactEmail": "YES",
-  "showClaimTypeNotEligibleWales": "No",
+  "showClaimTypeNotEligibleWales": "NO",
   "additionalReasonsForPossession": {
     "hasReasons": "NO"
   },
-  "showClaimTypeNotEligibleEngland": "No",
+  "showClaimTypeNotEligibleEngland": "NO",
   "tenancy_TenancyLicenceDocuments": [],
   "overriddenClaimantContactAddress": {
     "County": "",
@@ -110,14 +110,15 @@
     "AddressLine3": ""
   },
   "secureOrFlexibleMandatoryGrounds": [],
-  "showClaimantTypeNotEligibleWales": "No",
-  "showClaimantTypeNotEligibleEngland": "No",
+  "secureAntisocialAdditionalGrounds": [],
+  "showClaimantTypeNotEligibleWales": "NO",
+  "showClaimantTypeNotEligibleEngland": "NO",
   "secureOrFlexibleMandatoryGroundsAlt": [],
-  "suspensionOfRTB_ShowHousingActsPage": "Yes",
+  "suspensionOfRTB_ShowHousingActsPage": "YES",
   "secureOrFlexibleDiscretionaryGrounds": [
     "NUISANCE_OR_IMMORAL_USE"
   ],
-  "demotionOfTenancy_ShowHousingActsPage": "No",
-  "suspensionToBuyDemotionOfTenancyPages": "No",
+  "demotionOfTenancy_ShowHousingActsPage": "NO",
+  "suspensionToBuyDemotionOfTenancyPages": "NO",
   "secureOrFlexibleDiscretionaryGroundsAlt": []
 }
