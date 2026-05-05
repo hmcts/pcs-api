@@ -84,6 +84,7 @@
       "secureOrFlexibleMandatoryGrounds": [],
       "secureOrFlexibleMandatoryGroundsAlt": [],
       "secureOrFlexibleDiscretionaryGroundsAlt": [],
+      "secureAntisocialAdditionalGrounds": [],
       "tenancyByFalseStatementGround": "test",
       "showBreachOfTenancyTextarea": null,
       "showReasonsForGroundsPage": "Yes",
