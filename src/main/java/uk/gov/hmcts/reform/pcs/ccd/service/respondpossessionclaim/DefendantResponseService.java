@@ -151,6 +151,7 @@ public class DefendantResponseService {
             .writtenTerms(responses.getWrittenTerms())
             .disputeClaim(responses.getDisputeClaim())
             .disputeClaimDetails(responses.getDisputeClaimDetails())
+            .tenancyTypeConfirmation(responses.getTenancyTypeConfirmation())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
                 responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
