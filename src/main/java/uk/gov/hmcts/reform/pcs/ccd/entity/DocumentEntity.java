@@ -17,10 +17,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -57,6 +59,9 @@ public class DocumentEntity {
     private DocumentType type;
 
     private String description;
+
+    @CreationTimestamp
+    private Instant submittedDate;
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "document")
     @Builder.Default
