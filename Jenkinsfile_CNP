@@ -1,8 +1,9 @@
 #!groovy
 
-@Library("Infrastructure")
+@Library("Infrastructure@movecredentialstoroot")
 
 import uk.gov.hmcts.contino.AppPipelineDsl
+import uk.gov.hmcts.contino.GithubAPI
 import uk.gov.hmcts.contino.GradleBuilder
 
 def type = "java"
@@ -49,9 +50,22 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
     setPreviewEnvVars()
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
       env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
       enableHighLevelDataSetup()
+    } else {
+      env.CCD_ENABLED = "false"
+    }
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
+      env.E2E_SUITE = "chrome"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
+      env.E2E_SUITE = "regression"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_makeAClaim_test").size() > 0) {
+      env.E2E_SUITE = "makeAClaim"
+    }
   }
 
   onMaster() {
