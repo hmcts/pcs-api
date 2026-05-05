@@ -314,7 +314,7 @@ am-org-role-mapping-service:
     devcpuLimits: 1
     devmemoryLimits: 4Gi
     environment:
-      ROLE_ASSIGNMENT_APP_URL: ${SERVICE_NAME}-am-role-assignment-service
+      ROLE_ASSIGNMENT_APP_URL: http://${SERVICE_NAME}-am-role-assignment-service
       AMQP_ENABLED: false
       ORG_ROLE_MAPPING_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
       ORG_ROLE_MAPPING_DB_NAME: "pr-${CHANGE_ID}-org-role-mapping"
@@ -347,7 +347,7 @@ aac-manage-case-assignment:
       PRD_HOST: http://rd-professional-api-aat.service.core-compute-aat.internal
       CCD_DEFINITION_STORE_ALLOWED_SERVICE: xui_webapp
       CCD_DATA_STORE_ALLOWED_SERVICE: xui_webapp
-      ROLE_ASSIGNMENT_URL: "http://${SERVICE_NAME}-am-role-assignment-service"
+      ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
     autoscaling:
       enabled: false
     keyVaults:
