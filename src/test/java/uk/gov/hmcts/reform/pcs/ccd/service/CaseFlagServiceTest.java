@@ -71,7 +71,7 @@ class CaseFlagServiceTest {
         assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
         assertEquals(1, savedFlags.size());
 
-        List<FlagPathEntity> savedPaths = savedFlags.getFirst().getPaths();
+        List<FlagPathEntity> savedPaths = savedFlags.getFirst().getCaseFlagPaths();
         assertEquals(1, savedPaths.size());
         assertEquals("Case", savedPaths.getFirst().getPath());
     }
@@ -104,7 +104,7 @@ class CaseFlagServiceTest {
 
         // Then
         List<CaseFlagEntity> savedFlags = pcsCaseEntity.getCaseFlags();
-        List<FlagPathEntity> savedPaths = savedFlags.getFirst().getPaths();
+        List<FlagPathEntity> savedPaths = savedFlags.getFirst().getCaseFlagPaths();
         assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
         assertEquals(1, savedFlags.size());
         assertEquals(0, savedPaths.size());
@@ -182,17 +182,11 @@ class CaseFlagServiceTest {
         // Given
         UUID existingPartyId = UUID.randomUUID();
 
-        List<BaseCaseFlag> existingFlagsEntity = createCaseFlagEntity(existingPartyId);
-        List<CasePartyFlagEntity> existingPartyFlagEntities = new ArrayList<>();
-
-        for (BaseCaseFlag baseCaseFlag :existingFlagsEntity) {
-            existingPartyFlagEntities.add((CasePartyFlagEntity) baseCaseFlag);
-        }
-
+        List<CasePartyFlagEntity> existingPartyFlagsEntity = createCasePartyFlagEntity(existingPartyId);
 
         PartyEntity existingParty = PartyEntity.builder()
             .id(existingPartyId)
-            .respondentFlags(new ArrayList<>(existingPartyFlagEntities))
+            .respondentFlags(new ArrayList<>(existingPartyFlagsEntity))
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
@@ -260,8 +254,16 @@ class CaseFlagServiceTest {
         for (BaseCaseFlag baseCaseFlag : caseFlagEntity) {
             caseFlagEntities.add((CaseFlagEntity) baseCaseFlag);
         }
-
         return caseFlagEntities;
+    }
+
+    private List<CasePartyFlagEntity> castToCasePartyFlag(List<BaseCaseFlag> caseFlagEntity) {
+        List<CasePartyFlagEntity> casePartyFlagEntities = new ArrayList<>();
+
+        for (BaseCaseFlag baseCaseFlag : caseFlagEntity) {
+            casePartyFlagEntities.add((CasePartyFlagEntity) baseCaseFlag);
+        }
+        return casePartyFlagEntities;
     }
 
     private List<ListValue<FlagDetail>> createFlagDetail(String id, String flagCode, String name,
@@ -305,13 +307,30 @@ class CaseFlagServiceTest {
         caseFlagEntity.setDefaultStatus("Active");
         caseFlagEntity.setFlagCode("CF0008");
         caseFlagEntity.setFlagComment("Police arrest inactive");
-        caseFlagEntity.setPaths(createFlagPathEntity());
+        caseFlagEntity.setCaseFlagPaths(createFlagPathEntity());
         caseFlagEntity.setDateTimeModified(LocalDateTime.now());
 
         List<BaseCaseFlag> caseFlagEntities = new ArrayList<>();
         caseFlagEntities.add(caseFlagEntity);
 
         return caseFlagEntities;
+    }
+
+    private List<CasePartyFlagEntity> createCasePartyFlagEntity(UUID id) {
+
+
+        CasePartyFlagEntity casePartyFlagEntity = new CasePartyFlagEntity();
+        casePartyFlagEntity.setId(id);
+        casePartyFlagEntity.setDefaultStatus("Active");
+        casePartyFlagEntity.setFlagCode("PF00015");
+        casePartyFlagEntity.setFlagComment("Language Interpreter");
+        casePartyFlagEntity.setCasePartyFlagPaths(createFlagPathEntity());
+        casePartyFlagEntity.setDateTimeModified(LocalDateTime.now());
+
+        List<CasePartyFlagEntity> casePartyFlagEntities = new ArrayList<>();
+        casePartyFlagEntities.add(casePartyFlagEntity);
+
+        return casePartyFlagEntities;
     }
 
     private List<FlagPathEntity> createFlagPathEntity() {

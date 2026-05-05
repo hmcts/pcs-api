@@ -13,7 +13,6 @@ import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 
-
 @Entity
 @Table(name = "case_party_flag")
 @Setter

@@ -10,6 +10,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -77,7 +80,13 @@ public class CaseFlagsView {
     }
 
     private List<ListValue<String>> getPath(BaseCaseFlag flagEntity) {
-        return flagEntity.getPaths().stream()
+        List<FlagPathEntity> flagPathEntities = new ArrayList<>();
+        if (flagEntity instanceof CaseFlagEntity) {
+            flagPathEntities = flagEntity.getCaseFlagPaths();
+        } else if (flagEntity instanceof CasePartyFlagEntity) {
+            flagPathEntities = flagEntity.getCasePartyFlagPaths();
+        }
+        return flagPathEntities.stream()
             .map(pathEntity -> ListValue.<String>builder()
                 .id(pathEntity.getId().toString())
                 .value(pathEntity.getPath())

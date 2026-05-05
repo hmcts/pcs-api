@@ -103,17 +103,26 @@ public class CaseFlagService {
             List<BaseCaseFlag> mergedBaseFlagDetails = mergeFlagDetails(
                 existingCaseFlagEntityMap, incomingPartyFlags, pcsCaseEntity, existingFlagPathIds, partyEntity, flow);
 
-            List<CasePartyFlagEntity> mergedPartyFlagDetails = new ArrayList<>();
-            for (BaseCaseFlag baseCaseFlag: mergedBaseFlagDetails) {
-                CasePartyFlagEntity casePartyFlagEntity = new CasePartyFlagEntity();
-                casePartyFlagEntity = (CasePartyFlagEntity) baseCaseFlag;
-                casePartyFlagEntity.setParty(partyEntity);
-                mergedPartyFlagDetails.add(casePartyFlagEntity);
-            }
-
+            List<CasePartyFlagEntity> mergedPartyFlagDetails = castToCasePartyFlagEntity(mergedBaseFlagDetails,
+                                                                                         partyEntity);
             partyEntity.getRespondentFlags().clear();
             partyEntity.getRespondentFlags().addAll(mergedPartyFlagDetails);
         }
+    }
+
+    private List<CasePartyFlagEntity> castToCasePartyFlagEntity(List<BaseCaseFlag> mergedBaseFlagDetails,
+                                                                PartyEntity partyEntity) {
+        List<CasePartyFlagEntity> mergedPartyFlagDetails = new ArrayList<>();
+        for (BaseCaseFlag baseCaseFlag: mergedBaseFlagDetails) {
+            CasePartyFlagEntity casePartyFlagEntity = new CasePartyFlagEntity();
+            casePartyFlagEntity = (CasePartyFlagEntity) baseCaseFlag;
+            casePartyFlagEntity.setParty(partyEntity);
+            casePartyFlagEntity.setCasePartyFlagPaths(((CasePartyFlagEntity) baseCaseFlag).getCasePartyFlagPaths());
+            casePartyFlagEntity.setRefDataFlag(baseCaseFlag.getRefDataFlag());
+            mergedPartyFlagDetails.add(casePartyFlagEntity);
+        }
+
+        return mergedPartyFlagDetails;
     }
 
     private List<BaseCaseFlag> mergeFlagDetails(Map<UUID, BaseCaseFlag> existingCaseFlagEntitiesMap,
@@ -135,7 +144,7 @@ public class CaseFlagService {
             refDataFlagEntities.add(refDataFlagEntity);
 
             String flagId = incomingFlagDetailListValue.getId();
-            BaseCaseFlag flagEntity = existingFlagEntities.remove(UUID.fromString(flagId));
+            BaseCaseFlag flagEntity = existingCaseFlagEntitiesMap.remove(UUID.fromString(flagId));
             CasePartyFlagEntity ca = new CasePartyFlagEntity();
 
             if (flagEntity == null && partyEntity != null) {
@@ -170,7 +179,6 @@ public class CaseFlagService {
             flagEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
 
-            //Set<String> existingFlagPathIds = getExistingPathIds(existingFlagEntities);
             setFlagPath(incomingFlagDetail, existingFlagPathIds, flagEntity);
 
             mergedFlagDetails.add(flagEntity);
@@ -208,21 +216,23 @@ public class CaseFlagService {
                                              BaseCaseFlag flagEntity) {
         if (incomingFlagDetail.getPath() != null
             && !(existingFlagPathIds.containsAll(getIncomingFlagPathIds(incomingFlagDetail)))) {
+
             for (ListValue<String> path : incomingFlagDetail.getPath()) {
+                FlagPathEntity flagPathEntity = FlagPathEntity.builder()
+                    .path(path.getValue())
+                    .build();
+
                 CaseFlagEntity caseFlagEntity = null;
                 CasePartyFlagEntity casePartyFlagEntity = null;
                 if (flagEntity instanceof  CaseFlagEntity caseFlagEntityInstance) {
                     caseFlagEntity =  caseFlagEntityInstance;
+                    flagPathEntity.setCaseFlagEntity(caseFlagEntity);
+                    caseFlagEntity.getCaseFlagPaths().add(flagPathEntity);
                 } else if (flagEntity instanceof CasePartyFlagEntity casePartyFlagEntityInstance) {
                     casePartyFlagEntity = casePartyFlagEntityInstance;
+                    flagPathEntity.setCasePartyFlagEntity(casePartyFlagEntity);
+                    casePartyFlagEntity.getCasePartyFlagPaths().add(flagPathEntity);
                 }
-                FlagPathEntity flagPathEntity = FlagPathEntity.builder()
-                    .caseFlagEntity(caseFlagEntity)
-                    .casePartyFlagEntity(casePartyFlagEntity)
-                    .path(path.getValue())
-                    .build();
-                flagEntity.getPaths().add(flagPathEntity);
-
             }
         }
     }
@@ -235,7 +245,13 @@ public class CaseFlagService {
     private Set<String> getExistingPathIds(Map<UUID, BaseCaseFlag> existingFlagEntities) {
         Set<String> pathIds = new HashSet<>();
         for (BaseCaseFlag flagDetails : existingFlagEntities.values()) {
-            for (FlagPathEntity flagPathEntity : flagDetails.getPaths()) {
+            List<FlagPathEntity> flagPathEntities = new ArrayList<>();
+            if (flagDetails instanceof CaseFlagEntity) {
+                flagPathEntities =  flagDetails.getCaseFlagPaths();
+            } else if (flagDetails instanceof CasePartyFlagEntity) {
+                flagPathEntities =  flagDetails.getCasePartyFlagPaths();
+            }
+            for (FlagPathEntity flagPathEntity : flagPathEntities) {
                 pathIds.add(flagPathEntity.getId().toString());
             }
         }

@@ -6,7 +6,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.*;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.List;
@@ -66,7 +71,7 @@ class CaseFlagsViewTest {
         PartyEntity partyEntity = new PartyEntity();
         partyEntity.setId(UUID.randomUUID());
 
-        CasePartyFlagEntity appellantFlags = (CasePartyFlagEntity) createMockCaseFlagsEntity();
+        CasePartyFlagEntity appellantFlags = createMockCasePartyFlagsEntity();
         partyEntity.setRespondentFlags(List.of(appellantFlags));
 
         PCSCase pcsCase = PCSCase.builder().build();
@@ -84,7 +89,7 @@ class CaseFlagsViewTest {
         Party party = pcsCase.getParties().getFirst().getValue();
         assertNotNull(party.getRespondentFlags());
         assertEquals(1, party.getRespondentFlags().getDetails().size());
-        assertEquals("CF0007", party.getRespondentFlags().getDetails().getFirst().getValue().getFlagCode());
+        assertEquals("CF0015", party.getRespondentFlags().getDetails().getFirst().getValue().getFlagCode());
     }
 
     @Test
@@ -141,10 +146,23 @@ class CaseFlagsViewTest {
         caseFlagEntity.setId(UUID.randomUUID());
         caseFlagEntity.setFlagCode("CF0007");
         caseFlagEntity.setFlagComment("Urgent case");
-        caseFlagEntity.setPaths(List.of(createMockFlagPathEntity()));
+        caseFlagEntity.setCaseFlagPaths(List.of(createMockFlagPathEntity()));
         caseFlagEntity.setRefDataFlag(createMockRefDataFlagsEntity());
 
         return  caseFlagEntity;
+    }
+
+    private CasePartyFlagEntity createMockCasePartyFlagsEntity() {
+
+        CasePartyFlagEntity  casePartyFlagEntity = new CasePartyFlagEntity();
+
+        casePartyFlagEntity.setId(UUID.randomUUID());
+        casePartyFlagEntity.setFlagCode("CF0015");
+        casePartyFlagEntity.setFlagComment("Language Interpreter");
+        casePartyFlagEntity.setCaseFlagPaths(List.of(createMockFlagPathEntity()));
+        casePartyFlagEntity.setRefDataFlag(createMockRefDataFlagsEntity());
+
+        return  casePartyFlagEntity;
     }
 
     private FlagPathEntity createMockFlagPathEntity() {

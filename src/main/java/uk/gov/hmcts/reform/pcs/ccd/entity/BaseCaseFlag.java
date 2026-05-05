@@ -44,7 +44,11 @@ public abstract class BaseCaseFlag {
 
     @OneToMany(mappedBy = "caseFlagEntity", cascade = ALL, orphanRemoval = true)
     @Builder.Default
-    private List<FlagPathEntity> paths = new ArrayList<>();
+    private List<FlagPathEntity> caseFlagPaths = new ArrayList<>();
+
+    @OneToMany(mappedBy = "casePartyFlagEntity", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<FlagPathEntity> casePartyFlagPaths = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ref_data_flag_id")

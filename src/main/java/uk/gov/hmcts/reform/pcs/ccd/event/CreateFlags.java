@@ -33,7 +33,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                     .name("Create case flags")
                     .description("To create flags")
                     .showSummary()
-                    .grant(Permission.CRU, UserRole.PCS_SOLICITOR))
+                    .grant(Permission.CRU, UserRole.PCS_CASE_WORKER))
                 .page("caseworkerCaseFlag")
                 .pageLabel("Case Flags")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
