@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,5 +15,8 @@ public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
 
     @Query("SELECT p FROM PartyEntity p WHERE p.idamId = :idamId AND p.pcsCase.caseReference = :caseReference")
     Optional<PartyEntity> queryPartyByIdamId(@Param("idamId") UUID idamId, @Param("caseReference") long caseReference);
+
+    @Query("SELECT p.pcsCase.caseReference FROM PartyEntity p WHERE p.idamId = :idamId")
+    List<Long> findCaseReferencesByIdamId(@Param("idamId") UUID idamId);
 
 }
