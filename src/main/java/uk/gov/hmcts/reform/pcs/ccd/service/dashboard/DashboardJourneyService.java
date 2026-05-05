@@ -14,7 +14,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+
+import java.util.ArrayList;
+import java.util.Comparator;
 
 import java.util.List;
 import java.util.Map;
@@ -27,22 +31,27 @@ import java.util.Map;
 @Slf4j
 public class DashboardJourneyService {
 
-    private final DraftCaseDataService draftCaseDataService;
-    private final DefendantResponseService defendantResponseService;
-    private final ClaimTaskGroupEvaluator claimTaskGroupEvaluator;
-    private final ResponseTaskGroupEvaluator responseTaskGroupEvaluator;
+    private static final List<TaskGroupId> TASK_GROUP_ORDER = List.of(
+        TaskGroupId.CLAIM,
+        TaskGroupId.RESPONSE,
+        TaskGroupId.HEARING,
+        TaskGroupId.NOTICE,
+        TaskGroupId.APPLICATIONS
+    );
 
+    private static int orderIndex(TaskGroupId id) {
+        int idx = TASK_GROUP_ORDER.indexOf(id);
+        return idx >= 0 ? idx : Integer.MAX_VALUE; 
+    }
+
+    private final List<TaskGroupEvaluator> evaluatorsInOrder;
 
     public DashboardJourneyService(
-        DraftCaseDataService draftCaseDataService,
-        ClaimTaskGroupEvaluator claimTaskGroupEvaluator, 
-        ResponseTaskGroupEvaluator responseTaskGroupEvaluator,
-        DefendantResponseService defendantResponseService
+        List<TaskGroupEvaluator> evaluators
     ) {
-        this.draftCaseDataService = draftCaseDataService;
-        this.claimTaskGroupEvaluator = claimTaskGroupEvaluator;
-        this.responseTaskGroupEvaluator = responseTaskGroupEvaluator;
-        this.defendantResponseService = defendantResponseService;
+        this.evaluatorsInOrder = evaluators.stream()
+            .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
+            .toList();
     }
 
 

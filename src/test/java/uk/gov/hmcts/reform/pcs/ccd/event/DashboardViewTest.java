@@ -18,11 +18,14 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,10 +56,11 @@ class DashboardViewTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         dashboardJourneyService = new DashboardJourneyService(
-            draftCaseDataService,
-            new ClaimTaskGroupEvaluator(),
-            new ResponseTaskGroupEvaluator(),
-            defendantResponseService
+            List.of(
+                new ClaimTaskGroupEvaluator(),
+                new HearingsTaskGroupEvaluator(),
+                new NoticesTaskGroupEvaluator()
+            )
         );
         StartDashboardViewHandler startHandler = new StartDashboardViewHandler(
             pcsCaseService,
