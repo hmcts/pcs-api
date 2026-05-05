@@ -98,17 +98,20 @@ class NoticeOfPossessionServiceTest {
     void shouldSetNoticeTypeForWalesWhenNoticeServed() {
         // Given
         String typeOfNotice = "type of notice";
+        String noticeStatement = "notice statement";
 
         when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
         when(pcsCase.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
         when(walesNoticeDetails.getNoticeServed()).thenReturn(YesOrNo.YES);
         when(walesNoticeDetails.getTypeOfNoticeServed()).thenReturn(typeOfNotice);
+        when(walesNoticeDetails.getNoticeStatement()).thenReturn(noticeStatement);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
 
         // Then
         assertThat(noticeOfPossessionEntity.getNoticeType()).isEqualTo(typeOfNotice);
+        assertThat(noticeOfPossessionEntity.getNoticeStatement()).isEqualTo(noticeStatement);
     }
 
     @Test
