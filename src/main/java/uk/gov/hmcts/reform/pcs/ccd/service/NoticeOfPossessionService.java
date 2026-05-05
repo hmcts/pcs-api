@@ -36,6 +36,7 @@ public class NoticeOfPossessionService {
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
             WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
             noticeOfPossessionEntity.setNoticeType(walesNoticeDetails.getTypeOfNoticeServed());
+            noticeOfPossessionEntity.setNoticeStatement(walesNoticeDetails.getNoticeStatement());
         }
 
         noticeOfPossessionEntity.setServingMethod(noticeServiceMethod);
