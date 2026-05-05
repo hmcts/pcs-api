@@ -8,16 +8,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.ResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
-import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 
 import java.util.List;
@@ -45,10 +43,16 @@ public class DashboardJourneyService {
     }
 
     private final List<TaskGroupEvaluator> evaluatorsInOrder;
+    private final DraftCaseDataService draftCaseDataService;
+    private final DefendantResponseService defendantResponseService;
 
     public DashboardJourneyService(
+        DraftCaseDataService draftCaseDataService,
+        DefendantResponseService defendantResponseService,
         List<TaskGroupEvaluator> evaluators
     ) {
+        this.draftCaseDataService = draftCaseDataService;
+        this.defendantResponseService = defendantResponseService;
         this.evaluatorsInOrder = evaluators.stream()
             .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
             .toList();
@@ -113,10 +117,10 @@ public class DashboardJourneyService {
     }
 
     private List<ListValue<TaskGroup>> computeTaskGroups(DashboardContext ctx) {
-        return ListValueUtils.wrapListItems(List.of(
-            claimTaskGroupEvaluator.evaluate(ctx),
-            responseTaskGroupEvaluator.evaluate(ctx)
-        ));
+        List<TaskGroup> groups = evaluatorsInOrder.stream()
+            .map(e -> e.evaluate(ctx))
+            .toList();
+        return ListValueUtils.wrapListItems(groups);
     }
 
     private ResponseStatus getResponseStatus(boolean hasDraft, boolean hasSubmitted) {

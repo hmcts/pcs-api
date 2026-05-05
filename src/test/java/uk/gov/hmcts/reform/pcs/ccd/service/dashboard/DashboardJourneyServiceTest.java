@@ -41,10 +41,12 @@ class DashboardJourneyServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DashboardJourneyService(List.of(
-            new ClaimTaskGroupEvaluator(),
-            new HearingsTaskGroupEvaluator(),
-            new NoticesTaskGroupEvaluator()
+        underTest = new DashboardJourneyService(
+            draftCaseDataService, defendantResponseService, List.of(
+                new ClaimTaskGroupEvaluator(),
+                new ResponseTaskGroupEvaluator(),
+                new HearingsTaskGroupEvaluator(),
+                new NoticesTaskGroupEvaluator()
         ));
     }
 
@@ -57,7 +59,7 @@ class DashboardJourneyServiceTest {
 
         assertThat(result.getCaseId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(result.getPropertyAddress()).isEqualTo(propertyAddress);
-        assertThat(result.getNotifications()).hasSize(2);
+        assertThat(result.getNotifications()).hasSize(4);
         assertThat(result.getTaskGroups()).hasSize(4);
     }
 
@@ -94,9 +96,9 @@ class DashboardJourneyServiceTest {
             .extracting(g -> g.getGroupId(), g -> g.getTasks().size())
             .containsExactly(
                 tuple(TaskGroupId.CLAIM, 2),
+                tuple(TaskGroupId.RESPONSE, 2),
                 tuple(TaskGroupId.HEARING, 1),
-                tuple(TaskGroupId.NOTICE, 1),
-                tuple(TaskGroupId.RESPONSE, 3)
+                tuple(TaskGroupId.NOTICE, 1)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).getFirst().getTasks())
@@ -109,20 +111,20 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.ViewHearingDocuments", TaskStatus.AVAILABLE)
+                tuple("Defendant.RespondToClaim", TaskStatus.NOT_STARTED),
+                tuple("Defendant.ViewResponse", TaskStatus.NOT_AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.ViewOrdersAndNotices", TaskStatus.AVAILABLE)
+                tuple("Defendant.ViewHearingDocuments", TaskStatus.AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(3).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.RespondToClaim", TaskStatus.NOT_STARTED),
-                tuple("Defendant.ViewResponse", TaskStatus.NOT_AVAILABLE)
+                tuple("Defendant.ViewOrdersAndNotices", TaskStatus.AVAILABLE)
             );
     }
 

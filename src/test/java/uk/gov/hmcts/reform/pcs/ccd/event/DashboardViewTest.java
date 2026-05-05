@@ -56,9 +56,12 @@ class DashboardViewTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         dashboardJourneyService = new DashboardJourneyService(
+            draftCaseDataService,
+            defendantResponseService,
             List.of(
                 new ClaimTaskGroupEvaluator(),
                 new HearingsTaskGroupEvaluator(),
+                new ResponseTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
             )
         );
