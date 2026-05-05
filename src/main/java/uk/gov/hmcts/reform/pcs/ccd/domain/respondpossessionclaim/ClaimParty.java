@@ -23,9 +23,4 @@ public class ClaimParty {
 
     @CCD(access = {CitizenAccess.class})
     private String orgName;
-
-    // One of the possible roles: CLAIMANT, DEFENDANT, or UNDERLESSEE_OR_MORTGAGEE.
-    @CCD(access = {CitizenAccess.class})
-    private String role;
-
 }

@@ -140,7 +140,6 @@ public class PossessionClaimResponseMapper {
             .firstName(party.getFirstName())
             .lastName(party.getLastName())
             .orgName(party.getOrgName())
-            .role(role.name())
             .build();
     }
 

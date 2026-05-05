@@ -9,8 +9,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimParty;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimParty;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -52,13 +52,13 @@ public class StartEventHandler implements Start<PCSCase, State> {
         log.info("RespondPossessionClaim start callback invoked for Case Reference: {}", caseReference);
 
         PCSCase pcsCase = eventPayload.caseData();
-        PartyEntity matchedDefendant = loadAndValidateDefendant(caseReference);
+        PartyEntity currentDefendant = loadAndValidateDefendant(caseReference);
 
         if (hasDraftInProgress(caseReference)) {
-            return restoreSavedDraftAnswers(caseReference, pcsCase, matchedDefendant);
+            return restoreSavedDraftAnswers(caseReference, pcsCase, currentDefendant);
         }
 
-        return initializeFirstTimeResponse(caseReference, pcsCase, matchedDefendant);
+        return initializeFirstTimeResponse(caseReference, pcsCase, currentDefendant);
     }
 
     private PartyEntity loadAndValidateDefendant(long caseReference) {
@@ -70,8 +70,8 @@ public class StartEventHandler implements Start<PCSCase, State> {
         return draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim);
     }
 
-    private PCSCase initializeFirstTimeResponse(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant) {
-        PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, matchedDefendant);
+    private PCSCase initializeFirstTimeResponse(long caseReference, PCSCase pcsCase, PartyEntity currentDefendant) {
+        PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, currentDefendant);
         createInitialDraft(caseReference, response);
 
         return pcsCase.toBuilder()
@@ -79,15 +79,15 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .build();
     }
 
-    private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant) {
+    private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase pcsCase, PartyEntity currentDefendant) {
         PCSCase savedDraft = loadSavedDraft(caseReference);
-        Party claimantEnteredDetails = responseMapper.buildPartyFromEntity(matchedDefendant, pcsCase);
+        Party claimantEnteredDetails = responseMapper.buildPartyFromEntity(currentDefendant, pcsCase);
 
         PossessionClaimResponse mergedResponse = buildMergedResponse(
             pcsCase,
             savedDraft.getPossessionClaimResponse(),
             claimantEnteredDetails,
-            matchedDefendant
+            currentDefendant
         );
 
         return buildCaseWithDraft(pcsCase, mergedResponse);
@@ -101,8 +101,8 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private PossessionClaimResponse buildMergedResponse(PCSCase latestCase,
                                                          PossessionClaimResponse savedResponses,
                                                          Party claimantEnteredDetails,
-                                                         PartyEntity matchedDefendant) {
-        String currentDefendantPartyId = matchedDefendant.getId() != null ? matchedDefendant.getId().toString() : null;
+                                                         PartyEntity currentDefendant) {
+        String currentDefendantPartyId = currentDefendant.getId() != null ? currentDefendant.getId().toString() : null;
         return mergeLatestCaseData(latestCase, savedResponses)
             .toBuilder()
             .claimantEnteredDefendantDetails(claimantEnteredDetails)
