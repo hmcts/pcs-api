@@ -10,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
@@ -36,29 +36,14 @@ public class CaseFlagService {
                 .collect(Collectors.toMap(CaseFlagEntity::getId, Function.identity()));
 
         List<CaseFlagEntity> mergedFlagDetails = new ArrayList<>();
-
+        List<RefDataFlagEntity> refDataFlagEntities = new ArrayList<>();
         List<String> existingFlagPathIds = getExistingPathIds(existingCaseFlagEntities);
 
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
-            RefDataFlagsEntity refDataFlagsEntity = refDataFlagsRepository.findByFlagCode((
-                incomingFlagDetail.getFlagCode())).orElse(null);
-
-            if (refDataFlagsEntity == null) {
-                refDataFlagsEntity = new RefDataFlagsEntity();
-            }
-            refDataFlagsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
-            refDataFlagsEntity.setFlagName(incomingFlagDetail.getName());
-            refDataFlagsEntity.setFlagNameWelsh(incomingFlagDetail.getNameCy());
-            refDataFlagsEntity.setVisibility(incomingCaseFlags.getVisibility() != null
-                                                 ? incomingCaseFlags.getVisibility().getValue()
-                                                 : FlagVisibility.INTERNAL.getValue());
-            refDataFlagsEntity.setHearingRelevant(YesOrNoConverter.toBoolean(incomingFlagDetail.getHearingRelevant()));
-            refDataFlagsEntity.setAvailableExternally(YesOrNoConverter.toBoolean(
-                incomingFlagDetail.getAvailableExternally()));
-
-            refDataFlagsRepository.save(refDataFlagsEntity);
+            RefDataFlagEntity refDataFlagEntity = getRefDataEntity(incomingCaseFlags, incomingFlagDetail);
+            refDataFlagEntities.add(refDataFlagEntity);
 
             String flagId = incomingFlagDetailListValue.getId();
             CaseFlagEntity caseFlagEntity = existingCaseFlagEntities.remove(UUID.fromString(flagId));
@@ -82,6 +67,7 @@ public class CaseFlagService {
             caseFlagEntity.setSubTypeKey(incomingFlagDetail.getSubTypeKey());
             caseFlagEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
             caseFlagEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
+            caseFlagEntity.setRefDataFlag(refDataFlagEntity);
 
             if (flow.equals("UPDATE")) {
                 caseFlagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
@@ -95,8 +81,30 @@ public class CaseFlagService {
 
             mergedFlagDetails.add(caseFlagEntity);
         }
+        refDataFlagsRepository.saveAll(refDataFlagEntities);
         pcsCaseEntity.getCaseFlags().clear();
         pcsCaseEntity.getCaseFlags().addAll(mergedFlagDetails);
+    }
+
+    private RefDataFlagEntity getRefDataEntity(Flags incomingCaseFlags, FlagDetail incomingFlagDetail) {
+
+        RefDataFlagEntity refDataFlagsEntity = refDataFlagsRepository.findByFlagCode(
+            incomingFlagDetail.getFlagCode()).orElse(null);
+
+        if (refDataFlagsEntity == null) {
+            refDataFlagsEntity = new RefDataFlagEntity();
+        }
+        refDataFlagsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
+        refDataFlagsEntity.setFlagName(incomingFlagDetail.getName());
+        refDataFlagsEntity.setFlagNameWelsh(incomingFlagDetail.getNameCy());
+        refDataFlagsEntity.setVisibility(incomingCaseFlags.getVisibility() != null
+                                             ? incomingCaseFlags.getVisibility().getValue()
+                                             : FlagVisibility.INTERNAL.getValue());
+        refDataFlagsEntity.setHearingRelevant(YesOrNoConverter.toBoolean(incomingFlagDetail.getHearingRelevant()));
+        refDataFlagsEntity.setAvailableExternally(YesOrNoConverter.toBoolean(
+            incomingFlagDetail.getAvailableExternally()));
+
+        return refDataFlagsEntity;
     }
 
     private void setFlagPath(FlagDetail incomingFlagDetail, List<String> existingFlagPathIds,

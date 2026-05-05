@@ -24,6 +24,7 @@ globalsearch:
 
 hmcts:
   hmctsOrgId: AAA3
+  alternativeHmctsOrgId: AAA7
 
 springdoc:
   swagger-ui:
