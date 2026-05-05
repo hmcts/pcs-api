@@ -50,9 +50,9 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
                     "asbQuestionsWales-info",
                     """
                               <p class="govuk-body" tabindex="0">
-                              You’ll have the option to upload documents that give more details
-                              about the antisocial behaviour or illegal or prohibited conduct you’re
-                              describing or evidence of this behaviour later on.
+                              You can upload documents that give more details about the antisocial
+                              behaviour or illegal or prohibited conduct you're describing or evidence of
+                              this behaviour later on.
                               </p>
                             """)
             .label("asbQuestionsWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
