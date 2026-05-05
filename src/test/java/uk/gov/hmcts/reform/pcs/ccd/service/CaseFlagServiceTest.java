@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
@@ -132,7 +134,7 @@ class CaseFlagServiceTest {
         assertNotNull(pcsCaseEntity.getCaseFlags());
         List<CaseFlagEntity> savedFlags = pcsCaseEntity.getCaseFlags();
         assertEquals(1, savedFlags.size());
-        assertThat(savedFlags).extracting(CaseFlagEntity::getFlagCode).containsExactly("CF0008");
+        assertThat(savedFlags).extracting(BaseCaseFlag::getFlagCode).containsExactly("CF0008");
         assertThat(savedFlags.getLast().getFlagComment()).isEqualTo("Police arrest inactive");
         assertThat(savedFlags.getLast().getFlagCode()).isEqualTo("CF0008");
     }
@@ -160,7 +162,7 @@ class CaseFlagServiceTest {
         assertNotNull(savedParty.getRespondentFlags());
         assertEquals(1, savedParty.getRespondentFlags().size());
 
-        CaseFlagEntity savedFlags = savedParty.getRespondentFlags().getFirst();
+        BaseCaseFlag savedFlags = savedParty.getRespondentFlags().getFirst();
         assertEquals("CF0002", savedFlags.getFlagCode());
     }
 
@@ -180,12 +182,17 @@ class CaseFlagServiceTest {
         // Given
         UUID existingPartyId = UUID.randomUUID();
 
-        List<CaseFlagEntity> existingFlagsEntity = createCaseFlagEntity(existingPartyId);
+        List<BaseCaseFlag> existingFlagsEntity = createCaseFlagEntity(existingPartyId);
+        List<CasePartyFlagEntity> existingPartyFlagEntities = new ArrayList<>();
+
+        for (BaseCaseFlag baseCaseFlag :existingFlagsEntity) {
+            existingPartyFlagEntities.add((CasePartyFlagEntity) baseCaseFlag);
+        }
 
 
         PartyEntity existingParty = PartyEntity.builder()
             .id(existingPartyId)
-            .respondentFlags(existingFlagsEntity)
+            .respondentFlags(new ArrayList<>(existingPartyFlagEntities))
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
@@ -243,8 +250,18 @@ class CaseFlagServiceTest {
         return PcsCaseEntity.builder()
             .id(UUID.randomUUID())
             .caseReference(1234L)
-            .caseFlags(createCaseFlagEntity(id))
+            .caseFlags(castToCaseFlag(createCaseFlagEntity(id)))
             .build();
+    }
+
+    private List<CaseFlagEntity> castToCaseFlag(List<BaseCaseFlag> caseFlagEntity) {
+        List<CaseFlagEntity> caseFlagEntities = new ArrayList<>();
+
+        for (BaseCaseFlag baseCaseFlag : caseFlagEntity) {
+            caseFlagEntities.add((CaseFlagEntity) baseCaseFlag);
+        }
+
+        return caseFlagEntities;
     }
 
     private List<ListValue<FlagDetail>> createFlagDetail(String id, String flagCode, String name,
@@ -280,17 +297,18 @@ class CaseFlagServiceTest {
         return isPathEmpty ? null : paths;
     }
 
-    private List<CaseFlagEntity> createCaseFlagEntity(UUID id) {
-        List<CaseFlagEntity> caseFlagEntities = new ArrayList<>();
+    private List<BaseCaseFlag> createCaseFlagEntity(UUID id) {
 
-        CaseFlagEntity caseFlagEntity = CaseFlagEntity.builder()
-            .id(id)
-            .defaultStatus("Active")
-            .flagCode("CF0008")
-            .flagComment("Police arrest inactive")
-            .paths(createFlagPathEntity())
-            .dateTimeCreated(LocalDateTime.now())
-            .build();
+
+        BaseCaseFlag caseFlagEntity = new CaseFlagEntity();
+        caseFlagEntity.setId(id);
+        caseFlagEntity.setDefaultStatus("Active");
+        caseFlagEntity.setFlagCode("CF0008");
+        caseFlagEntity.setFlagComment("Police arrest inactive");
+        caseFlagEntity.setPaths(createFlagPathEntity());
+        caseFlagEntity.setDateTimeModified(LocalDateTime.now());
+
+        List<BaseCaseFlag> caseFlagEntities = new ArrayList<>();
         caseFlagEntities.add(caseFlagEntity);
 
         return caseFlagEntities;

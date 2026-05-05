@@ -6,10 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.*;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.List;
@@ -52,7 +49,7 @@ class CaseFlagsViewTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();
 
-        pcsCaseEntity.setCaseFlags(List.of(createMockCaseFlagsEntity()));
+        pcsCaseEntity.setCaseFlags(List.of((CaseFlagEntity)createMockCaseFlagsEntity()));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -69,7 +66,7 @@ class CaseFlagsViewTest {
         PartyEntity partyEntity = new PartyEntity();
         partyEntity.setId(UUID.randomUUID());
 
-        CaseFlagEntity appellantFlags = createMockCaseFlagsEntity();
+        CasePartyFlagEntity appellantFlags = (CasePartyFlagEntity) createMockCaseFlagsEntity();
         partyEntity.setRespondentFlags(List.of(appellantFlags));
 
         PCSCase pcsCase = PCSCase.builder().build();
@@ -137,15 +134,17 @@ class CaseFlagsViewTest {
         assertEquals(0, pcsCase.getParties().size());
     }
 
-    private CaseFlagEntity createMockCaseFlagsEntity() {
+    private BaseCaseFlag createMockCaseFlagsEntity() {
 
-        return CaseFlagEntity.builder()
-            .id(UUID.randomUUID())
-            .flagCode("CF0007")
-            .flagComment("Urgent case")
-            .paths(List.of(createMockFlagPathEntity()))
-            .refDataFlag(createMockRefDataFlagsEntity())
-            .build();
+        CaseFlagEntity  caseFlagEntity = new CaseFlagEntity();
+
+        caseFlagEntity.setId(UUID.randomUUID());
+        caseFlagEntity.setFlagCode("CF0007");
+        caseFlagEntity.setFlagComment("Urgent case");
+        caseFlagEntity.setPaths(List.of(createMockFlagPathEntity()));
+        caseFlagEntity.setRefDataFlag(createMockRefDataFlagsEntity());
+
+        return  caseFlagEntity;
     }
 
     private FlagPathEntity createMockFlagPathEntity() {

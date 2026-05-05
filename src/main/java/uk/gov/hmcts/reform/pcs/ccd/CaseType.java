@@ -105,7 +105,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
         builder.tab("caseFlags", "Case flags")
-            .forRoles(UserRole.PCS_CASE_WORKER)
+            .forRoles(UserRole.PCS_SOLICITOR)
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");

@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -33,16 +33,18 @@ public class CaseFlagsView {
     }
 
     private void mapBasicCaseFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        List<BaseCaseFlag> baseCaseFlags = new ArrayList<>(pcsCaseEntity.getCaseFlags());
+
         Flags caseFlags = pcsCaseEntity.getCaseFlags().isEmpty()
             ? Flags.builder().build()
             : Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(mapFlagDetails(pcsCaseEntity.getCaseFlags()))
+            .details(mapFlagDetails(baseCaseFlags))
             .build();
         pcsCase.setCaseFlags(caseFlags);
     }
 
-    private List<ListValue<FlagDetail>> mapFlagDetails(List<CaseFlagEntity> flagsEntities) {
+    private List<ListValue<FlagDetail>> mapFlagDetails(List<BaseCaseFlag> flagsEntities) {
 
         return flagsEntities.stream()
             .map(caseFlagEntity -> ListValue.<FlagDetail>builder()
@@ -74,8 +76,8 @@ public class CaseFlagsView {
             .toList();
     }
 
-    private List<ListValue<String>> getPath(CaseFlagEntity caseFlagEntity) {
-        return caseFlagEntity.getPaths().stream()
+    private List<ListValue<String>> getPath(BaseCaseFlag flagEntity) {
+        return flagEntity.getPaths().stream()
             .map(pathEntity -> ListValue.<String>builder()
                 .id(pathEntity.getId().toString())
                 .value(pathEntity.getPath())
@@ -122,7 +124,7 @@ public class CaseFlagsView {
                 .build();
         }
 
-        List<CaseFlagEntity> respondentFlags = partyEntity.getRespondentFlags();
+        List<BaseCaseFlag> respondentFlags = new ArrayList<>(partyEntity.getRespondentFlags());
 
         return Flags.builder()
             .partyName(Stream.of(partyEntity.getFirstName(), partyEntity.getLastName(),
