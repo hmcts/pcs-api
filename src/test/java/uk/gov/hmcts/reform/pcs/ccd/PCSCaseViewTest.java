@@ -25,7 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
-import uk.gov.hmcts.reform.pcs.ccd.view.PartyView;
+import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
@@ -67,7 +67,7 @@ class PCSCaseViewTest {
     @Mock
     private ClaimView claimView;
     @Mock
-    private PartyView partyView;
+    private PartiesView partyView;
     @Mock
     private DocumentsView documentsView;
     @Mock
