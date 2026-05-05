@@ -108,6 +108,7 @@ public class GenAppDocumentGenerator {
             .caseReference(caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference))
             .caseName(caseName)
             .submittedOn(currentUkDate)
+            .issuedOn(currentUkDate)
             .propertyAddress(formattedPropertyAddress)
             .applicant(uk.gov.hmcts.reform.pcs.document.model.Party.builder()
                            .name(applicantName)

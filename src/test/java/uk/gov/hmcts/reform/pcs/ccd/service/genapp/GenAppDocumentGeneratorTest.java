@@ -188,6 +188,16 @@ class GenAppDocumentGeneratorTest {
     }
 
     @Test
+    void shouldSetIssuedOnDate() {
+        // When
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+
+        // Then
+        GenAppFormPayload formPayload = getFormPayload();
+        assertThat(formPayload.getIssuedOn()).isEqualTo(FIXED_CURRENT_DATE);
+    }
+
+    @Test
     void shouldSetApplicantPartyDetails() {
         // Given
         String firstName = "some first name";
