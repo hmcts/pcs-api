@@ -84,10 +84,10 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
-    await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
+    await performAction('selectClaimType', claimType.noRadioOption);    
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
