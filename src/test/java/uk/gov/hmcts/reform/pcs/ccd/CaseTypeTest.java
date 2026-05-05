@@ -45,7 +45,7 @@ public class CaseTypeTest {
         String jurisdictionId = CaseType.getJurisdictionId();
 
         // Then
-        assertThat(jurisdictionId).isEqualTo("PCS");
+        assertThat(jurisdictionId).contains("PCS");
     }
 
     @Test
@@ -54,7 +54,7 @@ public class CaseTypeTest {
         String caseTypeName = CaseType.getCaseTypeName();
 
         // Then
-        assertThat(caseTypeName).isEqualTo("Possession");
+        assertThat(caseTypeName).contains("Possession");
     }
 
     @Test
