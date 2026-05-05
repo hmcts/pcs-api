@@ -18,12 +18,12 @@
   },
   {
     "email": "ctsc-admin@pcs.com",
-    "id": "3eb42aca-7f4f-4a34-b97c-9a9656f881d5",
+    "id": "dcded99f-9a7d-35d1-ace9-adfb2a3e44d4",
     "roleType": "ORGANISATION",
     "roleName": "ctsc",
-    "grantType": "BASIC",
+    "grantType": "STANDARD",
     "roleCategory": "ADMIN",
-    "classification": "PRIVATE",
+    "classification": "PUBLIC",
     "readOnly": true,
     "attributes": {
       "substantive": "N"
