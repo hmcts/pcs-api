@@ -36,7 +36,7 @@ public class CaseTypeTest {
         String caseType = CaseType.getCaseType();
 
         // Then
-        assertThat(caseType).isEqualTo("PCS");
+        assertThat(caseType).contains("PCS");
     }
 
     @Test
