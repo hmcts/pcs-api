@@ -146,7 +146,9 @@ public class DocumentService {
                         .url(holder.getDocument().getUrl())
                         .fileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
-                        .categoryId(mapDocumentTypeToCategory(holder.getType()).getId())
+                        .categoryId(Optional.ofNullable(mapDocumentTypeToCategory(holder.getType()))
+                            .map(CaseFileCategory::getId)
+                            .orElse(null))
                         .type(holder.getType())
                         .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                         .build())
@@ -189,7 +191,7 @@ public class DocumentService {
                  LEGAL_AID_CERTIFICATE -> CaseFileCategory.CORRESPONDENCE;
             case NOTICE_SERVED,
                  POLICE_REPORT,
-                 OTHER -> CaseFileCategory.UNCATEGORISED;
+                 OTHER -> null;
         };
     }
 
