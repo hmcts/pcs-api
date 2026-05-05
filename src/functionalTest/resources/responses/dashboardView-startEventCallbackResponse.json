@@ -58,6 +58,31 @@
         },
         {
           "value": {
+            "groupId": "RESPONSE",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "Defendant.RespondToClaim",
+                  "status": "NOT_STARTED"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "Defendant.ReviewResponse",
+                  "status": "IN_PROGRESS"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "Defendant.SubmitResponse",
+                  "status": "COMPLETED"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
             "groupId": "HEARING",
             "tasks": [
               {
@@ -77,31 +102,6 @@
                 "value": {
                   "templateId": "Defendant.ViewOrdersAndNotices",
                   "status": "AVAILABLE"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "value": {
-            "groupId": "RESPONSE",
-            "tasks": [
-              {
-                "value": {
-                  "templateId": "Defendant.RespondToClaim",
-                  "status": "NOT_STARTED"
-                }
-              },
-              {
-                "value": {
-                  "templateId": "Defendant.ReviewResponse",
-                  "status": "IN_PROGRESS"
-                }
-              },
-              {
-                "value": {
-                  "templateId": "Defendant.SubmitResponse",
-                  "status": "COMPLETED"
                 }
               }
             ]
