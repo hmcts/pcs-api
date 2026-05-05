@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
@@ -118,7 +119,7 @@ public class PCSCase {
     private String crossBorderCountry2;
 
     @CCD(access = {CaseLinkingAccess.class},
-        typeOverride = FieldType.Collection,
+        typeOverride = Collection,
         label = "Linked cases",
         typeParameterOverride = "CaseLink")
     @Builder.Default
@@ -578,4 +579,18 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "casePartiesTab_")
     @CCD
     private CasePartiesTab casePartiesTab;
+
+    @CCD(
+        label = "Note",
+        hint = "Add note detail, including relevant dates and people involved",
+        typeOverride = TextArea,
+        max = 500
+    )
+    private String note;
+
+    @CCD (
+        label = "Notes",
+        typeOverride = Collection,
+        typeParameterOverride = "CaseNote")
+    List<ListValue<CaseNote>> caseNotes;
 }
