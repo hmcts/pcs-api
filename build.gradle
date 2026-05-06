@@ -5,7 +5,7 @@ import uk.gov.hmcts.rse.CftlibExec
 buildscript {
   ext {
     flywayVersion = '11.20.3'
-    serenityBddVersion = '5.2.2'
+    serenityBddVersion = '5.3.9'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -378,9 +378,8 @@ repositories {
     }
   } else {
     mavenLocal()
+    mavenCentral()
   }
-
-  mavenCentral()
 
   maven {
     url = uri("https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1")
