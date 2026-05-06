@@ -85,7 +85,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         caseData.setShowRentSectionPage(walesRentSectionRoutingService.shouldShowRentSection(caseData));
 
-        if (YesOrNo.NO == caseData.getWalesNoticeDetails().getNoticeServed()) {
+        if (caseData.getWalesNoticeDetails() != null && YesOrNo.NO == caseData.getWalesNoticeDetails().getNoticeServed()) {
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 caseData.getWalesNoticeDetails().getNoticeStatement(),
                 WalesNoticeDetails.NOTICE_STATEMENT_LABEL,
