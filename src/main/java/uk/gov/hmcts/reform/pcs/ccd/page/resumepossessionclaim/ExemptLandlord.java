@@ -7,16 +7,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 @Component
-public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
+public class ExemptLandlord implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("claimantDetailsWales")
+            .page("exemptLandlord")
             .pageLabel("Exempt Landlord")
             .showCondition("legislativeCountry=\"Wales\"")
-            .label("claimantDetailsWales-info", "---")
+            .label("exemptLandlord-info", "---")
             .mandatory(PCSCase::getIsExemptLandlord)
-            .label("claimantDetailsWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("exemptLandlord-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
