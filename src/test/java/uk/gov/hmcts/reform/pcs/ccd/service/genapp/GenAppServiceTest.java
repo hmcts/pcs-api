@@ -224,6 +224,27 @@ class GenAppServiceTest {
         assertThat(genAppEntity.getWithoutNoticeReason()).isEqualTo(expectedWithoutNoticeReason);
     }
 
+    @Test
+    void shouldSetWhatOrderWanted() {
+        // Given
+        String expectedOrder = "this is the order wanted";
+
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .whatOrderWanted(expectedOrder)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .citizenGenAppRequest(genAppRequest)
+            .build();
+
+        // When
+        underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty);
+
+        // Then
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        assertThat(genAppEntityCaptor.getValue().getWhatOrderWanted()).isEqualTo(expectedOrder);
+    }
+
     @ParameterizedTest
     @EnumSource(value = LanguageUsed.class)
     void shouldSetLanguageUsed(LanguageUsed languageUsed) {

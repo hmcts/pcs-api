@@ -18,6 +18,7 @@ public class PaymentAgreementService {
             .paymentDetails(paymentAgreement.getPaymentDetails())
             .repaymentPlanAgreed(paymentAgreement.getRepaymentPlanAgreed())
             .repaymentAgreedDetails(paymentAgreement.getRepaymentAgreedDetails())
+            .repayArrearsInstalments(paymentAgreement.getRepayArrearsInstalments())
             .build();
 
         return paymentAgreementEntity;

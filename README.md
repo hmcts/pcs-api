@@ -103,6 +103,7 @@ The following environment variables are needed to run the tests:
 - PCS_API_IDAM_SECRET
 - IDAM_EXPIRED_USER_TOKEN
 - S2S_EXPIRED_TOKEN
+- IDAM_TESTING_SUPPORT_URL
 
 To run the tests, use:
 

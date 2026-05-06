@@ -15,7 +15,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 public enum ClaimantType implements HasLabel {
 
     PRIVATE_LANDLORD("Private landlord", Set.of(ENGLAND, WALES)),
-    PROVIDER_OF_SOCIAL_HOUSING("Registered provider of social housing", Set.of(ENGLAND)),
+    PROVIDER_OF_SOCIAL_HOUSING("Registered provider of social housing or local authority", Set.of(ENGLAND)),
     COMMUNITY_LANDLORD("Community landlord", Set.of(WALES)),
     MORTGAGE_LENDER("Mortgage lender", Set.of(ENGLAND, WALES)),
     OTHER("Other", Set.of(ENGLAND, WALES));
