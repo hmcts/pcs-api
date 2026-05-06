@@ -38,6 +38,8 @@ public class NotificationService {
     private final SchedulerClient schedulerClient;
     private final NotificationTemplateConfiguration templateConfiguration;
 
+    private static final String NO_CLAIMANT_PARTY_FOUND_MSG = "No claimant party found for defendant response: %s";
+
     public NotificationService(
         NotificationRepository notificationRepository,
         SchedulerClient schedulerClient,
@@ -281,17 +283,16 @@ public class NotificationService {
     protected static Map<String, Object> buildBasePersonalisation(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
 
-        Optional<PartyEntity> optClaimant = defendantResponse.getClaim().getClaimParties().stream()
+        PartyEntity claimant = defendantResponse.getClaim().getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole().equals(PartyRole.CLAIMANT))
             .map(ClaimPartyEntity::getParty)
-            .findFirst();
+            .findFirst()
+            .orElseThrow(
+                () -> new PartyNotFoundException(
+                    String.format(NO_CLAIMANT_PARTY_FOUND_MSG, defendantResponse.getId())
+                )
+            );
 
-        if (optClaimant.isEmpty()) {
-            throw new PartyNotFoundException(
-                "No claimant party found for defendant response: " + defendantResponse.getId());
-        }
-
-        PartyEntity claimant = optClaimant.get();
         String claimantName = (claimant.getOrgName() != null
             ? claimant.getOrgName()
             : String.format("%s %s", claimant.getFirstName(), claimant.getLastName()))
@@ -312,15 +313,14 @@ public class NotificationService {
         DefendantResponseEntity defendantResponse) {
 
         Map<String, Object> base = new HashMap<>(buildBasePersonalisation(defendantResponse));
-        base.put("paymentReferenceNumber",
-                 defendantResponse.getClaim().getFeePayments()
-                     .stream()
-                     .filter(p -> p.getPaymentStatus() == PaymentStatus.PAID)
-                     .findFirst()
-                     .map(FeePaymentEntity::getExternalReference)
-                     .orElseThrow(
-                         () -> new FeePaymentNotFoundException(
-                             "Paid fee payment not found for defendant response: " + defendantResponse.getId())));
+
+        FeePaymentEntity defendantFeePayment = defendantResponse.getClaim().getFeePayment();
+        if (defendantFeePayment == null || !defendantFeePayment.getPaymentStatus().equals(PaymentStatus.PAID)) {
+            throw new FeePaymentNotFoundException(
+                "Paid fee payment not found for defendant response: " + defendantResponse.getId());
+        }
+
+        base.put("paymentReferenceNumber", defendantFeePayment.getExternalReference());
         return base;
     }
 
