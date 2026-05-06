@@ -16,6 +16,18 @@ public class NotificationTemplateConfiguration {
     private Map<String, String> templates;
 
     public String getTemplateId(EmailTemplate template) {
-        return templates.get(template.getTemplateKey());
+        if (templates == null || templates.isEmpty()) {
+            throw new IllegalStateException("Notification templates are not configured");
+        }
+
+        String templateId = templates.get(template.getTemplateKey());
+
+        if (templateId == null) {
+            throw new IllegalArgumentException(
+                "Missing template for key: " + template.getTemplateKey()
+            );
+        }
+
+        return templateId;
     }
 }
