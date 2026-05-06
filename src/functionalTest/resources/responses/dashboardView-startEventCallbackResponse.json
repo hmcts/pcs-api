@@ -62,19 +62,19 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.RespondToClaim",
+                  "templateId": "RespondToClaim",
                   "status": "NOT_STARTED"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.ReviewResponse",
+                  "templateId": "ReviewResponse",
                   "status": "IN_PROGRESS"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.SubmitResponse",
+                  "templateId": "SubmitResponse",
                   "status": "COMPLETED"
                 }
               }
