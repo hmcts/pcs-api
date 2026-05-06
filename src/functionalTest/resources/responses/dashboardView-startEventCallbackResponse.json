@@ -87,7 +87,7 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.ViewHearingDocuments",
+                  "templateId": "ViewHearingDocuments",
                   "status": "AVAILABLE"
                 }
               }
@@ -100,7 +100,7 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.ViewOrdersAndNotices",
+                  "templateId": "ViewOrdersAndNotices",
                   "status": "AVAILABLE"
                 }
               }
