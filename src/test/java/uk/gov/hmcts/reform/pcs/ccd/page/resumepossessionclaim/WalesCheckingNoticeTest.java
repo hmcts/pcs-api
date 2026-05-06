@@ -94,6 +94,7 @@ class WalesCheckingNoticeTest extends BasePageTest {
         assertThat(response.getData()).isSameAs(caseData);
         verify(textAreaValidationService).validateSingleTextArea("Valid notice statement",
             WalesNoticeDetails.NOTICE_STATEMENT_LABEL, TextAreaValidationService.MEDIUM_TEXT_LIMIT);
+        verify(textAreaValidationService, never()).createValidationResponse(any(), any());
     }
 
     @Test

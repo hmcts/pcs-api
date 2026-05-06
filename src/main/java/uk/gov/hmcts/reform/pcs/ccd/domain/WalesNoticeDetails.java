@@ -33,7 +33,7 @@ public class WalesNoticeDetails {
     private String typeOfNoticeServed;
 
     @CCD(
-        label = "Enter Statement",
+        label = NOTICE_STATEMENT_LABEL,
         hint = "You can enter up to 500 characters",
         typeOverride = TextArea
     )
