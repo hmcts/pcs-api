@@ -87,7 +87,8 @@ public class CaseTypeTest {
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
         when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
-        when(builder.categories(UserRole.PCS_SOLICITOR)).thenReturn(CaseCategory.CaseCategoryBuilder.builder(UserRole.PCS_SOLICITOR));
+        when(builder.categories(UserRole.PCS_SOLICITOR))
+            .thenReturn(CaseCategory.CaseCategoryBuilder.builder(UserRole.PCS_SOLICITOR));
 
         // When
         caseType.configure(builder);
