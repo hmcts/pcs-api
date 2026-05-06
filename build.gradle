@@ -358,11 +358,22 @@ dependencyCheck {
   suppressionFile = 'config/owasp/suppressions.xml'
 }
 
+
 repositories {
-  mavenLocal()
+  if (System.getenv("USE_ARTIFACTORY") == "true") {
+    maven {
+      url = uri("https://artifactory.platform.hmcts.net/artifactory/maven-remotes")
+    }
+  }
+  if (System.getenv("USE_ARTIFACTORY") != "true") {
+    mavenLocal()
+  }
   mavenCentral()
-  maven { url = 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'}
+  maven {
+    url = uri("https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1")
+  }
 }
+
 
 ext {
   log4JVersion = "2.25.3"
