@@ -960,6 +960,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
+      mandatoryAbsolute:[whatAreYourGroundsForPossession.mandatoryAbsoluteGrounds.condition1],
       mandatoryAccommodation: [whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks],
       discretionaryAccommodation: [whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied],
     });
@@ -969,7 +970,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession'
-      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4, whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour,
+      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4, whatAreYourGroundsForPossession.mandatoryAbsoluteGrounds.condition1,
         whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks,
         whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied,
         reasonsForPossession.breachOfTenancy
