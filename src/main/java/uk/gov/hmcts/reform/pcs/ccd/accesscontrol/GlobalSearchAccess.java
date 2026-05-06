@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HMCTS_STAFF;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
@@ -16,11 +17,11 @@ public class GlobalSearchAccess implements HasAccessControl {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(PCS_CASE_WORKER, Permission.CRUD);
 
-        /***
+        /*
          * Remove before release
          */
-
         grants.putAll(PCS_SOLICITOR, Permission.CRUD);
+        grants.put(HMCTS_STAFF, Permission.R);
 
         return grants;
     }
