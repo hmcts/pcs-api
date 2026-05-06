@@ -33,11 +33,7 @@ public class NoticeOfPossessionService {
             return noticeOfPossessionEntity;
         }
 
-        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
-            WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
-            noticeOfPossessionEntity.setNoticeType(walesNoticeDetails.getTypeOfNoticeServed());
-            noticeOfPossessionEntity.setNoticeStatement(walesNoticeDetails.getNoticeStatement());
-        }
+        setWalesNoticeDetails(pcsCase, noticeOfPossessionEntity);
 
         noticeOfPossessionEntity.setServingMethod(noticeServiceMethod);
 
@@ -68,6 +64,14 @@ public class NoticeOfPossessionService {
         }
 
         return noticeOfPossessionEntity;
+    }
+
+    private static void setWalesNoticeDetails(PCSCase pcsCase, NoticeOfPossessionEntity noticeOfPossessionEntity) {
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
+            noticeOfPossessionEntity.setNoticeType(walesNoticeDetails.getTypeOfNoticeServed());
+            noticeOfPossessionEntity.setNoticeStatement(walesNoticeDetails.getNoticeStatement());
+        }
     }
 
     private static YesOrNo getNoticeServed(PCSCase pcsCase) {
