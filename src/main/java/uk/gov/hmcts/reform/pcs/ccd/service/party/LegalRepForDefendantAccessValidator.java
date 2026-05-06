@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -73,7 +72,7 @@ public class LegalRepForDefendantAccessValidator {
                                   organisationId
                               )
                 ))
-            .collect(Collectors.toList());
+            .toList();
 
         if (linkedDefendants.isEmpty()) {
             log.error(

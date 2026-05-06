@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -39,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -680,20 +682,30 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldLoadDraftForSelectedRepresentedPartyWhenDraftExists_ForLegalRepresentativeUser() {
         // given
-        UUID legalRepUserId = UUID.randomUUID();
         UUID representedPartyId = UUID.randomUUID();
         UUID differentPartyId = UUID.randomUUID();
 
+        Party party = Party.builder()
+            .build();
+        Party party2 = Party.builder()
+            .build();
+
+        List<ListValue<Party>> defendantList = new ArrayList<>();
+        defendantList.add(ListValue.<Party>builder().value(party).id(differentPartyId.toString()).build());
+        defendantList.add(ListValue.<Party>builder().value(party2).id(representedPartyId.toString()).build());
+
+        PCSCase caseData = PCSCase.builder()
+            .allDefendants(defendantList)
+            .build();
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PartyEntity representedParty2 = PartyEntity.builder().id(differentPartyId).build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        UUID legalRepUserId = UUID.randomUUID();
         PossessionClaimResponse savedResponse = PossessionClaimResponse.builder().build();
         PCSCase savedDraft = PCSCase.builder()
             .possessionClaimResponse(savedResponse)
             .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
-        PCSCase caseData = PCSCase.builder().build();
-        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
-        PartyEntity representedParty2 = PartyEntity.builder().id(differentPartyId).build();
-        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
-
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));

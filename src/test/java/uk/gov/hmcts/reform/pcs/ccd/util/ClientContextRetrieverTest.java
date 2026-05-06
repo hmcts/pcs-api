@@ -86,7 +86,7 @@ class ClientContextRetrieverTest {
         when(objectMapperSupplier.get()).thenReturn(new ObjectMapper());
 
         // when
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             clientContextRetriever.getClientContext();
         });
         assertEquals("Unable to parse Client-context", exception.getMessage());

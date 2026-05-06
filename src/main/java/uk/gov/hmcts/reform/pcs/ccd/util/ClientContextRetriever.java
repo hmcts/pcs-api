@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.context.request.RequestAttributes;
@@ -25,6 +26,7 @@ public class ClientContextRetriever {
         this.requestAttributesSupplier = requestAttributesSupplier;
     }
 
+    @Autowired
     public ClientContextRetriever() {
         this(ObjectMapper::new, RequestContextHolder::getRequestAttributes);
     }
@@ -38,7 +40,7 @@ public class ClientContextRetriever {
             ObjectMapper objectMapper = objectMapperSupplier.get();
             return objectMapper.readValue(clientContextAsStringJson, ClientContext.class);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to parse Client-context",e);
+            throw new IllegalStateException("Unable to parse Client-context",e);
         }
     }
 

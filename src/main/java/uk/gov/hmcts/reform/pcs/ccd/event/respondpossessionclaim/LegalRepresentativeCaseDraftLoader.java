@@ -105,7 +105,16 @@ public class LegalRepresentativeCaseDraftLoader {
             claimantEnteredDetails
         );
 
+        reduceCaseDefendantsToMatchedDefendant(pcsCase, matchedDefendant.getId().toString());
         return buildCaseWithDraft(pcsCase, mergedResponse);
+    }
+
+    private void reduceCaseDefendantsToMatchedDefendant(PCSCase pcsCase, String partyId) {
+        List<ListValue<Party>> matchedDefendant = pcsCase.getAllDefendants().stream()
+            .filter(party -> party.getId().equals(partyId))
+            .toList();
+
+        pcsCase.setAllDefendants(matchedDefendant);
     }
 
     private PCSCase buildCaseWithDraft(PCSCase pcsCase, PossessionClaimResponse response) {

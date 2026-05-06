@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -20,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -136,19 +138,30 @@ class LegalRepresentativeCaseDraftLoaderTest {
 
     @Test
     void shouldLoadDraftForSelectedRepresentedPartyWhenDraftExists() {
-        UUID legalRepUserId = UUID.randomUUID();
         UUID representedPartyId = UUID.randomUUID();
         UUID differentPartyId = UUID.randomUUID();
 
+        Party party = Party.builder()
+            .build();
+        Party party2 = Party.builder()
+            .build();
+
+        List<ListValue<Party>> defendantList = new ArrayList<>();
+        defendantList.add(ListValue.<Party>builder().value(party).id(differentPartyId.toString()).build());
+        defendantList.add(ListValue.<Party>builder().value(party2).id(representedPartyId.toString()).build());
+
+        PCSCase caseData = PCSCase.builder()
+            .allDefendants(defendantList)
+            .build();
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PartyEntity representedParty2 = PartyEntity.builder().id(differentPartyId).build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        UUID legalRepUserId = UUID.randomUUID();
         PossessionClaimResponse savedResponse = PossessionClaimResponse.builder().build();
         PCSCase savedDraft = PCSCase.builder()
             .possessionClaimResponse(savedResponse)
             .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
-        PCSCase caseData = PCSCase.builder().build();
-        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
-        PartyEntity representedParty2 = PartyEntity.builder().id(differentPartyId).build();
-        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
 
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
@@ -169,6 +182,9 @@ class LegalRepresentativeCaseDraftLoaderTest {
 
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
 
+        assertThat(result.getAllDefendants().size()).isEqualTo(1);
+        assertThat(result.getAllDefendants().getFirst().getId()).isEqualTo(representedPartyId.toString());
+        assertThat(result.getAllDefendants().getFirst().getValue()).isEqualTo(party);
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId)
