@@ -182,6 +182,12 @@ tasks.register('functional', Test) {
     includeTags System.getProperty("tags", "Functional")
   }
 
+  configurations.configureEach {
+    resolutionStrategy {
+      force "io.cucumber:query:14.7.0"
+    }
+  }
+
   doFirst {
     delete "${rootDir}/target/site/serenity"
     delete "${rootDir}/report-for-functional-tests"
