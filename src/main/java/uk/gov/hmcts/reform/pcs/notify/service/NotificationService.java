@@ -329,6 +329,11 @@ public class NotificationService {
         EmailTemplate template,
         Function<DefendantResponseEntity, Map<String, Object>> personalisationBuilder
     ) {
+        if (!canSendEmailNotification(defendantResponse.getParty())) {
+            log.info("Skipping email notification to user: {}", defendantResponse.getParty().getId());
+            return null;
+        }
+
         return scheduleEmailNotification(
             buildRequest(
                 templateConfiguration.getTemplateId(template),
@@ -349,5 +354,12 @@ public class NotificationService {
             .emailAddress(email)
             .personalisation(personalisation)
             .build();
+    }
+
+    private boolean canSendEmailNotification(PartyEntity party) {
+        return party.getEmailAddress() != null
+            && party.getContactPreferences() != null
+            && party.getContactPreferences().getContactByEmail() != null
+            && party.getContactPreferences().getContactByEmail().toBoolean();
     }
 }

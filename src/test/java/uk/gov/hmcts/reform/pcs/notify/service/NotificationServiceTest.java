@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -33,7 +34,9 @@ import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,6 +49,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -366,6 +370,10 @@ class NotificationServiceTest {
             party.setFirstName("John");
             party.setLastName("Doe");
 
+            ContactPreferencesEntity preferences = new ContactPreferencesEntity();
+            preferences.setContactByEmail(VerticalYesNo.YES);
+            party.setContactPreferences(preferences);
+
             PcsCaseEntity pcsCase = new PcsCaseEntity();
             pcsCase.setId(UUID.randomUUID());
             pcsCase.setCaseReference(1234567890L);
@@ -386,8 +394,7 @@ class NotificationServiceTest {
                 .party(claimantParty)
                 .role(PartyRole.CLAIMANT)
                 .build();
-            claim.setClaimParties(new java.util.ArrayList<>(java.util.List.of(claimParty)));
-            claim.setFeePayments(new java.util.ArrayList<>());
+            claim.setClaimParties(new ArrayList<>(List.of(claimParty)));
             defendantResponse.setClaim(claim);
         }
 
@@ -446,7 +453,7 @@ class NotificationServiceTest {
                 .paymentStatus(PaymentStatus.PAID)
                 .externalReference("PAY-123")
                 .build();
-            defendantResponse.getClaim().setFeePayments(java.util.List.of(feePayment));
+            defendantResponse.getClaim().setFeePayment(feePayment);
 
             CaseNotification savedNotification = createCaseNotification();
             when(notificationRepository.save(any())).thenReturn(savedNotification);
@@ -490,6 +497,90 @@ class NotificationServiceTest {
             verify(notificationRepository, times(2)).save(any());
             verify(schedulerClient).scheduleIfNotExists(any());
         }
+
+        @Test
+        @DisplayName("Should NOT send email when email address is null")
+        void shouldNotSendEmailWhenEmailIsNull() {
+            defendantResponse.getParty().setEmailAddress(null);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
+
+            assertThat(response).isNull();
+
+            verifyNoInteractions(templateConfiguration, notificationRepository, schedulerClient);
+        }
+
+        @Test
+        @DisplayName("Should NOT send email when contact preferences are null")
+        void shouldNotSendEmailWhenContactPreferencesAreNull() {
+            defendantResponse.getParty().setContactPreferences(null);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
+
+            assertThat(response).isNull();
+
+            verifyNoInteractions(templateConfiguration, notificationRepository, schedulerClient);
+        }
+
+        @Test
+        @DisplayName("Should NOT send email when contactByEmail is null")
+        void shouldNotSendEmailWhenContactByEmailIsNull() {
+            var prefs = new uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity();
+            prefs.setContactByEmail(null);
+
+            defendantResponse.getParty().setContactPreferences(prefs);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
+
+            assertThat(response).isNull();
+
+            verifyNoInteractions(templateConfiguration, notificationRepository, schedulerClient);
+        }
+
+        @Test
+        @DisplayName("Should NOT send email when contactByEmail is NO")
+        void shouldNotSendEmailWhenContactByEmailIsNo() {
+            var prefs = new uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity();
+            prefs.setContactByEmail(VerticalYesNo.NO);
+
+            defendantResponse.getParty().setContactPreferences(prefs);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
+
+            assertThat(response).isNull();
+
+            verifyNoInteractions(templateConfiguration, notificationRepository, schedulerClient);
+        }
+
+        @Test
+        @DisplayName("Should send email when contactByEmail is YES")
+        void shouldSendEmailWhenContactByEmailIsYes() {
+            var prefs = new uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity();
+            prefs.setContactByEmail(VerticalYesNo.YES);
+
+            defendantResponse.getParty().setContactPreferences(prefs);
+
+            when(templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration).getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM);
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
     }
 
     @Nested
@@ -514,7 +605,7 @@ class NotificationServiceTest {
         @DisplayName("Should build base personalisation with organisation name for claimant")
         void shouldBuildBasePersonalisationWithOrgName() {
             DefendantResponseEntity response = createDefendantResponse();
-            response.getClaim().getClaimParties().get(0).getParty().setOrgName("Claimant Corp");
+            response.getClaim().getClaimParties().getFirst().getParty().setOrgName("Claimant Corp");
 
             Map<String, Object> result =
                 NotificationService.buildBasePersonalisation(response);
@@ -542,7 +633,7 @@ class NotificationServiceTest {
                 .paymentStatus(PaymentStatus.PAID)
                 .externalReference("PAY-123")
                 .build();
-            response.getClaim().setFeePayments(java.util.List.of(feePayment));
+            response.getClaim().setFeePayment(feePayment);
 
             Map<String, Object> result =
                 NotificationService.buildCounterclaimPaymentSuccessPersonalisation(response);
@@ -564,7 +655,7 @@ class NotificationServiceTest {
                 .paymentStatus(PaymentStatus.NOT_PAID)
                 .externalReference("PAY-123")
                 .build();
-            response.getClaim().setFeePayments(java.util.List.of(feePayment));
+            response.getClaim().setFeePayment(feePayment);
 
             assertThatThrownBy(() -> NotificationService.buildCounterclaimPaymentSuccessPersonalisation(response))
                 .isInstanceOf(FeePaymentNotFoundException.class)
@@ -665,8 +756,7 @@ class NotificationServiceTest {
             .party(claimantParty)
             .role(PartyRole.CLAIMANT)
             .build();
-        claim.setClaimParties(new java.util.ArrayList<>(java.util.List.of(claimParty)));
-        claim.setFeePayments(new java.util.ArrayList<>());
+        claim.setClaimParties(new ArrayList<>(List.of(claimParty)));
         defendantResponse.setClaim(claim);
 
         return defendantResponse;
