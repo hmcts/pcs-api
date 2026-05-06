@@ -1,4 +1,6 @@
 export * from '@data/api-data/accessToken.api.data';
+export * from '@data/api-data/referenceData.api.data';
+export * from '@data/api-data/manageOrg.api.data';
 export * from '@data/api-data/s2SToken.api.data';
 export * from '@data/api-data/createCaseEventToken.api.data';
 export * from '@data/api-data/createCase.api.data';
