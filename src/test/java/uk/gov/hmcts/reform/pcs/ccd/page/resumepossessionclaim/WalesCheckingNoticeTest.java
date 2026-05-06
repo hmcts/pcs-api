@@ -103,9 +103,6 @@ class WalesCheckingNoticeTest extends BasePageTest {
             .noticeServed(YesOrNo.NO)
             .noticeStatement("x".repeat(501))
             .build();
-        PCSCase caseData = PCSCase.builder()
-            .walesNoticeDetails(walesNoticeDetails)
-            .build();
         List<String> errors = List.of("Notice statement must not exceed 500 characters");
         when(walesRentSectionRoutingService.shouldShowRentSection(any(PCSCase.class)))
             .thenReturn(YesOrNo.NO);
@@ -113,6 +110,10 @@ class WalesCheckingNoticeTest extends BasePageTest {
             .thenReturn(errors);
         when(textAreaValidationService.createValidationResponse(any(), any()))
             .thenReturn(AboutToStartOrSubmitResponse.builder().errorMessageOverride("error").build());
+
+        PCSCase caseData = PCSCase.builder()
+            .walesNoticeDetails(walesNoticeDetails)
+            .build();
 
         // When
         callMidEventHandler(caseData);
