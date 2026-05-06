@@ -26,7 +26,7 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.maintainCaseLink.name(), this::submit)
-                            .forAllStates()
+                            .forState(State.PENDING_CASE_ISSUED)
                             .name("Manage case links")
                             .description("To manage link related cases")
                             .grant(Permission.R, UserRole.PCS_CASE_WORKER)

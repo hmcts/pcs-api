@@ -25,7 +25,7 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.createCaseLink.name(), this::submit)
-                            .forAllStates()
+                            .forState(State.PENDING_CASE_ISSUED)
                             .name("Link cases")
                             .description("To link related cases")
                             .grant(Permission.R, UserRole.PCS_CASE_WORKER)
