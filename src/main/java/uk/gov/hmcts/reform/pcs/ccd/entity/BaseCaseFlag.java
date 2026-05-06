@@ -51,10 +51,8 @@ public abstract class BaseCaseFlag {
     private List<FlagPathEntity> casePartyFlagPaths = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ref_data_flag_id")
-    private RefDataFlagEntity refDataFlag;
-
-    private String flagCode;
+    @JoinColumn(name = "flag_ref_data_id")
+    private FlagRefDataEntity flagRefData;
 
     private String subTypeValue;
 

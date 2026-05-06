@@ -11,40 +11,35 @@ import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
-import uk.gov.hmcts.reform.pcs.ccd.repository.RefDataFlagsRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagServiceTest {
 
     @Mock
-    private RefDataFlagsRepository refDataFlagsRepository;
+    private FlagRefDataRepository flagRefDataRepository;
 
     @InjectMocks
     private CaseFlagService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseFlagService(refDataFlagsRepository);
+        underTest = new CaseFlagService(flagRefDataRepository);
     }
 
     @Test
@@ -58,32 +53,18 @@ class CaseFlagServiceTest {
                                               "Complicated case", "Active", false))
             .build();
 
-        List<ListValue<Party>> parties = createParties();
-
         // When
-        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, parties, EventFlow.CREATE.name());
+        List<BaseCaseFlag> savedFlags = underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, EventFlow.CREATE.name());
 
         // Then
-        assertNotNull(pcsCaseEntity.getCaseFlags());
-        List<CaseFlagEntity> savedFlags = pcsCaseEntity.getCaseFlags();
-        assertEquals("CF0002", savedFlags.getFirst().getFlagCode());
+        assertEquals("CF0002", savedFlags.getFirst().getFlagRefData().getFlagCode());
         assertEquals("Complicated case", savedFlags.getFirst().getFlagComment());
         assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
         assertEquals(1, savedFlags.size());
 
-        List<FlagPathEntity> savedPaths = savedFlags.getFirst().getCaseFlagPaths();
+        List<FlagPathEntity> savedPaths = savedFlags.getFirst().getPaths();
         assertEquals(1, savedPaths.size());
         assertEquals("Case", savedPaths.getFirst().getPath());
-    }
-
-    private List<ListValue<Party>> createParties() {
-        List<ListValue<Party>> parties = new ArrayList<>();
-        ListValue<Party> partyListValue = ListValue.<Party>builder()
-            .id(UUID.randomUUID().toString())
-            .value(Party.builder().build())
-            .build();
-        parties.add(partyListValue);
-        return parties;
     }
 
     @Test
@@ -97,14 +78,11 @@ class CaseFlagServiceTest {
                                       "Urgent case test", "Active", true))
             .build();
 
-        List<ListValue<Party>> parties = createParties();
-
         // When
-        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, parties, EventFlow.CREATE.name());
+        List<BaseCaseFlag> savedFlags = underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, EventFlow.CREATE.name());
 
         // Then
-        List<CaseFlagEntity> savedFlags = pcsCaseEntity.getCaseFlags();
-        List<FlagPathEntity> savedPaths = savedFlags.getFirst().getCaseFlagPaths();
+        List<FlagPathEntity> savedPaths = savedFlags.getFirst().getPaths();
         assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
         assertEquals(1, savedFlags.size());
         assertEquals(0, savedPaths.size());
@@ -125,145 +103,23 @@ class CaseFlagServiceTest {
             .details(flagDetails)
             .build();
 
-        List<ListValue<Party>> parties = createParties();
-
         // When
-        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, parties, EventFlow.UPDATE.name());
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, EventFlow.UPDATE.name());
 
         // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
-        List<CaseFlagEntity> savedFlags = pcsCaseEntity.getCaseFlags();
+        List<BaseCaseFlag> savedFlags = pcsCaseEntity.getCaseFlags();
         assertEquals(1, savedFlags.size());
-        assertThat(savedFlags).extracting(BaseCaseFlag::getFlagCode).containsExactly("CF0008");
         assertThat(savedFlags.getLast().getFlagComment()).isEqualTo("Police arrest inactive");
-        assertThat(savedFlags.getLast().getFlagCode()).isEqualTo("CF0008");
-    }
-
-    @Test
-    void testMergePartyFlags_NewPartyWithFlags() {
-        UUID partyId = UUID.randomUUID();
-        Set<PartyEntity> partyEntities = createPartyEntities(partyId);
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().parties(partyEntities).build();
-
-        Flags incomingFlags = Flags.builder()
-            .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null,"CF0002", "Complex Case",
-                                              "Complicated case", "Active", false))
-            .build();
-
-        Party incomingParty = Party.builder().respondentFlags(incomingFlags).build();
-        List<ListValue<Party>> parties = List.of(createPartyListValue(partyId.toString(), incomingParty));
-
-        underTest.mergePartyFlags(parties, pcsCaseEntity, EventFlow.CREATE.name());
-
-        assertEquals(1, pcsCaseEntity.getParties().size());
-        PartyEntity savedParty = pcsCaseEntity.getParties().iterator().next();
-
-        assertNotNull(savedParty.getRespondentFlags());
-        assertEquals(1, savedParty.getRespondentFlags().size());
-
-        BaseCaseFlag savedFlags = savedParty.getRespondentFlags().getFirst();
-        assertEquals("CF0002", savedFlags.getFlagCode());
-    }
-
-    private Set<PartyEntity> createPartyEntities(UUID partyId) {
-        Set<PartyEntity> parties = new HashSet<>();
-        PartyEntity partyEntity = PartyEntity.builder()
-            .id(partyId)
-            .firstName("King")
-            .lastName("Smith")
-            .build();
-        parties.add(partyEntity);
-        return parties;
-    }
-
-    @Test
-    void testMergePartyFlags_UpdateExistingPartyFlags() {
-        // Given
-        UUID existingPartyId = UUID.randomUUID();
-
-        List<CasePartyFlagEntity> existingPartyFlagsEntity = createCasePartyFlagEntity(existingPartyId);
-
-        PartyEntity existingParty = PartyEntity.builder()
-            .id(existingPartyId)
-            .respondentFlags(new ArrayList<>(existingPartyFlagsEntity))
-            .build();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .parties(new HashSet<>(List.of(existingParty)))
-            .build();
-
-        Flags updatedFlags = Flags.builder()
-            .visibility(FlagVisibility.INTERNAL)
-            .details((createFlagDetail(null,"CF0008", "Power of arrest with Police ",
-                                              "Police arrest inactive", "Inactive", false)))
-            .build();
-
-        Party incomingParty = Party.builder().respondentFlags(updatedFlags).build();
-        List<ListValue<Party>> incomingParties = List.of(createPartyListValue(
-            existingPartyId.toString(),
-            incomingParty
-        ));
-
-        // When
-        underTest.mergePartyFlags(incomingParties, pcsCaseEntity, EventFlow.UPDATE.name());
-
-        // Then
-        assertEquals(1, pcsCaseEntity.getParties().size());
-        PartyEntity updatedParty = pcsCaseEntity.getParties().iterator().next();
-
-        assertNotNull(updatedParty.getRespondentFlags());
-        assertEquals(1, updatedParty.getRespondentFlags().size());
-
-    }
-
-
-    @Test
-    void testMergePartyFlags_NoIncomingChanges() {
-        PartyEntity existingParty = PartyEntity.builder()
-            .id(UUID.randomUUID())
-            .firstName("John")
-            .lastName("Doe")
-            .build();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .parties(new HashSet<>(List.of(existingParty)))
-            .build();
-
-        underTest.mergePartyFlags(new ArrayList<>(), pcsCaseEntity, EventFlow.UPDATE.name());
-
-        assertEquals(1, pcsCaseEntity.getParties().size());
-        PartyEntity retainedParty = pcsCaseEntity.getParties().iterator().next();
-
-        assertEquals("John", retainedParty.getFirstName());
-        assertEquals("Doe", retainedParty.getLastName());
-        assertTrue(retainedParty.getRespondentFlags().isEmpty());
+        assertThat(savedFlags.getLast().getFlagRefData().getFlagCode()).isEqualTo("CF0008");
     }
 
     private PcsCaseEntity createPcsCaseEntity(UUID id) {
         return PcsCaseEntity.builder()
             .id(UUID.randomUUID())
             .caseReference(1234L)
-            .caseFlags(castToCaseFlag(createCaseFlagEntity(id)))
+            .caseFlags(createCaseFlagEntity(id))
             .build();
-    }
-
-    private List<CaseFlagEntity> castToCaseFlag(List<BaseCaseFlag> caseFlagEntity) {
-        List<CaseFlagEntity> caseFlagEntities = new ArrayList<>();
-
-        for (BaseCaseFlag baseCaseFlag : caseFlagEntity) {
-            caseFlagEntities.add((CaseFlagEntity) baseCaseFlag);
-        }
-        return caseFlagEntities;
-    }
-
-    private List<CasePartyFlagEntity> castToCasePartyFlag(List<BaseCaseFlag> caseFlagEntity) {
-        List<CasePartyFlagEntity> casePartyFlagEntities = new ArrayList<>();
-
-        for (BaseCaseFlag baseCaseFlag : caseFlagEntity) {
-            casePartyFlagEntities.add((CasePartyFlagEntity) baseCaseFlag);
-        }
-        return casePartyFlagEntities;
     }
 
     private List<ListValue<FlagDetail>> createFlagDetail(String id, String flagCode, String name,
@@ -302,35 +158,20 @@ class CaseFlagServiceTest {
     private List<BaseCaseFlag> createCaseFlagEntity(UUID id) {
 
 
+        FlagRefDataEntity flagRefDataEntity = new FlagRefDataEntity();
         BaseCaseFlag caseFlagEntity = new CaseFlagEntity();
+        caseFlagEntity.setFlagRefData(flagRefDataEntity);
         caseFlagEntity.setId(id);
         caseFlagEntity.setDefaultStatus("Active");
-        caseFlagEntity.setFlagCode("CF0008");
+        caseFlagEntity.getFlagRefData().setFlagCode("CF0008");
         caseFlagEntity.setFlagComment("Police arrest inactive");
-        caseFlagEntity.setCaseFlagPaths(createFlagPathEntity());
+        caseFlagEntity.setPaths(createFlagPathEntity());
         caseFlagEntity.setDateTimeModified(LocalDateTime.now());
 
         List<BaseCaseFlag> caseFlagEntities = new ArrayList<>();
         caseFlagEntities.add(caseFlagEntity);
 
         return caseFlagEntities;
-    }
-
-    private List<CasePartyFlagEntity> createCasePartyFlagEntity(UUID id) {
-
-
-        CasePartyFlagEntity casePartyFlagEntity = new CasePartyFlagEntity();
-        casePartyFlagEntity.setId(id);
-        casePartyFlagEntity.setDefaultStatus("Active");
-        casePartyFlagEntity.setFlagCode("PF00015");
-        casePartyFlagEntity.setFlagComment("Language Interpreter");
-        casePartyFlagEntity.setCasePartyFlagPaths(createFlagPathEntity());
-        casePartyFlagEntity.setDateTimeModified(LocalDateTime.now());
-
-        List<CasePartyFlagEntity> casePartyFlagEntities = new ArrayList<>();
-        casePartyFlagEntities.add(casePartyFlagEntity);
-
-        return casePartyFlagEntities;
     }
 
     private List<FlagPathEntity> createFlagPathEntity() {
@@ -343,12 +184,5 @@ class CaseFlagServiceTest {
         flagPathEntities.add(flagPathEntity);
 
         return flagPathEntities;
-    }
-
-    private ListValue<Party> createPartyListValue(String id, Party party) {
-        return ListValue.<Party>builder()
-            .id(id)
-            .value(party)
-            .build();
     }
 }

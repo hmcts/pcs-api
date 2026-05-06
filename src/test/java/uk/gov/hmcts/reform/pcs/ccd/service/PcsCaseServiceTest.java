@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -289,7 +290,7 @@ class PcsCaseServiceTest {
         caseData.setParties(parties);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties, EventFlow.UPDATE.name());
+        when(caseFlagService.mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name())).thenReturn(createCaseFlagEntity());
 
         // When
         underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.UPDATE.name());
@@ -304,6 +305,23 @@ class PcsCaseServiceTest {
         parties.add(ListValue.<Party>builder().value(Party.builder().build()).build());
 
         return parties;
+    }
+
+    private List<BaseCaseFlag> createCaseFlagEntity() {
+
+
+        FlagRefDataEntity flagRefDataEntity = new FlagRefDataEntity();
+        BaseCaseFlag caseFlagEntity = new CaseFlagEntity();
+        caseFlagEntity.setFlagRefData(flagRefDataEntity);
+        caseFlagEntity.setDefaultStatus("Active");
+        caseFlagEntity.getFlagRefData().setFlagCode("CF0008");
+        caseFlagEntity.setFlagComment("Police arrest inactive");
+        caseFlagEntity.setDateTimeModified(LocalDateTime.now());
+
+        List<BaseCaseFlag> caseFlagEntities = new ArrayList<>();
+        caseFlagEntities.add(caseFlagEntity);
+
+        return caseFlagEntities;
     }
 
     private ListValue<FlagDetail> createFlagDetails() {
