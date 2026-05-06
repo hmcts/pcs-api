@@ -92,7 +92,7 @@ public class DefendantResponseService {
      * @throws IllegalStateException if user ID is null, response already exists,
      *         party not found, or claim not found
      */
-    public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse) {
+    public DefendantResponseEntity saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse) {
         UUID userId = securityContextService.getCurrentUserId();
 
         if (userId == null) {
@@ -130,9 +130,8 @@ public class DefendantResponseService {
 
         saveCounterClaim(possessionClaimResponse.getDefendantResponses(), partyRef, claimRef);
 
-        defendantResponseRepository.save(responseEntity);
-
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
+        return defendantResponseRepository.save(responseEntity);
     }
 
     private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,19 +21,27 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,6 +51,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 class SubmitEventHandlerTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
+    private static final String PENDING_CASE_ISSUED = "PENDING_CASE_ISSUED";
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
@@ -51,12 +61,14 @@ class SubmitEventHandlerTest {
     private ClaimResponseService claimResponseService;
     @Mock
     private DefendantResponseService defendantResponseService;
+    @Mock
+    private NotificationService notificationService;
 
     private SubmitEventHandler underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(draftCaseDataService, claimResponseService, defendantResponseService);
+        underTest = new SubmitEventHandler(draftCaseDataService, claimResponseService, defendantResponseService, notificationService);
     }
 
     @Test
@@ -127,6 +139,9 @@ class SubmitEventHandlerTest {
 
         stubDraft(caseData);
 
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
+            .thenReturn(createSaveResponse());
+
         SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
 
         assertThat(result.getErrors()).isNullOrEmpty();
@@ -170,6 +185,8 @@ class SubmitEventHandlerTest {
             .build();
 
         stubDraft(caseData);
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
+            .thenReturn(createSaveResponse());
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
@@ -215,6 +232,8 @@ class SubmitEventHandlerTest {
             .possessionClaimResponse(response)
             .build();
         stubDraft(caseData);
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
+            .thenReturn(createSaveResponse());
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
@@ -302,6 +321,8 @@ class SubmitEventHandlerTest {
             .build();
 
         stubDraft(caseData);
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
+            .thenReturn(createSaveResponse());
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
@@ -371,6 +392,9 @@ class SubmitEventHandlerTest {
 
         stubDraft(caseData);
 
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
+            .thenReturn(createSaveResponse());
+
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         // When
@@ -381,6 +405,94 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
         assertThat(result.getState()).isNull(); // Default response has null state
+    }
+
+    @Test
+    void shouldSendNoCounterclaimEmailWhenNoCounterclaimExists() {
+        DefendantResponseEntity defendantResponse = createSaveResponse();
+        defendantResponse.getPcsCase().setCounterClaims(List.of());
+
+        underTest.sendEmailNotification(defendantResponse);
+
+        verify(notificationService)
+            .sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
+    }
+
+    @Nested
+    class SubmitEventHandlerEmailTest {
+        private final NotificationService notificationService = mock(NotificationService.class);
+
+        private final SubmitEventHandler underTest =
+            new SubmitEventHandler(null, null, null, notificationService);
+
+        @Test
+        void shouldSendNoCounterclaimEmail() {
+            DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+            PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
+            PartyEntity party = mock(PartyEntity.class);
+
+            UUID partyId = UUID.randomUUID();
+
+            when(response.getPcsCase()).thenReturn(caseEntity);
+            when(response.getParty()).thenReturn(party);
+            when(party.getId()).thenReturn(partyId);
+            when(caseEntity.getCounterClaims()).thenReturn(List.of());
+
+            underTest.sendEmailNotification(response);
+
+            verify(notificationService)
+                .sendDefendantResponseNoCounterclaimEmailNotification(response);
+        }
+
+        @Test
+        void shouldSendNoPaymentRequiredEmail() {
+            DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+            PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
+            CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+            PartyEntity party = mock(PartyEntity.class);
+
+            UUID partyId = UUID.randomUUID();
+
+            when(response.getPcsCase()).thenReturn(caseEntity);
+            when(response.getParty()).thenReturn(party);
+            when(party.getId()).thenReturn(partyId);
+
+            when(counterClaim.getParty()).thenReturn(party);
+            when(counterClaim.getStatus()).thenReturn(PENDING_CASE_ISSUED);
+            when(counterClaim.getHwfReferenceNumber()).thenReturn("HWF123");
+
+            when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+            underTest.sendEmailNotification(response);
+
+            verify(notificationService)
+                .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(response);
+        }
+
+        @Test
+        void shouldSendPaymentRequiredEmail() {
+            DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+            PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
+            CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+            PartyEntity party = mock(PartyEntity.class);
+
+            UUID partyId = UUID.randomUUID();
+
+            when(response.getPcsCase()).thenReturn(caseEntity);
+            when(response.getParty()).thenReturn(party);
+            when(party.getId()).thenReturn(partyId);
+
+            when(counterClaim.getParty()).thenReturn(party);
+            when(counterClaim.getStatus()).thenReturn(PENDING_CASE_ISSUED);
+            when(counterClaim.getHwfReferenceNumber()).thenReturn(null);
+
+            when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+            underTest.sendEmailNotification(response);
+
+            verify(notificationService)
+                .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
+        }
     }
 
     private void stubDraft(PCSCase draft) {
@@ -404,4 +516,14 @@ class SubmitEventHandlerTest {
             .build();
     }
 
+    private DefendantResponseEntity createSaveResponse() {
+        PartyEntity party = new PartyEntity();
+        party.setId(UUID.randomUUID());
+
+        DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
+        defendantResponse.setParty(party);
+        defendantResponse.setPcsCase(new PcsCaseEntity());
+
+        return defendantResponse;
+    }
 }

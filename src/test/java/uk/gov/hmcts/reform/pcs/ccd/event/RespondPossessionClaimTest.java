@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseS
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collections;
@@ -70,6 +71,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
 
+    @Mock
+    private NotificationService notificationService;
+
     @BeforeEach
     void setUp() {
 
@@ -85,7 +89,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
             draftCaseDataService,
             claimResponseService,
-            defendantResponseService
+            defendantResponseService,
+            notificationService
         );
 
         setEventUnderTest(new RespondPossessionClaim(
