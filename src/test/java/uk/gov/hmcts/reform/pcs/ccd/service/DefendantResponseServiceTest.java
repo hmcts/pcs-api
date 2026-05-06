@@ -12,10 +12,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimParty;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -1193,9 +1193,9 @@ class DefendantResponseServiceTest {
 
         CounterClaim counterClaim = CounterClaim.builder()
             .counterClaimAgainst(List.of(
-                ListValue.<ClaimParty>builder().id(claimantPartyId.toString()).value(ClaimParty.builder().build())
+                ListValue.<Party>builder().id(claimantPartyId.toString()).value(Party.builder().build())
                     .build(),
-                ListValue.<ClaimParty>builder().id(defendantPartyId.toString()).value(ClaimParty.builder().build())
+                ListValue.<Party>builder().id(defendantPartyId.toString()).value(Party.builder().build())
                     .build()
             ))
             .build();
@@ -1256,8 +1256,8 @@ class DefendantResponseServiceTest {
 
         CounterClaim counterClaim = CounterClaim.builder()
             .counterClaimAgainst(List.of(
-                ListValue.<ClaimParty>builder().id(null).value(ClaimParty.builder().build()).build(),
-                ListValue.<ClaimParty>builder().id(validPartyId.toString()).value(ClaimParty.builder().build()).build()
+                ListValue.<Party>builder().id(null).value(Party.builder().build()).build(),
+                ListValue.<Party>builder().id(validPartyId.toString()).value(Party.builder().build()).build()
             ))
             .build();
 

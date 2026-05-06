@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
@@ -58,9 +59,9 @@ public class CounterClaim {
     @CCD(
         access = {CitizenAccess.class},
         typeOverride = FieldType.Collection,
-        typeParameterOverride = "ClaimParty"
+        typeParameterOverride = "Party"
     )
-    private List<ListValue<ClaimParty>> counterClaimAgainst;
+    private List<ListValue<Party>> counterClaimAgainst;
 
     @CCD(access = {CitizenAccess.class}, max = 6800)
     private String aboutCounterclaimFor;
