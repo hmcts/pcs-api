@@ -61,7 +61,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
                    <p class="govuk-body">
                        You must make a statement that includes:
                        <ul class="govuk-list govuk-list--bullet">
-                       <li class="govuk-!-font-size-19"> the type of tenancy or license that is in place for this
+                       <li class="govuk-!-font-size-19"> the type of tenancy or licence that is in place for this
                        claim </li>
                        <li class="govuk-!-font-size-19"> how you have compiled with the applicable possession
                        procedures </li>
@@ -85,8 +85,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         caseData.setShowRentSectionPage(walesRentSectionRoutingService.shouldShowRentSection(caseData));
 
-        if (caseData.getWalesNoticeDetails() != null
-            && YesOrNo.NO.equals(caseData.getWalesNoticeDetails().getNoticeServed())) {
+        if (YesOrNo.NO == caseData.getWalesNoticeDetails().getNoticeServed()) {
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 caseData.getWalesNoticeDetails().getNoticeStatement(),
                 WalesNoticeDetails.NOTICE_STATEMENT_LABEL,
