@@ -6,6 +6,8 @@ pluginManagement {
       maven {
         url = uri("https://artifactory.platform.hmcts.net/artifactory/maven-remotes")
       }
+    } else {
+      mavenLocal()
     }
 
     maven {
@@ -13,15 +15,5 @@ pluginManagement {
     }
 
     gradlePluginPortal()
-  }
-
-  resolutionStrategy {
-    eachPlugin {
-      if (requested.id.id == "hmcts.ccd.sdk") {
-        useModule(
-          "com.github.hmcts.rse-cft-lib:ccd-gradle-plugin:${requested.version}"
-        )
-      }
-    }
   }
 }
