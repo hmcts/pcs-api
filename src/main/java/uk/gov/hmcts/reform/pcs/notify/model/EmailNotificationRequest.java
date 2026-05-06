@@ -12,6 +12,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmailNotificationRequest {
+
     private String templateId;
     private String emailAddress;
     private Map<String, Object> personalisation;
