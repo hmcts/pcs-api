@@ -13,6 +13,11 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
@@ -20,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.util.Optional;
 
@@ -33,6 +39,9 @@ public class PaymentService {
     private final IdamService idamService;
     private final FeePaymentRepository feePaymentRepository;
     private final PcsCaseService pcsCaseService;
+    private final NotificationService notificationService;
+
+    private static final String CASE_ISSUED = "CASE_ISSUED";
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
@@ -94,14 +103,21 @@ public class PaymentService {
         log.info("ServiceRequestUpdate status: {}", serviceRequestUpdate.getServiceRequestStatus());
         Optional<FeePaymentEntity> byCaseReference = feePaymentRepository
             .findByRequestReference(serviceRequestUpdate.getServiceRequestReference());
-        if (byCaseReference.isPresent()) {
-            FeePaymentEntity feePaymentEntity = byCaseReference.get();
-            feePaymentEntity.setExternalReference(serviceRequestUpdate.getPayment().getPaymentReference());
-            feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(serviceRequestUpdate.getServiceRequestStatus()));
-            feePaymentRepository.save(feePaymentEntity);
-        } else {
+
+        if (byCaseReference.isEmpty()) {
             log.error("Unable to find a payment with the service request reference : {}",
                       serviceRequestUpdate.getServiceRequestReference());
+            return;
+        }
+
+
+        FeePaymentEntity feePaymentEntity = byCaseReference.get();
+        feePaymentEntity.setExternalReference(serviceRequestUpdate.getPayment().getPaymentReference());
+        feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(serviceRequestUpdate.getServiceRequestStatus()));
+        feePaymentRepository.save(feePaymentEntity);
+
+        if (PaymentStatus.PAID.equals(feePaymentEntity.getPaymentStatus())) {
+            sendNotificationOnFeePaymentSuccess(feePaymentEntity);
         }
     }
 
@@ -122,6 +138,50 @@ public class PaymentService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         // Assuming 1 claim per PcsCase
         return pcsCaseEntity.getClaims().getFirst();
+    }
+
+    private void sendNotificationOnFeePaymentSuccess(FeePaymentEntity feePayment) {
+        ClaimEntity claim = feePayment.getClaim();
+        PartyEntity defendant = claim.getClaimParties()
+            .stream()
+            .filter(cp -> PartyRole.DEFENDANT.equals(cp.getRole()))
+            .map(ClaimPartyEntity::getParty)
+            .findFirst()
+            .orElse(null);
+
+        if (defendant == null) {
+            log.warn("No defendant found for claim {}", claim.getId());
+            return;
+        }
+
+        CounterClaimEntity counterClaim = claim.getPcsCase().getCounterClaims()
+            .stream()
+            .filter(counter -> counter.getParty().getId().equals(defendant.getId()))
+            .findFirst()
+            .orElse(null);
+
+        if (counterClaim == null) {
+            log.warn("No counterclaim found for claim {}", claim.getId());
+            return;
+        }
+
+        DefendantResponseEntity defendantResponse = claim.getPcsCase().getDefendantResponses().stream()
+            .filter(counter -> counter.getParty().getId().equals(defendant.getId()))
+            .findFirst()
+            .orElse(null);
+
+        if (defendantResponse == null) {
+            log.warn("No defendant response found for claim {}", claim.getId());
+            return;
+        }
+
+        if (!CASE_ISSUED.equals(counterClaim.getStatus())) {
+            log.info("Counterclaim status not eligible for AC04 email: {}", counterClaim.getStatus());
+            return;
+        }
+
+        log.info("Sending counterclaim payment success email for claim {}", claim.getId());
+        notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
     }
 
 }

@@ -19,6 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -28,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -41,6 +45,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -69,6 +74,8 @@ class PaymentServiceTest {
     private FeePaymentRepository feePaymentRepository;
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private PaymentService underTest;
@@ -128,6 +135,7 @@ class PaymentServiceTest {
             .paymentStatus(PaymentStatus.PAID)
             .requestReference(requestReference)
             .externalReference(paymentReference)
+            .claim(new ClaimEntity())
             .build();
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
 
@@ -161,7 +169,7 @@ class PaymentServiceTest {
 
         // Then
         verify(feePaymentRepository).findByRequestReference(requestReference);
-        verify(feePaymentRepository, org.mockito.Mockito.never()).save(any(FeePaymentEntity.class));
+        verify(feePaymentRepository, never()).save(any(FeePaymentEntity.class));
     }
 
     @Test
@@ -205,6 +213,168 @@ class PaymentServiceTest {
         assertThat(saved.getRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
         assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
         assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
+    }
+
+    @Test
+    void shouldSendPaymentSuccessEmail_whenAllConditionsMet() {
+        UUID partyId = UUID.randomUUID();
+
+        PartyEntity defendant = mock(PartyEntity.class);
+        when(defendant.getId()).thenReturn(partyId);
+
+        ClaimPartyEntity claimParty = mock(ClaimPartyEntity.class);
+        when(claimParty.getRole()).thenReturn(PartyRole.DEFENDANT);
+        when(claimParty.getParty()).thenReturn(defendant);
+
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        when(counterClaim.getParty()).thenReturn(defendant);
+        when(counterClaim.getStatus()).thenReturn("CASE_ISSUED");
+
+        DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+
+        ClaimEntity claim = mock(ClaimEntity.class);
+        when(claim.getClaimParties()).thenReturn(List.of(claimParty));
+        when(claim.getPcsCase()).thenReturn(pcsCase);
+
+        FeePaymentEntity feePayment = FeePaymentEntity.builder()
+            .claim(claim)
+            .build();
+
+        when(pcsCase.getCounterClaims()).thenReturn(List.of(counterClaim));
+        when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
+        when(defendantResponse.getParty()).thenReturn(defendant);
+
+        when(feePaymentRepository.findByRequestReference("SR-123"))
+            .thenReturn(Optional.of(feePayment));
+
+        ServiceRequestUpdate update = ServiceRequestUpdate.builder()
+            .serviceRequestReference("SR-123")
+            .serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(Payment.builder().paymentReference("PAY-1").build())
+            .build();
+
+        underTest.processPaymentResponse(update);
+
+        verify(notificationService)
+            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+    }
+
+    @Test
+    void shouldNotSendEmail_whenCounterClaimMissing() {
+        PartyEntity defendant = mock(PartyEntity.class);
+
+        ClaimPartyEntity claimParty = mock(ClaimPartyEntity.class);
+        when(claimParty.getRole()).thenReturn(PartyRole.DEFENDANT);
+        when(claimParty.getParty()).thenReturn(defendant);
+
+        ClaimEntity claim = mock(ClaimEntity.class);
+        when(claim.getClaimParties()).thenReturn(List.of(claimParty));
+
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        when(pcsCase.getCounterClaims()).thenReturn(List.of());
+        when(claim.getPcsCase()).thenReturn(pcsCase);
+
+        FeePaymentEntity feePayment = FeePaymentEntity.builder()
+            .claim(claim)
+            .build();
+
+        when(feePaymentRepository.findByRequestReference("SR-123"))
+            .thenReturn(Optional.of(feePayment));
+
+        ServiceRequestUpdate update = ServiceRequestUpdate.builder()
+            .serviceRequestReference("SR-123")
+            .serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(Payment.builder().paymentReference("PAY-1").build())
+            .build();
+
+        underTest.processPaymentResponse(update);
+
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(any());
+    }
+
+    @Test
+    void shouldNotSendEmail_whenStatusNotCaseIssued() {
+        UUID partyId = UUID.randomUUID();
+
+        PartyEntity defendant = mock(PartyEntity.class);
+        when(defendant.getId()).thenReturn(partyId);
+
+        ClaimPartyEntity claimParty = mock(ClaimPartyEntity.class);
+        when(claimParty.getRole()).thenReturn(PartyRole.DEFENDANT);
+        when(claimParty.getParty()).thenReturn(defendant);
+
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        when(counterClaim.getParty()).thenReturn(defendant);
+
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+
+        ClaimEntity claim = mock(ClaimEntity.class);
+        when(claim.getClaimParties()).thenReturn(List.of(claimParty));
+        when(claim.getPcsCase()).thenReturn(pcsCase);
+
+        when(pcsCase.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+        FeePaymentEntity feePayment = FeePaymentEntity.builder()
+            .claim(claim)
+            .build();
+
+        when(feePaymentRepository.findByRequestReference("SR-123"))
+            .thenReturn(Optional.of(feePayment));
+
+        ServiceRequestUpdate update = ServiceRequestUpdate.builder()
+            .serviceRequestReference("SR-123")
+            .serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(Payment.builder().paymentReference("PAY-1").build())
+            .build();
+
+        underTest.processPaymentResponse(update);
+
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(any());
+    }
+
+    @Test
+    void shouldNotSendEmail_whenDefendantResponseMissing() {
+        UUID partyId = UUID.randomUUID();
+
+        PartyEntity defendant = mock(PartyEntity.class);
+        when(defendant.getId()).thenReturn(partyId);
+
+        ClaimPartyEntity claimParty = mock(ClaimPartyEntity.class);
+        when(claimParty.getRole()).thenReturn(PartyRole.DEFENDANT);
+        when(claimParty.getParty()).thenReturn(defendant);
+
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        when(counterClaim.getParty()).thenReturn(defendant);
+
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+
+        ClaimEntity claim = mock(ClaimEntity.class);
+        when(claim.getClaimParties()).thenReturn(List.of(claimParty));
+        when(claim.getPcsCase()).thenReturn(pcsCase);
+
+        when(pcsCase.getCounterClaims()).thenReturn(List.of(counterClaim));
+        when(pcsCase.getDefendantResponses()).thenReturn(List.of());
+
+        FeePaymentEntity feePayment = FeePaymentEntity.builder()
+            .claim(claim)
+            .build();
+
+        when(feePaymentRepository.findByRequestReference("SR-123"))
+            .thenReturn(Optional.of(feePayment));
+
+        ServiceRequestUpdate update = ServiceRequestUpdate.builder()
+            .serviceRequestReference("SR-123")
+            .serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(Payment.builder().paymentReference("PAY-1").build())
+            .build();
+
+        underTest.processPaymentResponse(update);
+
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(any());
     }
 
     private void paymentsClientDependencies(FeeDetails feeDetails) {

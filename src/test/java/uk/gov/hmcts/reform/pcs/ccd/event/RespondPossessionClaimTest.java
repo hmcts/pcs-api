@@ -38,6 +38,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -274,10 +275,15 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldNotSaveDraftWhenPossessionClaimResponseIsNull() {
+        DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
+        defendantResponse.setParty(new PartyEntity());
+        defendantResponse.setPcsCase(new PcsCaseEntity());
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
+            .thenReturn(defendantResponse);
+
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(null)
             .build();
-
 
         callSubmitHandler(caseData);
 

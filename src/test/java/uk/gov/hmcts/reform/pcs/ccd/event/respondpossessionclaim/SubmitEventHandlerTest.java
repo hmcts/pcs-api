@@ -68,7 +68,8 @@ class SubmitEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(draftCaseDataService, claimResponseService, defendantResponseService, notificationService);
+        underTest = new SubmitEventHandler(
+            draftCaseDataService, claimResponseService, defendantResponseService, notificationService);
     }
 
     @Test
