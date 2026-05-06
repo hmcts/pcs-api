@@ -210,7 +210,8 @@ export function ragStatus(summary: AllureSummary): string {
 function latestResultByKey(tests: AllureTestRecord[]): AllureTestRecord[] {
   const byKey = new Map<string, AllureTestRecord>();
   for (const t of tests) {
-    const key = (t.historyId ?? t.fullName ?? t.name).trim() || t.name;
+    const keyTrimmed = (t.historyId ?? t.fullName ?? t.name).trim();
+    const key = keyTrimmed || t.name;
     const existing = byKey.get(key);
     const start = t.start ?? 0;
     const existingStart = existing?.start ?? 0;
@@ -305,9 +306,12 @@ export function buildSlackMessage(
       : summary;
   const rag = ragStatus(summaryForRag);
   const reportUrl = buildUrl ? `${buildUrl}${reportPathSuffix}` : '';
+  const platform = (process.env.E2E_PLATFORM ?? 'Linux').trim();
+  const browser = (process.env.E2E_BROWSER ?? 'Chrome').trim();
   const lines: string[] = [];
   lines.push(`*E2E Test Results* — Build #${buildNumber}  ${rag}`);
   lines.push(`*Service:* ${serviceName}  |  *Pipeline:* ${pipelineType}`);
+  lines.push(`*Platform:* ${platform}  |  *Browser:* ${browser}`);
   lines.push('');
   if (reportUrl) {
     lines.push(`*Allure report:* ${reportUrl}`);
@@ -346,7 +350,7 @@ export function buildSlackMessage(
         const truncated = msg.length > 120 ? msg.slice(0, 120) + '…' : msg;
         lines.push(
           `• \`${t.status}\` ${t.name} (${t.duration_seconds}s)` +
-            (truncated ? ` — ${truncated}` : '')
+          (truncated ? ` — ${truncated}` : '')
         );
       }
       if (fails.length > maxFailuresToList) {
@@ -369,6 +373,43 @@ export function buildSlackMessage(
 
 const DEFAULT_REPORT_PATH = 'E2E_20Test_20Report/';
 
+/** Parse `--pipeline-type <value>` or `--pipeline-type=value` (matches pcs-frontend HDPI-6046 nightly / CNP). */
+function parsePipelineTypeFromArgv(): string | null {
+  const argv = process.argv;
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--pipeline-type' && argv[i + 1]) {
+      return argv[i + 1].trim();
+    }
+    const match = argv[i].match(/^--pipeline-type=(.+)$/);
+    if (match) {
+      return match[1].trim();
+    }
+  }
+  return null;
+}
+
+function getFallbackMessage(
+  buildNumber: string,
+  buildUrl: string,
+  reportSuffix: string,
+  serviceName: string,
+  pipelineType: string
+): string {
+  const platform = (process.env.E2E_PLATFORM ?? 'Linux').trim();
+  const browser = (process.env.E2E_BROWSER ?? 'Chrome').trim();
+  const lines = [
+    `E2E Test Results — Build #${buildNumber}`,
+    `*Service:* ${serviceName}  |  *Pipeline:* ${pipelineType}`,
+    `*Platform:* ${platform}  |  *Browser:* ${browser}`,
+    '',
+    'Allure report not available – check build logs.',
+  ];
+  if (buildUrl) {
+    lines.push(`*Allure report:* ${buildUrl}${reportSuffix}`);
+  }
+  return lines.filter(Boolean).join('\n');
+}
+
 function resolveDirs(): { baseDir: string; e2eTestDir: string } {
   const e2eTestDir = path.resolve(__dirname, '..');
   const projectRootFromScript = path.resolve(e2eTestDir, '../..');
@@ -385,9 +426,17 @@ export function getSlackMessage(): string {
   const buildNumber = (process.env.BUILD_NUMBER ?? 'local').trim();
   const buildUrl = (process.env.BUILD_URL ?? '').trim();
   const jobName = (process.env.JOB_NAME ?? 'e2e').trim();
-  const reportSuffix = (process.env.ALLURE_REPORT_PATH_SUFFIX ?? DEFAULT_REPORT_PATH).trim() || DEFAULT_REPORT_PATH;
-  const serviceName = (process.env.E2E_SERVICE_NAME ?? process.env.COMPONENT ?? 'pcs-api').trim() || 'pcs-api';
-  const pipelineType = (process.env.E2E_PIPELINE_TYPE ?? (jobName.toLowerCase().includes('nightly') ? 'nightly' : 'master')).trim() || 'master';
+  const reportSuffixRaw = process.env.ALLURE_REPORT_PATH_SUFFIX ?? DEFAULT_REPORT_PATH;
+  const reportSuffix = reportSuffixRaw.trim() || DEFAULT_REPORT_PATH;
+  const serviceNameRaw =
+    process.env.E2E_SERVICE_NAME ?? process.env.COMPONENT ?? 'pcs-api';
+  const serviceName = serviceNameRaw.trim() || 'pcs-api';
+  const pipelineTypeArg = parsePipelineTypeFromArgv();
+  const pipelineTypeFromEnv =
+    process.env.E2E_PIPELINE_TYPE ??
+    (jobName.toLowerCase().includes('nightly') ? 'nightly' : 'master');
+  const pipelineTypeInferred = pipelineTypeFromEnv.trim() || 'master';
+  const pipelineType = pipelineTypeArg ?? pipelineTypeInferred;
 
   try {
     const summary = parseAllureSummary(findAllureSummaryJson(baseDir));
@@ -402,8 +451,7 @@ export function getSlackMessage(): string {
     if (!process.argv.includes('--print-only')) {
       console.warn('[WARN] Could not read Allure summary; sending fallback.', err);
     }
-    const reportUrl = buildUrl ? `${buildUrl}${reportSuffix}` : '';
-    return `E2E Test Results — Build #${buildNumber}\n*Service:* ${serviceName}  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.${reportUrl ? `\n*Allure report:* ${reportUrl}` : buildUrl ? `\n*Build:* ${buildUrl}` : ''}`;
+    return getFallbackMessage(buildNumber, buildUrl, reportSuffix, serviceName, pipelineType);
   }
 }
 
@@ -436,8 +484,25 @@ const isMain =
   process.argv[1]?.includes('allure-slack-notifier');
 
 if (isMain) {
+  const printOnly = process.argv.includes('--print-only');
   main().catch((err) => {
-    console.error(err);
-    process.exit(1);
+    if (printOnly) {
+      const buildNumber = (process.env.BUILD_NUMBER ?? 'unknown').trim();
+      const buildUrl = (process.env.BUILD_URL ?? '').trim();
+      const reportSuffixRaw = process.env.ALLURE_REPORT_PATH_SUFFIX ?? DEFAULT_REPORT_PATH;
+      const reportSuffix = reportSuffixRaw.trim() || DEFAULT_REPORT_PATH;
+      const serviceNameRaw = process.env.E2E_SERVICE_NAME ?? 'pcs-api';
+      const serviceName = serviceNameRaw.trim() || 'pcs-api';
+      const pipelineType =
+        parsePipelineTypeFromArgv() ??
+        process.env.E2E_PIPELINE_TYPE ??
+        'master';
+      process.stdout.write(
+        getFallbackMessage(buildNumber, buildUrl, reportSuffix, serviceName, String(pipelineType).trim())
+      );
+    } else {
+      console.error(err);
+      process.exit(1);
+    }
   });
 }

@@ -32,5 +32,6 @@ public final class TestSupportEnvironment {
         String lower = value.toLowerCase(Locale.UK);
         return lower.contains("dev") || lower.contains("preview") || lower.contains("aat");
     }
+
 }
 

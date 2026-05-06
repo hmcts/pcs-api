@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -9,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -23,7 +25,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
+import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Table(name = "household_circumstances")
@@ -42,6 +48,11 @@ public class HouseholdCircumstancesEntity {
     @JoinColumn(name = "defendant_response_id")
     @JsonBackReference
     private DefendantResponseEntity defendantResponse;
+
+    @OneToMany(mappedBy = "householdCircumstances", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    private List<RegularExpenseEntity> regularExpenses = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -83,13 +94,25 @@ public class HouseholdCircumstancesEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo shareIncomeExpenseDetails;
 
-    private String regularIncome;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo universalCredit;
 
     private LocalDate ucApplicationDate;
+
+    @OneToOne(cascade = ALL, mappedBy = "householdCircumstances", orphanRemoval = true)
+    @JsonManagedReference
+    private RegularIncomeEntity regularIncomeEntity;
+
+    public void setRegularIncomeEntity(RegularIncomeEntity regularIncomeEntity) {
+        if (this.regularIncomeEntity != null) {
+            this.regularIncomeEntity.setHouseholdCircumstances(null);
+        }
+        this.regularIncomeEntity = regularIncomeEntity;
+        if (this.regularIncomeEntity != null) {
+            this.regularIncomeEntity.setHouseholdCircumstances(this);
+        }
+    }
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -101,9 +124,8 @@ public class HouseholdCircumstancesEntity {
 
     private String debtContributionFrequency;
 
-    private String regularExpenses;
-
-    private BigDecimal expenseAmount;
-
-    private String expenseFrequency;
+    public void addRegularExpense(RegularExpenseEntity expense) {
+        regularExpenses.add(expense);
+        expense.setHouseholdCircumstances(this);
+    }
 }

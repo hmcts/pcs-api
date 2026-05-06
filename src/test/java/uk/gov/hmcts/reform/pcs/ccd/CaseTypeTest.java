@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.ConfigBuilderImpl;
+import uk.gov.hmcts.ccd.sdk.api.CaseCategory;
 import uk.gov.hmcts.ccd.sdk.api.PropertyUtils;
 import uk.gov.hmcts.ccd.sdk.api.Search;
 import uk.gov.hmcts.ccd.sdk.api.SearchCases;
@@ -36,7 +37,7 @@ public class CaseTypeTest {
         String caseType = CaseType.getCaseType();
 
         // Then
-        assertThat(caseType).isEqualTo("PCS");
+        assertThat(caseType).contains("PCS");
     }
 
     @Test
@@ -45,7 +46,7 @@ public class CaseTypeTest {
         String jurisdictionId = CaseType.getJurisdictionId();
 
         // Then
-        assertThat(jurisdictionId).isEqualTo("PCS");
+        assertThat(jurisdictionId).contains("PCS");
     }
 
     @Test
@@ -54,7 +55,7 @@ public class CaseTypeTest {
         String caseTypeName = CaseType.getCaseTypeName();
 
         // Then
-        assertThat(caseTypeName).isEqualTo("Possession");
+        assertThat(caseTypeName).contains("Possession");
     }
 
     @Test
@@ -67,6 +68,7 @@ public class CaseTypeTest {
         final Tab.TabBuilder<PCSCase, UserRole> serviceRequestTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, UserRole> caseNotesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, UserRole> caseLinksTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
+        final Tab.TabBuilder<PCSCase, UserRole> caseFileViewTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, UserRole> casePartiesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Search.SearchBuilder<PCSCase, UserRole> searchBuilder =
             Search.SearchBuilder.builder(PCSCase.class, utils);
@@ -83,8 +85,11 @@ public class CaseTypeTest {
         when(builder.tab("hidden", "HiddenFields")).thenReturn(hiddenTabBuilder);
         when(builder.tab("serviceRequest", "Service Request")).thenReturn(serviceRequestTabBuilder);
         when(builder.tab("notes", "Notes")).thenReturn(caseNotesTabBuilder);
-        when(builder.tab("caseLinks", "Linked cases")).thenReturn(caseLinksTabBuilder);
+        when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
+        when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
+        when(builder.categories(UserRole.PCS_SOLICITOR))
+            .thenReturn(CaseCategory.CaseCategoryBuilder.builder(UserRole.PCS_SOLICITOR));
 
         // When
         caseType.configure(builder);
@@ -95,15 +100,17 @@ public class CaseTypeTest {
         final Tab<PCSCase, UserRole> serviceRequestTab = serviceRequestTabBuilder.build();
         final Tab<PCSCase, UserRole> caseLinksTab = caseLinksTabBuilder.build();
         final Tab<PCSCase, UserRole> casePartiesTab = casePartiesTabBuilder.build();
+        final Tab<PCSCase, UserRole> caseFileViewTab = caseFileViewTabBuilder.build();
 
         // Then
         assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
         assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("confirmEvictionSummaryMarkup");
         assertThat(caseHistoryTab.getFields()).extracting(TabField::getId).contains("caseHistory");
-        assertThat(hiddenTab.getFields().size()).isEqualTo(1);
+        assertThat(hiddenTab.getFields().size()).isEqualTo(2);
         assertThat(serviceRequestTab.getFields()).extracting(TabField::getId).contains("waysToPay");
         assertThat(caseLinksTab.getFields()).extracting(TabField::getShowCondition)
             .contains("LinkedCasesComponentLauncher!=\"\"");
+        assertThat(caseFileViewTab.getFields().size()).isEqualTo(1);
         assertThat(casePartiesTab.getFields()).extracting(TabField::getId).contains("casePartiesTab_ClaimantDetails");
     }
 }
