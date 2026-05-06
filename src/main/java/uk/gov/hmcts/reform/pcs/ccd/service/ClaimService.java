@@ -29,13 +29,36 @@ public class ClaimService {
 
     public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
 
-        AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
+        ClaimEntity claimEntity = buildClaimEntity(pcsCase);
 
         List<ClaimGroundEntity> claimGrounds = claimGroundService.createClaimGroundEntities(pcsCase);
+        claimEntity.addClaimGrounds(claimGrounds);
+
+        claimEntity.setPossessionAlternativesEntity(
+            possessionAlternativesService.createPossessionAlternativesEntity(pcsCase));
+
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            claimEntity
+                .setAsbProhibitedConductEntity(asbProhibitedConductService.createAsbProhibitedConductEntity(pcsCase));
+        }
+
+        claimEntity.setRentArrears(rentArrearsService.createRentArrearsEntity(pcsCase));
+        claimEntity.setNoticeOfPossession(noticeOfPossessionService.createNoticeOfPossessionEntity(pcsCase));
+        claimEntity.setStatementOfTruth(statementOfTruthService.createStatementOfTruthEntity(pcsCase));
+
+        claimRepository.save(claimEntity);
+
+        return claimEntity;
+    }
+
+
+    private ClaimEntity buildClaimEntity(PCSCase pcsCase) {
+        AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
+
         ClaimantCircumstances claimantCircumstances = pcsCase.getClaimantCircumstances();
         DefendantCircumstances defendantCircumstances = pcsCase.getDefendantCircumstances();
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
+        return ClaimEntity.builder()
             .claimantType(pcsCase.getClaimantType() != null
                               ? ClaimantType.fromName(pcsCase.getClaimantType().getValueCode()) : null)
             .againstTrespassers(pcsCase.getClaimAgainstTrespassers())
@@ -66,24 +89,6 @@ public class ClaimService {
             .languageUsed(pcsCase.getLanguageUsed())
             .isExemptLandlord(pcsCase.getIsExemptLandlord())
             .build();
-
-        claimEntity.addClaimGrounds(claimGrounds);
-
-        claimEntity.setPossessionAlternativesEntity(
-            possessionAlternativesService.createPossessionAlternativesEntity(pcsCase));
-
-        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
-            claimEntity
-                .setAsbProhibitedConductEntity(asbProhibitedConductService.createAsbProhibitedConductEntity(pcsCase));
-        }
-
-        claimEntity.setRentArrears(rentArrearsService.createRentArrearsEntity(pcsCase));
-        claimEntity.setNoticeOfPossession(noticeOfPossessionService.createNoticeOfPossessionEntity(pcsCase));
-        claimEntity.setStatementOfTruth(statementOfTruthService.createStatementOfTruthEntity(pcsCase));
-
-        claimRepository.save(claimEntity);
-
-        return claimEntity;
     }
 
 }
