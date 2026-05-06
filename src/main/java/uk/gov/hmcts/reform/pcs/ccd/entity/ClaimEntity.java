@@ -181,9 +181,9 @@ public class ClaimEntity {
     @JsonManagedReference
     private StatementOfTruthEntity statementOfTruth;
 
-    @OneToMany(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<FeePaymentEntity> feePayments;
+    private FeePaymentEntity feePayment;
 
     public void setHousingActWales(HousingActWalesEntity housingActWales) {
         if (this.housingActWales != null) {
