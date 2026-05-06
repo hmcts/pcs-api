@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.RefDataFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 
 import java.util.List;
 import java.util.UUID;
@@ -75,13 +75,14 @@ class CaseFlagsViewTest {
 
     private CaseFlagEntity createMockCaseFlagsEntity() {
 
+        FlagRefDataEntity flagRefDataEntity = new FlagRefDataEntity();
         CaseFlagEntity  caseFlagEntity = new CaseFlagEntity();
-
+        caseFlagEntity.setFlagRefData(flagRefDataEntity);
         caseFlagEntity.setId(UUID.randomUUID());
-        caseFlagEntity.setFlagCode("CF0007");
+        caseFlagEntity.getFlagRefData().setFlagCode("CF0007");
         caseFlagEntity.setFlagComment("Urgent case");
         caseFlagEntity.setPaths(List.of(createMockFlagPathEntity()));
-        caseFlagEntity.setRefDataFlag(createMockRefDataFlagsEntity());
+        caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity());
 
         return  caseFlagEntity;
     }
@@ -93,9 +94,9 @@ class CaseFlagsViewTest {
             .build();
     }
 
-    private RefDataFlagEntity createMockRefDataFlagsEntity() {
+    private FlagRefDataEntity createMockRefDataFlagsEntity() {
 
-        return RefDataFlagEntity.builder()
+        return FlagRefDataEntity.builder()
             .flagCode("CF0007")
             .flagName("Urgent case")
             .build();

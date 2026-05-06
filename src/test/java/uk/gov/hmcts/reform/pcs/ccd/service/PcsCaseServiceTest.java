@@ -16,13 +16,7 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.*;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -30,6 +24,8 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -284,7 +280,7 @@ class PcsCaseServiceTest {
             .build();
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        doNothing().when(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
+        when(caseFlagService.mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name())).thenReturn(createCaseFlagEntity());
 
         // When
         underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.UPDATE.name());
@@ -292,6 +288,23 @@ class PcsCaseServiceTest {
         // Then
         verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
         verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
+    }
+
+    private List<BaseCaseFlag> createCaseFlagEntity() {
+
+
+        FlagRefDataEntity flagRefDataEntity = new FlagRefDataEntity();
+        BaseCaseFlag caseFlagEntity = new CaseFlagEntity();
+        caseFlagEntity.setFlagRefData(flagRefDataEntity);
+        caseFlagEntity.setDefaultStatus("Active");
+        caseFlagEntity.getFlagRefData().setFlagCode("CF0008");
+        caseFlagEntity.setFlagComment("Police arrest inactive");
+        caseFlagEntity.setDateTimeModified(LocalDateTime.now());
+
+        List<BaseCaseFlag> caseFlagEntities = new ArrayList<>();
+        caseFlagEntities.add(caseFlagEntity);
+
+        return caseFlagEntities;
     }
 
     private ListValue<FlagDetail> createFlagDetails() {

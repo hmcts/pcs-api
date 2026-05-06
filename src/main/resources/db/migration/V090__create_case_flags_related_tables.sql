@@ -1,4 +1,4 @@
-CREATE TABLE ref_data_flag(
+CREATE TABLE flag_ref_data(
                             id UUID PRIMARY KEY,
                             flag_code VARCHAR(10),
                             name VARCHAR(255),
@@ -11,8 +11,7 @@ CREATE TABLE ref_data_flag(
 CREATE TABLE case_flag (
                             id UUID PRIMARY KEY,
                             pcs_case_id UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
-                            ref_data_flag_id UUID NOT NULL REFERENCES ref_data_flag(id) ON DELETE CASCADE,
-                            flag_code VARCHAR(6) NOT NULL,
+                            flag_ref_data_id UUID NOT NULL REFERENCES flag_ref_data(id) ON DELETE CASCADE,
                             sub_type_key VARCHAR(50),
                             sub_type_value VARCHAR(50),
                             sub_type_value_cy VARCHAR(50),
