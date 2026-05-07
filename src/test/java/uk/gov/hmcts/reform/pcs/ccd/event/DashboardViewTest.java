@@ -51,7 +51,7 @@ class DashboardViewTest extends BaseEventTest {
             List.of(
                 new ClaimTaskGroupEvaluator(),
                 new HearingsTaskGroupEvaluator(),
-                new DocumentsTaskGroupEvaluator()
+                new DocumentsTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
             )
         );

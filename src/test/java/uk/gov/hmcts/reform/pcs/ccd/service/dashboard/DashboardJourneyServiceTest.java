@@ -44,7 +44,7 @@ class DashboardJourneyServiceTest {
         assertThat(result.getCaseId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(result.getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(result.getNotifications()).hasSize(2);
-        assertThat(result.getTaskGroups()).hasSize(4);
+        assertThat(result.getTaskGroups()).hasSize(5);
     }
 
     @Test
@@ -95,17 +95,22 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple("Defendant.UploadDocuments", TaskStatus.AVAILABLE),
-                tuple("Defendant.ViewDocuments", TaskStatus.AVAILABLE),
-                tuple("Defendant.ViewHearingDocuments", TaskStatus.AVAILABLE)
+                tuple("Defendant.ViewDocuments", TaskStatus.AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.ViewOrdersAndNotices", TaskStatus.AVAILABLE)
+                tuple("Defendant.ViewHearingDocuments", TaskStatus.AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(3).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple("Defendant.ViewOrdersAndNotices", TaskStatus.AVAILABLE)
+            );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(4).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple("Defendant.RespondToClaim", TaskStatus.NOT_STARTED),
