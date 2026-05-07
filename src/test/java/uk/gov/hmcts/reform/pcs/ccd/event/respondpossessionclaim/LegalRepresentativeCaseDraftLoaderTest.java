@@ -182,7 +182,7 @@ class LegalRepresentativeCaseDraftLoaderTest {
 
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
 
-        assertThat(result.getAllDefendants().size()).isEqualTo(1);
+        assertThat(result.getAllDefendants()).hasSize(1);
         assertThat(result.getAllDefendants().getFirst().getId()).isEqualTo(representedPartyId.toString());
         assertThat(result.getAllDefendants().getFirst().getValue()).isEqualTo(party);
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
