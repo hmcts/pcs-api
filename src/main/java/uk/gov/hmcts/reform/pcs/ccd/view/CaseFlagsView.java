@@ -11,11 +11,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Component
 @AllArgsConstructor
 public class CaseFlagsView {
+
+    public static  String PATHS_DELIMITER = ",";
+    public static  String PATH_DELIMITER = ":";
+
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
 
@@ -59,14 +64,20 @@ public class CaseFlagsView {
                        caseFlagEntity.getFlagRefData().getHearingRelevant()))
                    .availableExternally(YesOrNoConverter.toYesOrNo(
                        caseFlagEntity.getFlagRefData().getAvailableExternally()))
-                   .path(caseFlagEntity.getPaths().stream()
-                             .map(pathEntity -> ListValue.<String>builder()
-                                .id(pathEntity.getId().toString())
-                                .value(pathEntity.getPath())
-                                .build())
-                             .toList())
+                   .path(getPaths(caseFlagEntity.getPaths()))
                    .build())
                 .build())
             .toList();
+    }
+
+    private List<ListValue<String>> getPaths(String entityPaths) {
+
+        return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
+                .map(pathPairs -> pathPairs.split(PATH_DELIMITER))
+                .map(paths -> ListValue.<String>builder()
+                    .id(paths[0])
+                    .value(paths[1])
+                    .build())
+                .toList();
     }
 }

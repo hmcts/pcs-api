@@ -5,15 +5,14 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 
 import java.util.List;
 import java.util.Set;
@@ -21,7 +20,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -75,7 +73,7 @@ public class CaseFlagService {
             flagEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
 
-            setFlagPath(incomingFlagDetail, existingFlagEntities, flagEntity);
+            setFlagPath(incomingFlagDetail, flagEntity);
 
             mergedFlagDetails.add(flagEntity);
         }
@@ -105,38 +103,17 @@ public class CaseFlagService {
         return refDataFlagsEntity;
     }
 
-    private void setFlagPath(FlagDetail incomingFlagDetail, Map<UUID, BaseCaseFlag> existingFlagEntitiesMap,
-                                             BaseCaseFlag flagEntity) {
-        List<String> existingFlagPathIds = getExistingPathIds(existingFlagEntitiesMap);
-        if (incomingFlagDetail.getPath() != null
-            && !(new HashSet<>(existingFlagPathIds).containsAll(getIncomingFlagPathIds(incomingFlagDetail)))) {
-            for (ListValue<String> path : incomingFlagDetail.getPath()) {
-                FlagPathEntity flagPathEntity = FlagPathEntity.builder()
-                    .caseFlagEntity(flagEntity)
-                    .path(path.getValue())
-                    .build();
-                flagEntity.getPaths().add(flagPathEntity);
-            }
+    private void setFlagPath(FlagDetail incomingFlagDetail, BaseCaseFlag flagEntity) {
+
+        if (incomingFlagDetail.getPath() != null) {
+            List<String> pathLists = incomingFlagDetail.getPath().stream()
+                .map(pathLists1 -> pathLists1.getId() + CaseFlagsView.PATH_DELIMITER + pathLists1.getValue())
+                .toList();
+            StringBuilder paths = new StringBuilder();
+            pathLists.forEach(s -> paths.append(s).append(CaseFlagsView.PATHS_DELIMITER));
+            paths.deleteCharAt(paths.lastIndexOf(CaseFlagsView.PATHS_DELIMITER));
+            flagEntity.setPaths(paths.toString());
         }
-    }
-
-    private Boolean getBooleanValue(YesOrNo yesOrNoValue) {
-        return YesOrNoConverter.toBoolean(yesOrNoValue);
-    }
-
-    private List<String> getIncomingFlagPathIds(FlagDetail incomingFlagDetail) {
-
-        return incomingFlagDetail.getPath().stream().map(ListValue::getId).toList();
-    }
-
-    private List<String> getExistingPathIds(Map<UUID, BaseCaseFlag> existingFlagEntities) {
-        List<String> list = new ArrayList<>();
-        for (BaseCaseFlag flagDetails : existingFlagEntities.values()) {
-            for (FlagPathEntity flagPathEntity : flagDetails.getPaths()) {
-                list.add(flagPathEntity.getId().toString());
-            }
-        }
-        return list;
     }
 }
 

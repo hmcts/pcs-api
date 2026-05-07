@@ -23,12 +23,6 @@ CREATE TABLE case_flag (
                             flag_update_comment_cy VARCHAR(255),
                             date_time_created TIMESTAMP,
                             date_time_modified TIMESTAMP,
-                            status VARCHAR(50) NOT NULL
+                            status VARCHAR(50) NOT NULL,
+                            paths VARCHAR(255)
 );
-
-CREATE TABLE flag_path(
-                        id UUID PRIMARY KEY,
-                        case_flag_id UUID NOT NULL REFERENCES case_flag (id) ON DELETE CASCADE,
-                        path VARCHAR(255) NOT NULL
-                      );
-

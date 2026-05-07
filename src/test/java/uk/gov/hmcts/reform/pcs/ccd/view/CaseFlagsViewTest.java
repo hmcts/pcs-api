@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 
@@ -81,17 +80,10 @@ class CaseFlagsViewTest {
         caseFlagEntity.setId(UUID.randomUUID());
         caseFlagEntity.getFlagRefData().setFlagCode("CF0007");
         caseFlagEntity.setFlagComment("Urgent case");
-        caseFlagEntity.setPaths(List.of(createMockFlagPathEntity()));
+        caseFlagEntity.setPaths(UUID.randomUUID() + ":"  + "Case");
         caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity());
 
         return  caseFlagEntity;
-    }
-
-    private FlagPathEntity createMockFlagPathEntity() {
-        return FlagPathEntity.builder()
-            .id(UUID.randomUUID())
-            .path("Case")
-            .build();
     }
 
     private FlagRefDataEntity createMockRefDataFlagsEntity() {
