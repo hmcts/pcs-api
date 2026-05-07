@@ -20,13 +20,13 @@ import java.util.UUID;
 import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
-@Table(name = "ref_data_flag")
+@Table(name = "flag_ref_data")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RefDataFlagEntity {
+public class FlagRefDataEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,7 +38,7 @@ public class RefDataFlagEntity {
     @Column(name = "name_cy")
     private String flagNameWelsh;
 
-    @OneToMany(mappedBy = "refDataFlag", cascade = ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "flagRefData", cascade = ALL, orphanRemoval = true)
     @Builder.Default
     private List<CaseFlagEntity> caseFlags = new ArrayList<>();
 

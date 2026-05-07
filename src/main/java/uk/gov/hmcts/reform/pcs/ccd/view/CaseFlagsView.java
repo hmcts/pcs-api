@@ -11,11 +11,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Component
 @AllArgsConstructor
 public class CaseFlagsView {
+
+    public static  String PATHS_DELIMITER = ",";
+    public static  String PATH_DELIMITER = ":";
+
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
 
@@ -39,9 +44,9 @@ public class CaseFlagsView {
             .map(caseFlagEntity -> ListValue.<FlagDetail>builder()
                 .id(caseFlagEntity.getId().toString())
                 .value(FlagDetail.builder()
-                   .flagCode(caseFlagEntity.getFlagCode())
-                   .name(caseFlagEntity.getRefDataFlag().getFlagName())
-                   .nameCy(caseFlagEntity.getRefDataFlag().getFlagNameWelsh())
+                   .flagCode(caseFlagEntity.getFlagRefData().getFlagCode())
+                   .name(caseFlagEntity.getFlagRefData().getFlagName())
+                   .nameCy(caseFlagEntity.getFlagRefData().getFlagNameWelsh())
                    .flagComment(caseFlagEntity.getFlagComment())
                    .flagCommentCy(caseFlagEntity.getFlagCommentWelsh())
                    .status(caseFlagEntity.getDefaultStatus())
@@ -56,17 +61,23 @@ public class CaseFlagsView {
                    .otherDescription(caseFlagEntity.getOtherDescription())
                    .otherDescriptionCy(caseFlagEntity.getOtherDescriptionWelsh())
                    .hearingRelevant(YesOrNoConverter.toYesOrNo(
-                       caseFlagEntity.getRefDataFlag().getHearingRelevant()))
+                       caseFlagEntity.getFlagRefData().getHearingRelevant()))
                    .availableExternally(YesOrNoConverter.toYesOrNo(
-                       caseFlagEntity.getRefDataFlag().getAvailableExternally()))
-                   .path(caseFlagEntity.getPaths().stream()
-                             .map(pathEntity -> ListValue.<String>builder()
-                                .id(pathEntity.getId().toString())
-                                .value(pathEntity.getPath())
-                                .build())
-                             .toList())
+                       caseFlagEntity.getFlagRefData().getAvailableExternally()))
+                   .path(getPaths(caseFlagEntity.getPaths()))
                    .build())
                 .build())
             .toList();
+    }
+
+    private List<ListValue<String>> getPaths(String entityPaths) {
+
+        return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
+                .map(pathPairs -> pathPairs.split(PATH_DELIMITER))
+                .map(paths -> ListValue.<String>builder()
+                    .id(paths[0])
+                    .value(paths[1])
+                    .build())
+                .toList();
     }
 }

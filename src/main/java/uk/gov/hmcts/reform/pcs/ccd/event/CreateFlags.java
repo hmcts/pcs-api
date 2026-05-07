@@ -41,7 +41,6 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 null, null, null, null,
                 "#ARGUMENT(CREATE)"
             );
-
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
