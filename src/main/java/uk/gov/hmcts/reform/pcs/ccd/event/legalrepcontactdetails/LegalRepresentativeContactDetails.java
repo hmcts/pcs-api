@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepresentativedetails.LegalRepresentativeContactDetailsPage;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepresentativeContactDetails;
 
@@ -23,6 +25,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepresentativeConta
 public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, State, UserRole> {
 
     private final LegalRepresentativeContactDetailsPage legalRepresentativeContactDetailsPage;
+    private final SecurityContextService securityContextService;
+    private final OrganisationService organisationService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
