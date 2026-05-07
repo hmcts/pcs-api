@@ -6,5 +6,6 @@ public enum TaskGroupId {
     JUDGEMENT,
     NOTICE,
     RESPONSE,
-    APPLICATIONS
+    APPLICATIONS,
+    DOCUMENTS
 }

@@ -27,6 +27,7 @@ public class DashboardJourneyService {
     private static final List<TaskGroupId> TASK_GROUP_ORDER = List.of(
         TaskGroupId.CLAIM,
         TaskGroupId.RESPONSE,
+        TaskGroupId.DOCUMENTS,
         TaskGroupId.HEARING,
         TaskGroupId.NOTICE,
         TaskGroupId.APPLICATIONS

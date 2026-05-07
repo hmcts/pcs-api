@@ -14,4 +14,6 @@ public final class DashboardTaskTemplateIds {
     public static final String SUBMIT_RESPONSE = "SubmitResponse";
     public static final String VIEW_HEARING_DOCUMENTS = "ViewHearingDocuments";
     public static final String VIEW_ORDERS_AND_NOTICES = "ViewOrdersAndNotices";
+    public static final String UPLOAD_DOCUMENTS = "UploadDocuments";
+    public static final String VIEW_ALL_DOCUMENTS = "ViewAllDocuments";
 }
