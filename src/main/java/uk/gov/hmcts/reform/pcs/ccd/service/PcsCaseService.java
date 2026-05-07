@@ -58,6 +58,8 @@ public class PcsCaseService {
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
 
+        pcsCaseEntity.setRegionId(regionId);
+
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
