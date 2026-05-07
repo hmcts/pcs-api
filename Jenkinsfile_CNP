@@ -81,10 +81,12 @@ withPipeline(type, product, component) {
 
   onDemo {
     setDemoEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onIthc {
     setIthcEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onPerftest {
