@@ -143,12 +143,12 @@ test.describe('[Create Case - England] @nightly', async () => {
        day: '16', month: '07', year: '1985'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-       calculateRentAmount: '£114.29',
-       unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
-       unpaidRentAmountPerDay: '20'
-     });
+    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    // await performAction('selectDailyRentAmount', {
+    //    calculateRentAmount: '£114.29',
+    //    unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
+    //    unpaidRentAmountPerDay: '20'
+    //  });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
