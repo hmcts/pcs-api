@@ -62,7 +62,7 @@ properties([
   ])
 ])
 
-@Library("Infrastructure@maven-mirror-auth")
+@Library("Infrastructure")
 
 def type = "java"
 def product = "pcs"
