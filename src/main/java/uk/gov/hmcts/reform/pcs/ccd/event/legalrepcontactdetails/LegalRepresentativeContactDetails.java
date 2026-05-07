@@ -30,7 +30,7 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
             configBuilder
                 .decentralisedEvent(legalRepresentativeContactDetails.name(), this::submit, this::start)
                 .forAllStates()
-                .name("Update legal representative's details")
+                .name("Update legal rep's details")
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
                 .showSummary();
 

@@ -17,16 +17,50 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("legalRepresentativeDetails", this::midEvent)
+            .page("legalRepresentativeContactDetails", this::midEvent)
             .pageLabel("Update legal representative details")
-            .complex(PCSCase::getLegalRepresentativeDetails)
-                .mandatory(LegalRepresentativeDetails::getEmailAddress)
-                .optional(LegalRepresentativeDetails::getReference)
+            .complex(PCSCase::getLegalRepresentativeContactDetails)
+            .label("legalRepresentativeDetails-reference",  """
+                    ---
+                    <h2 class="govuk-heading-m">Reference</h2>
+                    <p class="govuk-body-m govuk-!-margin-bottom-1">
+                        You should provide a reference number.
+                    </p>
+
+                    """)
+
+            .optional(LegalRepresentativeDetails::getReference)
+              .label("legalRepresentativeDetails-email",  """
+                    ---
+                    <h2 class="govuk-heading-m">Notifications</h2>
+                    <p class="govuk-body-m govuk-!-margin-bottom-1">
+                        You’ll receive updates about your claim by email. For example, when a hearing
+                        has been scheduled or when a document is ready to view.
+                    </p>
+
+                    """)
+            .mandatory(LegalRepresentativeDetails::getEmailAddress)
+            .label("legalRepresentativeDetails-phoneNumber-question", """
+                    ----
+                    <h2 class="govuk-heading-m">Contact phone number</h2>
+                    <p class="govuk-body-m ">
+                        You should provide a phone number so we can contact you if there are urgent updates.
+                    </p>
+                    """)
                 .optional(LegalRepresentativeDetails::getProvideContactPhoneNumber)
-                .mandatory(LegalRepresentativeDetails::getContactPhoneNumber)
-                .label("legalRepresentativeDetails-correspondence", "abc")
+                .mandatory(LegalRepresentativeDetails::getContactPhoneNumber, "provideContactPhoneNumber=\"YES\"")
+                .label("legalRepresentativeDetails-address", """
+                    ----
+                    <h2 class="govuk-heading-m">Postal address</h2>
+                    <p class="govuk-body-m">
+                        Court documents like orders and notices will be sent by post to the address registered with
+                        My HMCTS.<br><br>
+                        You can change this service address if, for example, you work in a different office from
+                        the address registered with My HMCTS.
+                    </p>
+                    """)
                 .mandatory(LegalRepresentativeDetails::getDifferentPostalAddress)
-                .complex(LegalRepresentativeDetails::getCorrespondenceAddress)
+                .complex(LegalRepresentativeDetails::getCorrespondenceAddress, "differentPostalAddress=\"YES\"")
                     .mandatory(AddressUK::getAddressLine1)
                     .optional(AddressUK::getAddressLine2)
                     .optional(AddressUK::getAddressLine3)
@@ -36,7 +70,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
                     .done()
             .done()
-            .label("legalRepresentativeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);;
+            .label("legalRepresentativeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

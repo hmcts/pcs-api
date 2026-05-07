@@ -29,7 +29,9 @@ public class LegalRepresentativeDetails {
     @CCD(label = "Do you want to provide a contact phone number?")
     private VerticalYesNo provideContactPhoneNumber;
 
-    @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$", max = 60, showCondition = "provideContactPhoneNumber=\"YES\"")
+    @CCD(label = "Enter phone number",
+        regex = "^\\s*0\\d{10}\\s*$",
+        max = 11)
     private String contactPhoneNumber;
 
     @CCD(label = """
@@ -41,7 +43,7 @@ public class LegalRepresentativeDetails {
     @CCD(label = "Do you want to enter a different postal address?")
     private VerticalYesNo differentPostalAddress;
 
-    @CCD(label = "Enter address details", showCondition = "differentPostalAddress=\"YES\"")
+    @CCD(label = "Enter address details")
     private AddressUK correspondenceAddress;
 
 }

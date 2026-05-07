@@ -588,6 +588,6 @@ public class PCSCase {
     /**
      * The legal representative for a defendant on the case.
      */
-    @CCD
-    private LegalRepresentativeDetails legalRepresentativeDetails;
+    @JsonUnwrapped
+    private LegalRepresentativeDetails legalRepresentativeContactDetails;
 }
