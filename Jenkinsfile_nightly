@@ -9,6 +9,11 @@ properties([
       defaultValue: 'Daily nightly schedule run',
       description: 'Why this build was triggered. For manual runs, enter a short note (e.g. verify a fix, extra browser coverage). Scheduled runs keep the default.'
     ),
+    choice(
+      name: 'E2E_TARGET_ENV',
+      choices: ['aat', 'demo', 'perftest', 'ithc'],
+      description: 'CNP env name for Key Vault pcs-<name> and for Playwright (derives service URLs from ENVIRONMENT). Default aat when scheduled.'
+    ),
     booleanParam(
       name: 'CHROME_TESTS',
       defaultValue: true,
@@ -54,15 +59,10 @@ properties([
       choices: ['@nightly', '@smoke', '@e2e', '@regression'],
       description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default.'
     ),
-    choice(
-      name: 'E2E_TARGET_ENV',
-      choices: ['aat', 'demo', 'perftest', 'ithc'],
-      description: 'CNP env name for Key Vault pcs-<name> and for Playwright (derives service URLs from ENVIRONMENT). Default aat when scheduled.'
-    ),
   ])
 ])
 
-@Library("Infrastructure")
+@Library("Infrastructure@maven-mirror-auth")
 
 def type = "java"
 def product = "pcs"

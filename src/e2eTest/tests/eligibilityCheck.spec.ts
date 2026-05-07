@@ -36,7 +36,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Eligibility Check - Create Case] @nightly', async () => {
-  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async () => {
+  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales @smoke', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
       addressIndex: addressDetails.addressIndex
