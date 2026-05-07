@@ -16,14 +16,26 @@ const STANDARD_CNP_ENVS = new Set(['aat', 'demo', 'perftest', 'ithc']);
  */
 function applyStandardHmctsUrlsFromEnvironment(): void {
   const e = (process.env.ENVIRONMENT || '').toLowerCase();
-  if (!STANDARD_CNP_ENVS.has(e)) {
-    return;
+  if (STANDARD_CNP_ENVS.has(e)) {
+    process.env.MANAGE_CASE_BASE_URL ||= `https://manage-case.${e}.platform.hmcts.net`;
+    process.env.DATA_STORE_URL_BASE ||= `http://ccd-data-store-api-${e}.service.core-compute-${e}.internal`;
+    process.env.IDAM_WEB_URL ||= `https://idam-api.${e}.platform.hmcts.net`;
+    process.env.IDAM_TESTING_SUPPORT_URL ||= `https://idam-testing-support-api.${e}.platform.hmcts.net`;
+    process.env.S2S_URL ||= `http://rpe-service-auth-provider-${e}.service.core-compute-${e}.internal/testing-support/lease`;
   }
-  process.env.MANAGE_CASE_BASE_URL ||= `https://manage-case.${e}.platform.hmcts.net`;
-  process.env.DATA_STORE_URL_BASE ||= `http://ccd-data-store-api-${e}.service.core-compute-${e}.internal`;
-  process.env.IDAM_WEB_URL ||= `https://idam-api.${e}.platform.hmcts.net`;
-  process.env.IDAM_TESTING_SUPPORT_URL ||= `https://idam-testing-support-api.${e}.platform.hmcts.net`;
-  process.env.S2S_URL ||= `http://rpe-service-auth-provider-${e}.service.core-compute-${e}.internal/testing-support/lease`;
+
+  // Backwards-compatible aliases used in Jenkinsfile_CNP (onPR/onMaster).
+  process.env.IDAM_WEB_URL ||= process.env.IDAM_API_URL;
+  if (!process.env.IDAM_TESTING_SUPPORT_URL && process.env.IDAM_WEB_URL) {
+    process.env.IDAM_TESTING_SUPPORT_URL = process.env.IDAM_WEB_URL.replace(
+      'idam-api.',
+      'idam-testing-support-api.'
+    );
+  }
+  if (!process.env.S2S_URL && process.env.IDAM_S2S_AUTH_URL) {
+    const s2sAuthBase = process.env.IDAM_S2S_AUTH_URL.replace(/\/+$/, '');
+    process.env.S2S_URL = `${s2sAuthBase}/testing-support/lease`;
+  }
 }
 
 async function globalSetupConfig(): Promise<void> {
