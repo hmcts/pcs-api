@@ -27,7 +27,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Case tabs - England Journey] @nightly', async () => {
-  test('Case tabs - Case parties tab test @MAC', async () => {
+  test('Case tabs - Case parties tab test @MAC @regression', async () => {
     await performAction('clickTab', home.caseParties);
     await performAction('validateDefendantDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseTab.defendant1.nameKnown,
