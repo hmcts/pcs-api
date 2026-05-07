@@ -76,16 +76,11 @@ static Map<String, Object> secret(String secretName, String envVariable) {
   ]
 }
 
-// Shared list; vault name is pcs-<ENVIRONMENT> (set in handleEnvironmentSetting before loadVaultSecrets).
+// Only secrets used under src/e2eTest (vault pcs-<ENVIRONMENT>).
 def pcsE2eVaultSecrets = [
   secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
-  secret('idam-testing-support-url', 'IDAM_TESTING_SUPPORT_URL'),
-  secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
-  secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
   secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
   secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
-  secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
-  secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD')
 ]
 
 withNightlyPipeline(type, product, component) {
