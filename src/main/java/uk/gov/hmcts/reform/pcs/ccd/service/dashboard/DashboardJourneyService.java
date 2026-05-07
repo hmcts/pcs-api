@@ -38,7 +38,9 @@ public class DashboardJourneyService {
 
     private final List<TaskGroupEvaluator> evaluatorsInOrder;
 
-    public DashboardJourneyService(List<TaskGroupEvaluator> evaluators) {
+    public DashboardJourneyService(
+        List<TaskGroupEvaluator> evaluators
+    ) {
         this.evaluatorsInOrder = evaluators.stream()
             .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
             .toList();
