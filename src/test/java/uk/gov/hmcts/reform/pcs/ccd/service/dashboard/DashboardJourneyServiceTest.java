@@ -85,7 +85,7 @@ class DashboardJourneyServiceTest {
             .extracting(g -> g.getGroupId(), g -> g.getTasks().size())
             .containsExactly(
                 tuple(TaskGroupId.CLAIM, 1),
-                tuple(TaskGroupId.DOCUMENT, 2),
+                tuple(TaskGroupId.DOCUMENTS, 2),
                 tuple(TaskGroupId.RESPONSE, 3),
                 tuple(TaskGroupId.HEARING, 1),
                 tuple(TaskGroupId.NOTICE, 1),

@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.dashboard;
 
 public enum TaskGroupId {
     CLAIM,
-    DOCUMENT,
+    DOCUMENTS,
     HEARING,
     JUDGEMENT,
     NOTICE,

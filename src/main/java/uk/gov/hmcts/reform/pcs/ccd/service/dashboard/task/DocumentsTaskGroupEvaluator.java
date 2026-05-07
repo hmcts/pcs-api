@@ -18,7 +18,7 @@ public class DocumentsTaskGroupEvaluator implements TaskGroupEvaluator {
 
     @Override
     public TaskGroupId groupId() {
-        return TaskGroupId.DOCUMENT;
+        return TaskGroupId.DOCUMENTS;
     }
 
     @Override
