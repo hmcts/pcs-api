@@ -1,0 +1,106 @@
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
+
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+
+import java.util.Set;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
+
+public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguration {
+
+    @Override
+    public void addTo(PageBuilder pageBuilder) {
+        pageBuilder
+            .page("secureOrFlexibleGroundsForPossession", this::midEvent)
+            .pageLabel("What are your grounds for possession?")
+            .showCondition("(tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
+                        + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\")"
+                        + " AND legislativeCountry=\"England\"")
+            .label("secureOrFlexibleGroundsForPossession-info", """
+               ---
+               <p class="govuk-body" tabindex="0">
+                  You may have already given the defendants notice of your intention to begin possession proceedings.
+                  If you have, you should have written the grounds you’re making your claim under. You should select
+                  these grounds here and any extra grounds you’d like to add to your claim, if you need to.
+               </p>
+               <p class="govuk-body">
+                 <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
+               </p>
+               """)
+            .complex(PCSCase::getSecureOrFlexiblePossessionGrounds)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGrounds)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGrounds)
+            .mandatory(SecureOrFlexiblePossessionGrounds::getSecureAntisocialAdditionalGrounds,
+                    ShowConditions.fieldContains("secureOrFlexibleMandatoryGrounds",
+                            SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL))
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGroundsAlt)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGroundsAlt)
+            .done()
+            .label("secureOrFlexibleGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+        SecureOrFlexiblePossessionGrounds grounds = caseData.getSecureOrFlexiblePossessionGrounds();
+
+        Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds =
+                grounds.getSecureOrFlexibleDiscretionaryGrounds();
+
+        Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> discretionaryGroundsAlt =
+                grounds.getSecureOrFlexibleDiscretionaryGroundsAlt();
+
+        Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds = grounds.getSecureOrFlexibleMandatoryGrounds();
+
+        Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> mandatoryGroundsAlt =
+                grounds.getSecureOrFlexibleMandatoryGroundsAlt();
+
+        boolean hasOtherDiscretionaryGrounds = discretionaryGrounds
+                .stream()
+                .anyMatch(ground -> ground != RENT_ARREARS_OR_BREACH_OF_TENANCY
+                );
+
+        if (discretionaryGrounds.isEmpty() && discretionaryGroundsAlt.isEmpty() && mandatoryGrounds.isEmpty()
+            && mandatoryGroundsAlt.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errorMessageOverride("Please select at least one ground")
+                .build();
+        } else if (mandatoryGrounds.contains(SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL)
+                && grounds.getSecureAntisocialAdditionalGrounds().isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errorMessageOverride("Please select at least one absolute ground for possession for antisocial "
+                        + "behaviour")
+                .build();
+        }
+
+        if (!discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
+            // Ground 1 not selected - clear rent arrears data
+            caseData.setRentArrearsOrBreachOfTenancy(Set.of());
+        }
+        if (hasOtherDiscretionaryGrounds
+                || !discretionaryGroundsAlt.isEmpty()
+                || !mandatoryGrounds.isEmpty()
+                || !mandatoryGroundsAlt.isEmpty()
+        ) {
+            caseData.setShowReasonsForGroundsPage(YesOrNo.YES);
+        } else {
+            caseData.setShowReasonsForGroundsPage(YesOrNo.NO);
+        }
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+    }
+}

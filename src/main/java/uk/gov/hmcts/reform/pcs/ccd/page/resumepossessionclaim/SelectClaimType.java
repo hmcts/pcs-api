@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
@@ -23,13 +24,28 @@ public class SelectClaimType implements CcdPageConfiguration {
             .pageLabel("Claim type")
             .label("selectClaimType-info", """
                         ---
-                        If you’re not sure whether your claim is against trespassers,
-                        <a href="https://www.gov.uk/squatting-law/remove-squatters"
-                            rel="noreferrer noopener"
-                            target="_blank"
-                            class="govuk-link">read the guidance on removing squatters (opens in a new tab)</a>.
+                        <h3 class="govuk-heading-s govuk-!-font-size-19">Trespass claim</h3>
+                        <p class="govuk-body">
+                        A trespass claim can be made against someone who:
+                        <ul class="govuk-list govuk-list--bullet">
+                            <li class="govuk-!-font-size-19">
+                            entered or remained in the property without your consent</li>
+                            <li class="govuk-!-font-size-19">
+                            is not a tenant, sub-tenant or licensee (even if a tenancy or licence has ended)</li>
+                        </ul>
+                        </p>
+                        <p class="govuk-body">
+                        This includes someone who:
+                        <ul class="govuk-list govuk-list--bullet">
+                            <li class="govuk-!-font-size-19">
+                            had the licence terminated</li>
+                            <li class="govuk-!-font-size-19">
+                            who has no right to occupy because they did not succeed to the tenancy after a death</li>
+                        </ul>
+                        </p>
                         """)
-            .mandatory(PCSCase::getClaimAgainstTrespassers);
+            .mandatory(PCSCase::getClaimAgainstTrespassers)
+            .label("selectClaimType-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

@@ -3,8 +3,8 @@
 @Library("Infrastructure")
 
 import uk.gov.hmcts.contino.AppPipelineDsl
-import uk.gov.hmcts.contino.GradleBuilder
 import uk.gov.hmcts.contino.GithubAPI
+import uk.gov.hmcts.contino.GradleBuilder
 
 def type = "java"
 def product = "pcs"
@@ -16,7 +16,13 @@ def secrets = [
     secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
     secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
-    secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD')
+    secret('idam-testing-support-url', 'IDAM_TESTING_SUPPORT_URL'),
+    secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
+    secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
+    secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
+    secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD'),
+    secret('idam-expired-user-token', 'IDAM_EXPIRED_USER_TOKEN'),
+    secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
   ]
 ]
 
@@ -35,21 +41,42 @@ withPipeline(type, product, component) {
   def githubApi = new GithubAPI(this)
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
+  env.PACT_BROKER_URL = "https://pact-broker.platform.hmcts.net"
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
 
   onPR() {
-    // Skipping PACT publish on PRs until contracts are verified and CONSUMER_DEPLOY_CHECK can be added
-    // enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
+    enablePactAs([
+      AppPipelineDsl.PactRoles.CONSUMER,
+      AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
+    ])
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+      env.CCD_ENABLED = "true"
+      env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
       enableHighLevelDataSetup()
+    } else {
+      env.CCD_ENABLED = "false"
+    }
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
+      env.E2E_SUITE = "chrome"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
+      env.E2E_SUITE = "regression"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_makeAClaim_test").size() > 0) {
+      env.E2E_SUITE = "makeAClaim"
     }
   }
 
   onMaster() {
-    enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
+    enablePactAs([
+      AppPipelineDsl.PactRoles.CONSUMER,
+      AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
+    ])
+    enableHighLevelDataSetup("", true)
     setAatEnvVars()
+    enableE2eTest()
   }
 
   onDemo {
@@ -62,6 +89,7 @@ withPipeline(type, product, component) {
 
   onPerftest {
     setPerftestEnvVars()
+    enableHighLevelDataSetup()
   }
 
   before('highleveldatasetup') {
@@ -70,32 +98,61 @@ withPipeline(type, product, component) {
       env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     }
+    onMaster{
+      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
+      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
+      env.CASE_API_URL = "https://pcs-api-staging.aat.platform.hmcts.net"
+      env.CASE_TYPE_SUFFIX="staging"
+      generateDefinitions(builder)
+      env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
+      env.CASE_TYPE_SUFFIX=""
+    }
+    onPerftest{
+      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
+      env.CASE_API_URL = "http://pcs-api-perftest.service.core-compute-perftest.internal"
+      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-perftest.service.core-compute-perftest.internal"
+    }
     generateDefinitions(builder)
+  }
+
+  before('smoketest:aat') {
+    env.CASE_TYPE_SUFFIX="staging"
+    env.CCD_ENABLED = "true"
+  }
+
+  afterAlways('smoketest:preview') {
+    archiveSmokeTestReports()
+  }
+
+  afterAlways('smoketest:aat') {
+    archiveSmokeTestReports()
   }
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
-    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr:runE2eTests").size() > 0) {
-          runE2eTests(env.ENVIRONMENT)
-    }
   }
 
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
-    //Skipping e2e tests as the decentralisation is not currently supported in aat
-    //runE2eTests(env.ENVIRONMENT)
+  }
+
+  afterAlways('E2eTest:aat') {
+    if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
+      postAllureResultsToSlack('master')
+    }
   }
 }
 
 def setPreviewEnvVars() {
-  // TODO: Update URL to include XUI when available
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
+  env.E2E_SUITE= "pr"
 }
 
 def setAatEnvVars() {
-  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
+  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net"
   env.ENVIRONMENT= "aat"
+  env.E2E_SUITE= "regression"
 }
 
 def setDemoEnvVars() {
@@ -111,26 +168,9 @@ def setPerftestEnvVars() {
 }
 
 def generateDefinitions(builder) {
-  builder.gradle('generateCCDConfig')
+  builder.gradle('--rerun-tasks generateCCDConfig')
   sh "./bin/create-xlsx.sh ${env.ENVIRONMENT}"
   steps.archiveArtifacts artifacts: "build/definitions/*.xlsx"
-}
-
-def runE2eTests(String context) {
-  try {
-    stage('E2E Test - ' + context) {
-      sh './gradlew runE2eChromeTests'
-    }
-  } finally {
-    publishHTML([
-      allowMissing: true,
-      alwaysLinkToLastBuild: true,
-      keepAll: true,
-      reportDir: "src/e2eTest/allure-report",
-      reportFiles: 'index.html',
-      reportName: 'EXUI E2E Test Report'
-    ])
-  }
 }
 
 def archiveFunctionalTestReports() {
@@ -144,6 +184,51 @@ def archiveFunctionalTestReports() {
   ])
 
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
+}
+
+def archiveSmokeTestReports() {
+  publishHTML([
+    allowMissing: true,
+    alwaysLinkToLastBuild: true,
+    keepAll: true,
+    reportDir: "report-for-smoke-tests",
+    reportFiles: 'index.html',
+    reportName: 'API Smoke Test Report'
+  ])
+
+  archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-smoke-tests/*'
+}
+
+def archiveE2eTestReports() {
+  publishHTML([
+    allowMissing: true,
+    alwaysLinkToLastBuild: true,
+    keepAll: true,
+    reportDir: "e2e-output",
+    reportFiles: 'index.html',
+    reportName: 'E2E Test Report'
+  ])
+
+  archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
+}
+
+// E2E stage notification to #hdp-qa-e2e-test-results
+def postAllureResultsToSlack(String pipelineType = 'master') {
+  env.E2E_SERVICE_NAME = 'pcs-api'
+  env.E2E_PIPELINE_TYPE = pipelineType
+  def msg = sh(
+    script: "cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=${pipelineType} ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true",
+    returnStdout: true
+  ).trim()
+  if (!msg) {
+    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
+  }
+  try {
+    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
+    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results"
+  } catch (Exception e) {
+    echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
+  }
 }
 
 

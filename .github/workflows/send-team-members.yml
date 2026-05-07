@@ -1,0 +1,63 @@
+name: send-team-members.yml
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+jobs:
+  send_reviewers:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Send assigned reviewers to webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Waiting for reviewer assignment..."
+          sleep 10
+
+          echo "Fetching reviewers from GitHub API..."
+          REVIEWERS_JSON=$(curl -s \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/requested_reviewers")
+          
+          echo "Fetching GitHub-Slack user mappings..."
+          MAPPINGS=$(curl -s https://raw.githubusercontent.com/hmcts/github-slack-user-mappings/master/slack.json)
+
+          echo "$MAPPINGS" | jq -e '.users' > /dev/null || { echo "Failed to parse users array"; exit 1; }
+
+          GITHUB_REVIEWERS=$(echo "$REVIEWERS_JSON" | jq -r '.users[].login')
+
+          echo "GitHub reviewers: $GITHUB_REVIEWERS"
+
+          SLACK_IDS=""
+          for github_user in $GITHUB_REVIEWERS; do
+            echo "Looking up: $github_user"
+            slack_id=$(echo "$MAPPINGS" | jq -r --arg user "$github_user" '.users[] | select(.github == $user) | .slack')
+            if [ -n "$slack_id" ]; then
+              SLACK_IDS="$SLACK_IDS<@$slack_id> "
+              echo "✓ Mapped $github_user -> $slack_id"
+            else
+              SLACK_IDS="$SLACK_IDS@$github_user "
+              echo "✗ No mapping for $github_user"
+            fi
+          done
+
+          TEAM_REVIEWERS=$(echo "$REVIEWERS_JSON" | jq -r '.teams[].name' | paste -sd "," -)
+
+          PAYLOAD=$(jq -n \
+            --arg title "$PR_TITLE" \
+            --arg author "$PR_AUTHOR" \
+            --arg reviewers "$SLACK_IDS" \
+            --arg teams "$TEAM_REVIEWERS" \
+            --arg url "$PR_URL" \
+            '{"text": ("New PR review requested: \($title) by @\($author) - Reviewers: \($reviewers)\(if $teams != "" then " Team: \($teams)" else "" end) - \($url)")}')
+
+          curl -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD"
+
+          echo "Sent to webhook successfully!"

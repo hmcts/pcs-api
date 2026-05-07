@@ -22,7 +22,8 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     private static final CcdRoleConfig[] CCD_ROLES = {
         new CcdRoleConfig("caseworker-pcs", "PUBLIC"),
         new CcdRoleConfig("caseworker-pcs-solicitor", "PUBLIC"),
-        new CcdRoleConfig("citizen", "PUBLIC")
+        new CcdRoleConfig("citizen", "PUBLIC"),
+        new CcdRoleConfig("caseworker-ras-validation", "PUBLIC")
     };
 
 
@@ -56,9 +57,15 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     @Override
     protected List<String> getAllDefinitionFilesToLoadAt(String definitionsPath) {
         String environmentName = environment.name().toLowerCase(Locale.UK);
-        return List.of(
-            "build/definitions/CCD_Definition_" + CaseType.getCaseType() + "_" + environmentName + ".xlsx"
+        List<String> files = new java.util.ArrayList<>(
+            List.of("build/definitions/CCD_Definition_" + CaseType.getCaseType()
+                        + "_" + environmentName + ".xlsx")
         );
+        if ("aat".equals(environmentName)) {
+            files.add("build/definitions/CCD_Definition_" + CaseType.getCaseType()
+                          + "-staging_" + environmentName + ".xlsx");
+        }
+        return files;
     }
 
     @Override

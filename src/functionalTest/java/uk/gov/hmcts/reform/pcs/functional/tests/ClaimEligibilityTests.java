@@ -11,8 +11,6 @@ import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 
-import java.io.IOException;
-
 //Although this is a testing support endpoint, we’re adding some functional tests to ensure the logic works as expected
 
 @Issue("HDPI-1285")
@@ -25,38 +23,38 @@ class ClaimEligibilityTests extends BaseApi {
 
     @Title("Claim Eligibility endpoint - returns 200 and ELIGIBLE for an active whitelisted postcode")
     @Test
-    void shouldReturnEligible() throws IOException {
+    void shouldReturnEligible() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsTheQueryParameter("postcode", "W3 7RX");
         apiSteps.callIsSubmittedToTheEndpoint("ClaimEligibility", "GET");
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "src/functionalTest/resources/responses/claimEligibilityEligibleResponse.json");
+            "/responses/claimEligibilityEligibleResponse.json");
     }
 
     @Title("Claim Eligibility endpoint - returns 200 and NOT_ELIGIBLE for an active postcode that is not whitelisted")
     @Test
-    void shouldReturnNotEligible() throws IOException {
+    void shouldReturnNotEligible() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsTheQueryParameter("postcode", "W3 6RS");
         apiSteps.callIsSubmittedToTheEndpoint("ClaimEligibility", "GET");
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "src/functionalTest/resources/responses/claimEligibilityNotEligibleResponse.json");
+            "/responses/claimEligibilityNotEligibleResponse.json");
     }
 
     @Title("Claim Eligibility endpoint - returns 200 and LEGISLATIVE_COUNTRY_REQUIRED for cross-border postcode")
     @Test
-    void shouldReturnLegislativeCountryRequired() throws IOException {
+    void shouldReturnLegislativeCountryRequired() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsTheQueryParameter("postcode", "SY132LH");
         apiSteps.callIsSubmittedToTheEndpoint("ClaimEligibility", "GET");
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "src/functionalTest/resources/responses/claimEligibilityLegislativeCountryRequired.json");
+            "/responses/claimEligibilityLegislativeCountryRequired.json");
     }
 
     @Title("Claim Eligibility endpoint - returns 200 and NO_MATCH_FOUND for expired postcode")

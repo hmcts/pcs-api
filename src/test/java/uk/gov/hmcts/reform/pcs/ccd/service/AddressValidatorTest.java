@@ -55,6 +55,30 @@ class AddressValidatorTest {
         assertThat(actualValidationErrors).isEqualTo(expectedValidationErrors);
     }
 
+    @ParameterizedTest
+    @MethodSource("addressScenarios")
+    void shouldReturnErrorsWithSectionHintIfAddressNotValid(String postTown,
+                                                            String postcode,
+                                                            List<String> expectedValidationErrors) {
+        // Given
+        String sectionHint = "some section";
+
+        AddressUK address = AddressUK.builder()
+            .postTown(postTown)
+            .postCode(postcode)
+            .build();
+
+        // When
+        List<String> actualValidationErrors = underTest.validateAddressFields(address, sectionHint);
+
+        // Then
+        assertThat(actualValidationErrors).hasSameSizeAs(expectedValidationErrors);
+        for (int i = 0; i < actualValidationErrors.size(); i++) {
+            assertThat(actualValidationErrors.get(i))
+                .isEqualTo(expectedValidationErrors.get(i) + " for " + sectionHint);
+        }
+    }
+
     private static Stream<Arguments> addressScenarios() {
         return Stream.of(
             // Town, postcode, expected validation errors

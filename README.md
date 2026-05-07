@@ -18,12 +18,13 @@ To build the project execute the following command:
 ```bash
 ./gradlew bootWithCCD
 ```
+
 Above command starts PCS API + CCD & all dependencies
 
 This will start several containers:
 
 | Container                         | Port |
-|-----------------------------------|------|
+| --------------------------------- | ---- |
 | PCS-API                           | 3206 |
 | XUI Manage case (UI Access point) | 3000 |
 | Elastic search                    | 9200 |
@@ -53,14 +54,18 @@ authMode = AuthMode.AAT
 Then set the following environment variables based on the value below or named secret
 from the PCS AAT key vault:
 
-| Environment Variable     | Value or Secret Name                                             |
-|--------------------------|------------------------------------------------------------------|
-| LOCATION_REF_URL         | http://rd-location-ref-api-aat.service.core-compute-aat.internal |
-| PCS_API_S2S_SECRET       | secret: pcs-api-s2s-secret                                       |
-| IDAM_CLIENT_SECRET       | secret: pcs-api-idam-secret                                      |
-| PCS_IDAM_SYSTEM_USERNAME | secret: idam-system-user-name                                    |
-| PCS_IDAM_SYSTEM_PASSWORD | secret: idam-system-user-password                                |
-
+| Environment Variable         | Value or Secret Name                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| LOCATION_REF_URL             | http://rd-location-ref-api-aat.service.core-compute-aat.internal             |
+| DATA_STORE_URL_BASE          | https://ccd-data-store-api-pcs-api-pr-{CHANGE_ID}.preview.platform.hmcts.net |
+| PCS_API_S2S_SECRET           | secret: pcs-api-s2s-secret                                                   |
+| IDAM_CLIENT_SECRET           | secret: pcs-api-idam-secret                                                  |
+| PCS_IDAM_SYSTEM_USERNAME     | secret: idam-system-user-name                                                |
+| PCS_IDAM_SYSTEM_PASSWORD     | secret: idam-system-user-password                                            |
+| PCS_PRD_ADMIN_USERNAME       | secret: pcs-prd-admin-username                                               |
+| PCS_PRD_ADMIN_PASSWORD       | secret: pcs-prd-admin-password                                               |
+| IDAM_PCS_USER_PASSWORD       | secret: idam-pcs-user-password                                               |
+| PCS_SOLICITOR_AUTOMATION_UID | secret: pcs-solicitor-automation-uid                                         |
 
 Finally, run the service with the `bootWithCCD` task as above.
 
@@ -88,6 +93,7 @@ To access the swagger documentation for the API, go to http://localhost:3206/swa
 The Functional tests use [Rest Assured](https://rest-assured.io) and [Serenity](https://serenity-bdd.github.io) for reporting, and are located in the `/src/functionalTest` directory.
 
 The following environment variables are needed to run the tests:
+
 - PCS_API_S2S_SECRET
 - TEST_URL
 - IDAM_S2S_AUTH_URL
@@ -95,16 +101,21 @@ The following environment variables are needed to run the tests:
 - IDAM_SYSTEM_USERNAME
 - IDAM_SYSTEM_USER_PASSWORD
 - PCS_API_IDAM_SECRET
+- IDAM_EXPIRED_USER_TOKEN
+- S2S_EXPIRED_TOKEN
+- IDAM_TESTING_SUPPORT_URL
 
 To run the tests, use:
+
 ```bash
 ./gradlew functional
-````
+```
 
 To run tests based on tags, use the following command (replace `tagName` with the desired tag):
+
 ```bash
 ./gradlew functional -Dtags="tagName"
-````
+```
 
 Additionally, you can configure the tags to run in the pipeline by editing the functional task in the `build.gradle`, line:
 
@@ -120,41 +131,53 @@ This is done with:
 
 ```bash
 cd src/e2eTest
-````
+```
 
 Before running any tests, please install all required packages:
 
 ```bash
 yarn install
-````
+```
+
 Running the tests:
 
 The e2e tests use playwright, and are located in the /src/e2eTest directory.
 
 The following environment variables are needed to run the tests:
 
-- CHANGE_ID (same as PR number - Required only pointing to Preview env)
-- MANAGE_CASE_BASE_URL
 - PCS_API_IDAM_SECRET
-- IDAM_SYSTEM_USERNAME
-- IDAM_SYSTEM_USER_PASSWORD
 - IDAM_PCS_USER_PASSWORD
+- DATA_STORE_URL_BASE
+- MANAGE_CASE_BASE_URL
+- CHANGE_ID (same as PR number - Required only pointing to Preview env)
 
 The e2e suite can be run with the following command:
 
+To run the critical tests/PR tagged tests, use:
+
 ```bash
-yarn test:chrome
+yarn test:pr
 ```
+
 There are also several custom test scripts available:
 
-- `yarn test:changed` - runs only changed spec files
+- `yarn test:regression` - runs regression tagged tests
 - `yarn test:chrome` - runs the full E2E suite in Chrome
+- `yarn test:firefox` - runs the full E2E suite in Firefox
+- `yarn test:webkit` - runs the full E2E suite in WebKit (Safari engine)
+- `yarn test:edge` - runs the full E2E suite in Microsoft Edge
+- `yarn test:mobile-android` / `yarn test:mobile-ios` / `yarn test:mobile-ipad` - run the full suite on the matching Playwright device profile
+
+Locally, `playwright.config.ts` registers Firefox, WebKit, Edge, and mobile projects only when `CI` is set (as on Jenkins). For a local multi-browser run, set `CI=true` or pass `--project <name>` for a project that is defined in config.
+
+The nightly Jenkins job (`Jenkinsfile_nightly`) runs against **AAT** and offers `PLAYWRIGHT_GREP_TAG` (choice) and `PLAYWRIGHT_SPEC` (text). `handleEnvironmentSetting()` sets `E2E_TEST_SCOPE` and `E2E_SPEC` on the run; each matrix stage sets only `E2E_SUITE` in `withEnv` before `./gradlew runE2eTests` → `yarn test:<suite>`. `src/e2eTest/playwright.config.ts` reads those env vars for grep and `testMatch`.
 
 To open generated Allure report
 
 ```bash
 yarn test:openAllureReport
 ```
+
 Permanent IDAM Users:
 All permanent users needs to be added to ./data/permanent-users.data
 Temporary IDAM Users:
@@ -162,7 +185,65 @@ During test execution, temporary users are automatically created and tracked in 
 Update ./config/global-setup.config with list of roles for which temporary users needs to be created along with the key/name to
 identify them.
 
+### Running with Wiremock in Preview environment
+
+To enable a Wiremock pod in the Preview environment for a PR, add the label `pr-values:wiremock` to the PR. This
+will deploy a Wiremock instance pre-configured to respond to health/liveness checks, and proxy any requests
+for certain APIs to their AAT origin.
+
+Those API requests can then have mappings added for them to change the response. For example to update the Fee Register
+response for the possession claim fee:
+
+**POST** https://wiremock-pcs-api-pr-NNNN.preview.platform.hmcts.net/__admin/mappings
+
+**Headers**: Content-Type:application/json
+
+**Body**:
+
+```json
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/fees-register/fees/lookup",
+    "queryParameters": {
+      "service": {
+        "equalTo": "possession claim"
+      },
+      "jurisdiction1": {
+        "equalTo": "civil"
+      },
+      "jurisdiction2": {
+        "equalTo": "county court"
+      },
+      "channel": {
+        "equalTo": "default"
+      },
+      "event": {
+        "equalTo": "issue"
+      },
+      "amount_or_volume": {
+        "equalTo": "1"
+      },
+      "keyword": {
+        "equalTo": "PossessionCC"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "code": "FEE0412",
+      "description": "Recovery of Land - County Court (Test)",
+      "version": 1,
+      "fee_amount": 1234.56
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
-

@@ -6,16 +6,17 @@ import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 @Component
 @AllArgsConstructor
 public class SavingPageBuilderFactory {
 
-    private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final DraftCaseDataService draftCaseDataService;
 
-    public SavingPageBuilder create(EventBuilder<PCSCase, UserRole, State> eventBuilder) {
-        return new SavingPageBuilder(unsubmittedCaseDataService, eventBuilder);
+    public SavingPageBuilder create(EventBuilder<PCSCase, UserRole, State> eventBuilder, EventId eventId) {
+        return new SavingPageBuilder(draftCaseDataService, eventBuilder, eventId);
     }
 
 }

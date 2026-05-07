@@ -7,8 +7,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import java.util.List;
-
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
@@ -17,7 +15,7 @@ public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("claimantTypeNotEligibleEngland", this::midEvent)
-            .pageLabel("You're not eligible for this online service")
+            .pageLabel("You’re not eligible for this online service")
             .showCondition("showClaimantTypeNotEligibleEngland=\"Yes\"")
             .readonly(PCSCase::getShowClaimantTypeNotEligibleEngland, NEVER_SHOW)
             .label("claimantTypeNotEligibleEngland-info", """
@@ -50,7 +48,7 @@ public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-warning-text__assistive">Warning</span>
                     <span id="warning-message">
-                      To exit back to the case list, select 'Cancel'
+                      To exit to the case overview, select ‘Cancel’
                     </span>
                   </strong>
                 </div>
@@ -61,7 +59,7 @@ public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errors(List.of("You're not eligible for this online service"))
+            .errorMessageOverride("You’re not eligible for this online service")
             .build();
     }
 

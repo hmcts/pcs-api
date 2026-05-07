@@ -1,0 +1,39 @@
+{
+  "data": {
+    "propertyAddress": {
+      "AddressLine1": "1",
+      "AddressLine2": "Exton Gardens",
+      "AddressLine3": "70 Knyveton Road",
+      "PostTown": "Bournemouth",
+      "PostCode": "BH1 3BP",
+      "Country": "United Kingdom"
+    },
+    "legislativeCountry": "England",
+    "possessionClaimResponse": {
+      "claimantOrganisations": [
+
+      ],
+      "claimantEnteredDefendantDetails": {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "nameKnown": "YES",
+        "address": {
+
+        },
+        "addressKnown": "NO"
+      },
+      "defendantContactDetails": {
+        "party": {
+          "firstName": "Jane",
+          "lastName": "Doe",
+          "nameKnown": "YES",
+          "address": {
+
+          },
+          "addressKnown": "NO"
+        }
+      }
+    }
+  }
+}
+

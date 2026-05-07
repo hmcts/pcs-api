@@ -4,6 +4,7 @@ import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
@@ -14,8 +15,8 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 public enum ClaimantType implements HasLabel {
 
     PRIVATE_LANDLORD("Private landlord", Set.of(ENGLAND, WALES)),
-    PROVIDER_OF_SOCIAL_HOUSING("Registered provider of social housing", Set.of(ENGLAND)),
-    COMMUNITY_LANDLORD("Registered community landlord", Set.of(WALES)),
+    PROVIDER_OF_SOCIAL_HOUSING("Registered provider of social housing or local authority", Set.of(ENGLAND)),
+    COMMUNITY_LANDLORD("Community landlord", Set.of(WALES)),
     MORTGAGE_LENDER("Mortgage lender", Set.of(ENGLAND, WALES)),
     OTHER("Other", Set.of(ENGLAND, WALES));
 
@@ -24,11 +25,19 @@ public enum ClaimantType implements HasLabel {
 
     ClaimantType(String label, Set<LegislativeCountry> legislativeCountries) {
         this.label = label;
-        this.legislativeCountries = requireNonNull(legislativeCountries, "legistive countries must not be null");
+        this.legislativeCountries = requireNonNull(legislativeCountries, "legislative countries must not be null");
     }
 
     public boolean isApplicableFor(LegislativeCountry legislativeCountry) {
         return legislativeCountries.contains(legislativeCountry);
+    }
+
+    public static ClaimantType fromName(String code) {
+
+        return Arrays.stream(values())
+            .filter(type -> type.name().equals(code))
+            .findFirst()
+            .orElse(null);
     }
 
 }

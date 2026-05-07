@@ -1,0 +1,9 @@
+services:
+  wiremock:
+    image: wiremock/wiremock:latest
+    container_name: wiremock-local
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./src/test/resources/wiremock:/home/wiremock/mappings:ro
+    command: --global-response-templating --verbose --port 8083

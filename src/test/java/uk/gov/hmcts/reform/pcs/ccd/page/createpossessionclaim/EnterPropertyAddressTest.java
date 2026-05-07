@@ -98,6 +98,7 @@ class EnterPropertyAddressTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
+            .legislativeCountry(SCOTLAND)
             .build();
 
         EligibilityResult eligibilityResult = EligibilityResult.builder()
@@ -114,6 +115,9 @@ class EnterPropertyAddressTest extends BasePageTest {
         assertThat(resultData.getShowCrossBorderPage()).isEqualTo(expectedShowCrossBorder);
 
         if (status == EligibilityStatus.NO_MATCH_FOUND) {
+            assertThat(resultData.getLegislativeCountry()).isNull();
+            assertThat(resultData.getShowCrossBorderPage()).isEqualTo(NO);
+            assertThat(resultData.getShowPropertyNotEligiblePage()).isEqualTo(NO);
             assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YES);
             assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ALL_COUNTRIES");
         }
@@ -157,6 +161,28 @@ class EnterPropertyAddressTest extends BasePageTest {
     }
 
     @Test
+    void shouldNotShowPropertyNotEligibleOrCrossBorderPagesOnEligible() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder().postCode("M1 1AA").build();
+        PCSCase caseData = PCSCase.builder().propertyAddress(propertyAddress).build();
+
+        var result = EligibilityResult.builder()
+            .status(EligibilityStatus.ELIGIBLE)
+            .legislativeCountry(ENGLAND)
+            .build();
+
+        when(eligibilityService.checkEligibility("M1 1AA", null)).thenReturn(result);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> resp = callMidEventHandler(caseData);
+
+        // Then
+        PCSCase data = resp.getData();
+        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.NO);
+        assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
     void shouldShowPropertyNotEligiblePageOnNotEligible() {
         // Given
         AddressUK propertyAddress = AddressUK.builder().postCode("M1 1AA").build();
@@ -186,14 +212,14 @@ class EnterPropertyAddressTest extends BasePageTest {
             .propertyAddress(propertyAddress)
             .build();
 
-        List<String> expectedValidationErrors = List.of("error 1", "error 2");
-        when(addressValidator.validateAddressFields(propertyAddress)).thenReturn(expectedValidationErrors);
+        List<String> validationErrors = List.of("error 1", "error 2");
+        when(addressValidator.validateAddressFields(propertyAddress)).thenReturn(validationErrors);
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
+        assertThat(response.getErrorMessageOverride()).isEqualTo("error 1\nerror 2");
     }
 
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {

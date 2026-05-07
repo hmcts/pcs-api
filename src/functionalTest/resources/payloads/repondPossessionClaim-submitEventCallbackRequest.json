@@ -1,0 +1,39 @@
+{
+  "case_details_before": {},
+  "case_details": {
+    "id": "${caseId}",
+    "jurisdiction": "PCS",
+    "case_type_id": "${caseTypeId}",
+    "state": "AWAITING_SUBMISSION_TO_HMCTS",
+    "security_classification": "PUBLIC",
+    "case_data": {
+      "possessionClaimResponse": {
+        "defendantResponses": {
+          "tenancyTypeCorrect": "YES",
+          "tenancyType": "Assured Shorthold Tenancy",
+          "tenancyStartDate": "2020-01-01",
+          "defendantContactDetails": {
+            "party": {
+              "address": {},
+              "lastName": "Doe",
+              "firstName": "Jane",
+              "nameKnown": "YES",
+              "addressKnown": "NO"
+            }
+          }
+        }
+
+      }
+    }
+
+  },
+  "event_details": {
+    "case_type": "${caseTypeId}",
+    "event_name": "respondPossessionClaim",
+    "event_id": "respondPossessionClaim"
+  },
+  "internal_case_id": "${caseId}",
+  "start_revision": 1,
+  "merge_revision": 1
+}
+

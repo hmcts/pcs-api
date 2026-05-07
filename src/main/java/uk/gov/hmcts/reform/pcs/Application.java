@@ -4,26 +4,35 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.jms.annotation.EnableJms;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
+import uk.gov.hmcts.reform.pcs.idam.api.IdamTokenApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
-import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyApi;
+import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 
 @SpringBootApplication(
     scanBasePackages = {
+        "uk.gov.hmcts.reform.docassembly",
         "uk.gov.hmcts.reform.pcs",
-        "uk.gov.hmcts.ccd.sdk"
+        "uk.gov.hmcts.ccd.sdk",
+        "uk.gov.hmcts.reform.payments.client",
+        "uk.gov.hmcts.reform.ccd.client"
     })
-@SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, its not a utility class
+@SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, it's not a utility class
 @EnableFeignClients(
     clients = {
         HmcHearingApi.class,
         LocationReferenceApi.class,
         IdamApi.class,
-        DocAssemblyApi.class
+        IdamTokenApi.class,
+        RdProfessionalApi.class,
+        FeesApi.class
     }
 )
 @EnableJms
+@EnableScheduling
 public class Application {
 
     public static void main(final String[] args) {

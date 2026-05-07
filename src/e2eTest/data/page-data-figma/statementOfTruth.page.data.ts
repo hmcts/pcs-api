@@ -1,0 +1,18 @@
+export const statementOfTruth = {
+  mainHeader: `Statement of truth`,
+  iUnderstandThatProceedingsParagraph: `I understand that proceedings for contempt of court may be brought against anyone who makes, or causes to be made, a false statement in a document verified by a statement of truth without an honest belief in its truth.`,
+  completedByLabel: `Completed by`,
+  claimantRadioOption: `Claimant`,
+  claimantLegalRepresentativeRadioOption: `Claimant’s legal representative (as defined by CPR 2.3 (1))`,
+  iBelieveTheFactsHiddenCheckbox: `I believe that the facts stated in this claim form are true.`,
+  signThisStatementHiddenCheckbox: `The claimant believes that the facts stated in this claim form are true.  I am authorised by the claimant to sign this statement.`,
+  fullNameHiddenTextLabel: `Full name`,
+  fullNameHiddenTextInput: `John Doe`,
+  nameOfFirmHiddenTextLabel: `Name of firm`,
+  nameOfFirmHiddenTextInput: `Doe & Co Solicitors`,
+  positionOrOfficeHeldHiddenTextLabel: `Position or office held`,
+  positionOrOfficeHeldHiddenTextInput: `Solicitor`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`,
+}

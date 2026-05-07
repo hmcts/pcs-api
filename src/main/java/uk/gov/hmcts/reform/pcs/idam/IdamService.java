@@ -1,14 +1,13 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
-import com.nimbusds.oauth2.sdk.util.StringUtils;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
-import org.springframework.beans.factory.annotation.Value;
 import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 
 @Service
 @Slf4j
@@ -71,7 +70,7 @@ public class IdamService {
     }
 
     private String getBearerToken(String token) {
-        if (StringUtils.isBlank(token)) {
+        if (token == null || token.isBlank()) {
             return token;
         }
         return token.startsWith(BEARER_PREFIX) ? token : BEARER_PREFIX.concat(token);

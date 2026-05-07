@@ -9,24 +9,27 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import java.util.Optional;
 
 public class SavingPageBuilder extends PageBuilder {
 
-    private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final DraftCaseDataService draftCaseDataService;
+    private final EventId eventId;
 
-    public SavingPageBuilder(UnsubmittedCaseDataService unsubmittedCaseDataService,
-                             EventBuilder<PCSCase, UserRole, State> eventBuilder) {
+    public SavingPageBuilder(DraftCaseDataService draftCaseDataService,
+                             EventBuilder<PCSCase, UserRole, State> eventBuilder, EventId eventId) {
 
         super(eventBuilder);
-        this.unsubmittedCaseDataService = unsubmittedCaseDataService;
+        this.draftCaseDataService = draftCaseDataService;
+        this.eventId = eventId;
     }
 
     @Override
     public FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> page(String id) {
-        SavingMidEventDecorator savingMidEventDecorator = new SavingMidEventDecorator();
+        SavingMidEventDecorator savingMidEventDecorator = new SavingMidEventDecorator(eventId);
         return super.page(id, savingMidEventDecorator::handleMidEvent);
     }
 
@@ -34,7 +37,7 @@ public class SavingPageBuilder extends PageBuilder {
     public FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> page(
         String id, MidEvent<PCSCase, State> midEventCallback) {
 
-        SavingMidEventDecorator savingMidEventDecorator = new SavingMidEventDecorator(midEventCallback);
+        SavingMidEventDecorator savingMidEventDecorator = new SavingMidEventDecorator(midEventCallback, eventId);
         return super.page(id, savingMidEventDecorator::handleMidEvent);
     }
 
@@ -42,13 +45,16 @@ public class SavingPageBuilder extends PageBuilder {
     private class SavingMidEventDecorator {
 
         private final MidEvent<PCSCase, State> wrappedMidEvent;
+        private final EventId caseEventId;
 
-        public SavingMidEventDecorator() {
+        public SavingMidEventDecorator(EventId eventId) {
             this.wrappedMidEvent = null;
+            this.caseEventId = eventId;
         }
 
-        public SavingMidEventDecorator(MidEvent<PCSCase, State> midEvent) {
+        public SavingMidEventDecorator(MidEvent<PCSCase, State> midEvent, EventId eventId) {
             this.wrappedMidEvent = midEvent;
+            this.caseEventId = eventId;
         }
 
         public AboutToStartOrSubmitResponse<PCSCase, State> handleMidEvent(CaseDetails<PCSCase, State> details,
@@ -59,7 +65,7 @@ public class SavingPageBuilder extends PageBuilder {
                 wrappedMidEventResponse = wrappedMidEvent.handle(details, detailsBefore);
             }
 
-            saveUnsubmittedData(details);
+            patchUnsubmittedData(details);
 
             return Optional.ofNullable(wrappedMidEventResponse)
                 .orElseGet(() -> AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -67,11 +73,11 @@ public class SavingPageBuilder extends PageBuilder {
                     .build());
         }
 
-        private void saveUnsubmittedData(CaseDetails<PCSCase, State> details) {
+        private void patchUnsubmittedData(CaseDetails<PCSCase, State> details) {
             long caseReference = details.getId();
             PCSCase caseData = details.getData();
 
-            unsubmittedCaseDataService.saveUnsubmittedCaseData(caseReference, caseData);
+            draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId);
         }
 
     }

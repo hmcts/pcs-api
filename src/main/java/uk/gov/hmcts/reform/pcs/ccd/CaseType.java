@@ -1,16 +1,18 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 
 /**
  * Setup some common possessions case type configuration.
@@ -19,22 +21,29 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DE
 public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     private static final String CASE_TYPE_ID = "PCS";
-    private static final String CASE_TYPE_NAME = "Civil Possessions";
-    private static final String CASE_TYPE_DESCRIPTION = "Civil Possessions Case Type";
+    private static final String CASE_TYPE_NAME = "Possession";
+    private static final String CASE_TYPE_DESCRIPTION = "Possession Case Type";
     private static final String JURISDICTION_ID = "PCS";
-    private static final String JURISDICTION_NAME = "Possessions";
-    private static final String JURISDICTION_DESCRIPTION = "Possessions Jurisdiction";
+    private static final String JURISDICTION_NAME = "Civil Possession";
+    private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
+
+    @Value("${hmcts.hmctsOrgId}")
+    private String hmctsServiceId;
 
     public static String getCaseType() {
-        return withChangeId(CASE_TYPE_ID, "-");
+        return withSuffix(CASE_TYPE_ID, "-");
+    }
+
+    public static String getJurisdictionId() {
+        return JURISDICTION_ID;
     }
 
     public static String getCaseTypeName() {
-        return withChangeId(CASE_TYPE_NAME, " ");
+        return withSuffix(CASE_TYPE_NAME, " ");
     }
 
-    private static String withChangeId(String base, String separator) {
-        return ofNullable(getenv().get("CHANGE_ID"))
+    private static String withSuffix(String base, String separator) {
+        return ofNullable(getenv().get("CASE_TYPE_SUFFIX"))
             .map(changeId -> base + separator + changeId)
             .orElse(base);
     }
@@ -43,52 +52,65 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
 
-        builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
+        builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
-
-        String paymentLabel = "Payment Status";
+        builder.hmctsServiceId(hmctsServiceId);
 
         builder.searchInputFields()
-            .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
+            .caseReferenceField();
 
         builder.searchCasesFields()
-            .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
+            .caseReferenceField();
 
         builder.searchResultFields()
-            .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
-
-        builder.workBasketInputFields()
-            .caseReferenceField()
-            .field(PCSCase::getClaimantName, "Claimant Name");
+            .caseReferenceField();
 
         builder.workBasketResultFields()
             .caseReferenceField()
             .field(PCSCase::getPropertyAddress, "Property Address");
 
         builder.tab("nextSteps", "Next steps")
-            .showCondition(ShowConditions.stateEquals(AWAITING_FURTHER_CLAIM_DETAILS))
+            .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
             .field("nextStepsMarkdown", NEVER_SHOW);
 
-        builder.tab("summary", "Property Details")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
+        builder.tab("summary", "Summary")
+            .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
+            .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
             .field(PCSCase::getPropertyAddress);
 
         builder.tab("CaseHistory", "History")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("caseHistory");
-
-        builder.tab("ClaimPayment", "Payment")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
-            .showCondition("claimPaymentTabMarkdown!=\"\"")
-            .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
-            .field("claimPaymentTabMarkdown", NEVER_SHOW);
 
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
-            .field(PCSCase::getPageHeadingMarkdown);
+            .field(PCSCase::getCaseTitleMarkdown)
+            .field(PCSCase::getDashboardData);
+
+        builder.tab("serviceRequest", "Service Request")
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field("waysToPay");
+
+        builder.tab("caseFileView", "Case File View")
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
+
+        builder.tab("caseLinks", "Linked Cases")
+            .forRoles(UserRole.PCS_SOLICITOR)
+            .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
+            .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
+
+        configureCaseFileCategories(builder);
+    }
+
+    private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        for (CaseFileCategory category : CaseFileCategory.values()) {
+            builder.categories(UserRole.PCS_SOLICITOR)
+                .categoryID(category.getId())
+                .categoryLabel(category.getLabel())
+                .displayOrder(category.getDisplayOrder())
+                .build();
+        }
     }
 }

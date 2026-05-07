@@ -8,13 +8,14 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
 @ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class})
@@ -38,14 +40,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "referenceData_location", port = "8089")
-
+@RequiredArgsConstructor
+@TestConstructor(autowireMode = ALL)
 public class LocationReferenceDataApiConsumerTest {
 
     private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
     private static final String AUTHORIZATION_TOKEN = "Bearer userToken";
 
-    @Autowired
-    private LocationReferenceApi locationReferenceApi;
+    private final LocationReferenceApi locationReferenceApi;
 
     @Pact(provider = "referenceData_location", consumer = "pcs_api")
     public V4Pact getCourtVenueByEpimmsIdAndType(PactDslWithProvider builder) throws IOException {

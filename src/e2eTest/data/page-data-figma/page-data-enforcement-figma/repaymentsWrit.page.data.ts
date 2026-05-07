@@ -1,0 +1,22 @@
+export const repaymentsWrit = {
+  EnforceTheOrderCaption: `Enforce the order`,
+  mainHeader: `Repayments`,
+  totalAmountCaption: `Total amount that can be repaid`,
+  repaymentForTableHeader: `Repayment for`,
+  amountTableHeader: `Amount`,
+  arrearsAndOtherCostsTableHeader: `Arrears and other costs`,
+  legalCostsTableHeader: `Legal costs`,
+  landRegistryFeesTableHeader: `Land Registry fees`,
+  writOfPossessionFeeTableHeader: `Writ of possession fee`,
+  TotalTableHeader: `Total`,
+  rePaymentQuestion: `How much do you want the defendants to repay?`,
+  allRadioOptions: `All of it`,
+  someRadioOptions: `Some of it`,
+  noneRadioOptions: `None of it`,
+  enterTheAmountTextLabelHidden: `Enter the amount that you want the defendants to repay`,
+  enterTheAmountTextInputHidden: `100.50`,
+  summarySaveApplicationLink: `I want to save this application and return to it later`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`
+}

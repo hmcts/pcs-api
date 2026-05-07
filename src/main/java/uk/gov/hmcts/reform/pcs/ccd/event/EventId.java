@@ -2,11 +2,15 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 public enum EventId {
 
-    citizenCreateApplication,
-    citizenSubmitApplication,
-    citizenUpdateApplication,
     createPossessionClaim,
-    processClaimPayment,
     resumePossessionClaim,
-
+    enforceTheOrder,
+    respondPossessionClaim,
+    submitDefendantResponse,
+    citizenCreateGenApp,
+    createTestCase,
+    createCaseLink,
+    maintainCaseLink,
+    dashboardView,
+    confirmEviction
 }

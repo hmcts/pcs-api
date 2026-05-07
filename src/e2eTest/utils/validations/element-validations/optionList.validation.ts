@@ -1,10 +1,10 @@
 import {Page, expect} from '@playwright/test';
-import {IValidation, validationRecord} from "../../interfaces/validation.interface";
+import {IValidation, validationRecord} from "@utils/interfaces";
 
 export class OptionListValidation implements IValidation {
     async validate(page: Page, validation: string, fieldName: string, data: validationRecord): Promise<void> {
         const locator = page.locator(`input[type="${data.elementType}"][name="${fieldName}"]`,);
-        await page.locator(`fieldset:has-text("${fieldName}") >> label:has-text("${data.options}")`).click();
+        await page.locator(`fieldset:has(:text-is("${fieldName}")) >> label:text-is("${data.options}")`).click();
         const count = await locator.count();
         const actual: string[] = [];
 

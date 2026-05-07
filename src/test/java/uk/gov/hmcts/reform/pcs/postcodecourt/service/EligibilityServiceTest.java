@@ -59,7 +59,7 @@ class EligibilityServiceTest {
 
         assertThat(throwable)
             .isInstanceOf(InvalidPostCodeException.class)
-            .hasMessage("Postcode can't be empty or null");
+            .hasMessage("Postcode can’t be empty or null");
     }
 
     @Test

@@ -1,7 +1,7 @@
 provider "azurerm" {
   features {}
-  alias                      = "postgres_network"
-  subscription_id            = var.aks_subscription_id
+  alias           = "postgres_network"
+  subscription_id = var.aks_subscription_id
 }
 
 data "azurerm_key_vault" "pcs_key_vault" {
@@ -19,18 +19,18 @@ module "postgresql" {
 
   product       = var.product
   component     = var.component
-  name        = "${var.product}"
+  name          = var.product
   business_area = "cft"
 
   subnet_suffix = "expanded"
-  common_tags = var.common_tags
+  common_tags   = var.common_tags
   pgsql_databases = [
     {
       name : var.product
     }
   ]
 
-  pgsql_version = var.pgsql_version
+  pgsql_version        = var.pgsql_version
   admin_user_object_id = var.jenkins_AAD_objectId
 }
 

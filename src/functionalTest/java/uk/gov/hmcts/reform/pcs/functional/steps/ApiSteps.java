@@ -1,33 +1,42 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.annotations.Step;
 import net.serenitybdd.rest.SerenityRest;
+import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator;
+import uk.gov.hmcts.reform.pcs.functional.testutils.JsonAssertUtils;
+import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.notNullValue;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.solicitorUser;
 
 public class ApiSteps {
 
     private RequestSpecification request;
+    private Response response;
     private static final String baseUrl = System.getenv("TEST_URL");
-    private static String pcsApiS2sToken;
+    public static String pcsApiS2sToken;
     private static String pcsFrontendS2sToken;
     private static String unauthorisedS2sToken;
-    private static String idamToken;
+    public static String systemUserIdamToken;
+    public static String citizenUserIdamToken;
+    public static String solicitorUserIdamToken;
+    Long caseId;
 
     @Step("Generate S2S tokens")
     public static void setUp() {
@@ -36,7 +45,9 @@ public class ApiSteps {
         pcsFrontendS2sToken = serviceAuthenticationGenerator.generate(TestConstants.PCS_FRONTEND);
         unauthorisedS2sToken = serviceAuthenticationGenerator.generate(TestConstants.CIVIL_SERVICE);
 
-        idamToken = IdamAuthenticationGenerator.generateToken();
+        systemUserIdamToken = PcsIdamTokenClient.generateToken(systemUser);
+        citizenUserIdamToken = PcsIdamTokenClient.generateToken(citizenUser);
+        solicitorUserIdamToken = PcsIdamTokenClient.generateToken(solicitorUser);
 
         SerenityRest.given().baseUri(baseUrl);
     }
@@ -60,18 +71,24 @@ public class ApiSteps {
         }
 
         String validS2sToken = serviceTokens.get(microservice.toLowerCase());
-        request = request.request().header(TestConstants.SERVICE_AUTHORIZATION, validS2sToken);
+        request = request.header(TestConstants.SERVICE_AUTHORIZATION, validS2sToken);
     }
 
     @Step("the request contains an unauthorised service token")
     public void theRequestContainsUnauthorisedServiceToken() {
-        request = request.request().header(TestConstants.SERVICE_AUTHORIZATION, unauthorisedS2sToken);
+        request = request.header(TestConstants.SERVICE_AUTHORIZATION, unauthorisedS2sToken);
     }
 
     @Step("the request contains an expired service token")
     public void theRequestContainsExpiredServiceToken() {
         String expiredS2sToken = TestConstants.EXPIRED_S2S_TOKEN;
-        request = request.request().header(TestConstants.SERVICE_AUTHORIZATION, expiredS2sToken);
+        request = request.header(TestConstants.SERVICE_AUTHORIZATION, expiredS2sToken);
+    }
+
+    @Step("the request contains an Idempotency-Key header")
+    public void theRequestContainsIdempotencyKeyHeader() {
+        String idempotencyKey = UUID.randomUUID().toString();
+        request = request.header("Idempotency-Key", idempotencyKey);
     }
 
     @Step("the request contains the path parameter {0} as {1}")
@@ -84,22 +101,28 @@ public class ApiSteps {
     public void callIsSubmittedToTheEndpoint(String resource, String method) {
         Endpoints resourceAPI = Endpoints.valueOf(resource);
 
-        switch (method.toUpperCase()) {
-            case "POST" -> SerenityRest.when().post(resourceAPI.getResource());
-            case "GET" -> SerenityRest.when().get(resourceAPI.getResource());
-            case "DELETE" -> SerenityRest.when().delete(resourceAPI.getResource());
+        response = switch (method.toUpperCase()) {
+            case "POST" -> request.when().post(resourceAPI.getResource());
+            case "GET" -> request.when().get(resourceAPI.getResource());
+            case "DELETE" -> request.when().delete(resourceAPI.getResource());
             default -> throw new IllegalStateException("Unexpected value: " + method.toUpperCase());
-        }
+        };
     }
 
     @Step("Check status code is {0}")
     public void checkStatusCode(int statusCode) {
-        SerenityRest.then().assertThat().statusCode(statusCode);
+        if (response == null) {
+            throw new IllegalStateException("No response available. Did you call callIsSubmittedToTheEndpoint first?");
+        }
+        response.then().assertThat().statusCode(statusCode);
     }
 
     @Step("the response body contains {0} as a string: {1}")
     public void theResponseBodyContainsAString(String attribute, String value) {
-        SerenityRest.then().assertThat().body(attribute, Matchers.equalTo(value));
+        if (response == null) {
+            throw new IllegalStateException("No response available. Did you call callIsSubmittedToTheEndpoint first?");
+        }
+        response.then().assertThat().body(attribute, Matchers.equalTo(value));
     }
 
     @Step("the response body matches the expected list")
@@ -115,17 +138,22 @@ public class ApiSteps {
     }
 
     @Step("the response body matches the expected response")
-    public void theResponseBodyMatchesTheExpectedResponse(String expectedResponsePath) throws IOException {
-        String expectedResponse = new String(Files.readAllBytes(Paths.get(expectedResponsePath)));
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode expectedJson = mapper.readTree(expectedResponse);
-        JsonNode actualJson = mapper.readTree(SerenityRest.lastResponse().asString());
-        assertEquals(expectedJson, actualJson);
+    public void theResponseBodyMatchesTheExpectedResponse(String expectedPath) {
+        JsonAssertUtils.assertEqualsIgnoreFields(
+            expectedPath,
+            SerenityRest.lastResponse().getBody().asString()
+        );
     }
 
     @Step("the request contains a valid IDAM token")
-    public void theRequestContainsValidIdamToken() {
-        request = request.header(TestConstants.AUTHORIZATION, "Bearer " + idamToken);
+    public void theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType user) {
+        String userToken = switch (user) {
+            case systemUser -> systemUserIdamToken;
+            case citizenUser -> citizenUserIdamToken;
+            case solicitorUser -> solicitorUserIdamToken;
+        };
+
+        request = request.header(TestConstants.AUTHORIZATION, "Bearer " + userToken);
     }
 
     @Step("the request contains an expired IDAM token")
@@ -137,5 +165,102 @@ public class ApiSteps {
     @Step("the request contains the query parameter {0} as {1}")
     public void theRequestContainsTheQueryParameter(String queryParam, String value) {
         request = request.queryParam(queryParam, value);
+    }
+
+    @Step("the request contains a request body")
+    public void theRequestContainsBody(Object body) {
+        request = request.body(body);
+    }
+
+    @Step("a case for {0} is created")
+    public Long ccdCaseIsCreated(String legislativeCountry) {
+        final int maxAttempts = 3;
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            var response = SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .pathParam("legislativeCountry", legislativeCountry)
+                .when()
+                .post(Endpoints.CreateTestCase.getResource());
+
+            if (response.statusCode() == 201) {
+                return response.then().extract().path("caseId");
+            }
+
+            if (attempt == maxAttempts) {
+                response.then().statusCode(201);
+            }
+        }
+        throw new IllegalStateException("Unexpected retry failure");
+    }
+
+    @Step("a pin is fetched")
+    public String accessCodeIsFetched(Long caseReference) {
+        Callable<String> fetchPins = () -> {
+            Map<String, Object> pins = SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .pathParam("caseReference", caseReference)
+                .when()
+                .get(Endpoints.GetPins.getResource())
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<Map<String, Object>>() {});
+
+            if (pins != null && !pins.isEmpty()) {
+                return pins.keySet().iterator().next();
+            }
+            return null;
+        };
+
+        try {
+            return await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(fetchPins, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Access code not available for case: " + caseReference, e
+            );
+        }
+    }
+
+
+    @Step("access code validated")
+    public String validateAccessCode(String caseReference, String accessCode) {
+        String idempotencyKey = UUID.randomUUID().toString();
+        Callable<String> validateCode = () -> {
+            SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsFrontendS2sToken)
+                .header("Idempotency-Key", idempotencyKey)
+                .pathParam("caseReference", caseReference)
+                .body(Map.of("accessCode", accessCode))
+                .when()
+                .post(Endpoints.ValidateAccessCode.getResource())
+                .then()
+                .statusCode(200);
+            return "Success";
+        };
+
+        try {
+            return await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(validateCode, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Validate access code failed: " + caseReference, e
+            );
+        }
     }
 }

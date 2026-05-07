@@ -13,9 +13,27 @@
     <cve>CVE-2023-36415</cve>
     <cve>CVE-2024-35255</cve>
   </suppress>
+
   <suppress base="true">
     <notes>Pebble templates</notes>
     <cve>CVE-2025-1686</cve>
   </suppress>
+
+  <suppress>
+    <notes><![CDATA[file name: angus-activation-2.0.3.jar]]> Suppressing false positive on angus activation</notes>
+    <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>
+    <cve>CVE-2025-7962</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[
+False positive: org.hibernate.validator:hibernate-validator is being incorrectly matched to Nu Html Checker (validator.nu)
+via the generic CPE "cpe:2.3:a:validator:validator". This project uses Hibernate Validator (Jakarta Bean Validation RI),
+not validator.nu.
+]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.hibernate\.validator/hibernate-validator@8\.0\.3\.Final$</packageUrl>
+    <cve>CVE-2025-15104</cve>
+  </suppress>
+
   <!--End of false positives section -->
 </suppressions>

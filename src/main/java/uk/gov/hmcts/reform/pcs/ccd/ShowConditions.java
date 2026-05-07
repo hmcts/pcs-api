@@ -17,4 +17,12 @@ public class ShowConditions {
         return "[STATE]!=\"%s\"".formatted(state.name());
     }
 
+    public static String fieldEquals(String fieldId, Enum<?> value) {
+        return "%s=\"%s\"".formatted(fieldId, value.name());
+    }
+
+    public static String fieldContains(String fieldId, Enum<?> value) {
+        return "%sCONTAINS\"%s\"".formatted(fieldId, value.name());
+    }
+
 }

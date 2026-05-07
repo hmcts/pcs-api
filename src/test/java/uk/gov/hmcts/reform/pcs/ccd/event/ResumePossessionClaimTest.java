@@ -1,6 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,30 +15,67 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimGroundService;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -41,12 +84,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.SCOTLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
@@ -54,251 +102,550 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @ExtendWith(MockitoExtension.class)
 class ResumePossessionClaimTest extends BaseEventTest {
 
+    private static final UUID USER_ID = UUID.randomUUID();
+    private static final BigDecimal CLAIM_FEE_AMOUNT = new BigDecimal("123.40");
+    public static final String RESPONSIBLE_PARTY_LTD = "Responsible Party Ltd";
+
     @Mock
     private PcsCaseService pcsCaseService;
-    @Mock
+    @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
-    @Mock
-    private PartyService partyService;
-    @Mock
-    private ClaimService claimService;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @Mock
     private ResumeClaim resumeClaim;
     @Mock
-    private UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private SelectClaimantType selectClaimantType;
     @Mock
     private ContactPreferences contactPreferences;
     @Mock
     private DefendantsDetails defendantsDetails;
     @Mock
     private NoticeDetails noticeDetails;
-    @Mock
+    @Mock(strictness = LENIENT)
     private UserInfo userDetails;
     @Mock
-    private TenancyLicenceDetails tenancyLicenceDetails;
+    private TenancyLicenceDetailsPage tenancyLicenceDetails;
     @Mock
-    private ClaimGroundService claimGroundService;
+    private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
+    @Mock
+    private NoRentArrearsGroundsForPossessionReason noRentArrearsGroundsForPossessionReason;
+    @Mock
+    private AdditionalReasonsForPossession additionalReasonsForPossession;
+    @Mock
+    private SecureOrFlexibleGroundsForPossessionReasons secureOrFlexibleGroundsForPossessionReasons;
+    @Mock
+    private MediationAndSettlement mediationAndSettlement;
+    @Mock
+    private ClaimantCircumstancesPage claimantCircumstancesPage;
+    @Mock
+    private IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    @Mock
+    private IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
+    @Mock
+    private RentArrearsGroundsForPossessionReasons rentArrearsGroundsForPossessionReasons;
+    @Mock
+    private SuspensionToBuyDemotionOfTenancyOrderReasons suspensionToBuyDemotionOfTenancyOrderReasons;
+    @Mock
+    private DefendantCircumstancesPage defendantCircumstancesPage;
+    @Mock
+    private SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
+    @Mock
+    private StatementOfExpressTerms statementOfExpressTerms;
+    @Mock
+    private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
+    @Mock
+    private OrganisationService organisationService;
+    @Mock
+    private ClaimantInformationPage claimantInformationPage;
+    @Mock
+    private ClaimantDetailsWalesPage claimantDetailsWalesPage;
+    @Mock
+    private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageePage;
+    @Mock
+    private ProhibitedConductWales prohibitedConductWalesPage;
+    @Mock
+    private SchedulerClient schedulerClient;
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
+    @Mock
+    private GroundsForPossessionWalesPage groundsForPossessionWales;
+    @Mock
+    private SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
+    @Mock
+    private ReasonsForPossessionWales reasonsForPossessionWales;
+    @Mock
+    private AddressFormatter addressFormatter;
+    @Mock
+    private RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
+    @Mock
+    private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
+    @Mock
+    private AssuredNoArrearsGroundsForPossessionPage noRentArrearsGroundsForPossessionOptions;
+    @Mock
+    private CheckingNotice checkingNotice;
+    @Mock
+    private WalesCheckingNotice walesCheckingNotice;
+    @Mock
+    private ASBQuestionsWales asbQuestionsWales;
+    @Mock
+    private FeeService feeService;
+    @Mock
+    private MoneyFormatter feeFormatter;
+    @Mock
+    private RentDetailsPage rentDetailsPage;
 
     @BeforeEach
     void setUp() {
         SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
-        when(savingPageBuilderFactory.create(any())).thenReturn(savingPageBuilder);
+        when(savingPageBuilderFactory.create(any(), any(EventId.class))).thenReturn(savingPageBuilder);
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
-
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
+        when(userDetails.getUid()).thenReturn(USER_ID.toString());
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, securityContextService,
-            partyService, claimService, claimGroundService,
             savingPageBuilderFactory, resumeClaim,
-            unsubmittedCaseDataService, noticeDetails,
-            tenancyLicenceDetails, contactPreferences,
-            defendantsDetails
+            selectClaimantType, noticeDetails,
+            uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
+            defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
+            secureOrFlexibleGroundsForPossessionReasons, mediationAndSettlement, claimantCircumstancesPage,
+            introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
+            rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
+            defendantCircumstancesPage, suspensionOfRightToBuyOrderReason, statementOfExpressTerms,
+            demotionOfTenancyOrderReason, organisationService, claimantInformationPage, claimantDetailsWalesPage,
+            prohibitedConductWalesPage, schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage,
+            groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
+            addressFormatter, rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
+            noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
+            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage
         );
 
         setEventUnderTest(underTest);
     }
 
-    @Test
-    void shouldThrowExceptionInStartCallbackIfPropertyAddressNotSet() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .legislativeCountry(WALES)
-            .build();
+    @Nested
+    @DisplayName("Start callback tests")
+    class StartCallbackTests {
 
-        // When
-        Throwable throwable = catchThrowable(() -> callStartHandler(caseData));
+        @Test
+        void shouldThrowExceptionIfPropertyAddressNotSet() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .legislativeCountry(WALES)
+                .build();
 
-        // Then
-        assertThat(throwable)
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Cannot resume claim without property address already set");
+            // When
+            Throwable throwable = catchThrowable(() -> callStartHandler(caseData));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Cannot resume claim without property address already set");
+        }
+
+        @Test
+        void shouldThrowExceptionIfLegislativeCountryNotSet() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .build();
+
+            // When
+            Throwable throwable = catchThrowable(() -> callStartHandler(caseData));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Cannot resume claim without legislative country already set");
+        }
+
+        @Test
+        void shouldSetClaimantNameFromOrganisationServiceWhenAvailable() {
+            // Given
+            String orgName = "ACME Org Ltd";
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(orgName);
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            ClaimantInformation claimantInformation = updatedCaseData.getClaimantInformation();
+
+            assertThat(claimantInformation.getOrgNameFound()).isEqualTo(YesOrNo.YES);
+            assertThat(claimantInformation.getClaimantName()).isEqualTo(orgName);
+        }
+
+        @Test
+        void shouldSetFlagWhenOrganisationNameNotAvailable() {
+            // Given
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            ClaimantInformation claimantInformation = updatedCaseData.getClaimantInformation();
+
+            assertThat(claimantInformation.getOrgNameFound()).isEqualTo(YesOrNo.NO);
+            assertThat(claimantInformation.getClaimantName()).isNull();
+        }
+
+        @Test
+        void shouldCreateContactPreferencesWhenNull() {
+            // Given
+            String userEmail = "user@test.com";
+            when(userDetails.getSub()).thenReturn(userEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+
+            AddressUK organisationAddress = mock(AddressUK.class);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn("formatted org address");
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .claimantContactPreferences(null)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getClaimantContactPreferences()).isNotNull();
+            assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail()).isEqualTo(userEmail);
+        }
+
+        @Test
+        void shouldSetOrganisationAddressAndFormattedAddressAndFlagWhenAddressPresent() {
+            // Given
+            String userEmail = "user@test.com";
+            when(userDetails.getSub()).thenReturn(userEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+
+            AddressUK organisationAddress = mock(AddressUK.class);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+
+            String formattedOrgAddress = "formatted org address";
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn(formattedOrgAddress);
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getClaimantContactPreferences().getOrganisationAddress())
+                .isEqualTo(organisationAddress);
+            assertThat(updatedCaseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
+                .isEqualTo(formattedOrgAddress);
+            assertThat(updatedCaseData.getClaimantContactPreferences().getOrgAddressFound())
+                .isEqualTo(YesOrNo.YES);
+        }
+
+        @Test
+        void shouldSetOrgAddressFoundNoWhenOrganisationAddressNull() {
+            // Given
+            String userEmail = "user@test.com";
+            when(userDetails.getSub()).thenReturn(userEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(null);
+            when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER))
+                .thenReturn(null);
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getClaimantContactPreferences().getOrganisationAddress()).isNull();
+            assertThat(updatedCaseData.getClaimantContactPreferences().getOrgAddressFound())
+                .isEqualTo(YesOrNo.NO);
+        }
+
+        @ParameterizedTest
+        @MethodSource("claimantTypeScenarios")
+        void shouldSetClaimantTypeList(LegislativeCountry legislativeCountry,
+                                       List<ClaimantType> expectedClaimantTypes) {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(legislativeCountry)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            List<String> actualClaimantTypeCodes = updatedCaseData.getClaimantType().getListItems().stream()
+                .map(DynamicStringListElement::getCode)
+                .toList();
+
+            List<String> expectedClaimantTypeCodes = expectedClaimantTypes.stream()
+                .map(ClaimantType::name)
+                .toList();
+
+            assertThat(actualClaimantTypeCodes).isEqualTo(expectedClaimantTypeCodes);
+        }
+
+        private static Stream<Arguments> claimantTypeScenarios() {
+            return Stream.of(
+                arguments(
+                    ENGLAND, List.of(
+                        ClaimantType.PRIVATE_LANDLORD,
+                        ClaimantType.PROVIDER_OF_SOCIAL_HOUSING,
+                        ClaimantType.MORTGAGE_LENDER,
+                        ClaimantType.OTHER
+                    )
+                ),
+                arguments(
+                    WALES, List.of(
+                        ClaimantType.PRIVATE_LANDLORD,
+                        ClaimantType.COMMUNITY_LANDLORD,
+                        ClaimantType.MORTGAGE_LENDER,
+                        ClaimantType.OTHER
+                    )
+                ),
+                arguments(SCOTLAND, List.of())
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("unsubmittedDataFlagScenarios")
+        void shouldSetFlagForUnsubmittedData(boolean hasUnsubmittedData, YesOrNo expectedCaseDataFlag) {
+            // Given
+            when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim))
+                .thenReturn(hasUnsubmittedData);
+
+            when(userDetails.getSub()).thenReturn("user@test.com");
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(null);
+            when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER)).thenReturn(null);
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(ENGLAND)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getHasUnsubmittedCaseData()).isEqualTo(expectedCaseDataFlag);
+            verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim);
+        }
+
+        private static Stream<Arguments> unsubmittedDataFlagScenarios() {
+            return Stream.of(
+                arguments(false, YesOrNo.NO),
+                arguments(true, YesOrNo.YES)
+            );
+        }
     }
 
-    @Test
-    void shouldThrowExceptionInStartCallbackIfLegislativeCountryNotSet() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .propertyAddress(mock(AddressUK.class))
-            .build();
+    @Nested
+    @DisplayName("Save for later submit callback tests")
+    class SaveForLaterTests {
 
-        // When
-        Throwable throwable = catchThrowable(() -> callStartHandler(caseData));
+        @Test
+        void shouldReturnConfirmationScreen() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(CompletionNextStep.SAVE_IT_FOR_LATER)
+                .build();
 
-        // Then
-        assertThat(throwable)
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Cannot resume claim without legislative country already set");
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(caseData);
+
+            // Then
+            assertThat(submitResponse.getConfirmationBody()).contains("A draft of your claim has been saved");
+        }
+
+        @Test
+        void shouldNotClearDraftData() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(CompletionNextStep.SAVE_IT_FOR_LATER)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any());
+        }
     }
 
-    @Test
-    void shouldSetClaimantDetailsInStartCallback() {
-        // Given
-        String expectedUserEmail = "user@test.com";
-        when(userDetails.getSub()).thenReturn(expectedUserEmail);
+    @Nested
+    @DisplayName("Submit and pay callback tests")
+    class SubmitAndPayTests {
 
-        AddressUK propertyAddress = AddressUK.builder()
-            .addressLine1("10 High Street")
-            .addressLine2("address line 2")
-            .addressLine3("address line 3")
-            .postTown("London")
-            .postCode("W1 2BC")
-            .country("United Kingdom")
-            .build();
+        @Test
+        void shouldCreateMainClaimOnCase() {
+            // Given
+            stubFeeService();
 
-        PCSCase caseData = PCSCase.builder()
-            .propertyAddress(propertyAddress)
-            .legislativeCountry(WALES)
-            .build();
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
+                .build();
 
-        // When
-        PCSCase updatedCaseData = callStartHandler(caseData);
+            // When
+            callSubmitHandler(caseData);
 
-        // Then
-        assertThat(updatedCaseData.getClaimantName()).isEqualTo(expectedUserEmail);
-        assertThat(updatedCaseData.getClaimantContactEmail()).isEqualTo(expectedUserEmail);
-        assertThat(updatedCaseData.getFormattedClaimantContactAddress())
-            .isEqualTo("10 High Street<br>London<br>W1 2BC");
+            // Then
+            verify(pcsCaseService).createMainClaimOnCase(TEST_CASE_REFERENCE, caseData);
+        }
+
+        @Test
+        void shouldSchedulePaymentTaskWithResponsiblePartyAsClaimantName() {
+            // Given
+            stubFeeService();
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName(RESPONSIBLE_PARTY_LTD).build())
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
+            assertThat(taskData.getResponsibleParty()).isEqualTo(RESPONSIBLE_PARTY_LTD);
+        }
+
+        @Test
+        void shouldSchedulePaymentTask() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
+                .build();
+
+            FeeDetails feeDetails = stubFeeService();
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
+            assertThat(taskData.getFeeType()).isEqualTo(FeeType.CASE_ISSUE_FEE.getCode());
+            assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
+            assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
+            assertThat(taskData.getCcdCaseNumber()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
+        }
+
+        @Test
+        void shouldScheduleAccessCodeTask() {
+            // Given
+            stubFeeService();
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            AccessCodeTaskData taskData = getScheduledTaskData(ACCESS_CODE_TASK_DESCRIPTOR);
+            assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
+        }
+
+        @Test
+        void shouldDeleteDraftDataOnSubmitAndPay() {
+            // Given
+            stubFeeService();
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim);
+        }
+
+        @Test
+        void shouldReturnConfirmationScreen() {
+            // Given
+            stubFeeService();
+
+            String formattedFee = "some formatted fee";
+            when(feeFormatter.formatFee(CLAIM_FEE_AMOUNT)).thenReturn(formattedFee);
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("test").build())
+                .build();
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(caseData);
+
+            // Then
+            assertThat(submitResponse.getConfirmationBody()).contains("You must pay the claim fee of " + formattedFee);
+        }
+
+        private FeeDetails stubFeeService() {
+            FeeDetails feeDetails = FeeDetails.builder().feeAmount(CLAIM_FEE_AMOUNT).build();
+            when(feeService.getFee(FeeType.CASE_ISSUE_FEE))
+                .thenReturn(feeDetails);
+
+            return feeDetails;
+        }
+
+        @SuppressWarnings("unchecked")
+        private <T> T getScheduledTaskData(TaskDescriptor<T> taskDescriptor) {
+            ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
+
+            verify(schedulerClient, atLeastOnce()).scheduleIfNotExists(captor.capture());
+            List<SchedulableInstance<?>> allTasks = captor.getAllValues();
+
+            String taskName = taskDescriptor.getTaskName();
+            Class<T> taskDataClass = taskDescriptor.getDataClass();
+
+            List<T> taskDataList = allTasks.stream()
+                .filter(t -> t.getTaskInstance().getTaskName().equals(taskName))
+                .map(SchedulableInstance::getTaskInstance)
+                .map(TaskInstance::getData)
+                .map(taskDataClass::cast)
+                .toList();
+
+            if (taskDataList.isEmpty()) {
+                throw new AssertionError("No scheduled task found with name " + taskName);
+            } else if (taskDataList.size() > 1) {
+                throw new AssertionError("Multiple scheduled tasks found with name " + taskName);
+            }
+
+            return taskDataList.getFirst();
+        }
+
+
     }
-
-    @ParameterizedTest
-    @MethodSource("claimantTypeScenarios")
-    void shouldSetClaimantTypeListInStartCallback(LegislativeCountry legislativeCountry,
-                                                  List<ClaimantType> expectedClaimantTypes) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .propertyAddress(mock(AddressUK.class))
-            .legislativeCountry(legislativeCountry)
-            .build();
-
-        // When
-        PCSCase updatedCaseData = callStartHandler(caseData);
-
-        // Then
-        List<String> actualClaimantTypeCodes = updatedCaseData.getClaimantType().getListItems().stream()
-            .map(DynamicStringListElement::getCode)
-            .toList();
-
-        List<String> expectedClaimantTypeCodes = expectedClaimantTypes.stream()
-            .map(ClaimantType::name)
-            .toList();
-
-        assertThat(actualClaimantTypeCodes).isEqualTo(expectedClaimantTypeCodes);
-    }
-
-    @Test
-    void shouldPatchCaseDataInSubmitCallback() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .legislativeCountry(WALES)
-            .build();
-
-        when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
-        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
-            .thenReturn(ClaimEntity.builder().build());
-
-        // When
-        callSubmitHandler(caseData);
-
-        // Then
-        ArgumentCaptor<PCSCase> pcsCaseCaptor = ArgumentCaptor.forClass(PCSCase.class);
-        verify(pcsCaseService).patchCase(eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture());
-
-        PCSCase dataToPatchWith = pcsCaseCaptor.getValue();
-        assertThat(dataToPatchWith).isSameAs(caseData);
-        assertThat(dataToPatchWith.getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
-        assertThat(dataToPatchWith.getLegislativeCountry()).isEqualTo(WALES);
-    }
-
-    @Test
-    void shouldCreatePartyInSubmitCallback() {
-        // Given
-        AddressUK propertyAddress = mock(AddressUK.class);
-        String claimantName = "Test Claimant";
-        String claimantContactEmail = "claimant@test.com";
-        String claimantContactPhoneNumber = "01234 567890";
-
-        UUID userId = UUID.randomUUID();
-        when(userDetails.getUid()).thenReturn(userId.toString());
-
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
-        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
-            .thenReturn(ClaimEntity.builder().build());
-
-        PCSCase caseData = PCSCase.builder()
-            .propertyAddress(propertyAddress)
-            .legislativeCountry(WALES)
-            .claimantName(claimantName)
-            .claimantContactEmail(claimantContactEmail)
-            .claimantContactPhoneNumber(claimantContactPhoneNumber)
-            .build();
-
-        // When
-        callSubmitHandler(caseData);
-
-        // Then
-        verify(partyService).createAndLinkParty(
-            eq(pcsCaseEntity),
-            eq(userId),
-            eq(claimantName),
-            eq(null),
-            eq(claimantContactEmail),
-            eq(propertyAddress),
-            eq(claimantContactPhoneNumber),
-            eq(true)
-        );
-    }
-
-    @Test
-    void shouldCreateMainClaimInSubmitCallback() {
-        // Given
-        UUID userId = UUID.randomUUID();
-        when(userDetails.getUid()).thenReturn(userId.toString());
-
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
-
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class)))
-            .thenReturn(claimEntity);
-
-        PCSCase caseData = mock(PCSCase.class);
-
-        // When
-        callSubmitHandler(caseData);
-
-        // Then
-        verify(claimService)
-            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(CLAIMANT));
-
-        verify(claimService).saveClaim(claimEntity);
-    }
-
-    private static Stream<Arguments> claimantTypeScenarios() {
-        return Stream.of(
-            arguments(
-                ENGLAND, List.of(
-                    ClaimantType.PRIVATE_LANDLORD,
-                    ClaimantType.PROVIDER_OF_SOCIAL_HOUSING,
-                    ClaimantType.MORTGAGE_LENDER,
-                    ClaimantType.OTHER
-                )
-            ),
-
-            arguments(
-                WALES, List.of(
-                    ClaimantType.PRIVATE_LANDLORD,
-                    ClaimantType.COMMUNITY_LANDLORD,
-                    ClaimantType.MORTGAGE_LENDER,
-                    ClaimantType.OTHER
-                )
-            ),
-
-            arguments(SCOTLAND, List.of())
-        );
-    }
-
 }

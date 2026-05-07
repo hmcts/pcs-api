@@ -1,56 +1,40 @@
-import {test} from '@playwright/test';
-import {parentSuite} from 'allure-js-commons';
-import {caseApiData} from '@data/api-data/case.api.data';
+import { test } from '@utils/test-fixtures';
 import {
   initializeExecutor,
   performAction,
   performValidation
 } from '@utils/controller';
-import {createCase} from '@data/page-data/createCase.page.data';
-import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
-import {user} from '@data/user-data/permanent.user.data';
-
-test.beforeEach(async ({page}, testInfo) => {
-    initializeExecutor(page);
-    await parentSuite('Search Case');
-    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await testInfo.attach('Page URL', {
-      body: page.url(),
-      contentType: 'text/plain',
-    });
-    await performAction('login', user.claimantSolicitor);
-    createCaseWithAddress();
+import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+test.beforeEach(async ({ page }) => {
+  initializeExecutor(page);
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
-async function createCaseWithAddress() {
-  await performAction('createCase', {
-    data: caseApiData.createCasePayload,
-  });
-}
+test.afterEach(async () => {
+  if (caseInfo.id) {
+    await performAction('deleteCaseRole', '[CREATOR]');
+  }
+});
 
-async function searchCase(caseNumber: string) {
-  await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
-  await performAction('select', 'Case type', createCase.caseType.civilPossessions);
-  await performAction('inputText', 'Case Number', caseNumber);
-  await performAction('clickButton', 'Apply');
-}
-
-//Skipping these tests until create case journey is fully developed because tests may fail each time when payload changes for create case API
-test.describe.skip('[Search case by case number] @PR @Master @nightly', () => {
-  test('Search for case via caselist', async ({}) => {
-    await searchCase(caseInfo.id);
-    await performValidation(
-      'visibility',
-      'caseNumber',
-      {visible: caseInfo.fid}
-    );
+//Skipping these tests as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
+test.describe.skip('[Search Case]', () => {
+  test('Search for case via case list', async ({}) => {
+    await performAction('filterCaseFromCaseList', caseInfo.state);
+    await performValidation('text', {
+      "text": 'Case number: '+caseInfo.fid,
+      "elementType": "paragraph"
+    });
   });
-  test('Search for case via find case', async ({}) => {
-    await searchCase(caseInfo.id);
-    await performValidation(
-      'visibility',
-      'caseNumber',
-      {visible: caseInfo.fid}
-    );
+
+  test('Search for case via find case @PR' , async ({}) => {
+    await performAction('searchCaseFromFindCase', caseInfo.fid);
+    await performValidation('text', {
+      "text": 'Case number: '+caseInfo.fid,
+      "elementType": "paragraph"
+    });
   });
 });

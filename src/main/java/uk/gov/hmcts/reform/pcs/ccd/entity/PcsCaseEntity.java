@@ -8,8 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.NamedAttributeNode;
-import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -18,14 +16,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
-import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,12 +38,6 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@NamedEntityGraph(
-    name = "PcsCaseEntity.parties",
-    attributeNodes = {
-        @NamedAttributeNode("parties")
-    }
-)
 public class PcsCaseEntity {
 
     @Id
@@ -61,18 +52,17 @@ public class PcsCaseEntity {
     @Enumerated(EnumType.STRING)
     private LegislativeCountry legislativeCountry;
 
-    private Integer caseManagementLocation;
-
     @Enumerated(EnumType.STRING)
-    private PaymentStatus paymentStatus;
+    @Column(name = "claimant_type")
+    private ClaimantType claimantType;
+
+    private Integer caseManagementLocation;
 
     private Boolean preActionProtocolCompleted;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    private TenancyLicence tenancyLicence;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    private PossessionGrounds possessionGrounds;
+    @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private TenancyLicenceEntity tenancyLicence;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
@@ -82,15 +72,75 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
-    private Set<ClaimEntity> claims = new HashSet<>();
+    private List<ClaimEntity> claims = new ArrayList<>();
 
-    @Column(name = "defendant_details")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private List<Defendant> defendants;
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private Set<GenAppEntity> genApps = new HashSet<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private List<DefendantResponseEntity> defendantResponses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    private List<DocumentEntity> documents = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private List<CounterClaimEntity> counterClaims = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase",
+        cascade = ALL,
+        orphanRemoval = true)
+    @Builder.Default
+    private List<CaseLinkEntity> caseLinks = new ArrayList<>();
+
+    public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
+        if (this.tenancyLicence != null) {
+            this.tenancyLicence.setPcsCase(null);
+        }
+
+        this.tenancyLicence = tenancyLicence;
+
+        if (this.tenancyLicence != null) {
+            this.tenancyLicence.setPcsCase(this);
+        }
+    }
+
+    public void addClaim(ClaimEntity claim) {
+        claims.add(claim);
+        claim.setPcsCase(this);
+    }
+
+    public void addGenApp(GenAppEntity genApp) {
+        genApps.add(genApp);
+        genApp.setPcsCase(this);
+    }
 
     public void addParty(PartyEntity party) {
         parties.add(party);
         party.setPcsCase(this);
     }
 
+    public void addDocuments(List<DocumentEntity> documents) {
+        for (DocumentEntity document : documents) {
+            document.setPcsCase(this);
+            this.documents.add(document);
+        }
+    }
+
+    public void addDefendantResponse(DefendantResponseEntity defendantResponse) {
+        defendantResponses.add(defendantResponse);
+        defendantResponse.setPcsCase(this);
+    }
+
+    public void addCounterClaim(CounterClaimEntity counterClaim) {
+        counterClaims.add(counterClaim);
+        counterClaim.setPcsCase(this);
+    }
 }

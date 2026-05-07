@@ -11,5 +11,5 @@ public enum RentArrearsOrBreachOfTenancy implements HasLabel {
     RENT_ARREARS("Rent arrears"),
     BREACH_OF_TENANCY("Breach of the tenancy");
 
-    private String label;
+    private final String label;
 }
