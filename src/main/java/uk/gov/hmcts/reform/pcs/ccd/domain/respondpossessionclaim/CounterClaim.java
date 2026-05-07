@@ -63,16 +63,4 @@ public class CounterClaim {
     )
     private List<ListValue<Party>> counterClaimAgainst;
 
-    @CCD(access = {CitizenAccess.class}, max = 6800)
-    private String aboutCounterclaimFor;
-
-    @CCD(access = {CitizenAccess.class}, max = 6800)
-    private String aboutCounterclaimReasons;
-
-    @CCD(access = {CitizenAccess.class}, max = 6800)
-    private String orderOtherThanSumRequested;
-
-    @CCD(access = {CitizenAccess.class}, max = 6800)
-    private String orderOtherThanSumFacts;
-
 }

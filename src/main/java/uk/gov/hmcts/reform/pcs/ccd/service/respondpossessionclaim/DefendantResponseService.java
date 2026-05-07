@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -209,8 +210,10 @@ public class DefendantResponseService {
                                          ? cc.getEstimatedMaxClaimAmount() : null)
             .counterClaimFor(cc.getCounterClaimFor())
             .counterClaimReasons(cc.getCounterClaimReasons())
-            .otherOrderRequestDetails(cc.getOtherOrderRequestDetails())
-            .otherOrderRequestFacts(cc.getOtherOrderRequestFacts())
+            .otherOrderRequestDetails(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
+                                          ? cc.getOtherOrderRequestDetails() : null)
+            .otherOrderRequestFacts(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
+                                        ? cc.getOtherOrderRequestFacts() : null)
             .needHelpWithFees(cc.getNeedHelpWithFees())
             .appliedForHwf(cc.getAppliedForHwf())
             .hwfReferenceNumber(cc.getHwfReferenceNumber())
