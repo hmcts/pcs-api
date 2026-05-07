@@ -151,6 +151,7 @@ public class DefendantResponseService {
             .writtenTerms(responses.getWrittenTerms())
             .disputeClaim(responses.getDisputeClaim())
             .disputeClaimDetails(responses.getDisputeClaimDetails())
+            .makeCounterClaim(responses.getMakeCounterClaim())
             .tenancyTypeConfirmation(responses.getTenancyTypeConfirmation())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(

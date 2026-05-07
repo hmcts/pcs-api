@@ -107,4 +107,6 @@ public class DefendantResponses {
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;
+    @CCD
+    private VerticalYesNo makeCounterClaim;
 }
