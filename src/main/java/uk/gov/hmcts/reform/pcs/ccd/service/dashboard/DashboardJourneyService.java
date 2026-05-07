@@ -104,12 +104,6 @@ public class DashboardJourneyService {
                 )))
                 .build(),
             DashboardNotification.builder()
-                .templateId("Defendant.ResponseToClaim")
-                .templateValues(toTemplateValues(Map.of(
-                    "ctaLabel", "Start your response"
-                )))
-                .build(),
-            DashboardNotification.builder()
                 .templateId(responseTemplateId)
                 .templateValues(toTemplateValues(Map.of()))
                 .build()

@@ -59,7 +59,7 @@ class DashboardJourneyServiceTest {
 
         assertThat(result.getCaseId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(result.getPropertyAddress()).isEqualTo(propertyAddress);
-        assertThat(result.getNotifications()).hasSize(4);
+        assertThat(result.getNotifications()).hasSize(3);
         assertThat(result.getTaskGroups()).hasSize(4);
     }
 
@@ -74,7 +74,6 @@ class DashboardJourneyServiceTest {
             .containsExactly(
                 tuple("Defendant.NoHearingArranged", 0),
                 tuple("Defendant.CaseIssued", 2),
-                tuple("Defendant.ResponseToClaim", 1),
                 tuple("Defendant.ResponseNotStarted", 0)
             );
 
@@ -129,21 +128,20 @@ class DashboardJourneyServiceTest {
     }
 
     @Test
-    void shouldOnlyExposeDeclaredPlaceholdersForResponseToClaimNotification() {
-        PCSCase submitted = PCSCase.builder().build();
+    void shouldUseResponseInProgressNotificationWhenDraftExists() {
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(true);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(false);
 
-        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted);
+        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, PCSCase.builder().build());
 
-        List<String> keysForResponseNotification = ListValueUtils.unwrapListItems(result.getNotifications()).stream()
-            .filter(n -> "Defendant.ResponseToClaim".equals(n.getTemplateId()))
-            .findFirst()
-            .orElseThrow()
-            .getTemplateValues()
-            .stream()
-            .map(lv -> lv.getValue().getKey())
-            .toList();
-
-        assertThat(keysForResponseNotification).containsExactly("ctaLabel");
+        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
+            .extracting(n -> n.getTemplateId())
+            .containsExactly(
+                "Defendant.NoHearingArranged",
+                "Defendant.CaseIssued",
+                "Defendant.ResponseInProgress"
+            );
     }
 
     @Test

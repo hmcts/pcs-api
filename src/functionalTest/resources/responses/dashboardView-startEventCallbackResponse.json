@@ -30,19 +30,6 @@
         },
         {
           "value": {
-            "templateId": "Defendant.ResponseToClaim",
-            "templateValues": [
-              {
-                "value": {
-                  "key": "ctaLabel",
-                  "value": "Start your response"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "value": {
             "templateId": "Defendant.ResponseNotStarted",
             "templateValues": []
           }
