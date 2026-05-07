@@ -10,14 +10,15 @@ import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_CLAIM;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.UPLOAD_DOCUMENTS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_DOCUMENTS;
 
 @Component
-public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
+public class DocumentsTaskGroupEvaluator implements TaskGroupEvaluator {
 
     @Override
     public TaskGroupId groupId() {
-        return TaskGroupId.CLAIM;
+        return TaskGroupId.DOCUMENT;
     }
 
     @Override
@@ -26,10 +27,21 @@ public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
             .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
-                    .templateId(VIEW_CLAIM)
+                    .templateId(UPLOAD_DOCUMENTS)
                     .status(TaskStatus.AVAILABLE)
+                    .build(),
+                Task.builder()
+                    .templateId(VIEW_DOCUMENTS)
+                    .status(hasDocuments(ctx) ? TaskStatus.AVAILABLE : TaskStatus.NOT_AVAILABLE)
                     .build()
             )))
             .build();
+    }
+
+    private boolean hasDocuments(DashboardContext ctx) {
+        return ctx != null
+            && ctx.caseEntity() != null
+            && ctx.caseEntity().getDocuments() != null
+            && !ctx.caseEntity().getDocuments().isEmpty();
     }
 }
