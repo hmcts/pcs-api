@@ -78,7 +78,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             } else {
                 Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseData);
                 if (selectedPartyId.isEmpty()) {
-                    throw new IllegalStateException("No selected responding party id for respond to claim");
+                    return error(List.of("No selected responding party id for respond to claim"));
                 }
                 UUID representedPartyId = selectedPartyId.get();
                 draftCaseDataService.patchUnsubmittedEventData(

@@ -46,6 +46,7 @@ class LegalRepForDefendantAccessValidatorTest {
         PartyEntity defendant = PartyEntity.builder().build();
         LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
             .organisationId(organisationId)
+            .idamId(authenticatedUserId)
             .build();
         defendant.setClaimPartyLegalRepresentativeList(List.of(
             ClaimPartyLegalRepresentativeEntity.builder()
@@ -91,12 +92,98 @@ class LegalRepForDefendantAccessValidatorTest {
             .hasMessage("User is not linked as a defendant on this case");
     }
 
+    @Test
+    void shouldThrowWhenLegalRepIsLinkIsInactive() {
+        UUID authenticatedUserId = UUID.randomUUID();
+
+        PartyEntity defendant = PartyEntity.builder().build();
+        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+            .organisationId("ORG-123")
+            .build();
+        defendant.setClaimPartyLegalRepresentativeList(List.of(
+            ClaimPartyLegalRepresentativeEntity.builder()
+                .party(defendant)
+                .legalRepresentative(linkedRepresentative)
+                .active(YesOrNo.NO)
+                .build()
+        ));
+
+        PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
+
+        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
+            .thenReturn("ORG-123");
+
+        assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User is not linked as a defendant on this case");
+    }
+
+    @Test
+    void shouldThrowWhenNoClaims() {
+        UUID authenticatedUserId = UUID.randomUUID();
+
+        PartyEntity defendant = PartyEntity.builder().build();
+        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+            .organisationId("ORG-123")
+            .build();
+        defendant.setClaimPartyLegalRepresentativeList(List.of(
+            ClaimPartyLegalRepresentativeEntity.builder()
+                .party(defendant)
+                .legalRepresentative(linkedRepresentative)
+                .active(YesOrNo.NO)
+                .build()
+        ));
+
+        PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
+        caseEntity.setClaims(List.of());
+
+        assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("No claim found for this case");
+    }
+
+    @Test
+    void shouldThrowWhenNoDefendants() {
+        UUID authenticatedUserId = UUID.randomUUID();
+
+        PartyEntity defendant = PartyEntity.builder().build();
+        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+            .organisationId("ORG-123")
+            .build();
+        defendant.setClaimPartyLegalRepresentativeList(List.of(
+            ClaimPartyLegalRepresentativeEntity.builder()
+                .party(defendant)
+                .legalRepresentative(linkedRepresentative)
+                .active(YesOrNo.YES)
+                .build()
+        ));
+
+        PcsCaseEntity caseEntity = createCaseWithNonDefendant(defendant);
+
+        assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("No defendants associated with this case");
+    }
+
     private PcsCaseEntity createCaseWithDefendant(PartyEntity defendant) {
         ClaimEntity claimEntity = ClaimEntity.builder().build();
         claimEntity.getClaimParties().add(ClaimPartyEntity.builder()
             .party(defendant)
             .role(PartyRole.DEFENDANT)
             .build());
+
+        return PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(claimEntity))
+            .build();
+    }
+
+    private PcsCaseEntity createCaseWithNonDefendant(PartyEntity defendant) {
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        claimEntity.getClaimParties().add(ClaimPartyEntity.builder()
+                                              .party(defendant)
+                                              .role(PartyRole.UNDERLESSEE_OR_MORTGAGEE)
+                                              .build());
 
         return PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)

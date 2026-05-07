@@ -473,8 +473,8 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .party(Party.builder().firstName("Jack").lastName("Smith").build())
             .build();
         PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .build());
+                                             .defendantContactDetails(contactDetails)
+                                             .build());
 
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
@@ -486,6 +486,27 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId)
         );
+    }
+
+    @Test
+    void shouldThrowErrorWhenNoSelectedPartyId() {
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(Party.builder().firstName("Jack").lastName("Smith").build())
+            .build();
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantContactDetails(contactDetails)
+                                             .build());
+
+        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
+            .thenReturn(List.of());
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        assertThat(response.getErrors()).containsExactly(
+            "No selected responding party id for respond to claim"
+        );
+        assertThat(response.getData()).isNull();
     }
 
     private PCSCase buildCaseData(PossessionClaimResponse possessionClaimResponse) {

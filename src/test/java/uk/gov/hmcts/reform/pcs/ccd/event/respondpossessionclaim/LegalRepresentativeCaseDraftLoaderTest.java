@@ -137,7 +137,7 @@ class LegalRepresentativeCaseDraftLoaderTest {
     }
 
     @Test
-    void shouldLoadDraftForSelectedRepresentedPartyWhenDraftExists() {
+    void shouldLoadDraftForSelectedRepresentedPartyWhenDraftExists_WithoutClaimants() {
         UUID representedPartyId = UUID.randomUUID();
         UUID differentPartyId = UUID.randomUUID();
 
@@ -189,6 +189,72 @@ class LegalRepresentativeCaseDraftLoaderTest {
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId)
         );
+        assertThat(result.getPossessionClaimResponse().getClaimantOrganisations()).hasSize(0);
+    }
+
+    @Test
+    void shouldLoadDraftForSelectedRepresentedPartyWhenDraftExists_WithClaimants() {
+        UUID representedPartyId = UUID.randomUUID();
+        UUID differentPartyId = UUID.randomUUID();
+
+        Party party = Party.builder()
+            .build();
+        Party party2 = Party.builder()
+            .build();
+
+        List<ListValue<Party>> defendantList = new ArrayList<>();
+        defendantList.add(ListValue.<Party>builder().value(party).id(differentPartyId.toString()).build());
+        defendantList.add(ListValue.<Party>builder().value(party2).id(representedPartyId.toString()).build());
+        String orgName = "org";
+        UUID claimantPartyId = UUID.randomUUID();
+        Party claimantParty = Party.builder().orgName(orgName).build();
+        ListValue<Party> claimantPartyListValue = ListValue.<Party>builder().id(claimantPartyId.toString())
+            .value(claimantParty).build();
+
+        PCSCase caseData = PCSCase.builder()
+            .allDefendants(defendantList)
+            .allClaimants(List.of(claimantPartyListValue))
+            .build();
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PartyEntity representedParty2 = PartyEntity.builder().id(differentPartyId).build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        UUID legalRepUserId = UUID.randomUUID();
+        PossessionClaimResponse savedResponse = PossessionClaimResponse.builder().build();
+        PCSCase savedDraft = PCSCase.builder()
+            .possessionClaimResponse(savedResponse)
+            .hasUnsubmittedCaseData(YesOrNo.YES)
+            .build();
+
+        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+            .thenReturn(Optional.of(savedDraft));
+        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, legalRepUserId))
+            .thenReturn(List.of(representedParty, representedParty2));
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE,
+                                                                                     representedPartyId))
+            .thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+            .thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+            .thenReturn(Optional.of(savedDraft));
+        when(responseMapper.buildPartyFromEntity(representedParty, caseData))
+            .thenReturn(uk.gov.hmcts.reform.pcs.ccd.domain.Party.builder().build());
+
+        PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
+
+        assertThat(result.getAllDefendants()).hasSize(1);
+        assertThat(result.getAllDefendants().getFirst().getId()).isEqualTo(representedPartyId.toString());
+        assertThat(result.getAllDefendants().getFirst().getValue()).isEqualTo(party);
+        assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId)
+        );
+        assertThat(result.getPossessionClaimResponse().getClaimantOrganisations().getFirst().getId())
+            .isEqualTo(claimantPartyId.toString());
+        assertThat(result.getPossessionClaimResponse().getClaimantOrganisations().getFirst().getValue())
+            .isEqualTo(orgName);
     }
 
     @Test

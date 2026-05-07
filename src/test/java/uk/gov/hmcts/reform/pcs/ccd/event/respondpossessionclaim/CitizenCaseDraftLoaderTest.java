@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClai
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -300,8 +302,13 @@ class CitizenCaseDraftLoaderTest {
     @Test
     void shouldPopulateClaimantEnteredDefendantDetailsWhenDraftExists() {
         // Given
+        String orgName = "org";
+        UUID claimantPartyId = UUID.randomUUID();
         UUID defendantUserId = UUID.randomUUID();
-        PCSCase caseData = PCSCase.builder().build();
+        Party claimantParty = Party.builder().orgName(orgName).build();
+        ListValue<Party> claimantPartyListValue = ListValue.<Party>builder().id(claimantPartyId.toString())
+            .value(claimantParty).build();
+        PCSCase caseData = PCSCase.builder().allClaimants(List.of(claimantPartyListValue)).build();
 
         // Draft has defendant edits
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
@@ -356,6 +363,10 @@ class CitizenCaseDraftLoaderTest {
             .isEqualTo("Arun");
         assertThat(result.getPossessionClaimResponse().getClaimantEnteredDefendantDetails().getLastName())
             .isEqualTo("Kumar");
+        assertThat(result.getPossessionClaimResponse().getClaimantOrganisations().getFirst().getId())
+            .isEqualTo(claimantPartyId.toString());
+        assertThat(result.getPossessionClaimResponse().getClaimantOrganisations().getFirst().getValue())
+            .isEqualTo(orgName);
 
         // Verify defendantContactDetails has draft edits
         assertThat(result.getPossessionClaimResponse().getDefendantContactDetails().getParty().getFirstName())
