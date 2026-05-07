@@ -5,18 +5,24 @@
       "notifications": [
         {
           "value": {
+            "templateId": "Defendant.NoHearingArranged",
+            "templateValues": []
+          }
+        },
+        {
+          "value": {
             "templateId": "Defendant.CaseIssued",
             "templateValues": [
               {
                 "value": {
-                  "key": "responseEndDate",
-                  "value": "2026-05-15"
+                  "key": "hearingDateTime",
+                  "value": "2026-06-15T10:30:00Z"
                 }
               },
               {
                 "value": {
-                  "key": "hearingDateTime",
-                  "value": "2026-06-15T10:30:00Z"
+                  "key": "responseEndDate",
+                  "value": "2026-05-15"
                 }
               }
             ]
@@ -29,10 +35,16 @@
               {
                 "value": {
                   "key": "ctaLabel",
-                  "value": "Start your response."
+                  "value": "Start your response"
                 }
               }
             ]
+          }
+        },
+        {
+          "value": {
+            "templateId": "Defendant.ResponseNotStarted",
+            "templateValues": []
           }
         }
       ],
@@ -50,6 +62,25 @@
               {
                 "value": {
                   "templateId": "ViewDocuments",
+                  "status": "NOT_AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "RESPONSE",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "RespondToClaim",
+                  "status": "NOT_STARTED"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ViewResponse",
                   "status": "NOT_AVAILABLE"
                 }
               }
@@ -77,25 +108,6 @@
                 "value": {
                   "templateId": "ViewOrdersAndNotices",
                   "status": "AVAILABLE"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "value": {
-            "groupId": "RESPONSE",
-            "tasks": [
-              {
-                "value": {
-                  "templateId": "RespondToClaim",
-                  "status": "NOT_STARTED"
-                }
-              },
-              {
-                "value": {
-                  "templateId": "ViewResponse",
-                  "status": "NOT_AVAILABLE"
                 }
               }
             ]
