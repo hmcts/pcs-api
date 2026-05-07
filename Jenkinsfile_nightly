@@ -54,6 +54,11 @@ properties([
       choices: ['@nightly', '@smoke', '@e2e', '@regression'],
       description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default.'
     ),
+    choice(
+      name: 'E2E_TARGET_ENV',
+      choices: ['aat', 'demo', 'perftest', 'ithc'],
+      description: 'Where E2E runs: CNP name (first segment in URLs) and Key Vault pcs-<name>. Default aat for the schedule.'
+    ),
   ])
 ])
 
@@ -71,24 +76,23 @@ static Map<String, Object> secret(String secretName, String envVariable) {
   ]
 }
 
-def secrets = [
-  'pcs-${env}': [
-    secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
-    secret('idam-testing-support-url', 'IDAM_TESTING_SUPPORT_URL'),
-    secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
-    secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
-    secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
-    secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
-    secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
-    secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD')
-  ]
+// Shared list; vault name is pcs-<ENVIRONMENT> (set in handleEnvironmentSetting before loadVaultSecrets).
+def pcsE2eVaultSecrets = [
+  secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
+  secret('idam-testing-support-url', 'IDAM_TESTING_SUPPORT_URL'),
+  secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
+  secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
+  secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
+  secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
+  secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
+  secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD')
 ]
 
 withNightlyPipeline(type, product, component) {
   validateInputs()
   enableSlackNotifications('#pcs-tech')
-  loadVaultSecrets(secrets)
   handleEnvironmentSetting()
+  loadVaultSecrets([("pcs-${env.ENVIRONMENT}"): pcsE2eVaultSecrets])
   enableFortifyScan()
 
   afterAlways('fortify-scan') {
@@ -103,12 +107,19 @@ def validateInputs() {
   }
 }
 
+// E2E_TARGET_ENV → env.ENVIRONMENT and all service URLs the Playwright job needs (plus vault pcs-<ENVIRONMENT> below).
 def handleEnvironmentSetting() {
   env.E2E_TEST_SCOPE = params.PLAYWRIGHT_GREP_TAG?.trim() ?: '@nightly'
   env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
-  env.ENVIRONMENT = 'aat'
-  env.MANAGE_CASE_BASE_URL = 'https://manage-case.aat.platform.hmcts.net'
-  env.DATA_STORE_URL_BASE = 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
+
+  def targetEnv = (params.E2E_TARGET_ENV?.trim() ?: 'aat').toLowerCase()
+  env.ENVIRONMENT = targetEnv
+
+  env.MANAGE_CASE_BASE_URL = "https://manage-case.${targetEnv}.platform.hmcts.net"
+  env.DATA_STORE_URL_BASE = "http://ccd-data-store-api-${targetEnv}.service.core-compute-${targetEnv}.internal"
+  env.IDAM_WEB_URL = "https://idam-api.${targetEnv}.platform.hmcts.net"
+  env.IDAM_TESTING_SUPPORT_URL = "https://idam-testing-support-api.${targetEnv}.platform.hmcts.net"
+  env.S2S_URL = "http://rpe-service-auth-provider-${targetEnv}.service.core-compute-${targetEnv}.internal/testing-support/lease"
 }
 
 def getE2eMatrix() {
@@ -131,7 +142,7 @@ def runE2eMatrix() {
 }
 
 def runE2eStage(gradleBuilder, Map row) {
-  stage("E2E - ${row.label}") {
+  stage("E2E - ${row.label} [${env.ENVIRONMENT}]") {
     node {
       checkout scm
       sh 'rm -rf e2e-output allure-report src/e2eTest/allure-results src/e2eTest/.auth/storage-state.json || true'

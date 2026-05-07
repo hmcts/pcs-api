@@ -1,6 +1,5 @@
 import {IdamUtils, ServiceAuthUtils} from '@hmcts/playwright-common';
 import {chromium} from '@playwright/test';
-import {accessTokenApiData, s2STokenApiData} from '@data/api-data';
 import {user} from '@data/user-data';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -81,13 +80,16 @@ async function authenticateAndSaveState(): Promise<string> {
 }
 
 export const getS2SToken = async (): Promise<void> => {
-  process.env.S2S_URL = s2STokenApiData.s2sUrl;
-  process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({ microservice: s2STokenApiData.microservice });
+  if (!process.env.S2S_URL) {
+    throw new Error('S2S_URL is not set');
+  }
+  process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({ microservice: 'pcs_api' });
 };
 
 export const getAccessToken = async (): Promise<void> => {
-  process.env.IDAM_WEB_URL = accessTokenApiData.idamUrl;
-  process.env.IDAM_TESTING_SUPPORT_URL = accessTokenApiData.idamTestingSupportUrl;
+  if (!process.env.IDAM_WEB_URL || !process.env.IDAM_TESTING_SUPPORT_URL) {
+    throw new Error('IDAM_WEB_URL and IDAM_TESTING_SUPPORT_URL must be set');
+  }
   process.env.BEARER_TOKEN = await new IdamUtils().generateIdamToken({
     username: user.claimantSolicitor.email,
     password: user.claimantSolicitor.password,
