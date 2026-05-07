@@ -130,7 +130,8 @@ public class DashboardJourneyService {
         if (hasDraft && !hasSubmitted) {
             return ResponseStatus.IN_PROGRESS;
         }
-        if (!hasDraft && hasSubmitted) {
+        // if (!hasDraft && hasSubmitted) {
+        if (hasSubmitted) {
             return ResponseStatus.SUBMITTED;
         }
         return ResponseStatus.UNKNOWN; 
