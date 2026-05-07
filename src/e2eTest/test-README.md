@@ -139,16 +139,17 @@ On the **nightly** job, parameters `PLAYWRIGHT_GREP_TAG` and `PLAYWRIGHT_SPEC` b
 
 ### Environment variables (local)
 
-For **aat**, **demo**, **perftest**, or **ithc**, set **`ENVIRONMENT`** to that name (e.g. `export ENVIRONMENT=aat`). Global setup fills `MANAGE_CASE_BASE_URL`, `DATA_STORE_URL_BASE`, IDAM URLs, and `S2S_URL` using standard HMCTS host patterns. You can still override any of those by exporting them explicitly.
+**CNP-style local run:** export **`MANAGE_CASE_BASE_URL`**, **`DATA_STORE_URL_BASE`**, and either **`IDAM_API_URL`** / **`IDAM_S2S_AUTH_URL`** (global setup maps these to `IDAM_WEB_URL` / `S2S_URL`) or set **`IDAM_WEB_URL`**, **`IDAM_TESTING_SUPPORT_URL`**, **`S2S_URL`** explicitly.
 
-For **preview** (or any non-standard env), set **`MANAGE_CASE_BASE_URL`** and the other service URLs yourself; `ENVIRONMENT=preview` only affects Playwright worker count.
+**Same URL derivation as the nightly job:** set **`E2E_DERIVE_SERVICE_URLS_FROM_ENV=true`** and **`ENVIRONMENT`** to **`aat`**, **`demo`**, **`perftest`**, or **`ithc`** — global setup then fills the standard HMCTS URLs (only when this flag is set).
 
 Also required:
 
-- **PCS_API_IDAM_SECRET**, **IDAM_PCS_USER_PASSWORD**, **PCS_SOLICITOR_AUTOMATION_UID** (same as nightly Key Vault names; obtain values for your env.)
-- **CASE_TYPE_SUFFIX** when needed (e.g. PR number on preview, `staging` on AAT for certain case types — see pipeline docs.)
+- **PCS_API_IDAM_SECRET**, **IDAM_PCS_USER_PASSWORD**, **PCS_SOLICITOR_AUTOMATION_UID** (same as nightly Key Vault names where applicable.)
+- **CASE_TYPE_SUFFIX** when needed (e.g. PR number on preview, `staging` on AAT — see pipeline docs.)
 
 ```bash
+export E2E_DERIVE_SERVICE_URLS_FROM_ENV=true
 export ENVIRONMENT=aat
 yarn test:chrome
 ```

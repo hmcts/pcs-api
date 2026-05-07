@@ -8,15 +8,16 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
-const STANDARD_CNP_ENVS = new Set(['aat', 'demo', 'perftest', 'ithc']);
+/** Matches Jenkinsfile_nightly `E2E_TARGET_ENV` choices. */
+const NIGHTLY_ENV_SLUGS = new Set(['aat', 'demo', 'perftest', 'ithc']);
 
-/**
- * For aat | demo | perftest | ithc, fills standard HMCTS URLs from ENVIRONMENT so local/CI only need ENVIRONMENT + secrets.
- * Does not overwrite vars already set (e.g. preview or manual overrides).
- */
-function applyStandardHmctsUrlsFromEnvironment(): void {
+/** Nightly (`E2E_DERIVE_SERVICE_URLS_FROM_ENV`): derive URLs from ENVIRONMENT. Always: CNP IDAM/S2S aliases. Order preserved: nightly first, then ||= aliases. */
+function applyPlaywrightServiceUrls(): void {
+  const nightlyUrls =
+    (process.env.E2E_DERIVE_SERVICE_URLS_FROM_ENV ?? '').trim().toLowerCase() === 'true';
   const e = (process.env.ENVIRONMENT || '').toLowerCase();
-  if (STANDARD_CNP_ENVS.has(e)) {
+
+  if (nightlyUrls && NIGHTLY_ENV_SLUGS.has(e)) {
     process.env.MANAGE_CASE_BASE_URL ||= `https://manage-case.${e}.platform.hmcts.net`;
     process.env.DATA_STORE_URL_BASE ||= `http://ccd-data-store-api-${e}.service.core-compute-${e}.internal`;
     process.env.IDAM_WEB_URL ||= `https://idam-api.${e}.platform.hmcts.net`;
@@ -24,22 +25,21 @@ function applyStandardHmctsUrlsFromEnvironment(): void {
     process.env.S2S_URL ||= `http://rpe-service-auth-provider-${e}.service.core-compute-${e}.internal/testing-support/lease`;
   }
 
-  // Backwards-compatible aliases used in Jenkinsfile_CNP (onPR/onMaster).
   process.env.IDAM_WEB_URL ||= process.env.IDAM_API_URL;
-  if (!process.env.IDAM_TESTING_SUPPORT_URL && process.env.IDAM_WEB_URL) {
-    process.env.IDAM_TESTING_SUPPORT_URL = process.env.IDAM_WEB_URL.replace(
-      'idam-api.',
-      'idam-testing-support-api.'
-    );
+
+  if (!process.env.IDAM_TESTING_SUPPORT_URL) {
+    process.env.IDAM_TESTING_SUPPORT_URL = NIGHTLY_ENV_SLUGS.has(e)
+      ? `https://idam-testing-support-api.${e}.platform.hmcts.net`
+      : 'https://idam-testing-support-api.aat.platform.hmcts.net';
   }
   if (!process.env.S2S_URL && process.env.IDAM_S2S_AUTH_URL) {
-    const s2sAuthBase = process.env.IDAM_S2S_AUTH_URL.replace(/\/+$/, '');
-    process.env.S2S_URL = `${s2sAuthBase}/testing-support/lease`;
+    const base = process.env.IDAM_S2S_AUTH_URL.replace(/\/+$/, '');
+    process.env.S2S_URL = `${base}/testing-support/lease`;
   }
 }
 
 async function globalSetupConfig(): Promise<void> {
-  applyStandardHmctsUrlsFromEnvironment();
+  applyPlaywrightServiceUrls();
   await getAccessToken();
   await getS2SToken();
   await authenticateAndSaveState();
@@ -50,7 +50,7 @@ async function authenticateAndSaveState(): Promise<string> {
 
   if (!baseUrl) {
     throw new Error(
-      'MANAGE_CASE_BASE_URL is not set. For aat/demo/perftest/ithc set ENVIRONMENT (e.g. ENVIRONMENT=aat); for preview set MANAGE_CASE_BASE_URL explicitly.'
+      'MANAGE_CASE_BASE_URL is not set (CNP/local: export it; nightly: ensure E2E_DERIVE_SERVICE_URLS_FROM_ENV and ENVIRONMENT are set).'
     );
   }
   if (!user.claimantSolicitor.email || !user.claimantSolicitor.password) {
@@ -116,14 +116,16 @@ async function authenticateAndSaveState(): Promise<string> {
 
 export const getS2SToken = async (): Promise<void> => {
   if (!process.env.S2S_URL) {
-    throw new Error('S2S_URL is not set (use ENVIRONMENT=aat|demo|perftest|ithc or set S2S_URL)');
+    throw new Error('S2S_URL is not set (CNP: IDAM_S2S_AUTH_URL; nightly: derived when E2E_DERIVE_SERVICE_URLS_FROM_ENV=true; or set S2S_URL)');
   }
   process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({ microservice: 'pcs_api' });
 };
 
 export const getAccessToken = async (): Promise<void> => {
   if (!process.env.IDAM_WEB_URL || !process.env.IDAM_TESTING_SUPPORT_URL) {
-    throw new Error('IDAM_WEB_URL and IDAM_TESTING_SUPPORT_URL are not set (use ENVIRONMENT or set both explicitly)');
+    throw new Error(
+      'IDAM_WEB_URL and IDAM_TESTING_SUPPORT_URL are not set (CNP: IDAM_API_URL; nightly: derived when E2E_DERIVE_SERVICE_URLS_FROM_ENV=true; or set both)'
+    );
   }
   process.env.BEARER_TOKEN = await new IdamUtils().generateIdamToken({
     username: user.claimantSolicitor.email,
