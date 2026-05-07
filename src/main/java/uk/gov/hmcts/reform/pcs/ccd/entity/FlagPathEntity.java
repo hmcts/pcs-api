@@ -1,3 +1,4 @@
+/*
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import jakarta.persistence.Entity;
@@ -39,3 +40,4 @@ public class FlagPathEntity {
 
     private String path;
 }
+*/

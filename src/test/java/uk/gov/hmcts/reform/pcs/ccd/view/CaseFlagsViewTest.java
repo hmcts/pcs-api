@@ -55,7 +55,7 @@ class CaseFlagsViewTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();
 
-        pcsCaseEntity.setCaseFlags(List.of((CaseFlagEntity)createMockCaseFlagsEntity()));
+        pcsCaseEntity.setCaseFlags(List.of(createMockCaseFlagsEntity()));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -148,7 +148,7 @@ class CaseFlagsViewTest {
         caseFlagEntity.setId(UUID.randomUUID());
         caseFlagEntity.getFlagRefData().setFlagCode("CF0007");
         caseFlagEntity.setFlagComment("Urgent case");
-        caseFlagEntity.setPaths(List.of(createMockFlagPathEntity()));
+        caseFlagEntity.setPaths(UUID.randomUUID() + ":"  + "Case");
         caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity());
 
         return  caseFlagEntity;

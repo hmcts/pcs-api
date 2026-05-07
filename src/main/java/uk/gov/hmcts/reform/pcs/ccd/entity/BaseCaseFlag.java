@@ -8,22 +8,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.UUID;
 
-import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
@@ -41,14 +37,6 @@ public abstract class BaseCaseFlag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pcs_case_id")
     private PcsCaseEntity pcsCase;
-
-    @OneToMany(mappedBy = "caseFlagEntity", cascade = ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<FlagPathEntity> caseFlagPaths = new ArrayList<>();
-
-    @OneToMany(mappedBy = "casePartyFlagEntity", cascade = ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<FlagPathEntity> casePartyFlagPaths = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "flag_ref_data_id")
@@ -82,4 +70,6 @@ public abstract class BaseCaseFlag {
 
     @Column(name = "status")
     private String defaultStatus;
+
+    private String paths;
 }

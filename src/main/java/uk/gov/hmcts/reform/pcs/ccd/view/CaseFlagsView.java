@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +26,10 @@ import java.util.stream.Stream;
 @Component
 @AllArgsConstructor
 public class CaseFlagsView {
+
+    public static  String PATHS_DELIMITER = ",";
+    public static  String PATH_DELIMITER = ":";
+
 
     private static final String RESPONDENT = "respondent";
     private static final String CLAIMANT = "claimant";
@@ -73,33 +78,21 @@ public class CaseFlagsView {
                        caseFlagEntity.getFlagRefData().getHearingRelevant()))
                    .availableExternally(YesOrNoConverter.toYesOrNo(
                        caseFlagEntity.getFlagRefData().getAvailableExternally()))
-                   .path(caseFlagEntity.getPaths().stream()
-                             .map(pathEntity -> ListValue.<String>builder()
-                                .id(pathEntity.getId().toString())
-                                .value(pathEntity.getPath())
-                                .build())
-                             .toList())
-                   .build())
-                       caseFlagEntity.getRefDataFlag().getAvailableExternally()))
-                   .path(getPath(caseFlagEntity))
+                   .path(getPaths(caseFlagEntity.getPaths()))
                    .build())
                 .build())
             .toList();
     }
 
-    private List<ListValue<String>> getPath(BaseCaseFlag flagEntity) {
-        List<FlagPathEntity> flagPathEntities = new ArrayList<>();
-        if (flagEntity instanceof CaseFlagEntity) {
-            flagPathEntities = flagEntity.getCaseFlagPaths();
-        } else if (flagEntity instanceof CasePartyFlagEntity) {
-            flagPathEntities = flagEntity.getCasePartyFlagPaths();
-        }
-        return flagPathEntities.stream()
-            .map(pathEntity -> ListValue.<String>builder()
-                .id(pathEntity.getId().toString())
-                .value(pathEntity.getPath())
-                .build())
-            .toList();
+    private List<ListValue<String>> getPaths(String entityPaths) {
+
+        return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
+                .map(pathPairs -> pathPairs.split(PATH_DELIMITER))
+                .map(paths -> ListValue.<String>builder()
+                    .id(paths[0])
+                    .value(paths[1])
+                    .build())
+                .toList();
     }
 
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {

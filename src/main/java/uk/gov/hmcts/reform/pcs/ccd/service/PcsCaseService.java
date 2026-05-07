@@ -69,7 +69,8 @@ public class PcsCaseService {
 
         if (pcsCase.getCaseFlags() != null && pcsCase.getCaseFlags().getDetails() != null
             || pcsCase.getParties() != null) {
-            List<BaseCaseFlag> mergedFlagDetails = caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(), pcsCaseEntity, flow);
+            List<BaseCaseFlag> mergedFlagDetails = caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(),
+                                                                                  pcsCaseEntity, flow);
             pcsCaseEntity.getCaseFlags().clear();
             pcsCaseEntity.getCaseFlags().addAll(mergedFlagDetails);
         }

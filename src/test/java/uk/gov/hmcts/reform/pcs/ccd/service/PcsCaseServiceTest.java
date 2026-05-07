@@ -16,14 +16,16 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -46,7 +48,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.doNothing;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -290,12 +291,16 @@ class PcsCaseServiceTest {
         caseData.setParties(parties);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(caseFlagService.mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name())).thenReturn(createCaseFlagEntity());
+        when(caseFlagService.mergeCaseFlags(flags, pcsCaseEntity,
+                                            EventFlow.UPDATE.name())).thenReturn(createCaseFlagEntity());
 
         // When
         underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.UPDATE.name());
 
         // Then
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
+        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity,
+                                                         EventFlow.UPDATE.name());
         verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, parties, EventFlow.UPDATE.name());
         verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity, parties, EventFlow.UPDATE.name());
     }
