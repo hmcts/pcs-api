@@ -106,8 +106,6 @@ def handleEnvironmentSetting() {
   env.E2E_TEST_SCOPE = params.PLAYWRIGHT_GREP_TAG?.trim() ?: '@nightly'
   env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
   env.ENVIRONMENT = (params.E2E_TARGET_ENV?.trim() ?: 'aat').toLowerCase()
-  // Enables ENVIRONMENT-based URL derivation in global-setup only for this pipeline (not CNP PR/master/local).
-  env.E2E_DERIVE_SERVICE_URLS_FROM_ENV = 'true'
 }
 
 def getE2eMatrix() {

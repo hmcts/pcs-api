@@ -139,9 +139,11 @@ On the **nightly** job, parameters `PLAYWRIGHT_GREP_TAG` and `PLAYWRIGHT_SPEC` b
 
 ### Environment variables (local)
 
-**CNP-style local run:** export **`MANAGE_CASE_BASE_URL`**, **`DATA_STORE_URL_BASE`**, and either **`IDAM_API_URL`** / **`IDAM_S2S_AUTH_URL`** (global setup maps these to `IDAM_WEB_URL` / `S2S_URL`) or set **`IDAM_WEB_URL`**, **`IDAM_TESTING_SUPPORT_URL`**, **`S2S_URL`** explicitly.
+**With `ENVIRONMENT` set to `aat`, `demo`, `perftest`, or `ithc`:** global setup fills **`MANAGE_CASE_BASE_URL`**, **`DATA_STORE_URL_BASE`**, IdAM, and S2S URLs from standard HMCTS patterns (same idea as the nightly job). You can still override any of those by exporting them first.
 
-**Same URL derivation as the nightly job:** set **`E2E_DERIVE_SERVICE_URLS_FROM_ENV=true`** and **`ENVIRONMENT`** to **`aat`**, **`demo`**, **`perftest`**, or **`ithc`** — global setup then fills the standard HMCTS URLs (only when this flag is set).
+**Preview or other values of `ENVIRONMENT`:** global setup defaults IdAM / S2S to **AAT**; you must export **`MANAGE_CASE_BASE_URL`** and **`DATA_STORE_URL_BASE`** yourself (e.g. preview XUI / data-store).
+
+Alternatively set **`ENVIRONMENT`** as above, or export **`MANAGE_CASE_BASE_URL`**, **`DATA_STORE_URL_BASE`**, and explicit **`IDAM_WEB_URL`** / **`IDAM_TESTING_SUPPORT_URL`** / **`S2S_URL`**.
 
 Also required:
 
@@ -149,7 +151,6 @@ Also required:
 - **CASE_TYPE_SUFFIX** when needed (e.g. PR number on preview, `staging` on AAT — see pipeline docs.)
 
 ```bash
-export E2E_DERIVE_SERVICE_URLS_FROM_ENV=true
 export ENVIRONMENT=aat
 yarn test:chrome
 ```
