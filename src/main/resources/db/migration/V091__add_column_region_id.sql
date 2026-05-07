@@ -1,0 +1,1 @@
+ALTER TABLE pcs_case ADD COLUMN region_id INTEGER;

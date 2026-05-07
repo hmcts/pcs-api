@@ -100,6 +100,8 @@ public class PcsCaseEntity {
     @Builder.Default
     private List<CaseLinkEntity> caseLinks = new ArrayList<>();
 
+    private String regionId;
+
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
             this.tenancyLicence.setPcsCase(null);
