@@ -137,17 +137,19 @@ await performValidationGroup(
 
 On the **nightly** job, parameters `PLAYWRIGHT_GREP_TAG` and `PLAYWRIGHT_SPEC` become `E2E_TEST_SCOPE` and `E2E_SPEC` for Gradle → `yarn test:<browser>`. `playwright.config.ts` reads those env vars for grep and `testMatch`.
 
-### The following environment variables are needed to run the tests:
+### Environment variables (local)
 
-- MANAGE_CASE_BASE_URL (base URL for the manage-case UI; pipeline sets this from CHANGE_ID on Preview)
-- CASE_TYPE_SUFFIX (case type suffix: set by pipeline to PR number on Preview, "staging" on AAT; E2E uses this for case type name/ID. When running locally against Preview, set to your PR number.)
-- PCS_API_IDAM_SECRET
-- IDAM_SYSTEM_USERNAME
-- IDAM_SYSTEM_USER_PASSWORD
-- IDAM_PCS_USER_PASSWORD
-- PCS_SOLICITOR_AUTOMATION_UID
+For **aat**, **demo**, **perftest**, or **ithc**, set **`ENVIRONMENT`** to that name (e.g. `export ENVIRONMENT=aat`). Global setup fills `MANAGE_CASE_BASE_URL`, `DATA_STORE_URL_BASE`, IDAM URLs, and `S2S_URL` using standard HMCTS host patterns. You can still override any of those by exporting them explicitly.
+
+For **preview** (or any non-standard env), set **`MANAGE_CASE_BASE_URL`** and the other service URLs yourself; `ENVIRONMENT=preview` only affects Playwright worker count.
+
+Also required:
+
+- **PCS_API_IDAM_SECRET**, **IDAM_PCS_USER_PASSWORD**, **PCS_SOLICITOR_AUTOMATION_UID** (same as nightly Key Vault names; obtain values for your env.)
+- **CASE_TYPE_SUFFIX** when needed (e.g. PR number on preview, `staging` on AAT for certain case types — see pipeline docs.)
 
 ```bash
+export ENVIRONMENT=aat
 yarn test:chrome
 ```
 

@@ -57,7 +57,7 @@ properties([
     choice(
       name: 'E2E_TARGET_ENV',
       choices: ['aat', 'demo', 'perftest', 'ithc'],
-      description: 'Where E2E runs: CNP name (first segment in URLs) and Key Vault pcs-<name>. Default aat for the schedule.'
+      description: 'CNP env name for Key Vault pcs-<name> and for Playwright (derives service URLs from ENVIRONMENT). Default aat when scheduled.'
     ),
   ])
 ])
@@ -102,19 +102,11 @@ def validateInputs() {
   }
 }
 
-// E2E_TARGET_ENV → env.ENVIRONMENT and all service URLs the Playwright job needs (plus vault pcs-<ENVIRONMENT> below).
+// Playwright global setup derives MANAGE_CASE / DATA_STORE / IDAM / S2S URLs from ENVIRONMENT for aat|demo|perftest|ithc.
 def handleEnvironmentSetting() {
   env.E2E_TEST_SCOPE = params.PLAYWRIGHT_GREP_TAG?.trim() ?: '@nightly'
   env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
-
-  def targetEnv = (params.E2E_TARGET_ENV?.trim() ?: 'aat').toLowerCase()
-  env.ENVIRONMENT = targetEnv
-
-  env.MANAGE_CASE_BASE_URL = "https://manage-case.${targetEnv}.platform.hmcts.net"
-  env.DATA_STORE_URL_BASE = "http://ccd-data-store-api-${targetEnv}.service.core-compute-${targetEnv}.internal"
-  env.IDAM_WEB_URL = "https://idam-api.${targetEnv}.platform.hmcts.net"
-  env.IDAM_TESTING_SUPPORT_URL = "https://idam-testing-support-api.${targetEnv}.platform.hmcts.net"
-  env.S2S_URL = "http://rpe-service-auth-provider-${targetEnv}.service.core-compute-${targetEnv}.internal/testing-support/lease"
+  env.ENVIRONMENT = (params.E2E_TARGET_ENV?.trim() ?: 'aat').toLowerCase()
 }
 
 def getE2eMatrix() {

@@ -8,7 +8,26 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
+const STANDARD_CNP_ENVS = new Set(['aat', 'demo', 'perftest', 'ithc']);
+
+/**
+ * For aat | demo | perftest | ithc, fills standard HMCTS URLs from ENVIRONMENT so local/CI only need ENVIRONMENT + secrets.
+ * Does not overwrite vars already set (e.g. preview or manual overrides).
+ */
+function applyStandardHmctsUrlsFromEnvironment(): void {
+  const e = (process.env.ENVIRONMENT || '').toLowerCase();
+  if (!STANDARD_CNP_ENVS.has(e)) {
+    return;
+  }
+  process.env.MANAGE_CASE_BASE_URL ||= `https://manage-case.${e}.platform.hmcts.net`;
+  process.env.DATA_STORE_URL_BASE ||= `http://ccd-data-store-api-${e}.service.core-compute-${e}.internal`;
+  process.env.IDAM_WEB_URL ||= `https://idam-api.${e}.platform.hmcts.net`;
+  process.env.IDAM_TESTING_SUPPORT_URL ||= `https://idam-testing-support-api.${e}.platform.hmcts.net`;
+  process.env.S2S_URL ||= `http://rpe-service-auth-provider-${e}.service.core-compute-${e}.internal/testing-support/lease`;
+}
+
 async function globalSetupConfig(): Promise<void> {
+  applyStandardHmctsUrlsFromEnvironment();
   await getAccessToken();
   await getS2SToken();
   await authenticateAndSaveState();
@@ -17,7 +36,11 @@ async function globalSetupConfig(): Promise<void> {
 async function authenticateAndSaveState(): Promise<string> {
   const baseUrl = process.env.MANAGE_CASE_BASE_URL;
 
-  if (!baseUrl) throw new Error('MANAGE_CASE_BASE_URL is not set');
+  if (!baseUrl) {
+    throw new Error(
+      'MANAGE_CASE_BASE_URL is not set. For aat/demo/perftest/ithc set ENVIRONMENT (e.g. ENVIRONMENT=aat); for preview set MANAGE_CASE_BASE_URL explicitly.'
+    );
+  }
   if (!user.claimantSolicitor.email || !user.claimantSolicitor.password) {
     throw new Error('Login failed: missing credentials. Set IDAM_PCS_USER_PASSWORD.');
   }
@@ -81,14 +104,14 @@ async function authenticateAndSaveState(): Promise<string> {
 
 export const getS2SToken = async (): Promise<void> => {
   if (!process.env.S2S_URL) {
-    throw new Error('S2S_URL is not set');
+    throw new Error('S2S_URL is not set (use ENVIRONMENT=aat|demo|perftest|ithc or set S2S_URL)');
   }
   process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({ microservice: 'pcs_api' });
 };
 
 export const getAccessToken = async (): Promise<void> => {
   if (!process.env.IDAM_WEB_URL || !process.env.IDAM_TESTING_SUPPORT_URL) {
-    throw new Error('IDAM_WEB_URL and IDAM_TESTING_SUPPORT_URL must be set');
+    throw new Error('IDAM_WEB_URL and IDAM_TESTING_SUPPORT_URL are not set (use ENVIRONMENT or set both explicitly)');
   }
   process.env.BEARER_TOKEN = await new IdamUtils().generateIdamToken({
     username: user.claimantSolicitor.email,
