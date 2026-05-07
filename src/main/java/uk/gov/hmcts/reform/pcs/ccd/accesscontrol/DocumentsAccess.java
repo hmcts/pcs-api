@@ -13,8 +13,8 @@ public class DocumentsAccess implements HasAccessControl {
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.putAll(PCS_SOLICITOR, Permission.CRU);
-        grants.putAll(CITIZEN, Permission.CRU);
+        grants.putAll(PCS_SOLICITOR, Permission.CR);
+        grants.putAll(CITIZEN, Permission.CR);
 
         return grants;
     }
