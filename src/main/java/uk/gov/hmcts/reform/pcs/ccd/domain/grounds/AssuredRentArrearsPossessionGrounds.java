@@ -54,6 +54,7 @@ public class AssuredRentArrearsPossessionGrounds {
 
     @CCD(
             label = "Give details of your other grounds for possession",
+            hint = "You can enter up to 500 characters",
             typeOverride = TextArea
     )
     private String additionalOtherGroundDescription;

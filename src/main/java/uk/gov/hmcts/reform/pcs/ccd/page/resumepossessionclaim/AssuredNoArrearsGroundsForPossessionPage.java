@@ -88,7 +88,9 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
             .anyMatch(ground -> ground != AssuredDiscretionaryGround.RENT_ARREARS_GROUND10
                 && ground != AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11);
 
-        boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
+        boolean hasOtherGrounds = !CollectionUtils.isEmpty(additionalOtherGrounds);
+
+        boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds || hasOtherGrounds;
         groundsForPossession.setShowGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
         return possessionGroundsValidationUtil.validateOtherGroundDescription(caseData,

@@ -122,6 +122,7 @@ class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
     void shouldSetCorrectShowFlagForNoRentArrearsReasonsPage(
         Set<AssuredMandatoryGround> mandatoryGrounds,
         Set<AssuredDiscretionaryGround> discretionaryGrounds,
+        Set<AssuredAdditionalOtherGround> otherGrounds,
         YesOrNo expectedShowFlag) {
         // Given
         PCSCase caseData = PCSCase.builder()
@@ -129,7 +130,7 @@ class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
                 AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(mandatoryGrounds)
                     .discretionaryGrounds(discretionaryGrounds)
-                    .otherGround(Set.of())
+                    .otherGround(otherGrounds)
                     .build()
             )
             .build();
@@ -197,17 +198,25 @@ class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
         return Stream.of(
             Arguments.of(Set.of(AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8),
                          Set.of(),
+                         Set.of(),
                          YesOrNo.NO),
             Arguments.of(Set.of(),
                          Set.of(
                              AssuredDiscretionaryGround.RENT_ARREARS_GROUND10,
                              AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11),
+                         Set.of(),
                          YesOrNo.NO),
             Arguments.of(Set.of(AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A),
+                         Set.of(),
                          Set.of(),
                          YesOrNo.YES),
             Arguments.of(Set.of(),
                          Set.of(AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17),
+                         Set.of(),
+                         YesOrNo.YES),
+            Arguments.of(Set.of(),
+                         Set.of(),
+                         Set.of(AssuredAdditionalOtherGround.OTHER),
                          YesOrNo.YES)
         );
     }
