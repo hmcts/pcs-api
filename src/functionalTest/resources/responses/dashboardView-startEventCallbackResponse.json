@@ -69,6 +69,14 @@
               {
                 "value": {
                   "templateId": "Defendant.ViewDocuments",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
             "groupId": "HEARING",
             "tasks": [
               {
