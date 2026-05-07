@@ -28,7 +28,7 @@ class DashboardJourneyServiceTest {
     void setUp() {
         underTest = new DashboardJourneyService(List.of(
             new ClaimTaskGroupEvaluator(),
-            new DocumentsTaskGroupEvaluator()
+            new DocumentsTaskGroupEvaluator(),
             new HearingsTaskGroupEvaluator(),
             new NoticesTaskGroupEvaluator()
         ));
@@ -95,7 +95,7 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple("Defendant.UploadDocuments", TaskStatus.AVAILABLE),
-                tuple("Defendant.ViewDocuments", TaskStatus.AVAILABLE)
+                tuple("Defendant.ViewDocuments", TaskStatus.AVAILABLE),
                 tuple("Defendant.ViewHearingDocuments", TaskStatus.AVAILABLE)
             );
 
