@@ -915,7 +915,7 @@ class DefendantResponseServiceTest {
             .document(Document.builder()
                 .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
             .contentType("application/pdf")
-            .size(135529L)
+            .sizeInBytes(135529L)
             .build();
 
         List<ListValue<UploadedDocument>> uploadedDocs = List.of(

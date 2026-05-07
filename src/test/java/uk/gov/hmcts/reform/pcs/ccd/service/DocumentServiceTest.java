@@ -547,14 +547,14 @@ class DocumentServiceTest {
             .document(Document.builder()
                 .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
             .contentType("application/pdf")
-            .size(135529L)
+            .sizeInBytes(135529L)
             .build();
 
         UploadedDocument defDoc2 = UploadedDocument.builder()
             .document(Document.builder()
                 .url("url2").filename("file2.xlsx").binaryUrl("bin2").categoryId("cat2").build())
             .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            .size(26033L)
+            .sizeInBytes(26033L)
             .build();
 
         List<ListValue<UploadedDocument>> uploadedDocs = List.of(
@@ -640,7 +640,7 @@ class DocumentServiceTest {
             .document(Document.builder()
                 .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
             .contentType("application/pdf")
-            .size(100L)
+            .sizeInBytes(100L)
             .build();
 
         List<ListValue<UploadedDocument>> uploadedDocs = List.of(

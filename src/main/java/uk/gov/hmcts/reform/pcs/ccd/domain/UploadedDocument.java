@@ -16,5 +16,5 @@ public class UploadedDocument {
 
     private String contentType;
 
-    private Long size;
+    private Long sizeInBytes;
 }
