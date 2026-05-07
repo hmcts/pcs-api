@@ -585,4 +585,9 @@ public class PCSCase {
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
 
+    /**
+     * The legal representative for a defendant on the case.
+     */
+    @CCD
+    private LegalRepresentativeDetails legalRepresentativeDetails;
 }
