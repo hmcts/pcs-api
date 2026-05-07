@@ -1,5 +1,5 @@
 ALTER TABLE document
-    ADD COLUMN submitted_date TIMESTAMP WITH TIME ZONE;
+    ADD COLUMN submitted_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
 
 UPDATE document
 SET submitted_date = COALESCE(submitted_date, CURRENT_TIMESTAMP);

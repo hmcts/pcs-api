@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -76,4 +77,11 @@ public class DocumentEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "counter_claim_id")
     private CounterClaimEntity counterClaim;
+
+    @PrePersist
+    void prePersist() {
+        if (submittedDate == null) {
+            submittedDate = Instant.now();
+        }
+    }
 }
