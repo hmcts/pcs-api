@@ -9,8 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 @AllArgsConstructor
 public class AddCaseNoteConfigurer implements PageConfigurer {
 
+    private final AddCaseNotePage caseNotePage;
+
     @Override
     public void configurePages(PageBuilder pageBuilder) {
-        pageBuilder.add(new AddCaseNotePage());
+        pageBuilder.add(caseNotePage);
     }
 }

@@ -92,8 +92,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
-        builder.tab("notes", "Notes")
-            .field(PCSCase::getCaseNotes);
+        buildCaseNotesTab(builder);
 
         builder.tab("caseFileView", "Case File View")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -117,6 +116,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+    }
+
+    private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.tab("notes", "Notes")
+            .field(PCSCase::getCaseNotes);
     }
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
