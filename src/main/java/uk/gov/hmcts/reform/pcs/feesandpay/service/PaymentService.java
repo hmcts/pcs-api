@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,16 +14,15 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Slf4j
@@ -30,13 +30,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private static final String PARTY_NOT_FOUND = "Matching PartyEntity not found";
+    public static final String PARTY_NOT_FOUND = "Matching PartyEntity not found";
 
     private final PaymentsClient paymentsClient;
     private final PaymentRequestMapper paymentRequestMapper;
     private final IdamService idamService;
     private final FeePaymentRepository feePaymentRepository;
     private final PcsCaseService pcsCaseService;
+    private final PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
+    private final ObjectMapper objectMapper;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
@@ -53,44 +55,44 @@ public class PaymentService {
      * 4) Calls {@link PaymentsClient#createServiceRequest(String, CreateServiceRequestDTO)} using the system user
      * token.
      *
-     * @param caseReference the business case reference sent to the Payments API
-     * @param ccdCaseNumber the CCD case number sent to the Payments API
-     * @param feeDetails the fee details
-     * @param volume the quantity of the fee (e.g., number of items)
-     * @param responsibleParty the party responsible for the payment
+     * @param feesAndPayTaskData Holds all the details for the payment to be made and stored
      * @return {@link PaymentServiceResponse} containing the service request reference
      */
     @Transactional
-    public PaymentServiceResponse createServiceRequest(String caseReference, String ccdCaseNumber,
-                                                       FeeDetails feeDetails, int volume, String responsibleParty) {
-        log.info("""
-                Building payload for caseReference: {}, ccdCaseNumber: {} \
-                feeDetails: {}, volume: {}, responsibleParty: {}""",
-                caseReference, ccdCaseNumber, feeDetails, volume, responsibleParty);
-        FeeDto feeDto = paymentRequestMapper.toFeeDto(feeDetails, volume);
-        CasePaymentRequestDto casePaymentRequest = paymentRequestMapper.toCasePaymentRequest(responsibleParty);
+    public PaymentServiceResponse createServiceRequest(FeesAndPayTaskData feesAndPayTaskData) {
+        log.info("Building payload for caseReference: {}", feesAndPayTaskData);
+        FeeDto feeDto = paymentRequestMapper.toFeeDto(feesAndPayTaskData.getFeeDetails(),
+                                                      feesAndPayTaskData.getVolume());
+        CasePaymentRequestDto casePaymentRequest = paymentRequestMapper.toCasePaymentRequest(
+            feesAndPayTaskData.getResponsibleParty());
         log.info("casePaymentRequest: {}", casePaymentRequest);
-
+        String caseReference = feesAndPayTaskData.getCaseReference();
         CreateServiceRequestDTO requestDto = CreateServiceRequestDTO.builder()
             .callBackUrl(callbackUrl)
             .casePaymentRequest(casePaymentRequest)
             .caseReference(caseReference)
-            .ccdCaseNumber(ccdCaseNumber)
+            .ccdCaseNumber(feesAndPayTaskData.getCcdCaseNumber())
             .fees(new FeeDto[]{feeDto})
             .hmctsOrgId(hmctsOrgId)
             .build();
-
+        String feesAndPayTaskDataAsString = writeAsString(feesAndPayTaskData);
         log.info("Calling ServiceCreateRequest with callback url: {} using hmctsOrgId: {} for caseReference: {}",
                  callbackUrl, hmctsOrgId, caseReference);
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
             idamService.getSystemUserAuthorisation(), requestDto);
-
         ClaimEntity claimEntity = retrieveClaimEntity(Long.parseLong(caseReference));
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
-        saveNewFeePayment(caseReference, claimEntity, feeDto, responsibleParty,
+        saveNewFeePayment(feesAndPayTaskDataAsString, feesAndPayTaskData, claimEntity,
                           paymentServiceResponse.getServiceRequestReference());
-
         return paymentServiceResponse;
+    }
+
+    private String writeAsString(FeesAndPayTaskData feesAndPayTaskData) {
+        try {
+            return objectMapper.writeValueAsString(feesAndPayTaskData);
+        } catch (IOException e) {
+            throw new PaymentException("Unable to write to json the FeesAndPayTaskData", e);
+        }
     }
 
     @Transactional
@@ -102,6 +104,11 @@ public class PaymentService {
             FeePaymentEntity feePaymentEntity = byCaseReference.get();
             feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
             feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
+            PaymentCallbackStrategy paymentCallbackStrategy = paymentCallbackStrategyFactory
+                .getStrategy(feePaymentEntity.getJourneyId());
+            if (paymentCallbackStrategy != null) {
+                paymentCallbackStrategy.handle(paymentStatusCallback, feePaymentEntity);
+            }
             feePaymentRepository.save(feePaymentEntity);
         } else {
             log.error("Unable to find a payment with the service request reference : {}",
@@ -110,16 +117,16 @@ public class PaymentService {
     }
 
     @Transactional
-    public void saveNewFeePayment(String caseReference, ClaimEntity claimEntity, FeeDto feeDto,
-                                  String responsibleParty, String serviceRequestReference) {
-        log.info("Saving New Fee Payment for the case: {} with serviceRequestReference: {}", caseReference,
-                 serviceRequestReference);
-        ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(claimEntity, responsibleParty);
+    public void saveNewFeePayment(String feesAndPayTaskDataAsString, FeesAndPayTaskData feesAndPayTaskData,
+                                  ClaimEntity claimEntity, String serviceRequestReference) {
+        log.info("Saving New Fee Payment for the case: {} with serviceRequestReference: {}",
+                 feesAndPayTaskData.getCaseReference(), serviceRequestReference);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
-            .party(claimPartyEntity.getParty())
             .requestReference(serviceRequestReference)
-            .amount(feeDto.getCalculatedAmount())
+            .amount(feesAndPayTaskData.getFeeDetails().getFeeAmount())
+            .journeyId(feesAndPayTaskData.getJourneyId())
+            .taskData(feesAndPayTaskDataAsString)
             .build();
         feePaymentRepository.save(feePaymentEntity);
     }
@@ -128,14 +135,6 @@ public class PaymentService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         // Assuming 1 claim per PcsCase
         return pcsCaseEntity.getClaims().getFirst();
-    }
-
-    private ClaimPartyEntity retrieveClaimPartyEntity(ClaimEntity claimEntity, String responsibleParty) {
-        return claimEntity.getClaimParties()
-            .stream()
-            .filter(party -> responsibleParty.equals(party.getParty().getOrgName()))
-            .findFirst()
-            .orElseThrow(() -> new PartyNotFoundException(PARTY_NOT_FOUND));
     }
 
 }

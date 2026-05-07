@@ -89,6 +89,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -354,24 +355,21 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {
-
         FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
-
-        String taskId = UUID.randomUUID().toString();
-
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
             .feeType(FeeType.CASE_ISSUE_FEE.getCode())
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(String.valueOf(caseReference))
             .responsibleParty(responsibleParty)
+            .journeyId(JourneyId.RESUME_POSSESSION_CLAIM)
             .build();
 
         schedulerClient.scheduleIfNotExists(
             FEE_CASE_ISSUED_TASK_DESCRIPTOR
-                .instance(taskId)
+                .instance(UUID.randomUUID().toString())
                 .data(taskData)
-                .scheduledTo(Instant.now())
+                .scheduledTo(Instant.now().plusSeconds(10))
         );
 
         return feeDetails;

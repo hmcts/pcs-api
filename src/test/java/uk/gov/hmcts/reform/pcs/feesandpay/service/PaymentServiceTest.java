@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,21 +23,22 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -44,8 +46,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId.RESUME_POSSESSION_CLAIM;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
@@ -56,8 +58,6 @@ class PaymentServiceTest {
     private static final String RESPONSIBLE_PARTY = "Applicant";
     private static final String SYSTEM_TOKEN = "Bearer sys-token";
     private static final BigDecimal CALCULATED_AMOUNT = new BigDecimal("808.00");
-    private static final String FEE_CODE = "FEE0412";
-    private static final String FEE_VERSION = "4";
     private static final String SERVICE_REQUEST_REFERENCE = "SR-123";
     private static final String CALLBACK_URL = "https://etc:123/service-request-update";
     private static final String HMCTS_ORG_ID = "TEST_ORG";
@@ -72,6 +72,10 @@ class PaymentServiceTest {
     private FeePaymentRepository feePaymentRepository;
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @InjectMocks
     private PaymentService underTest;
@@ -83,6 +87,7 @@ class PaymentServiceTest {
     void setUp() {
         setPrivateField(underTest, "callbackUrl", CALLBACK_URL);
         setPrivateField(underTest, "hmctsOrgId", HMCTS_ORG_ID);
+        setPrivateField(underTest, "objectMapper", objectMapper);
     }
 
     @Test
@@ -92,17 +97,17 @@ class PaymentServiceTest {
         paymentsClientDependencies(feeDetails);
         ClaimPartyEntity claimPartyEntity = claimPartyEntity();
         PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseService.loadCase(anyLong())).thenReturn(pcsCaseEntity);
         PaymentServiceResponse expectedResponse = createPaymentServiceResponse();
         when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
             .thenReturn(expectedResponse);
+        FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
 
         // When
-        PaymentServiceResponse result = underTest.createServiceRequest(String.valueOf(CASE_REFERENCE), CCD_CASE_NUMBER,
-                                                                       feeDetails, VOLUME, RESPONSIBLE_PARTY);
+        PaymentServiceResponse result = underTest.createServiceRequest(feesAndPayTaskData);
 
         // Then
-        assertServiceRequestCreation(result);
+        assertServiceRequestCreation(feesAndPayTaskData, result);
     }
 
     @Test
@@ -112,8 +117,7 @@ class PaymentServiceTest {
         when(pcsCaseService.loadCase(anyLong())).thenThrow(new CaseNotFoundException(222L));
 
         // When
-        assertThatThrownBy(() -> underTest.createServiceRequest("222", CCD_CASE_NUMBER,
-                                                                feeDetails, VOLUME, RESPONSIBLE_PARTY))
+        assertThatThrownBy(() -> underTest.createServiceRequest(createFeesAndPayTaskData(feeDetails)))
             .isInstanceOf(CaseNotFoundException.class);
     }
 
@@ -131,8 +135,11 @@ class PaymentServiceTest {
             .paymentStatus(PaymentStatus.PAID)
             .requestReference(requestReference)
             .externalReference(paymentReference)
+            .journeyId(RESUME_POSSESSION_CLAIM)
             .build();
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
+        when(paymentCallbackStrategyFactory.getStrategy(any(JourneyId.class)))
+            .thenReturn(mock(MakeAClaimPaymentCallbackStrategy.class));
 
         // When
         underTest.processPaymentResponse(paymentStatusCallback);
@@ -168,18 +175,19 @@ class PaymentServiceTest {
     }
 
     @Test
-    void shouldSaveNewFeePaymentWithExpectedFields() {
+    void shouldSaveNewFeePaymentWithExpectedFields() throws IOException {
         // Given
-        String responsibleParty = "Test";
+        FeeDetails feeDetails = createFeeDetails();
+        FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
+        String asString = objectMapper.writeValueAsString(feesAndPayTaskData);
         ClaimEntity claimEntity = new ClaimEntity();
-        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(responsibleParty).build();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID())
+            .orgName(feesAndPayTaskData.getResponsibleParty()).build();
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder().claim(claimEntity).party(partyEntity).build();
         claimEntity.setClaimParties(List.of(claimPartyEntity));
-        FeeDto feeDto = createFeeDto();
 
         // When
-        underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto, responsibleParty,
-                                    SERVICE_REQUEST_REFERENCE);
+        underTest.saveNewFeePayment(asString, feesAndPayTaskData, claimEntity, SERVICE_REQUEST_REFERENCE);
 
         // Then
         ArgumentCaptor<FeePaymentEntity> captor = ArgumentCaptor.forClass(FeePaymentEntity.class);
@@ -192,54 +200,18 @@ class PaymentServiceTest {
     }
 
     @Test
-    void shouldFailSaveNewFeePaymentWithNoParty() {
-        // Given
-        String responsibleParty = "Test";
-        ClaimEntity claimEntity = new ClaimEntity();
-        FeeDto feeDto = createFeeDto();
-
-        // When
-        assertThatExceptionOfType(PartyNotFoundException.class)
-            .isThrownBy(() -> underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto,
-                                                          responsibleParty, SERVICE_REQUEST_REFERENCE));
-
-        // Then
-        verifyNoInteractions(feePaymentRepository);
-    }
-
-    @Test
-    void shouldFailSaveNewFeePaymentWithIncorrectResponsibleParty() {
-        // Given
-        String responsibleParty = "Test";
-        ClaimEntity claimEntity = new ClaimEntity();
-        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(responsibleParty).build();
-        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder().claim(claimEntity).party(partyEntity).build();
-        claimEntity.setClaimParties(List.of(claimPartyEntity));
-        FeeDto feeDto = createFeeDto();
-
-        // When
-        assertThatExceptionOfType(PartyNotFoundException.class)
-            .isThrownBy(() -> underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto,
-                                                          "Different",
-                                                          SERVICE_REQUEST_REFERENCE));
-
-        // Then
-        verifyNoInteractions(feePaymentRepository);
-    }
-
-    @Test
     void shouldPersistFeePaymentWhenCreatingServiceRequest() {
         // Given
-        FeeDetails feeDetails = Instancio.create(FeeDetails.class);
+        FeeDetails feeDetails = createFeeDetails();
         paymentsClientDependencies(feeDetails);
         PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity());
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseService.loadCase(anyLong())).thenReturn(pcsCaseEntity);
         when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
             .thenReturn(createPaymentServiceResponse());
+        FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
 
         // When
-        underTest.createServiceRequest(String.valueOf(CASE_REFERENCE), CCD_CASE_NUMBER,
-                                       feeDetails, VOLUME, RESPONSIBLE_PARTY);
+        underTest.createServiceRequest(feesAndPayTaskData);
 
         // Then
         ArgumentCaptor<FeePaymentEntity> captor = ArgumentCaptor.forClass(FeePaymentEntity.class);
@@ -252,7 +224,7 @@ class PaymentServiceTest {
     }
 
     private void paymentsClientDependencies(FeeDetails feeDetails) {
-        FeeDto mappedFee = createFeeDto();
+        FeeDto mappedFee = createFeeDto(feeDetails);
         CasePaymentRequestDto casePaymentRequestDto = createCasePaymentRequestDto();
         when(paymentRequestMapper.toFeeDto(feeDetails, VOLUME)).thenReturn(mappedFee);
         when(paymentRequestMapper.toCasePaymentRequest(RESPONSIBLE_PARTY))
@@ -283,29 +255,29 @@ class PaymentServiceTest {
         return PaymentServiceResponse.builder().serviceRequestReference(SERVICE_REQUEST_REFERENCE).build();
     }
 
-    private FeeDto createFeeDto() {
-        return FeeDto.builder().calculatedAmount(CALCULATED_AMOUNT).code(FEE_CODE).version(FEE_VERSION)
-            .volume(VOLUME).build();
+    private FeeDto createFeeDto(FeeDetails feeDetails) {
+        return new PaymentRequestMapper().toFeeDto(feeDetails, VOLUME);
     }
 
-    private void assertServiceRequestCreation(PaymentServiceResponse result) {
+    private void assertServiceRequestCreation(FeesAndPayTaskData feesAndPayTaskData,
+                                              PaymentServiceResponse result) {
         assertThat(result).isNotNull();
         assertThat(result.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
 
         verify(paymentsClient).createServiceRequest(eq(SYSTEM_TOKEN), createServiceRequestCaptor.capture());
         CreateServiceRequestDTO sent = createServiceRequestCaptor.getValue();
 
-        assertCreateServiceRequestDTO(sent);
+        assertCreateServiceRequestDTO(feesAndPayTaskData, sent);
     }
 
-    private void assertCreateServiceRequestDTO(CreateServiceRequestDTO sent) {
+    private void assertCreateServiceRequestDTO(FeesAndPayTaskData feesAndPayTaskData, CreateServiceRequestDTO sent) {
         assertThat(sent.getCallBackUrl()).isEqualTo(CALLBACK_URL);
         assertThat(sent.getHmctsOrgId()).isEqualTo(HMCTS_ORG_ID);
         assertThat(sent.getCaseReference()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(sent.getCcdCaseNumber()).isEqualTo(CCD_CASE_NUMBER);
         assertThat(sent.getFees()).isNotNull();
         assertThat(sent.getFees()).hasSize(1);
-        assertThat(sent.getFees()[0]).isEqualTo(createFeeDto());
+        assertThat(sent.getFees()[0]).isEqualTo(createFeeDto(feesAndPayTaskData.getFeeDetails()));
     }
 
     private static <T> void setPrivateField(T object, String fieldName, Object value) {
@@ -316,6 +288,24 @@ class PaymentServiceTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set private field", e);
         }
+    }
+
+    private FeesAndPayTaskData createFeesAndPayTaskData(FeeDetails feeDetails) {
+        return FeesAndPayTaskData.builder()
+            .caseReference("222")
+            .ccdCaseNumber(CCD_CASE_NUMBER)
+            .feeDetails(feeDetails)
+            .caseReference(String.valueOf(CASE_REFERENCE))
+            .volume(VOLUME)
+            .responsibleParty(RESPONSIBLE_PARTY)
+            .journeyId(RESUME_POSSESSION_CLAIM)
+            .build();
+    }
+
+    private FeeDetails createFeeDetails() {
+        return FeeDetails.builder().feeAmount(CALCULATED_AMOUNT)
+            .code("FEE123")
+            .build();
     }
 
 }

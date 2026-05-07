@@ -29,4 +29,6 @@ public class FeesAndPayTaskData implements Serializable {
     private Integer volume = 1;
 
     private String responsibleParty;
+
+    private JourneyId journeyId;
 }

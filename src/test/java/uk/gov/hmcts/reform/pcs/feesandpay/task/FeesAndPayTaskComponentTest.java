@@ -28,8 +28,6 @@ import java.time.Duration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -122,13 +120,7 @@ class FeesAndPayTaskComponentTest {
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(paymentService).createServiceRequest(
-                data.getCaseReference(),
-                data.getCcdCaseNumber(),
-                feeDetails,
-                data.getVolume(),
-                data.getResponsibleParty()
-            );
+            verify(paymentService).createServiceRequest(data);
             assertThat(result).isInstanceOf(OnCompleteRemove.class);
         }
     }
@@ -145,10 +137,7 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(data);
 
             FeignException exception = mock(FeignException.class);
-            when(paymentService.createServiceRequest(
-                anyString(), anyString(), any(FeeDetails.class),
-                anyInt(), anyString()
-            )).thenThrow(exception);
+            when(paymentService.createServiceRequest(any(FeesAndPayTaskData.class))).thenThrow(exception);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feePaymentTask();
 

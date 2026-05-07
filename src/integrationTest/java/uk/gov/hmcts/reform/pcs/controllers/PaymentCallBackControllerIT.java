@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.instancio.Instancio;
@@ -22,8 +23,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.util.Optional;
@@ -58,17 +61,27 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     @Autowired
     private FeePaymentRepository feePaymentRepository;
 
-    private final long caseReference = 12345L;
+    private String caseReference;
     private String serviceCaseReference;
     private FeeDto feeDto;
+    private FeesAndPayTaskData feesAndPayTaskData;
+    private ClaimEntity claimEntity;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws JsonProcessingException {
         serviceCaseReference = UUID.randomUUID().toString();
+        feesAndPayTaskData = Instancio.create(FeesAndPayTaskData.class);
+        feesAndPayTaskData.setCaseReference("1234");
+        feesAndPayTaskData.setJourneyId(JourneyId.RESUME_POSSESSION_CLAIM);
+        caseReference = feesAndPayTaskData.getCaseReference();
         feeDto = Instancio.create(FeeDto.class);
         feeDto.setCcdCaseNumber(String.valueOf(caseReference));
-        PcsCaseEntity pcsCaseEntity = establishTestCase(caseReference);
-        establishFeePayment(pcsCaseEntity, serviceCaseReference);
+        PcsCaseEntity pcsCaseEntity = establishTestCase();
+        claimEntity = pcsCaseEntity.getClaims().getFirst();
+        ClaimPartyEntity claimPartyEntity = claimEntity.getClaimParties().getFirst();
+        String orgName = claimPartyEntity.getParty().getOrgName();
+        feesAndPayTaskData.setResponsibleParty(orgName);
+        establishFeePayment(serviceCaseReference);
     }
 
     @Test
@@ -96,16 +109,13 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
         assertThat(feePaymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
     }
 
-    PcsCaseEntity establishTestCase(long caseReference) {
+    PcsCaseEntity establishTestCase() {
         return caseCreationHelper
-            .createTestCaseWithParty(caseReference, null, PartyRole.CLAIMANT);
+            .createTestCaseWithParty(Long.parseLong(caseReference), null, PartyRole.CLAIMANT);
     }
 
-    void establishFeePayment(PcsCaseEntity pcsCaseEntity, String serviceCaseReference) {
-        ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
-        ClaimPartyEntity claimPartyEntity = claimEntity.getClaimParties().get(0);
-        String orgName = claimPartyEntity.getParty().getOrgName();
-        paymentService.saveNewFeePayment(String.valueOf(caseReference),
-                                         claimEntity, feeDto, orgName, serviceCaseReference);
+    void establishFeePayment(String serviceCaseReference) throws JsonProcessingException {
+        String asString = objectMapper.writeValueAsString(feesAndPayTaskData);
+        paymentService.saveNewFeePayment(asString, feesAndPayTaskData, claimEntity, serviceCaseReference);
     }
 }
