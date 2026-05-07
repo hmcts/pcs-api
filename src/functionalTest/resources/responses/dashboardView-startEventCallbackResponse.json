@@ -43,13 +43,13 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.ViewClaim",
+                  "templateId": "ViewClaim",
                   "status": "AVAILABLE"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.ViewDocuments",
+                  "templateId": "ViewDocuments",
                   "status": "NOT_AVAILABLE"
                 }
               }
@@ -62,7 +62,7 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.ViewHearingDocuments",
+                  "templateId": "ViewHearingDocuments",
                   "status": "AVAILABLE"
                 }
               }
@@ -75,7 +75,7 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.ViewOrdersAndNotices",
+                  "templateId": "ViewOrdersAndNotices",
                   "status": "AVAILABLE"
                 }
               }
@@ -88,26 +88,14 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.RespondToClaim",
+                  "templateId": "RespondToClaim",
                   "status": "NOT_STARTED"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.ViewResponse",
+                  "templateId": "ViewResponse",
                   "status": "NOT_AVAILABLE"
-                }
-              },
-              {
-                "value": {
-                  "templateId": "Defendant.ReviewResponse",
-                  "status": "IN_PROGRESS"
-                }
-              },
-              {
-                "value": {
-                  "templateId": "Defendant.SubmitResponse",
-                  "status": "COMPLETED"
                 }
               }
             ]

@@ -22,13 +22,18 @@ public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
     @Override
     public TaskGroup evaluate(DashboardContext ctx) {
 
-        TaskStatus respondToClaimStatus = ctx.hasSubmittedResponse()
-            ? TaskStatus.COMPLETED
-            : ctx.hasDraftResponse()
-                ? TaskStatus.IN_PROGRESS
-                : TaskStatus.NOT_STARTED;
+        // if conflicting state exists, disable links and omit tags.
+        boolean edgeCase = ctx.hasDraftResponse() && ctx.hasSubmittedResponse();
 
-        TaskStatus viewResponseStatus = ctx.hasSubmittedResponse()
+        TaskStatus respondToClaimStatus = edgeCase
+            ? TaskStatus.NOT_AVAILABLE
+            : ctx.hasSubmittedResponse()
+                ? TaskStatus.COMPLETED
+                : ctx.hasDraftResponse()
+                    ? TaskStatus.IN_PROGRESS
+                    : TaskStatus.NOT_STARTED;
+
+        TaskStatus viewResponseStatus = !edgeCase && ctx.hasSubmittedResponse()
                 ? TaskStatus.AVAILABLE
                 : TaskStatus.NOT_AVAILABLE;
 
@@ -36,11 +41,11 @@ public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
             .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
-                    .templateId("Defendant.RespondToClaim")
+                    .templateId("RespondToClaim")
                     .status(respondToClaimStatus)
                     .build(),
                 Task.builder()
-                    .templateId("Defendant.ViewResponse")
+                    .templateId("ViewResponse")
                     .status(viewResponseStatus)
                     .build()
             )))

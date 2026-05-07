@@ -25,7 +25,7 @@ public class NoticesTaskGroupEvaluator implements TaskGroupEvaluator {
             .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
-                    .templateId("Defendant.ViewOrdersAndNotices")
+                    .templateId("ViewOrdersAndNotices")
                     .status(TaskStatus.AVAILABLE)
                     .build()
             )))

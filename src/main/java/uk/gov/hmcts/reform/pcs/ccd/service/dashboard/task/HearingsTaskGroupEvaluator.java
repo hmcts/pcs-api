@@ -25,7 +25,7 @@ public class HearingsTaskGroupEvaluator implements TaskGroupEvaluator {
             .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
-                    .templateId("Defendant.ViewHearingDocuments")
+                    .templateId("ViewHearingDocuments")
                     .status(TaskStatus.AVAILABLE)
                     .build()
             )))

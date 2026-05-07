@@ -25,11 +25,11 @@ public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
             .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
-                    .templateId("Defendant.ViewClaim")
+                    .templateId("ViewClaim")
                     .status(TaskStatus.AVAILABLE)
                     .build(),
                 Task.builder()
-                    .templateId("Defendant.ViewDocuments")
+                    .templateId("ViewDocuments")
                     .status(TaskStatus.NOT_AVAILABLE)
                     .build()
             )))

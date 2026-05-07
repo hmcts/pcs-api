@@ -104,27 +104,27 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).getFirst().getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.ViewClaim", TaskStatus.AVAILABLE),
-                tuple("Defendant.ViewDocuments", TaskStatus.NOT_AVAILABLE)
+                tuple("ViewClaim", TaskStatus.AVAILABLE),
+                tuple("ViewDocuments", TaskStatus.NOT_AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.RespondToClaim", TaskStatus.NOT_STARTED),
-                tuple("Defendant.ViewResponse", TaskStatus.NOT_AVAILABLE)
+                tuple("RespondToClaim", TaskStatus.NOT_STARTED),
+                tuple("ViewResponse", TaskStatus.NOT_AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.ViewHearingDocuments", TaskStatus.AVAILABLE)
+                tuple("ViewHearingDocuments", TaskStatus.AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(3).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.ViewOrdersAndNotices", TaskStatus.AVAILABLE)
+                tuple("ViewOrdersAndNotices", TaskStatus.AVAILABLE)
             );
     }
 
@@ -156,7 +156,7 @@ class DashboardJourneyServiceTest {
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
-            .contains(tuple("Defendant.RespondToClaim", TaskStatus.IN_PROGRESS));
+            .contains(tuple("RespondToClaim", TaskStatus.IN_PROGRESS));
     }
 
     @Test
@@ -170,8 +170,8 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .contains(
-                tuple("Defendant.RespondToClaim", TaskStatus.COMPLETED),
-                tuple("Defendant.ViewResponse", TaskStatus.AVAILABLE)
+                tuple("RespondToClaim", TaskStatus.COMPLETED),
+                tuple("ViewResponse", TaskStatus.AVAILABLE)
             );
     }
 }
