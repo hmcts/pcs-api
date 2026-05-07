@@ -1,19 +1,8 @@
 pluginManagement {
     repositories {
+        gradlePluginPortal()
         maven {
-            name = "hmctsLib"
-            url = uri("https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1")
-            content {
-                includeGroupByRegex("com\\.github\\.hmcts(\\..*)?")
-                includeGroupByRegex("hmcts\\.ccd\\.sdk(\\..*)?")
-            }
-        }
-
-        gradlePluginPortal {
-            content {
-                excludeGroupByRegex("com\\.github\\.hmcts(\\..*)?")
-                excludeGroupByRegex("hmcts\\.ccd\\.sdk(\\..*)?")
-            }
+            url = 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'
         }
     }
 }
