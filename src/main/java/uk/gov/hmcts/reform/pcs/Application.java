@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.jms.annotation.EnableJms;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
@@ -33,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 )
 @EnableJms
 @EnableScheduling
+@EnableAsync
 public class Application {
 
     public static void main(final String[] args) {

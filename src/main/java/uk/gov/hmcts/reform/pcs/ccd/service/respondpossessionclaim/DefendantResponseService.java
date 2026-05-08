@@ -134,7 +134,7 @@ public class DefendantResponseService {
         saveCounterClaim(possessionClaimResponse.getDefendantResponses(), partyRef, claimRef);
 
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
-        return defendantResponseRepository.save(responseEntity);
+        return defendantResponseRepository.saveAndFlush(responseEntity);
     }
 
     private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
