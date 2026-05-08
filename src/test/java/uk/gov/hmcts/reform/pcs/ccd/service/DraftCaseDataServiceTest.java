@@ -197,6 +197,19 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
+    void shouldDeleteUnsubmittedDataByCaseReferenceAndPartyId() {
+        // given
+        UUID partyId = UUID.randomUUID();
+
+        // When
+        underTest.deleteUnsubmittedCaseData(CASE_REFERENCE, eventId, partyId);
+
+        // Then
+        verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                                               USER_ID, partyId);
+    }
+
+    @Test
     void shouldThrowExceptionForJsonExceptionWhenReading() throws JsonProcessingException {
         // Given
         String unsubmittedCaseDataJson = "case data json";
@@ -230,4 +243,133 @@ class DraftCaseDataServiceTest {
             .hasCause(jsonProcessingException);
 
     }
+
+    @Test
+    void shouldGetUnsubmittedCaseDataForPartyId() throws JsonProcessingException {
+        // Given
+        String unsubmittedCaseDataJson = "case data json";
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+        PCSCase expectedUnsubmittedCaseData = mock(PCSCase.class);
+        UUID partyId = UUID.randomUUID();
+
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                                          USER_ID, partyId))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
+        when(objectMapper.readValue(unsubmittedCaseDataJson, PCSCase.class)).thenReturn(expectedUnsubmittedCaseData);
+
+        // When
+        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId, partyId);
+
+        // Then
+        assertThat(unsubmittedCaseData).contains(expectedUnsubmittedCaseData);
+        verify(expectedUnsubmittedCaseData).setHasUnsubmittedCaseData(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldReturnEmptyWhenNoUnsubmittedCaseDataForPartyId() {
+        // Given
+        UUID partyId = UUID.randomUUID();
+
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                                USER_ID, partyId))
+            .thenReturn(Optional.empty());
+
+        // When
+        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId, partyId);
+
+        // Then
+        assertThat(unsubmittedCaseData).isEmpty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnWhetherUnsubmittedCaseDataExistsForPartyId(boolean repositoryDataExists) {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                                            USER_ID, partyId))
+            .thenReturn(repositoryDataExists);
+
+        // When
+        boolean hasUnsubmittedCaseData = underTest.hasUnsubmittedCaseData(CASE_REFERENCE, eventId, partyId);
+
+        // Then
+        assertThat(hasUnsubmittedCaseData).isEqualTo(repositoryDataExists);
+    }
+
+    @Test
+    void shouldSaveNewUnsubmittedCaseData_WithPartyId() throws JsonProcessingException {
+        // Given
+        String caseDataJson = "case data json";
+        PCSCase caseData = mock(PCSCase.class);
+        UUID partyId = UUID.randomUUID();
+        when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                                          USER_ID, partyId))
+            .thenReturn(Optional.empty());
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId);
+
+        // Then
+        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
+
+        assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
+        assertThat(savedEntity.getIdamUserId()).isEqualTo(USER_ID);
+        assertThat(savedEntity.getPartyId()).isEqualTo(partyId);
+    }
+
+    @Test
+    void shouldUpdateExistingUnsubmittedCaseDataWithPartId() throws JsonProcessingException {
+        // Given
+        String existingCaseDataJson = "existing case data json";
+        String newCaseDataJson = "new case data json";
+        String mergedCaseDataJson = "merged case data JSON";
+        UUID partyId = UUID.randomUUID();
+
+        PCSCase newCaseData = mock(PCSCase.class);
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn(newCaseDataJson);
+
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+        when(draftCaseDataEntity.getCaseData()).thenReturn(existingCaseDataJson);
+
+        when(draftCaseJsonMerger.mergeJson(existingCaseDataJson, newCaseDataJson)).thenReturn(mergedCaseDataJson);
+
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                                USER_ID, partyId))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        underTest.patchUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, partyId);
+
+        // Then
+        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
+
+        assertThat(savedEntity).isSameAs(draftCaseDataEntity);
+        verify(draftCaseDataEntity).setCaseData(mergedCaseDataJson);
+    }
+
+    @Test
+    void shouldThrowExceptionForJsonExceptionWhenSaving_WithPartyId() throws JsonProcessingException {
+        // Given
+        PCSCase caseData = mock(PCSCase.class);
+        JsonProcessingException jsonProcessingException = mock(JsonProcessingException.class);
+        when(objectMapper.writeValueAsString(caseData)).thenThrow(jsonProcessingException);
+        UUID partyId = UUID.randomUUID();
+
+        // Then
+        assertThatThrownBy(() -> underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId))
+            .isInstanceOf(UnsubmittedDataException.class)
+            .hasMessage("Failed to save answers")
+            .hasCause(jsonProcessingException);
+    }
+
 }

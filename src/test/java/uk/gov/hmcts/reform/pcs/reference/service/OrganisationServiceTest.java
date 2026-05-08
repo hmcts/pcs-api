@@ -7,12 +7,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,6 +69,26 @@ class OrganisationServiceTest {
 
         assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
         verify(organisationDetailsService).getOrganisationIdentifier(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should return null when user ID is null")
+    void getOrganisationIdForCurrentUser_ShouldReturnNullWhenUserIdIsNull() {
+        String result = organisationService.getOrganisationIdForCurrentUser();
+
+        assertThat(result).isNull();
+        verify(organisationDetailsService, never()).getOrganisationIdentifier(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should return null when exception thrown")
+    void getOrganisationIdForCurrentUser_ShouldReturnNullWhenExceptionThrown() {
+        when(securityContextService.getCurrentUserId()).thenThrow(new SecurityContextException(""));
+
+        String result = organisationService.getOrganisationIdForCurrentUser();
+
+        assertThat(result).isNull();
+        verify(organisationDetailsService, never()).getOrganisationIdentifier(USER_ID.toString());
     }
 
     @Test

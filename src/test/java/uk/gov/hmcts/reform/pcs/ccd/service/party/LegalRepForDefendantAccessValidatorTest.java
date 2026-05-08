@@ -67,6 +67,35 @@ class LegalRepForDefendantAccessValidatorTest {
     }
 
     @Test
+    void shouldReturnDefendant() {
+        UUID authenticatedUserId = UUID.randomUUID();
+        UUID authenticatedUserIdamId = UUID.randomUUID();
+        String organisationId = "ORG-123";
+
+        PartyEntity defendant = PartyEntity.builder().build();
+        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+            .organisationId(organisationId)
+            .idamId(authenticatedUserIdamId)
+            .build();
+        defendant.setClaimPartyLegalRepresentativeList(List.of(
+            ClaimPartyLegalRepresentativeEntity.builder()
+                .party(defendant)
+                .legalRepresentative(linkedRepresentative)
+                .active(YesOrNo.YES)
+                .build()
+        ));
+
+        PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
+
+        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
+            .thenReturn(organisationId);
+
+        List<PartyEntity> result = underTest.validateAndGetDefendants(caseEntity, authenticatedUserId);
+
+        assertThat(result).containsExactly(defendant);
+    }
+
+    @Test
     void shouldThrowWhenLegalRepIsInDifferentOrganisation() {
         UUID authenticatedUserId = UUID.randomUUID();
 
