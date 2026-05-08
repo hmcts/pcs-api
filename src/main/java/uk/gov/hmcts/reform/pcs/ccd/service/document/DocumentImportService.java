@@ -23,9 +23,9 @@ public class DocumentImportService {
     private final IdamService idamService;
     private final AuthTokenGenerator authTokenGenerator;
 
-    public void addDocumentToCase(long caseReference,
-                                  String documentUrl,
-                                  CaseFileCategory caseFileCategory) {
+    public DocumentEntity addDocumentToCase(long caseReference,
+                                            String documentUrl,
+                                            CaseFileCategory caseFileCategory) {
 
         String[] urlParts = documentUrl.split("/");
         UUID documentId = UUID.fromString(urlParts[urlParts.length - 1]);
@@ -41,6 +41,7 @@ public class DocumentImportService {
 
         DocumentEntity documentEntity = DocumentEntity.builder()
             .fileName(documentMetadata.originalDocumentName)
+            .documentId(documentId)
             .url(documentMetadata.links.self.href)
             .binaryUrl(documentMetadata.links.binary.href)
             .categoryId(caseFileCategory.getId())
@@ -48,6 +49,8 @@ public class DocumentImportService {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         pcsCaseEntity.addDocuments(List.of(documentEntity));
+
+        return documentEntity;
     }
 
 }

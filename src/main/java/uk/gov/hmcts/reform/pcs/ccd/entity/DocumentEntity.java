@@ -67,6 +67,9 @@ public class DocumentEntity {
 
     private String categoryId;
 
+    // The DM Store document ID
+    private UUID documentId;
+
     @Enumerated(EnumType.STRING)
     private DocumentType type;
 

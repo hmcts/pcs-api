@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -96,7 +97,10 @@ public class CitizenCreateGenApp implements CCDConfig<PCSCase, State, UserRole> 
             genAppEntity
         );
 
-        documentImportService.addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
+        DocumentEntity documentEntity = documentImportService
+            .addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
+
+        genAppEntity.setSubmissionDocument(documentEntity);
     }
 
     private static SubmitResponse<State> errorResponse(String errorMessage) {

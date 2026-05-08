@@ -71,17 +71,24 @@ class DocumentImportServiceTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         // When
-        underTest.addDocumentToCase(CASE_REFERENCE, documentUrl, CaseFileCategory.HEARING_DOCUMENTS);
+        DocumentEntity returnedDocumentEntity = underTest.addDocumentToCase(
+            CASE_REFERENCE,
+            documentUrl,
+            CaseFileCategory.HEARING_DOCUMENTS
+        );
 
         // Then
         verify(pcsCaseEntity).addDocuments(documentEntityListCaptor.capture());
         assertThat(documentEntityListCaptor.getValue()).hasSize(1);
 
-        DocumentEntity documentEntity = documentEntityListCaptor.getValue().getFirst();
-        assertThat(documentEntity.getFileName()).isEqualTo("original filename");
-        assertThat(documentEntity.getUrl()).isEqualTo("test url");
-        assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
-        assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.HEARING_DOCUMENTS.getId());
+        DocumentEntity addedDocumentEntity = documentEntityListCaptor.getValue().getFirst();
+        assertThat(addedDocumentEntity).isSameAs(returnedDocumentEntity);
+
+        assertThat(addedDocumentEntity.getFileName()).isEqualTo("original filename");
+        assertThat(addedDocumentEntity.getDocumentId()).isEqualTo(documentId);
+        assertThat(addedDocumentEntity.getUrl()).isEqualTo("test url");
+        assertThat(addedDocumentEntity.getBinaryUrl()).isEqualTo("test binary url");
+        assertThat(addedDocumentEntity.getCategoryId()).isEqualTo(CaseFileCategory.HEARING_DOCUMENTS.getId());
     }
 
     @SuppressWarnings("SameParameterValue")

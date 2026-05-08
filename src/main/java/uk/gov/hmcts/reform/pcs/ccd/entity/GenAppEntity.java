@@ -106,4 +106,8 @@ public class GenAppEntity {
     private StatementOfTruthEntity statementOfTruth;
 
     private LocalDateTime applicationSubmittedDate;
+
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "submission_document_id")
+    private DocumentEntity submissionDocument;
 }
