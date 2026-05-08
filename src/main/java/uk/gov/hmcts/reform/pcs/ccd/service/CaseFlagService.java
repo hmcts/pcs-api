@@ -56,10 +56,9 @@ public class CaseFlagService {
             } else {
                 if ("Inactive".equals(flagEntity.getDefaultStatus())) {
                     flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagUpdateComment());
-                } else  {
+                } else {
                     flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
                 }
-                flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
                 flagEntity.setFlagUpdateCommentWelsh(incomingFlagDetail.getFlagCommentCy());
             }
 
@@ -71,11 +70,6 @@ public class CaseFlagService {
             flagEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
             flagEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
             flagEntity.setFlagRefData(flagRefDataEntity);
-
-            if ("UPDATE".equals(flow)) {
-                flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
-                flagEntity.setFlagUpdateCommentWelsh(incomingFlagDetail.getFlagCommentCy());
-            }
 
             flagEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
