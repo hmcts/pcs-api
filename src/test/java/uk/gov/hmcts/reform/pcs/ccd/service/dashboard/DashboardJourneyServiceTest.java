@@ -5,12 +5,17 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -29,6 +34,8 @@ class DashboardJourneyServiceTest {
         underTest = new DashboardJourneyService(List.of(
             new ClaimTaskGroupEvaluator(),
             new DocumentsTaskGroupEvaluator(),
+            new ResponseTaskGroupEvaluator(),
+            new ApplicationsTaskGroupEvaluator(),
             new HearingsTaskGroupEvaluator(),
             new NoticesTaskGroupEvaluator()
         ));
@@ -44,7 +51,7 @@ class DashboardJourneyServiceTest {
         assertThat(result.getCaseId()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(result.getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(result.getNotifications()).hasSize(2);
-        assertThat(result.getTaskGroups()).hasSize(5);
+        assertThat(result.getTaskGroups()).hasSize(6);
     }
 
     @Test
@@ -77,37 +84,40 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()))
             .extracting(g -> g.getGroupId(), g -> g.getTasks().size())
             .containsExactly(
-                tuple(TaskGroupId.CLAIM, 2),
+                tuple(TaskGroupId.CLAIM, 1),
                 tuple(TaskGroupId.DOCUMENTS, 2),
+                tuple(TaskGroupId.RESPONSE, 3),
                 tuple(TaskGroupId.HEARING, 1),
                 tuple(TaskGroupId.NOTICE, 1),
-                tuple(TaskGroupId.RESPONSE, 3)
+                tuple(TaskGroupId.APPLICATIONS, 2)
             );
 
-        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).getFirst().getTasks())
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(0).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.ViewClaim", TaskStatus.AVAILABLE),
-                tuple("Defendant.ViewDocuments", TaskStatus.NOT_AVAILABLE)
+                tuple(DashboardTaskTemplateIds.VIEW_CLAIM, TaskStatus.AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.UploadDocuments", TaskStatus.AVAILABLE),
-                tuple("Defendant.ViewDocuments", TaskStatus.AVAILABLE)
+                tuple(DashboardTaskTemplateIds.UPLOAD_DOCUMENTS, TaskStatus.AVAILABLE),
+                tuple(DashboardTaskTemplateIds.VIEW_DOCUMENTS, TaskStatus.NOT_AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple("Defendant.ViewHearingDocuments", TaskStatus.AVAILABLE)
+                tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.NOT_STARTED),
+                tuple(DashboardTaskTemplateIds.REVIEW_RESPONSE, TaskStatus.IN_PROGRESS),
+                tuple(DashboardTaskTemplateIds.SUBMIT_RESPONSE, TaskStatus.COMPLETED)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(3).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
-                tuple("Defendant.ViewOrdersAndNotices", TaskStatus.AVAILABLE)
+                tuple(DashboardTaskTemplateIds.VIEW_HEARING_DOCUMENTS, TaskStatus.AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(4).getTasks())
@@ -116,6 +126,35 @@ class DashboardJourneyServiceTest {
                 tuple("Defendant.RespondToClaim", TaskStatus.NOT_STARTED),
                 tuple("Defendant.ReviewResponse", TaskStatus.IN_PROGRESS),
                 tuple("Defendant.SubmitResponse", TaskStatus.COMPLETED)
+                tuple(DashboardTaskTemplateIds.VIEW_ORDERS_AND_NOTICES, TaskStatus.AVAILABLE)
+            );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(5).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple(DashboardTaskTemplateIds.MAKE_GENERAL_APPLICATION, TaskStatus.AVAILABLE),
+                tuple(DashboardTaskTemplateIds.VIEW_ALL_APPLICATIONS, TaskStatus.NOT_AVAILABLE)
+            );
+    }
+
+    @Test
+    void shouldShowViewApplicationsTaskWhenAtLeastOneGeneralApplicationExists() {
+        PCSCase submitted = PCSCase.builder().build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .genApps(java.util.Set.of(GenAppEntity.builder().build()))
+            .build();
+
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            submitted,
+            new DashboardContext(CASE_REFERENCE, caseEntity, null)
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(5).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple(DashboardTaskTemplateIds.MAKE_GENERAL_APPLICATION, TaskStatus.AVAILABLE),
+                tuple(DashboardTaskTemplateIds.VIEW_ALL_APPLICATIONS, TaskStatus.AVAILABLE)
             );
     }
 
