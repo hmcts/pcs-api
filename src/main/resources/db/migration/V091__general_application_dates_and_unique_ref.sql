@@ -12,3 +12,6 @@ ALTER TABLE statement_of_truth
 
 ALTER TABLE help_with_fees
   ALTER COLUMN hwf_reference TYPE VARCHAR(60);
+
+
+
