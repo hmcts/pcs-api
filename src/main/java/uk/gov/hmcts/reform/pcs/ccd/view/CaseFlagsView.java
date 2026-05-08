@@ -24,10 +24,11 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public class CaseFlagsView {
 
-    public static  String PATHS_DELIMITER = ",";
-    public static  String PATH_DELIMITER = ":";
     private static final String RESPONDENT = "respondent";
     private static final String CLAIMANT = "claimant";
+    public static final String PATHS_DELIMITER = ",";
+    public static final String PATH_DELIMITER = ":";
+
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
 
