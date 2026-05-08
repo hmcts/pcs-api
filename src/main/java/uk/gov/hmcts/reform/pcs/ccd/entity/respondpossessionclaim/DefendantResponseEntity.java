@@ -148,6 +148,11 @@ public class DefendantResponseEntity {
     private VerticalYesNo makeCounterClaim;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "counter_claim_want_to_upload_files")
+    private VerticalYesNo counterClaimWantToUploadFiles;
+
+    @Enumerated(EnumType.STRING)
     private DefendantResponseStatus status;
 
     private LocalDateTime responseSubmittedDate;
