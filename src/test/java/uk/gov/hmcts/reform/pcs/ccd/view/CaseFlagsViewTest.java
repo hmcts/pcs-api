@@ -8,10 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -79,7 +76,6 @@ class CaseFlagsViewTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
         pcsCaseEntity.setParties(Set.of(partyEntity));
-        //when(refDataFlagsRepository.findAll()).thenReturn(List.of(createMockRefDataFlagsEntity()));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -90,7 +86,7 @@ class CaseFlagsViewTest {
         Party party = pcsCase.getParties().getFirst().getValue();
         assertNotNull(party.getRespondentFlags());
         assertEquals(1, party.getRespondentFlags().getDetails().size());
-        assertEquals("CF0015", party.getRespondentFlags().getDetails().getFirst().getValue().getFlagCode());
+        assertEquals("PF0015", party.getRespondentFlags().getDetails().getFirst().getValue().getFlagCode());
     }
 
     @Test
@@ -140,16 +136,13 @@ class CaseFlagsViewTest {
         assertEquals(0, pcsCase.getParties().size());
     }
 
-    private BaseCaseFlag createMockCaseFlagsEntity() {
+    private CaseFlagEntity createMockCaseFlagsEntity() {
 
-        FlagRefDataEntity flagRefDataEntity = new FlagRefDataEntity();
         CaseFlagEntity  caseFlagEntity = new CaseFlagEntity();
-        caseFlagEntity.setFlagRefData(flagRefDataEntity);
         caseFlagEntity.setId(UUID.randomUUID());
-        caseFlagEntity.getFlagRefData().setFlagCode("CF0007");
         caseFlagEntity.setFlagComment("Urgent case");
         caseFlagEntity.setPaths(UUID.randomUUID() + ":"  + "Case");
-        caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity());
+        caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity("CF0007", "Urgent case"));
 
         return  caseFlagEntity;
     }
@@ -159,26 +152,18 @@ class CaseFlagsViewTest {
         CasePartyFlagEntity  casePartyFlagEntity = new CasePartyFlagEntity();
 
         casePartyFlagEntity.setId(UUID.randomUUID());
-        casePartyFlagEntity.setFlagCode("CF0015");
         casePartyFlagEntity.setFlagComment("Language Interpreter");
-        casePartyFlagEntity.setCaseFlagPaths(List.of(createMockFlagPathEntity()));
-        casePartyFlagEntity.setRefDataFlag(createMockRefDataFlagsEntity());
+        casePartyFlagEntity.setPaths(UUID.randomUUID() + ":" + "Case");
+        casePartyFlagEntity.setFlagRefData(createMockRefDataFlagsEntity("PF0015", "Language Interpreter"));
 
         return  casePartyFlagEntity;
     }
 
-    private FlagPathEntity createMockFlagPathEntity() {
-        return FlagPathEntity.builder()
-            .id(UUID.randomUUID())
-            .path("Case")
-            .build();
-    }
-
-    private FlagRefDataEntity createMockRefDataFlagsEntity() {
+    private FlagRefDataEntity createMockRefDataFlagsEntity(String flagCode, String flagName) {
 
         return FlagRefDataEntity.builder()
-            .flagCode("CF0007")
-            .flagName("Urgent case")
+            .flagCode(flagCode)
+            .flagName(flagName)
             .build();
     }
 }

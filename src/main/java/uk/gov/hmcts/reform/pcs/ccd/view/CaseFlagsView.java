@@ -10,9 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagPathEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -29,8 +26,6 @@ public class CaseFlagsView {
 
     public static  String PATHS_DELIMITER = ",";
     public static  String PATH_DELIMITER = ":";
-
-
     private static final String RESPONDENT = "respondent";
     private static final String CLAIMANT = "claimant";
 
@@ -86,7 +81,9 @@ public class CaseFlagsView {
 
     private List<ListValue<String>> getPaths(String entityPaths) {
 
-        return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
+        return entityPaths == null
+            ? new ArrayList<>()
+            : Arrays.stream(entityPaths.split(PATHS_DELIMITER))
                 .map(pathPairs -> pathPairs.split(PATH_DELIMITER))
                 .map(paths -> ListValue.<String>builder()
                     .id(paths[0])

@@ -35,10 +35,6 @@ public abstract class BaseCaseFlag {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pcs_case_id")
-    private PcsCaseEntity pcsCase;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "flag_ref_data_id")
     private FlagRefDataEntity flagRefData;
 

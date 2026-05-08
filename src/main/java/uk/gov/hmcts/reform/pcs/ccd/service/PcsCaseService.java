@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -69,10 +69,12 @@ public class PcsCaseService {
 
         if (pcsCase.getCaseFlags() != null && pcsCase.getCaseFlags().getDetails() != null
             || pcsCase.getParties() != null) {
-            List<BaseCaseFlag> mergedFlagDetails = caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(),
-                                                                                  pcsCaseEntity, flow);
+            List<CaseFlagEntity> mergedFlagDetails = caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(),
+                                                                                    pcsCaseEntity, flow);
             pcsCaseEntity.getCaseFlags().clear();
             pcsCaseEntity.getCaseFlags().addAll(mergedFlagDetails);
+
+            caseFlagService.mergePartyFlags(pcsCase.getParties(), pcsCaseEntity, flow);
         }
     }
 
