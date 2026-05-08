@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.Column;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,11 +20,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -55,6 +58,8 @@ public class GenAppEntity {
     @Enumerated(EnumType.STRING)
     private GenAppState state;
 
+    private String clientReference;
+
     @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "party_id")
     @JsonBackReference
@@ -78,4 +83,25 @@ public class GenAppEntity {
     @JsonManagedReference
     private HelpWithFeesEntity helpWithFeesEntity;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo otherPartiesAgreed;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo withoutNotice;
+
+    private String withoutNoticeReason;
+
+    private String whatOrderWanted;
+
+    @Enumerated(EnumType.STRING)
+    private LanguageUsed languageUsed;
+
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "sot_id")
+    @JsonManagedReference
+    private StatementOfTruthEntity statementOfTruth;
+
+    private LocalDateTime applicationSubmittedDate;
 }

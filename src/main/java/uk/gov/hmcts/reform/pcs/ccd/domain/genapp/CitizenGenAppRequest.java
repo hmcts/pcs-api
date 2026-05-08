@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 @Builder
@@ -21,7 +22,27 @@ public class CitizenGenAppRequest {
 
     private VerticalYesNo appliedForHwf;
 
-    @CCD(max = 16)
+    @CCD(max = 100)
     private String hwfReference;
+
+    private VerticalYesNo otherPartiesAgreed;
+
+    private VerticalYesNo withoutNotice;
+
+    @CCD(max = 6800)
+    private String withoutNoticeReason;
+
+    @CCD(max = 6800)
+    private String whatOrderWanted;
+
+    private LanguageUsed languageUsed;
+
+    private VerticalYesNo sotAccepted;
+
+    @CCD(max = 100)
+    private String sotFullName;
+
+    @CCD(max = 60)
+    private String clientReference;
 
 }

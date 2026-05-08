@@ -85,7 +85,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Create Case - With resume claim options]', async () => {
+test.describe('[Create Case - With resume claim options] @nightly', async () => {
   test('England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
@@ -96,20 +96,22 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption, true);
     await performAction('verifyPageAndClickButton', claimantType.continueButton, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimType.noRadioOption, true);
     await performAction('verifyPageAndClickButton', claimType.continueButton, claimType.mainHeader);
-    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
+    await performValidation('mainHeader', contactPreferences.mainHeader)
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
@@ -124,7 +126,10 @@ test.describe('[Create Case - With resume claim options]', async () => {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
       day: tenancyLicenceDetails.dayTextInput,
       month: tenancyLicenceDetails.monthTextInput,
-      year: tenancyLicenceDetails.yearTextInput
+      year: tenancyLicenceDetails.yearTextInput,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
     });
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
     await performAction('selectYourPossessionGrounds', {
@@ -220,21 +225,23 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
-    await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
+    await performAction('selectClaimType', claimType.noRadioOption);    
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, false);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption, false);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performValidation('radioButtonChecked', claimType.noRadioOption, false);
-    await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, false);
-    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
+    await performAction('selectClaimType', claimType.noRadioOption);    
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
@@ -246,17 +253,22 @@ test.describe('[Create Case - With resume claim options]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption});
+      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
+      mandatoryAbsolute:[whatAreYourGroundsForPossession.mandatoryAbsoluteGrounds.condition1],
       mandatoryAccommodation: [whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks],
       discretionaryAccommodation: [whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied],
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession'
-      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4, whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour,
+      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4, whatAreYourGroundsForPossession.mandatoryAbsoluteGrounds.condition1,
         whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks,
         whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied
       ]);

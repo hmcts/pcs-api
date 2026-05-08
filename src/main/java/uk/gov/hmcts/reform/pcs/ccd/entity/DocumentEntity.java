@@ -19,6 +19,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +47,18 @@ public class DocumentEntity {
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "party_id")
+    private PartyEntity party;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "general_application_id")
+    private GenAppEntity generalApplication;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "defendant_response_id")
+    private DefendantResponseEntity defendantResponse;
+
     private String url;
 
     private String fileName;
@@ -55,7 +70,17 @@ public class DocumentEntity {
     @Enumerated(EnumType.STRING)
     private DocumentType type;
 
+    private String contentType;
+
+    private Long size;
+
+    private String displayFileName;
+
     private String description;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "claim_id")
+    private ClaimEntity claim;
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "document")
     @Builder.Default
@@ -66,4 +91,8 @@ public class DocumentEntity {
     @JoinColumn(name = "enf_case_id")
     @JsonBackReference
     private EnforcementOrderEntity enfCase;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "counter_claim_id")
+    private CounterClaimEntity counterClaim;
 }

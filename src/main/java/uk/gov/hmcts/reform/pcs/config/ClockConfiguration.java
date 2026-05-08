@@ -12,6 +12,11 @@ public class ClockConfiguration {
     public static final ZoneId UK_ZONE_ID = ZoneId.of("Europe/London");
 
     @Bean
+    public Clock utcClock() {
+        return Clock.systemUTC();
+    }
+
+    @Bean
     public Clock ukClock() {
         return Clock.system(UK_ZONE_ID);
     }

@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
@@ -343,21 +344,27 @@ public class ClaimGroundService {
             }
         );
 
-        possessionGrounds.getSecureOrFlexibleMandatoryGrounds().forEach(
-            mandatoryGround -> {
-                String reasonText = switch (mandatoryGround) {
-                    case ANTI_SOCIAL -> reasons.getAntiSocialGround();
-                };
+        if (!CollectionUtils.isEmpty(possessionGrounds.getSecureAntisocialAdditionalGrounds())) {
+            possessionGrounds.getSecureAntisocialAdditionalGrounds().forEach(
+                antisocialGround -> {
+                    String reasonText = switch (antisocialGround) {
+                        case S84A_CONDITION_1 -> reasons.getAntiSocialCondition1OfS84AGround();
+                        case S84A_CONDITION_2 -> reasons.getAntiSocialCondition2OfS84AGround();
+                        case S84A_CONDITION_3 -> reasons.getAntiSocialCondition3OfS84AGround();
+                        case S84A_CONDITION_4 -> reasons.getAntiSocialCondition4OfS84AGround();
+                        case S84A_CONDITION_5 -> reasons.getAntiSocialCondition5OfS84AGround();
+                    };
 
-                claimGroundEntities.add(
-                    ClaimGroundEntity.builder()
-                        .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_MANDATORY)
-                        .code(mandatoryGround.name())
-                        .reason(reasonText)
-                        .isRentArrears(false)
-                        .build());
-            }
-        );
+                    claimGroundEntities.add(
+                        ClaimGroundEntity.builder()
+                            .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                            .code(antisocialGround.name())
+                            .reason(reasonText)
+                            .isRentArrears(false)
+                            .build());
+                }
+            );
+        }
 
         possessionGrounds.getSecureOrFlexibleDiscretionaryGroundsAlt().forEach(
             discretionaryGroundAlt -> {
