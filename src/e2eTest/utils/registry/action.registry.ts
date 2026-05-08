@@ -96,6 +96,8 @@ export class ActionRegistry {
     ['selectAsb', new CreateCaseWalesAction()],
     ['payClaimFee', new CreateCaseAction()],
     ['claimSaved', new CreateCaseAction()],
+    ['validateDefendantDetails', new CreateCaseAction()],
+    ['validateClaimantDetails', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
