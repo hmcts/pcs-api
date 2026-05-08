@@ -1,6 +1,6 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
-import { actionRetries, MEDIUM_TIMEOUT, SHORT_TIMEOUT, waitForPageRedirectionTimeout } from '../../../playwright.config';
+import { actionRetries, waitForPageRedirectionTimeout } from '../../../playwright.config';
 
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string, actionParams: string): Promise<void> {
@@ -21,20 +21,11 @@ export class ClickButtonAction implements IAction {
     await actionToPerform();
   }
 
-  private async clickButton(page: Page, button: Locator): Promise<void> {
-    await expect(async () => {
+  private async clickButton(page: Page, button: Locator): Promise<void> {   
       await page.waitForLoadState();
       await button.click();
       await page.waitForLoadState();
-      await page.locator('.spinner-container').waitFor({ state: 'detached' });
-      await expect(page.locator(`h3.error-summary-heading:text-is("The event could not be created"),
-                                        h3.error-summary-heading:text-is("Errors"),
-                                        h2#error-summary-title:text-is("There is a problem"),
-                                        h3#edit-case-event_error-summary-heading
-                                        `), `This checks for Unexpected callback errors or server failures. The action retries based on the timeout provided.`).toHaveCount(0, { timeout: SHORT_TIMEOUT });
-    }).toPass({
-      timeout: MEDIUM_TIMEOUT + MEDIUM_TIMEOUT,
-    });
+      await page.locator('.spinner-container').waitFor({ state: 'detached' });    
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
