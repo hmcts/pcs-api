@@ -34,20 +34,16 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
                    ---
                    <section tabindex="0">
                    <p class="govuk-body">
-                       You may have already served the defendants with notice of your intention to begin
-                       possession proceedings. Notice periods vary between grounds and some do not require any
-                       notice to be served. You should read the <a href="https://www.gov.wales/understanding-possession-process-guidance-private-landlords"
-                        rel="noreferrer noopener" target="_blank" class="govuk-link">guidance on
-                       possession notice periods (opens in new tab)</a>
-                       to make sure your claim is valid.
+                       If this is a possession claim under an occupation contract, you must have
+                       <br> already served the defendant with notice seeking possession.
                    </p>
 
                    <div class="govuk-warning-text">
                      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                      <strong class="govuk-warning-text__text">
                        <span class="govuk-visually-hidden">Warning</span>
-                             A judge might not grant a possession order if you have not
-                             followed the correct notice procedure
+                             Each ground requires a different notice period before a possession
+                             <br> claim may be made. Some do not require any notice period.
                      </strong>
                    </div>
                    </section>
@@ -63,7 +59,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
                        <ul class="govuk-list govuk-list--bullet">
                        <li class="govuk-!-font-size-19"> the type of tenancy or licence that is in place for this
                        claim </li>
-                       <li class="govuk-!-font-size-19"> how you have compiled with the applicable possession
+                       <li class="govuk-!-font-size-19"> how you have complied with the applicable possession
                        procedures </li>
                        </ul>
                    </p>
