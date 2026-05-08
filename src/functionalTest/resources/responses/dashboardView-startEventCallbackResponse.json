@@ -63,25 +63,6 @@
               {
                 "value": {
                   "templateId": "ViewDocuments",
-                  "status": "NOT_AVAILABLE"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "value": {
-            "groupId": "DOCUMENTS",
-            "tasks": [
-              {
-                "value": {
-                  "templateId": "Defendant.UploadDocuments",
-                  "status": "AVAILABLE"
-                }
-              },
-              {
-                "value": {
-                  "templateId": "Defendant.ViewDocuments",
                   "status": "AVAILABLE"
                 }
               }
@@ -90,7 +71,7 @@
         },
         {
           "value": {
-            "groupId": "HEARING",
+            "groupId": "RESPONSE",
             "tasks": [
               {
                 "value": {
