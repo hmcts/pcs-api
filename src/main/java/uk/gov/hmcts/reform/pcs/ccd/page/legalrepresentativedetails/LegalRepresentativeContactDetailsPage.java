@@ -33,13 +33,44 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
               .label("legalRepresentativeDetails-email",  """
                     ---
                     <h2 class="govuk-heading-m">Notifications</h2>
-                    <p class="govuk-body-m govuk-!-margin-bottom-1">
+                    <p class="govuk-body-m govuk-!-margin-bottom-2">
                         You’ll receive updates about your claim by email. For example, when a hearing
                         has been scheduled or when a document is ready to view.
                     </p>
-
+                    <p class="govuk-body-m govuk-!-margin-bottom-1 govuk-!-font-weight-bold">
+                        Your My HMCTS registered email address is:
+                    </p>
+                    <p class="govuk-body-m govuk-!-margin-bottom-2">
+                        defendantlegalrepresentative@defendantLRemail.org
+                    </p>
                     """)
             .mandatory(LegalRepresentativeDetails::getEmailAddress)
+            .label("legalRepresentativeDetails-address", """
+                    ----
+                    <h2 class="govuk-heading-m">Postal address</h2>
+                    <p class="govuk-body-m">
+                        Court documents like orders and notices will be sent by post to the address registered with
+                        My HMCTS.<br><br>
+                        You can change this service address if, for example, you work in a different office from
+                        the address registered with My HMCTS.
+                    </p>
+                    <p class="govuk-body-m govuk-!-margin-bottom-1 govuk-!-font-weight-bold">
+                        Your My HMCTS registered address is:
+                    </p>
+                    <p class="govuk-body-m govuk-!-margin-bottom-2">
+                        123 love lane
+                    </p>
+                    """)
+            .mandatory(LegalRepresentativeDetails::getDifferentPostalAddress)
+            .complex(LegalRepresentativeDetails::getCorrespondenceAddress, "differentPostalAddress=\"YES\"")
+            .mandatory(AddressUK::getAddressLine1)
+            .optional(AddressUK::getAddressLine2)
+            .optional(AddressUK::getAddressLine3)
+            .mandatory(AddressUK::getPostTown)
+            .optional(AddressUK::getCounty)
+            .optional(AddressUK::getCountry)
+            .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+            .done()
             .label("legalRepresentativeDetails-phoneNumber-question", """
                     ----
                     <h2 class="govuk-heading-m">Contact phone number</h2>
@@ -49,26 +80,6 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     """)
                 .optional(LegalRepresentativeDetails::getProvideContactPhoneNumber)
                 .mandatory(LegalRepresentativeDetails::getContactPhoneNumber, "provideContactPhoneNumber=\"YES\"")
-                .label("legalRepresentativeDetails-address", """
-                    ----
-                    <h2 class="govuk-heading-m">Postal address</h2>
-                    <p class="govuk-body-m">
-                        Court documents like orders and notices will be sent by post to the address registered with
-                        My HMCTS.<br><br>
-                        You can change this service address if, for example, you work in a different office from
-                        the address registered with My HMCTS.
-                    </p>
-                    """)
-                .mandatory(LegalRepresentativeDetails::getDifferentPostalAddress)
-                .complex(LegalRepresentativeDetails::getCorrespondenceAddress, "differentPostalAddress=\"YES\"")
-                    .mandatory(AddressUK::getAddressLine1)
-                    .optional(AddressUK::getAddressLine2)
-                    .optional(AddressUK::getAddressLine3)
-                    .mandatory(AddressUK::getPostTown)
-                    .optional(AddressUK::getCounty)
-                    .optional(AddressUK::getCountry)
-                    .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
-                    .done()
             .done()
             .label("legalRepresentativeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
