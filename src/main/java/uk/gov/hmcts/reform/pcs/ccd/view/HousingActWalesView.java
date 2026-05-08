@@ -10,9 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
 import java.util.Optional;
 
 @Component
-public class HousingActWalesView implements ViewComponent {
+public class HousingActWalesView {
 
-    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
             .map(ClaimEntity::getHousingActWales)

@@ -31,11 +31,10 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
-public class ClaimGroundsView implements ViewComponent {
+public class ClaimGroundsView {
 
     private static final Comparator<ListValue<ClaimGroundSummary>> GROUNDS_COMPARATOR = createGroundsComparator();
 
-    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
             .ifPresent(mainClaim -> setClaimGroundFields(pcsCase, mainClaim));

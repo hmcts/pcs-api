@@ -14,9 +14,8 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toVerticalYesNo;
 
 @Component
-public class AlternativesToPossessionView implements ViewComponent {
+public class AlternativesToPossessionView {
 
-    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
             .map(ClaimEntity::getPossessionAlternativesEntity)

@@ -7,9 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 
 @Component
-public class RentDetailsView implements ViewComponent {
+public class RentDetailsView {
 
-    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         TenancyLicenceEntity tenancyLicence = pcsCaseEntity.getTenancyLicence();
 

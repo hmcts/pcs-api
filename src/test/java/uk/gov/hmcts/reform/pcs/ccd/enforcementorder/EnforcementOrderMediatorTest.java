@@ -52,7 +52,7 @@ class EnforcementOrderMediatorTest {
     private EnforcementOrderRepository enforcementOrderRepository;
 
     @InjectMocks
-    private uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator underTest;
+    private EnforcementOrderMediator underTest;
 
     private PCSCase pcsCase;
 

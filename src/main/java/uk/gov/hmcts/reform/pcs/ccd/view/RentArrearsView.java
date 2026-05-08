@@ -15,9 +15,8 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
-public class RentArrearsView implements ViewComponent {
+public class RentArrearsView {
 
-    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
             .map(ClaimEntity::getRentArrears)

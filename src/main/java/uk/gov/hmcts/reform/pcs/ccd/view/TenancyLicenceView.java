@@ -12,9 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 @Component
-public class TenancyLicenceView implements ViewComponent {
+public class TenancyLicenceView {
 
-    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         TenancyLicenceEntity tenancyLicence = pcsCaseEntity.getTenancyLicence();
 

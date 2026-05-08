@@ -11,9 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import java.util.Optional;
 
 @Component
-public class AsbProhibitedConductView implements ViewComponent {
+public class AsbProhibitedConductView {
 
-    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
             .map(ClaimEntity::getAsbProhibitedConductEntity)

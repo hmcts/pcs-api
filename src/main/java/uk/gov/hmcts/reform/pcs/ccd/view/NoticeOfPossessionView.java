@@ -13,9 +13,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.Optional;
 
 @Component
-public class NoticeOfPossessionView implements ViewComponent {
+public class NoticeOfPossessionView {
 
-    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
             .map(ClaimEntity::getNoticeOfPossession)

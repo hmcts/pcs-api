@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class CaseLinkView implements ViewComponent {
+public class CaseLinkView {
 
-    @Override
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         setCaseLinks(pcsCase, pcsCaseEntity);
+
     }
 
     private void setCaseLinks(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
