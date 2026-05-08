@@ -52,9 +52,11 @@ import {
   underlesseeMortgageeDetails
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {compareMaps} from '@utils/common/compareMaps.util';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
+export const caseTabMap = new Map<string, string>();
 
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -108,7 +110,9 @@ export class CreateCaseAction implements IAction {
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
       ['claimSaved', () => this.claimSaved()],
-      ['payClaimFee', () => this.payClaimFee()]
+      ['payClaimFee', () => this.payClaimFee()],
+      ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
+      ['validateClaimantDetails', () => this.validateClaimantDetails(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -172,7 +176,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:resumeClaimOptions.resumeClaimQuestion, option: caseData});
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaimOptions.continue, claimantType.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaimOptions.continue, claimantInformation.mainHeader);
   }
 
   private async selectClaimantType(caseData: actionData) {
@@ -191,10 +195,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
-    if(caseData === claimType.noRadioOption){
-      await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantInformation.mainHeader);
-    }
-    else{
+    if(caseData === claimType.yesRadioOption){    
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
     }
   }
@@ -426,6 +427,9 @@ export class CreateCaseAction implements IAction {
           break;
         case 'mandatory':
           await performAction('check', {question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory});
+          if (String(possessionGrounds.mandatory) === 'Antisocial behaviour') {
+            await performAction('check', {question: whatAreYourGroundsForPossession.mandatoryAbsoluteGrounds.absoluteGroundQuestion, option: possessionGrounds.mandatoryAbsolute});
+          }
           break;
         case 'mandatoryAccommodation':
           await performAction('check', {question: whatAreYourGroundsForPossession.mandatoryWithAccommodation.mandatoryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.mandatoryAccommodation});
@@ -713,7 +717,7 @@ export class CreateCaseAction implements IAction {
   private async claimSaved() {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
-    await performValidation('mainHeader',confirm.makeAClaimDynamicHeader);
+    await performValidation('mainHeader', confirm.makeAClaimDynamicHeader);
     await performValidation('text', { elementType: 'span', text: confirm.claimSavedDynamicLabel });
     await performValidation('text', { elementType: 'paragraph', text: confirm.aDraftOfYourClaimDynamicParagraph });
     await performValidation('text', { elementType: 'listItem', text: confirm.resumeYourClaimDynamicParagraph });
@@ -763,7 +767,7 @@ export class CreateCaseAction implements IAction {
       }).toPass({
         timeout: VERY_LONG_TIMEOUT,
       });
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continueButton, claimantType.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continueButton, claimantInformation.mainHeader);
   }
 
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
@@ -876,4 +880,132 @@ export class CreateCaseAction implements IAction {
     //Skipping Find Case search as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
     //await performAction('searchCaseFromFindCase', caseNumber);
   }
+
+  private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {
+
+    const defendant = new Map<string, string>();
+    const payLoad = defendantsDetails.payLoad as Record<string, any>;
+    if (defendantsDetails.defendant1NameKnown === 'YES') {
+      defendant.set(`Defendant's first name`, `${payLoad.defendant1.firstName}`);
+      defendant.set(`Defendant's last name`, `${payLoad.defendant1.lastName}`);
+    } else {
+      defendant.set(`Defendant's first name`, `null`);
+      defendant.set(`Defendant's last name`, `null`);
+    }
+
+    if (payLoad.defendant1.addressKnown === 'YES' && payLoad.defendant1.addressSameAsPossession === 'YES') {
+      const address = payLoad.formattedClaimantContactAddress.split('<br>');
+      defendant.set(`Building and Street`, address[0]);
+      defendant.set(`Address Line 2`, address[1]);
+      defendant.set(`Town or City`, address[2]);
+      defendant.set(`Postcode/Zipcode`, address[3]);
+      defendant.set('Country', 'United Kingdom')
+
+    } else if (payLoad.defendant1.addressKnown === 'YES' && payLoad.defendant1.addressSameAsPossession === 'NO') {
+      defendant.set(`Building and Street`, payLoad.defendant1.correspondenceAddress.AddressLine1);
+      defendant.set(`Address Line 2`, payLoad.defendant1.correspondenceAddress.AddressLine2);
+      defendant.set(`Town or City`, payLoad.defendant1.correspondenceAddress.PostTown);
+      defendant.set(`Postcode/Zipcode`, payLoad.defendant1.correspondenceAddress.PostCode);
+      defendant.set('Country', 'United Kingdom')
+    }
+    await this.caseTabTableData(page, defendantsDetails.table as string);
+
+    const misMatchMap = compareMaps(defendant, caseTabMap, {
+      name1: 'Defendant',
+      name2: 'CaseParties',
+    })
+    
+      if (misMatchMap.size > 0) {
+        console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+        for (const [key, val] of misMatchMap) {
+          const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+          const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+          console.log('============================================================');
+          console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+        }
+        console.log(`\n**********  END OF FAILURE LIST. ***************`);
+        throw new Error(`Case Parties (Defendant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+      } else {
+        console.log('\n✅ Case Parties (Defendant) VALIDATION PASSED!\n');
+      }
+    
+    caseTabMap.clear();
+
+  }
+
+  private async validateClaimantDetails(page: Page, defendantsDetails: actionRecord) {
+
+    const claimant = new Map<string, string>();
+    const payLoad = defendantsDetails.payLoad as Record<string, any>;
+
+    claimant.set(`Name`, payLoad.claimantName);
+    claimant.set(`Email address`, payLoad.claimantContactEmail);
+    if (payLoad.claimantProvidePhoneNumber === 'YES') {
+      claimant.set(`Telephone number`, payLoad.claimantContactPhoneNumber);
+    }
+
+    if (payLoad.orgAddressFound === 'Yes') {
+      claimant.set(`Building and Street`, payLoad.organisationAddress.AddressLine1);
+      claimant.set(`Address Line 2`, payLoad.organisationAddress.AddressLine2);
+      claimant.set(`Town or City`, payLoad.organisationAddress.PostTown);
+      claimant.set(`Postcode/Zipcode`, payLoad.organisationAddress.PostCode);
+      claimant.set('Country', payLoad.organisationAddress.Country)
+    }
+
+    await this.caseTabTableData(page, defendantsDetails.table as string);
+
+    const misMatchMap = compareMaps(claimant, caseTabMap, {
+      name1: 'Claimant',
+      name2: 'CaseParties',
+    })
+    
+      if (misMatchMap.size > 0) {
+        console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+        for (const [key, val] of misMatchMap) {
+          const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+          const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+          console.log('============================================================');
+          console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+        }
+        console.log(`\n**********  END OF FAILURE LIST. ***************`);
+        throw new Error(`Case Parties (Claimant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+      } else {
+        console.log('\n✅ Case Parties (Claimant) VALIDATION PASSED!\n');
+      }
+    
+    caseTabMap.clear();
+
+  }
+
+  private async caseTabTableData(page: Page, table: string) {
+
+    const tables = page.locator(`//span[text()="${table}"]/ancestor::div[1]/child::table[@aria-describedby="complex field table"]`);
+    const tableCount = await tables.count();
+
+    if (tableCount === 0) throw new Error(`the table ${table} not found. Exiting...`);
+
+    for (let i = 0; i < tableCount; i++) {
+      const table = tables.nth(i);
+      await expect(table).toBeVisible();
+
+      const rows = table.locator('tr');
+      const rowCount = await rows.count();
+
+      for (let j = 0; j < rowCount; j++) {
+        const row = rows.nth(j);
+        if (!(await row.isVisible())) continue;
+
+        const keyQns = row.locator('th span, th');
+        const valAns = row.locator('td.case-field-content, td');
+
+        if ((await keyQns.count()) === 0 || (await valAns.count()) === 0) continue;
+
+        const keyText = (await keyQns.first().innerText()).trim();
+        const valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
+        if (keyText && keyText.length > 0) {
+          caseTabMap.set(keyText ?? '', valText ?? '');
+        }
+      }
+    }
+  };
 }

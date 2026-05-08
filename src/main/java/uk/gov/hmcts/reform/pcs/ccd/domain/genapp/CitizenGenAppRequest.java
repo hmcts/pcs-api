@@ -22,7 +22,7 @@ public class CitizenGenAppRequest {
 
     private VerticalYesNo appliedForHwf;
 
-    @CCD(max = 16)
+    @CCD(max = 100)
     private String hwfReference;
 
     private VerticalYesNo otherPartiesAgreed;
@@ -32,6 +32,17 @@ public class CitizenGenAppRequest {
     @CCD(max = 6800)
     private String withoutNoticeReason;
 
+    @CCD(max = 6800)
+    private String whatOrderWanted;
+
     private LanguageUsed languageUsed;
+
+    private VerticalYesNo sotAccepted;
+
+    @CCD(max = 100)
+    private String sotFullName;
+
+    @CCD(max = 60)
+    private String clientReference;
 
 }
