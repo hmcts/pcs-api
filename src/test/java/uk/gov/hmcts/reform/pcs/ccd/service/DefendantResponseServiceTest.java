@@ -115,8 +115,6 @@ class DefendantResponseServiceTest {
 
     private void stubPartyLookup() {
         when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
     }
 
     private void stubClaimLookup() {
@@ -473,7 +471,6 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -514,7 +511,6 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then - Verify JPA proxy pattern used
-        verify(partyRepository).getReferenceById(PARTY_ID);
         verify(claimRepository).getReferenceById(CLAIM_ID);
 
         // Verify ID-only queries used (not findById which loads full entity)
@@ -558,7 +554,6 @@ class DefendantResponseServiceTest {
         verify(claimRepository).findIdByCaseReference(CASE_REFERENCE);
 
         // 4. Get JPA proxies (no database query)
-        verify(partyRepository).getReferenceById(PARTY_ID);
         verify(claimRepository).getReferenceById(CLAIM_ID);
 
         // 5. Save (only locks new row)

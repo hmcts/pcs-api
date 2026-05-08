@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Service for managing defendant responses.
@@ -92,31 +93,77 @@ public class DefendantResponseService {
      * @throws IllegalStateException if user ID is null, response already exists,
      *         party not found, or claim not found
      */
-    public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse) {
-        UUID userId = securityContextService.getCurrentUserId();
+    public void saveDefendantResponse(long caseReference,
+                                      PossessionClaimResponse possessionClaimResponse) {
 
-        if (userId == null) {
-            log.error("Cannot save defendant response: current user IDAM ID is null");
-            throw new IllegalStateException("Current user IDAM ID is null");
-        }
+        UUID userId = requireCurrentUserId();
 
-        // Fail fast - check duplicate first (indexed query, very fast)
-        if (defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-                caseReference, userId)) {
-            log.warn("Duplicate defendant response attempt for case {} user {}", caseReference, userId);
-            throw new IllegalStateException("A response has already been submitted for this case.");
-        }
+        saveDefendantResponseInternal(
+            caseReference,
+            possessionClaimResponse,
+            () -> {
+                if (defendantResponseRepository
+                    .existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId)) {
+                    log.warn("Duplicate defendant response attempt for case {} user {}", caseReference, userId);
+                    throw new IllegalStateException("A response has already been submitted for this case.");
+                }
+            },
+            () -> partyService.getPartyEntityByIdamId(userId, caseReference),
+            String.format("Successfully saved defendant response for case %s user %s",
+                          caseReference, userId)
+        );
+    }
 
-        UUID partyId = partyService.getPartyEntityByIdamId(userId, caseReference).getId();
+    public void saveDefendantResponse(long caseReference,
+                                      PossessionClaimResponse possessionClaimResponse,
+                                      UUID partyId) {
 
+        requireCurrentUserId();
+
+        saveDefendantResponseInternal(
+            caseReference,
+            possessionClaimResponse,
+            () -> {
+                if (defendantResponseRepository
+                    .existsByClaimPcsCaseCaseReferenceAndPartyId(caseReference, partyId)) {
+
+                    log.warn("Duplicate defendant response attempt for case {} party {}",
+                             caseReference, partyId);
+
+                    throw new IllegalStateException("A response has already been submitted for this case.");
+                }
+            },
+            () -> partyRepository
+                .findByIdAndPcsCaseCaseReference(partyId, caseReference)
+                .orElseThrow(() -> new IllegalStateException(
+                    "No party found for party ID: "
+                        + partyId
+                        + " and case reference: "
+                        + caseReference
+                )),
+            String.format("Successfully saved defendant response for case %s represented party %s",
+                          caseReference, partyId)
+        );
+    }
+
+    private void saveDefendantResponseInternal(
+        long caseReference,
+        PossessionClaimResponse possessionClaimResponse,
+        Runnable duplicateCheck,
+        Supplier<PartyEntity> partySupplier,
+        String successLogMessage
+    ) {
+
+        duplicateCheck.run();
+        PartyEntity partyRef = partySupplier.get();
         UUID claimId = claimRepository.findIdByCaseReference(caseReference)
             .orElseThrow(() -> {
                 log.error("No claim found for case: {}", caseReference);
                 return new IllegalStateException(
-                    String.format("No claim found for case: %d", caseReference));
+                    String.format("No claim found for case: %d", caseReference)
+                );
             });
 
-        PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         DefendantResponseEntity responseEntity =
@@ -126,17 +173,23 @@ public class DefendantResponseService {
                 possessionClaimResponse.getDefendantResponses()
             );
 
-        buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
+        buildAndLinkChildEntities(
+            responseEntity,
+            possessionClaimResponse.getDefendantResponses()
+        );
 
-        saveCounterClaim(possessionClaimResponse.getDefendantResponses(), partyRef, claimRef);
+        saveCounterClaim(
+            possessionClaimResponse.getDefendantResponses(),
+            partyRef,
+            claimRef
+        );
 
         defendantResponseRepository.save(responseEntity);
 
-        log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
+        log.info(successLogMessage);
     }
 
-    public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse,
-                                      UUID partyId) {
+    private UUID requireCurrentUserId() {
         UUID userId = securityContextService.getCurrentUserId();
 
         if (userId == null) {
@@ -144,35 +197,7 @@ public class DefendantResponseService {
             throw new IllegalStateException("Current user IDAM ID is null");
         }
 
-        if (defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(caseReference, partyId)) {
-            log.warn("Duplicate defendant response attempt for case {} party {}", caseReference, partyId);
-            throw new IllegalStateException("A response has already been submitted for this case.");
-        }
-
-        UUID claimId = claimRepository.findIdByCaseReference(caseReference)
-            .orElseThrow(() -> {
-                log.error("No claim found for case: {}", caseReference);
-                return new IllegalStateException(String.format("No claim found for case: %d", caseReference));
-            });
-
-        PartyEntity partyRef = partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
-            .orElseThrow(() -> new IllegalStateException(
-                "No party found for party ID: " + partyId + " and case reference: " + caseReference
-            ));
-        ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
-
-        DefendantResponseEntity responseEntity =
-            buildDefendantResponseEntity(
-                claimRef,
-                partyRef,
-                possessionClaimResponse.getDefendantResponses()
-            );
-
-        buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
-
-        defendantResponseRepository.save(responseEntity);
-
-        log.info("Successfully saved defendant response for case {} represented party {}", caseReference, partyId);
+        return userId;
     }
 
     private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,

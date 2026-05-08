@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 @Service
 @Slf4j
@@ -44,139 +46,121 @@ public class DraftCaseDataService {
 
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
-        log.info("Getting unsubmitted draft data: caseReference={}, eventId={}, userId={}",
-            caseReference, eventId, userId);
 
-        Optional<PCSCase> optionalCaseData = draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
-                .map(DraftCaseDataEntity::getCaseData)
-                .map(this::parseCaseDataJson)
-                .map(this::setUnsubmittedDataFlag);
-
-        if (optionalCaseData.isPresent()) {
-            log.debug("Found draft case data for caseReference={}, eventId={}, userId={}",
-                caseReference, eventId, userId);
-        } else {
-            log.debug("No draft case data found for caseReference={}, eventId={}, userId={}",
-                caseReference, eventId, userId);
-        }
-
-        return optionalCaseData;
+        return getUnsubmittedCaseDataInternal(
+            caseReference,
+            eventId,
+            userId,
+            null,
+            () -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndIdamUserId(
+                    caseReference,
+                    eventId,
+                    userId
+                )
+        );
     }
 
-    public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId, UUID partyId) {
+    public Optional<PCSCase> getUnsubmittedCaseData(long caseReference,
+                                                    EventId eventId,
+                                                    UUID partyId) {
         UUID userId = getCurrentUserId();
-        log.info("Getting unsubmitted draft data: caseReference={}, eventId={}, userId={}, partyId={}",
-                 caseReference, eventId, userId, partyId);
 
-        Optional<PCSCase> optionalCaseData = draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(caseReference, eventId, userId, partyId)
-            .map(DraftCaseDataEntity::getCaseData)
-            .map(this::parseCaseDataJson)
-            .map(this::setUnsubmittedDataFlag);
-
-        if (optionalCaseData.isPresent()) {
-            log.debug("Found draft case data for caseReference={}, eventId={}, userId={}, partyId={}",
-                      caseReference, eventId, userId, partyId);
-        } else {
-            log.debug("No draft case data found for caseReference={}, eventId={}, userId={}, partyId={}",
-                      caseReference, eventId, userId, partyId);
-        }
-
-        return optionalCaseData;
+        return getUnsubmittedCaseDataInternal(
+            caseReference,
+            eventId,
+            userId,
+            partyId,
+            () -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+                    caseReference,
+                    eventId,
+                    userId,
+                    partyId
+                )
+        );
     }
 
     public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
-        log.info("Checking if draft exists: caseReference={}, eventId={}, userId={}",
-            caseReference, eventId, userId);
 
-        boolean exists = draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserId(
-            caseReference, eventId, userId);
-
-        log.debug("Draft exists check result: caseReference={}, eventId={}, userId={}, exists={}",
-            caseReference, eventId, userId, exists);
-
-        return exists;
+        return hasUnsubmittedCaseDataInternal(
+            caseReference,
+            eventId,
+            userId,
+            null,
+            () -> draftCaseDataRepository
+                .existsByCaseReferenceAndEventIdAndIdamUserId(
+                    caseReference,
+                    eventId,
+                    userId
+                )
+        );
     }
 
-    public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId, UUID partyId) {
+    public boolean hasUnsubmittedCaseData(long caseReference,
+                                          EventId eventId,
+                                          UUID partyId) {
+
         UUID userId = getCurrentUserId();
-        log.info("Checking if draft exists: caseReference={}, eventId={}, userId={}",
-                 caseReference, eventId, userId);
 
-        boolean exists = draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-            caseReference, eventId, userId, partyId);
-
-        log.debug("Draft exists check result: caseReference={}, eventId={}, userId={}, exists={}",
-                  caseReference, eventId, userId, exists);
-
-        return exists;
+        return hasUnsubmittedCaseDataInternal(
+            caseReference,
+            eventId,
+            userId,
+            partyId,
+            () -> draftCaseDataRepository
+                .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+                    caseReference,
+                    eventId,
+                    userId,
+                    partyId
+                )
+        );
     }
-
 
     public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
-        Objects.requireNonNull(eventData, "eventData must not be null");
-        Objects.requireNonNull(eventId, "eventId must not be null");
 
-        UUID userId = getCurrentUserId();
-        log.info("Patching draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
-
-        String patchEventDataJson = writeCaseDataJson(eventData);
-        patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson);
+        patchUnsubmittedEventDataInternal(caseReference, eventData, eventId, null);
     }
 
-    public <T> void patchUnsubmittedEventData(long caseReference, T eventData,
-                                              EventId eventId, UUID partyId) {
-        Objects.requireNonNull(eventData, "eventData must not be null");
-        Objects.requireNonNull(eventId, "eventId must not be null");
-        Objects.requireNonNull(partyId, "partyId must not be null");
+    public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId, UUID partyId) {
 
-        UUID userId = getCurrentUserId();
-        log.info("Patching draft: caseReference={}, eventId={}, userId={}, partyId={}",
-                 caseReference, eventId, userId, partyId);
-
-        String patchEventDataJson = writeCaseDataJson(eventData);
-        patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson, partyId);
+        patchUnsubmittedEventDataInternal(caseReference, eventData, eventId, partyId);
     }
 
-    public void patchUnsubmittedCaseData(long caseReference, EventId eventId,
-                                         String patchEventDataJson, UUID partyId) {
+    public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson, UUID partyId) {
         UUID userId = getCurrentUserId();
-        DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(caseReference, eventId, userId, partyId)
-            .map(existingDraft -> {
-                log.debug("Updating existing draft for userId={}", userId);
-                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson));
-                return existingDraft;
-            }).orElseGet(() -> {
-                log.debug("Creating new draft for caseReference={}, eventId={}, userId={}",
-                          caseReference, eventId, userId);
-                return createNewDraft(caseReference, eventId, userId, patchEventDataJson, partyId);
-            });
-
-        DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
-        log.debug("Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
-                  saved.getId(), saved.getCaseReference(), saved.getEventId(), saved.getIdamUserId());
+        patchInternal(
+            caseReference,
+            eventId,
+            patchEventDataJson,
+            userId,
+            () -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+                    caseReference, eventId, userId, partyId
+                ),
+            () -> createNewDraft(
+                caseReference, eventId, userId, patchEventDataJson, partyId
+            )
+        );
     }
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
         UUID userId = getCurrentUserId();
-        DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
-            .map(existingDraft -> {
-                log.debug("Updating existing draft for userId={}", userId);
-                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson));
-                return existingDraft;
-            }).orElseGet(() -> {
-                log.debug("Creating new draft for caseReference={}, eventId={}, userId={}",
-                    caseReference, eventId, userId);
-                return createNewDraft(caseReference, eventId, userId, patchEventDataJson);
-            });
-
-        DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
-        log.debug("Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
-            saved.getId(), saved.getCaseReference(), saved.getEventId(), saved.getIdamUserId());
+        patchInternal(
+            caseReference,
+            eventId,
+            patchEventDataJson,
+            userId,
+            () -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndIdamUserId(
+                    caseReference, eventId, userId
+                ),
+            () -> createNewDraft(
+                caseReference, eventId, userId, patchEventDataJson
+            )
+        );
     }
 
     private String mergeCaseDataJson(String baseCaseDataJson, String patchCaseDataJson) {
@@ -191,20 +175,41 @@ public class DraftCaseDataService {
     @Transactional
     public void deleteUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
-        log.info("Deleting draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
-        draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId);
-        log.debug("Draft deleted successfully for userId={}", userId);
+
+        deleteUnsubmittedCaseDataInternal(
+            caseReference,
+            eventId,
+            userId,
+            null,
+            () -> draftCaseDataRepository
+                .deleteByCaseReferenceAndEventIdAndIdamUserId(
+                    caseReference,
+                    eventId,
+                    userId
+                )
+        );
     }
 
     @Transactional
-    public void deleteUnsubmittedCaseData(long caseReference, EventId eventId, UUID partyId) {
+    public void deleteUnsubmittedCaseData(long caseReference,
+                                          EventId eventId,
+                                          UUID partyId) {
+
         UUID userId = getCurrentUserId();
-        log.info("Deleting draft: caseReference={}, eventId={}, userId={}, partyId={}",
-            caseReference, eventId, userId, partyId);
-        draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-            caseReference, eventId, userId, partyId
+
+        deleteUnsubmittedCaseDataInternal(
+            caseReference,
+            eventId,
+            userId,
+            partyId,
+            () -> draftCaseDataRepository
+                .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+                    caseReference,
+                    eventId,
+                    userId,
+                    partyId
+                )
         );
-        log.debug("Draft deleted successfully for userId={} and partyId={}", userId, partyId);
     }
 
     public PCSCase parseCaseDataJson(String caseDataJson) {
@@ -242,13 +247,229 @@ public class DraftCaseDataService {
 
     private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId,
                                                UUID userId, String caseData, UUID partyId) {
-        DraftCaseDataEntity newDraft = new DraftCaseDataEntity();
-        newDraft.setCaseReference(caseReference);
-        newDraft.setCaseData(caseData);
-        newDraft.setEventId(eventId);
-        newDraft.setIdamUserId(userId);
+        DraftCaseDataEntity newDraft = createNewDraft(caseReference, eventId, userId, caseData);
         newDraft.setPartyId(partyId);
         return newDraft;
     }
 
+    private Optional<PCSCase> getUnsubmittedCaseDataInternal(
+        long caseReference,
+        EventId eventId,
+        UUID userId,
+        UUID partyId,
+        Supplier<Optional<DraftCaseDataEntity>> draftSupplier
+    ) {
+
+        if (partyId != null) {
+            log.info(
+                "Getting unsubmitted draft data: caseReference={}, eventId={}, userId={}, partyId={}",
+                caseReference,
+                eventId,
+                userId,
+                partyId
+            );
+        } else {
+            log.info(
+                "Getting unsubmitted draft data: caseReference={}, eventId={}, userId={}",
+                caseReference,
+                eventId,
+                userId
+            );
+        }
+
+        Optional<PCSCase> optionalCaseData = draftSupplier.get()
+            .map(DraftCaseDataEntity::getCaseData)
+            .map(this::parseCaseDataJson)
+            .map(this::setUnsubmittedDataFlag);
+
+        if (partyId != null) {
+            if (optionalCaseData.isPresent()) {
+                log.debug(
+                    "Found draft case data for caseReference={}, eventId={}, userId={}, partyId={}",
+                    caseReference,
+                    eventId,
+                    userId,
+                    partyId
+                );
+            } else {
+                log.debug(
+                    "No draft case data found for caseReference={}, eventId={}, userId={}, partyId={}",
+                    caseReference,
+                    eventId,
+                    userId,
+                    partyId
+                );
+            }
+        } else {
+            if (optionalCaseData.isPresent()) {
+                log.debug(
+                    "Found draft case data for caseReference={}, eventId={}, userId={}",
+                    caseReference,
+                    eventId,
+                    userId
+                );
+            } else {
+                log.debug(
+                    "No draft case data found for caseReference={}, eventId={}, userId={}",
+                    caseReference,
+                    eventId,
+                    userId
+                );
+            }
+        }
+
+        return optionalCaseData;
+    }
+
+    private void deleteUnsubmittedCaseDataInternal(
+        long caseReference,
+        EventId eventId,
+        UUID userId,
+        UUID partyId,
+        Runnable deleteAction
+    ) {
+
+        if (partyId != null) {
+            log.info(
+                "Deleting draft: caseReference={}, eventId={}, userId={}, partyId={}",
+                caseReference,
+                eventId,
+                userId,
+                partyId
+            );
+        } else {
+            log.info(
+                "Deleting draft: caseReference={}, eventId={}, userId={}",
+                caseReference,
+                eventId,
+                userId
+            );
+        }
+
+        deleteAction.run();
+
+        if (partyId != null) {
+            log.debug(
+                "Draft deleted successfully for userId={} and partyId={}",
+                userId,
+                partyId
+            );
+        } else {
+            log.debug(
+                "Draft deleted successfully for userId={}",
+                userId
+            );
+        }
+    }
+
+    private boolean hasUnsubmittedCaseDataInternal(
+        long caseReference,
+        EventId eventId,
+        UUID userId,
+        UUID partyId,
+        BooleanSupplier existsSupplier
+    ) {
+
+        if (partyId != null) {
+            log.info(
+                "Checking if draft exists: caseReference={}, eventId={}, userId={}, partyId={}",
+                caseReference,
+                eventId,
+                userId,
+                partyId
+            );
+        } else {
+            log.info(
+                "Checking if draft exists: caseReference={}, eventId={}, userId={}",
+                caseReference,
+                eventId,
+                userId
+            );
+        }
+
+        boolean exists = existsSupplier.getAsBoolean();
+
+        if (partyId != null) {
+            log.debug(
+                "Draft exists check result: caseReference={}, eventId={}, userId={}, partyId={}, exists={}",
+                caseReference,
+                eventId,
+                userId,
+                partyId,
+                exists
+            );
+        } else {
+            log.debug(
+                "Draft exists check result: caseReference={}, eventId={}, userId={}, exists={}",
+                caseReference,
+                eventId,
+                userId,
+                exists
+            );
+        }
+
+        return exists;
+    }
+
+    private <T> void patchUnsubmittedEventDataInternal(long caseReference,
+                                                       T eventData,
+                                                       EventId eventId,
+                                                       UUID partyId) {
+
+        Objects.requireNonNull(eventData, "eventData must not be null");
+        Objects.requireNonNull(eventId, "eventId must not be null");
+
+        UUID userId = getCurrentUserId();
+
+        if (partyId != null) {
+            Objects.requireNonNull(partyId, "partyId must not be null");
+            log.info("Patching draft: caseReference={}, eventId={}, userId={}, partyId={}",
+                     caseReference, eventId, userId, partyId);
+        } else {
+            log.info("Patching draft: caseReference={}, eventId={}, userId={}",
+                     caseReference, eventId, userId);
+        }
+
+        String patchEventDataJson = writeCaseDataJson(eventData);
+
+        if (partyId != null) {
+            patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson, partyId);
+        } else {
+            patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson);
+        }
+    }
+
+    private void patchInternal(long caseReference,
+                               EventId eventId,
+                               String patchEventDataJson,
+                               UUID userId,
+                               Supplier<Optional<DraftCaseDataEntity>> findDraft,
+                               Supplier<DraftCaseDataEntity> createDraft) {
+
+        DraftCaseDataEntity draftCaseDataEntity = findDraft.get()
+            .map(existingDraft -> {
+                log.debug("Updating existing draft for userId={}", userId);
+                existingDraft.setCaseData(
+                    mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson)
+                );
+                return existingDraft;
+            })
+            .orElseGet(() -> {
+                log.debug(
+                    "Creating new draft for caseReference={}, eventId={}, userId={}",
+                    caseReference, eventId, userId
+                );
+                return createDraft.get();
+            });
+
+        DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
+
+        log.debug(
+            "Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
+            saved.getId(),
+            saved.getCaseReference(),
+            saved.getEventId(),
+            saved.getIdamUserId()
+        );
+    }
 }
