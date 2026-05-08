@@ -1016,10 +1016,12 @@ class DefendantResponseServiceTest {
     @ParameterizedTest
     @MethodSource("amountSelectionScenarios")
     void shouldPersistCorrectAmountsBasedOnSelection(
+        CounterClaimType claimType,
         VerticalYesNo claimantAmountKnown,
+        VerticalYesNo expectedIsClaimAmountKnown,
         BigDecimal claimAmountInput,
-        BigDecimal estimatedInput,
         BigDecimal expectedClaimAmount,
+        BigDecimal estimatedInput,
         BigDecimal expectedEstimatedAmount
     ) {
         // Given
@@ -1031,6 +1033,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(claimType)
             .isClaimAmountKnown(claimantAmountKnown)
             .claimAmount(claimAmountInput)
             .estimatedMaxClaimAmount(estimatedInput)
@@ -1051,7 +1054,7 @@ class DefendantResponseServiceTest {
         verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
         CounterClaimEntity saved = counterClaimCaptor.getValue();
 
-        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(claimantAmountKnown);
+        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(expectedIsClaimAmountKnown);
         assertBigDecimalEquals(saved.getClaimAmount(), expectedClaimAmount);
         assertBigDecimalEquals(saved.getEstimatedMaxClaimAmount(), expectedEstimatedAmount);
     }
@@ -1067,18 +1070,34 @@ class DefendantResponseServiceTest {
     private static Stream<Arguments> amountSelectionScenarios() {
         return Stream.of(
             Arguments.of(
-                VerticalYesNo.YES,
-                new BigDecimal("250.00"),
-                new BigDecimal("999.00"),
-                new BigDecimal("250.00"),
-                null
+                CounterClaimType.PAYMENT_OR_COMPENSATION,
+                VerticalYesNo.YES, VerticalYesNo.YES,
+                new BigDecimal("250.00"), new BigDecimal("250.00"),
+                new BigDecimal("999.00"), null
             ),
             Arguments.of(
-                VerticalYesNo.NO,
-                new BigDecimal("999.00"),
-                new BigDecimal("500.00"),
+                CounterClaimType.PAYMENT_OR_COMPENSATION,
+                VerticalYesNo.NO, VerticalYesNo.NO,
+                new BigDecimal("999.00"), null,
+                new BigDecimal("500.00"), new BigDecimal("500.00")
+            ),
+            Arguments.of(
+                CounterClaimType.SOMETHING_ELSE,
+                VerticalYesNo.YES, null,
+                new BigDecimal("250.00"), null,
+                new BigDecimal("999.00"), null
+            ),
+            Arguments.of(
+                CounterClaimType.SOMETHING_ELSE,
+                null, null,
+                new BigDecimal("999.00"), null,
+                new BigDecimal("500.00"), null
+            ),
+            Arguments.of(
                 null,
-                new BigDecimal("500.00")
+                null, null,
+                new BigDecimal("250.00"), null,
+                new BigDecimal("999.00"), null
             )
         );
     }
@@ -1117,6 +1136,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.BOTH)
             .isClaimAmountKnown(VerticalYesNo.YES)
             .claimAmount(new BigDecimal("1000.50"))
             .build();
