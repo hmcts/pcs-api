@@ -46,9 +46,14 @@ public class SummaryTab {
     )
     private SummaryClaimantTabDetails summaryClaimantTabDetails;
 
-    @CCD(
-        label = "Defendant 1"
-    )
-    private SummaryDefendantTabDetails defendantTabDetails;
+//    @CCD(
+//        label = "Defendant 1"
+//    )
+//    private SummaryDefendantTabDetails defendantTabDetails;
+//
+//    @CCD(
+//        label = "Defendant 1"
+//    )
+//    private SummaryDefendantAddressTabDetails defendantTabDetails;
 
 }

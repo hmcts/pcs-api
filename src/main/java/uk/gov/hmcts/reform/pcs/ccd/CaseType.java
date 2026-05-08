@@ -135,8 +135,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                    "summaryTab_ReasonsForPossession!=\"\"")
             .field("summaryTab_DateSubmitted")
             .label("Claimant Details", null, "## Claimant Details")
-            .field("summaryTab_ClaimantDetails")
-            .label("Defendant details", null, "## Defendant details")
-            .field("summaryTab_DefendantDetails");
+            .field("summaryTab_SummaryClaimantTabDetails");
+//            .label("Defendant details", null, "## Defendant details");
     }
 }
