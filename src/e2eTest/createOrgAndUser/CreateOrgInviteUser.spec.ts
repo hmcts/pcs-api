@@ -4,11 +4,11 @@ import {completeIdamPasswordActivation, waitForLatestIdamNotificationLink,} from
 import {
   createHousingPossessionClaimEnglandWalesAddressSmoke,
   type IdamOAuthTokenResponse,
+  pickRandomPba,
   registerOrganisationAsSolicitor,
   runCurlScript,
   runCurlScriptJson,
 } from './utils';
-
 
 test('test', async ({page, request}) => {
   const hmctsEnv = (process.env.HMCTS_ENV ?? 'aat').trim();
@@ -18,16 +18,16 @@ test('test', async ({page, request}) => {
   const userCreationNeeded = 'false';
   const newTempUser = 'false';
   const inviteTheUserToOrg = 'false';
-  const updateIDAMRoles = 'true';
+  const updateIDAMRoles = 'false';
 
 
   const orgName = 'Possession Claim Service Org1';
   const postCode = 'SW1H 9AJ';
   const orgRegistrationRef = 'PCS001';
-  const PBA1 = 'PBA0077554';
+  const PBA1 = pickRandomPba();
   const orgFirstName = 'Possession Claim';
   const orgLastName = 'Service Org1';
-  const orgEmailAddress = 'pcs-solicitor-org-admin1@mailinator.com';
+  const orgEmailAddress = 'pcs-solicitor-org1-admin@mailinator.com';
   const orgManageOrgLoginPassword = 'Pa$$w0rd';
 
 
