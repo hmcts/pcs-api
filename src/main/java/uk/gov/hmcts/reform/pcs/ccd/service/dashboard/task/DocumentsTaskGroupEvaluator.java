@@ -33,16 +33,17 @@ public class DocumentsTaskGroupEvaluator implements TaskGroupEvaluator {
                     .build(),
                 Task.builder()
                     .templateId(VIEW_DOCUMENTS)
-                    .status(hasDocuments(ctx) ? TaskStatus.AVAILABLE : TaskStatus.NOT_AVAILABLE)
+                    .status(TaskStatus.AVAILABLE)
+                    // .status(hasDocuments(ctx) ? TaskStatus.AVAILABLE : TaskStatus.NOT_AVAILABLE)
                     .build()
             )))
             .build();
     }
 
-    private boolean hasDocuments(DashboardContext ctx) {
-        return ctx != null
-            && ctx.caseEntity() != null
-            && ctx.caseEntity().getDocuments() != null
-            && !ctx.caseEntity().getDocuments().isEmpty();
-    }
+    // private boolean hasDocuments(DashboardContext ctx) {
+    //     return ctx != null
+    //         && ctx.caseEntity() != null
+    //         && ctx.caseEntity().getDocuments() != null
+    //         && !ctx.caseEntity().getDocuments().isEmpty();
+    // }
 }
