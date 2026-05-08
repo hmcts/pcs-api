@@ -85,7 +85,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Create Case - With resume claim options] @nightly', async () => {
+test.describe('[Create Case - With resume claim options] @nightly @MAC', async () => {
   test('England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
@@ -150,18 +150,11 @@ test.describe('[Create Case - With resume claim options] @nightly', async () => 
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Weekly', rentAmount: '800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
-      unpaidRentAmountPerDay: '20'
-    });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
-      paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
@@ -213,7 +206,7 @@ test.describe('[Create Case - With resume claim options] @nightly', async () => 
     )
   });
 
-  test('England - Resume without saved options - Secure tenancy - No Rent Arrears', async () => {
+  test('England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
