@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
@@ -33,21 +35,14 @@ import java.util.function.Function;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final SchedulerClient schedulerClient;
     private final NotificationTemplateConfiguration templateConfiguration;
+    private final PartyService partyService;
 
     private static final String NO_CLAIMANT_PARTY_FOUND_MSG = "No claimant party found for defendant response: %s";
-
-    public NotificationService(
-        NotificationRepository notificationRepository,
-        SchedulerClient schedulerClient,
-        NotificationTemplateConfiguration templateConfiguration) {
-        this.notificationRepository = notificationRepository;
-        this.schedulerClient = schedulerClient;
-        this.templateConfiguration = templateConfiguration;
-    }
 
     public EmailNotificationResponse sendDefendantResponseNoCounterclaimEmailNotification(
         DefendantResponseEntity defendantResponse
@@ -329,7 +324,7 @@ public class NotificationService {
         EmailTemplate template,
         Function<DefendantResponseEntity, Map<String, Object>> personalisationBuilder
     ) {
-        if (!canSendEmailNotification(defendantResponse.getParty())) {
+        if (!partyService.canSendEmailNotification(defendantResponse.getParty())) {
             log.info("Skipping email notification to user: {}", defendantResponse.getParty().getId());
             return null;
         }
@@ -354,12 +349,5 @@ public class NotificationService {
             .emailAddress(email)
             .personalisation(personalisation)
             .build();
-    }
-
-    private boolean canSendEmailNotification(PartyEntity party) {
-        return party.getEmailAddress() != null
-            && party.getContactPreferences() != null
-            && party.getContactPreferences().getContactByEmail() != null
-            && party.getContactPreferences().getContactByEmail().toBoolean();
     }
 }
