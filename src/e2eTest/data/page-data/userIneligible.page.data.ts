@@ -1,8 +1,8 @@
 export const userIneligible = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'You’re not eligible for this online service',
+  mainHeader: 'You cannot use this online service',
   eventNotCreated: 'The event could not be created',
-  notEligibleForOnlineService: 'You’re not eligible for this online service',
+  notEligibleForOnlineService: 'You cannot use this online service',
   continue: 'Continue',
   cancel: 'Cancel',
   thisServiceIsCurrentlyOnlyAvailableParagraph: 'This service is currently only available for community landlords.',
