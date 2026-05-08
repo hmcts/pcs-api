@@ -18,8 +18,8 @@ import java.util.List;
 @AllArgsConstructor
 public class CaseFlagsView {
 
-    public static  String PATHS_DELIMITER = ",";
-    public static  String PATH_DELIMITER = ":";
+    public static final String PATHS_DELIMITER = ",";
+    public static final String PATH_DELIMITER = ":";
 
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
