@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.view.enforcementorder;
+package uk.gov.hmcts.reform.pcs.ccd.enforcementorder;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,8 +8,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.view.ViewComponent;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,26 +21,28 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_NO_DATES;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_WITH_DATES;
 
-
 @Component
 @Slf4j
 @AllArgsConstructor
-public class EnforcementOrderView implements ViewComponent {
+public class EnforcementOrderMediator {
 
+    private final PcsCaseRepository pcsCaseRepository;
     private final EnforcementOrderRepository enforcementOrderRepository;
 
-    @Override
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        getEnforcementOrder(pcsCaseEntity)
-            .ifPresent(enforcementOrderEntity ->
-                           Optional.ofNullable(enforcementOrderEntity.getBailiffDate())
-                               .ifPresentOrElse(
-                                   date -> prepareEvictionWithDates(pcsCase, date),
-                                   () -> prepareEvictionWithNoDates(pcsCase)
-                               ));
+    public void handleEnforcementRequirements(long caseReference, PCSCase pcsCase) {
+        if (caseReference > 0 && pcsCase != null) {
+            getEnforcementOrder(caseReference).ifPresent(enforcementOrderEntity ->
+                Optional.ofNullable(enforcementOrderEntity.getBailiffDate())
+                    .ifPresentOrElse(
+                        date -> prepareEvictionWithDates(pcsCase, date),
+                        () -> prepareEvictionWithNoDates(pcsCase)
+                    ));
+        }
     }
 
-    Optional<EnforcementOrderEntity> getEnforcementOrder(PcsCaseEntity pcsCaseEntity) {
+    Optional<EnforcementOrderEntity> getEnforcementOrder(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
         List<ClaimEntity> claims = pcsCaseEntity.getClaims();
         if (claims != null && !claims.isEmpty()) {
             // At this point we do not know which Enforcement Order the Confirm Eviction is placed against.
