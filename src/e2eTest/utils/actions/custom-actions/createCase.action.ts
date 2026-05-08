@@ -172,7 +172,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:resumeClaimOptions.resumeClaimQuestion, option: caseData});
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaimOptions.continue, claimantType.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaimOptions.continue, claimantInformation.mainHeader);
   }
 
   private async selectClaimantType(caseData: actionData) {
@@ -191,10 +191,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
-    if(caseData === claimType.noRadioOption){
-      await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantInformation.mainHeader);
-    }
-    else{
+    if(caseData === claimType.yesRadioOption){    
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
     }
   }
@@ -764,7 +761,7 @@ export class CreateCaseAction implements IAction {
       }).toPass({
         timeout: VERY_LONG_TIMEOUT,
       });
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continueButton, claimantType.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continueButton, claimantInformation.mainHeader);
   }
 
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
