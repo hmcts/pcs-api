@@ -36,15 +36,10 @@ public class DashboardJourneyService {
 
     private final List<TaskGroupEvaluator> evaluatorsInOrder;
 
-    public DashboardJourneyService(List<TaskGroupEvaluator> taskGroupEvaluators) {
-        this.taskGroupEvaluators = taskGroupEvaluators.stream()
-            .sorted(Comparator.comparingInt(evaluator -> orderIndex(evaluator.groupId())))
+    public DashboardJourneyService(List<TaskGroupEvaluator> evaluators) {
+        this.evaluatorsInOrder = evaluators.stream()
+            .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
             .toList();
-    }
-
-    private static int orderIndex(TaskGroupId id) {
-        int idx = TASK_GROUP_ORDER.indexOf(id);
-        return idx >= 0 ? idx : TASK_GROUP_ORDER.size();
     }
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
@@ -88,33 +83,10 @@ public class DashboardJourneyService {
         ));
     }
 
-    private List<ListValue<TaskGroup>> computeTaskGroups(DashboardContext dashboardContext) {
-        return ListValueUtils.wrapListItems(
-            taskGroupEvaluators.stream()
-                .map(evaluator -> evaluator.evaluate(dashboardContext))
-                .toList()
-        );
-
-        groups.add(
-            TaskGroup.builder()
-                .groupId(TaskGroupId.RESPONSE)
-                .tasks(ListValueUtils.wrapListItems(List.of(
-                    Task.builder()
-                        .templateId("Defendant.RespondToClaim")
-                        .status(TaskStatus.NOT_STARTED)
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.ReviewResponse")
-                        .status(TaskStatus.IN_PROGRESS)
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.SubmitResponse")
-                        .status(TaskStatus.COMPLETED)
-                        .build()
-                )))
-                .build()
-        );
-
+    private List<ListValue<TaskGroup>> computeTaskGroups(DashboardContext ctx) {
+        List<TaskGroup> groups = evaluatorsInOrder.stream()
+            .map(e -> e.evaluate(ctx))
+            .toList();
         return ListValueUtils.wrapListItems(groups);
     }
 
