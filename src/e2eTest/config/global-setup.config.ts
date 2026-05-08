@@ -10,9 +10,9 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
 async function globalSetupConfig(): Promise<void> {
-  await getAccessToken();
-  await getS2SToken();
-  await authenticateAndSaveState();
+  // await getAccessToken();
+  // await getS2SToken();
+  // await authenticateAndSaveState();
 }
 
 async function authenticateAndSaveState(): Promise<string> {

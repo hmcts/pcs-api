@@ -25,8 +25,8 @@ const e2eScope = process.env.E2E_TEST_SCOPE?.trim();
 const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 
 export default defineConfig({
-  testDir: 'tests/',
-  ...(e2eTestMatch?.length ? { testMatch: e2eTestMatch } : {}),
+  testDir: '.',
+  testMatch: e2eTestMatch?.length ? e2eTestMatch : '**/*.spec.ts',
   ...(e2eGrep ? { grep: e2eGrep } : {}),
   /* Run tests in files in parallel */
   fullyParallel: true,
