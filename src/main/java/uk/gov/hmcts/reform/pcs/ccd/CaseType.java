@@ -101,6 +101,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
+        buildCasePartiesTab(builder);
+
         configureCaseFileCategories(builder);
     }
 
@@ -112,5 +114,13 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+    }
+
+    private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.tab("caseParties", "Case Parties")
+            .label("Case Parties", null, "#### Case Parties")
+            .field("casePartiesTab_ClaimantDetails")
+            .field("casePartiesTab_DefendantOneDetails")
+            .field("casePartiesTab_DefendantsDetails");
     }
 }
