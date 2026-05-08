@@ -118,8 +118,12 @@ public class CaseFlagService {
             if ("CREATE".equals(flow)) {
                 flagEntity.setFlagComment(incomingFlagDetail.getFlagComment());
                 flagEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
-            } else if ("UPDATE".equals(flow)) {
-                flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
+            } else {
+                if ("Inactive".equals(flagEntity.getDefaultStatus())) {
+                    flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagUpdateComment());
+                } else {
+                    flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
+                }
                 flagEntity.setFlagUpdateCommentWelsh(incomingFlagDetail.getFlagCommentCy());
             }
 
