@@ -2,8 +2,7 @@ import {expect, test} from '@playwright/test';
 
 import {completeIdamPasswordActivation, waitForLatestIdamNotificationLink,} from './idam-testing-support-notification';
 import {
-  createHousingPossessionClaimEnglandWalesAddressSmoke,
-  type IdamOAuthTokenResponse,
+  type IdamOAuthTokenResponse, makeAClaimSmoke,
   pickRandomPba,
   registerOrganisationAsSolicitor,
   runCurlScript,
@@ -39,9 +38,9 @@ test('test', async ({page, request}) => {
 
   const createOrg = 'false';
   const orgApprovalNeeded = 'false';
-  const userCreationNeeded = 'true';
+  const userCreationNeeded = 'false';
   const newTempUser = 'false';
-  const inviteTheUserToOrg = 'true';
+  const inviteTheUserToOrg = 'false';
   const updateIDAMRoles = 'true';
 
   /** Namespace for org emails/names (e.g. `org1` → …Org1, …org1…). Change only here to retarget all derived ids. */
@@ -192,8 +191,17 @@ test('test', async ({page, request}) => {
         runCurlScript('idamTempUserIDAMDashboardAdmin.sh', {HMCTS_ENV: hmctsEnv});
       }
 
-      //Login to IDAM dashboard and update roles
+      // IdAM user-dashboard shares SSO with other HMCTS apps on this context. An existing
+      // manage-org / manage-case (or a half-finished dashboard) session often yields an error
+      // page instead of the email field — clear storage so this step always starts logged out.
+      await page.context().clearCookies();
       await page.goto(`https://idam-user-dashboard.${hmctsEnv}.platform.hmcts.net/`);
+      await page.evaluate(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+      });
+
+      //Login to IDAM dashboard and update roles
       await page.getByRole('textbox', {name: 'Enter your email address'}).click();
       await page.getByRole('textbox', {name: 'Enter your email address'}).fill('pcs-idam-admin@test.com');
       await page.getByRole('button', {name: 'Continue'}).click();
@@ -227,7 +235,7 @@ test('test', async ({page, request}) => {
     }
 
     // Check whether created user can start a Housing Possession claim (manage-case smoke).
-    await createHousingPossessionClaimEnglandWalesAddressSmoke(page, hmctsEnv, {
+    await makeAClaimSmoke(page, hmctsEnv, {
       email: solicitorEmailAddress,
       password: solicitorPassword,
     });

@@ -156,7 +156,7 @@ export type ManageCaseLoginCredentials = {
  * Smoke path: manage-case login → create Housing Possession → England/Wales border postcode → submit address CYA → capture case id.
  * Wires `@utils/controller` the same way as other specs (`initializeExecutor` before `performAction`).
  */
-export async function createHousingPossessionClaimEnglandWalesAddressSmoke(
+export async function makeAClaimSmoke(
   page: Page,
   hmctsEnv: string,
   login: ManageCaseLoginCredentials,
