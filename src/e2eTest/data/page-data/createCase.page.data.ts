@@ -7,9 +7,7 @@ export const createCase =
     jurisdictionLabel: 'Jurisdiction',
     caseTypeLabel: 'Case type',
     eventLabel: 'Event',
-    //HDPI-5381 updated this from Possessions-> Civil Possession, however due to ccd config issue this change not reflected in AAT yet. As temp fix we have added this condition to keep the build green until ccd issue is resolved.
-    possessionsJurisdiction: process.env.CASE_TYPE_SUFFIX ? 'Civil Possession' : 'Possessions',
-    //possessionsJurisdiction: 'Civil Possession',
+    possessionsJurisdiction: 'Civil Possession',
     caseType:
       {
         civilPossessions: getCaseTypeName()
