@@ -18,27 +18,30 @@ test('test', async ({page, request}) => {
   const userCreationNeeded = 'false';
   const newTempUser = 'false';
   const inviteTheUserToOrg = 'false';
-  const updateIDAMRoles = 'false';
+  const updateIDAMRoles = 'true';
 
+  /** Namespace for org emails/names (e.g. `org1` → …Org1, …org1…). Change only here to retarget all derived ids. */
+  const org = 'org1';
 
-  const orgName = 'Possession Claim Service Org1';
+  const orgDisplay = org.charAt(0).toUpperCase() + org.slice(1);
+
+  const orgName = `Possession Claim Service ${orgDisplay}`;
   const postCode = 'SW1H 9AJ';
-  const orgRegistrationRef = 'PCS001';
+  const orgRegistrationRef = `PCS ${orgDisplay}`;
   const PBA1 = pickRandomPba();
   const orgFirstName = 'Possession Claim';
-  const orgLastName = 'Service Org1';
-  const orgEmailAddress = 'pcs-solicitor-org1-admin@mailinator.com';
+  const orgLastName = `Service ${orgDisplay}`;
+  const orgEmailAddress = `pcs-solicitor-${org}-admin@mailinator.com`;
   const orgManageOrgLoginPassword = 'Pa$$w0rd';
 
-
-  const solicitorEmailAddress = 'pcs-solicitor1-org1@test.com';
-  const solicitorFirstName = 'Possession Claim';
-  const solicitorLastName = 'Possession Claim';
+  const solicitorEmailAddress = `pcs-${org}-solicitor1@test.com`;
+  const solicitorFirstName = `Solicitor`;
+  const solicitorLastName = `PCS`;
   const solicitorPassword = 'Pa$$w0rd';
 
-  /** Must match idamTempUserIDAMDashboardAdmin.sh testing-support user. */
+  const pcsOrganisationAdmin = 'pcs-organisation-admin@test.com';
   const pcsIdamDashboardAdminEmail = 'pcs-idam-adminstrator@test.com';
-  const pcsIdamDashboardAdminPassword = 'Pa$$w0rd';
+  const password = 'Pa$$w0rd';
 
   /** PCS solicitor IdAM roles (aligned with idamTempUserPCSSolicitor.sh). */
   const pcsSolitorRoles = [
@@ -170,6 +173,8 @@ test('test', async ({page, request}) => {
   await page.getByRole('textbox', {name: 'Search for an existing user'}).fill(solicitorEmailAddress);
   await page.getByRole('button', {name: 'Search'}).click();
   await page.getByRole('button', {name: 'Edit user'}).click();
+  await page.waitForLoadState('domcontentloaded');
+  await expect(page.getByRole('button', {name: 'Save'})).toBeVisible({timeout: 30_000});
 
   const roleCheckboxes = page.getByRole('checkbox');
   for (let i = 0; i < await roleCheckboxes.count(); i += 1) {
