@@ -123,7 +123,7 @@ export function runCurlScriptJson(scriptName: string, extraEnv?: NodeJS.ProcessE
     const stdout = err.stdout?.toString?.().trim() ?? '';
     const idamHint =
       scriptName === 'idamToken.sh'
-        ? '\nFor idamToken.sh export: IDAM_TOKEN_USERNAME, IDAM_TOKEN_PASSWORD, IDAM_TOKEN_CLIENT_SECRET (and optionally HMCTS_ENV).'
+        ? '\nFor idamToken.sh export: HMCTS_ENV, IDAM_TOKEN_USERNAME, IDAM_TOKEN_PASSWORD, IDAM_TOKEN_CLIENT_SECRET.'
         : '';
     throw new Error(
       `${scriptName} failed (exit ${String(err.status ?? err.code ?? '?')}).\n` +

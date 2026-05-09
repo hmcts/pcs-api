@@ -5,7 +5,7 @@
 # waitForLatestIdamNotificationLink + completeIdamPasswordActivation in ../idam-testing-support-notification.ts
 set -euo pipefail
 
-: "${HMCTS_ENV:=aat}"
+: "${HMCTS_ENV:?Set HMCTS_ENV (e.g. aat)}"
 IDAM_API_BASE="https://idam-testing-support-api.${HMCTS_ENV}.platform.hmcts.net"
 
 : "${ORG_EMAIL_ADDRESS:?Set ORG_EMAIL_ADDRESS}"

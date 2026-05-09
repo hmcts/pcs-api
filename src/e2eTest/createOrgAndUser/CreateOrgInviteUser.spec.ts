@@ -11,7 +11,11 @@ import {
 } from './utils';
 
 test('test', async ({page, request}) => {
-  const hmctsEnv = (process.env.HMCTS_ENV ?? 'aat').trim();
+  const hmctsEnvRaw = process.env.HMCTS_ENV?.trim();
+  if (!hmctsEnvRaw) {
+    throw new Error('HMCTS_ENV is required (e.g. export HMCTS_ENV=aat)');
+  }
+  const hmctsEnv = hmctsEnvRaw;
 
   const createOrg = 'false';
   const orgApprovalNeeded = 'false';

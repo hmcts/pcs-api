@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # IdAM password grant — JSON (access_token) on stdout for Playwright.
 #
-# Required: IDAM_TOKEN_USERNAME, IDAM_TOKEN_PASSWORD, IDAM_TOKEN_CLIENT_SECRET
-# Optional: HMCTS_ENV (default aat), IDAM_TOKEN_CLIENT_ID, IDAM_TOKEN_SCOPE,
-#           IDAM_TOKEN_GRANT_TYPE, IDAM_TOKEN_REDIRECT_URI (default uses HMCTS_ENV for civil-citizen-ui)
+# Required: HMCTS_ENV, IDAM_TOKEN_USERNAME, IDAM_TOKEN_PASSWORD, IDAM_TOKEN_CLIENT_SECRET
+# Optional: IDAM_TOKEN_CLIENT_ID, IDAM_TOKEN_SCOPE, IDAM_TOKEN_GRANT_TYPE, IDAM_TOKEN_REDIRECT_URI
+#           (defaults use HMCTS_ENV for idam-api / civil-citizen-ui URLs)
 set -euo pipefail
 
-: "${HMCTS_ENV:=aat}"
+: "${HMCTS_ENV:?Set HMCTS_ENV (e.g. aat)}"
 
 IDAM_TOKEN_URL="${IDAM_TOKEN_URL:-https://idam-api.${HMCTS_ENV}.platform.hmcts.net/o/token}"
 : "${IDAM_TOKEN_CLIENT_ID:=pcs-api}"

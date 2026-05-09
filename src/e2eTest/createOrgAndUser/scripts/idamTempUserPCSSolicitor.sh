@@ -3,7 +3,7 @@
 # Response body discarded (-o /dev/null).
 set -euo pipefail
 
-: "${HMCTS_ENV:=aat}"
+: "${HMCTS_ENV:?Set HMCTS_ENV (e.g. aat)}"
 IDAM_API_BASE="https://idam-api.${HMCTS_ENV}.platform.hmcts.net"
 
 : "${SOLICITOR_EMAIL_ADDRESS:?Set SOLICITOR_EMAIL_ADDRESS (e.g. solicitorEmailAddress from test)}"
