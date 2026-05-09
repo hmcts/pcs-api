@@ -10,6 +10,26 @@ import {
   runCurlScriptJson,
 } from './utils';
 
+/** Forename shown in IdAM / forms: `Solicitor First`, `Solicitor Second`, … aligned with email `…solicitor${sol}@…`. */
+function solicitorForenameForSol(sol: number): string {
+  const ordinals = [
+    'First',
+    'Second',
+    'Third',
+    'Fourth',
+    'Fifth',
+    'Sixth',
+    'Seventh',
+    'Eighth',
+    'Ninth',
+    'Tenth',
+    'Eleventh',
+    'Twelfth',
+  ] as const;
+  const word = ordinals[sol - 1];
+  return word != null ? `Solicitor ${word}` : `Solicitor ${String(sol)}`;
+}
+
 test('test', async ({page, request}) => {
   const hmctsEnvRaw = process.env.HMCTS_ENV?.trim();
   if (!hmctsEnvRaw) {
@@ -19,16 +39,16 @@ test('test', async ({page, request}) => {
 
   const createOrg = 'false';
   const orgApprovalNeeded = 'false';
-  const userCreationNeeded = 'false';
+  const userCreationNeeded = 'true';
   const newTempUser = 'false';
-  const inviteTheUserToOrg = 'false';
+  const inviteTheUserToOrg = 'true';
   const updateIDAMRoles = 'true';
 
   /** Namespace for org emails/names (e.g. `org1` → …Org1, …org1…). Change only here to retarget all derived ids. */
   const org = 'org2';
   /** How many solicitors to provision (emails `pcs-${org}-solicitor1@test.com`, …solicitor2…, etc.). */
   const numberOfSolicitorUsers = 1;
-  const solicitorEmailStartsWith = 2;
+  const solicitorEmailStartsWith = 3;
   const orgDisplay = org.charAt(0).toUpperCase() + org.slice(1);
 
   const orgName = `Possession Claim Service ${orgDisplay}`;
@@ -40,7 +60,6 @@ test('test', async ({page, request}) => {
   const orgEmailAddress = `pcs-solicitor-${org}-admin@mailinator.com`;
   const orgManageOrgLoginPassword = 'Pa$$w0rd';
 
-  const solicitorFirstName = `Solicitor`;
   const solicitorLastName = `PCS`;
   const solicitorPassword = 'Pa$$w0rd';
 
@@ -121,6 +140,7 @@ test('test', async ({page, request}) => {
 
   for (let index = 1; index <= numberOfSolicitorUsers; index += 1) {
     const solicitorEmailAddress = `pcs-${org}-solicitor${sol}@test.com`;
+    const solicitorFirstName = solicitorForenameForSol(sol);
     // @ts-ignore
     if (userCreationNeeded == 'true') {
       // @ts-ignore
