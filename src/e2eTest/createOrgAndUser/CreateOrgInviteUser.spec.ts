@@ -17,16 +17,16 @@ test('test', async ({page, request}) => {
   }
   const hmctsEnv = hmctsEnvRaw;
 
-  const createOrg = 'false';
-  const orgApprovalNeeded = 'false';
-  const userCreationNeeded = 'false';
+  const createOrg = 'true';
+  const orgApprovalNeeded = 'true';
+  const userCreationNeeded = 'true';
   const newTempUser = 'false';
-  const inviteTheUserToOrg = 'false';
+  const inviteTheUserToOrg = 'true';
   const updateIDAMRoles = 'true';
 
   /** Namespace for org emails/names (e.g. `org1` → …Org1, …org1…). Change only here to retarget all derived ids. */
   const org = 'org1';
-
+  const sol = '1'
   const orgDisplay = org.charAt(0).toUpperCase() + org.slice(1);
 
   const orgName = `Possession Claim Service ${orgDisplay}`;
@@ -38,7 +38,7 @@ test('test', async ({page, request}) => {
   const orgEmailAddress = `pcs-solicitor-${org}-admin@mailinator.com`;
   const orgManageOrgLoginPassword = 'Pa$$w0rd';
 
-  const solicitorEmailAddress = `pcs-${org}-solicitor1@test.com`;
+  const solicitorEmailAddress = `pcs-${org}-solicitor${sol}@test.com`;
   const solicitorFirstName = `Solicitor`;
   const solicitorLastName = `PCS`;
   const solicitorPassword = 'Pa$$w0rd';
