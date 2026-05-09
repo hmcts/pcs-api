@@ -17,16 +17,18 @@ test('test', async ({page, request}) => {
   }
   const hmctsEnv = hmctsEnvRaw;
 
-  const createOrg = 'true';
-  const orgApprovalNeeded = 'true';
-  const userCreationNeeded = 'true';
+  const createOrg = 'false';
+  const orgApprovalNeeded = 'false';
+  const userCreationNeeded = 'false';
   const newTempUser = 'false';
-  const inviteTheUserToOrg = 'true';
+  const inviteTheUserToOrg = 'false';
   const updateIDAMRoles = 'true';
 
   /** Namespace for org emails/names (e.g. `org1` → …Org1, …org1…). Change only here to retarget all derived ids. */
-  const org = 'org1';
-  const sol = '1'
+  const org = 'org2';
+  /** How many solicitors to provision (emails `pcs-${org}-solicitor1@test.com`, …solicitor2…, etc.). */
+  const numberOfSolicitorUsers = 1;
+  const solicitorEmailStartsWith = 2;
   const orgDisplay = org.charAt(0).toUpperCase() + org.slice(1);
 
   const orgName = `Possession Claim Service ${orgDisplay}`;
@@ -38,7 +40,6 @@ test('test', async ({page, request}) => {
   const orgEmailAddress = `pcs-solicitor-${org}-admin@mailinator.com`;
   const orgManageOrgLoginPassword = 'Pa$$w0rd';
 
-  const solicitorEmailAddress = `pcs-${org}-solicitor${sol}@test.com`;
   const solicitorFirstName = `Solicitor`;
   const solicitorLastName = `PCS`;
   const solicitorPassword = 'Pa$$w0rd';
@@ -111,94 +112,105 @@ test('test', async ({page, request}) => {
     });
     await completeIdamPasswordActivation(page, orgActivationUrl, orgManageOrgLoginPassword);
   }
-  // @ts-ignore
-  if (userCreationNeeded == 'true') {
-    // @ts-ignore
-    if (newTempUser == 'true') {
-      runCurlScript('idamTempUserPCSSolicitor.sh', {
-        HMCTS_ENV: hmctsEnv,
-        SOLICITOR_EMAIL_ADDRESS: solicitorEmailAddress,
-        SOLICITOR_FORENAME: solicitorFirstName,
-        SOLICITOR_SURNAME: solicitorLastName,
-      });
-    } else {
 
-      //Register user
-      await page.goto(`https://manage-case.${hmctsEnv}.platform.hmcts.net`);
-      await page.getByRole('link', {name: 'create an account'}).click();
+  if (!Number.isInteger(numberOfSolicitorUsers) || numberOfSolicitorUsers < 1) {
+    throw new Error('numberOfSolicitorUsers must be a positive integer (1, 2, 3, …)');
+  }
+
+  let sol = solicitorEmailStartsWith;
+
+  for (let index = 1; index <= numberOfSolicitorUsers; index += 1) {
+    const solicitorEmailAddress = `pcs-${org}-solicitor${sol}@test.com`;
+    // @ts-ignore
+    if (userCreationNeeded == 'true') {
+      // @ts-ignore
+      if (newTempUser == 'true') {
+        runCurlScript('idamTempUserPCSSolicitor.sh', {
+          HMCTS_ENV: hmctsEnv,
+          SOLICITOR_EMAIL_ADDRESS: solicitorEmailAddress,
+          SOLICITOR_FORENAME: solicitorFirstName,
+          SOLICITOR_SURNAME: solicitorLastName,
+        });
+      } else {
+        //Register user
+        await page.goto(`https://manage-case.${hmctsEnv}.platform.hmcts.net`);
+        await page.getByRole('link', {name: 'create an account'}).click();
+        await page.getByRole('textbox', {name: 'First name'}).fill(solicitorFirstName);
+        await page.getByRole('textbox', {name: 'Last name'}).fill(solicitorLastName);
+        await page.getByRole('textbox', {name: 'Email address'}).fill(solicitorEmailAddress);
+        await page.getByRole('button', {name: 'Continue'}).click();
+        // activate the user
+        const activationUrl = await waitForLatestIdamNotificationLink(request, {
+          hmctsEnv,
+          email: solicitorEmailAddress,
+          bearerToken: accessToken,
+        });
+        await completeIdamPasswordActivation(page, activationUrl, solicitorPassword);
+      }
+    }
+
+    // @ts-ignore
+    if (inviteTheUserToOrg == 'true') {
+      //Invite user to Org
+      await page.goto(`https://manage-org.${hmctsEnv}.platform.hmcts.net/users/invite-user`);
+      await page.getByRole('textbox', {name: 'Email address'}).fill(orgEmailAddress);
+      await page.getByRole('textbox', {name: 'Password'}).fill(orgManageOrgLoginPassword);
+      await page.getByRole('button', {name: 'Sign in'}).click();
+      await page.getByRole('link', {name: 'Users'}).click();
+      await page.getByRole('button', {name: 'Invite user'}).click();
       await page.getByRole('textbox', {name: 'First name'}).fill(solicitorFirstName);
       await page.getByRole('textbox', {name: 'Last name'}).fill(solicitorLastName);
       await page.getByRole('textbox', {name: 'Email address'}).fill(solicitorEmailAddress);
+      await page.getByRole('checkbox', {name: 'Permit users to   Manage Cases'}).check();
+      await page.getByRole('button', {name: 'Send invitation'}).click();
+    }
+
+    // @ts-ignore
+    if (updateIDAMRoles == 'true') {
+      // Create IdAM user-dashboard admin (testing-support) once — same IdAM user for all iterations.
+      if (index === 1) {
+        runCurlScript('idamTempUserIDAMDashboardAdmin.sh', {HMCTS_ENV: hmctsEnv});
+      }
+
+      //Login to IDAM dashboard and update roles
+      await page.goto(`https://idam-user-dashboard.${hmctsEnv}.platform.hmcts.net/`);
+      await page.getByRole('textbox', {name: 'Enter your email address'}).click();
+      await page.getByRole('textbox', {name: 'Enter your email address'}).fill('pcs-idam-admin@test.com');
       await page.getByRole('button', {name: 'Continue'}).click();
-      // activate the user
-      const activationUrl = await waitForLatestIdamNotificationLink(request, {
-        hmctsEnv,
-        email: solicitorEmailAddress,
-        bearerToken: accessToken,
-      });
-      await completeIdamPasswordActivation(page, activationUrl, solicitorPassword);
+      await page.getByRole('textbox', {name: 'Enter your password'}).fill('Pa$$w0rd');
+      await page.getByRole('button', {name: 'Continue'}).click();
+
+      await page.getByRole('radio', {name: /Manage an existing user/i}).check();
+      await page.getByRole('button', {name: 'Continue'}).click();
+
+      await page.getByRole('textbox', {name: 'Search for an existing user'}).fill(solicitorEmailAddress);
+      await page.getByRole('button', {name: 'Search'}).click();
+      await page.getByRole('button', {name: 'Edit user'}).click();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page.getByRole('button', {name: 'Save'})).toBeVisible({timeout: 30_000});
+
+      const roleCheckboxes = page.getByRole('checkbox');
+      for (let i = 0; i < await roleCheckboxes.count(); i += 1) {
+        const box = roleCheckboxes.nth(i);
+        if ((await box.getAttribute('id')) === 'multiFactorAuthentication') {
+          continue;
+        }
+        if (await box.isChecked()) {
+          await box.uncheck();
+        }
+      }
+      for (const role of pcsSolitorRoles) {
+        const escaped = role.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        await page.getByRole('checkbox', {name: new RegExp(`^\\s*${escaped}\\s*$`, 'i')}).check();
+      }
+      await page.getByRole('button', {name: 'Save'}).click();
     }
+
+    // Check whether created user can start a Housing Possession claim (manage-case smoke).
+    await createHousingPossessionClaimEnglandWalesAddressSmoke(page, hmctsEnv, {
+      email: solicitorEmailAddress,
+      password: solicitorPassword,
+    });
+    sol=sol +1;
   }
-
-  // @ts-ignore
-  if(inviteTheUserToOrg == 'true') {
-    //Invite user to Org
-    await page.goto(`https://manage-org.${hmctsEnv}.platform.hmcts.net/users/invite-user`);
-    await page.getByRole('textbox', {name: 'Email address'}).fill(orgEmailAddress);
-    await page.getByRole('textbox', {name: 'Password'}).fill(orgManageOrgLoginPassword);
-    await page.getByRole('button', {name: 'Sign in'}).click();
-    await page.getByRole('link', {name: 'Users'}).click();
-    await page.getByRole('button', {name: 'Invite user'}).click();
-    await page.getByRole('textbox', {name: 'First name'}).fill(solicitorFirstName);
-    await page.getByRole('textbox', {name: 'Last name'}).fill(solicitorLastName);
-    await page.getByRole('textbox', {name: 'Email address'}).fill(solicitorEmailAddress);
-    await page.getByRole('checkbox', {name: 'Permit users to   Manage Cases'}).check();
-    await page.getByRole('button', {name: 'Send invitation'}).click();
-  }
-
-  // @ts-ignore
-  if(updateIDAMRoles == 'true') {
-
-
-  // Create IdAM user-dashboard admin (testing-support)
-  runCurlScript('idamTempUserIDAMDashboardAdmin.sh', {HMCTS_ENV: hmctsEnv});
-
-  //Login to IDAM dashboard and update roles
-  await page.goto(`https://idam-user-dashboard.${hmctsEnv}.platform.hmcts.net/`);
-  await page.getByRole('textbox', {name: 'Enter your email address'}).click();
-  await page.getByRole('textbox', {name: 'Enter your email address'}).fill('pcs-idam-admin@test.com');
-  await page.getByRole('button', {name: 'Continue'}).click();
-  await page.getByRole('textbox', {name: 'Enter your password'}).fill('Pa$$w0rd');
-  await page.getByRole('button', {name: 'Continue'}).click();
-
-  await page.getByRole('radio', {name: /Manage an existing user/i}).check();
-  await page.getByRole('button', {name: 'Continue'}).click();
-
-  await page.getByRole('textbox', {name: 'Search for an existing user'}).fill(solicitorEmailAddress);
-  await page.getByRole('button', {name: 'Search'}).click();
-  await page.getByRole('button', {name: 'Edit user'}).click();
-  await page.waitForLoadState('domcontentloaded');
-  await expect(page.getByRole('button', {name: 'Save'})).toBeVisible({timeout: 30_000});
-
-  const roleCheckboxes = page.getByRole('checkbox');
-  for (let i = 0; i < await roleCheckboxes.count(); i += 1) {
-    const box = roleCheckboxes.nth(i);
-    if ((await box.getAttribute('id')) === 'multiFactorAuthentication') {
-      continue;
-    }
-    if (await box.isChecked()) {
-      await box.uncheck();
-    }
-  }
-  for (const role of pcsSolitorRoles) {
-    const escaped = role.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    await page.getByRole('checkbox', {name: new RegExp(`^\\s*${escaped}\\s*$`, 'i')}).check();
-  }
-  await page.getByRole('button', {name: 'Save'}).click();
-}
-  // Check whether created user can start a Housing Possession claim (manage-case smoke).
-  await createHousingPossessionClaimEnglandWalesAddressSmoke(page, hmctsEnv, {
-    email: solicitorEmailAddress,
-    password: solicitorPassword,
-  });
 });

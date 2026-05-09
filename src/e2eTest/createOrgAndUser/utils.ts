@@ -121,8 +121,14 @@ export function runCurlScriptJson(scriptName: string, extraEnv?: NodeJS.ProcessE
     const err = e as NodeJS.ErrnoException & {status?: number; stderr?: Buffer; stdout?: Buffer};
     const stderr = err.stderr?.toString?.().trim() ?? '';
     const stdout = err.stdout?.toString?.().trim() ?? '';
+    // Do not suggest missing IdAM exports when curl failed to reach the host (misleading if env is fine).
+    const looksLikeCurlTransportFailure =
+      /curl:\s*\((?:6|7|28|35|56)\)/i.test(stderr) ||
+      /failed to connect|couldn't connect|could not resolve host|connection refused|connection timed out|network is unreachable|no route to host/i.test(
+        stderr
+      );
     const idamHint =
-      scriptName === 'idamToken.sh'
+      scriptName === 'idamToken.sh' && !looksLikeCurlTransportFailure
         ? '\nFor idamToken.sh export: HMCTS_ENV, IDAM_TOKEN_USERNAME, IDAM_TOKEN_PASSWORD, IDAM_TOKEN_CLIENT_SECRET.'
         : '';
     throw new Error(
