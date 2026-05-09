@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 public class ChooseAnApplication implements CcdPageConfiguration {
 
     private static final String INFO_MARKDOWN = """
-        <p class="govuk-body"> You cannot apply to suspend (stop or delay) an eviction online.</p>
+        <p class="govuk-body">You cannot apply to suspend (stop or delay) an eviction online.</p>
         <p class="govuk-body govuk-!-margin-bottom-1">You must apply by post:</p>
         <ul class="govuk-list govuk-list--bullet">
             <li class="govuk-!-font-size-19">
