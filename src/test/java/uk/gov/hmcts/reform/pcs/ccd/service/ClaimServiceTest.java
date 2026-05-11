@@ -79,15 +79,14 @@ class ClaimServiceTest {
         when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getPreActionProtocolCompleted()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getMediationAttempted()).thenReturn(VerticalYesNo.NO);
-        when(pcsCase.getMediationAttemptedDetails()).thenReturn("mediation details");
         when(pcsCase.getSettlementAttempted()).thenReturn(VerticalYesNo.YES);
-        when(pcsCase.getSettlementAttemptedDetails()).thenReturn("settlement details");
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getWantToUploadDocuments()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getApplicationWithClaim()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
+        when(pcsCase.getPreActionProtocolIncompleteExplanation()).thenReturn("explanation");
 
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.createClaimGroundEntities(pcsCase)).thenReturn(expectedClaimGrounds);
@@ -101,9 +100,7 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getClaimCosts()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getPreActionProtocolFollowed()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getMediationAttempted()).isEqualTo(VerticalYesNo.NO);
-        assertThat(createdClaimEntity.getMediationDetails()).isEqualTo("mediation details");
         assertThat(createdClaimEntity.getSettlementAttempted()).isEqualTo(VerticalYesNo.YES);
-        assertThat(createdClaimEntity.getSettlementDetails()).isEqualTo("settlement details");
         assertThat(createdClaimEntity.getAdditionalDefendants()).isEqualTo(VerticalYesNo.NO);
         assertThat(createdClaimEntity.getUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getAdditionalUnderlesseesOrMortgagees()).isEqualTo(VerticalYesNo.NO);
@@ -111,6 +108,7 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getGenAppExpected()).isEqualTo(VerticalYesNo.NO);
         assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
         assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
+        assertThat(createdClaimEntity.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
 
         verify(claimRepository).save(createdClaimEntity);
     }

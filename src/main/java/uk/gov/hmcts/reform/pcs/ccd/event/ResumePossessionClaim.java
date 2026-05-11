@@ -156,6 +156,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
     private final RentDetailsPage rentDetailsPage;
+    private final PreActionProtocol preActionProtocol;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -198,7 +199,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(rentArrearsGroundsForPossessionReasons)
             .add(noRentArrearsGroundsForPossessionOptions)
             .add(noRentArrearsGroundsForPossessionReason)
-            .add(new PreActionProtocol())
+            .add(preActionProtocol)
             .add(mediationAndSettlement)
             .add(checkingNotice)
             .add(walesCheckingNotice)
