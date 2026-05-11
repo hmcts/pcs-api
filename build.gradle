@@ -561,15 +561,18 @@ check.dependsOn cftlibTest
 // Add wiremock docker compose dependency
 dockerCompose.isRequiredBy cftlibTest
 
+def cleanUpContainers = System.getenv("CI") != null
+
 dockerCompose {
   useComposeFiles = ['docker-compose-wiremock.yml']
-  stopContainers = false
-  removeContainers = false
-  forceRecreate = true
+  stopContainers = cleanUpContainers
+  removeContainers = cleanUpContainers
+  buildBeforeUp = false
+  buildBeforePull = false
 }
 
 composeUp.doFirst {
-  dockerCompose.executable = "which docker".execute().text
+  dockerCompose.dockerExecutable = ("which docker".execute().text).replaceAll("\n", "")
 }
 
 tasks.named("processIntegrationTestResources") {
