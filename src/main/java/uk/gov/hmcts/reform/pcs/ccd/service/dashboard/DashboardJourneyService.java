@@ -10,19 +10,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.RelatedApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-
-
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import java.util.Objects;
 
 /**
  * Computes dashboard data (notifications + task groups) from submitted case data.
