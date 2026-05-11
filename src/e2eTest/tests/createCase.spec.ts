@@ -121,10 +121,11 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performAction('selectYourPossessionGrounds',{
        mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
        discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation],
+       other: whatAreYourGroundsForPossession.otherAdditionalGrounds
      });
     await performAction('enterReasonForPossession',
        [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier,
-         whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation])
+         whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation,whatAreYourGroundsForPossession.otherAdditionalGrounds])
     await performValidation('text', {"text": preactionProtocol.englandRegisteredProvidersDynamicParagraph, "elementType": "paragraph"});
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -244,10 +245,11 @@ test.describe('[Create Case - England] @nightly', async () => {
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossession.additionalGroundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
-      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet]
+      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet],
+      other: whatAreYourGroundsForPossession.otherAdditionalGrounds
     });
     await performAction('enterReasonForPossession',
-      [whatAreYourGroundsForPossession.mandatory.holidayLet]);
+      [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.otherAdditionalGrounds]);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
@@ -377,12 +379,13 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory : [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
-      discretionary :[whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture15]
+      discretionary :[whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture15],
+      other: whatAreYourGroundsForPossession.otherAdditionalGrounds
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession',
       [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier,
-        whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture15]);
+        whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture15,whatAreYourGroundsForPossession.otherAdditionalGrounds]);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {

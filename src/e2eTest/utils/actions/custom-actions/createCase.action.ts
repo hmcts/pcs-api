@@ -437,6 +437,10 @@ export class CreateCaseAction implements IAction {
         case 'discretionaryAccommodation':
           await performAction('check', {question: whatAreYourGroundsForPossession.discretionaryWithAccommodation.discretionaryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.discretionaryAccommodation});
           break;
+        case 'other':
+          await performAction('check', {question: whatAreYourGroundsForPossession.additionalGrounds, option: possessionGrounds.other});
+          await performAction('inputText', whatAreYourGroundsForPossession.giveDetailsHiddenTextLabel, whatAreYourGroundsForPossession.giveDetailsHiddenTextInput);
+          break;
       }
     }
     await performAction('clickButton', whatAreYourGroundsForPossession.continueButton);
