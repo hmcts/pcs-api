@@ -129,7 +129,9 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.tab("caseDetails", "Case Details")
             .label("Case details", null, "### Case details")
-            .field(PCSCase::getPropertyAddress)
+            .field("caseDetailsTab_ClaimDetails")
+            .field("caseDetailsTab_PropertyAddress")
+            .field("caseDetailsTab_TenancyLicenceDetails")
             .label("Claimant Details", null, "### Claimant Details")
             .label("Defendant Details", null, "### Defendant Details")
             .label(

@@ -87,6 +87,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = getSubmittedCase(caseReference);
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
+        if (hasUnsubmittedCaseData) {
+            draftCaseDataService
+                .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
+                .ifPresent(draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft));
+        }
+
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
 

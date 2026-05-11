@@ -54,10 +54,10 @@ public class CaseDetailsTab {
     )
     private RentArrearsTabDetails rentArrearsDetails;
 
-    @CCD(
-        label = "Reasons for possession"
-    )
-    private ReasonsForPossessionTabDetails reasonsForPossessionDetails;
+//    @CCD(
+//        label = "Reasons for possession"
+//    )
+//    private ReasonsForPossessionTabDetails reasonsForPossessionDetails;
 
     @CCD(
         label = "Applications"
@@ -102,7 +102,7 @@ public class CaseDetailsTab {
     @CCD(
         label = "Underlessee or mortgagee"
     )
-    private List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> underlesseeMortgageDetails;
+    private List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> mortgageDetails;
 
     @CCD(
         label = "Demotion of tenancy claim"

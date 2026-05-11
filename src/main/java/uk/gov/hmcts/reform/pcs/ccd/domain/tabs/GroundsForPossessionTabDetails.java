@@ -14,10 +14,10 @@ import java.util.List;
 @AllArgsConstructor
 public class GroundsForPossessionTabDetails {
 
-    @CCD(
-        label = "Grounds"
-    )
-    private List<String> grounds;
+//    @CCD(
+//        label = "Grounds"
+//    )
+//    private List<String> grounds;
 
     @CCD(
         label = "Description of other grounds"

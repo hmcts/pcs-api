@@ -1,14 +1,16 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
 
@@ -16,16 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CaseTabViewTest {
 
-    private CaseTabView underTest;
+    @Mock
+    private CaseDetailsTabView caseDetailsTabView;
 
-    @BeforeEach
-    void setUp() {
-        underTest = new CaseTabView();
-    }
+    @InjectMocks
+    private CaseTabView underTest;
 
     @Test
     void shouldSetClaimantDetailsInCasePartiesTab() {
@@ -49,6 +51,8 @@ public class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder()
             .allClaimants(claimants)
             .build();
+
+        when(caseDetailsTabView.buildCaseDetailsTab(pcsCase)).thenReturn(CaseDetailsTab.builder().build());
 
         // When
         underTest.setCaseTabFields(pcsCase);
@@ -86,6 +90,8 @@ public class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder()
             .allDefendants(defendants)
             .build();
+
+        when(caseDetailsTabView.buildCaseDetailsTab(pcsCase)).thenReturn(CaseDetailsTab.builder().build());
 
         // When
         underTest.setCaseTabFields(pcsCase);
@@ -141,6 +147,8 @@ public class CaseTabViewTest {
             .allDefendants(defendants)
             .build();
 
+        when(caseDetailsTabView.buildCaseDetailsTab(pcsCase)).thenReturn(CaseDetailsTab.builder().build());
+
         // When
         underTest.setCaseTabFields(pcsCase);
 
@@ -186,6 +194,8 @@ public class CaseTabViewTest {
             .allDefendants(defendants)
             .build();
 
+        when(caseDetailsTabView.buildCaseDetailsTab(pcsCase)).thenReturn(CaseDetailsTab.builder().build());
+
         // When
         underTest.setCaseTabFields(pcsCase);
 
@@ -226,6 +236,8 @@ public class CaseTabViewTest {
             .propertyAddress(address)
             .build();
 
+        when(caseDetailsTabView.buildCaseDetailsTab(pcsCase)).thenReturn(CaseDetailsTab.builder().build());
+
         // When
         underTest.setCaseTabFields(pcsCase);
 
@@ -245,6 +257,7 @@ public class CaseTabViewTest {
     void shouldNotSetCasePartiesTabWithNoData() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
+        when(caseDetailsTabView.buildCaseDetailsTab(pcsCase)).thenReturn(CaseDetailsTab.builder().build());
 
         // When
         underTest.setCaseTabFields(pcsCase);

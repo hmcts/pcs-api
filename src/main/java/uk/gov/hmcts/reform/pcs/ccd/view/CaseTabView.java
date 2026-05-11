@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -7,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
@@ -14,14 +16,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
 @Component
 public class CaseTabView {
+
+    private final CaseDetailsTabView caseDetailsTabView;
 
     private static final String NAME_UNKNOWN = "Person unknown";
 
     public void setCaseTabFields(PCSCase pcsCase) {
         CasePartiesTab casePartiesTab = buildCasePartiesTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
         pcsCase.setCasePartiesTab(casePartiesTab);
+        pcsCase.setCaseDetailsTab(caseDetailsTab);
+    }
+
+    public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draft) {
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(draft);
+        pcsCase.setCaseDetailsTab(caseDetailsTab);
     }
 
     private CasePartiesTab buildCasePartiesTab(PCSCase pcsCase) {

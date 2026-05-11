@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 
@@ -19,7 +21,7 @@ public class TenancyLicenceTabDetails {
     @CCD(
         label = "Tenancy, occupation contract or licence agreement type"
     )
-    private String typeOfTenancyLicence;
+    private TenancyLicenceType typeOfTenancyLicence;
 
     @CCD(
         label = "Tenancy, occupation contract or licence start date"
@@ -29,7 +31,7 @@ public class TenancyLicenceTabDetails {
     @CCD(
         label = "Do you have a copy of the tenancy or licence agreement?"
     )
-    private String hasCopyOfTenancyLicence;
+    private VerticalYesNo hasCopyOfTenancyLicence;
 
     @CCD(
         label = "Details of why you do not have a copy"
