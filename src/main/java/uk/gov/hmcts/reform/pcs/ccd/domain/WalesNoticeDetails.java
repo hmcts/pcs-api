@@ -19,7 +19,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class WalesNoticeDetails {
 
-    public static final String NOTICE_STATEMENT_LABEL = "Enter Statement";
+    public static final String NOTICE_STATEMENT_LABEL = "Enter statement";
 
     @CCD(label = "Have you served notice to the defendants?")
     private YesOrNo noticeServed;
