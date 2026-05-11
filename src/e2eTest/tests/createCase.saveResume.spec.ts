@@ -80,7 +80,7 @@ test.beforeEach(async ({ page, context }) => {
 
 test.afterEach(async () => {
   if (caseNumber) {
-    await performAction('deleteCaseRole', '[CREATOR]');
+    await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
   PageContentValidation.finaliseTest();
 });
@@ -96,20 +96,22 @@ test.describe('[Create Case - With resume claim options] @nightly', async () => 
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption, true);
     await performAction('verifyPageAndClickButton', claimantType.continueButton, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimType.noRadioOption, true);
     await performAction('verifyPageAndClickButton', claimType.continueButton, claimType.mainHeader);
-    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
+    await performValidation('mainHeader', contactPreferences.mainHeader)
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
@@ -223,21 +225,23 @@ test.describe('[Create Case - With resume claim options] @nightly', async () => 
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
-    await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
+    await performAction('selectClaimType', claimType.noRadioOption);    
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, false);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption, false);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performValidation('radioButtonChecked', claimType.noRadioOption, false);
-    await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, false);
-    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
+    await performAction('selectClaimType', claimType.noRadioOption);    
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,

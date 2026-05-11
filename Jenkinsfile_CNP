@@ -81,10 +81,12 @@ withPipeline(type, product, component) {
 
   onDemo {
     setDemoEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onIthc {
     setIthcEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onPerftest {
@@ -111,6 +113,16 @@ withPipeline(type, product, component) {
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
       env.CASE_API_URL = "http://pcs-api-perftest.service.core-compute-perftest.internal"
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-perftest.service.core-compute-perftest.internal"
+    }
+    onDemo {
+      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-demo.service.core-compute-demo.internal"
+      env.CASE_API_URL = "http://pcs-api-demo.service.core-compute-demo.internal"
+      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-demo.service.core-compute-demo.internal"
+    }
+    onIthc{
+      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-ithc.service.core-compute-ithc.internal"
+      env.CASE_API_URL = "http://pcs-api-ithc.service.core-compute-ithc.internal"
+      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-ithc.service.core-compute-ithc.internal"
     }
     generateDefinitions(builder)
   }

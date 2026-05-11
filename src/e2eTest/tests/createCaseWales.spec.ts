@@ -57,7 +57,7 @@ test.beforeEach(async ({ page }) => {
 
 test.afterEach(async () => {
   if (caseNumber) {
-    await performAction('deleteCaseRole', '[CREATOR]');
+    await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
   PageContentValidation.finaliseTest();
 });
@@ -76,10 +76,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
          question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
@@ -181,10 +182,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
@@ -302,10 +304,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.noRadioOption,
          question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.noRadioOption,
@@ -412,10 +415,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.noRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantInformation.noRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.notApplicableRadioOption,
          question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.notApplicableRadioOption,
@@ -511,10 +515,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
@@ -643,10 +648,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
@@ -738,10 +744,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
