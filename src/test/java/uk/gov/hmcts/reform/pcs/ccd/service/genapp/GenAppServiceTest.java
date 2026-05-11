@@ -281,7 +281,7 @@ class GenAppServiceTest {
         UploadedDocument uploadedDocument = UploadedDocument.builder()
             .document(document)
             .contentType("test content type")
-            .size(1234L)
+            .sizeInBytes(1234L)
             .build();
 
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
@@ -324,7 +324,7 @@ class GenAppServiceTest {
         UploadedDocument uploadedDocument = UploadedDocument.builder()
             .document(document)
             .contentType("test content type")
-            .size(1234L)
+            .sizeInBytes(1234L)
             .build();
 
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
