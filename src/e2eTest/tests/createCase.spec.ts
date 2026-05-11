@@ -83,7 +83,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('provideMoreDetailsOfClaim');
+    await performAction('provideMoreDetailsOfClaim');//
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
@@ -184,6 +184,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.submitAndPayForClaimRadioOption);
     await performAction('selectStatementOfTruth', {
