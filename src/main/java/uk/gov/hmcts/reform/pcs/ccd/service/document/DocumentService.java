@@ -153,7 +153,6 @@ public class DocumentService {
                         .url(holder.getDocument().getUrl())
                         .documentId(extractDocumentId(holder.getDocument().getUrl()))
                         .fileName(holder.getDocument().getFilename())
-                        .displayFileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
                         .categoryId(mapDocumentTypeToCategory(holder.getType()).getId())
                         .type(holder.getType())

@@ -77,8 +77,6 @@ public class DocumentEntity {
 
     private Long size;
 
-    private String displayFileName;
-
     private String description;
 
     @ManyToOne(fetch = LAZY)
