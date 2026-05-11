@@ -6,15 +6,23 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.RelatedApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
+
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import java.util.Objects;
 
 /**
  * Computes dashboard data (notifications + task groups) from submitted case data.
@@ -52,6 +60,8 @@ public class DashboardJourneyService {
     ) {
         List<ListValue<DashboardNotification>> notifications = computeNotifications();
         List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(dashboardContext);
+        List<ListValue<RelatedApplication>> relatedApplications = computeRelatedApplications(dashboardContext);
+
 
         log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for case={}",
                  notifications.size(), taskGroups.size(), caseReference);
@@ -61,6 +71,7 @@ public class DashboardJourneyService {
             .propertyAddress(submittedCaseData.getPropertyAddress())
             .notifications(notifications)
             .taskGroups(taskGroups)
+            .relatedApplications(relatedApplications)
             .build();
     }
 
@@ -89,6 +100,26 @@ public class DashboardJourneyService {
                 .toList()
         );
     }
+
+    private List<ListValue<RelatedApplication>> computeRelatedApplications(DashboardContext dashboardContext) {
+        if (dashboardContext == null
+            || dashboardContext.caseEntity() == null
+            || dashboardContext.caseEntity().getGenApps() == null
+            || dashboardContext.caseEntity().getGenApps().isEmpty()) {
+            return List.of();
+        }
+    
+        return ListValueUtils.wrapListItems(
+            dashboardContext.caseEntity().getGenApps().stream()
+                .map(genApp -> RelatedApplication.builder()
+                    .id(genApp.getId() != null ? genApp.getId().toString() : null)
+                    .type(genApp.getType())
+                    .applicationSubmittedDate(genApp.getApplicationSubmittedDate())
+                    .build())
+                .toList()
+        );
+    }
+      
 
     /**
      * Entries with a null value are omitted so optional placeholders (for example {@code ctaLink}) can be left out

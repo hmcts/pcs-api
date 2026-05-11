@@ -6,8 +6,10 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.RelatedApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
@@ -18,7 +20,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvalua
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -52,6 +57,8 @@ class DashboardJourneyServiceTest {
         assertThat(result.getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(result.getNotifications()).hasSize(2);
         assertThat(result.getTaskGroups()).hasSize(6);
+        assertThat(result.getRelatedApplications()).isEmpty();
+
     }
 
     @Test
@@ -137,7 +144,7 @@ class DashboardJourneyServiceTest {
     void shouldShowViewApplicationsTaskWhenAtLeastOneGeneralApplicationExists() {
         PCSCase submitted = PCSCase.builder().build();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
-            .genApps(java.util.Set.of(GenAppEntity.builder().build()))
+            .genApps(Set.of(GenAppEntity.builder().build()))
             .build();
 
         DashboardData result = underTest.computeDashboardData(
@@ -152,6 +159,37 @@ class DashboardJourneyServiceTest {
                 tuple(DashboardTaskTemplateIds.MAKE_GENERAL_APPLICATION, TaskStatus.AVAILABLE),
                 tuple(DashboardTaskTemplateIds.VIEW_ALL_APPLICATIONS, TaskStatus.AVAILABLE)
             );
+    }
+
+    @Test
+    void shouldPopulateRelatedApplicationsFromGeneralApplications() {
+        PCSCase submitted = PCSCase.builder().build();
+
+        GenAppEntity genApp = GenAppEntity.builder()
+            .id(UUID.randomUUID())
+            .type(GenAppType.ADJOURN)
+            .applicationSubmittedDate(LocalDateTime.of(2026, 4, 28, 10, 30))
+            .build();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .genApps(Set.of(genApp))
+            .build();
+
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            submitted,
+            new DashboardContext(CASE_REFERENCE, caseEntity, null)
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
+            .extracting(RelatedApplication::getType, RelatedApplication::getApplicationSubmittedDate)
+            .containsExactly(
+                tuple(GenAppType.ADJOURN, LocalDateTime.of(2026, 4, 28, 10, 30))
+            );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
+            .extracting(RelatedApplication::getId)
+            .allMatch(id -> id != null && !id.isBlank());
     }
 
     @Test
@@ -171,4 +209,5 @@ class DashboardJourneyServiceTest {
 
         assertThat(keysForResponseNotification).containsExactly("ctaLabel");
     }
+
 }
