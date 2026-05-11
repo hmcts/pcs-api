@@ -24,10 +24,6 @@ import java.util.Optional;
 @ConditionalOnProperty(name = "testing-support.enabled", havingValue = "true")
 public class TestingSupportAccessCodeService {
 
-    // Letters A-Z minus I, O, Q, U — subset of AccessCodeGenerator.ALLOWED_CHARS that excludes
-    // visually-ambiguous characters. Using letters only keeps the generated suffix unambiguous
-    // (no risk of '2'/'Z' or '8'/'B' confusion in logs) and gives 22^3 = 10,648 slots, far above
-    // any realistic defendant count.
     static final String SUFFIX_ALPHABET = "ABCDEFGHJKLMNPRSTVWXYZ";
     static final int SUFFIX_LENGTH = 3;
     static final int MAX_DEFENDANTS = (int) Math.pow(SUFFIX_ALPHABET.length(), SUFFIX_LENGTH);
@@ -44,12 +40,10 @@ public class TestingSupportAccessCodeService {
     }
 
     private RegenerateAccessCodesResponse regenerateForCase(PcsCaseEntity pcsCase, long caseReference) {
-        // Sort by the canonical hex string of partyId so ordering is unsigned/lexicographic
-        // (UUID.compareTo is signed and produces counter-intuitive results across high-bit flips).
         List<PartyAccessCodeEntity> rows = partyAccessCodeRepository
             .findAllByPcsCase_Id(pcsCase.getId())
             .stream()
-            .sorted(Comparator.comparing(e -> e.getPartyId().toString()))
+            .sorted(byPartyId())
             .toList();
 
         if (rows.size() > MAX_DEFENDANTS) {
@@ -81,5 +75,9 @@ public class TestingSupportAccessCodeService {
             n /= base;
         }
         return PIN_PREFIX + new String(suffix);
+    }
+
+    private static Comparator<PartyAccessCodeEntity> byPartyId() {
+        return Comparator.comparing(e -> e.getPartyId().toString());
     }
 }

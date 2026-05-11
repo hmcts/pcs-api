@@ -70,7 +70,6 @@ class TestingSupportAccessCodeServiceTest {
     void shouldAssignPinsInPartyIdSortedOrder() {
         long caseReference = 1234567890123456L;
         UUID caseId = UUID.randomUUID();
-        // Deliberately use partyIds that sort differently from insertion order.
         UUID partyIdLast = UUID.fromString("ffffffff-0000-0000-0000-000000000000");
         UUID partyIdFirst = UUID.fromString("11111111-0000-0000-0000-000000000000");
         UUID partyIdMiddle = UUID.fromString("88888888-0000-0000-0000-000000000000");
@@ -155,7 +154,6 @@ class TestingSupportAccessCodeServiceTest {
 
         assertThat(firstCall).isPresent();
         assertThat(secondCall).isPresent();
-        // Same partyId -> same PIN slot on every call.
         assertThat(firstCall.get().pins())
             .extracting(DefendantPin::partyId, DefendantPin::accessCode)
             .containsExactly(
