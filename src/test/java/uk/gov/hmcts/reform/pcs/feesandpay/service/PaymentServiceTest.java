@@ -267,7 +267,7 @@ class PaymentServiceTest {
 
         when(feePaymentRepository.findByRequestReference("SR-123")).thenReturn(Optional.of(feePayment));
 
-        ServiceRequestUpdate update = ServiceRequestUpdate.builder()
+        PaymentStatusCallback update = PaymentStatusCallback.builder()
             .serviceRequestReference("SR-123")
             .serviceRequestStatus(PaymentStatus.PAID.getValue())
             .payment(Payment.builder().paymentReference("PAY-1").build())

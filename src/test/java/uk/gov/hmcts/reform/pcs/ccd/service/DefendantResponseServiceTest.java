@@ -908,7 +908,7 @@ class DefendantResponseServiceTest {
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubPartyLookup();
         stubClaimLookup();
-        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+        when(defendantResponseRepository.saveAndFlush(any(DefendantResponseEntity.class)))
             .thenAnswer(inv -> inv.getArgument(0));
 
         UploadedDocument defDoc = UploadedDocument.builder()
@@ -946,7 +946,7 @@ class DefendantResponseServiceTest {
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubPartyLookup();
         stubClaimLookup();
-        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+        when(defendantResponseRepository.saveAndFlush(any(DefendantResponseEntity.class)))
             .thenAnswer(inv -> inv.getArgument(0));
 
         DefendantResponses responses = DefendantResponses.builder()
