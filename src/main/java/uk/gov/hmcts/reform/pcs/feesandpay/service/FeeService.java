@@ -29,7 +29,7 @@ public class FeeService {
     public FeeDetails getFee(FeeType feeType) {
         log.debug("Requesting fee of type: {}", feeType);
         try {
-                FeeLookupResponseDto feeLookupResponse = pcsFeesClient.lookupFee(feeType);
+            FeeLookupResponseDto feeLookupResponse = pcsFeesClient.lookupFee(feeType);
             log.debug("Successfully retrieved fee: type={}, code={}, amount={}",
                       feeType, feeLookupResponse.getCode(), feeLookupResponse.getFeeAmount());
 
