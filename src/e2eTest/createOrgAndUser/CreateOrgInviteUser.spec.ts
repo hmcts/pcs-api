@@ -38,16 +38,16 @@ test('test', async ({page, request}) => {
 
   const createOrg = 'false';
   const orgApprovalNeeded = 'false';
-  const userCreationNeeded = 'false';
-  const newTempUser = 'false';
-  const inviteTheUserToOrg = 'false';
+  const userCreationNeeded = 'true';
+  const newTempUser = 'true';
+  const inviteTheUserToOrg = 'true';
   const updateIDAMRoles = 'true';
 
   /** Namespace for org emails/names (e.g. `org1` → …Org1, …org1…). Change only here to retarget all derived ids. */
-  const org = 'org2';
+  const org = 'org1';
   /** How many solicitors to provision (emails `pcs-${org}-solicitor1@test.com`, …solicitor2…, etc.). */
-  const numberOfSolicitorUsers = 1;
-  const solicitorEmailStartsWith = 3;
+  const numberOfSolicitorUsers = 5;
+  const solicitorEmailStartsWith = 1;
   const orgDisplay = org.charAt(0).toUpperCase() + org.slice(1);
 
   const orgName = `Possession Claim Service ${orgDisplay}`;
@@ -66,7 +66,7 @@ test('test', async ({page, request}) => {
   const pcsIdamDashboardAdminEmail = 'pcs-idam-adminstrator@test.com';
   const password = 'Pa$$w0rd';
 
-  /** PCS solicitor IdAM roles (aligned with idamTempUserPCSSolicitor.sh). */
+  /** PCS solicitor IdAM roles (aligned with idamTempUserUsingIdamAPIPCSSolicitor.sh). */
   const pcsSolitorRoles = [
     'caseworker',
     'caseworker-pcs',
@@ -144,8 +144,9 @@ test('test', async ({page, request}) => {
     if (userCreationNeeded == 'true') {
       // @ts-ignore
       if (newTempUser == 'true') {
-        runCurlScript('idamTempUserPCSSolicitor.sh', {
+        runCurlScript('tempUserUsingTestingSupportAPIPCSSolicitor.sh', {
           HMCTS_ENV: hmctsEnv,
+          IDAM_ACCESS_TOKEN: accessToken,
           SOLICITOR_EMAIL_ADDRESS: solicitorEmailAddress,
           SOLICITOR_FORENAME: solicitorFirstName,
           SOLICITOR_SURNAME: solicitorLastName,
