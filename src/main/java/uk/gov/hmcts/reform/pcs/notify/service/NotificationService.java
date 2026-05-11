@@ -298,7 +298,7 @@ public class NotificationService {
         return Map.of(
             "firstName", defendant.getFirstName(),
             "lastName", defendant.getLastName(),
-            "caseNumber", defendantResponse.getPcsCase().getCaseReference().toString(),
+            "caseNumber", formatCaseReference(defendantResponse.getPcsCase().getCaseReference().toString()),
             "claimantName", claimantName,
             "primaryDefendantName", primaryDefendantName
         );
@@ -349,5 +349,13 @@ public class NotificationService {
             .emailAddress(email)
             .personalisation(personalisation)
             .build();
+    }
+
+    private static String formatCaseReference(String caseReference) {
+        if (caseReference == null) {
+            return null;
+        }
+
+        return caseReference.replaceAll("(.{4})(?!$)", "$1-");
     }
 }

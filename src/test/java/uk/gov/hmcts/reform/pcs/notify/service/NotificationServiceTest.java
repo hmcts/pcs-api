@@ -535,7 +535,7 @@ class NotificationServiceTest {
                 .hasSize(5)
                 .containsEntry("firstName", "John")
                 .containsEntry("lastName", "Doe")
-                .containsEntry("caseNumber", "1234567890")
+                .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }
@@ -630,6 +630,19 @@ class NotificationServiceTest {
                 NotificationService.buildRequest("template-1", "test@example.com", Map.of());
 
             assertThat(request.getPersonalisation()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should format case reference with dashes every 4 characters")
+        void shouldFormatCaseReferenceWithDashes() {
+            DefendantResponseEntity response = createDefendantResponse();
+            response.getPcsCase().setCaseReference(1234567890123456L);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(response);
+
+            assertThat(result)
+                .containsEntry("caseNumber", "1234-5678-9012-3456");
         }
     }
 
