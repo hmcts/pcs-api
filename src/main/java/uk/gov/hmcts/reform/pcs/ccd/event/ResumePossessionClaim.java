@@ -81,6 +81,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         SavingPageBuilder savingPageBuilder = savingPageBuilderFactory.create(eventBuilder, resumePossessionClaim);
         resumePossessionClaimConfigurer.configurePages(savingPageBuilder);
+
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
