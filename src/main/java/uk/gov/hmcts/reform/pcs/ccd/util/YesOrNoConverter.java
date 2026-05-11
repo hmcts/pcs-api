@@ -17,6 +17,10 @@ public class YesOrNoConverter {
         return value != null ? YesOrNo.from(value) : null;
     }
 
+    public static YesOrNo toYesOrNo(VerticalYesNo yesOrNo) {
+        return yesOrNo != null ? YesOrNo.from(yesOrNo.toBoolean()) : null;
+    }
+
     public static VerticalYesNo toVerticalYesNo(YesOrNo yesOrNo) {
         return yesOrNo != null ? VerticalYesNo.from(yesOrNo.toBoolean()) : null;
     }
