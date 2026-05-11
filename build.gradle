@@ -33,6 +33,8 @@ plugins {
   id 'uk.gov.hmcts.java' version '0.12.68'
 }
 
+apply plugin: 'docker-compose'
+
 group = 'uk.gov.hmcts.reform'
 version = '0.0.1'
 
@@ -563,13 +565,11 @@ dockerCompose {
   stopContainers = false
   removeContainers = false
   waitForTcpPorts = false
-  dockerExecutable = '/usr/local/bin/docker'
 }
 
-//tasks.named("cftlibTest") {
-//  composeUp
-//}
-
+composeUp.doFirst {
+  dockerCompose.executable = "which docker".execute().text
+}
 
 tasks.named("processIntegrationTestResources") {
   duplicatesStrategy = 'include'
