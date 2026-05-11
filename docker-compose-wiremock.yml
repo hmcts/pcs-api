@@ -7,3 +7,10 @@ services:
     volumes:
       - ./wiremock/mappings:/home/wiremock/mappings:ro
     command: --global-response-templating --verbose --port 8083
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/__admin/mappings"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 0s
+      start_interval: 1s

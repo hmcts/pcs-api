@@ -149,9 +149,8 @@ rd-professional:
   api-url: ${RD_PROFESSIONAL_API_URL:http://localhost:8083}
 
 fees:
-  mock: false
   api:
-    url: ${FEES_REGISTER_API_URL:http://localhost:8991}
+    url: ${FEES_REGISTER_API_URL:http://localhost:8083}
   lookup:
     caseIssueFee:
       service: possession claim
