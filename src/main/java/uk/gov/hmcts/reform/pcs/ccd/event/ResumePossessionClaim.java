@@ -90,6 +90,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -156,6 +157,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
     private final RentDetailsPage rentDetailsPage;
+    private final NotificationService notificationService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -311,6 +313,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         if (pcsCase.getCompletionNextStep() == SUBMIT_AND_PAY_NOW) {
             return submitClaim(caseReference, pcsCase);
         } else {
+            notificationService.sendClaimantDraftSavedForLater(caseReference, pcsCase);
             return saveForLater();
         }
     }
