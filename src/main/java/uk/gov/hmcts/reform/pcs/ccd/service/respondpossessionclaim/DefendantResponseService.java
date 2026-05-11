@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -50,6 +52,7 @@ public class DefendantResponseService {
     private final ReasonableAdjustmentsService reasonableAdjustmentsService;
     private final HouseholdCircumstancesService householdCircumstancesService;
     private final PaymentAgreementService paymentAgreementService;
+    private final DocumentService documentService;
     private final Clock utcClock;
 
     public DefendantResponseService(PartyService partyService,
@@ -60,6 +63,7 @@ public class DefendantResponseService {
                                     ReasonableAdjustmentsService reasonableAdjustmentsService,
                                     HouseholdCircumstancesService householdCircumstancesService,
                                     PaymentAgreementService paymentAgreementService,
+                                    DocumentService documentService,
                                     @Qualifier("utcClock") Clock utcClock) {
         this.partyService = partyService;
         this.partyRepository = partyRepository;
@@ -69,6 +73,7 @@ public class DefendantResponseService {
         this.reasonableAdjustmentsService = reasonableAdjustmentsService;
         this.householdCircumstancesService = householdCircumstancesService;
         this.paymentAgreementService = paymentAgreementService;
+        this.documentService = documentService;
         this.utcClock = utcClock;
     }
 
@@ -121,18 +126,25 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
+        DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
+
         DefendantResponseEntity responseEntity =
-            buildDefendantResponseEntity(
-                claimRef,
-                partyRef,
-                possessionClaimResponse.getDefendantResponses()
+            buildDefendantResponseEntity(claimRef, partyRef, responses);
+
+        buildAndLinkChildEntities(responseEntity, responses);
+
+        saveCounterClaim(responses, partyRef, claimRef);
+
+        DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
+
+        if (!CollectionUtils.isEmpty(responses.getDefendantDocuments())) {
+            documentService.createDefendantUploadedDocuments(
+                responses.getDefendantDocuments(),
+                savedResponse,
+                claimRef.getPcsCase(),
+                partyRef
             );
-
-        buildAndLinkChildEntities(responseEntity, possessionClaimResponse.getDefendantResponses());
-
-        saveCounterClaim(possessionClaimResponse.getDefendantResponses(), partyRef, claimRef);
-
-        defendantResponseRepository.save(responseEntity);
+        }
 
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
     }
@@ -203,11 +215,14 @@ public class DefendantResponseService {
             return;
         }
 
+        boolean claimAmountApplies = cc.getClaimType() != null && cc.getClaimType() != CounterClaimType.SOMETHING_ELSE;
+
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .claimType(cc.getClaimType())
-            .isClaimAmountKnown(cc.getIsClaimAmountKnown())
-            .claimAmount(cc.getIsClaimAmountKnown() == VerticalYesNo.YES ? cc.getClaimAmount() : null)
-            .estimatedMaxClaimAmount(cc.getIsClaimAmountKnown() == VerticalYesNo.NO
+            .isClaimAmountKnown(claimAmountApplies ? cc.getIsClaimAmountKnown() : null)
+            .claimAmount(claimAmountApplies && cc.getIsClaimAmountKnown() == VerticalYesNo.YES
+                             ? cc.getClaimAmount() : null)
+            .estimatedMaxClaimAmount(claimAmountApplies && cc.getIsClaimAmountKnown() == VerticalYesNo.NO
                                          ? cc.getEstimatedMaxClaimAmount() : null)
             .counterClaimFor(cc.getCounterClaimFor())
             .counterClaimReasons(cc.getCounterClaimReasons())
