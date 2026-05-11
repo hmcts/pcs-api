@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 @Service
 @AllArgsConstructor
