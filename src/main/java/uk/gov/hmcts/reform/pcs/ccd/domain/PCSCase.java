@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentsAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
@@ -519,7 +520,7 @@ public class PCSCase {
     )
     private DynamicList testCaseSupportFileList;
 
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = {DocumentsAccess.class})
     private List<ListValue<Document>> allDocuments;
 
     @CCD(
