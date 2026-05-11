@@ -286,4 +286,9 @@ public class ClaimEntity {
             document.getClaimDocuments().add(claimDocument);
         }
     }
+
+    public void addCaseNote(CaseNoteEntity caseNote) {
+        caseNotes.add(caseNote);
+        caseNote.setClaim(this);
+    }
 }

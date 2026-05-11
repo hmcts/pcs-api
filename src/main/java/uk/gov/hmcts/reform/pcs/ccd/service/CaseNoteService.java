@@ -23,7 +23,16 @@ public class CaseNoteService {
     private final SecurityContextService securityContextService;
     private final Clock ukClock;
 
-    public CaseNoteEntity createCaseNoteEntity(PCSCase pcsCase) {
+    public void addCaseNote(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+
+        ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
+        CaseNoteEntity caseNoteEntity = createCaseNoteEntity(pcsCase);
+        claimEntity.addCaseNote(caseNoteEntity);
+        claimRepository.save(claimEntity);
+    }
+
+    private CaseNoteEntity createCaseNoteEntity(PCSCase pcsCase) {
         UserInfo userInfo = securityContextService.getCurrentUserDetails();
 
         return CaseNoteEntity
@@ -32,18 +41,5 @@ public class CaseNoteService {
             .note(pcsCase.getNote())
             .createdOn(LocalDateTime.now(ukClock))
             .build();
-    }
-
-    public void addCaseNote(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-
-        ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
-        CaseNoteEntity caseNoteEntity = createCaseNoteEntity(pcsCase);
-        caseNoteEntity.setClaim(claimEntity);
-        if (claimEntity.getCaseNotes() == null) {
-            claimEntity.setCaseNotes(new ArrayList<>());
-        }
-        claimEntity.getCaseNotes().add(caseNoteEntity);
-        claimRepository.save(claimEntity);
     }
 }
