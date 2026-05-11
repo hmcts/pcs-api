@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequ
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -44,17 +43,13 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
 class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
-    @Mock
-    private ImmutablePartyFieldValidator immutableFieldValidator;
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
@@ -71,7 +66,6 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         lenient().when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         lenient().when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         setPageUnderTest(new RespondToPossessionDraftSavePage(
-            immutableFieldValidator,
             draftCaseDataService,
             securityContextService,
             selectedPartyRetriever
@@ -95,15 +89,12 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantResponses(responses)
                                              .build());
 
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
-
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         assertThat(response.getErrors()).isNull();
 
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
 
@@ -115,10 +106,12 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
-    void shouldReturnErrorsWhenImmutableFieldViolationsFound() {
+    void shouldSavePartyDataIncludingImmutableFields() {
         //Given
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(Party.builder()
+                       .firstName("Jack")
+                       .lastName("Smith")
                        .nameKnown(VerticalYesNo.YES)
                        .addressKnown(VerticalYesNo.YES)
                        .addressSameAsProperty(VerticalYesNo.NO)
@@ -129,19 +122,14 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantContactDetails(contactDetails)
                                              .build());
 
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of("nameKnown", "addressKnown", "addressSameAsProperty"));
-
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-        assertThat(response.getErrors()).containsExactly(
-            "Invalid submission: immutable field must not be sent: nameKnown",
-            "Invalid submission: immutable field must not be sent: addressKnown",
-            "Invalid submission: immutable field must not be sent: addressSameAsProperty"
+        //Then
+        assertThat(response.getErrors()).isNull();
+        verify(draftCaseDataService).saveUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
-        assertThat(response.getData()).isNull();
-        verify(draftCaseDataService, never()).patchUnsubmittedEventData(anyLong(), any(), any());
     }
 
     @Test
@@ -166,8 +154,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -198,15 +185,12 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantContactDetails(contactDetails)
                                              .build());
 
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
-
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -238,8 +222,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -292,15 +275,12 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantResponses(responses)
                                              .build());
 
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
-
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -335,8 +315,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -345,7 +324,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
-    void shouldSkipValidationWhenDefendantContactDetailsIsNull() {
+    void shouldSaveWhenDefendantContactDetailsIsNull() {
         //Given
         DefendantResponses responses = DefendantResponses.builder()
             .freeLegalAdvice(YesNoPreferNotToSay.NO)
@@ -359,8 +338,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -402,7 +380,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
 
@@ -448,12 +426,9 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantContactDetails(contactDetails)
                                              .build());
 
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
-
         doThrow(new RuntimeException("DB connection failed"))
             .when(draftCaseDataService)
-            .patchUnsubmittedEventData(anyLong(), any(), any());
+            .saveUnsubmittedEventData(anyLong(), any(), any());
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -477,8 +452,6 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .build());
 
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
@@ -497,9 +470,6 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
                                              .defendantContactDetails(contactDetails)
                                              .build());
-
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 

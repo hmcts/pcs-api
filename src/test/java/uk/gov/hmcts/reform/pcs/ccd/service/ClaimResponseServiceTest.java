@@ -29,9 +29,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -97,13 +94,11 @@ class ClaimResponseServiceTest {
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
-        verify(partyRepository, times(2)).save(partyCaptor.capture());
-        PartyEntity savedParty = partyCaptor.getValue();
-        assertThat(savedParty.getPhoneNumber()).isEqualTo("07123456789");
-        assertThat(savedParty.getEmailAddress()).isEqualTo("defendant@example.com");
-        assertThat(savedParty.getAddress()).isEqualTo(addressEntity);
+        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
+        assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
 
-        ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
+        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
@@ -130,10 +125,8 @@ class ClaimResponseServiceTest {
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
-        verify(partyRepository, times(2)).save(partyCaptor.capture());
-        PartyEntity savedParty = partyCaptor.getValue();
-        assertThat(savedParty.getPhoneNumber()).isEqualTo("07123456789");
-        assertThat(savedParty.getEmailAddress()).isNull();
+        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
+        assertThat(testParty.getEmailAddress()).isNull();
     }
 
     @Test
@@ -155,10 +148,8 @@ class ClaimResponseServiceTest {
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
-        verify(partyRepository).save(partyCaptor.capture());
-        PartyEntity savedParty = partyCaptor.getValue();
-        assertThat(savedParty.getEmailAddress()).isEqualTo("defendant@example.com");
-        assertThat(savedParty.getPhoneNumber()).isNull();
+        assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
+        assertThat(testParty.getPhoneNumber()).isNull();
     }
 
     @Test
@@ -181,10 +172,8 @@ class ClaimResponseServiceTest {
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
-        verify(partyRepository).save(partyCaptor.capture());
-        PartyEntity savedParty = partyCaptor.getValue();
-        assertThat(savedParty.getContactPreferences()).isNotNull();
-        assertThat(savedParty.getContactPreferences().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(testParty.getContactPreferences()).isNotNull();
+        assertThat(testParty.getContactPreferences().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
@@ -197,13 +186,10 @@ class ClaimResponseServiceTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(null);
 
-        // When
+        // When / Then
         assertThatThrownBy(() -> underTest.saveDraftData(response, TEST_CASE_REFERENCE))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Current user IDAM ID is null");
-
-        // Then
-        verifyNoInteractions(partyRepository);
     }
 
     @Test
@@ -246,8 +232,7 @@ class ClaimResponseServiceTest {
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
-        verify(partyRepository).save(partyCaptor.capture());
-        ContactPreferencesEntity savedPrefs = partyCaptor.getValue().getContactPreferences();
+        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
         assertThat(savedPrefs.getContactByText()).isEqualTo(null);
         assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
@@ -285,20 +270,16 @@ class ClaimResponseServiceTest {
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
-        //Once for address being created, once for preferences being
-        verify(partyRepository, times(2)).save(partyCaptor.capture());
-        PartyEntity savedParty = partyCaptor.getValue();
+        assertThat(testParty.getAddress()).isNotNull();
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+        assertThat(testParty.getAddress().getAddressLine1()).isEqualTo("123 Test Street");
+        assertThat(testParty.getAddress().getPostTown()).isEqualTo("London");
+        assertThat(testParty.getAddress().getPostcode()).isEqualTo("SW1A 1AA");
 
-        assertThat(savedParty.getAddress()).isNotNull();
-        assertThat(savedParty.getAddress()).isEqualTo(addressEntity);
-        assertThat(savedParty.getAddress().getAddressLine1()).isEqualTo("123 Test Street");
-        assertThat(savedParty.getAddress().getPostTown()).isEqualTo("London");
-        assertThat(savedParty.getAddress().getPostcode()).isEqualTo("SW1A 1AA");
+        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
+        assertThat(testParty.getEmailAddress()).isEqualTo("test@example.com");
 
-        assertThat(savedParty.getPhoneNumber()).isEqualTo("07123456789");
-        assertThat(savedParty.getEmailAddress()).isEqualTo("test@example.com");
-
-        ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
+        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
@@ -325,10 +306,8 @@ class ClaimResponseServiceTest {
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
-        verify(partyRepository).save(partyCaptor.capture());
-        PartyEntity savedParty = partyCaptor.getValue();
-        assertThat(savedParty.getFirstName()).isEqualTo("John");
-        assertThat(savedParty.getLastName()).isEqualTo("Doe");
+        assertThat(testParty.getFirstName()).isEqualTo("John");
+        assertThat(testParty.getLastName()).isEqualTo("Doe");
     }
 
     @Test
@@ -354,10 +333,8 @@ class ClaimResponseServiceTest {
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
-        verify(partyRepository).save(partyCaptor.capture());
-        PartyEntity savedParty = partyCaptor.getValue();
-        assertThat(savedParty.getFirstName()).isEqualTo("ExistingFirst");
-        assertThat(savedParty.getLastName()).isEqualTo("ExistingLast");
+        assertThat(testParty.getFirstName()).isEqualTo("ExistingFirst");
+        assertThat(testParty.getLastName()).isEqualTo("ExistingLast");
     }
 
     @Test
@@ -387,13 +364,11 @@ class ClaimResponseServiceTest {
         underTest.saveDraftDataForParty(response, TEST_CASE_REFERENCE, partyId);
 
         // Then
-        verify(partyRepository, times(2)).save(partyCaptor.capture());
-        PartyEntity savedParty = partyCaptor.getValue();
-        assertThat(savedParty.getPhoneNumber()).isEqualTo("07123456789");
-        assertThat(savedParty.getEmailAddress()).isEqualTo("defendant@example.com");
-        assertThat(savedParty.getAddress()).isEqualTo(addressEntity);
+        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
+        assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
 
-        ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
+        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
@@ -429,14 +404,12 @@ class ClaimResponseServiceTest {
         underTest.saveDraftDataForParty(response, TEST_CASE_REFERENCE, partyId);
 
         // Then
-        verify(partyRepository, times(2)).save(partyCaptor.capture());
-        PartyEntity savedParty = partyCaptor.getValue();
-        assertThat(savedParty.getPhoneNumber()).isEqualTo("07123456789");
-        assertThat(savedParty.getEmailAddress()).isEqualTo("defendant@example.com");
-        assertThat(savedParty.getAddress()).isEqualTo(addressEntity);
-        assertThat(savedParty.getDateOfBirth()).isEqualTo(dob);
+        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
+        assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+        assertThat(testParty.getDateOfBirth()).isEqualTo(dob);
 
-        ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
+        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);

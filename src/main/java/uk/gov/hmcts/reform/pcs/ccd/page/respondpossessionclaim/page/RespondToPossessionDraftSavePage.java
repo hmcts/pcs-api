@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -27,7 +26,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 @Slf4j
 public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
 
-    private final ImmutablePartyFieldValidator immutableFieldValidator;
     private final DraftCaseDataService draftCaseDataService;
     private final SecurityContextService securityContextService;
     private final SelectedPartyRetriever selectedPartyRetriever;
@@ -43,7 +41,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        long caseRef = details.getId();
+        final long caseRef = details.getId();
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
 
         PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
@@ -55,24 +53,8 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .possessionClaimResponse(defendantAnswersOnly)
             .build();
 
-        if (response.getDefendantContactDetails() != null
-            && response.getDefendantContactDetails().getParty() != null) {
-
-            List<String> violations = immutableFieldValidator.findImmutableFieldViolations(
-                response.getDefendantContactDetails().getParty(),
-                caseRef
-            );
-
-            if (!violations.isEmpty()) {
-                log.error("Draft submit rejected for case {}: immutable field violations: {}", caseRef, violations);
-                List<String> errors = violations.stream()
-                    .map(field -> "Invalid submission: immutable field must not be sent: " + field)
-                    .toList();
-                return error(errors);
-            }
-        }
-
         try {
+            draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
             if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
                 draftCaseDataService.patchUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
             } else {
@@ -103,6 +85,5 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .errors(errorMessages)
             .build();
     }
-
 
 }
