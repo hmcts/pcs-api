@@ -301,15 +301,6 @@ class PcsCaseServiceTest {
         verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
         verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity,
                                                          EventFlow.UPDATE.name());
-        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
-        verify(caseFlagService, times(1)).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
-    }
-
-    private List<ListValue<Party>> createParties() {
-        List<ListValue<Party>> parties = new ArrayList<>();
-        parties.add(ListValue.<Party>builder().value(Party.builder().build()).build());
-
-        return parties;
     }
 
     private List<CaseFlagEntity> createCaseFlagEntity() {
@@ -328,6 +319,30 @@ class PcsCaseServiceTest {
 
         return caseFlagEntities;
     }
+
+    private List<ListValue<Party>> createParties() {
+        List<ListValue<Party>> parties = new ArrayList<>();
+        parties.add(ListValue.<Party>builder().value(Party.builder().build()).build());
+
+        return parties;
+    }
+
+    /*private List<CaseFlagEntity> createCaseFlagEntity() {
+
+
+        FlagRefDataEntity flagRefDataEntity = new FlagRefDataEntity();
+        CaseFlagEntity caseFlagEntity = new CaseFlagEntity();
+        caseFlagEntity.setFlagRefData(flagRefDataEntity);
+        caseFlagEntity.setDefaultStatus("Active");
+        caseFlagEntity.getFlagRefData().setFlagCode("CF0008");
+        caseFlagEntity.setFlagComment("Police arrest inactive");
+        caseFlagEntity.setDateTimeModified(LocalDateTime.now());
+
+        List<CaseFlagEntity> caseFlagEntities = new ArrayList<>();
+        caseFlagEntities.add(caseFlagEntity);
+
+        return caseFlagEntities;
+    }*/
 
     private ListValue<FlagDetail> createFlagDetails() {
 

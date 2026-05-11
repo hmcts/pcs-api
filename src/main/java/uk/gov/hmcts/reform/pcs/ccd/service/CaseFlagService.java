@@ -10,8 +10,8 @@ import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -173,7 +173,7 @@ public class CaseFlagService {
 
         if (incomingFlagDetail.getPath() != null) {
             List<String> pathLists = incomingFlagDetail.getPath().stream()
-                .map(pathList -> pathList.getId() + CaseFlagsView.PATH_DELIMITER + pathList.getValue())
+                .map(pathLists1 -> pathLists1.getId() + CaseFlagsView.PATH_DELIMITER + pathLists1.getValue())
                 .toList();
             StringBuilder paths = new StringBuilder();
             pathLists.forEach(s -> paths.append(s).append(CaseFlagsView.PATHS_DELIMITER));

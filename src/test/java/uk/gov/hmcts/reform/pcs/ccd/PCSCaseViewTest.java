@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
@@ -104,6 +105,8 @@ class PCSCaseViewTest {
     @Mock
     private CaseLinkView caseLinkView;
     @Mock
+    private CaseTabView caseTabView;
+    @Mock
     private CaseFlagsView caseFlagsView;
 
     private PCSCaseView underTest;
@@ -118,7 +121,7 @@ class PCSCaseViewTest {
                                     alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseFlagsView
+                                    caseTabView, caseFlagsView
         );
     }
 

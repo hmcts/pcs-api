@@ -45,3 +45,4 @@ CREATE TABLE case_flag (
                             status VARCHAR(50) NOT NULL,
                             paths VARCHAR(255)
 );
+

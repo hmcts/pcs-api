@@ -25,4 +25,5 @@ public class CasePartyFlagEntity extends BaseCaseFlag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "party_id")
     private PartyEntity party;
+
 }
