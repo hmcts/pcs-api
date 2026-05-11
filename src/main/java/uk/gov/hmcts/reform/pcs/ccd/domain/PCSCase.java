@@ -598,7 +598,7 @@ public class PCSCase {
         access = {InternalCaseFlagAccess.class},
         label = "Launch the flags screen"
     )
-    @JsonProperty("flagLauncherInternal")
+
     private FlagLauncher flagLauncherInternal;
 
 }
