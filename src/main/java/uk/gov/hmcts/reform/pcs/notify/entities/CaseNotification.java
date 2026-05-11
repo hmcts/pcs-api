@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -63,8 +64,9 @@ public class CaseNotification {
     @Column(name = "status", nullable = false)
     private NotificationStatus status;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    private String type;
+    private NotificationType type;
 
     @Column(name = "recipient", nullable = false)
     private String recipient;
