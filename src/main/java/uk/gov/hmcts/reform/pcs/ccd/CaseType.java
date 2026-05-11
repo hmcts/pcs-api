@@ -74,11 +74,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
             .field("nextStepsMarkdown", NEVER_SHOW);
 
-        builder.tab("summary", "Summary")
-            .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
-            .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
-            .field(PCSCase::getPropertyAddress);
-
+        configureSummary(builder);
         builder.tab("CaseHistory", "History")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("caseHistory");
@@ -113,4 +109,15 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                 .build();
         }
     }
+
+    private void configureSummary(ConfigBuilder<PCSCase, State, UserRole> builder) {
+            builder.tab("summary", "Summary")
+                .field("showLegalRepresentativeSummary", NEVER_SHOW)
+                .label("summaryLegalRepresentativeMarkdownLabel", null
+                , "${summaryLegalRepresentativeMarkdown}")
+                .field("summaryLegalRepresentativeMarkdown", NEVER_SHOW)
+                .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
+                .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
+                .field(PCSCase::getPropertyAddress);
+        }
 }

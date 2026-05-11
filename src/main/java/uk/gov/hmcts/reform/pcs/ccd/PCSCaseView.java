@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
@@ -34,7 +35,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepresentativeContactDetails;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 /**
@@ -86,6 +87,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
+        setSummaryLegalRepresentativeMarkdownFields(pcsCase, false);
         enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
@@ -117,6 +119,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
             .allDocuments(mapAndWrapDocuments(pcsCaseEntity))
+            .showLegalRepresentativeSummary(isLegalRepresentativeUser(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -181,8 +184,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <br>
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
-                                                role="button"
-                                                class="govuk-button govuk-link govuk-link--no-visited-state">
+                                                class="govuk-link govuk-link--no-visited-state">
                                                Continue
                                              </a>
                                              <p class="govuk-body govuk-!-font-size-19">
@@ -197,7 +199,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <br>
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
-                                                role="button"
                                                 class="govuk-button govuk-link govuk-link--no-visited-state">
                                                Continue
                                              </a>
@@ -206,6 +207,32 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              </p>
                                              """.formatted(resumePossessionClaim));
         }
+    }
+
+    private void setSummaryLegalRepresentativeMarkdownFields(PCSCase pcsCase,
+                                                             boolean hasUpdatedLegalRepresentativeDetails) {
+            if (hasUpdatedLegalRepresentativeDetails) {
+                pcsCase.setSummaryLegalRepresentativeMarkdown("""
+                                                                  <h2 class="govuk-heading-m">What happens next</h2>
+                                                                  <p>You must
+                                                                  <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
+                                                                     role="button"
+                                                                     class="govuk-link govuk-link--no-visited-state">
+                                                                    update the legal representative details for the case</a>
+                                                                  before</p>
+                                                                  <p>responding so you can receive updates and notifications
+                                                                  about the case.
+                                                                  </p>
+                                                                  """.formatted(legalRepresentativeContactDetails));
+            } else {
+                pcsCase.setSummaryLegalRepresentativeMarkdown("""
+                                                                  <h2 class="govuk-heading-m">What happens next</h2>
+                                                                  <a href="/ToConfirm"
+                                                                     role="button"
+                                                                     class="govuk-link govuk-link--no-visited-state">
+                                                                    Respond to the claim</a>
+                                                                  """);
+            }
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {
@@ -256,5 +283,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                            .build())
                 .build())
             .collect(Collectors.toList());
+    }
+
+    private YesOrNo isLegalRepresentativeUser(PcsCaseEntity pcsCaseEntity) {
+//        pcsCaseEntity.getClaims().stream().forEach(p);
+        return YesOrNo.YES;
     }
 }

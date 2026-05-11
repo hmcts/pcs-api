@@ -53,6 +53,8 @@ public class LegalRepresentativeEntity {
     @OneToOne(cascade = ALL,orphanRemoval = true)
     private AddressEntity address;
 
+    private String reference;
+
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "legalRepresentative")
     @Builder.Default
     @JsonManagedReference
