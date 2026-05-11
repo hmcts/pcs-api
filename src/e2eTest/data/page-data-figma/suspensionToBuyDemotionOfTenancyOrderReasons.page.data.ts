@@ -1,6 +1,6 @@
 export const suspensionToBuyDemotionOfTenancyOrderReasons = {
   makeAClaimCaption: `Make a claim`,
-  mainHeader: `Reasons for requesting a suspension order and a demotion order`,
+  mainHeader: `Reasons for requesting a suspension of right to buy and demotion of tenancy`,
   whyAreYouRequestingSuspensionOrderQuestion: `Why are you requesting a suspension of right to buy?`,
   giveDetailsHintText: `Give details of the defendants’ conduct and any other reasons you think are relevant. You can enter up to 250 characters`,
   whyAreYouRequestingDemotionOrderQuestion: `Why are you requesting a demotion of tenancy?`,
