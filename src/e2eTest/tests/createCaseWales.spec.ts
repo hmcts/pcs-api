@@ -63,7 +63,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - Wales] @nightly', async () => {
-  test('Wales - Standard Contract - Rent arrears only @PR', async () => {
+  test('Wales - Standard Contract - Rent arrears only @PR @MAC', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -123,18 +123,13 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption
     });
+    await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
-    });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
-      paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.noRadioOption);
@@ -174,7 +169,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + ASB + other options', async () => {
+  test('Wales - Secure contract - Rent arrears + ASB + other options @MAC', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -236,18 +231,12 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       option: checkingNotice.noRadioOption
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {
-      rentAmount: '850',
-      rentFrequencyOption: 'Other',
-      inputFrequency: rentDetails.enterFrequencyHiddenTextInput,
-      unpaidRentAmountPerDay: '50'
-    });
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
-      paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
@@ -297,7 +286,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Standard contract - Rent arrears + ASB', async () => {
+  test('Wales - Standard contract - Rent arrears + ASB @MAC', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -357,16 +346,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    await performAction('selectDailyRentAmount', {
-    calculateRentAmount: '£32.85',
-    unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
-    });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
-      paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
@@ -409,7 +393,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Other - No Rent arrears,  ASB + other options', async () => {
+  test('Wales - Other - No Rent arrears,  ASB + other options @MAC', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -510,7 +494,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + estate grounds + other options @regression', async () => {
+  test('Wales - Secure contract - Rent arrears + estate grounds + other options @regression @MAC', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -572,18 +556,13 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption
     });
+    await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
-    });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
-      paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.noRadioOption);
@@ -644,7 +623,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     )
   });
 
-  test('Wales - Standard contract - No Rent arrears', async () => {
+  test('Wales - Standard contract - No Rent arrears @MAC', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -741,7 +720,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + Other options', async () => {
+  test('Wales - Secure contract - Rent arrears + Other options @MAC', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -794,18 +773,13 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption
     });
+    await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
-    });
     await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: rentArrears.yesRadioOption,
-      paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.noRadioOption);

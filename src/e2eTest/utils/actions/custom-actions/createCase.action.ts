@@ -583,16 +583,14 @@ export class CreateCaseAction implements IAction {
     await performAction('uploadFile', rentArrearsData.files);
     await performAction('inputText', rentArrears.totalRentArrearsTextLabel, rentArrearsData.rentArrearsAmountOnStatement);
     await performAction('clickRadioButton', {
-      question: rentArrears.forThePeriodShownOnTheRentStatementHaveAnyRentPaymentsBeenPaidBySomeoneOtherThanTheDefendantsQuestion,
+      question: rentArrears.haveThereBeenPreviousStepsTakenQuestion,
       option: rentArrearsData.rentPaidByOthersOption
     });
     if (rentArrearsData.rentPaidByOthersOption == rentArrears.yesRadioOption) {
-      await performAction('check', {question: rentArrears.whereHaveThePaymentsComeFromHiddenQuestion, option: rentArrearsData.paymentOptions});
-      if ((rentArrearsData.paymentOptions as Array<string>).includes(rentArrears.otherHiddenCheckBox)) {
-        await performAction('inputText', rentArrears.paymentSourceHiddenTextLabel, rentArrears.paymentSourceHiddenTextInput);
-      }
-      await performAction('clickButton', rentArrears.continueButton);
+
+      await performAction('inputText', rentArrears.giveDetailsOfPreviousStepsTakenHiddenTextLabel, rentArrears.giveDetailsOfPreviousStepsTakenHiddenTextInput);
     }
+    await performAction('clickButton', rentArrears.continueButton);
   }
 
   private async selectMoneyJudgment(option: actionData) {
