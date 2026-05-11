@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -536,6 +537,8 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
+    private String dateSubmitted;
+
     @CCD(
         access = DefendantAccess.class,
         searchable = false
@@ -589,4 +592,8 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "casePartiesTab_")
     @CCD
     private CasePartiesTab casePartiesTab;
+
+    @JsonUnwrapped(prefix = "summaryTab_")
+    @CCD
+    private SummaryTab summaryTab;
 }

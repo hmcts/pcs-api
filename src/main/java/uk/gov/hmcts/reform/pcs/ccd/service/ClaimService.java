@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -65,6 +66,7 @@ public class ClaimService {
             .additionalDocsProvided(pcsCase.getWantToUploadDocuments())
             .genAppExpected(pcsCase.getApplicationWithClaim())
             .languageUsed(pcsCase.getLanguageUsed())
+            .claimSubmittedDate(LocalDateTime.now())
             .build();
 
         claimEntity.addClaimGrounds(claimGrounds);
