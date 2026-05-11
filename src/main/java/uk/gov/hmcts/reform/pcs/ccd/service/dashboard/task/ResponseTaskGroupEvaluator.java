@@ -22,20 +22,23 @@ public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
     @Override
     public TaskGroup evaluate(DashboardContext ctx) {
 
-        // if conflicting state exists, disable links and omit tags.
-        boolean edgeCase = ctx.hasDraftResponse() && ctx.hasSubmittedResponse();
+        boolean hasDraftResponse = ctx.hasDraftResponse();
+        boolean hasSubmittedResponse = ctx.hasSubmittedResponse();
 
-        TaskStatus respondToClaimStatus = edgeCase
-            ? TaskStatus.NOT_AVAILABLE
-            : ctx.hasSubmittedResponse()
-                ? TaskStatus.COMPLETED
-                : ctx.hasDraftResponse()
-                    ? TaskStatus.IN_PROGRESS
-                    : TaskStatus.NOT_STARTED;
+        TaskStatus respondToClaimStatus;
+        TaskStatus viewResponseStatus;
 
-        TaskStatus viewResponseStatus = !edgeCase && ctx.hasSubmittedResponse()
-                ? TaskStatus.AVAILABLE
-                : TaskStatus.NOT_AVAILABLE;
+        // If conflicting state exists, disable both links.
+        if (hasSubmittedResponse) {
+            respondToClaimStatus = TaskStatus.COMPLETED;
+            viewResponseStatus = TaskStatus.AVAILABLE;
+        } else if (hasDraftResponse) {
+            respondToClaimStatus = TaskStatus.IN_PROGRESS;
+            viewResponseStatus = TaskStatus.NOT_AVAILABLE;
+        } else {
+            respondToClaimStatus = TaskStatus.NOT_STARTED;
+            viewResponseStatus = TaskStatus.NOT_AVAILABLE;
+        }
 
         return TaskGroup.builder()
             .groupId(groupId())
