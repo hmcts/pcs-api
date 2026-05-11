@@ -5,6 +5,7 @@ import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-a
 import {
   // migration (page-data → page-data-figma)
   claimantDetailsWales,
+  contactPreferences,
   occupationLicenceDetailsWales,
   prohibitedConductWales
 } from '@data/page-data-figma';
@@ -44,7 +45,8 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
         ['inputText', claimantDetailsWales.monthHiddenTextLabel, claimantDetailsWales.monthHiddenTextInput],
         ['inputText', claimantDetailsWales.yearHiddenTextLabel, claimantDetailsWales.yearHiddenTextInput]);
     }
-    await performAction('clickButton', claimantDetailsWales.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantDetailsWales.continueButton, contactPreferences.mainHeader);
+    
   }
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {

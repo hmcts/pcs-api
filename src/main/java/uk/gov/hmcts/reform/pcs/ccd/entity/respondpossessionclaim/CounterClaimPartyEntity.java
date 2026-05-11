@@ -1,9 +1,7 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity.claim;
+package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,33 +13,32 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Builder
+@Table(name = "counter_claim_party")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "rent_arrears_payment_source")
-public class RentArrearsPaymentSourceEntity {
+public class CounterClaimPartyEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "rent_arrears_id")
+    @JoinColumn(name = "cc_id", nullable = false)
     @JsonBackReference
-    private RentArrearsEntity rentArrears;
+    private CounterClaimEntity counterClaim;
 
-    @Enumerated(EnumType.STRING)
-    private ThirdPartyPaymentSource name;
-
-    private String description;
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "party_id", nullable = false)
+    private PartyEntity party;
 
 }

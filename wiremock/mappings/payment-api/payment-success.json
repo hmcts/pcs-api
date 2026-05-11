@@ -21,6 +21,10 @@
       "name": "webhook",
       "parameters": {
         "method": "PUT",
+        "delay": {
+          "type": "fixed",
+          "milliseconds": 5000
+        },
         "url": "{{{jsonPath originalRequest.body '$.call_back_url'}}}",
         "headers": {
           "Content-Type": "application/json",
