@@ -8,6 +8,7 @@ import {
   home
 } from '@data/page-data';
 import {
+  claimantInformation,
   claimantType,
   claimType,
   postcodeNotAssignedToCourt,
@@ -30,7 +31,7 @@ test.beforeEach(async ({ page }) => {
 
 test.afterEach(async () => {
   if (caseNumber) {
-    await performAction('deleteCaseRole', '[CREATOR]');
+    await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
   PageContentValidation.finaliseTest();
 });
@@ -123,6 +124,8 @@ test.describe('[Eligibility Check - Create Case] @nightly', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.mortgageLenderRadioOption);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
@@ -144,6 +147,8 @@ test.describe('[Eligibility Check - Create Case] @nightly', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.privateLandlordRadioOption);
     await performValidation('text', {"text": userIneligible.thisServiceIsCurrentlyOnlyAvailableParagraph, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
@@ -168,6 +173,8 @@ test.describe('[Eligibility Check - Create Case] @nightly', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.yesRadioOption);
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
@@ -192,6 +199,8 @@ test.describe('[Eligibility Check - Create Case] @nightly', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.yesRadioOption);
     await performAction('clickButton', userIneligible.continue);

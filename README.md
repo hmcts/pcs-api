@@ -185,6 +185,18 @@ During test execution, temporary users are automatically created and tracked in 
 Update ./config/global-setup.config with list of roles for which temporary users needs to be created along with the key/name to
 identify them.
 
+### Running with Wiremock in local environment
+
+The docker-compose-wiremock.yml in the project root will start wiremock with mappings
+from the wiremock/mappings folder. Currently this has mappings to simulate the payment API
+callback and also to provide a fixed professional ref data response for an organisation.
+
+It can be run as follows:
+
+```
+docker compose -f docker-compose-wiremock.yml up -d
+```
+
 ### Running with Wiremock in Preview environment
 
 To enable a Wiremock pod in the Preview environment for a PR, add the label `pr-values:wiremock` to the PR. This
