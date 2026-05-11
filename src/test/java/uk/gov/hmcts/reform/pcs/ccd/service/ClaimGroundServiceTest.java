@@ -51,6 +51,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY;
@@ -537,7 +538,6 @@ class ClaimGroundServiceTest {
                     .rentArrearsGrounds(rentArrearsGrounds)
                     .additionalMandatoryGrounds(Set.of())
                     .additionalDiscretionaryGrounds(Set.of())
-                    .additionalOtherGround(Set.of())
                     .build()
             )
             .build();
@@ -872,5 +872,41 @@ class ClaimGroundServiceTest {
 
         // Then
         assertThat(actualClaimGroundEntities).isEqualTo(expectedClaimGroundEntities);
+    }
+
+    @Test
+    void shouldReturnClaimGroundEntityWhenSecureAntisocialAdditionalGroundsIsNull() {
+        // Given
+        Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds
+            = Set.of(SecureOrFlexibleDiscretionaryGrounds.FURNITURE_DETERIORATION);
+
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder().typeOfTenancyLicence(SECURE_TENANCY).build())
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds.builder()
+                    .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
+                    .secureOrFlexibleMandatoryGrounds(Set.of())
+                    .secureAntisocialAdditionalGrounds(null)
+                    .secureOrFlexibleDiscretionaryGroundsAlt(Set.of())
+                    .secureOrFlexibleMandatoryGroundsAlt(Set.of())
+                    .build()
+            )
+            .secureOrFlexibleGroundsReasons(mock(SecureOrFlexibleGroundsReasons.class))
+            .rentArrearsOrBreachOfTenancy(null)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> result = underTest.createClaimGroundEntities(caseData);
+
+        // Then
+        assertThat(result)
+            .usingRecursiveFieldByFieldElementComparator()
+            .containsExactlyInAnyOrder(
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY)
+                    .code("FURNITURE_DETERIORATION")
+                    .isRentArrears(false)
+                    .build()
+            );
     }
 }
