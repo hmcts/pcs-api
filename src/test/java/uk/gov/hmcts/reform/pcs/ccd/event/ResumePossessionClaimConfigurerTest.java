@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -79,7 +78,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PageConfigurerHelper.verifyAndCount;
 
 @ExtendWith(MockitoExtension.class)
-@Disabled
 public class ResumePossessionClaimConfigurerTest {
 
     @InjectMocks
@@ -155,6 +153,8 @@ public class ResumePossessionClaimConfigurerTest {
     private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     @Mock
     private RentDetailsPage rentDetailsPage;
+    @Mock
+    private RentArrears rentArrears;
 
     @Test
     @SuppressWarnings("squid:S5961")
@@ -173,13 +173,13 @@ public class ResumePossessionClaimConfigurerTest {
         AtomicInteger verificationCount = new AtomicInteger(0);
 
         verifyAndCount(inOrder, pageBuilder, resumeClaim, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, claimantInformationPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, selectClaimantType, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ClaimantTypeNotEligibleEngland.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ClaimantTypeNotEligibleWales.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, SelectClaimType.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ClaimTypeNotEligibleEngland.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ClaimTypeNotEligibleWales.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, claimantInformationPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, claimantDetailsWales, verificationCount);
         verifyAndCount(inOrder, pageBuilder, contactPreferences, verificationCount);
         verifyAndCount(inOrder, pageBuilder, defendantsDetails, verificationCount);
@@ -206,7 +206,7 @@ public class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, walesCheckingNotice, verificationCount);
         verifyAndCount(inOrder, pageBuilder, noticeDetails, verificationCount);
         verifyAndCount(inOrder, pageBuilder, rentDetailsPage, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, RentArrears.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, rentArrears, verificationCount);
         verifyAndCount(inOrder, pageBuilder, MoneyJudgment.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, claimantCircumstancesPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, defendantCircumstancesPage, verificationCount);

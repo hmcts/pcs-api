@@ -39,7 +39,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGrounds
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsOrBreachOfTenancyGround;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
@@ -105,7 +104,8 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
-        pageBuilder.add(resumeClaim)
+        pageBuilder
+            .add(resumeClaim)
             .add(claimantInformationPage)
             .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
@@ -152,7 +152,6 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(statementOfExpressTerms)
             .add(demotionOfTenancyOrderReason)
             .add(suspensionToBuyDemotionOfTenancyOrderReasons)
-            .add(new ClaimingCosts())
             .add(additionalReasonsForPossession)
             .add(new UnderlesseeOrMortgageeEntitledToClaimRelief())
             .add(underlesseeOrMortgageeDetailsPage)
