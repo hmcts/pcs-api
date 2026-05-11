@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.TestingSupportAccessCodeService;
 
 import java.net.URI;
 import java.time.Instant;
@@ -78,6 +79,7 @@ public class TestingSupportController {
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final IdamService idamService;
+    private final TestingSupportAccessCodeService testingSupportAccessCodeService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -452,6 +454,35 @@ public class TestingSupportController {
             userDetails
         );
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+        summary = "Regenerate access codes for all defendants on a case (testing only)",
+        description = "Overwrites every defendant's stored access code with a predictable testing PIN "
+            + "(DEFENDANT001, DEFENDANT002, ...) assigned in partyId-sorted order. Returns the "
+            + "partyId-to-PIN mapping. PINs are encoded via PartyAccessCodeHashingService, so this "
+            + "endpoint behaves correctly whether hashing is enabled or disabled."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Access codes regenerated"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "403",
+            description = "Forbidden - Invalid or missing service authorization token")
+    })
+    @PostMapping(value = "/pins/{caseReference}/regenerate", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RegenerateAccessCodesResponse> regenerateAccessCodes(
+        @Parameter(description = "The 16-digit case reference number", required = true)
+        @PathVariable long caseReference,
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
+    ) {
+        return testingSupportAccessCodeService.regenerateAccessCodes(caseReference)
+            .map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
 }

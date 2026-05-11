@@ -34,7 +34,10 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
+import uk.gov.hmcts.reform.pcs.testingsupport.endpoint.RegenerateAccessCodesResponse;
+import uk.gov.hmcts.reform.pcs.testingsupport.endpoint.RegenerateAccessCodesResponse.DefendantPin;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.TestingSupportAccessCodeService;
 
 import java.net.URI;
 import java.time.Instant;
@@ -82,6 +85,8 @@ class TestingSupportControllerTest {
     @Mock
     private IdamService idamService;
     @Mock
+    private TestingSupportAccessCodeService testingSupportAccessCodeService;
+    @Mock
     private User user;
     @Mock
     private UserInfo userInfo;
@@ -97,7 +102,8 @@ class TestingSupportControllerTest {
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
-                                                 idamService
+                                                 idamService,
+                                                 testingSupportAccessCodeService
         );
     }
 
@@ -836,6 +842,39 @@ class TestingSupportControllerTest {
         assertEquals("CREATED", body.get("status"));
         assertEquals(caseIdValue, body.get(caseIdKey));
         assertEquals(caseDetailsValue, body.get(caseDetailsKey));
+    }
+
+    @Test
+    void shouldReturn200WithMappingWhenRegeneratingAccessCodes() {
+        long caseReference = 1234567890123456L;
+        UUID partyIdA = UUID.randomUUID();
+        UUID partyIdB = UUID.randomUUID();
+        RegenerateAccessCodesResponse response = new RegenerateAccessCodesResponse(List.of(
+            new DefendantPin(partyIdA, "DEFENDANTAAA"),
+            new DefendantPin(partyIdB, "DEFENDANTAAB")
+        ));
+        when(testingSupportAccessCodeService.regenerateAccessCodes(caseReference))
+            .thenReturn(Optional.of(response));
+
+        ResponseEntity<RegenerateAccessCodesResponse> result =
+            underTest.regenerateAccessCodes(caseReference, "ServiceAuthToken");
+
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isSameAs(response);
+        verify(testingSupportAccessCodeService).regenerateAccessCodes(caseReference);
+    }
+
+    @Test
+    void shouldReturn404WhenRegeneratingAccessCodesForUnknownCase() {
+        long caseReference = 9999999999999999L;
+        when(testingSupportAccessCodeService.regenerateAccessCodes(caseReference))
+            .thenReturn(Optional.empty());
+
+        ResponseEntity<RegenerateAccessCodesResponse> result =
+            underTest.regenerateAccessCodes(caseReference, "ServiceAuthToken");
+
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(result.getBody()).isNull();
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName) {
