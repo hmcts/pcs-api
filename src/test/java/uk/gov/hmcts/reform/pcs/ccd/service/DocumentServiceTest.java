@@ -604,7 +604,7 @@ class DocumentServiceTest {
 
         assertThat(entities).allSatisfy(entity -> {
             assertThat(entity.getType()).isNull();
-            assertThat(entity.getCategoryId()).isEqualTo("uncategorised");
+            assertThat(entity.getCategoryId()).isNull();
             assertThat(entity.getDefendantResponse()).isEqualTo(response);
             assertThat(entity.getPcsCase()).isEqualTo(pcsCase);
             assertThat(entity.getParty()).isEqualTo(party);

@@ -201,7 +201,6 @@ public class DocumentService {
                 .url(defDoc.getDocument().getUrl())
                 .fileName(defDoc.getDocument().getFilename())
                 .binaryUrl(defDoc.getDocument().getBinaryUrl())
-                .categoryId(CaseFileCategory.UNCATEGORISED.getId())
                 .contentType(defDoc.getContentType())
                 .size(defDoc.getSizeInBytes())
                 .build())
