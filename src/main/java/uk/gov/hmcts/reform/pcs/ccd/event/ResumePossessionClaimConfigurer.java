@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEli
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CompletingYourClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyHousingActOptions;
@@ -40,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGrounds
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsOrBreachOfTenancyGround;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
@@ -101,17 +101,18 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final RentDetailsPage rentDetailsPage;
+    private final RentArrears rentArrears;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder.add(resumeClaim)
+            .add(claimantInformationPage)
             .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
             .add(new ClaimantTypeNotEligibleWales())
             .add(new SelectClaimType())
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
-            .add(claimantInformationPage)
             .add(claimantDetailsWales)
             .add(contactPreferences)
             .add(defendantsDetails)
@@ -138,8 +139,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(walesCheckingNotice)
             .add(noticeDetails)
             .add(rentDetailsPage)
-            .add(new DailyRentAmount())
-            .add(new RentArrears())
+            .add(rentArrears)
             .add(new MoneyJudgment())
             .add(claimantCircumstancesPage)
             .add(defendantCircumstancesPage)
@@ -152,6 +152,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(statementOfExpressTerms)
             .add(demotionOfTenancyOrderReason)
             .add(suspensionToBuyDemotionOfTenancyOrderReasons)
+            .add(new ClaimingCosts())
             .add(additionalReasonsForPossession)
             .add(new UnderlesseeOrMortgageeEntitledToClaimRelief())
             .add(underlesseeOrMortgageeDetailsPage)
