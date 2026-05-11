@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
@@ -509,7 +510,7 @@ public class PCSCase {
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
     @CCD(
-        access = {DefendantAccess.class},
+        access = {DefendantAccess.class, DefendantSolicitorAccess.class},
         searchable = false
     )
     private PossessionClaimResponse possessionClaimResponse;
@@ -533,7 +534,7 @@ public class PCSCase {
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, DefendantSolicitorAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
     @CCD(

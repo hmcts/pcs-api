@@ -40,15 +40,15 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         log.info("RespondPossessionClaim submit callback invoked for Case Reference: {}", caseReference);
-        return processFinalSubmit(caseReference, eventPayload.caseData());
+        return processFinalSubmit(caseReference);
     }
 
-    private SubmitResponse<State> processFinalSubmit(long caseReference, PCSCase caseData) {
+    private SubmitResponse<State> processFinalSubmit(long caseReference) {
         log.info("Processing final submission for case {}", caseReference);
         boolean citizenUser = securityContextService.getCurrentUserDetails().getRoles()
             .contains(UserRole.CITIZEN.getRole());
 
-        UUID representedPartyId = citizenUser ? null : getSelectedPartyId(caseData);
+        UUID representedPartyId = citizenUser ? null : getSelectedPartyId(caseReference);
 
         //load draft data
         PCSCase draftData = (representedPartyId == null
@@ -104,8 +104,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .build();
     }
 
-    private UUID getSelectedPartyId(PCSCase pcsCase) {
-        Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
+    private UUID getSelectedPartyId(long caseReference) {
+        Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseReference);
         if (selectedPartyId.isEmpty()) {
             throw new IllegalStateException("No selected responding party id for respond to claim");
         }

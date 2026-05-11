@@ -451,7 +451,8 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantContactDetails(contactDetails)
                                              .build());
 
-        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
+        when(selectedPartyRetriever.getSelectedPartyId(TEST_CASE_REFERENCE))
+            .thenReturn(Optional.of(representedPartyId));
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 

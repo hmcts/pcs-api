@@ -413,6 +413,7 @@ class SubmitEventHandlerTest {
         // given
         UUID representedPartyId = UUID.randomUUID();
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
@@ -426,7 +427,7 @@ class SubmitEventHandlerTest {
             .possessionClaimResponse(possessionClaimResponse)
             .build();
 
-        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
+        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
             .thenReturn(Optional.of(caseData));
 
@@ -448,8 +449,7 @@ class SubmitEventHandlerTest {
         // given
         UUID representedPartyId = UUID.randomUUID();
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
-        when(eventPayload.caseData()).thenReturn(pcsCase);
-
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
             .build();
@@ -458,7 +458,7 @@ class SubmitEventHandlerTest {
             .defendantResponses(responses)
             .build();
 
-        when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.empty());
+        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // when / then
         assertThat(org.junit.jupiter.api.Assertions.assertThrows(
@@ -482,7 +482,6 @@ class SubmitEventHandlerTest {
 
     private EventPayload<PCSCase, State> createEventPayload(PCSCase caseData) {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
-        when(eventPayload.caseData()).thenReturn(caseData);
         return eventPayload;
     }
 

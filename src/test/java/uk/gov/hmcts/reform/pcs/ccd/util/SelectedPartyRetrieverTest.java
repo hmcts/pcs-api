@@ -8,6 +8,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +38,66 @@ class SelectedPartyRetrieverTest {
 
     @Mock
     private ClientContext clientContext;
+
+    @Mock
+    private PcsCaseEntity pcsCaseEntity;
+
+    @Mock
+    private PartyEntity partyEntity;
+
+    @Mock
+    private PartyEntity partyEntity2;
+
+    @Mock
+    private PcsCaseService pcsCaseService;
+
+    @Mock
+    private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+
+    @Mock
+    private SecurityContextService securityContextService;
+
+    @Test
+    void getSelectedPartyId_WithSingleDefendantAndCaseReference_ReturnsPartyId() {
+        // given
+        UUID userId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+        long caseRef = 1L;
+        when(pcsCaseService.loadCase(caseRef)).thenReturn(pcsCaseEntity);
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, userId))
+            .thenReturn(List.of(partyEntity));
+        when(partyEntity.getId()).thenReturn(partyId);
+
+        // when
+        Optional<UUID> result = selectedPartyRetriever.getSelectedPartyId(caseRef);
+
+        // then
+        assertTrue(result.isPresent());
+        assertEquals(partyId, result.get());
+        verify(clientContextRetriever, never()).getClientContext();
+    }
+
+    @Test
+    void getSelectedPartyId_WithMultipleDefendantsAndCaseReference_ReturnClientContextSelectedPartyId() {
+        // given
+        UUID userId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+        long caseRef = 1L;
+        when(pcsCaseService.loadCase(caseRef)).thenReturn(pcsCaseEntity);
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, userId))
+            .thenReturn(List.of(partyEntity, partyEntity2));
+        when(clientContextRetriever.getClientContext()).thenReturn(clientContext);
+        when(clientContext.getSelectedPartyId()).thenReturn(partyId.toString());
+
+        // when
+        Optional<UUID> result = selectedPartyRetriever.getSelectedPartyId(caseRef);
+
+        // then
+        assertTrue(result.isPresent());
+        assertEquals(partyId, result.get());
+    }
 
     @Test
     void getSelectedPartyId_WithSingleDefendant_ReturnsPartyId() {

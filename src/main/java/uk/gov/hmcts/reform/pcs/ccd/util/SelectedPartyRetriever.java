@@ -3,7 +3,13 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +19,19 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 @AllArgsConstructor
 public class SelectedPartyRetriever {
     private final ClientContextRetriever clientContextRetriever;
+    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+    private final SecurityContextService securityContextService;
+    private final PcsCaseService pcsCaseService;
+
+    public Optional<UUID> getSelectedPartyId(long caseReference) {
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+        List<PartyEntity> partyEntities = legalRepForDefendantAccessValidator.validateAndGetDefendants(
+            caseEntity,
+            securityContextService.getCurrentUserId()
+        );
+        return partyEntities.size() == 1
+            ? Optional.of(UUID.fromString(partyEntities.getFirst().getId().toString())) : getRequiredPartyId();
+    }
 
     public Optional<UUID> getSelectedPartyId(PCSCase caseData) {
         return caseData.getAllDefendants().size() == 1

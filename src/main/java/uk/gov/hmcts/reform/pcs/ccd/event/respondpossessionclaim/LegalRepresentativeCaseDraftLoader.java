@@ -43,7 +43,7 @@ public class LegalRepresentativeCaseDraftLoader {
         List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendantsForLegalRep(caseReference);
 
         if (defendantPartiesLinkedAndActive.size() == 1) {
-            return getDraftCaseData(caseReference, pcsCase, defendantPartiesLinkedAndActive.getFirst());
+            return getDraftCaseData(caseReference, pcsCase, defendantPartiesLinkedAndActive.getFirst(), true);
         }
 
         Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
@@ -55,13 +55,15 @@ public class LegalRepresentativeCaseDraftLoader {
         PartyEntity matchedDefendant = findMatchedDefendant(defendantPartiesLinkedAndActive, selectedPartyId.get());
         validateResponseNotAlreadySubmitted(caseReference, matchedDefendant.getId());
 
-        return getDraftCaseData(caseReference, pcsCase, matchedDefendant);
+        return getDraftCaseData(caseReference, pcsCase, matchedDefendant, false);
     }
 
-    private PCSCase getDraftCaseData(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant) {
+    private PCSCase getDraftCaseData(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,
+                                     boolean isSingleLinkedDefendant) {
         if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim,
                                                         matchedDefendant.getId())) {
-            return restoreSavedDraftAnswersForLegalRepresentative(caseReference, pcsCase, matchedDefendant);
+            return restoreSavedDraftAnswersForLegalRepresentative(caseReference, pcsCase, matchedDefendant,
+                                                                  isSingleLinkedDefendant);
         }
 
         return initializeFirstTimeResponse(caseReference, pcsCase, matchedDefendant);
@@ -95,7 +97,8 @@ public class LegalRepresentativeCaseDraftLoader {
     }
 
     private PCSCase restoreSavedDraftAnswersForLegalRepresentative(long caseReference, PCSCase pcsCase,
-                                                                   PartyEntity matchedDefendant) {
+                                                                   PartyEntity matchedDefendant,
+                                                                   boolean isSingleLinkedDefendant) {
         PCSCase savedDraft = loadSavedDraft(caseReference, matchedDefendant.getId());
         Party claimantEnteredDetails = responseMapper.buildPartyFromEntity(matchedDefendant, pcsCase);
 
@@ -105,7 +108,9 @@ public class LegalRepresentativeCaseDraftLoader {
             claimantEnteredDetails
         );
 
-        reduceCaseDefendantsToMatchedDefendant(pcsCase, matchedDefendant.getId().toString());
+        if (isSingleLinkedDefendant) {
+            reduceCaseDefendantsToMatchedDefendant(pcsCase, matchedDefendant.getId().toString());
+        }
         return buildCaseWithDraft(pcsCase, mergedResponse);
     }
 

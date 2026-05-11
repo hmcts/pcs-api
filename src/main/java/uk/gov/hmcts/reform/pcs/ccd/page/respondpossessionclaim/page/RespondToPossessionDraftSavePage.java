@@ -54,11 +54,10 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .build();
 
         try {
-            draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
             if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
-                draftCaseDataService.patchUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
+                draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
             } else {
-                Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseData);
+                Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef);
                 if (selectedPartyId.isEmpty()) {
                     return error(List.of("No selected responding party id for respond to claim"));
                 }

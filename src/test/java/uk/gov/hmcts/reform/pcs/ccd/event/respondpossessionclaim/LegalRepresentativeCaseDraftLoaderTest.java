@@ -182,9 +182,9 @@ class LegalRepresentativeCaseDraftLoaderTest {
 
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
 
-        assertThat(result.getAllDefendants()).hasSize(1);
-        assertThat(result.getAllDefendants().getFirst().getId()).isEqualTo(representedPartyId.toString());
-        assertThat(result.getAllDefendants().getFirst().getValue()).isEqualTo(party);
+        assertThat(result.getAllDefendants()).hasSize(2);
+        assertThat(result.getAllDefendants().getFirst().getId()).isEqualTo(differentPartyId.toString());
+        assertThat(result.getAllDefendants().getFirst().getValue()).isEqualTo(party2);
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId)
@@ -244,9 +244,11 @@ class LegalRepresentativeCaseDraftLoaderTest {
 
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
 
-        assertThat(result.getAllDefendants()).hasSize(1);
-        assertThat(result.getAllDefendants().getFirst().getId()).isEqualTo(representedPartyId.toString());
-        assertThat(result.getAllDefendants().getFirst().getValue()).isEqualTo(party);
+        assertThat(result.getAllDefendants()).hasSize(2);
+        assertThat(result.getAllDefendants().getFirst().getId()).isEqualTo(differentPartyId.toString());
+        assertThat(result.getAllDefendants().getFirst().getValue()).isEqualTo(party2);
+        assertThat(result.getAllDefendants().get(1).getId()).isEqualTo(representedPartyId.toString());
+        assertThat(result.getAllDefendants().get(1).getValue()).isEqualTo(party);
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId)
