@@ -13,7 +13,7 @@ public class ExemptLandlord implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("exemptLandlord")
-            .pageLabel("Exempt Landlord")
+            .pageLabel("Exempt landlord")
             .showCondition("legislativeCountry=\"Wales\"")
             .label("exemptLandlord-info", "---")
             .mandatory(PCSCase::getIsExemptLandlord)
