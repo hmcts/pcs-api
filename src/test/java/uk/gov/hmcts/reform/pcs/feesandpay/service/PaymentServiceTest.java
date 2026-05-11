@@ -23,11 +23,12 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.math.BigDecimal;
@@ -36,6 +37,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -44,6 +46,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -124,7 +127,7 @@ class PaymentServiceTest {
         String requestReference = UUID.randomUUID().toString();
         String paymentReference = UUID.randomUUID().toString();
         Payment payment = Payment.builder().paymentReference(paymentReference).build();
-        ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
+        PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
             .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
             .payment(payment)
             .build();
@@ -137,7 +140,7 @@ class PaymentServiceTest {
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
 
         // When
-        underTest.processPaymentResponse(serviceRequestUpdate);
+        underTest.processPaymentResponse(paymentStatusCallback);
 
         // Then
         verify(feePaymentRepository).findByRequestReference(requestReference);
@@ -154,7 +157,7 @@ class PaymentServiceTest {
     void shouldNotUpdateFeePaymentWhenRequestReferenceNotFound() {
         // Given
         String requestReference = UUID.randomUUID().toString();
-        ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
+        PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
             .serviceRequestReference(requestReference)
             .serviceRequestStatus(PaymentStatus.PAID.getValue())
             .payment(Payment.builder().paymentReference(UUID.randomUUID().toString()).build())
@@ -162,7 +165,7 @@ class PaymentServiceTest {
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.empty());
 
         // When
-        underTest.processPaymentResponse(serviceRequestUpdate);
+        underTest.processPaymentResponse(paymentStatusCallback);
 
         // Then
         verify(feePaymentRepository).findByRequestReference(requestReference);
@@ -172,11 +175,16 @@ class PaymentServiceTest {
     @Test
     void shouldSaveNewFeePaymentWithExpectedFields() {
         // Given
+        String responsibleParty = "Test";
         ClaimEntity claimEntity = new ClaimEntity();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(responsibleParty).build();
+        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder().claim(claimEntity).party(partyEntity).build();
+        claimEntity.setClaimParties(List.of(claimPartyEntity));
         FeeDto feeDto = createFeeDto();
 
         // When
-        underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto, SERVICE_REQUEST_REFERENCE);
+        underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto, responsibleParty,
+                                    SERVICE_REQUEST_REFERENCE);
 
         // Then
         ArgumentCaptor<FeePaymentEntity> captor = ArgumentCaptor.forClass(FeePaymentEntity.class);
@@ -186,6 +194,42 @@ class PaymentServiceTest {
         assertThat(saved.getClaim()).isSameAs(claimEntity);
         assertThat(saved.getRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
         assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
+    }
+
+    @Test
+    void shouldFailSaveNewFeePaymentWithNoParty() {
+        // Given
+        String responsibleParty = "Test";
+        ClaimEntity claimEntity = new ClaimEntity();
+        FeeDto feeDto = createFeeDto();
+
+        // When
+        assertThatExceptionOfType(PartyNotFoundException.class)
+            .isThrownBy(() -> underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto,
+                                                          responsibleParty, SERVICE_REQUEST_REFERENCE));
+
+        // Then
+        verifyNoInteractions(feePaymentRepository);
+    }
+
+    @Test
+    void shouldFailSaveNewFeePaymentWithIncorrectResponsibleParty() {
+        // Given
+        String responsibleParty = "Test";
+        ClaimEntity claimEntity = new ClaimEntity();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(responsibleParty).build();
+        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder().claim(claimEntity).party(partyEntity).build();
+        claimEntity.setClaimParties(List.of(claimPartyEntity));
+        FeeDto feeDto = createFeeDto();
+
+        // When
+        assertThatExceptionOfType(PartyNotFoundException.class)
+            .isThrownBy(() -> underTest.saveNewFeePayment(String.valueOf(CASE_REFERENCE), claimEntity, feeDto,
+                                                          "Different",
+                                                          SERVICE_REQUEST_REFERENCE));
+
+        // Then
+        verifyNoInteractions(feePaymentRepository);
     }
 
     @Test

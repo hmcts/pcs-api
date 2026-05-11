@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
@@ -66,6 +67,9 @@ class NotificationServiceTest {
     @Mock
     private NotificationTemplateConfiguration templateConfiguration;
 
+    @Mock
+    private PartyService partyService;
+
     private NotificationService notificationService;
 
     private static final String TEST_EMAIL = "test@example.com";
@@ -76,7 +80,9 @@ class NotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationService(notificationRepository, schedulerClient, templateConfiguration);
+        notificationService = new NotificationService(
+            notificationRepository, schedulerClient, templateConfiguration, partyService
+        );
     }
 
     @Nested
@@ -315,7 +321,7 @@ class NotificationServiceTest {
         @DisplayName("Should create service with dependencies")
         void shouldCreateServiceWithDependencies() {
             NotificationService service = new NotificationService(
-                notificationRepository, schedulerClient, templateConfiguration
+                notificationRepository, schedulerClient, templateConfiguration, partyService
             );
 
             assertThat(service).isNotNull();
@@ -403,6 +409,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should send defendant response no counterclaim email")
         void shouldSendDefendantResponseNoCounterclaimEmail() {
+            when(partyService.canSendEmailNotification(any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM))
                 .thenReturn(TEMPLATE_ID);
 
@@ -425,6 +432,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should send counterclaim payment required email")
         void shouldSendCounterclaimPaymentRequiredEmail() {
+            when(partyService.canSendEmailNotification(any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(
                 EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED))
                 .thenReturn(TEMPLATE_ID);
@@ -447,6 +455,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should send counterclaim payment success email")
         void shouldSendCounterclaimPaymentSuccessEmail() {
+            when(partyService.canSendEmailNotification(any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(
                 EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS))
                 .thenReturn(TEMPLATE_ID);
@@ -477,6 +486,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should send counterclaim no payment required email")
         void shouldSendCounterclaimNoPaymentRequiredEmail() {
+            when(partyService.canSendEmailNotification(any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(
                 EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED))
                 .thenReturn(TEMPLATE_ID);
@@ -501,9 +511,9 @@ class NotificationServiceTest {
         }
 
         @Test
-        @DisplayName("Should NOT send email when email address is null")
-        void shouldNotSendEmailWhenEmailIsNull() {
-            defendantResponse.getParty().setEmailAddress(null);
+        @DisplayName("Should NOT send email when canSendEmailNotification is false")
+        void shouldNotSendEmailWhenCanSendEmailNotificationIsFalse() {
+            when(partyService.canSendEmailNotification(any())).thenReturn(false);
 
             EmailNotificationResponse response =
                 notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
@@ -511,77 +521,6 @@ class NotificationServiceTest {
             assertThat(response).isNull();
 
             verifyNoInteractions(templateConfiguration, notificationRepository, schedulerClient);
-        }
-
-        @Test
-        @DisplayName("Should NOT send email when contact preferences are null")
-        void shouldNotSendEmailWhenContactPreferencesAreNull() {
-            defendantResponse.getParty().setContactPreferences(null);
-
-            EmailNotificationResponse response =
-                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
-
-            assertThat(response).isNull();
-
-            verifyNoInteractions(templateConfiguration, notificationRepository, schedulerClient);
-        }
-
-        @Test
-        @DisplayName("Should NOT send email when contactByEmail is null")
-        void shouldNotSendEmailWhenContactByEmailIsNull() {
-            var prefs = new uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity();
-            prefs.setContactByEmail(null);
-
-            defendantResponse.getParty().setContactPreferences(prefs);
-
-            EmailNotificationResponse response =
-                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
-
-            assertThat(response).isNull();
-
-            verifyNoInteractions(templateConfiguration, notificationRepository, schedulerClient);
-        }
-
-        @Test
-        @DisplayName("Should NOT send email when contactByEmail is NO")
-        void shouldNotSendEmailWhenContactByEmailIsNo() {
-            var prefs = new uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity();
-            prefs.setContactByEmail(VerticalYesNo.NO);
-
-            defendantResponse.getParty().setContactPreferences(prefs);
-
-            EmailNotificationResponse response =
-                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
-
-            assertThat(response).isNull();
-
-            verifyNoInteractions(templateConfiguration, notificationRepository, schedulerClient);
-        }
-
-        @Test
-        @DisplayName("Should send email when contactByEmail is YES")
-        void shouldSendEmailWhenContactByEmailIsYes() {
-            var prefs = new uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity();
-            prefs.setContactByEmail(VerticalYesNo.YES);
-
-            defendantResponse.getParty().setContactPreferences(prefs);
-
-            when(templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM))
-                .thenReturn(TEMPLATE_ID);
-
-            CaseNotification savedNotification = createCaseNotification();
-            when(notificationRepository.save(any())).thenReturn(savedNotification);
-            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
-
-            EmailNotificationResponse response =
-                notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
-
-            assertThat(response).isNotNull();
-            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
-
-            verify(templateConfiguration).getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM);
-            verify(notificationRepository, times(2)).save(any());
-            verify(schedulerClient).scheduleIfNotExists(any());
         }
     }
 

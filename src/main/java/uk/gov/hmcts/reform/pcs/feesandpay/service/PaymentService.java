@@ -13,20 +13,25 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
+
 import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+
+    private static final String PARTY_NOT_FOUND = "Matching PartyEntity not found";
 
     private final PaymentsClient paymentsClient;
     private final PaymentRequestMapper paymentRequestMapper;
@@ -84,42 +89,41 @@ public class PaymentService {
 
         ClaimEntity claimEntity = retrieveClaimEntity(Long.parseLong(caseReference));
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
-        saveNewFeePayment(caseReference, claimEntity, feeDto,
+        saveNewFeePayment(caseReference, claimEntity, feeDto, responsibleParty,
                           paymentServiceResponse.getServiceRequestReference());
 
         return paymentServiceResponse;
     }
 
     @Transactional
-    public void processPaymentResponse(ServiceRequestUpdate serviceRequestUpdate) {
-        log.info("ServiceRequestUpdate status: {}", serviceRequestUpdate.getServiceRequestStatus());
+    public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback) {
+        log.info("PaymentStatusCallback status: {}", paymentStatusCallback.getServiceRequestStatus());
         Optional<FeePaymentEntity> byCaseReference = feePaymentRepository
-            .findByRequestReference(serviceRequestUpdate.getServiceRequestReference());
+            .findByRequestReference(paymentStatusCallback.getServiceRequestReference());
+        if (byCaseReference.isPresent()) {
+            FeePaymentEntity feePaymentEntity = byCaseReference.get();
+            feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
+            feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
+            feePaymentRepository.saveAndFlush(feePaymentEntity);
 
-        if (byCaseReference.isEmpty()) {
+            if (feePaymentEntity.getPaymentStatus() == PaymentStatus.PAID) {
+                paymentNotificationService.sendCounterClaimPaymentSuccessNotification(feePaymentEntity.getId());
+            }
+        } else {
             log.error("Unable to find a payment with the service request reference : {}",
-                      serviceRequestUpdate.getServiceRequestReference());
-            return;
-        }
-
-
-        FeePaymentEntity feePaymentEntity = byCaseReference.get();
-        feePaymentEntity.setExternalReference(serviceRequestUpdate.getPayment().getPaymentReference());
-        feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(serviceRequestUpdate.getServiceRequestStatus()));
-        feePaymentRepository.saveAndFlush(feePaymentEntity);
-
-        if (feePaymentEntity.getPaymentStatus() == PaymentStatus.PAID) {
-            paymentNotificationService.sendCounterClaimPaymentSuccessNotification(feePaymentEntity.getId());
+                      paymentStatusCallback.getServiceRequestReference());
         }
     }
 
     @Transactional
-    public void saveNewFeePayment(String caseReference, ClaimEntity claimEntity,
-                                   FeeDto feeDto, String serviceRequestReference) {
+    public void saveNewFeePayment(String caseReference, ClaimEntity claimEntity, FeeDto feeDto,
+                                  String responsibleParty, String serviceRequestReference) {
         log.info("Saving New Fee Payment for the case: {} with serviceRequestReference: {}", caseReference,
                  serviceRequestReference);
+        ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(claimEntity, responsibleParty);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
+            .party(claimPartyEntity.getParty())
             .requestReference(serviceRequestReference)
             .amount(feeDto.getCalculatedAmount())
             .build();
@@ -130,6 +134,14 @@ public class PaymentService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         // Assuming 1 claim per PcsCase
         return pcsCaseEntity.getClaims().getFirst();
+    }
+
+    private ClaimPartyEntity retrieveClaimPartyEntity(ClaimEntity claimEntity, String responsibleParty) {
+        return claimEntity.getClaimParties()
+            .stream()
+            .filter(party -> responsibleParty.equals(party.getParty().getOrgName()))
+            .findFirst()
+            .orElseThrow(() -> new PartyNotFoundException(PARTY_NOT_FOUND));
     }
 
 }
