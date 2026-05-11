@@ -10,7 +10,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
@@ -45,6 +48,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -53,6 +57,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -82,6 +87,8 @@ class DefendantResponseServiceTest {
     @Mock
     private PaymentAgreementService paymentAgreementService;
     @Mock
+    private DocumentService documentService;
+    @Mock
     private PartyEntity partyEntity;
     @Mock
     private ClaimEntity claimEntity;
@@ -109,6 +116,7 @@ class DefendantResponseServiceTest {
             reasonableAdjustmentsService,
             householdCircumstancesService,
             paymentAgreementService,
+            documentService,
             FIXED_UTC_CLOCK
         );
     }
@@ -893,6 +901,69 @@ class DefendantResponseServiceTest {
     }
 
     @Test
+    void shouldSaveUploadedDocumentsWhenPresent() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenAnswer(inv -> inv.getArgument(0));
+
+        UploadedDocument defDoc = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
+            .contentType("application/pdf")
+            .sizeInBytes(135529L)
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
+        );
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .defendantDocuments(uploadedDocs)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(documentService).createDefendantUploadedDocuments(
+            eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), any(PartyEntity.class));
+    }
+
+    @Test
+    void shouldNotSaveDocumentsWhenUploadedDocumentsIsNull() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenAnswer(inv -> inv.getArgument(0));
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(documentService, never()).createDefendantUploadedDocuments(any(), any(), any(), any());
+    }
+
+    @Test
     void shouldSaveCounterClaimWithAllFields() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
@@ -945,10 +1016,12 @@ class DefendantResponseServiceTest {
     @ParameterizedTest
     @MethodSource("amountSelectionScenarios")
     void shouldPersistCorrectAmountsBasedOnSelection(
+        CounterClaimType claimType,
         VerticalYesNo claimantAmountKnown,
+        VerticalYesNo expectedIsClaimAmountKnown,
         BigDecimal claimAmountInput,
-        BigDecimal estimatedInput,
         BigDecimal expectedClaimAmount,
+        BigDecimal estimatedInput,
         BigDecimal expectedEstimatedAmount
     ) {
         // Given
@@ -960,6 +1033,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(claimType)
             .isClaimAmountKnown(claimantAmountKnown)
             .claimAmount(claimAmountInput)
             .estimatedMaxClaimAmount(estimatedInput)
@@ -980,7 +1054,7 @@ class DefendantResponseServiceTest {
         verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
         CounterClaimEntity saved = counterClaimCaptor.getValue();
 
-        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(claimantAmountKnown);
+        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(expectedIsClaimAmountKnown);
         assertBigDecimalEquals(saved.getClaimAmount(), expectedClaimAmount);
         assertBigDecimalEquals(saved.getEstimatedMaxClaimAmount(), expectedEstimatedAmount);
     }
@@ -996,18 +1070,34 @@ class DefendantResponseServiceTest {
     private static Stream<Arguments> amountSelectionScenarios() {
         return Stream.of(
             Arguments.of(
-                VerticalYesNo.YES,
-                new BigDecimal("250.00"),
-                new BigDecimal("999.00"),
-                new BigDecimal("250.00"),
-                null
+                CounterClaimType.PAYMENT_OR_COMPENSATION,
+                VerticalYesNo.YES, VerticalYesNo.YES,
+                new BigDecimal("250.00"), new BigDecimal("250.00"),
+                new BigDecimal("999.00"), null
             ),
             Arguments.of(
-                VerticalYesNo.NO,
-                new BigDecimal("999.00"),
-                new BigDecimal("500.00"),
+                CounterClaimType.PAYMENT_OR_COMPENSATION,
+                VerticalYesNo.NO, VerticalYesNo.NO,
+                new BigDecimal("999.00"), null,
+                new BigDecimal("500.00"), new BigDecimal("500.00")
+            ),
+            Arguments.of(
+                CounterClaimType.SOMETHING_ELSE,
+                VerticalYesNo.YES, null,
+                new BigDecimal("250.00"), null,
+                new BigDecimal("999.00"), null
+            ),
+            Arguments.of(
+                CounterClaimType.SOMETHING_ELSE,
+                null, null,
+                new BigDecimal("999.00"), null,
+                new BigDecimal("500.00"), null
+            ),
+            Arguments.of(
                 null,
-                new BigDecimal("500.00")
+                null, null,
+                new BigDecimal("250.00"), null,
+                new BigDecimal("999.00"), null
             )
         );
     }
@@ -1046,6 +1136,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.BOTH)
             .isClaimAmountKnown(VerticalYesNo.YES)
             .claimAmount(new BigDecimal("1000.50"))
             .build();
@@ -1167,6 +1258,42 @@ class DefendantResponseServiceTest {
         return Stream.of(
             Arguments.of("Need adjustments for court attendance"),
             Arguments.of((String) null)
+        );
+    }
+
+    @ParameterizedTest(name = "makeCounterClaim={0}")
+    @MethodSource("makeCounterClaimPersistenceScenarios")
+    void shouldPersistMakeCounterClaim(VerticalYesNo makeCounterClaim) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .makeCounterClaim(makeCounterClaim)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getMakeCounterClaim()).isEqualTo(makeCounterClaim);
+    }
+
+    private static Stream<Arguments> makeCounterClaimPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
         );
     }
 }

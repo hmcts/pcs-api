@@ -1,14 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.claim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -22,12 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
-
-import static jakarta.persistence.CascadeType.ALL;
-import static jakarta.persistence.FetchType.EAGER;
 
 @Entity
 @Builder
@@ -50,20 +43,12 @@ public class RentArrearsEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo thirdPartyPaymentsMade;
-
-    @OneToMany(mappedBy = "rentArrears", fetch = EAGER, cascade = ALL)
-    @Builder.Default
-    @JsonManagedReference
-    private Set<RentArrearsPaymentSourceEntity> thirdPartyPaymentSources = new HashSet<>();
+    private VerticalYesNo arrearsJudgmentWanted;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo arrearsJudgmentWanted;
+    private VerticalYesNo recoveryAttempted;
 
-    public void addThirdPartyPaymentSource(RentArrearsPaymentSourceEntity paymentSource) {
-        thirdPartyPaymentSources.add(paymentSource);
-        paymentSource.setRentArrears(this);
-    }
+    private String recoveryAttemptDetails;
 
 }
