@@ -1,4 +1,4 @@
-import {expect, test} from '@playwright/test';
+import {expect, test, type Page} from '@playwright/test';
 
 import {completeIdamPasswordActivation, waitForLatestIdamNotificationLink,} from './idam-testing-support-notification';
 import {
@@ -29,6 +29,11 @@ function solicitorForenameForSol(sol: number): string {
   return word != null ? `Solicitor ${word}` : `Solicitor ${String(sol)}`;
 }
 
+/** Drop HMCTS/IdAM SSO cookies before any sign-in or protected app URL — avoids stale session / expiry pages. */
+async function resetCookiesBeforeIdamAccess(page: Page): Promise<void> {
+  await page.context().clearCookies();
+}
+
 test('test', async ({page, request}) => {
   const hmctsEnvRaw = process.env.HMCTS_ENV?.trim();
   if (!hmctsEnvRaw) {
@@ -37,9 +42,9 @@ test('test', async ({page, request}) => {
   const hmctsEnv = hmctsEnvRaw;
 
   const createOrg = 'false';
-  const orgApprovalNeeded = 'false';
+  const orgApprovalNeeded = 'true';
   const userCreationNeeded = 'true';
-  const newTempUser = 'true';
+  const newTempUser = 'false';
   const inviteTheUserToOrg = 'true';
   const updateIDAMRoles = 'true';
 
@@ -83,7 +88,7 @@ test('test', async ({page, request}) => {
 
   // @ts-ignore
   if (createOrg == 'true') {
-
+    await resetCookiesBeforeIdamAccess(page);
     await registerOrganisationAsSolicitor(page, {
       hmctsEnv,
       orgName,
@@ -100,9 +105,17 @@ test('test', async ({page, request}) => {
   if (orgApprovalNeeded == 'true') {
     //Create admin to approve
     runCurlScript('idamTempUserOrgAdmin.sh', {HMCTS_ENV: hmctsEnv});
-    //Approve
+    //Approve — administer-orgs shares IdAM SSO with manage-org / manage-case; stale cookies often show session expiry instead of login.
+    await resetCookiesBeforeIdamAccess(page);
     await page.goto(`https://administer-orgs.${hmctsEnv}.platform.hmcts.net/organisation/pending`);
-    await page.getByRole('textbox', {name: 'Email address'}).click();
+    // IdAM often redirects after goto; evaluate before navigation settles → "Execution context was destroyed".
+    const orgAdminEmailField = page.getByRole('textbox', {name: 'Email address'});
+    await orgAdminEmailField.waitFor({state: 'visible', timeout: 30_000});
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    await orgAdminEmailField.click();
     await page.getByRole('textbox', {name: 'Email address'}).fill('pcs-organisation-admin@test.com');
     await page.getByRole('textbox', {name: 'Email address'}).press('Tab');
     await page.getByRole('textbox', {name: 'Password'}).fill('Pa$$w0rd');
@@ -128,6 +141,7 @@ test('test', async ({page, request}) => {
       email: orgEmailAddress,
       bearerToken: accessToken,
     });
+    await resetCookiesBeforeIdamAccess(page);
     await completeIdamPasswordActivation(page, orgActivationUrl, orgManageOrgLoginPassword);
   }
 
@@ -153,6 +167,7 @@ test('test', async ({page, request}) => {
         });
       } else {
         //Register user
+        await resetCookiesBeforeIdamAccess(page);
         await page.goto(`https://manage-case.${hmctsEnv}.platform.hmcts.net`);
         await page.getByRole('link', {name: 'create an account'}).click();
         await page.getByRole('textbox', {name: 'First name'}).fill(solicitorFirstName);
@@ -165,6 +180,7 @@ test('test', async ({page, request}) => {
           email: solicitorEmailAddress,
           bearerToken: accessToken,
         });
+        await resetCookiesBeforeIdamAccess(page);
         await completeIdamPasswordActivation(page, activationUrl, solicitorPassword);
       }
     }
@@ -172,6 +188,7 @@ test('test', async ({page, request}) => {
     // @ts-ignore
     if (inviteTheUserToOrg == 'true') {
       //Invite user to Org
+      await resetCookiesBeforeIdamAccess(page);
       await page.goto(`https://manage-org.${hmctsEnv}.platform.hmcts.net/users/invite-user`);
       await page.getByRole('textbox', {name: 'Email address'}).fill(orgEmailAddress);
       await page.getByRole('textbox', {name: 'Password'}).fill(orgManageOrgLoginPassword);
@@ -195,16 +212,18 @@ test('test', async ({page, request}) => {
       // IdAM user-dashboard shares SSO with other HMCTS apps on this context. An existing
       // manage-org / manage-case (or a half-finished dashboard) session often yields an error
       // page instead of the email field — clear storage so this step always starts logged out.
-      await page.context().clearCookies();
+      await resetCookiesBeforeIdamAccess(page);
       await page.goto(`https://idam-user-dashboard.${hmctsEnv}.platform.hmcts.net/`);
+      const idamDashboardEmailField = page.getByRole('textbox', {name: 'Enter your email address'});
+      await idamDashboardEmailField.waitFor({state: 'visible', timeout: 30_000});
       await page.evaluate(() => {
         localStorage.clear();
         sessionStorage.clear();
       });
 
       //Login to IDAM dashboard and update roles
-      await page.getByRole('textbox', {name: 'Enter your email address'}).click();
-      await page.getByRole('textbox', {name: 'Enter your email address'}).fill('pcs-idam-admin@test.com');
+      await idamDashboardEmailField.click();
+      await idamDashboardEmailField.fill('pcs-idam-admin@test.com');
       await page.getByRole('button', {name: 'Continue'}).click();
       await page.getByRole('textbox', {name: 'Enter your password'}).fill('Pa$$w0rd');
       await page.getByRole('button', {name: 'Continue'}).click();
@@ -236,10 +255,11 @@ test('test', async ({page, request}) => {
     }
 
     // Check whether created user can start a Housing Possession claim (manage-case smoke).
+    await resetCookiesBeforeIdamAccess(page);
     await makeAClaimSmoke(page, hmctsEnv, {
       email: solicitorEmailAddress,
       password: solicitorPassword,
     });
-    sol=sol +1;
+    sol = sol + 1;
   }
 });
