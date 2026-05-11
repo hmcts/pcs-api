@@ -8,10 +8,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "case_flag")
@@ -19,7 +18,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class CaseFlagEntity extends BaseCaseFlag {
 
     @ManyToOne(fetch = FetchType.LAZY)

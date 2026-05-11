@@ -151,11 +151,8 @@ public class CaseFlagService {
     private FlagRefDataEntity getRefDataEntity(Flags incomingCaseFlags, FlagDetail incomingFlagDetail) {
 
         FlagRefDataEntity refDataFlagsEntity = flagRefDataRepository.findByFlagCode(
-            incomingFlagDetail.getFlagCode()).orElse(null);
+            incomingFlagDetail.getFlagCode()).orElse(new FlagRefDataEntity());
 
-        if (refDataFlagsEntity == null) {
-            refDataFlagsEntity = new FlagRefDataEntity();
-        }
         refDataFlagsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
         refDataFlagsEntity.setFlagName(incomingFlagDetail.getName());
         refDataFlagsEntity.setFlagNameWelsh(incomingFlagDetail.getNameCy());
