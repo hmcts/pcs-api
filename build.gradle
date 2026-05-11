@@ -565,7 +565,7 @@ dockerCompose {
   useComposeFiles = ['docker-compose-wiremock.yml']
   stopContainers = false
   removeContainers = false
-  waitForTcpPorts = false
+  forceRecreate = true
 }
 
 composeUp.doFirst {
