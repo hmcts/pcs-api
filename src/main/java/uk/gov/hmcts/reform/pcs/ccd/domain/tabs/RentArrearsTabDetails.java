@@ -1,0 +1,58 @@
+package uk.gov.hmcts.reform.pcs.ccd.domain.tabs;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+
+import java.util.List;
+
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RentArrearsTabDetails {
+
+    @CCD(
+        label = "Rent amount"
+    )
+    private String rentAmount;
+
+    @CCD(
+        label = "How rent is calculated"
+    )
+    private String rentCalculation;
+
+    @CCD(
+        label = "Frequency"
+    )
+    private String frequency;
+
+    @CCD(
+        label = "Daily rate"
+    )
+    private String dailyRate;
+
+    @CCD(
+        label = "Previous steps taken to recover rent arrears?"
+    )
+    private String stepsToRecoverArrears;
+
+    @CCD(
+        label = "Rent statement"
+    )
+    private List<ListValue<Document>> rentStatement;
+
+    @CCD(
+        label = "Rent arrears total at the time of claim issue"
+    )
+    private String totalRentArrears;
+
+    @CCD(
+        label = "Judgment requested for the outstanding arrears?"
+    )
+    private String judgementRequested;
+}
