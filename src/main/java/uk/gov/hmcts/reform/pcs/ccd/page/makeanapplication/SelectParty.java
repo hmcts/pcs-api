@@ -14,7 +14,7 @@ public class SelectParty implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("selectParty")
-            .pageLabel("Which defendant are you making this application for")
+            .pageLabel("Which defendant are you making this application for?")
             .label("selectParty-lineSeparator", "---")
             .mandatoryWithLabel(PCSCase::getRepresentedPartyNames,
                                 "Which defendant are you making this application for?");
