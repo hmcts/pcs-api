@@ -106,6 +106,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"");
 
+        buildCasePartiesTab(builder);
+
         configureCaseFileCategories(builder);
     }
 
@@ -117,5 +119,13 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+    }
+
+    private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.tab("caseParties", "Case Parties")
+            .label("Case Parties", null, "#### Case Parties")
+            .field("casePartiesTab_ClaimantDetails")
+            .field("casePartiesTab_DefendantOneDetails")
+            .field("casePartiesTab_DefendantsDetails");
     }
 }
