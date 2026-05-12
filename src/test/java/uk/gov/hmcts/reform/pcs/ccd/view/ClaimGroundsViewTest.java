@@ -12,19 +12,29 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherNoGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -203,6 +213,112 @@ class ClaimGroundsViewTest {
             );
     }
 
+    @Test
+    void shouldBuildClaimGroundSummariesFromDraft() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .assuredRentArrearsPossessionGrounds(AssuredRentArrearsPossessionGrounds.builder()
+                                                    .rentArrearsGrounds(Set.of(
+                                                        AssuredRentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8,
+                                                        AssuredRentArrearsGround.RENT_ARREARS_GROUND10
+                                                    ))
+                                                    .additionalMandatoryGrounds(Set.of(
+                                                        AssuredAdditionalMandatoryGrounds.OWNER_OCCUPIER_GROUND1
+                                                    ))
+                                                    .additionalDiscretionaryGrounds(Set.of(
+                                                        AssuredAdditionalDiscretionaryGrounds.BREACH_TENANCY_GROUND12
+                                                    ))
+                                                    .build())
+            .noRentArrearsGroundsOptions(AssuredNoArrearsPossessionGrounds.builder()
+                                            .mandatoryGrounds(Set.of(AssuredMandatoryGround.HOLIDAY_LET_GROUND3))
+                                            .discretionaryGrounds(Set.of(
+                                                AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13
+                                            ))
+                                            .build())
+            .introductoryDemotedOrOtherGroundsForPossession(
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .introductoryDemotedOrOtherGrounds(Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL))
+                    .build()
+            )
+            .secureOrFlexiblePossessionGrounds(SecureOrFlexiblePossessionGrounds.builder()
+                                                   .secureOrFlexibleMandatoryGrounds(Set.of(
+                                                       SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL
+                                                   ))
+                                                   .secureOrFlexibleDiscretionaryGrounds(Set.of(
+                                                       SecureOrFlexibleDiscretionaryGrounds
+                                                           .RENT_ARREARS_OR_BREACH_OF_TENANCY
+                                                   ))
+                                                   .secureAntisocialAdditionalGrounds(Set.of(
+                                                       SecureAntisocialAdditionalGrounds.S84A_CONDITION_1
+                                                   ))
+                                                   .secureOrFlexibleMandatoryGroundsAlt(Set.of(
+                                                       SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD
+                                                   ))
+                                                   .secureOrFlexibleDiscretionaryGroundsAlt(Set.of(
+                                                       SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm
+                                                           .ADAPTED_ACCOMMODATION
+                                                   ))
+                                                   .build())
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                                           .mandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
+                                           .discretionaryGrounds(Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157))
+                                           .estateManagementGrounds(Set.of(
+                                               EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
+                                           ))
+                                           .build())
+            .secureContractGroundsForPossessionWales(SecureContractGroundsForPossessionWales.builder()
+                                                        .mandatoryGrounds(Set.of(
+                                                            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186
+                                                        ))
+                                                        .discretionaryGrounds(Set.of(
+                                                            SecureContractDiscretionaryGroundsWales
+                                                                .ANTISOCIAL_BEHAVIOUR_S157
+                                                        ))
+                                                        .estateManagementGrounds(Set.of(
+                                                            EstateManagementGroundsWales.RESERVE_SUCCESSORS
+                                                        ))
+                                                        .build())
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries = underTest.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries)
+            .map(ListValue::getValue)
+            .map(ClaimGroundSummary::getLabel)
+            .containsExactlyInAnyOrder(
+                "Serious rent arrears (ground 8)",
+                "Rent arrears (ground 10)",
+                "Owner occupier (ground 1)",
+                "Breach of tenancy conditions (ground 12)",
+                "Holiday let (ground 3)",
+                "Deterioration in the condition of the property (ground 13)",
+                "Antisocial behaviour",
+                "Rent arrears or breach of the tenancy (ground 1)",
+                "Condition 1 of Section 84A of the Housing Act 1985",
+                "Property sold for redevelopment (ground 10A)",
+                "Adapted accommodation (ground 13)",
+                "Antisocial behaviour",
+                "Notice given under a landlord’s break clause (section 199)",
+                "Rent arrears (breach of contract) (section 157)",
+                "Redevelopment schemes (ground B)",
+                "Landlord’s notice in connection with end of fixed term given (section 186)",
+                "Antisocial behaviour (breach of contract) (section 157)",
+                "Reserve successors (ground G)"
+            );
+    }
+
+    @Test
+    void shouldReturnEmptyClaimGroundSummariesFromEmptyDraft() {
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            underTest.buildClaimGroundSummariesFromDraft(PCSCase.builder().build());
+
+        // Then
+        assertThat(summaries).isEmpty();
+    }
+
     private static Stream<Arguments> claimGroundScenarios() {
         return Stream.of(
             argumentSet(
@@ -235,6 +351,14 @@ class ClaimGroundsViewTest {
                 SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.name(),
                 "Reason for deteriation of antisocial ground", // Reason
                 "Antisocial behaviour", // Expected label
+                false // Is rent arrears ground
+            ),
+            argumentSet(
+                "Secure or flexible tenancy antisocial ground",
+                ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL,
+                SecureAntisocialAdditionalGrounds.S84A_CONDITION_1.name(),
+                "Reason for antisocial ground", // Reason
+                "Condition 1 of Section 84A of the Housing Act 1985", // Expected label
                 false // Is rent arrears ground
             ),
             argumentSet(

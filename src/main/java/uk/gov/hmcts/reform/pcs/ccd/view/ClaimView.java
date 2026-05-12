@@ -43,7 +43,7 @@ public class ClaimView {
         pcsCase.setLanguageUsed(claim.getLanguageUsed());
         pcsCase.setWantToUploadDocuments(claim.getAdditionalDocsProvided());
         pcsCase.setDateSubmitted(claim.getClaimSubmittedDate() == null ? null : claim.getClaimSubmittedDate()
-        .format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM"));
+            .format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM"));
     }
 
     private void mapComplexClaimFields(PCSCase pcsCase, ClaimEntity claim) {
