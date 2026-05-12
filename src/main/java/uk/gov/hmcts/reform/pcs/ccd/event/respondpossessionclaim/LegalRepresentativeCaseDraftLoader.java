@@ -82,7 +82,7 @@ public class LegalRepresentativeCaseDraftLoader {
 
         return pcsCase.toBuilder()
             .parties(representedPartyList)
-            .allDefendants(representedPartyList)
+            .allLinkedDefendants(representedPartyList)
             .possessionClaimResponse(null)
             .hasUnsubmittedCaseData(null)
             .build();
@@ -110,6 +110,8 @@ public class LegalRepresentativeCaseDraftLoader {
 
         if (isSingleLinkedDefendant) {
             reduceCaseDefendantsToMatchedDefendant(pcsCase, matchedDefendant.getId().toString());
+        } else {
+            pcsCase.setAllLinkedDefendants(pcsCase.getAllDefendants());
         }
         return buildCaseWithDraft(pcsCase, mergedResponse);
     }
@@ -119,7 +121,7 @@ public class LegalRepresentativeCaseDraftLoader {
             .filter(party -> party.getId().equals(partyId))
             .toList();
 
-        pcsCase.setAllDefendants(matchedDefendant);
+        pcsCase.setAllLinkedDefendants(matchedDefendant);
     }
 
     private PCSCase buildCaseWithDraft(PCSCase pcsCase, PossessionClaimResponse response) {

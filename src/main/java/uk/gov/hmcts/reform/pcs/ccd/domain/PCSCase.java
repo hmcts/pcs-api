@@ -591,4 +591,7 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "casePartiesTab_")
     @CCD
     private CasePartiesTab casePartiesTab;
+
+    @CCD(access = {DefendantSolicitorAccess.class})
+    private List<ListValue<Party>> allLinkedDefendants;
 }
