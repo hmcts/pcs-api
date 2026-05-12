@@ -222,7 +222,7 @@ public class CaseDetailsTabView {
                 SecureOrFlexibleMandatoryGroundsAlternativeAccomm altMandatoryGround :
                 secureOrFlexibleMandatoryGroundsAlt
             ) {
-                allGrounds.append(altMandatoryGround).append(SEPARATE);
+                allGrounds.append(altMandatoryGround.getLabel()).append(SEPARATE);
             }
         }
 
