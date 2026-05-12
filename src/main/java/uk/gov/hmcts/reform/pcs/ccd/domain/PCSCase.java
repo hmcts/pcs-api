@@ -122,7 +122,7 @@ public class PCSCase {
     @External
     private String crossBorderCountry2;
 
-    @CCD(access = {CaseLinkingAccess.class},
+    @CCD(access = {ClaimantAccess.class},
         typeOverride = FieldType.Collection,
         label = "Linked cases",
         typeParameterOverride = "CaseLink")

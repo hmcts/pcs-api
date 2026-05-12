@@ -97,7 +97,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
         builder.tab("caseLinks", "Linked Cases")
-            .forRoles(UserRole.PCS_SOLICITOR)
+            .forRoles(UserRole.CTSC_ADMIN, UserRole.PCS_SOLICITOR)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 

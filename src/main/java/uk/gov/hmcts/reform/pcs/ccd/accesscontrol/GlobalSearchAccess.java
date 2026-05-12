@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
@@ -21,6 +22,7 @@ public class GlobalSearchAccess implements HasAccessControl {
          */
 
         grants.putAll(PCS_SOLICITOR, Permission.CRUD);
+        grants.putAll(CTSC_ADMIN, Permission.CRUD);
 
         return grants;
     }
