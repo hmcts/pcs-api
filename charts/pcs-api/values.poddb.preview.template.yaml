@@ -6,6 +6,19 @@ global:
 java:
   postgresql:
     enabled: true
-
+  secrets:
+    PCS_DB_PASSWORD:
+      key: password
+ccd:
+  ccd-definition-store-api:
+    java:
+      secrets:
+        DEFINITION_STORE_DB_PASSWORD:
+          key: password
+  ccd-data-store-api:
+    java:
+      secrets:
+        DATA_STORE_DB_PASSWORD:
+          key: password
 postgresql:
   enabled: false
