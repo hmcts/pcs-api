@@ -92,7 +92,7 @@ public class PCSCase {
 
     @CCD(
         label = "Property address",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     @External
     private AddressUK propertyAddress;
@@ -137,14 +137,14 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     @External
     private String userPcqId;
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     private YesOrNo userPcqIdSet;
 
@@ -219,7 +219,7 @@ public class PCSCase {
 
     @CCD(
         label = "Have you served notice to the defendants?",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     private YesOrNo noticeServed;
 
@@ -232,7 +232,7 @@ public class PCSCase {
     @CCD(access = {DefendantAccess.class})
     private DashboardData dashboardData;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {CitizenAccess.class, DefendantSolicitorAccess.class})
     private LegislativeCountry legislativeCountry;
 
     @CCD(

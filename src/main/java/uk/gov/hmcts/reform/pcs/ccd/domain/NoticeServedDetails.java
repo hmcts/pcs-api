@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,42 +38,42 @@ public class NoticeServedDetails {
     @CCD(
             label = "Date the document was posted",
             hint = "For example, 16 4 2021",
-            access = {CitizenAccess.class}
+            access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     private LocalDate noticePostedDate;
 
     @CCD(
             label = "Date the document was delivered",
             hint = "For example, 16 4 2021",
-            access = {CitizenAccess.class}
+            access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     private LocalDate noticeDeliveredDate;
 
     @CCD(
             label = "Date and time the document was handed over",
             hint = "For example, 16 4 2021, 11 15",
-            access = {CitizenAccess.class}
+            access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     private LocalDateTime noticeHandedOverDateTime;
 
     @CCD(
             label = "Date and time the document was emailed",
             hint = "For example, 16 4 2021, 11 15",
-            access = {CitizenAccess.class}
+            access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     private LocalDateTime noticeEmailSentDateTime;
 
     @CCD(
             label = "Date and time the message was sent",
             hint = "For example, 16 4 2021, 11 15",
-            access = {CitizenAccess.class}
+            access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     private LocalDateTime noticeOtherElectronicDateTime;
 
     @CCD(
             label = "Date and time the document was served",
             hint = "For example, 16 4 2021, 11 15",
-            access = {CitizenAccess.class}
+            access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     private LocalDateTime noticeOtherDateTime;
 

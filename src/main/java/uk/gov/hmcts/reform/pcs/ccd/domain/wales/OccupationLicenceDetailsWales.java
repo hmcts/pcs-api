@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +28,7 @@ public class OccupationLicenceDetailsWales {
 
     @CCD(
         label = "What type of occupation contract or licence is in place?",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     private OccupationLicenceTypeWales occupationLicenceTypeWales;
 
@@ -35,7 +36,7 @@ public class OccupationLicenceDetailsWales {
         typeOverride = TextArea,
         label = "Give details about what type of occupation contract or licence is in place",
         hint = "You can enter up to 500 characters",
-        access = {CitizenAccess.class},
+        access = {CitizenAccess.class, DefendantSolicitorAccess.class},
         max = 500
     )
     private String otherLicenceTypeDetails;
@@ -43,7 +44,7 @@ public class OccupationLicenceDetailsWales {
     @CCD(
         label = "What date did the occupation contract or licence begin?",
         hint = "For example, 16 4 2021",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, DefendantSolicitorAccess.class}
     )
     private LocalDate licenceStartDate;
 

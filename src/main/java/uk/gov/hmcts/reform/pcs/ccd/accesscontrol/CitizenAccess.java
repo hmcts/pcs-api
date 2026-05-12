@@ -16,7 +16,6 @@ public class CitizenAccess implements HasAccessControl {
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(CITIZEN, Permission.CRUD);
-        grants.putAll(PCS_SOLICITOR, Permission.CRUD);
         return grants;
     }
 
