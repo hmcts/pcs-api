@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.exception.CaseDataValidationException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
@@ -123,13 +122,8 @@ public class TenancyLicenceService {
     private BigDecimal getDailyRentAmount(RentDetails rentDetails) {
         if (rentDetails.getFrequency() == RentPaymentFrequency.OTHER) {
             return rentDetails.getDailyCharge();
-        } else if (rentDetails.getPerDayCorrect() == VerticalYesNo.YES) {
-            return rentDetails.getCalculatedDailyCharge();
-        } else if (rentDetails.getPerDayCorrect() == VerticalYesNo.NO) {
-            return rentDetails.getAmendedDailyCharge();
-        } else {
-            throw new CaseDataValidationException("Invalid rent details: " + rentDetails);
         }
+        return rentDetails.getCalculatedDailyCharge();
     }
 
 }

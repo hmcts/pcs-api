@@ -567,6 +567,7 @@ dockerCompose {
   useComposeFiles = ['docker-compose-wiremock.yml']
   stopContainers = cleanUpContainers
   removeContainers = cleanUpContainers
+  forceRecreate = true
   buildBeforeUp = false
   buildBeforePull = false
 }
