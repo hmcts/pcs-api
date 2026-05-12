@@ -137,7 +137,7 @@ public class DefendantResponseService {
 
         saveCounterClaim(responses, partyRef, claimRef);
 
-        DefendantResponseEntity savedResponse = defendantResponseRepository.saveAndFlush(responseEntity);
+        DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
         if (!CollectionUtils.isEmpty(responses.getDefendantDocuments())) {
             documentService.createDefendantUploadedDocuments(

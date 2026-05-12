@@ -145,7 +145,7 @@ class PaymentServiceTest {
         // Then
         verify(feePaymentRepository).findByRequestReference(requestReference);
         ArgumentCaptor<FeePaymentEntity> feePaymentCaptor = ArgumentCaptor.forClass(FeePaymentEntity.class);
-        verify(feePaymentRepository).saveAndFlush(feePaymentCaptor.capture());
+        verify(feePaymentRepository).save(feePaymentCaptor.capture());
         FeePaymentEntity paymentEntity = feePaymentCaptor.getValue();
 
         assertThat(paymentEntity.getRequestReference()).isEqualTo(requestReference);

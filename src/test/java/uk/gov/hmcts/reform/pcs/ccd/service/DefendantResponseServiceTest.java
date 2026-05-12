@@ -159,7 +159,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getParty()).isEqualTo(partyEntity);
@@ -195,7 +195,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.NO);
@@ -223,7 +223,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.PREFER_NOT_TO_SAY);
@@ -251,7 +251,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getFreeLegalAdvice()).isNull();
@@ -279,7 +279,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getPossessionNoticeReceived()).isEqualTo(possessionNoticeReceived);
@@ -316,7 +316,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getLandlordRegistered()).isEqualTo(landlordRegistered);
@@ -353,7 +353,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getWrittenTerms()).isEqualTo(writtenTerms);
@@ -389,7 +389,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getLandlordLicensed()).isEqualTo(landlordLicensed);
@@ -570,7 +570,7 @@ class DefendantResponseServiceTest {
         verify(claimRepository).getReferenceById(CLAIM_ID);
 
         // 5. Save (only locks new row)
-        verify(defendantResponseRepository).saveAndFlush(any(DefendantResponseEntity.class));
+        verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
     }
 
     @ParameterizedTest(name = "tenancyStartDate={0}")
@@ -596,7 +596,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getTenancyStartDate()).isEqualTo(tenancyStartDate);
@@ -637,7 +637,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
 
         DefendantResponseEntity saved = responseCaptor.getValue();
 
@@ -703,7 +703,7 @@ class DefendantResponseServiceTest {
         verify(householdCircumstancesService).createHouseholdCircumstancesEntity(any(HouseholdCircumstances.class));
         verify(paymentAgreementService).createPaymentAgreementEntity(any(PaymentAgreement.class));
 
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity saved = responseCaptor.getValue();
         assertThat(saved.getReasonableAdjustment()).isSameAs(reasonableAdjustmentEntity);
         assertThat(saved.getHouseholdCircumstances()).isSameAs(householdCircumstancesEntity);
@@ -743,7 +743,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getDisputeClaim()).isEqualTo(disputeClaim);
@@ -779,7 +779,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getDisputeClaimDetails()).isEqualTo(disputeClaimDetails);
@@ -814,7 +814,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getDefendantNameConfirmation()).isEqualTo(defendantNameConfirmation);
@@ -850,7 +850,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getNoticeReceivedDate()).isEqualTo(noticeReceivedDate);
@@ -885,7 +885,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(rentArrearsAmountConfirmation);
@@ -908,7 +908,7 @@ class DefendantResponseServiceTest {
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubPartyLookup();
         stubClaimLookup();
-        when(defendantResponseRepository.saveAndFlush(any(DefendantResponseEntity.class)))
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
             .thenAnswer(inv -> inv.getArgument(0));
 
         UploadedDocument defDoc = UploadedDocument.builder()
@@ -946,7 +946,7 @@ class DefendantResponseServiceTest {
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubPartyLookup();
         stubClaimLookup();
-        when(defendantResponseRepository.saveAndFlush(any(DefendantResponseEntity.class)))
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
             .thenAnswer(inv -> inv.getArgument(0));
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -1181,7 +1181,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getLanguageUsed()).isEqualTo(languageUsed);
@@ -1215,7 +1215,7 @@ class DefendantResponseServiceTest {
 
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getOtherConsiderations()).isEqualTo(otherConsiderations);
@@ -1248,7 +1248,7 @@ class DefendantResponseServiceTest {
 
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getOtherConsiderationsDetails()).isEqualTo(otherConsiderationsDetails);
@@ -1283,7 +1283,7 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
         // Then
-        verify(defendantResponseRepository).saveAndFlush(responseCaptor.capture());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getMakeCounterClaim()).isEqualTo(makeCounterClaim);
