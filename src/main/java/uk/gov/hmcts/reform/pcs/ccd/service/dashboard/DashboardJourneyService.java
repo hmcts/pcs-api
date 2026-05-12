@@ -88,7 +88,6 @@ public class DashboardJourneyService {
             case NOT_STARTED -> "Defendant.ResponseNotStarted";
             case IN_PROGRESS -> "Defendant.ResponseInProgress";
             case SUBMITTED -> "Defendant.ResponseSubmitted";
-            case UNKNOWN -> "Defendant.ResponseUnknown";
         };
 
         return ListValueUtils.wrapListItems(List.of(
@@ -118,16 +117,10 @@ public class DashboardJourneyService {
     }
 
     private ResponseStatus getResponseStatus(boolean hasDraft, boolean hasSubmitted) {
-        if (!hasDraft && !hasSubmitted) {
-            return ResponseStatus.NOT_STARTED;
-        }
-        if (hasDraft && !hasSubmitted) {
-            return ResponseStatus.IN_PROGRESS;
-        }
         if (hasSubmitted) {
             return ResponseStatus.SUBMITTED;
         }
-        return ResponseStatus.UNKNOWN; 
+        return hasDraft ? ResponseStatus.IN_PROGRESS : ResponseStatus.NOT_STARTED;
     }
 
     /**
