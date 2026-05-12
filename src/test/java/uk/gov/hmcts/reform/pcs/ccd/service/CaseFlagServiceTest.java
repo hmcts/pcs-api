@@ -132,7 +132,7 @@ class CaseFlagServiceTest {
                                       "Complicated case", "Active", false))
             .build();
 
-        Party incomingParty = Party.builder().respondentFlags(incomingFlags).build();
+        Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
         List<ListValue<Party>> parties = List.of(createPartyListValue(partyId.toString(), incomingParty));
 
         underTest.mergePartyFlags(parties, pcsCaseEntity, EventFlow.CREATE.name());
@@ -140,10 +140,10 @@ class CaseFlagServiceTest {
         assertEquals(1, pcsCaseEntity.getParties().size());
         PartyEntity savedParty = pcsCaseEntity.getParties().iterator().next();
 
-        assertNotNull(savedParty.getRespondentFlags());
-        assertEquals(1, savedParty.getRespondentFlags().size());
+        assertNotNull(savedParty.getDefendantFlags());
+        assertEquals(1, savedParty.getDefendantFlags().size());
 
-        BaseCaseFlag savedFlags = savedParty.getRespondentFlags().getFirst();
+        BaseCaseFlag savedFlags = savedParty.getDefendantFlags().getFirst();
     }
 
     private Set<PartyEntity> createPartyEntities(UUID partyId) {
@@ -166,7 +166,7 @@ class CaseFlagServiceTest {
 
         PartyEntity existingParty = PartyEntity.builder()
             .id(existingPartyId)
-            .respondentFlags(new ArrayList<>(existingPartyFlagsEntity))
+            .defendantFlags(new ArrayList<>(existingPartyFlagsEntity))
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
@@ -179,7 +179,7 @@ class CaseFlagServiceTest {
                                        "Police arrest inactive", "Inactive", false)))
             .build();
 
-        Party incomingParty = Party.builder().respondentFlags(updatedFlags).build();
+        Party incomingParty = Party.builder().defendantFlags(updatedFlags).build();
         List<ListValue<Party>> incomingParties = List.of(createPartyListValue(
             existingPartyId.toString(),
             incomingParty
@@ -192,8 +192,8 @@ class CaseFlagServiceTest {
         assertEquals(1, pcsCaseEntity.getParties().size());
         PartyEntity updatedParty = pcsCaseEntity.getParties().iterator().next();
 
-        assertNotNull(updatedParty.getRespondentFlags());
-        assertEquals(1, updatedParty.getRespondentFlags().size());
+        assertNotNull(updatedParty.getDefendantFlags());
+        assertEquals(1, updatedParty.getDefendantFlags().size());
 
     }
 
@@ -217,7 +217,7 @@ class CaseFlagServiceTest {
 
         assertEquals("John", retainedParty.getFirstName());
         assertEquals("Doe", retainedParty.getLastName());
-        assertTrue(retainedParty.getRespondentFlags().isEmpty());
+        assertTrue(retainedParty.getDefendantFlags().isEmpty());
     }
 
     private PcsCaseEntity createPcsCaseEntity(UUID id) {

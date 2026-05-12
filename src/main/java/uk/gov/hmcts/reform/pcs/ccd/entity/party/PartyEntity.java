@@ -116,6 +116,7 @@ public class PartyEntity {
         cascade = ALL,
         orphanRemoval = true)
     @Builder.Default
-    private List<CasePartyFlagEntity> respondentFlags = new ArrayList<>();
+    private List<CasePartyFlagEntity> defendantFlags = new ArrayList<>();
 
 }
+

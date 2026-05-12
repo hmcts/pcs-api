@@ -36,9 +36,9 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
             .pageLabel("Case Flags")
             .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
             .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
-            .page("respondentFlags")
-            .list(PCSCase::getParties, ShowConditions.NEVER_SHOW)
-                .optional(Party::getRespondentFlags, ShowConditions.NEVER_SHOW,  true)
+            .page("defendantFlags")
+            .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
+                .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
             .done()
             .optional(PCSCase::getFlagLauncherInternal,null, null,
                 null, null, "#ARGUMENT(UPDATE)");

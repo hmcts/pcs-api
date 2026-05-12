@@ -70,7 +70,7 @@ class CaseFlagsViewTest {
         partyEntity.setId(UUID.randomUUID());
 
         CasePartyFlagEntity appellantFlags = createMockCasePartyFlagsEntity();
-        partyEntity.setRespondentFlags(List.of(appellantFlags));
+        partyEntity.setDefendantFlags(List.of(appellantFlags));
 
         PCSCase pcsCase = PCSCase.builder().build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
@@ -84,9 +84,9 @@ class CaseFlagsViewTest {
         assertNotNull(pcsCase.getParties());
         assertEquals(1, pcsCase.getParties().size());
         Party party = pcsCase.getParties().getFirst().getValue();
-        assertNotNull(party.getRespondentFlags());
-        assertEquals(1, party.getRespondentFlags().getDetails().size());
-        assertEquals("PF0015", party.getRespondentFlags().getDetails().getFirst().getValue().getFlagCode());
+        assertNotNull(party.getDefendantFlags());
+        assertEquals(1, party.getDefendantFlags().getDetails().size());
+        assertEquals("PF0015", party.getDefendantFlags().getDetails().getFirst().getValue().getFlagCode());
     }
 
     @Test
@@ -106,8 +106,8 @@ class CaseFlagsViewTest {
         assertNotNull(pcsCase.getParties());
         assertEquals(1, pcsCase.getParties().size());
         Party party = pcsCase.getParties().getFirst().getValue();
-        assertNotNull(party.getRespondentFlags());
-        assertEquals(0, party.getRespondentFlags().getDetails().size());
+        assertNotNull(party.getDefendantFlags());
+        assertEquals(0, party.getDefendantFlags().getDetails().size());
     }
 
     @Test

@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public class CaseFlagsView {
 
-    private static final String RESPONDENT = "respondent";
+    private static final String DEFENDANT = "defendant";
     private static final String CLAIMANT = "claimant";
     public static final String PATHS_DELIMITER = ",";
     public static final String PATH_DELIMITER = ":";
@@ -96,13 +96,13 @@ public class CaseFlagsView {
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<ListValue<Party>> mappedParties = pcsCaseEntity.getParties().stream()
             .filter(partyEntity -> partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty())
-            .map(this::mapPartyWithRespondentFlags)
+            .map(this::mapPartyWithDefendantFlags)
             .toList();
 
         pcsCase.setParties(mappedParties);
     }
 
-    private ListValue<Party> mapPartyWithRespondentFlags(PartyEntity partyEntity) {
+    private ListValue<Party> mapPartyWithDefendantFlags(PartyEntity partyEntity) {
         return ListValue.<Party>builder()
             .id(partyEntity.getId().toString())
             .value(
@@ -114,32 +114,32 @@ public class CaseFlagsView {
                     .firstName(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
                                  ? partyEntity.getFirstName() : partyEntity.getOrgName())
                     .lastName(partyEntity.getLastName())
-                    .respondentFlags(mapRespondentFlags(partyEntity))
+                    .defendantFlags(mapDefendantFlags(partyEntity))
                     .build()
             )
             .build();
     }
 
-    private Flags mapRespondentFlags(PartyEntity partyEntity) {
-        if (partyEntity.getRespondentFlags() == null || partyEntity.getRespondentFlags().isEmpty()) {
+    private Flags mapDefendantFlags(PartyEntity partyEntity) {
+        if (partyEntity.getDefendantFlags() == null || partyEntity.getDefendantFlags().isEmpty()) {
             return Flags.builder()
                 .partyName(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
                                ? partyEntity.getFirstName() + " " + partyEntity.getLastName()
                                : partyEntity.getOrgName())
                 .roleOnCase(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
-                                ? RESPONDENT : CLAIMANT)
+                                ? DEFENDANT : CLAIMANT)
                 .details(new ArrayList<>())
                 .build();
         }
 
-        List<BaseCaseFlag> respondentFlags = new ArrayList<>(partyEntity.getRespondentFlags());
+        List<BaseCaseFlag> respondentFlags = new ArrayList<>(partyEntity.getDefendantFlags());
 
         return Flags.builder()
             .partyName(Stream.of(partyEntity.getFirstName(), partyEntity.getLastName(),
                                  partyEntity.getOrgName()).filter(
                 Objects::nonNull).collect(Collectors.joining(" ")))
             .roleOnCase(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
-                            ? RESPONDENT : CLAIMANT)
+                            ? DEFENDANT : CLAIMANT)
             .details(mapFlagDetails(respondentFlags))
             .visibility(FlagVisibility.INTERNAL)
             .build();

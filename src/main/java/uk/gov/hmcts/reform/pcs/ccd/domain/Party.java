@@ -44,6 +44,6 @@ public class Party {
         label = "Party Flags",
         retainHiddenValue = true
     )
-    private Flags respondentFlags;
+    private Flags defendantFlags;
 
 }

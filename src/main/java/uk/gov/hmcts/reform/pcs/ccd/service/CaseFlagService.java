@@ -64,10 +64,10 @@ public class CaseFlagService {
 
                 PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
 
-                if (partyEntity != null && incomingParty.getRespondentFlags() != null
-                    && !incomingParty.getRespondentFlags().getDetails().isEmpty()) {
-                    mergePartyFlagGroup(incomingParty.getRespondentFlags(), partyEntity.getRespondentFlags(),
-                        partyEntity, pcsCaseEntity, flow
+                if (partyEntity != null && incomingParty.getDefendantFlags() != null
+                    && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
+                    mergePartyFlagGroup(incomingParty.getDefendantFlags(), partyEntity.getDefendantFlags(),
+                                        partyEntity, pcsCaseEntity, flow
                     );
                 }
             }
@@ -85,8 +85,8 @@ public class CaseFlagService {
             existingPartyFlagEntityMap, incomingPartyFlags, pcsCaseEntity,
             partyEntity, flow, CasePartyFlagEntity::new);
 
-        partyEntity.getRespondentFlags().clear();
-        partyEntity.getRespondentFlags().addAll(mergedCasePartyFlags);
+        partyEntity.getDefendantFlags().clear();
+        partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
     }
 
     private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(
