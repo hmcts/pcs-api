@@ -29,6 +29,11 @@ public class DefendantResponses {
     @CCD
     private YesNoNotSure tenancyTypeConfirmation;
 
+    /**
+     * Legacy field replaced by {@link #tenancyTypeConfirmation}.
+     *
+     * @deprecated use {@link #tenancyTypeConfirmation} instead.
+     */
     @Deprecated(forRemoval = true)
     @CCD
     private YesNoNotSure tenancyTypeCorrect;
@@ -39,6 +44,11 @@ public class DefendantResponses {
     @CCD
     private YesNoNotSure tenancyStartDateConfirmation;
 
+    /**
+     * Legacy field replaced by {@link #tenancyStartDateConfirmation}.
+     *
+     * @deprecated use {@link #tenancyStartDateConfirmation} instead.
+     */
     @Deprecated(forRemoval = true)
     @CCD
     private YesNoNotSure tenancyStartDateCorrect;
