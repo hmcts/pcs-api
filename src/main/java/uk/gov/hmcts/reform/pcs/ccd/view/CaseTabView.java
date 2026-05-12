@@ -4,10 +4,32 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.*;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.*;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.*;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.GroundsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.ReasonsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryAdditionalDefendantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryClaimantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryDefendantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.TenancyTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
@@ -149,7 +171,8 @@ public class CaseTabView {
         return createSummaryDefendantDetails(pcsCase.getAllDefendants().getFirst().getValue(), pcsCase);
     }
 
-    private List<ListValue<SummaryAdditionalDefendantTabDetails>> createAdditionalSummaryDefendantsDetails(PCSCase pcsCase) {
+    private List<ListValue<SummaryAdditionalDefendantTabDetails>> createAdditionalSummaryDefendantsDetails(
+        PCSCase pcsCase) {
         if (CollectionUtils.isEmpty(pcsCase.getAllDefendants()) || pcsCase.getAllDefendants().size() < 2) {
             return null;
         }
@@ -244,14 +267,21 @@ public class CaseTabView {
 
     private TenancyTabDetails buildTenancyTabDetails(PCSCase pcsCase) {
         TenancyLicenceDetails tenancyLicenceDetails = pcsCase.getTenancyLicenceDetails();
+        OccupationLicenceDetailsWales occupationLicenceDetailsWales = pcsCase.getOccupationLicenceDetailsWales();
 
-        if (tenancyLicenceDetails == null || tenancyLicenceDetails.getTypeOfTenancyLicence() == null) {
+        if ((tenancyLicenceDetails == null || tenancyLicenceDetails.getTypeOfTenancyLicence() == null)
+            && (occupationLicenceDetailsWales == null
+            || occupationLicenceDetailsWales.getOccupationLicenceTypeWales() == null)) {
             return null;
         }
 
-        String agreementType = getAgreementType(tenancyLicenceDetails);
-        String agreementStartDate = tenancyLicenceDetails.getTenancyLicenceDate() == null
-            ? null : tenancyLicenceDetails.getTenancyLicenceDate().format(SUMMARY_DATE_FORMATTER);
+        String agreementType = tenancyLicenceDetails != null && tenancyLicenceDetails.getTypeOfTenancyLicence() != null
+            ? getAgreementType(tenancyLicenceDetails)
+            : getOccupationLicenceAgreementType(occupationLicenceDetailsWales);
+        String agreementStartDate = tenancyLicenceDetails != null
+            && tenancyLicenceDetails.getTenancyLicenceDate() != null
+            ? tenancyLicenceDetails.getTenancyLicenceDate().format(SUMMARY_DATE_FORMATTER)
+            : getOccupationLicenceStartDate(occupationLicenceDetailsWales);
 
         return TenancyTabDetails.builder()
             .agreementType(agreementType)
@@ -265,6 +295,22 @@ public class CaseTabView {
         }
 
         return tenancyLicenceDetails.getTypeOfTenancyLicence().getLabel();
+    }
+
+    private String getOccupationLicenceAgreementType(OccupationLicenceDetailsWales occupationLicenceDetailsWales) {
+        if (occupationLicenceDetailsWales.getOccupationLicenceTypeWales() == OccupationLicenceTypeWales.OTHER) {
+            return occupationLicenceDetailsWales.getOtherLicenceTypeDetails();
+        }
+
+        return occupationLicenceDetailsWales.getOccupationLicenceTypeWales().getLabel();
+    }
+
+    private String getOccupationLicenceStartDate(OccupationLicenceDetailsWales occupationLicenceDetailsWales) {
+        if (occupationLicenceDetailsWales == null || occupationLicenceDetailsWales.getLicenceStartDate() == null) {
+            return null;
+        }
+
+        return occupationLicenceDetailsWales.getLicenceStartDate().format(SUMMARY_DATE_FORMATTER);
     }
 
     private NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase) {

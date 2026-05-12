@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -79,6 +80,20 @@ class ClaimViewTest {
     }
 
     @ParameterizedTest
+    @MethodSource("claimSubmittedDateScenarios")
+    void shouldMapClaimSubmittedDate(LocalDateTime claimSubmittedDate, String expectedDateSubmitted) {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(claimEntity.getClaimSubmittedDate()).thenReturn(claimSubmittedDate);
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getDateSubmitted()).isEqualTo(expectedDateSubmitted);
+    }
+
+    @ParameterizedTest
     @MethodSource("complexClaimFieldsScenarios")
     void shouldMapComplexClaimFields(
         VerticalYesNo claimantSelect,
@@ -135,6 +150,13 @@ class ClaimViewTest {
         assertThat(pcsCase.getDefendantCircumstances()).isNull();
         assertThat(pcsCase.getAdditionalReasonsForPossession()).isNull();
         assertThat(pcsCase.getClaimantType()).isNull();
+    }
+
+    private static Stream<Arguments> claimSubmittedDateScenarios() {
+        return Stream.of(
+            Arguments.of(null, null),
+            Arguments.of(LocalDateTime.of(2026, 5, 11, 17, 2, 31), "11 May 2026, 5:02:31PM")
+        );
     }
 
     private static Stream<Arguments> complexClaimFieldsScenarios() {

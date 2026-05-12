@@ -10,9 +10,13 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -51,10 +55,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
 class PCSCaseViewTest {
@@ -254,6 +261,10 @@ class PCSCaseViewTest {
         return ListValue.<Party>builder().id(id.toString()).value(party).build();
     }
 
+    private static <T> ListValue<T> listValue(T value) {
+        return ListValue.<T>builder().value(value).build();
+    }
+
     private ClaimPartyEntity createClaimPartyEntity(Party party, UUID partyId, PartyRole partyRole) {
         PartyEntity partyEntity = mock(PartyEntity.class);
 
@@ -296,6 +307,104 @@ class PCSCaseViewTest {
 
         // Then
         verify(caseFieldsView).setCaseFields(pcsCase);
+    }
+
+    @Test
+    void shouldSetSummaryTabFromDraftDataWhenUnsubmittedCaseDataExists() {
+        // Given
+        AddressEntity addressEntity = mock(AddressEntity.class);
+        when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
+        AddressUK propertyAddress = stubAddressEntityModelMapper(addressEntity);
+
+        Party claimant = mock(Party.class);
+        UUID claimantId = UUID.randomUUID();
+        ClaimPartyEntity claimantClaimParty = createClaimPartyEntity(claimant, claimantId, PartyRole.CLAIMANT);
+        when(claimEntity.getClaimParties()).thenReturn(List.of(claimantClaimParty));
+
+        AddressUK defendantOneAddress = AddressUK.builder().postCode("E1 1AA").build();
+        AddressUK defendantTwoAddress = AddressUK.builder().postCode("E2 2AA").build();
+        PCSCase draftCaseData = PCSCase.builder()
+            .defendant1(DefendantDetails.builder()
+                            .nameKnown(VerticalYesNo.YES)
+                            .firstName("Defendant")
+                            .lastName("One")
+                            .addressKnown(VerticalYesNo.YES)
+                            .correspondenceAddress(defendantOneAddress)
+                            .build())
+            .addAnotherDefendant(VerticalYesNo.YES)
+            .additionalDefendants(List.of(listValue(DefendantDetails.builder()
+                                                     .nameKnown(VerticalYesNo.YES)
+                                                     .firstName("Defendant")
+                                                     .lastName("Two")
+                                                     .addressKnown(VerticalYesNo.YES)
+                                                     .correspondenceAddress(defendantTwoAddress)
+                                                     .build())))
+            .summaryTab(SummaryTab.builder().build())
+            .build();
+        List<ListValue<ClaimGroundSummary>> draftGrounds =
+            List.of(listValue(ClaimGroundSummary.builder().label("Draft ground").build()));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(Optional.of(draftCaseData));
+        when(claimGroundsView.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(draftGrounds);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+
+        // Then
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(caseTabView).setCaseTabFields(draftCaseData);
+        assertThat(draftCaseData.getPropertyAddress()).isEqualTo(propertyAddress);
+        assertThat(draftCaseData.getAllClaimants()).containsExactly(asListValue(claimantId, claimant));
+        assertThat(draftCaseData.getAllDefendants()).hasSize(2);
+        assertThat(draftCaseData.getAllDefendants().get(0).getValue().getFirstName()).isEqualTo("Defendant");
+        assertThat(draftCaseData.getAllDefendants().get(0).getValue().getLastName()).isEqualTo("One");
+        assertThat(draftCaseData.getAllDefendants().get(0).getValue().getAddress()).isEqualTo(defendantOneAddress);
+        assertThat(draftCaseData.getAllDefendants().get(1).getValue().getFirstName()).isEqualTo("Defendant");
+        assertThat(draftCaseData.getAllDefendants().get(1).getValue().getLastName()).isEqualTo("Two");
+        assertThat(draftCaseData.getAllDefendants().get(1).getValue().getAddress()).isEqualTo(defendantTwoAddress);
+        assertThat(draftCaseData.getClaimGroundSummaries()).isEqualTo(draftGrounds);
+        assertThat(pcsCase.getSummaryTab()).isSameAs(draftCaseData.getSummaryTab());
+        assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+    }
+
+    @Test
+    void shouldFallbackToSubmittedSummaryDataWhenDraftDataIsPartial() {
+        // Given
+        Party defendant = mock(Party.class);
+        UUID defendantId = UUID.randomUUID();
+        ClaimPartyEntity defendantClaimParty = createClaimPartyEntity(defendant, defendantId, PartyRole.DEFENDANT);
+        when(claimEntity.getClaimParties()).thenReturn(List.of(defendantClaimParty));
+
+        List<ListValue<ClaimGroundSummary>> submittedGrounds =
+            List.of(listValue(ClaimGroundSummary.builder().label("Submitted ground").build()));
+        doAnswer(invocation -> {
+            PCSCase pcsCase = invocation.getArgument(0);
+            pcsCase.setClaimGroundSummaries(submittedGrounds);
+            return null;
+        }).when(claimGroundsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+
+        PCSCase draftCaseData = PCSCase.builder()
+            .summaryTab(SummaryTab.builder().build())
+            .build();
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(Optional.of(draftCaseData));
+        when(claimGroundsView.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
+
+        // When
+        underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+
+        // Then
+        assertThat(draftCaseData.getAllDefendants()).containsExactly(asListValue(defendantId, defendant));
+        assertThat(draftCaseData.getClaimGroundSummaries()).isEqualTo(submittedGrounds);
+    }
+
+    @Test
+    void shouldNotLoadUnsubmittedCaseDataWhenCaseIsNotAwaitingSubmission() {
+        // When
+        underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(any(Long.class), any());
     }
 
     @Test
