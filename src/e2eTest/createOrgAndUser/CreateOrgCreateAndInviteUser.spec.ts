@@ -26,7 +26,7 @@ function solicitorForenameForSol(sol: number): string {
     'Twelfth',
   ] as const;
   const word = ordinals[sol - 1];
-  return word != null ? `Solicitor ${word}` : `Solicitor ${String(sol)}`;
+  return word != null ? `Solicitor  ${word}` : `Solicitor ${String(sol)}`;
 }
 
 /** Drop HMCTS/IdAM SSO cookies before any sign-in or protected app URL — avoids stale session / expiry pages. */
@@ -42,11 +42,13 @@ test('test', async ({page, request}) => {
   const hmctsEnv = hmctsEnvRaw;
 
   const createOrg = 'false';
-  const orgApprovalNeeded = 'true';
-  const userCreationNeeded = 'true';
-  const newTempUser = 'false';
-  const inviteTheUserToOrg = 'true';
-  const updateIDAMRoles = 'true';
+  const orgApprovalNeeded = 'false';
+  const pwdResetToOrg = 'false';
+  const userCreationNeeded = 'false';
+  const newTempUser = 'true';
+  const inviteTheUserToOrg = 'false';
+  const updateIDAMRoles = 'false';
+  const executeExuiE2eTest = 'true';
 
   /** Namespace for org emails/names (e.g. `org1` → …Org1, …org1…). Change only here to retarget all derived ids. */
   const org = 'org1';
@@ -135,7 +137,7 @@ test('test', async ({page, request}) => {
   }
 
   // @ts-ignore
-  if (createOrg == 'true') {
+  if (pwdResetToOrg == 'true') {
     const orgActivationUrl = await waitForLatestIdamNotificationLink(request, {
       hmctsEnv,
       email: orgEmailAddress,
@@ -255,11 +257,13 @@ test('test', async ({page, request}) => {
     }
 
     // Check whether created user can start a Housing Possession claim (manage-case smoke).
-    await resetCookiesBeforeIdamAccess(page);
-    await makeAClaimSmoke(page, hmctsEnv, {
-      email: solicitorEmailAddress,
-      password: solicitorPassword,
-    });
+    if (executeExuiE2eTest == 'true') {
+      await resetCookiesBeforeIdamAccess(page);
+      await makeAClaimSmoke(page, hmctsEnv, {
+        email: solicitorEmailAddress,
+        password: solicitorPassword,
+      });
+    }
     sol = sol + 1;
   }
 });
