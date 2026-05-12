@@ -87,7 +87,7 @@ withNightlyPipeline(type, product, component) {
   validateInputs()
   enableSlackNotifications('#pcs-tech')
   handleEnvironmentSetting()
-  loadVaultSecrets([("pcs-${env.ENVIRONMENT}"): pcsE2eVaultSecrets])
+  loadVaultSecrets(["pcs-${env.ENVIRONMENT}": pcsE2eVaultSecrets])
   enableFortifyScan()
 
   afterAlways('fortify-scan') {
