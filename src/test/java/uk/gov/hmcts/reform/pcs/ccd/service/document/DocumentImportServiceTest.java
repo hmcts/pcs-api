@@ -39,6 +39,8 @@ class DocumentImportServiceTest {
     private IdamService idamService;
     @Mock
     private AuthTokenGenerator authTokenGenerator;
+    @Mock
+    private DocumentIdExtractor documentIdExtractor;
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
@@ -49,7 +51,8 @@ class DocumentImportServiceTest {
         when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(S2S_AUTH_TOKEN);
 
-        underTest = new DocumentImportService(pcsCaseService, caseDocumentClientApi, idamService, authTokenGenerator);
+        underTest = new DocumentImportService(pcsCaseService, caseDocumentClientApi, idamService,
+                                              authTokenGenerator, documentIdExtractor);
     }
 
     @Test
@@ -65,7 +68,8 @@ class DocumentImportServiceTest {
         when(caseDocumentClientApi.getMetadataForDocument(SYSTEM_AUTH_TOKEN, S2S_AUTH_TOKEN, documentId))
             .thenReturn(documentMetadata);
 
-        String documentUrl = "https://some.host/some/path/%s".formatted(documentId.toString());
+        String documentUrl = "some document URL";
+        when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(documentId);
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);

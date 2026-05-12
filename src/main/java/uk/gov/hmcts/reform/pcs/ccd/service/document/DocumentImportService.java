@@ -22,13 +22,13 @@ public class DocumentImportService {
     private final CaseDocumentClientApi caseDocumentClientApi;
     private final IdamService idamService;
     private final AuthTokenGenerator authTokenGenerator;
+    private final DocumentIdExtractor documentIdExtractor;
 
     public DocumentEntity addDocumentToCase(long caseReference,
                                             String documentUrl,
                                             CaseFileCategory caseFileCategory) {
 
-        String[] urlParts = documentUrl.split("/");
-        UUID documentId = UUID.fromString(urlParts[urlParts.length - 1]);
+        UUID documentId = documentIdExtractor.extractDocumentId(documentUrl);
 
         String authorization = idamService.getSystemUserAuthorisation();
         String serviceAuthorization = authTokenGenerator.generate();

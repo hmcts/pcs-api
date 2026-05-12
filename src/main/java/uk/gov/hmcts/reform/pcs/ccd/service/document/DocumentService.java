@@ -34,7 +34,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
@@ -42,6 +41,7 @@ import java.util.UUID;
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
+    private final DocumentIdExtractor documentIdExtractor;
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
@@ -151,7 +151,7 @@ public class DocumentService {
         return documents.stream()
                 .map(holder -> DocumentEntity.builder()
                         .url(holder.getDocument().getUrl())
-                        .documentId(extractDocumentId(holder.getDocument().getUrl()))
+                        .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
                         .fileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
                         .categoryId(mapDocumentTypeToCategory(holder.getType())
@@ -161,11 +161,6 @@ public class DocumentService {
                         .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                         .build())
                 .toList();
-    }
-
-    private UUID extractDocumentId(String documentUrl) {
-        String[] urlParts = documentUrl.split("/");
-        return UUID.fromString(urlParts[urlParts.length - 1]);
     }
 
     private DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {

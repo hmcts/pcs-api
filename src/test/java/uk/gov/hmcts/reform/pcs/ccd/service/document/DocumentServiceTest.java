@@ -52,7 +52,8 @@ class DocumentServiceTest {
 
     @Mock
     private DocumentRepository documentRepository;
-
+    @Mock
+    private DocumentIdExtractor documentIdExtractor;
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
@@ -60,20 +61,21 @@ class DocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentService(documentRepository);
+        underTest = new DocumentService(documentRepository, documentIdExtractor);
     }
-
 
     @Test
     void shouldSetDocumentIdFromUrl() {
         // Given
         UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
+        String documentUrl = "document URL";
+        when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(expectedDocumentId);
 
         PCSCase pcsCase = mock(PCSCase.class);
 
         AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
             .document(Document.builder()
-                          .url("https://host/" + expectedDocumentId)
+                          .url(documentUrl)
                           .filename("file-WITNESS_STATEMENT")
                           .binaryUrl("bin-WITNESS_STATEMENT")
                           .categoryId("cat-WITNESS_STATEMENT")
