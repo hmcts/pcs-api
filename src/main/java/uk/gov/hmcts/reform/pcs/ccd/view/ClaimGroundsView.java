@@ -1,14 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherNoGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherNoGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
@@ -25,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +42,84 @@ public class ClaimGroundsView {
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
             .ifPresent(mainClaim -> setClaimGroundFields(pcsCase, mainClaim));
+    }
+
+    public List<ListValue<ClaimGroundSummary>> buildClaimGroundSummariesFromDraft(PCSCase draftCaseData) {
+        List<ListValue<ClaimGroundSummary>> summaries = new ArrayList<>();
+
+        Optional.ofNullable(draftCaseData.getAssuredRentArrearsPossessionGrounds()).ifPresent(selected -> {
+            if (!CollectionUtils.isEmpty(selected.getRentArrearsGrounds())) {
+                addGrounds(summaries, selected.getRentArrearsGrounds().stream()
+                    .map(this::mapAssuredRentArrearsGround)
+                    .toList());
+            }
+            if (!CollectionUtils.isEmpty(selected.getAdditionalMandatoryGrounds())) {
+                addGrounds(summaries, selected.getAdditionalMandatoryGrounds().stream()
+                    .map(ground -> AssuredMandatoryGround.valueOf(ground.name()))
+                    .toList());
+            }
+            if (!CollectionUtils.isEmpty(selected.getAdditionalDiscretionaryGrounds())) {
+                addGrounds(summaries, selected.getAdditionalDiscretionaryGrounds().stream()
+                    .map(ground -> AssuredDiscretionaryGround.valueOf(ground.name()))
+                    .toList());
+            }
+        });
+
+        Optional.ofNullable(draftCaseData.getNoRentArrearsGroundsOptions()).ifPresent(selected -> {
+            addGrounds(summaries, selected.getMandatoryGrounds());
+            addGrounds(summaries, selected.getDiscretionaryGrounds());
+        });
+
+        Optional.ofNullable(draftCaseData.getIntroductoryDemotedOrOtherGroundsForPossession())
+            .map(IntroductoryDemotedOtherGroundsForPossession::getIntroductoryDemotedOrOtherGrounds)
+            .ifPresent(selected -> addGrounds(summaries, selected));
+
+        Optional.ofNullable(draftCaseData.getSecureOrFlexiblePossessionGrounds()).ifPresent(selected -> {
+            addGrounds(summaries, selected.getSecureOrFlexibleMandatoryGrounds());
+            addGrounds(summaries, selected.getSecureOrFlexibleDiscretionaryGrounds());
+            addGrounds(summaries, selected.getSecureAntisocialAdditionalGrounds());
+            addGrounds(summaries, selected.getSecureOrFlexibleMandatoryGroundsAlt());
+            addGrounds(summaries, selected.getSecureOrFlexibleDiscretionaryGroundsAlt());
+        });
+
+        Optional.ofNullable(draftCaseData.getGroundsForPossessionWales()).ifPresent(selected -> {
+            addGrounds(summaries, selected.getMandatoryGrounds());
+            addGrounds(summaries, selected.getDiscretionaryGrounds());
+            addGrounds(summaries, selected.getEstateManagementGrounds());
+        });
+
+        Optional.ofNullable(draftCaseData.getSecureContractGroundsForPossessionWales()).ifPresent(selected -> {
+            addGrounds(summaries, selected.getMandatoryGrounds());
+            addGrounds(summaries, selected.getDiscretionaryGrounds());
+            addGrounds(summaries, selected.getEstateManagementGrounds());
+        });
+
+        return summaries;
+    }
+
+    private void addGrounds(List<ListValue<ClaimGroundSummary>> summaries,
+                            Set<? extends PossessionGroundEnum> grounds) {
+        if (!CollectionUtils.isEmpty(grounds)) {
+            addGrounds(summaries, List.copyOf(grounds));
+        }
+    }
+
+    private void addGrounds(List<ListValue<ClaimGroundSummary>> summaries,
+                            List<? extends PossessionGroundEnum> grounds) {
+        if (!CollectionUtils.isEmpty(grounds)) {
+            grounds.stream()
+                .map(ground -> ClaimGroundSummary.builder().label(ground.getLabel()).build())
+                .map(summary -> ListValue.<ClaimGroundSummary>builder().value(summary).build())
+                .forEach(summaries::add);
+        }
+    }
+
+    private PossessionGroundEnum mapAssuredRentArrearsGround(AssuredRentArrearsGround ground) {
+        if (ground == AssuredRentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8) {
+            return AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
+        }
+
+        return AssuredDiscretionaryGround.valueOf(ground.name());
     }
 
     private void setClaimGroundFields(PCSCase pcsCase,

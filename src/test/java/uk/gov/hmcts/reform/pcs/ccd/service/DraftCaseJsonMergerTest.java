@@ -92,6 +92,7 @@ class DraftCaseJsonMergerTest {
                             "enforcementOrder.rawWarrantDetails.selectedDefendants",
                             "enforcementOrder.rawWarrantDetails.vulnerablePeoplePresent",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
+                            "summaryTab",
                             "casePartiesTab.claimantDetails.emailAddress",
                             "casePartiesTab.claimantDetails.name",
                             "casePartiesTab.claimantDetails.serviceAddress",
