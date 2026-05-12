@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.IncomeExpenseDetails;
@@ -14,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularExpenseE
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
 
+import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toVerticalYesNo;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -27,28 +27,30 @@ public class HouseholdCircumstancesService {
         if (hc == null) {
             return null;
         }
-
-        VerticalYesNo otherTenants = hc.getOtherTenants();
+        YesOrNo otherTenants = hc.getOtherTenants();
         YesNoNotSure alternativeAccommodation = hc.getAlternativeAccommodation();
 
         HouseholdCircumstancesEntity hcEntity = HouseholdCircumstancesEntity.builder()
-            .dependantChildren(hc.getDependantChildren())
+            .dependantChildren(toVerticalYesNo(hc.getDependantChildren()))
             .dependantChildrenDetails(hc.getDependantChildrenDetails())
-            .shareAdditionalCircumstances(hc.getShareAdditionalCircumstances())
+            .shareAdditionalCircumstances(toVerticalYesNo(hc.getShareAdditionalCircumstances()))
             .additionalCircumstancesDetails(hc.getAdditionalCircumstancesDetails())
-            .exceptionalHardship(hc.getExceptionalHardship())
+            .exceptionalHardship(toVerticalYesNo(hc.getExceptionalHardship()))
             .exceptionalHardshipDetails(hc.getExceptionalHardshipDetails())
-            .otherDependants(hc.getOtherDependants())
+            .otherDependants(toVerticalYesNo(hc.getOtherDependants()))
             .otherDependantDetails(hc.getOtherDependantDetails())
-            .otherTenants(otherTenants)
-            .otherTenantsDetails(otherTenants == VerticalYesNo.YES ? hc.getOtherTenantsDetails() : null)
+            .otherTenants(toVerticalYesNo(otherTenants))
+            .otherTenantsDetails(otherTenants == YesOrNo.YES ? hc.getOtherTenantsDetails() : null)
             .alternativeAccommodation(alternativeAccommodation)
             .alternativeAccommodationTransferDate(alternativeAccommodation == YesNoNotSure.YES
                                                       ? hc.getAlternativeAccommodationTransferDate() : null)
-
-            .shareIncomeExpenseDetails(hc.getShareIncomeExpenseDetails())
-            .universalCredit(hc.getUniversalCredit())
+            .shareIncomeExpenseDetails(toVerticalYesNo(hc.getShareIncomeExpenseDetails()))
+            .universalCredit(toVerticalYesNo(hc.getUniversalCredit()))
             .ucApplicationDate(hc.getUcApplicationDate())
+            .priorityDebts(toVerticalYesNo(hc.getPriorityDebts()))
+            .debtTotal(hc.getDebtTotal())
+            .debtContribution(hc.getDebtContribution())
+            .debtContributionFrequency(hc.getDebtContributionFrequency())
             .build();
 
         RegularIncomeEntity regularIncome = buildRegularIncome(hc);
