@@ -65,8 +65,20 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
         UUID currentUserId = securityContextService.getCurrentUserId();
         PCSCase pcsCase = eventPayload.caseData();
         legalRepresentativeService.save(currentUserId, pcsCase.getLegalRepresentativeContactDetails());
-        return SubmitResponse.defaultResponse();
+        return SubmitResponse.<State>builder()
+            .confirmationBody(getUpdatedInformationConfirmationMarkdown())
+            .confirmationHeader("Change sol info")
+            .build();
     }
 
+    private String getUpdatedInformationConfirmationMarkdown() {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+            <span class="govuk-panel__title govuk-!-font-size-36">You have updated a defendant's
+                    legal representative's information</span>
+            </div>
+            """;
+    }
 
 }

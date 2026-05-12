@@ -123,7 +123,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     private void buildSummary(ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.tab("summary", "Summary")
-            .field("showLegalRepresentativeSummary", NEVER_SHOW)
             .label("summaryLegalRepresentativeMarkdownLabel", null
                 , "${summaryLegalRepresentativeMarkdown}")
             .field("summaryLegalRepresentativeMarkdown", NEVER_SHOW)

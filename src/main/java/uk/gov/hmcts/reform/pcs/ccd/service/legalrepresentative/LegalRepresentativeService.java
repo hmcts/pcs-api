@@ -47,7 +47,8 @@ public class LegalRepresentativeService {
             legalRepresentativeEntity.setAddress(mapAddress(legalRepresentativeDetails.getCorrespondenceAddress()));
         }
 
-        if (legalRepresentativeDetails.getProvideContactPhoneNumber().equals(VerticalYesNo.YES)) {
+        if (legalRepresentativeDetails.getProvideContactPhoneNumber() != null &&
+            legalRepresentativeDetails.getProvideContactPhoneNumber().equals(VerticalYesNo.YES)) {
             legalRepresentativeEntity.setPhone(legalRepresentativeDetails.getContactPhoneNumber());
         }
 

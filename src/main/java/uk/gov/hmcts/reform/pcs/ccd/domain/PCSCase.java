@@ -595,9 +595,6 @@ public class PCSCase {
     @CCD
     private CasePartiesTab casePartiesTab;
 
-    @CCD(searchable = false)
-    private YesOrNo showLegalRepresentativeSummary;
-
     /**
      * The legal representative for a defendant on the case.
      */

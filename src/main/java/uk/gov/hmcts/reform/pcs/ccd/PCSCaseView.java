@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
@@ -76,6 +77,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
     private final CaseTabView caseTabView;
+    private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -89,7 +91,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
-        setSummaryLegalRepresentativeMarkdownFields(pcsCase);
         enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
@@ -138,6 +139,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseTabView.setCaseTabFields(pcsCase);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
@@ -211,21 +213,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              </p>
                                              """.formatted(resumePossessionClaim));
         }
-    }
-
-    private void setSummaryLegalRepresentativeMarkdownFields(PCSCase pcsCase) {
-                pcsCase.setSummaryLegalRepresentativeMarkdown("""
-                                                                  <h2 class="govuk-heading-m">What happens next</h2>
-                                                                  <p>You must
-                                                                  <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
-                                                                     role="button"
-                                                                     class="govuk-link govuk-link--no-visited-state">
-                                                                    update the legal representative details for the case</a>
-                                                                  before</p>
-                                                                  <p>responding so you can receive updates and notifications
-                                                                  about the case.
-                                                                  </p>
-                                                                  """.formatted(legalRepresentativeContactDetails));
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {
