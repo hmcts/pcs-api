@@ -29,19 +29,11 @@ public class DefendantResponses {
     @CCD
     private YesNoNotSure tenancyTypeConfirmation;
 
-    @Deprecated(forRemoval = true)
-    @CCD
-    private YesNoNotSure tenancyTypeCorrect;
-
     @CCD
     private String tenancyType;
 
     @CCD
     private YesNoNotSure tenancyStartDateConfirmation;
-
-    @Deprecated(forRemoval = true)
-    @CCD
-    private YesNoNotSure tenancyStartDateCorrect;
 
     @CCD
     private LocalDate tenancyStartDate;
