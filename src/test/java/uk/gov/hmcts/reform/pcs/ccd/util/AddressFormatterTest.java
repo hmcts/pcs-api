@@ -18,6 +18,7 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.NEWLINE_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class AddressFormatterTest {
@@ -113,6 +114,25 @@ class AddressFormatterTest {
     }
 
     @Test
+    void shouldFormatFullAddressWithCustomDelimiter() {
+        // Given
+        when(propertyAddress.getAddressLine1()).thenReturn("Address line 1");
+        when(propertyAddress.getAddressLine2()).thenReturn("Address line 2");
+        when(propertyAddress.getAddressLine3()).thenReturn("Address line 3");
+        when(propertyAddress.getPostTown()).thenReturn("Post Town");
+        when(propertyAddress.getPostCode()).thenReturn("Postcode");
+        when(propertyAddress.getCounty()).thenReturn("County");
+        when(propertyAddress.getCountry()).thenReturn("Country");
+
+        // When
+        String result = underTest.formatFullAddress(propertyAddress, NEWLINE_DELIMITER);
+
+        // Then
+        assertThat(result)
+            .isEqualTo("Address line 1\nAddress line 2\nAddress line 3\nPost Town\nCounty\nPostcode\nCountry");
+    }
+
+    @Test
     void shouldReturnNullFormattedShortAddressWhenAddressIsNull() {
         // When
         String result = underTest.formatShortAddress(null, COMMA_DELIMITER);
@@ -125,6 +145,15 @@ class AddressFormatterTest {
     void shouldReturnNullFormattedMediumAddressWhenAddressIsNull() {
         // When
         String result = underTest.formatMediumAddress(null, BR_DELIMITER);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void shouldReturnNullFormattedFullAddressWhenAddressIsNull() {
+        // When
+        String result = underTest.formatFullAddress(null, BR_DELIMITER);
 
         // Then
         assertThat(result).isNull();
@@ -145,6 +174,17 @@ class AddressFormatterTest {
     void shouldThrowExceptionForFormattedMediumAddressIfDelimiterIsNull() {
         // When
         Throwable throwable = catchThrowable(() -> underTest.formatMediumAddress(propertyAddress, null));
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("Delimiter must not be null");
+    }
+
+    @Test
+    void shouldThrowExceptionForFormattedFullAddressIfDelimiterIsNull() {
+        // When
+        Throwable throwable = catchThrowable(() -> underTest.formatFullAddress(propertyAddress, null));
 
         // Then
         assertThat(throwable)
