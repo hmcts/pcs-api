@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
@@ -280,7 +280,7 @@ public class CaseTabViewTest {
         AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(propertyAddress)
-            .dateSubmitted("11 May 2026, 5:02:31PM")
+            .dateSubmitted(LocalDateTime.of(2026, 5, 11, 17, 2, 31))
             .claimGroundSummaries(List.of(
                 listValue(ClaimGroundSummary.builder().label("Ground 1").build()),
                 listValue(ClaimGroundSummary.builder().label("Ground 2").build())

@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +60,8 @@ public class PcsCaseEntity {
     private Integer caseManagementLocation;
 
     private Boolean preActionProtocolCompleted;
+
+    private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference

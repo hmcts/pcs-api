@@ -10,14 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-
 @Component
 public class ClaimView {
-
-    private static final DateTimeFormatter SUBMITTED_DATE_FORMATTER =
-        DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm:ssa", Locale.UK);
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (!pcsCaseEntity.getClaims().isEmpty()) {
@@ -42,8 +36,6 @@ public class ClaimView {
         pcsCase.setApplicationWithClaim(claim.getGenAppExpected());
         pcsCase.setLanguageUsed(claim.getLanguageUsed());
         pcsCase.setWantToUploadDocuments(claim.getAdditionalDocsProvided());
-        pcsCase.setDateSubmitted(claim.getClaimSubmittedDate() == null ? null : claim.getClaimSubmittedDate()
-            .format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM"));
     }
 
     private void mapComplexClaimFields(PCSCase pcsCase, ClaimEntity claim) {

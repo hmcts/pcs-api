@@ -178,6 +178,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
             .allDocuments(mapAndWrapDocuments(pcsCaseEntity))
+            .dateSubmitted(pcsCaseEntity.getCreatedAt())
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
