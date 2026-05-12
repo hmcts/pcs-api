@@ -21,7 +21,7 @@ public class TenancyLicenceTabDetails {
     @CCD(
         label = "Tenancy, occupation contract or licence agreement type"
     )
-    private TenancyLicenceType typeOfTenancyLicence;
+    private String typeOfTenancyLicence;
 
     @CCD(
         label = "Tenancy, occupation contract or licence start date"
@@ -31,7 +31,7 @@ public class TenancyLicenceTabDetails {
     @CCD(
         label = "Do you have a copy of the tenancy or licence agreement?"
     )
-    private VerticalYesNo hasCopyOfTenancyLicence;
+    private String hasCopyOfTenancyLicence;
 
     @CCD(
         label = "Details of why you do not have a copy"
