@@ -101,6 +101,7 @@ export class ActionRegistry {
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['whereShouldThisFlagBeAdded', new CaseFlagAction()],
     ['selectFlagType', new CaseFlagAction()],
+    ['selectSpecialMeasureForFlag', new CaseFlagAction()],
     ['addCommentsForFlag', new CaseFlagAction()],
     ['clickChangeLinkForRow', new CaseFlagAction()],
     ['reviewFlagDetails', new CaseFlagAction()],

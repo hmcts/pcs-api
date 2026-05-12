@@ -6,6 +6,7 @@ export const manageCaseFlags = {
     goButton: `Go`,
     caseLevelComplexCaseRadioOption: `Case level - Complex case (Test)`,
     caseLevelUrgentCaseRadioOption: `Case level - Urgent case (Test)`,
+    respondentRadioOption: `Peter Parker (defendant) - Special measure, Evidence by live link (Test)`,
     continueButton: `Continue`,
     cancelButton: `Cancel`
 };

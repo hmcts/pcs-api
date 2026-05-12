@@ -7,6 +7,7 @@ export class CaseFlagAction implements IAction {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['whereShouldThisFlagBeAdded', () => this.whereShouldThisFlagBeAdded(fieldName as actionRecord, page)],
       ['selectFlagType', () => this.selectFlagType(fieldName as actionRecord, page)],
+      ['selectSpecialMeasureForFlag', () => this.selectSpecialMeasureForFlag(fieldName as actionRecord, page)],
       ['addCommentsForFlag', () => this.addCommentsForFlag(fieldName as actionRecord, page)],
       ['clickChangeLinkForRow', () => this.clickChangeLinkForRow(fieldName as actionRecord, page)],
       ['reviewFlagDetails', () => this.reviewFlagDetails(fieldName as actionRecord, page)],
@@ -31,6 +32,13 @@ export class CaseFlagAction implements IAction {
     const radio = page.locator(`label >> text=${selectOptions.selectFlagOption}`);
     await radio.waitFor({ state: 'visible' });
     await performAction('clickRadioButton', { question: selectOptions.selectFlagQuestion, option: selectOptions.selectFlagOption });
+    await performAction('clickButton', selectOptions.continueButton);
+  }
+
+  private async selectSpecialMeasureForFlag(selectOptions: actionRecord, page: Page) {
+    const radio = page.locator(`label >> text=${selectOptions.specialMeasureOption}`);
+    await radio.waitFor({ state: 'visible' });
+    await performAction('clickRadioButton', { label: selectOptions.specialMeasureLabel, option: selectOptions.specialMeasureOption });
     await performAction('clickButton', selectOptions.continueButton);
   }
 

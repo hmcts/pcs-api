@@ -7,6 +7,7 @@ export const selectFlagType = {
     powerOfArrestWithPoliceRadioOption: `Power of arrest with police`,
     warrantOfArrestConclusionOrWithdrawnRadioOption: `Warrant of arrest conclusion/withdrawn`,
     welshFormsAndCommunicationsRadioOption: `Welsh forms and communications`,
+    specialMeasureRadioOption: `Special measure`,
     otherRadioOption: `Other`,
     enterAFlagTypeInputLabel: `Enter a flag type`,
     enterAFlagTypeInputText: `Test Flag`,

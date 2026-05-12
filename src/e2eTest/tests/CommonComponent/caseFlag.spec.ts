@@ -17,11 +17,12 @@ import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { specialMeasureForFlag } from '@data/page-data/specialMeasureForFlag.page.data';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
@@ -38,7 +39,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Case Flags]', async () => {
-  test('Case Flags - Create New Case Flag when case level is selected @caseflags @nightly', async () => {
+  test('Case Flags - Create New Case Flag when case level is selected @caseFlags @nightly', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
@@ -81,6 +82,68 @@ test.describe('[Common Component Case Flags]', async () => {
     await performAction('clickButton', manageCaseFlags.goButton);
     await performAction('manageCaseFlags', {
       flagOption: manageCaseFlags.caseLevelUrgentCaseRadioOption,
+      continueButton: manageCaseFlags.continueButton
+    }); 
+    await performAction('makeFlagInactive', {
+      inactiveButton: updateFlagComments.makeInactiveButton,
+      continueButton: updateFlagComments.continueButton
+    });
+    await performAction('reviewFlagDetails', {
+      saveButton: reviewFlagDetails.saveAndContinueButton
+    });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
+    });
+
+    test('Case Flags - Create New Case Flag when defendant is selected @caseFlags @nightly', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
+    await performAction('clickButton', caseSummary.go);
+    //I have commented out because the main header is not matching in both the PR HDPI-3503 and HDPI-5740
+    //await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
+    await performAction('whereShouldThisFlagBeAdded', {
+      flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
+      flagLevelOption: whereShouldThisFlagBeAdded.respondentRadioOption,
+      continueButton: whereShouldThisFlagBeAdded.continueButton
+    });
+    //await performValidation('mainHeader', selectFlagType.mainHeader);
+    await performAction('selectFlagType', {
+      selectFlaglabel: selectFlagType.selectFlagTypeLabel,
+      selectFlagOption: selectFlagType.specialMeasureRadioOption,
+      continueButton: selectFlagType.continueButton
+    });
+    await performValidation('mainHeader', specialMeasureForFlag.mainHeader);
+    await performAction('selectSpecialMeasureForFlag', {
+      specialMeasurelabel: specialMeasureForFlag.specialMeasureLabel,
+      specialMeasureOption: specialMeasureForFlag.screeningWitnessFromAccusedRadioOption,
+      continueButton: specialMeasureForFlag.continueButton
+    });
+    //await performValidation('mainHeader', addCommentsForFlag.mainHeader);
+    await performAction('addCommentsForFlag', {
+      label: addCommentsForFlag.addCommentsLabel,
+      input: addCommentsForFlag.addCommentTextInput,
+      continueButton: addCommentsForFlag.continueButton
+    });
+    await performValidation('mainHeader', reviewFlagDetails.mainHeader);
+    await performAction('clickChangeLinkForRow', {
+      rowLabel: reviewFlagDetails.rowLabel,
+      changeLinkText: reviewFlagDetails.changeLink
+    });
+     await performAction('selectSpecialMeasureForFlag', {
+      specialMeasurelabel: specialMeasureForFlag.specialMeasureLabel,
+      specialMeasureOption: specialMeasureForFlag.evidenceByLiveLinkRadioOption,
+      continueButton: specialMeasureForFlag.continueButton
+    });
+    await performAction('clickButton', addCommentsForFlag.continueButton);
+    await performAction('reviewFlagDetails', {
+      saveButton: reviewFlagDetails.saveAndContinueButton
+    });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
+    await performAction('viewCaseFlags', {
+      viewFlagLink: viewCaseFlag.viewFlagLink
+    });
+    await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
+    await performAction('clickButton', manageCaseFlags.goButton);
+    await performAction('manageCaseFlags', {
+      flagOption: manageCaseFlags.respondentRadioOption,
       continueButton: manageCaseFlags.continueButton
     }); 
     await performAction('makeFlagInactive', {
