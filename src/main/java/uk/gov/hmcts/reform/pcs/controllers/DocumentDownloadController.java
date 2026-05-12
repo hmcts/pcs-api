@@ -1,21 +1,20 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import uk.gov.hmcts.reform.pcs.document.model.DownloadedDocumentResponse;
 import uk.gov.hmcts.reform.pcs.document.service.DocumentDownloadService;
-import uk.gov.hmcts.reform.pcs.exception.DocumentDownloadException;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -29,31 +28,22 @@ public class DocumentDownloadController {
     private final DocumentDownloadService documentDownloadService;
 
     @GetMapping("/downloadDocument/{documentId}")
-    public void downloadDocumentById(
+    public ResponseEntity<StreamingResponseBody> downloadDocumentById(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
-        @PathVariable UUID documentId,
-        HttpServletResponse response
+        @PathVariable UUID documentId
     ) {
-
         DownloadedDocumentResponse document = documentDownloadService.downloadDocument(authorisation, documentId);
 
-        response.setContentType(document.mimeType());
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, buildContentDisposition(document.fileName()));
-
-        try {
-            try (InputStream in = document.file().getInputStream();
-                 OutputStream out = response.getOutputStream()) {
+        StreamingResponseBody streamBody = out -> {
+            try (InputStream in = document.file().getInputStream()) {
                 in.transferTo(out);
-                out.flush();
             }
+        };
 
-            log.debug("Document streamed successfully: {}", document.fileName());
-
-        } catch (IOException ioe) {
-            log.error("Failed to stream document {}: {}", documentId, ioe.getMessage(), ioe);
-            throw new DocumentDownloadException("Failed to stream document " + documentId, ioe);
-        }
-
+        return ResponseEntity.status(HttpStatus.OK)
+            .contentType(document.mediaType())
+            .header(HttpHeaders.CONTENT_DISPOSITION, buildContentDisposition(document.fileName()))
+            .body(streamBody);
     }
 
     private String buildContentDisposition(String filename) {

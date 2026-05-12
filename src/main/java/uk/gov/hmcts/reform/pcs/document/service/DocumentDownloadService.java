@@ -4,6 +4,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DocumentDownloadService {
 
-    private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+    private static final MediaType DEFAULT_CONTENT_TYPE = MediaType.APPLICATION_OCTET_STREAM;
     private static final String FALLBACK_FILENAME = "Unknown filename";
 
     private final CaseDocumentClientApi caseDocumentClientApi;
@@ -42,16 +43,16 @@ public class DocumentDownloadService {
                 .map(DocumentEntity::getFileName)
                 .orElseGet(() -> getOriginalFileName(authorisation, serviceAuth, documentId));
 
-            String mimeType = response.getHeaders().getContentType() != null
-                ? response.getHeaders().getContentType().toString()
+            MediaType mediaType = response.getHeaders().getContentType() != null
+                ? response.getHeaders().getContentType()
                 : DEFAULT_CONTENT_TYPE;
 
-            log.debug("Document downloaded successfully: {}, Type: {}", fileName, mimeType);
+            log.debug("Document downloaded successfully: {}, Type: {}", fileName, mediaType);
 
             return new DownloadedDocumentResponse(
                 response.getBody(),
                 fileName,
-                mimeType
+                mediaType
             );
 
         } catch (FeignException fe) {

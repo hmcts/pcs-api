@@ -65,7 +65,7 @@ class DocumentDownloadServiceTest {
         // Then
         assertThat(response.file()).isEqualTo(resource);
         assertThat(response.fileName()).isEqualTo(overriddenFilename);
-        assertThat(response.mimeType()).isEqualTo(MediaType.APPLICATION_PDF.toString());
+        assertThat(response.mediaType()).isEqualTo(MediaType.APPLICATION_PDF);
     }
 
     @Test
@@ -82,7 +82,7 @@ class DocumentDownloadServiceTest {
         DownloadedDocumentResponse response = underTest.downloadDocument(AUTH_TOKEN, DOCUMENT_ID);
 
         // Then
-        assertThat(response.mimeType()).isEqualTo("application/octet-stream");
+        assertThat(response.mediaType()).isEqualTo(MediaType.APPLICATION_OCTET_STREAM);
     }
 
     @Test
