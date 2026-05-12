@@ -21,21 +21,28 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -141,7 +148,7 @@ class DocumentServiceTest {
     @ParameterizedTest
     @MethodSource("additionalDocumentCategoryScenarios")
     void shouldMapAdditionalDocumentsToCaseFileCategories(AdditionalDocumentType additionalDocumentType,
-                                                          CaseFileCategory expectedCategory) {
+                                                          String expectedCategoryId) {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
@@ -163,7 +170,7 @@ class DocumentServiceTest {
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getCategoryId)
-            .containsExactly(expectedCategory.getId());
+            .containsExactly(expectedCategoryId);
     }
 
     @Test
@@ -338,6 +345,35 @@ class DocumentServiceTest {
         assertThat(capturedEntities)
                 .extracting(DocumentEntity::getType)
                 .containsExactly(expectedDocumentType);
+    }
+
+    @Test
+    void shouldPersistNullCategoryForPoliceReportEvidenceDocuments() {
+        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
+            .document(Document.builder()
+                .url("url-POLICE_REPORT")
+                .filename("file-POLICE_REPORT")
+                .binaryUrl("bin-POLICE_REPORT")
+                .build())
+            .documentType(EvidenceDocumentType.POLICE_REPORT)
+            .build();
+
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                .additionalDocuments(List.of(ListValue.<EvidenceOfDefendants>builder()
+                    .id("1")
+                    .value(evidenceDocument)
+                    .build()))
+                .build())
+            .build();
+
+        underTest.createAllDocuments(enforcementOrder);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+        assertThat(capturedEntities.getFirst().getCategoryId()).isNull();
     }
 
     @Test
@@ -528,24 +564,179 @@ class DocumentServiceTest {
         assertThat(entity.getDescription()).isNull();
     }
 
+    @Test
+    void shouldSaveDefendantEvidenceDocuments() {
+        // Given
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        when(response.getId()).thenReturn(UUID.randomUUID());
+
+        UploadedDocument defDoc1 = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
+            .contentType("application/pdf")
+            .sizeInBytes(135529L)
+            .build();
+
+        UploadedDocument defDoc2 = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url2").filename("file2.xlsx").binaryUrl("bin2").categoryId("cat2").build())
+            .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .sizeInBytes(26033L)
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc1).build(),
+            ListValue.<UploadedDocument>builder().id("2").value(defDoc2).build()
+        );
+
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        List<DocumentEntity> result =
+            underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(2);
+
+        assertThat(entities).allSatisfy(entity -> {
+            assertThat(entity.getType()).isNull();
+            assertThat(entity.getCategoryId()).isNull();
+            assertThat(entity.getDefendantResponse()).isEqualTo(response);
+            assertThat(entity.getPcsCase()).isEqualTo(pcsCase);
+            assertThat(entity.getParty()).isEqualTo(party);
+        });
+
+        assertThat(entities)
+            .extracting(DocumentEntity::getFileName)
+            .containsExactly("file1.pdf", "file2.xlsx");
+
+        assertThat(entities)
+            .extracting(DocumentEntity::getContentType)
+            .containsExactly("application/pdf",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+        assertThat(entities)
+            .extracting(DocumentEntity::getSize)
+            .containsExactly(135529L, 26033L);
+
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoDefendantEvidenceDocuments() {
+        // Given
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        // When
+        List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(null, response, pcsCase, party);
+
+        // Then
+        assertThat(result).isEmpty();
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenDefendantEvidenceDocumentsIsEmpty() {
+        // Given
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        // When
+        List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(
+            Collections.emptyList(), response, pcsCase, party);
+
+        // Then
+        assertThat(result).isEmpty();
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void shouldFilterOutNullValuesFromDefendantEvidenceDocuments() {
+        // Given
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        when(response.getId()).thenReturn(UUID.randomUUID());
+
+        UploadedDocument validDoc = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
+            .contentType("application/pdf")
+            .sizeInBytes(100L)
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(validDoc).build(),
+            ListValue.<UploadedDocument>builder().id("2").value(null).build()
+        );
+
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        assertThat(entities.getFirst().getFileName()).isEqualTo("file1.pdf");
+    }
+
+    @Test
+    void shouldSaveDefendantEvidenceWithNullMetadata() {
+        // Given
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        when(response.getId()).thenReturn(UUID.randomUUID());
+
+        UploadedDocument defDoc = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url1").filename("file1.pdf").binaryUrl("bin1").build())
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
+        );
+
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        underTest.createDefendantUploadedDocuments(uploadedDocs, response, pcsCase, party);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities.getFirst().getContentType()).isNull();
+        assertThat(entities.getFirst().getSize()).isNull();
+    }
+
     private static Stream<Arguments> additionalDocumentCategoryScenarios() {
         return Stream.of(
             Arguments.of(
                 AdditionalDocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
-                CaseFileCategory.STATEMENTS_OF_CASE
+                CaseFileCategory.STATEMENTS_OF_CASE.getId()
             ),
-            Arguments.of(AdditionalDocumentType.RENT_STATEMENT, CaseFileCategory.PROPERTY_DOCUMENTS),
-            Arguments.of(AdditionalDocumentType.TENANCY_AGREEMENT, CaseFileCategory.PROPERTY_DOCUMENTS),
-            Arguments.of(AdditionalDocumentType.POSSESSION_NOTICE, CaseFileCategory.PROPERTY_DOCUMENTS),
-            Arguments.of(AdditionalDocumentType.WITNESS_STATEMENT, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SERVICE, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.PHOTOGRAPHIC_EVIDENCE, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF, CaseFileCategory.CORRESPONDENCE),
-            Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE),
-            Arguments.of(AdditionalDocumentType.OTHER, CaseFileCategory.UNCATEGORISED)
+            Arguments.of(AdditionalDocumentType.RENT_STATEMENT, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
+            Arguments.of(AdditionalDocumentType.TENANCY_AGREEMENT, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
+            Arguments.of(AdditionalDocumentType.POSSESSION_NOTICE, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
+            Arguments.of(AdditionalDocumentType.WITNESS_STATEMENT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SERVICE, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.PHOTOGRAPHIC_EVIDENCE, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF,
+                         CaseFileCategory.CORRESPONDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.OTHER, null)
         );
     }
 }

@@ -26,7 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -74,6 +75,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFieldsView caseFieldsView;
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
+    private final CaseTabView caseTabView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -87,7 +89,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
-        setSummaryLegalRepresentativeMarkdownFields(pcsCase, false);
+        setSummaryLegalRepresentativeMarkdownFields(pcsCase);
         enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
@@ -119,7 +121,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
             .allDocuments(mapAndWrapDocuments(pcsCaseEntity))
-            .showLegalRepresentativeSummary(isLegalRepresentativeUser(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -136,6 +137,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
+        caseTabView.setCaseTabFields(pcsCase);
 
         return pcsCase;
     }
@@ -184,7 +186,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <br>
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
-                                                class="govuk-link govuk-link--no-visited-state">
+                                                role="button"
+                                                class="govuk-button govuk-link govuk-link--no-visited-state">
                                                Continue
                                              </a>
                                              <p class="govuk-body govuk-!-font-size-19">
@@ -199,6 +202,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <br>
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
+                                                role="button"
                                                 class="govuk-button govuk-link govuk-link--no-visited-state">
                                                Continue
                                              </a>
@@ -209,9 +213,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         }
     }
 
-    private void setSummaryLegalRepresentativeMarkdownFields(PCSCase pcsCase,
-                                                             boolean hasUpdatedLegalRepresentativeDetails) {
-            if (hasUpdatedLegalRepresentativeDetails) {
+    private void setSummaryLegalRepresentativeMarkdownFields(PCSCase pcsCase) {
                 pcsCase.setSummaryLegalRepresentativeMarkdown("""
                                                                   <h2 class="govuk-heading-m">What happens next</h2>
                                                                   <p>You must
@@ -224,15 +226,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                                                   about the case.
                                                                   </p>
                                                                   """.formatted(legalRepresentativeContactDetails));
-            } else {
-                pcsCase.setSummaryLegalRepresentativeMarkdown("""
-                                                                  <h2 class="govuk-heading-m">What happens next</h2>
-                                                                  <a href="/ToConfirm"
-                                                                     role="button"
-                                                                     class="govuk-link govuk-link--no-visited-state">
-                                                                    Respond to the claim</a>
-                                                                  """);
-            }
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {

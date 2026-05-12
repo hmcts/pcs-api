@@ -1,21 +1,33 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection.RECOVERY_ATTEMPT_DETAILS_LABEL;
+
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.List;
+
+@AllArgsConstructor
+@Component
 public class RentArrears implements CcdPageConfiguration {
+
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("rentArrears")
-                .showCondition("showRentSectionPage=\"Yes\" AND showRentArrearsPage=\"Yes\"")
+                .page("rentArrears", this::midEvent)
+                .showCondition("showRentSectionPage=\"Yes\"")
                 .pageLabel("Details of rent arrears")
-                .readonly(PCSCase::getShowRentArrearsPage, NEVER_SHOW)
 
                 .complex(PCSCase::getRentArrears)
                     // ---------- Rent statement guidance ----------
@@ -62,19 +74,26 @@ public class RentArrears implements CcdPageConfiguration {
                             How much are the total rent arrears as shown on the rent statement?</h3>
                             """)
                     .mandatory(RentArrearsSection::getTotal)
+                    .mandatory(RentArrearsSection::getRecoveryAttempted)
+                    .mandatory(
+                        RentArrearsSection::getRecoveryAttemptDetails,
+                        "rentArrears_RecoveryAttempted=\"YES\" "
+                    )
 
-                    // ---------- Third-party payments ----------
-                    .label("rentArrears-thirdPartyPayments-separator", "---")
-                    .mandatory(RentArrearsSection::getThirdPartyPayments)
-
-                    .mandatory(RentArrearsSection::getThirdPartyPaymentSources,
-                            "rentArrears_ThirdPartyPayments=\"YES\"")
-
-                    // "Other" free text is mandatory when OTHER is selected
-                    .mandatory(RentArrearsSection::getPaymentSourceOther,
-                            "rentArrears_ThirdPartyPayments=\"YES\" "
-                            + "AND rentArrears_ThirdPartyPaymentSources CONTAINS \"OTHER\"")
                 .done()
                 .label("rentArrears-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+
+        List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
+            caseData.getRentArrears().getRecoveryAttemptDetails(),
+            RECOVERY_ATTEMPT_DETAILS_LABEL,
+            TextAreaValidationService.MEDIUM_TEXT_LIMIT
+        );
+
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

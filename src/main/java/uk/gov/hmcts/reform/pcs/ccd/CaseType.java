@@ -74,7 +74,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
             .field("nextStepsMarkdown", NEVER_SHOW);
 
-        configureSummary(builder);
+        buildSummary(builder);
+
         builder.tab("CaseHistory", "History")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("caseHistory");
@@ -97,6 +98,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
+        buildCasePartiesTab(builder);
+
         configureCaseFileCategories(builder);
     }
 
@@ -110,14 +113,22 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         }
     }
 
-    private void configureSummary(ConfigBuilder<PCSCase, State, UserRole> builder) {
-            builder.tab("summary", "Summary")
-                .field("showLegalRepresentativeSummary", NEVER_SHOW)
-                .label("summaryLegalRepresentativeMarkdownLabel", null
+    private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.tab("caseParties", "Case Parties")
+            .label("Case Parties", null, "#### Case Parties")
+            .field("casePartiesTab_ClaimantDetails")
+            .field("casePartiesTab_DefendantOneDetails")
+            .field("casePartiesTab_DefendantsDetails");
+    }
+
+    private void buildSummary(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.tab("summary", "Summary")
+            .field("showLegalRepresentativeSummary", NEVER_SHOW)
+            .label("summaryLegalRepresentativeMarkdownLabel", null
                 , "${summaryLegalRepresentativeMarkdown}")
-                .field("summaryLegalRepresentativeMarkdown", NEVER_SHOW)
-                .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
-                .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
-                .field(PCSCase::getPropertyAddress);
-        }
+            .field("summaryLegalRepresentativeMarkdown", NEVER_SHOW)
+            .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
+            .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
+            .field(PCSCase::getPropertyAddress);
+    }
 }
