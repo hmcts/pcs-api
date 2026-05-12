@@ -19,5 +19,15 @@ export const checkingNotice = {
   thisWillSaveYourProgressHiddenParagraph: `This will save your progress and take you to the case overview.`,
   continueButton: `Continue`,
   previousButton: `Previous`,
-  cancelLink: `Cancel`
+  cancelLink: `Cancel`,
+  limitHintText: 'You can enter up to 500 characters',
+  noStatementText: '"I am a landlord under a tenancy or license which is not an occupation contract because:"',
+  noServedNoticeEnterStatementTextLabel: `Enter statement`,
+  noServedNoticeEnterStatementHintText: `You can enter up to 500 characters`,
+  noServedNoticeEnterStatementTextInput: `This is the sample text for - I am a landlord under a tenancy or license which is not an occupation contract because:`,
+  noServedNoticeStatementParagraph: 'You must make a statement that includes:',
+  noServedNoticeStatementBulletinListItem1: 'the type of tenancy or licence that is in place for this claim',
+  noServedNoticeStatementBulletinListItem2: ' how you have complied with the applicable possession procedures',
+  noServedNoticeStratStatementParagraph: 'Start your statement with:\n"I am a landlord under a tenancy or license which is not an occupation contract because:"'
 };
+
