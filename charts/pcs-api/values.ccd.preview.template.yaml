@@ -183,7 +183,7 @@ ccd:
   am-role-assignment-service:
     java:
       nameOverride: ${SERVICE_NAME}-am-role-assignment-service
-      image: 'hmctsprod.azurecr.io/am/role-assignment-service:pr-2691'
+      image: 'hmctsprod.azurecr.io/am/role-assignment-service:latest'
       ingressHost: am-role-assignment-service-${SERVICE_FQDN}
       autoscaling:
         enabled: false
@@ -289,7 +289,7 @@ ccd-case-document-am-api:
 am-org-role-mapping-service:
   enabled: true
   java:
-    image: 'hmctsprod.azurecr.io/am/org-role-mapping-service:pr-2705'
+    image: 'hmctsprod.azurecr.io/am/org-role-mapping-service:latest'
     ingressHost: am-org-role-mapping-service-${SERVICE_FQDN}
     releaseNameOverride: ${SERVICE_NAME}-am-org-role-mapping-service
     secrets:
