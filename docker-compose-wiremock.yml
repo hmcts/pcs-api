@@ -1,6 +1,7 @@
 services:
   wiremock:
     image: wiremock/wiremock:latest
+    container_name: wiremock-local
     ports:
       - "8083:8083"
     volumes:
