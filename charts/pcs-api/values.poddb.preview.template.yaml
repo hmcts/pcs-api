@@ -1,0 +1,11 @@
+global:
+  postgresSecret: ${SERVICE_NAME}-postgresql
+  postgresHostname: "{{ .Release.Name }}-postgresql"
+  postgresUsername: "javapostgres"
+
+java:
+  postgresql:
+    enabled: true
+
+postgresql:
+  enabled: false
