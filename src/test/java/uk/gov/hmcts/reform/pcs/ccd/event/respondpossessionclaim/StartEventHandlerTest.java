@@ -10,10 +10,16 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.CitizenStartEventStrategy;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.LegalRepStartEventStrategy;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,15 +30,15 @@ class StartEventHandlerTest {
     private static final long CASE_REFERENCE = 1234567890L;
 
     @Mock
-    private SecurityContextService securityContextService;
-    @Mock
-    private CitizenCaseDraftLoader citizenCaseDraftLoader;
-    @Mock
-    private LegalRepresentativeCaseDraftLoader legalRepresentativeCaseDraftLoader;
-    @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
+    private SecurityContextService securityContextService;
+    @Mock
     private UserInfo userInfo;
+    @Mock
+    private LegalRepStartEventStrategy legalRepStartEventStrategy;
+    @Mock
+    private CitizenStartEventStrategy citizenStartEventStrategy;
 
     private StartEventHandler underTest;
 
@@ -40,49 +46,66 @@ class StartEventHandlerTest {
     void setUp() {
         underTest = new StartEventHandler(
             securityContextService,
-            citizenCaseDraftLoader,
-            legalRepresentativeCaseDraftLoader
+            List.of(legalRepStartEventStrategy, citizenStartEventStrategy)
         );
     }
 
     @Test
-    void shouldLoadCitizenDraftWhenUserHasCitizenRole() {
-        // Given
+    void shouldLoadCitizenStrategyForCitizenUser() {
+        // given
+        PCSCase pcsCase = PCSCase.builder().build();
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(pcsCase);
+        when(citizenStartEventStrategy.supports(true)).thenReturn(true);
+        when(legalRepStartEventStrategy.supports(true)).thenReturn(false);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload();
-
-        // When
+        // when
         underTest.start(eventPayload);
 
-        // Then
-        verify(citizenCaseDraftLoader).loadDraft(CASE_REFERENCE, eventPayload.caseData());
-        verify(legalRepresentativeCaseDraftLoader, never()).loadDraft(CASE_REFERENCE, eventPayload.caseData());
+        // then
+        verify(citizenStartEventStrategy).loadDraft(CASE_REFERENCE, pcsCase);
+        verify(legalRepStartEventStrategy, never()).loadDraft(CASE_REFERENCE, pcsCase);
     }
 
     @Test
-    void shouldLoadLegalRepresentativeDraftWhenUserHasNoCitizenRole() {
-        // Given
+    void shouldLoadLegalRepStrategyForNoCitizenUser() {
+        // given
+        PCSCase pcsCase = PCSCase.builder().build();
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(pcsCase);
+        when(legalRepStartEventStrategy.supports(false)).thenReturn(true);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload();
-
-        // When
+        // when
         underTest.start(eventPayload);
 
-        // Then
-        verify(legalRepresentativeCaseDraftLoader).loadDraft(CASE_REFERENCE, eventPayload.caseData());
-        verify(citizenCaseDraftLoader, never()).loadDraft(CASE_REFERENCE, eventPayload.caseData());
+        // then
+        verify(citizenStartEventStrategy, never()).loadDraft(CASE_REFERENCE, pcsCase);
+        verify(legalRepStartEventStrategy).loadDraft(CASE_REFERENCE, pcsCase);
     }
 
-    private EventPayload<PCSCase, State> createEventPayload() {
-        PCSCase caseData = PCSCase.builder().build();
+    @Test
+    void shouldExceptionWhenNoStrategyApplies() {
+        // given
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+
+        // when
+        assertThat(assertThrows(
+            IllegalStateException.class,
+            () -> underTest.start(eventPayload)
+        )).hasMessage("No start event strategy found");
+
+        // then
+        verify(citizenStartEventStrategy, never()).loadDraft(anyLong(), any());
+        verify(legalRepStartEventStrategy, never()).loadDraft(anyLong(), any());
+    }
+
+    private EventPayload<PCSCase, State> createEventPayload(PCSCase caseData) {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
         return eventPayload;
     }
-
 
 }

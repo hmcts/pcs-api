@@ -23,10 +23,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.CitizenCaseDraftLoader;
-import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepresentativeCaseDraftLoader;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.CitizenStartEventStrategy;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.CitizenSubmissionEventStrategy;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.LegalRepStartEventStrategy;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.LegalRepSubmissionEventStrategy;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.SubmitResponseFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -95,25 +98,43 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
+    @Mock
+    private SubmitResponseFactory submitResponseFactory;
+
     @BeforeEach
     void setUp() {
 
         // Create handlers with real dependencies
+
         StartEventHandler startEventHandler = new StartEventHandler(
             securityContextService,
-            new CitizenCaseDraftLoader(pcsCaseService, securityContextService, accessValidator, responseMapper,
-                                       draftCaseDataService),
-            new LegalRepresentativeCaseDraftLoader(pcsCaseService, responseMapper, draftCaseDataService,
-                                                   defendantResponseRepository, legalRepForDefendantAccessValidator,
-                                                   securityContextService, selectedPartyRetriever)
+            List.of(new CitizenStartEventStrategy(responseMapper,
+                                                  draftCaseDataService,
+                                                  pcsCaseService,
+                                                  securityContextService,
+                                                  accessValidator),
+                    new LegalRepStartEventStrategy(responseMapper,
+                                                            draftCaseDataService,
+                                                            pcsCaseService,
+                                                            defendantResponseRepository,
+                                                            legalRepForDefendantAccessValidator,
+                                                            securityContextService,
+                                                            selectedPartyRetriever)
+            )
         );
 
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
-            draftCaseDataService,
-            claimResponseService,
-            defendantResponseService,
-            securityContextService,
-            selectedPartyRetriever
+            List.of(new CitizenSubmissionEventStrategy(draftCaseDataService,
+                                                       claimResponseService,
+                                                       defendantResponseService,
+                                                       submitResponseFactory),
+                    new LegalRepSubmissionEventStrategy(draftCaseDataService,
+                                                   claimResponseService,
+                                                   defendantResponseService,
+                                                   selectedPartyRetriever,
+                                                        submitResponseFactory)
+            ),
+            securityContextService
         );
 
         setEventUnderTest(new RespondPossessionClaim(
@@ -301,7 +322,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("User is not linked as a defendant on this case");
     }
-
 
     @Test
     void shouldNotSaveDraftWhenPossessionClaimResponseIsNull_ForCitizenUser() {
@@ -827,8 +847,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             eq(TEST_CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId)
         );
         verify(selectedPartyRetriever, never()).getSelectedPartyId(any(PCSCase.class));
-        verify(defendantResponseRepository, never()).existsByClaimPcsCaseCaseReferenceAndPartyId(TEST_CASE_REFERENCE,
-                                                                                                 representedPartyId);
     }
 
     @Test

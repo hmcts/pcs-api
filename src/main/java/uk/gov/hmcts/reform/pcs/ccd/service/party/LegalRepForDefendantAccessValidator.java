@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class LegalRepForDefendantAccessValidator {
             .findFirst()
             .orElseThrow(() -> {
                 log.error("No claim found for case {}", caseReference);
-                return new CaseAccessException("No claim found for this case");
+                return new ClaimNotFoundException(caseReference);
             });
 
         List<PartyEntity> defendants = mainClaim.getClaimParties().stream()
@@ -80,7 +81,7 @@ public class LegalRepForDefendantAccessValidator {
                 authenticatedUserId,
                 caseReference
             );
-            throw new CaseAccessException("User is not linked as a defendant on this case");
+            throw new CaseAccessException("User is not linked as a defendant solicitor on this case");
 
         }
         return linkedDefendants;

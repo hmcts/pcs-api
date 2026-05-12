@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.List;
@@ -118,7 +119,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User is not linked as a defendant on this case");
+            .hasMessage("User is not linked as a defendant solicitor on this case");
     }
 
     @Test
@@ -144,7 +145,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User is not linked as a defendant on this case");
+            .hasMessage("User is not linked as a defendant solicitor on this case");
     }
 
     @Test
@@ -167,8 +168,8 @@ class LegalRepForDefendantAccessValidatorTest {
         caseEntity.setClaims(List.of());
 
         assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
-            .isInstanceOf(CaseAccessException.class)
-            .hasMessage("No claim found for this case");
+            .isInstanceOf(ClaimNotFoundException.class)
+            .hasMessage("No claim found for case reference "+ CASE_REFERENCE);
     }
 
     @Test

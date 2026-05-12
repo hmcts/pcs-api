@@ -1,0 +1,66 @@
+package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+
+import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+
+@Component
+@RequiredArgsConstructor
+public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSubmissionEventStrategy {
+
+    private final DraftCaseDataService draftCaseDataService;
+    private final ClaimResponseService claimResponseService;
+    private final DefendantResponseService defendantResponseService;
+    private final SelectedPartyRetriever selectedPartyRetriever;
+    private final SubmitResponseFactory submitResponseFactory;
+
+    @Override
+    public boolean supports(boolean citizenUser) {
+        return !citizenUser;
+    }
+
+    @Override
+    public SubmitResponse<State> process(long caseReference) {
+
+        UUID representedPartyId = selectedPartyRetriever
+            .getSelectedPartyId(caseReference)
+            .orElseThrow(() -> new IllegalStateException("No selected responding party id for respond to claim"));
+
+        PCSCase draftData = draftCaseDataService
+            .getUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId)
+            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
+
+        PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
+
+        SubmitResponse<State> validationError = submitResponseFactory.validate(responseDraftData, caseReference);
+
+        if (validationError != null) {
+            return validationError;
+        }
+
+        claimResponseService.saveDraftDataForParty(responseDraftData, caseReference, representedPartyId);
+
+        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, representedPartyId
+        );
+
+        draftCaseDataService.deleteUnsubmittedCaseData(
+            caseReference,
+            respondPossessionClaim,
+            representedPartyId
+        );
+
+        return submitResponseFactory.success();
+    }
+}
