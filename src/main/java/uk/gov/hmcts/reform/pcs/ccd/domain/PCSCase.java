@@ -600,7 +600,7 @@ public class PCSCase {
     private String note;
 
     @CCD (
-        label = "Notes",
+        label = "Note",
         typeOverride = Collection,
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
