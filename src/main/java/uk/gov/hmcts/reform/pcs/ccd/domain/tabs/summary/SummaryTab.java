@@ -73,6 +73,4 @@ public class SummaryTab {
         label = "Notice details"
     )
     private NoticeTabDetails noticeDetails;
-
-
 }
