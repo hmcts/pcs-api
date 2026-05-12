@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.tabs;
+package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
-import java.util.List;
 
 @Builder
 @Data
@@ -14,10 +13,10 @@ import java.util.List;
 @AllArgsConstructor
 public class GroundsForPossessionTabDetails {
 
-//    @CCD(
-//        label = "Grounds"
-//    )
-//    private List<String> grounds;
+    @CCD(
+        label = "Grounds"
+    )
+    private String grounds;
 
     @CCD(
         label = "Description of other grounds"

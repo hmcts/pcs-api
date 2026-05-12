@@ -131,6 +131,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("Case details", null, "### Case details")
             .field("caseDetailsTab_ClaimDetails")
             .field("caseDetailsTab_PropertyAddress")
+            .field("caseDetailsTab_GroundsForPossessionDetails")
             .field("caseDetailsTab_TenancyLicenceDetails")
             .field("caseDetailsTab_NoticeDetails")
             .field("caseDetailsTab_ActionsTakenDetails")
