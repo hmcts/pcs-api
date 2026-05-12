@@ -94,6 +94,20 @@ class ClaimViewTest {
     }
 
     @ParameterizedTest
+    @MethodSource("claimSubmittedDateScenarios")
+    void shouldMapClaimSubmittedDate(LocalDateTime claimSubmittedDate, String expectedDateSubmitted) {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(claimEntity.getClaimSubmittedDate()).thenReturn(claimSubmittedDate);
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getDateSubmitted()).isEqualTo(expectedDateSubmitted);
+    }
+
+    @ParameterizedTest
     @MethodSource("complexClaimFieldsScenarios")
     void shouldMapComplexClaimFields(
         VerticalYesNo claimantSelect,
