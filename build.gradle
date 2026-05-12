@@ -398,6 +398,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
   implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'
+  implementation group: 'com.github.hmcts', name: 'ccd-case-document-am-client', version: '1.59.2'
   implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
@@ -561,15 +562,19 @@ check.dependsOn cftlibTest
 // Add wiremock docker compose dependency
 dockerCompose.isRequiredBy cftlibTest
 
+def cleanUpContainers = System.getenv("CI") != null
+
 dockerCompose {
   useComposeFiles = ['docker-compose-wiremock.yml']
-  stopContainers = false
-  removeContainers = false
+  stopContainers = cleanUpContainers
+  removeContainers = cleanUpContainers
   forceRecreate = true
+  buildBeforeUp = false
+  buildBeforePull = false
 }
 
 composeUp.doFirst {
-  dockerCompose.executable = "which docker".execute().text
+  dockerCompose.dockerExecutable = ("which docker".execute().text).replaceAll("\n", "")
 }
 
 tasks.named("processIntegrationTestResources") {

@@ -12,15 +12,19 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ChooseAnApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.SelectParty;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -42,6 +46,8 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
     private final SecurityContextService securityContextService;
     private final GenAppService genAppService;
     private final GenAppRepository genAppRepository;
+    private final GenAppDocumentGenerator genAppDocumentGenerator;
+    private final DocumentImportService documentImportService;
     private final LegalRepresentativeService legalRepresentativeService;
 
     @Override
@@ -85,7 +91,10 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             return errorResponse("Application already exists for client reference");
         }
 
-        genAppService.createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty);
+        GenAppEntity genAppEntity = genAppService
+            .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty);
+
+        createSubmissionDocument(caseReference, createGenAppRequest, genAppEntity);
 
         return SubmitResponse.<State>builder()
             .build();
@@ -114,6 +123,18 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
         String clientReference = createGenAppRequest.getClientReference();
         return clientReference != null
             && genAppRepository.existsByPcsCaseAndClientReference(pcsCaseEntity, clientReference);
+    }
+
+    private void createSubmissionDocument(long caseReference,
+                                          GenAppRequest citizenGenAppRequest,
+                                          GenAppEntity genAppEntity) {
+        String documentUrl = genAppDocumentGenerator.generateSubmissionDocument(
+            caseReference,
+            citizenGenAppRequest,
+            genAppEntity
+        );
+
+        documentImportService.addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
     }
 
     @SuppressWarnings("SameParameterValue")
