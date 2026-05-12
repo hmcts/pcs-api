@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -16,11 +17,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
@@ -30,11 +35,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 public class DocumentService {
 
-    private DocumentRepository documentRepository;
+    private final DocumentRepository documentRepository;
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
@@ -145,8 +151,11 @@ public class DocumentService {
                 .map(holder -> DocumentEntity.builder()
                         .url(holder.getDocument().getUrl())
                         .fileName(holder.getDocument().getFilename())
+                        .displayFileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
-                        .categoryId(mapDocumentTypeToCategory(holder.getType()).getId())
+                        .categoryId(mapDocumentTypeToCategory(holder.getType())
+                                        .map(CaseFileCategory::getId)
+                                        .orElse(null))
                         .type(holder.getType())
                         .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                         .build())
@@ -171,25 +180,64 @@ public class DocumentService {
         };
     }
 
-    private CaseFileCategory mapDocumentTypeToCategory(DocumentType documentType) {
+    public List<DocumentEntity> createDefendantUploadedDocuments(
+        List<ListValue<UploadedDocument>> defendantDocuments,
+        DefendantResponseEntity defendantResponse,
+        PcsCaseEntity pcsCase,
+        PartyEntity party
+    ) {
+        if (CollectionUtils.isEmpty(defendantDocuments)) {
+            log.info("No defendant evidence documents to save");
+            return Collections.emptyList();
+        }
+
+        List<DocumentEntity> documentEntities = defendantDocuments.stream()
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .map(defDoc -> DocumentEntity.builder()
+                .pcsCase(pcsCase)
+                .party(party)
+                .defendantResponse(defendantResponse)
+                .url(defDoc.getDocument().getUrl())
+                .fileName(defDoc.getDocument().getFilename())
+                .binaryUrl(defDoc.getDocument().getBinaryUrl())
+                .contentType(defDoc.getContentType())
+                .size(defDoc.getSizeInBytes())
+                .build())
+            .toList();
+
+        List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
+
+        log.info("Saved {} defendant evidence documents for defendant response {}",
+            saved.size(), defendantResponse.getId());
+
+        return saved;
+    }
+
+    private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
         return switch (documentType) {
-            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION -> CaseFileCategory.STATEMENTS_OF_CASE;
+            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION ->
+                Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
             case RENT_STATEMENT,
                  TENANCY_AGREEMENT,
                  TENANCY_LICENCE,
                  OCCUPATION_LICENCE,
-                 POSSESSION_NOTICE -> CaseFileCategory.PROPERTY_DOCUMENTS;
+                 POSSESSION_NOTICE ->
+                Optional.of(CaseFileCategory.PROPERTY_DOCUMENTS);
             case WITNESS_STATEMENT,
                  CERTIFICATE_OF_SERVICE,
                  CORRESPONDENCE_FROM_DEFENDANT,
                  CORRESPONDENCE_FROM_CLAIMANT,
                  PHOTOGRAPHIC_EVIDENCE,
-                 INSPECTION_OR_REPORT -> CaseFileCategory.EVIDENCE;
+                 INSPECTION_OR_REPORT ->
+                Optional.of(CaseFileCategory.EVIDENCE);
             case CERTIFICATE_OF_SUITABILITY_AS_LF,
-                 LEGAL_AID_CERTIFICATE -> CaseFileCategory.CORRESPONDENCE;
+                 LEGAL_AID_CERTIFICATE ->
+                Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_SERVED,
                  POLICE_REPORT,
-                 OTHER -> CaseFileCategory.UNCATEGORISED;
+                 OTHER ->
+                Optional.empty();
         };
     }
 

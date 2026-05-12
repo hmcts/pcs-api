@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
@@ -73,6 +74,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFieldsView caseFieldsView;
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
+    private final CaseTabView caseTabView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -133,6 +135,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
+        caseTabView.setCaseTabFields(pcsCase);
 
         return pcsCase;
     }
