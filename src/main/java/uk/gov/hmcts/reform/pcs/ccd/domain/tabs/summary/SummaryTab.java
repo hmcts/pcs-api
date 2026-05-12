@@ -9,6 +9,10 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInfomationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 
 import java.util.List;
 
@@ -37,7 +41,7 @@ public class SummaryTab {
     @CCD(
         label = "Reasons for possession"
     )
-    private  ReasonsForPossessionTabDetails reasonsForPossession;
+    private ReasonsForPossessionTabDetails reasonsForPossession;
 
     @CCD(
         label = "Date claim Submitted"
@@ -47,17 +51,17 @@ public class SummaryTab {
     @CCD(
         label = "Claimant"
     )
-    private SummaryClaimantTabDetails claimantDetails;
+    private ClaimantInformationTabDetails claimantDetails;
 
     @CCD(
         label = "Defendant 1"
     )
-    private SummaryDefendantTabDetails defendantDetails;
+    private DefendantInfomationTabDetails defendantDetails;
 
     @CCD(
         label = "Additional defendant"
     )
-    private List<ListValue<SummaryAdditionalDefendantTabDetails>> additionalDefendants;
+    private List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendants;
 
     @CCD(
         label = "Details of rent arrears"

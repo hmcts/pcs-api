@@ -169,6 +169,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
             .allDocuments(mapAndWrapDocuments(pcsCaseEntity))
+            .dateSubmitted(pcsCaseEntity.getCreatedAt())
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);

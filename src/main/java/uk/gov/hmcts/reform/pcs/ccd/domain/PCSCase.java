@@ -50,6 +50,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -550,7 +551,8 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
-    private String dateSubmitted;
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private LocalDateTime dateSubmitted;
 
     @CCD(
         access = DefendantAccess.class,

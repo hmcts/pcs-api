@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary;
+package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SummaryDefendantTabDetails {
+public class AdditionalDefendantInformationTabDetails {
 
     @CCD(
         label = "First name"
@@ -24,7 +24,7 @@ public class SummaryDefendantTabDetails {
     private String lastName;
 
     @CCD(
-        label = "Defendant 1 address for service"
+        label = "Additional defendant address for service"
     )
     private AddressUK addressForService;
 }
