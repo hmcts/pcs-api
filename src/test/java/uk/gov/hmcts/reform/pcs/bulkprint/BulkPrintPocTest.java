@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs;
+package uk.gov.hmcts.reform.pcs.bulkprint;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.hmcts.reform.authorisation.ServiceAuthAutoConfiguration;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.config.ServiceTokenGeneratorConfiguration;
 import uk.gov.hmcts.reform.sendletter.SendLetterAutoConfiguration;
 import uk.gov.hmcts.reform.sendletter.api.LetterWithPdfsRequest;
@@ -32,15 +31,9 @@ import uk.gov.hmcts.reform.sendletter.api.config.RetryConfig;
     ServiceTokenGeneratorConfiguration.class
 })
 @TestPropertySource(properties = {
-    "send-letter.url=http://rpe-send-letter-service-demo.service.core-compute-demo.internal",
-    "idam.s2s-auth.url=http://rpe-service-auth-provider-demo.service.core-compute-demo.internal",
-    "idam.s2s-auth.microservice=pcs_api",
-    "idam.s2s-auth.totp_secret=HMLBO7EEZQ3RTDKD"
+    "send-letter.url=http://rpe-send-letter-service-demo.service.core-compute-demo.internal"
 })
 class BulkPrintPocTest {
-
-    @Autowired
-    private AuthTokenGenerator s2sTokenGenerator;
 
     @Autowired
     private SendLetterApi sendLetterApi;
@@ -49,7 +42,9 @@ class BulkPrintPocTest {
 
     @BeforeEach
     void setup() {
-        s2sToken = s2sTokenGenerator.generate();
+        ServiceAuthenticationGenerator s2sAuthTokenGenerator = new ServiceAuthenticationGenerator();
+        String s2sToken = s2sAuthTokenGenerator.generate();
+        this.s2sToken = "Bearer " + s2sToken;
     }
 
     @Test
@@ -57,7 +52,7 @@ class BulkPrintPocTest {
         byte[] pdfBytes = Files.readAllBytes(Paths.get("test-document.pdf"));
         String encodedPdf = Base64.getEncoder().encodeToString(pdfBytes);
         Map<String, Object> additionalData = Map.of(
-            "recipients", List.of("John Smith"),
+            "recipients", List.of("Joe Bloggs"),
             "isInternational", false
         );
 
