@@ -137,17 +137,21 @@ await performValidationGroup(
 
 On the **nightly** job, parameters `PLAYWRIGHT_GREP_TAG` and `PLAYWRIGHT_SPEC` become `E2E_TEST_SCOPE` and `E2E_SPEC` for Gradle → `yarn test:<browser>`. `playwright.config.ts` reads those env vars for grep and `testMatch`.
 
-### The following environment variables are needed to run the tests:
+### Environment variables (local)
 
-- MANAGE_CASE_BASE_URL (base URL for the manage-case UI; pipeline sets this from CHANGE_ID on Preview)
-- CASE_TYPE_SUFFIX (case type suffix: set by pipeline to PR number on Preview, "staging" on AAT; E2E uses this for case type name/ID. When running locally against Preview, set to your PR number.)
-- PCS_API_IDAM_SECRET
-- IDAM_SYSTEM_USERNAME
-- IDAM_SYSTEM_USER_PASSWORD
-- IDAM_PCS_USER_PASSWORD
-- PCS_SOLICITOR_AUTOMATION_UID
+**With `ENVIRONMENT` set to `aat`, `demo`, `perftest`, or `ithc`:** global setup fills **`MANAGE_CASE_BASE_URL`**, **`DATA_STORE_URL_BASE`**, IdAM, and S2S URLs from standard HMCTS patterns (same idea as the nightly job). You can still override any of those by exporting them first.
+
+**Preview or other values of `ENVIRONMENT`:** global setup defaults IdAM / S2S to **AAT**; you must export **`MANAGE_CASE_BASE_URL`** and **`DATA_STORE_URL_BASE`** yourself (e.g. preview XUI / data-store).
+
+Alternatively set **`ENVIRONMENT`** as above, or export **`MANAGE_CASE_BASE_URL`**, **`DATA_STORE_URL_BASE`**, and explicit **`IDAM_WEB_URL`** / **`IDAM_TESTING_SUPPORT_URL`** / **`S2S_URL`**.
+
+Also required:
+
+- **PCS_API_IDAM_SECRET**, **IDAM_PCS_USER_PASSWORD**, **PCS_SOLICITOR_AUTOMATION_UID** (same as nightly Key Vault names where applicable.)
+- **CASE_TYPE_SUFFIX** when needed (e.g. PR number on preview, `staging` on AAT — see pipeline docs.)
 
 ```bash
+export ENVIRONMENT=aat
 yarn test:chrome
 ```
 

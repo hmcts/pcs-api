@@ -27,19 +27,16 @@ import java.util.List;
 public class DefendantResponses {
 
     @CCD
-    private YesNoNotSure tenancyTypeCorrect;
+    private YesNoNotSure tenancyTypeConfirmation;
 
     @CCD
     private String tenancyType;
 
     @CCD
-    private YesNoNotSure tenancyStartDateCorrect;
+    private YesNoNotSure tenancyStartDateConfirmation;
 
     @CCD
     private LocalDate tenancyStartDate;
-
-    @CCD
-    private YesNoNotSure tenancyStartDateConfirmation;
 
     @CCD
     private YesNoNotSure rentArrearsAmountConfirmation;

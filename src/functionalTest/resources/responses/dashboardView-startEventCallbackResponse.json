@@ -43,14 +43,39 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.ViewClaim",
+                  "templateId": "ViewClaim",
                   "status": "AVAILABLE"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.ViewDocuments",
+                  "templateId": "ViewDocuments",
                   "status": "NOT_AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "RESPONSE",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "RespondToClaim",
+                  "status": "NOT_STARTED"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ReviewResponse",
+                  "status": "IN_PROGRESS"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "SubmitResponse",
+                  "status": "COMPLETED"
                 }
               }
             ]
@@ -62,7 +87,7 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.ViewHearingDocuments",
+                  "templateId": "ViewHearingDocuments",
                   "status": "AVAILABLE"
                 }
               }
@@ -75,7 +100,7 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.ViewOrdersAndNotices",
+                  "templateId": "ViewOrdersAndNotices",
                   "status": "AVAILABLE"
                 }
               }
@@ -84,24 +109,18 @@
         },
         {
           "value": {
-            "groupId": "RESPONSE",
+            "groupId": "APPLICATIONS",
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.RespondToClaim",
-                  "status": "NOT_STARTED"
+                  "templateId": "MakeGeneralApplication",
+                  "status": "AVAILABLE"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.ReviewResponse",
-                  "status": "IN_PROGRESS"
-                }
-              },
-              {
-                "value": {
-                  "templateId": "Defendant.SubmitResponse",
-                  "status": "COMPLETED"
+                  "templateId": "ViewAllApplications",
+                  "status": "NOT_AVAILABLE"
                 }
               }
             ]
