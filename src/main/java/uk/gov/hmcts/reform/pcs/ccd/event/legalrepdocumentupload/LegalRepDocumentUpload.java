@@ -12,12 +12,17 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.ConfirmEvictionConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 
 @Component
 @AllArgsConstructor
 public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRole> {
+
+    private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
+
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -28,12 +33,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .name("Upload legal rep document")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
-        //Placeholder screen. This will be decentralised and replaced with a screen in FE
-        new PageBuilder(eventBuilder)
-            .add(pageBuilder -> pageBuilder
-                .page("legalRepDocumentUpload")
-                .pageLabel("Legal Representative Document Upload Placeholder")
-                .label("legalRepDocumentUpload-separator", "---"));
+        legalRepDocumentUploadConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
