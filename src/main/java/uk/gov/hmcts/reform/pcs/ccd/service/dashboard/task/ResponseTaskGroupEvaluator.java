@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.RESPOND_TO_CLAIM;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.REVIEW_RESPONSE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.SUBMIT_RESPONSE;
 
 @Component
@@ -50,10 +49,6 @@ public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
                 Task.builder()
                     .templateId(RESPOND_TO_CLAIM)
                     .status(respondToClaimStatus)
-                    .build(),
-                Task.builder()
-                    .templateId(REVIEW_RESPONSE)
-                    .status(viewResponseStatus)
                     .build(),
                 Task.builder()
                     .templateId(SUBMIT_RESPONSE)
