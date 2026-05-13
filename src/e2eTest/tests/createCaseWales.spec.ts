@@ -95,6 +95,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
+    await performValidation('mainHeader', occupationLicenceDetailsWales.mainHeader);
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationLicenceDetailsWales.whatTypeOfOccupationContractQuestion,
       occupationContractType: occupationLicenceDetailsWales.standardContractRadioOption,
@@ -109,7 +110,8 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
     await performValidation('text', {"text": preactionProtocol.walesCommunityLandlordsDynamicParagraph, "elementType": "paragraph"})
-    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
+    await performAction('selectPreActionProtocol', preactionProtocol.noRadioOption);
+    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
@@ -140,6 +142,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: false
     });
+    await performValidation('mainHeader', prohibitedConductWales.mainHeader);
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
@@ -157,6 +160,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveClaim);
@@ -270,6 +274,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
       option: claimLanguageUsed.englishLRadioOption
@@ -379,6 +384,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveClaim);
@@ -479,6 +485,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveClaim);
@@ -594,6 +601,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.submitAndPayForClaimRadioOption);
     await performAction('selectStatementOfTruth', {
@@ -703,6 +711,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveClaim);
@@ -809,6 +818,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
     await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveClaim);

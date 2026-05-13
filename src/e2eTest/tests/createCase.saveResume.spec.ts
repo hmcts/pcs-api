@@ -185,6 +185,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
       option: claimLanguageUsed.englishLRadioOption
@@ -306,6 +307,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
       option: claimLanguageUsed.englishLRadioOption
