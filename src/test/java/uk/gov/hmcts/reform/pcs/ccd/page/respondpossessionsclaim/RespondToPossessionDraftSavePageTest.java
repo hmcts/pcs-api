@@ -118,7 +118,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
@@ -186,7 +186,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     void shouldSaveDefendantResponsesData() {
         //Given
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .contactByEmail(VerticalYesNo.YES)
@@ -205,7 +205,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         DefendantResponses savedResponses = savedDraft.getPossessionClaimResponse().getDefendantResponses();
-        assertThat(savedResponses.getTenancyTypeCorrect()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedResponses.getTenancyTypeConfirmation()).isEqualTo(YesNoNotSure.YES);
         assertThat(savedResponses.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponses.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
