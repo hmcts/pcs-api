@@ -230,6 +230,9 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:preactionProtocol.haveYouFollowedThePreactionQuestion, option: caseData});
+    if(caseData === 'No' && addressInfo.townCity !== addressDetails.walesTownOrCityTextInput){
+      await performAction('inputText', preactionProtocol.explainWhyYouHaveNoFollowedHiddenTextLabel, preactionProtocol.explainWhyYouHaveNoFollowedHiddenTextInput);
+    }
     await performAction('clickButton', preactionProtocol.continueButton);
   }
 
@@ -474,16 +477,10 @@ export class CreateCaseAction implements IAction {
       question: mediationAndSettlement.haveYouAttemptedMediationWithQuestion,
       option: mediationSettlement.attemptedMediationWithDefendantsOption
     });
-    if (mediationSettlement.attemptedMediationWithDefendantsOption == mediationAndSettlement.yesRadioOption) {
-      await performAction('inputText', mediationAndSettlement.giveDetailsAboutTheAttemptedHiddenTextLabel, mediationAndSettlement.giveDetailsAboutTheAttemptedHiddenTextInput);
-    }
     await performAction('clickRadioButton', {
       question: mediationAndSettlement.haveYouTriedToReachQuestion,
       option: mediationSettlement.settlementWithDefendantsOption
     });
-    if (mediationSettlement.settlementWithDefendantsOption == mediationAndSettlement.yesRadioOption) {
-      await performAction('inputText', mediationAndSettlement.explainWhatStepsYouHaveTakenHiddenTextLabel, mediationAndSettlement.explainWhatStepsYouHaveTakenHiddenTextInput);
-    }
     await performAction('clickButton', mediationAndSettlement.continueButton);
   }
 
@@ -586,16 +583,14 @@ export class CreateCaseAction implements IAction {
     await performAction('uploadFile', rentArrearsData.files);
     await performAction('inputText', rentArrears.totalRentArrearsTextLabel, rentArrearsData.rentArrearsAmountOnStatement);
     await performAction('clickRadioButton', {
-      question: rentArrears.forThePeriodShownOnTheRentStatementHaveAnyRentPaymentsBeenPaidBySomeoneOtherThanTheDefendantsQuestion,
+      question: rentArrears.haveThereBeenPreviousStepsTakenQuestion,
       option: rentArrearsData.rentPaidByOthersOption
     });
     if (rentArrearsData.rentPaidByOthersOption == rentArrears.yesRadioOption) {
-      await performAction('check', {question: rentArrears.whereHaveThePaymentsComeFromHiddenQuestion, option: rentArrearsData.paymentOptions});
-      if ((rentArrearsData.paymentOptions as Array<string>).includes(rentArrears.otherHiddenCheckBox)) {
-        await performAction('inputText', rentArrears.paymentSourceHiddenTextLabel, rentArrears.paymentSourceHiddenTextInput);
-      }
-      await performAction('clickButton', rentArrears.continueButton);
+
+      await performAction('inputText', rentArrears.giveDetailsOfPreviousStepsTakenHiddenTextLabel, rentArrears.giveDetailsOfPreviousStepsTakenHiddenTextInput);
     }
+    await performAction('clickButton', rentArrears.continueButton);
   }
 
   private async selectMoneyJudgment(option: actionData) {

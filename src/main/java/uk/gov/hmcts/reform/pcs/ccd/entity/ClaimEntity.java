@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -83,17 +84,15 @@ public class ClaimEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo preActionProtocolFollowed;
 
+    private String preActionProtocolIncompleteExplanation;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo mediationAttempted;
 
-    private String mediationDetails;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo settlementAttempted;
-
-    private String settlementDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -139,6 +138,7 @@ public class ClaimEntity {
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
+    @OrderBy("rank ASC")
     private List<ClaimPartyEntity> claimParties = new ArrayList<>();
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
@@ -258,7 +258,9 @@ public class ClaimEntity {
     }
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
+        int rank = countNumberOfExistingPartiesWithRole(partyRole) + 1;
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
+            .rank(rank)
             .claim(this)
             .party(party)
             .role(partyRole)
@@ -286,6 +288,13 @@ public class ClaimEntity {
             document.getClaimDocuments().add(claimDocument);
         }
     }
+
+    private int countNumberOfExistingPartiesWithRole(PartyRole partyRole) {
+        return (int) claimParties.stream()
+            .filter(claimPartyEntity -> claimPartyEntity.getRole().equals(partyRole))
+            .count();
+    }
+
 
     public void addCaseNote(CaseNoteEntity caseNote) {
         caseNotes.add(caseNote);
