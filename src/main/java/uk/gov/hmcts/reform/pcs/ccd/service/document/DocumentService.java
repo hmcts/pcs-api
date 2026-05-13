@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -153,7 +153,9 @@ public class DocumentService {
                         .fileName(holder.getDocument().getFilename())
                         .displayFileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
-                        .categoryId(mapDocumentTypeToCategory(holder.getType()).getId())
+                        .categoryId(mapDocumentTypeToCategory(holder.getType())
+                                        .map(CaseFileCategory::getId)
+                                        .orElse(null))
                         .type(holder.getType())
                         .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                         .build())
@@ -199,7 +201,6 @@ public class DocumentService {
                 .url(defDoc.getDocument().getUrl())
                 .fileName(defDoc.getDocument().getFilename())
                 .binaryUrl(defDoc.getDocument().getBinaryUrl())
-                .categoryId(CaseFileCategory.UNCATEGORISED.getId())
                 .contentType(defDoc.getContentType())
                 .size(defDoc.getSizeInBytes())
                 .build())
@@ -213,25 +214,30 @@ public class DocumentService {
         return saved;
     }
 
-    private CaseFileCategory mapDocumentTypeToCategory(DocumentType documentType) {
+    private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
         return switch (documentType) {
-            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION -> CaseFileCategory.STATEMENTS_OF_CASE;
+            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION ->
+                Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
             case RENT_STATEMENT,
                  TENANCY_AGREEMENT,
                  TENANCY_LICENCE,
                  OCCUPATION_LICENCE,
-                 POSSESSION_NOTICE -> CaseFileCategory.PROPERTY_DOCUMENTS;
+                 POSSESSION_NOTICE ->
+                Optional.of(CaseFileCategory.PROPERTY_DOCUMENTS);
             case WITNESS_STATEMENT,
                  CERTIFICATE_OF_SERVICE,
                  CORRESPONDENCE_FROM_DEFENDANT,
                  CORRESPONDENCE_FROM_CLAIMANT,
                  PHOTOGRAPHIC_EVIDENCE,
-                 INSPECTION_OR_REPORT -> CaseFileCategory.EVIDENCE;
+                 INSPECTION_OR_REPORT ->
+                Optional.of(CaseFileCategory.EVIDENCE);
             case CERTIFICATE_OF_SUITABILITY_AS_LF,
-                 LEGAL_AID_CERTIFICATE -> CaseFileCategory.CORRESPONDENCE;
+                 LEGAL_AID_CERTIFICATE ->
+                Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_SERVED,
                  POLICE_REPORT,
-                 OTHER -> CaseFileCategory.UNCATEGORISED;
+                 OTHER ->
+                Optional.empty();
         };
     }
 

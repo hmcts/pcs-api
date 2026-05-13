@@ -2,7 +2,7 @@ export const rentDetails = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Rent details`,
   howMuchIsTheRentQuestion: `How much is the rent?`,
-  howFrequentlyShouldRentBePaidQuestion: `How frequently should rent be paid?`,
+  howFrequentlyShouldRentBePaidQuestion: `How is the rent calculated?`,
   weeklyRadioOption: `Weekly`,
   fortnightlyRadioOption: `Fortnightly`,
   monthlyRadioOption: `Monthly`,

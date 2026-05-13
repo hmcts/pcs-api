@@ -21,11 +21,11 @@ export class ClickButtonAction implements IAction {
     await actionToPerform();
   }
 
-  private async clickButton(page: Page, button: Locator): Promise<void> {
-    await page.waitForLoadState();
-    await button.click(); 
-    await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+  private async clickButton(page: Page, button: Locator): Promise<void> {   
+      await page.waitForLoadState();
+      await button.click();
+      await page.waitForLoadState();
+      await page.locator('.spinner-container').waitFor({ state: 'detached' });    
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {

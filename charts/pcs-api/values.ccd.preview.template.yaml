@@ -19,6 +19,7 @@ java:
     PCS_DB_USER_NAME: "{{ .Values.global.postgresUsername}}"
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
     CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
+    CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
@@ -182,7 +183,7 @@ ccd:
   am-role-assignment-service:
     java:
       nameOverride: ${SERVICE_NAME}-am-role-assignment-service
-      image: 'hmctsprod.azurecr.io/am/role-assignment-service:pr-2691'
+      image: 'hmctsprod.azurecr.io/am/role-assignment-service:latest'
       ingressHost: am-role-assignment-service-${SERVICE_FQDN}
       autoscaling:
         enabled: false
@@ -288,7 +289,7 @@ ccd-case-document-am-api:
 am-org-role-mapping-service:
   enabled: true
   java:
-    image: 'hmctsprod.azurecr.io/am/org-role-mapping-service:pr-2705'
+    image: 'hmctsprod.azurecr.io/am/org-role-mapping-service:latest'
     ingressHost: am-org-role-mapping-service-${SERVICE_FQDN}
     releaseNameOverride: ${SERVICE_NAME}-am-org-role-mapping-service
     secrets:
