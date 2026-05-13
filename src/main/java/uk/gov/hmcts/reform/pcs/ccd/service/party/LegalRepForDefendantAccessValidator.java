@@ -91,11 +91,8 @@ public class LegalRepForDefendantAccessValidator {
                                               String linkedOrganisationId,
                                               UUID authenticatedUserId,
                                               String authenticatedOrganisationId) {
-        if (authenticatedUserId.equals(linkedUserId)) {
-            return true;
-        }
-
-        return isNotBlank(authenticatedOrganisationId)
-            && authenticatedOrganisationId.equals(linkedOrganisationId);
+        return authenticatedUserId.equals(linkedUserId)
+            || (isNotBlank(authenticatedOrganisationId)
+            && authenticatedOrganisationId.equals(linkedOrganisationId));
     }
 }

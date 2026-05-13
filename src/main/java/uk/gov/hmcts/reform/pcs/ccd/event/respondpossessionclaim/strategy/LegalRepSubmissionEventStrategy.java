@@ -53,15 +53,8 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         }
 
         claimResponseService.saveDraftDataForParty(responseDraftData, caseReference, representedPartyId);
-
-        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, representedPartyId
-        );
-
-        draftCaseDataService.deleteUnsubmittedCaseData(
-            caseReference,
-            respondPossessionClaim,
-            representedPartyId
-        );
+        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, representedPartyId);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId);
 
         return submitResponseFactory.success();
     }

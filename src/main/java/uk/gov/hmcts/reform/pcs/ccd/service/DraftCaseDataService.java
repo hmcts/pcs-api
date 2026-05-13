@@ -485,15 +485,6 @@ public class DraftCaseDataService {
                 );
                 return createDraft.get();
             });
-
-        DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
-
-        log.debug(
-            "Draft saved successfully: id={}, caseReference={}, eventId={}, userId={}",
-            saved.getId(),
-            saved.getCaseReference(),
-            saved.getEventId(),
-            saved.getIdamUserId()
-        );
+        draftCaseDataRepository.save(draftCaseDataEntity);
     }
 }

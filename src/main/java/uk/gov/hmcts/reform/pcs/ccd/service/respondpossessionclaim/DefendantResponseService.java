@@ -107,13 +107,6 @@ public class DefendantResponseService {
         saveDefendantResponseInternal(
             caseReference,
             possessionClaimResponse,
-            () -> {
-                if (defendantResponseRepository
-                    .existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId)) {
-                    log.warn("Duplicate defendant response attempt for case {} user {}", caseReference, userId);
-                    throw new IllegalStateException("A response has already been submitted for this case.");
-                }
-            },
             () -> partyService.getPartyEntityByIdamId(userId, caseReference),
             String.format("Successfully saved defendant response for case %s user %s",
                           caseReference, userId)
@@ -129,16 +122,6 @@ public class DefendantResponseService {
         saveDefendantResponseInternal(
             caseReference,
             possessionClaimResponse,
-            () -> {
-                if (defendantResponseRepository
-                    .existsByClaimPcsCaseCaseReferenceAndPartyId(caseReference, partyId)) {
-
-                    log.warn("Duplicate defendant response attempt for case {} party {}",
-                             caseReference, partyId);
-
-                    throw new IllegalStateException("A response has already been submitted for this case.");
-                }
-            },
             () -> partyRepository
                 .findByIdAndPcsCaseCaseReference(partyId, caseReference)
                 .orElseThrow(() -> new IllegalStateException(
@@ -155,12 +138,9 @@ public class DefendantResponseService {
     private void saveDefendantResponseInternal(
         long caseReference,
         PossessionClaimResponse possessionClaimResponse,
-        Runnable duplicateCheck,
         Supplier<PartyEntity> partySupplier,
         String successLogMessage
     ) {
-
-        duplicateCheck.run();
         PartyEntity partyRef = partySupplier.get();
         UUID claimId = claimRepository.findIdByCaseReference(caseReference)
             .orElseThrow(() -> {

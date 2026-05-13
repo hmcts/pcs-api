@@ -40,6 +40,8 @@ import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
@@ -73,6 +75,7 @@ public class TestingSupportController {
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final IdamService idamService;
+    private final OrganisationDetailsService organisationDetailsService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -370,10 +373,14 @@ public class TestingSupportController {
 
         caseRoleAssignmentService.assignRasRole(caseReference, userDetails.getUid(), UserRole.DEFENDANT_SOLICITOR);
 
+        OrganisationDetailsResponse organisationDetails = organisationDetailsService
+            .getOrganisationDetails(userDetails.getUid());
+
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId,
-            userDetails
+            userDetails,
+            organisationDetails
         );
         return ResponseEntity.ok().build();
     }

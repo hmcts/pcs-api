@@ -37,7 +37,8 @@ public class PartyService {
     private final OrganisationService organisationService;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
-        PartyEntity claimant = createClaimant(pcsCase);
+        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
+        PartyEntity claimant = createClaimant(pcsCase, organisationIdForCurrentUser);
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
@@ -64,7 +65,7 @@ public class PartyService {
                 "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
     }
 
-    private PartyEntity createClaimant(PCSCase pcsCase) {
+    private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
         Objects.requireNonNull(claimantInformation, "Claimant must be provided");
@@ -72,7 +73,7 @@ public class PartyService {
         PartyEntity claimantParty = new PartyEntity();
 
         setClaimantOrgName(claimantInformation, claimantParty);
-        claimantParty.setOrganisationId(organisationService.getOrganisationIdForCurrentUser());
+        claimantParty.setOrganisationId(organisationIdForCurrentUser);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);

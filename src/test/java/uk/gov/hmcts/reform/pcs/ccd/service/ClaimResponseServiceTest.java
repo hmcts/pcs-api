@@ -416,6 +416,31 @@ class ClaimResponseServiceTest {
         assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
     }
 
+    @Test
+    void saveDraftDataForParty_WithNoPartyId_ThrowsException() {
+        // Given
+        PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("07123456789")
+                .emailAddress("defendant@example.com")
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .contactByPost(VerticalYesNo.NO)
+                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(VerticalYesNo.YES)
+                .build()
+        );
+
+        UUID partyId = UUID.randomUUID();
+
+        // When / then
+        assertThatThrownBy(() -> underTest.saveDraftDataForParty(response, TEST_CASE_REFERENCE, partyId))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("No party found for party ID: " + partyId + " and case reference: " + TEST_CASE_REFERENCE);
+    }
+
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {
         return PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder().party(party).build())

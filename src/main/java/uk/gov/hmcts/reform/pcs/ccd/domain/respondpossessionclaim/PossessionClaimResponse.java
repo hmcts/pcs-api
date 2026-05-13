@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 import java.util.List;
@@ -30,19 +29,19 @@ public class PossessionClaimResponse {
      * Supports multiple claimants (e.g., joint landlords).
      */
     @CCD(
-        access = {CitizenAccess.class, DefendantSolicitorAccess.class},
+        access = {DefendantAccess.class},
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Text"
     )
     private List<ListValue<String>> claimantOrganisations;
 
-    @CCD(access = {CitizenAccess.class, DefendantSolicitorAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private Party claimantEnteredDefendantDetails;
 
-    @CCD(access = {CitizenAccess.class, DefendantSolicitorAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private DefendantContactDetails defendantContactDetails;
 
-    @CCD(access = {CitizenAccess.class, DefendantSolicitorAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private DefendantResponses defendantResponses;
 
 }

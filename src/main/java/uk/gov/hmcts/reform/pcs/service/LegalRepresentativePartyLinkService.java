@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -38,17 +39,16 @@ public class LegalRepresentativePartyLinkService {
     private final AddressMapper addressMapper;
 
     @Transactional
-    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user) {
-        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
-        PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
-        OrganisationDetailsResponse organisationDetails = organisationDetailsService
-            .getOrganisationDetails(user.getUid());
+    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user,
+                                               OrganisationDetailsResponse organisationDetails) {
         String organisationId = organisationDetails.getOrganisationIdentifier();
-
         if (isAlreadyLinkedToParty(user, partyId, organisationId)) {
             throw new LegalRepresentativeAlreadyLinkedToPartyException(
                 "Legal Representative or organisation already linked to Party [" + partyId + "]");
         }
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+        PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
+
         unlinkExistingRepresentation(UUID.fromString(partyId));
 
         Optional<LegalRepresentativeEntity> legalRepresentativeEntity = findExistingRepresentative(
@@ -77,7 +77,7 @@ public class LegalRepresentativePartyLinkService {
 
         legalRepresentative.addParty(defendantPartyEntity);
 
-        legalRepresentativeRepository.saveAndFlush(legalRepresentative);
+        legalRepresentativeRepository.save(legalRepresentative);
     }
 
     private boolean isAlreadyLinkedToParty(UserInfo user, String partyId, String organisationId) {
@@ -95,15 +95,10 @@ public class LegalRepresentativePartyLinkService {
     }
 
     private Optional<LegalRepresentativeEntity> findExistingRepresentative(UUID userId, String organisationId) {
-        if (isNotBlank(organisationId)) {
-            Optional<LegalRepresentativeEntity> byOrganisation =
-                legalRepresentativeRepository.findByOrganisationId(organisationId);
-            if (byOrganisation.isPresent()) {
-                return byOrganisation;
-            }
-        }
-
-        return legalRepresentativeRepository.findByIdamId(userId);
+        return Optional.ofNullable(organisationId)
+            .filter(StringUtils::isNotBlank)
+            .flatMap(legalRepresentativeRepository::findByOrganisationId)
+            .or(() -> legalRepresentativeRepository.findByIdamId(userId));
     }
 
     private void backfillOrganisationMetadata(LegalRepresentativeEntity legalRepresentative,
@@ -131,7 +126,7 @@ public class LegalRepresentativePartyLinkService {
 
     private void unlinkExistingRepresentation(UUID partyId) {
         Optional<LegalRepresentativeEntity> partyLinkedToLegalRepresentativeAndActive =
-            legalRepresentativeRepository.isPartyLinkedToLegalRepresentativeAndActive(partyId);
+            legalRepresentativeRepository.findByPartyLinkedToLegalRepresentativeAndActive(partyId);
 
         if (partyLinkedToLegalRepresentativeAndActive.isPresent()) {
             LegalRepresentativeEntity existingLegalRepresentative = partyLinkedToLegalRepresentativeAndActive.get();
@@ -141,7 +136,7 @@ public class LegalRepresentativePartyLinkService {
                             claimPartyLegalRepresentative.getParty().getId().equals(partyId))
                 .forEach(this::invalidateLegalRepresentativeClaimParty);
 
-            legalRepresentativeRepository.saveAndFlush(existingLegalRepresentative);
+            legalRepresentativeRepository.save(existingLegalRepresentative);
         }
     }
 

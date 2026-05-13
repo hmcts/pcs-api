@@ -31,7 +31,7 @@ public interface LegalRepresentativeRepository extends JpaRepository<LegalRepres
         WHERE p.id = :partyId
         AND cplr.active = 'YES'
         """)
-    Optional<LegalRepresentativeEntity> isPartyLinkedToLegalRepresentativeAndActive(@Param("partyId") UUID partyId);
+    Optional<LegalRepresentativeEntity> findByPartyLinkedToLegalRepresentativeAndActive(@Param("partyId") UUID partyId);
 
     @Query("""
         SELECT COUNT(lr) > 0
