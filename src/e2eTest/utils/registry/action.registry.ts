@@ -12,6 +12,7 @@ import {UploadFileAction} from '@utils/actions/element-actions/uploadFile.action
 import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWales.action';
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
+import {GlobalSearchCaseAction} from '@utils/actions/custom-actions/globalSearch.action';
 import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
@@ -84,6 +85,9 @@ export class ActionRegistry {
     ['enterReasonForSuspensionOrder', new CreateCaseAction()],
     ['searchCaseFromFindCase', new SearchCaseAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],
+    ['navigateToGlobalSearch', new GlobalSearchCaseAction()],
+    ['searchByCaseReference', new GlobalSearchCaseAction()],
+    ['searchByName', new GlobalSearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],

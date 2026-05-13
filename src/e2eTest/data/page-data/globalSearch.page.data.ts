@@ -1,0 +1,25 @@
+export const globalSearch =
+  {
+    title: 'Search cases - HM Courts & Tribunals Service - GOV.UK',
+    mainHeader: 'Search cases',
+    usingPartialInformationHiddenParagraph: 'Using partial information to search for a case',
+    youCanUseAnAsteriskHiddenParagraph: 'You can use an asterisk (*) to search for:',
+    oneOrMoreUnknownCharactersHiddenParagraph: 'one or more unknown characters in any part of a word, for example \'J* Smith\'',
+    aMissingWordHiddenParagraph: 'a missing word, for example \'John *\'',
+    youCanOnlyDoThisIfHiddenParagraph: 'You can only do this if you\'re searching for any of the following:',
+    caseReferenceHiddenParagraph: '16-digit case reference',
+    otherReferenceHiddenParagraph: 'other reference',
+    nameHiddenParagraph: 'name',
+    firstLineOfAddressHiddenParagraph: 'first line of address',
+    searchForAtLeastOneOfTheFollowingToFindACaseParagraph: 'Search for at least one of the following to find a case:',
+    caseReferenceLabel: '16-digit case reference',
+    nameOfAPartyLabel:'Name',
+    firstLineOfAddressLabel: 'First line of address',
+    postCodeLabel: 'Postcode',
+    emailAddressLabel: 'Email address',
+    dateOfBirthLabel: 'Date of birth',
+    servicesDropdownLabel: 'Services',
+    servicesDropdownOption1: 'All',
+    servicesDropdownOption2: 'Mortgage and Landlord Possession Claims',
+    search: 'Search'    
+  }

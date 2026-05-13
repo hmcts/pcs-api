@@ -4,6 +4,7 @@ export * from '@data/page-data/asbQuestionsWales.page.data';
 export * from '@data/page-data/borderPostcode.page.data';
 export * from '@data/page-data/caseList.page.data';
 export * from '@data/page-data/caseSummary.page.data';
+export * from '@data/page-data/globalSearch.page.data';
 export * from '@data/page-data/checkYourAnswers.page.data';
 export * from '@data/page-data/createCase.page.data';
 export * from '@data/page-data/home.page.data';
