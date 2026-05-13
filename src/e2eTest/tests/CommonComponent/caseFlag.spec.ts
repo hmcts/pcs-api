@@ -92,7 +92,7 @@ test.describe('[Common Component Case Flags]', async () => {
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
     });
-    test('Validate Create and Manage Case Flag Menu @smoke', async () => {
+    test('Validate Create and Manage Case Flag Menu @PR @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
