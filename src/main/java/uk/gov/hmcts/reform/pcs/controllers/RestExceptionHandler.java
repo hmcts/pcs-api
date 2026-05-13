@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
@@ -22,6 +24,8 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 @Slf4j
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final String RETRY_AFTER_SECONDS = "5";
 
     @ExceptionHandler(CaseNotFoundException.class)
     public ResponseEntity<Error> handleCaseNotFoundException(CaseNotFoundException caseNotFoundException) {
@@ -79,6 +83,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             .body(new Error(ex.getMessage()));
     }
 
+    @ExceptionHandler(IdamException.class)
+    public ResponseEntity<Error> handleIdamException(IdamException ex) {
+        log.error("IDAM call failed", ex);
+        if (isUpstreamThrottled(ex)) {
+            return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, RETRY_AFTER_SECONDS)
+                .body(new Error("Authentication service temporarily unavailable, please retry"));
+        }
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new Error(ex.getMessage()));
+    }
+
     @Override
     @Nullable
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -90,6 +108,17 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new Error("Invalid data"));
+    }
+
+    private static boolean isUpstreamThrottled(Throwable ex) {
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            if (cause instanceof FeignException feign && feign.status() == HttpStatus.TOO_MANY_REQUESTS.value()) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 
     public record Error(String message) {}

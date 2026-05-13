@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
@@ -361,6 +363,59 @@ class RestExceptionHandlerTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
         assertThat(exception.getCause()).isEqualTo(cause);
+    }
+
+    @Test
+    void shouldMapIdamExceptionWith429CauseToServiceUnavailable() {
+        FeignException tooMany = mock(FeignException.class);
+        when(tooMany.status()).thenReturn(429);
+        IdamException ex = new IdamException("Unable to get access token response", tooMany);
+
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("5");
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message())
+            .isEqualTo("Authentication service temporarily unavailable, please retry");
+    }
+
+    @Test
+    void shouldMapIdamExceptionWithNestedFeign429CauseToServiceUnavailable() {
+        FeignException tooMany = mock(FeignException.class);
+        when(tooMany.status()).thenReturn(429);
+        RuntimeException wrapper = new RuntimeException("outer", tooMany);
+        IdamException ex = new IdamException("Unable to get access token response", wrapper);
+
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("5");
+    }
+
+    @Test
+    void shouldMapIdamExceptionWithNon429FeignCauseToInternalServerError() {
+        FeignException internal = mock(FeignException.class);
+        when(internal.status()).thenReturn(500);
+        IdamException ex = new IdamException("Unable to get access token response", internal);
+
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isNull();
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message()).isEqualTo("Unable to get access token response");
+    }
+
+    @Test
+    void shouldMapIdamExceptionWithNoCauseToInternalServerError() {
+        IdamException ex = new IdamException("Unable to get access token response");
+
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message()).isEqualTo("Unable to get access token response");
     }
 
     @Test
