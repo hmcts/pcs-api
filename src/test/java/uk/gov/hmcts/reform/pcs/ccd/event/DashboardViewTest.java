@@ -101,7 +101,6 @@ class DashboardViewTest extends BaseEventTest {
             .extracting(n -> n.getTemplateId())
             .containsExactly(
                 "Defendant.NoHearingArranged",
-                "Defendant.CaseIssued",
                 "Defendant.ResponseNotStarted"
             );
         verify(pcsCaseService).loadCase(TEST_CASE_REFERENCE);

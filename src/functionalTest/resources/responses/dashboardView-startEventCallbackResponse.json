@@ -11,25 +11,6 @@
         },
         {
           "value": {
-            "templateId": "Defendant.CaseIssued",
-            "templateValues": [
-              {
-                "value": {
-                  "key": "hearingDateTime",
-                  "value": "2026-06-15T10:30:00Z"
-                }
-              },
-              {
-                "value": {
-                  "key": "responseEndDate",
-                  "value": "2026-05-15"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "value": {
             "templateId": "Defendant.ResponseNotStarted",
             "templateValues": []
           }
