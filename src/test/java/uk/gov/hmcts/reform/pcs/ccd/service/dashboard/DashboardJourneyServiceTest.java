@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvalu
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
-import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
@@ -110,7 +109,7 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.NOT_STARTED),
-                tuple(DashboardTaskTemplateIds.REVIEW_RESPONSE, TaskStatus.IN_PROGRESS),
+                tuple(DashboardTaskTemplateIds.REVIEW_RESPONSE, TaskStatus.NOT_AVAILABLE),
                 tuple(DashboardTaskTemplateIds.SUBMIT_RESPONSE, TaskStatus.COMPLETED)
             );
 
@@ -144,7 +143,8 @@ class DashboardJourneyServiceTest {
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, null)
+            caseEntity,
+            null
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(4).getTasks())
@@ -181,7 +181,7 @@ class DashboardJourneyServiceTest {
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
-            .contains(tuple("RespondToClaim", TaskStatus.IN_PROGRESS));
+            .contains(tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.IN_PROGRESS));
     }
 
     @Test
@@ -195,8 +195,8 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .contains(
-                tuple("RespondToClaim", TaskStatus.COMPLETED),
-                tuple("ViewResponse", TaskStatus.AVAILABLE)
+                tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.COMPLETED),
+                tuple(DashboardTaskTemplateIds.REVIEW_RESPONSE, TaskStatus.AVAILABLE)
             );
     }
 }

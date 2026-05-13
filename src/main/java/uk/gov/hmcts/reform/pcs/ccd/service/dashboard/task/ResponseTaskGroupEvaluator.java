@@ -54,6 +54,7 @@ public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
                 Task.builder()
                     .templateId(REVIEW_RESPONSE)
                     .status(viewResponseStatus)
+                    .build(),
                 Task.builder()
                     .templateId(SUBMIT_RESPONSE)
                     .status(TaskStatus.COMPLETED)

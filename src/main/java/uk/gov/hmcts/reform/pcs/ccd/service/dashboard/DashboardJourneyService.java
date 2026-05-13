@@ -6,6 +6,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.ResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
@@ -36,11 +38,6 @@ public class DashboardJourneyService {
         TaskGroupId.APPLICATIONS
     );
 
-    private static int orderIndex(TaskGroupId id) {
-        int idx = TASK_GROUP_ORDER.indexOf(id);
-        return idx >= 0 ? idx : Integer.MAX_VALUE; 
-    }
-
     private final List<TaskGroupEvaluator> evaluatorsInOrder;
     private final DraftCaseDataService draftCaseDataService;
     private final DefendantResponseService defendantResponseService;
@@ -58,12 +55,27 @@ public class DashboardJourneyService {
     }
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
+        return computeDashboardData(caseReference, submittedCaseData, null, null);
+    }
+
+    public DashboardData computeDashboardData(
+        long caseReference,
+        PCSCase submittedCaseData,
+        PcsCaseEntity caseEntity,
+        PartyEntity defendant
+    ) {
 
         boolean hasDraftResponse = draftCaseDataService.hasUnsubmittedCaseData(
             caseReference, EventId.respondPossessionClaim);
         boolean hasSubmittedResponse = defendantResponseService.hasSubmittedResponse(caseReference);
-        
-        DashboardContext ctx = new DashboardContext(caseReference, hasDraftResponse, hasSubmittedResponse);
+
+        DashboardContext ctx = new DashboardContext(
+            caseReference,
+            caseEntity,
+            defendant,
+            hasDraftResponse,
+            hasSubmittedResponse
+        );
 
         ResponseStatus responseStatus = getResponseStatus(hasDraftResponse, hasSubmittedResponse);
 
