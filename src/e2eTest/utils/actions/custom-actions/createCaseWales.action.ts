@@ -4,8 +4,8 @@ import {performAction, performActions, performValidation} from '@utils/controlle
 import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
 import {
   // migration (page-data → page-data-figma)
-  claimantDetailsWales,
   contactPreferences,
+  exemptLandlord,
   occupationLicenceDetailsWales,
   prohibitedConductWales
 } from '@data/page-data-figma';
@@ -28,7 +28,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: claimant.question1, option: claimant.option1});
-    await performAction('clickButtonAndVerifyPageNavigation', claimantDetailsWales.continueButton, contactPreferences.mainHeader);    
+    await performAction('clickButtonAndVerifyPageNavigation', exemptLandlord.continueButton, contactPreferences.mainHeader);    
   }
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {

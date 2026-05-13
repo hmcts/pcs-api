@@ -1,4 +1,4 @@
-export const claimantDetailsWales = {
+export const exemptLandlord = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Exempt landlord`,
   wereYouRegisteredUnderPart1Question: `Are you an exempt landlord under Part 1 of the Housing (Wales) Act 2014?`,
