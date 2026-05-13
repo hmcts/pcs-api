@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -387,12 +388,12 @@ class CitizenStartEventStrategyTest {
     @Test
     void supports_WithCitizenUser_ReturnsTrue() {
         // when / then
-        assertThat(underTest.supports(true)).isTrue();
+        assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isTrue();
     }
 
     @Test
     void supports_WithNonCitizenUser_ReturnsFalse() {
         // when / then
-        assertThat(underTest.supports(false)).isFalse();
+        assertThat(underTest.supports(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()))).isFalse();
     }
 }

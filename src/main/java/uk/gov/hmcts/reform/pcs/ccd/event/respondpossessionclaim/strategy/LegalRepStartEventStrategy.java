@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -52,10 +53,9 @@ public class LegalRepStartEventStrategy extends AbstractRespondPossessionClaimSt
     }
 
     @Override
-    public boolean supports(boolean citizenUser) {
-        return !citizenUser;
+    public boolean supports(List<String> roles) {
+        return roles.contains(UserRole.DEFENDANT_SOLICITOR.getRole());
     }
-
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
 

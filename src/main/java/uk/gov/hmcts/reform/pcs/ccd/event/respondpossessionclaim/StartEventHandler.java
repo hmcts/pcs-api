@@ -38,11 +38,8 @@ public class StartEventHandler implements Start<PCSCase, State> {
             caseReference
         );
 
-        boolean citizenUser = securityContextService.getCurrentUserDetails().getRoles()
-            .contains(UserRole.CITIZEN.getRole());
-
         return strategies.stream()
-            .filter(strategy -> strategy.supports(citizenUser))
+            .filter(strategy -> strategy.supports(securityContextService.getCurrentUserDetails().getRoles()))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No start event strategy found"))
             .loadDraft(caseReference, eventPayload.caseData());

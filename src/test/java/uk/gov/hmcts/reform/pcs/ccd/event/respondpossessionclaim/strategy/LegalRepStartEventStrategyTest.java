@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -388,14 +389,14 @@ class LegalRepStartEventStrategyTest {
     }
 
     @Test
-    void supports_WithCitizenUser_ReturnsFalse() {
+    void supports_WithDefendantSolicitorUser_ReturnsTrue() {
         // when / then
-        assertThat(underTest.supports(true)).isFalse();
+        assertThat(underTest.supports(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()))).isTrue();
     }
 
     @Test
-    void supports_WithNonCitizenUser_ReturnsTrue() {
+    void supports_WithNonDefendantSolicitorUser_ReturnsFalse() {
         // when / then
-        assertThat(underTest.supports(false)).isTrue();
+        assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isFalse();
     }
 }

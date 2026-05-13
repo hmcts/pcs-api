@@ -103,5 +103,4 @@ class SubmitEventHandlerTest {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         return eventPayload;
     }
-
 }
