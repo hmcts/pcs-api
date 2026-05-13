@@ -54,7 +54,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .build();
 
         try {
-            if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.DEFENDANT.getRole())) {
+            if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
                 draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
             } else {
                 Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef);

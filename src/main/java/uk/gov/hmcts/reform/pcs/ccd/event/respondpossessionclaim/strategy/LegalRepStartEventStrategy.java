@@ -54,7 +54,7 @@ public class LegalRepStartEventStrategy extends AbstractRespondPossessionClaimSt
 
     @Override
     public boolean supports(List<String> roles) {
-        return roles.contains(UserRole.DEFENDANT_SOLICITOR.getRole());
+        return !roles.contains(UserRole.CITIZEN.getRole());
     }
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {

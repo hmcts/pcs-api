@@ -53,12 +53,13 @@ class StartEventHandlerTest {
     @Test
     void shouldLoadCitizenStrategyForCitizenUser() {
         // given
+        List<String> userRoles = List.of(UserRole.CITIZEN.getRole());
         PCSCase pcsCase = PCSCase.builder().build();
         EventPayload<PCSCase, State> eventPayload = createEventPayload(pcsCase);
-        when(citizenStartEventStrategy.supports(true)).thenReturn(true);
-        when(legalRepStartEventStrategy.supports(true)).thenReturn(false);
+        when(citizenStartEventStrategy.supports(userRoles)).thenReturn(true);
+        when(legalRepStartEventStrategy.supports(userRoles)).thenReturn(false);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+        when(userInfo.getRoles()).thenReturn(userRoles);
 
         // when
         underTest.start(eventPayload);
@@ -71,11 +72,12 @@ class StartEventHandlerTest {
     @Test
     void shouldLoadLegalRepStrategyForNoCitizenUser() {
         // given
+        List<String> userRoles = List.of(UserRole.DEFENDANT_SOLICITOR.getRole());
         PCSCase pcsCase = PCSCase.builder().build();
         EventPayload<PCSCase, State> eventPayload = createEventPayload(pcsCase);
-        when(legalRepStartEventStrategy.supports(false)).thenReturn(true);
+        when(legalRepStartEventStrategy.supports(userRoles)).thenReturn(true);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(userRoles);
 
         // when
         underTest.start(eventPayload);

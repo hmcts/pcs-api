@@ -98,9 +98,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
-    @Mock
-    private SubmitResponseFactory submitResponseFactory;
-
     @BeforeEach
     void setUp() {
 
@@ -127,12 +124,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
             List.of(new CitizenSubmissionEventStrategy(draftCaseDataService,
                                                        claimResponseService,
                                                        defendantResponseService,
-                                                       submitResponseFactory),
+                                                       new SubmitResponseFactory()),
                     new LegalRepSubmissionEventStrategy(draftCaseDataService,
                                                    claimResponseService,
                                                    defendantResponseService,
                                                    selectedPartyRetriever,
-                                                        submitResponseFactory)
+                                                        new SubmitResponseFactory())
             ),
             securityContextService
         );
@@ -857,7 +854,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
 
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()

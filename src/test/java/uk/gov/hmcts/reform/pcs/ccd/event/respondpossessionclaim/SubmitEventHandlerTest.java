@@ -51,11 +51,12 @@ class SubmitEventHandlerTest {
     @Test
     void shouldLoadCitizenStrategyForCitizenUser() {
         // given
+        List<String> userRoles = List.of(UserRole.CITIZEN.getRole());
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
-        when(citizenSubmissionEventStrategy.supports(true)).thenReturn(true);
-        when(legalRepSubmissionEventStrategy.supports(true)).thenReturn(false);
+        when(citizenSubmissionEventStrategy.supports(userRoles)).thenReturn(true);
+        when(legalRepSubmissionEventStrategy.supports(userRoles)).thenReturn(false);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+        when(userInfo.getRoles()).thenReturn(userRoles);
 
         // when
         underTest.submit(eventPayload);
@@ -68,10 +69,11 @@ class SubmitEventHandlerTest {
     @Test
     void shouldLoadLegalRepStrategyForNoCitizenUser() {
         // given
+        List<String> userRoles = List.of(UserRole.DEFENDANT_SOLICITOR.getRole());
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
-        when(legalRepSubmissionEventStrategy.supports(false)).thenReturn(true);
+        when(legalRepSubmissionEventStrategy.supports(userRoles)).thenReturn(true);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(userRoles);
 
         // when
         underTest.submit(eventPayload);

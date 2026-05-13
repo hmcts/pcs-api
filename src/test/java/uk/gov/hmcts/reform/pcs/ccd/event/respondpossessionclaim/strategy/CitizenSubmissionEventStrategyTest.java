@@ -3,37 +3,23 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
-import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -47,22 +33,16 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
-class CitizenSubmissionStrategyTest {
+class CitizenSubmissionEventStrategyTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
-    private EventPayload<PCSCase, State> eventPayload;
-    @Mock
-    private PCSCase pcsCase;
-    @Mock
     private ClaimResponseService claimResponseService;
     @Mock
     private DefendantResponseService defendantResponseService;
-    @Mock
-    private SelectedPartyRetriever selectedPartyRetriever;
     @Mock
     private SubmitResponseFactory submitResponseFactory;
     private CitizenSubmissionEventStrategy underTest;
@@ -81,7 +61,7 @@ class CitizenSubmissionStrategyTest {
     void shouldProcessDraft() {
         // given
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
@@ -104,7 +84,7 @@ class CitizenSubmissionStrategyTest {
     void shouldThrowExceptionWhenNoDraftFound() {
         // given
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
@@ -131,7 +111,7 @@ class CitizenSubmissionStrategyTest {
     void shouldReturnValidationErrors() {
         // given
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
@@ -178,15 +158,15 @@ class CitizenSubmissionStrategyTest {
     }
 
     @Test
-    void supports_ShouldReturnFalseWhenCitizen() {
+    void supports_WithCitizenUser_ReturnsTrue() {
         // when / then
-        assertThat(underTest.supports(false)).isFalse();
+        assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isTrue();
     }
 
     @Test
-    void supports_ShouldReturnTrueWhenNotCitizen() {
+    void supports_WithNonCitizenUser_ReturnsFalse() {
         // when / then
-        assertThat(underTest.supports(true)).isTrue();
+        assertThat(underTest.supports(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()))).isFalse();
     }
 
 }

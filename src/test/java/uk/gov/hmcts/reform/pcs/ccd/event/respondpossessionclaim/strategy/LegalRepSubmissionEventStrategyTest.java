@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -65,7 +66,7 @@ class LegalRepSubmissionEventStrategyTest {
         UUID representedPartyId = UUID.randomUUID();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -102,7 +103,7 @@ class LegalRepSubmissionEventStrategyTest {
         // given
         UUID representedPartyId = UUID.randomUUID();
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -132,7 +133,7 @@ class LegalRepSubmissionEventStrategyTest {
         UUID representedPartyId = UUID.randomUUID();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -166,14 +167,14 @@ class LegalRepSubmissionEventStrategyTest {
     }
 
     @Test
-    void supports_ShouldReturnFalseWhenCitizen() {
+    void supports_WithDefendantSolicitorUser_ReturnsTrue() {
         // when / then
-        assertThat(underTest.supports(true)).isFalse();
+        assertThat(underTest.supports(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()))).isTrue();
     }
 
     @Test
-    void supports_ShouldReturnTrueWhenNotCitizen() {
+    void supports_WithNonDefendantSolicitorUser_ReturnsFalse() {
         // when / then
-        assertThat(underTest.supports(false)).isTrue();
+        assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isFalse();
     }
 }

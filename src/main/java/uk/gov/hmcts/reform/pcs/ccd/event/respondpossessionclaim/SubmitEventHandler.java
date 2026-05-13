@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.RespondPossessionClaimSubmissionEventStrategy;
@@ -30,11 +29,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         log.info("RespondPossessionClaim submit callback invoked for Case Reference: {}", caseReference);
 
-        boolean citizenUser = securityContextService.getCurrentUserDetails().getRoles()
-            .contains(UserRole.CITIZEN.getRole());
-
         return strategies.stream()
-            .filter(strategy -> strategy.supports(citizenUser))
+            .filter(strategy -> strategy.supports(securityContextService.getCurrentUserDetails().getRoles()))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No submit event strategy found"))
             .process(caseReference);
