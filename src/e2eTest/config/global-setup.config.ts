@@ -1,6 +1,5 @@
 import {IdamUtils, ServiceAuthUtils} from '@hmcts/playwright-common';
 import {chromium} from '@playwright/test';
-import {accessTokenApiData, s2STokenApiData} from '@data/api-data';
 import {user} from '@data/user-data';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -9,7 +8,28 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
+/** Matches Jenkins nightly `E2E_TARGET_ENV` and full slug URL templates. */
+const NIGHTLY_ENV_SLUGS = new Set(['aat', 'demo', 'perftest', 'ithc']);
+
+function applyPlaywrightServiceUrls(): void {
+  const e = (process.env.ENVIRONMENT || '').toLowerCase();
+
+  if (NIGHTLY_ENV_SLUGS.has(e)) {
+    process.env.MANAGE_CASE_BASE_URL ||= `https://manage-case.${e}.platform.hmcts.net`;
+    process.env.DATA_STORE_URL_BASE ||= `http://ccd-data-store-api-${e}.service.core-compute-${e}.internal`;
+    process.env.IDAM_WEB_URL ||= `https://idam-api.${e}.platform.hmcts.net`;
+    process.env.IDAM_TESTING_SUPPORT_URL ||= `https://idam-testing-support-api.${e}.platform.hmcts.net`;
+    process.env.S2S_URL ||= `http://rpe-service-auth-provider-${e}.service.core-compute-${e}.internal/testing-support/lease`;
+  } else {
+    // preview, empty ENVIRONMENT, etc.: AAT IdAM/S2S (same as Jenkinsfile_CNP defaults). MANAGE_CASE / data-store from Jenkins or exports.
+    process.env.IDAM_WEB_URL ||= 'https://idam-api.aat.platform.hmcts.net';
+    process.env.IDAM_TESTING_SUPPORT_URL ||= 'https://idam-testing-support-api.aat.platform.hmcts.net';
+    process.env.S2S_URL ||= 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal/testing-support/lease';
+  }
+}
+
 async function globalSetupConfig(): Promise<void> {
+  applyPlaywrightServiceUrls();
   await getAccessToken();
   await getS2SToken();
   await authenticateAndSaveState();
@@ -18,7 +38,11 @@ async function globalSetupConfig(): Promise<void> {
 async function authenticateAndSaveState(): Promise<string> {
   const baseUrl = process.env.MANAGE_CASE_BASE_URL;
 
-  if (!baseUrl) throw new Error('MANAGE_CASE_BASE_URL is not set');
+  if (!baseUrl) {
+    throw new Error(
+      'MANAGE_CASE_BASE_URL is not set (export it, or set ENVIRONMENT to aat|demo|perftest|ithc for default manage-case URL).'
+    );
+  }
   if (!user.claimantSolicitor.email || !user.claimantSolicitor.password) {
     throw new Error('Login failed: missing credentials. Set IDAM_PCS_USER_PASSWORD.');
   }
@@ -81,13 +105,18 @@ async function authenticateAndSaveState(): Promise<string> {
 }
 
 export const getS2SToken = async (): Promise<void> => {
-  process.env.S2S_URL = s2STokenApiData.s2sUrl;
-  process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({ microservice: s2STokenApiData.microservice });
+  if (!process.env.S2S_URL) {
+    throw new Error('S2S_URL is not set (set ENVIRONMENT to aat|demo|perftest|ithc, or preview/empty for AAT default, or export S2S_URL)');
+  }
+  process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({ microservice: 'pcs_api' });
 };
 
 export const getAccessToken = async (): Promise<void> => {
-  process.env.IDAM_WEB_URL = accessTokenApiData.idamUrl;
-  process.env.IDAM_TESTING_SUPPORT_URL = accessTokenApiData.idamTestingSupportUrl;
+  if (!process.env.IDAM_WEB_URL || !process.env.IDAM_TESTING_SUPPORT_URL) {
+    throw new Error(
+      'IDAM_WEB_URL and IDAM_TESTING_SUPPORT_URL are not set (set ENVIRONMENT to aat|demo|perftest|ithc, preview defaults AAT, or export both URLs)'
+    );
+  }
   process.env.BEARER_TOKEN = await new IdamUtils().generateIdamToken({
     username: user.claimantSolicitor.email,
     password: user.claimantSolicitor.password,
