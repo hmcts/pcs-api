@@ -32,7 +32,8 @@ public class AddCaseNote implements CCDConfig<PCSCase, State, UserRole> {
                         .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                         .name("Add a case note")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                        .showSummary();
+                        .showSummary()
+                        .endButtonLabel("Submit");
         addCaseNoteConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
 

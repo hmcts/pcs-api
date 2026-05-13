@@ -69,6 +69,7 @@ public class PCSCase {
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
+    public static final String NOTE_LABEL = "Note";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
@@ -592,10 +593,9 @@ public class PCSCase {
     private CasePartiesTab casePartiesTab;
 
     @CCD(
-        label = "Note",
+        label = NOTE_LABEL,
         hint = "Add note detail, including relevant dates and people involved",
-        typeOverride = TextArea,
-        max = 500
+        typeOverride = TextArea
     )
     private String note;
 
