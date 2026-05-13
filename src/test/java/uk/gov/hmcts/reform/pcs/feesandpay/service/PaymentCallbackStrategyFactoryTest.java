@@ -28,16 +28,6 @@ class PaymentCallbackStrategyFactoryTest {
     }
 
     @Test
-    void shouldReturnNullForUnmappedJourneyId() {
-        for (JourneyId journeyId : JourneyId.values()) {
-            PaymentCallbackStrategy result = underTest.getStrategy(journeyId);
-            assertThat(result)
-                .as("Expected a non-null strategy for JourneyId %s", journeyId)
-                .isNotNull();
-        }
-    }
-
-    @Test
     void shouldHaveARegisteredStrategyForEveryJourneyId() {
         for (JourneyId journeyId : JourneyId.values()) {
             PaymentCallbackStrategy result = underTest.getStrategy(journeyId);
