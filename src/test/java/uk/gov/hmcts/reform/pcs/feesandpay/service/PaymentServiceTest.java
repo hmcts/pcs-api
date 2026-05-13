@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,13 +24,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
@@ -49,7 +48,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId.RESUME_POSSESSION_CLAIM;
 
@@ -133,14 +131,10 @@ class PaymentServiceTest {
         Payment payment = Payment.builder().paymentReference(paymentReference).build();
         PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
             .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
-            .payment(payment)
-            .build();
+            .payment(payment).build();
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-            .paymentStatus(PaymentStatus.PAID)
-            .requestReference(requestReference)
-            .externalReference(paymentReference)
-            .journeyId(RESUME_POSSESSION_CLAIM)
-            .build();
+            .paymentStatus(PaymentStatus.PAID).requestReference(requestReference).externalReference(paymentReference)
+            .journeyId(RESUME_POSSESSION_CLAIM).build();
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
         when(paymentCallbackStrategyFactory.getStrategy(any(JourneyId.class)))
             .thenReturn(mock(MakeAClaimPaymentCallbackStrategy.class));
@@ -227,13 +221,94 @@ class PaymentServiceTest {
         assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
     }
 
+    @Test
+    void shouldCallPaymentCallbackStrategyWhenStrategyExistsForJourneyId() {
+        // Given
+        String requestReference = UUID.randomUUID().toString();
+        String paymentReference = UUID.randomUUID().toString();
+        Payment payment = Payment.builder().paymentReference(paymentReference).build();
+        PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
+            .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(payment).build();
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().paymentStatus(PaymentStatus.PAID)
+            .requestReference(requestReference).journeyId(RESUME_POSSESSION_CLAIM).build();
+        when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
+        PaymentCallbackStrategy strategy = mock(PaymentCallbackStrategy.class);
+        when(paymentCallbackStrategyFactory.getStrategy(RESUME_POSSESSION_CLAIM)).thenReturn(strategy);
+
+        // When
+        underTest.processPaymentResponse(paymentStatusCallback);
+
+        // Then
+        verify(strategy).handle(paymentStatusCallback, feePaymentEntity);
+        verify(feePaymentRepository).save(feePaymentEntity);
+    }
+
+    @Test
+    void shouldSkipStrategyAndStillSaveWhenNoStrategyRegisteredForJourneyId() {
+        // Given
+        String requestReference = UUID.randomUUID().toString();
+        Payment payment = Payment.builder().paymentReference(UUID.randomUUID().toString()).build();
+        PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
+            .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(payment).build();
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .paymentStatus(PaymentStatus.PAID).requestReference(requestReference).journeyId(RESUME_POSSESSION_CLAIM)
+            .build();
+        when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
+        when(paymentCallbackStrategyFactory.getStrategy(RESUME_POSSESSION_CLAIM)).thenReturn(null);
+
+        // When
+        underTest.processPaymentResponse(paymentStatusCallback);
+
+        // Then
+        verify(feePaymentRepository).save(feePaymentEntity);
+    }
+
+    @Test
+    void shouldSaveTaskDataAndJourneyIdWhenSavingNewFeePayment() throws Exception {
+        // Given
+        FeeDetails feeDetails = createFeeDetails();
+        FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
+        String taskDataJson = objectMapper.writeValueAsString(feesAndPayTaskData);
+        ClaimEntity claimEntity = new ClaimEntity();
+
+        // When
+        underTest.saveNewFeePayment(taskDataJson, feesAndPayTaskData, claimEntity, SERVICE_REQUEST_REFERENCE);
+
+        // Then
+        ArgumentCaptor<FeePaymentEntity> captor = ArgumentCaptor.forClass(FeePaymentEntity.class);
+        verify(feePaymentRepository).save(captor.capture());
+        FeePaymentEntity saved = captor.getValue();
+
+        assertThat(saved.getTaskData()).isEqualTo(taskDataJson);
+        assertThat(saved.getJourneyId()).isEqualTo(RESUME_POSSESSION_CLAIM);
+        assertThat(saved.getParty()).isNull();
+    }
+
+    @Test
+    void shouldThrowPaymentExceptionWhenFeesAndPayTaskDataCannotBeSerialisedToJson() throws Exception {
+        // Given
+        FeeDetails feeDetails = createFeeDetails();
+        FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
+        paymentsClientDependencies(feeDetails);
+        ObjectMapper mapper = mock(ObjectMapper.class);
+        when(mapper.writeValueAsString(any())).thenThrow(new JsonProcessingException("Unable to write to json") {});
+        setPrivateField(underTest, "objectMapper", mapper);
+
+        // When / Then
+        assertThatExceptionOfType(PaymentException.class)
+            .isThrownBy(() -> underTest.createServiceRequest(feesAndPayTaskData))
+            .withMessageContaining("Unable to write to json");
+    }
+
     private void paymentsClientDependencies(FeeDetails feeDetails) {
         FeeDto mappedFee = createFeeDto(feeDetails);
         CasePaymentRequestDto casePaymentRequestDto = createCasePaymentRequestDto();
         when(paymentRequestMapper.toFeeDto(feeDetails, VOLUME)).thenReturn(mappedFee);
         when(paymentRequestMapper.toCasePaymentRequest(RESPONSIBLE_PARTY))
             .thenReturn(casePaymentRequestDto);
-        when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_TOKEN);
+        lenient().when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_TOKEN);
     }
 
     private PcsCaseEntity setupPcsCase(ClaimPartyEntity claimPartyEntity) {

@@ -7,6 +7,8 @@ import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +21,7 @@ import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
@@ -26,12 +29,15 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentCallbackStrategy;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentCallbackStrategyFactory;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -59,6 +65,10 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     private CaseCreationHelper caseCreationHelper;
     @Autowired
     private FeePaymentRepository feePaymentRepository;
+    @MockitoBean
+    private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
+    @Mock
+    private PaymentCallbackStrategy pretendStrategy;
 
     private String caseReference;
     private String serviceCaseReference;
@@ -80,6 +90,7 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
         ClaimPartyEntity claimPartyEntity = claimEntity.getClaimParties().getFirst();
         String orgName = claimPartyEntity.getParty().getOrgName();
         feesAndPayTaskData.setResponsibleParty(orgName);
+        Mockito.when(paymentCallbackStrategyFactory.getStrategy(any())).thenReturn(pretendStrategy);
         establishFeePayment(serviceCaseReference);
     }
 

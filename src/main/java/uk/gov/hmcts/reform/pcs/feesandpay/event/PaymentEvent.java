@@ -33,7 +33,7 @@ public class PaymentEvent implements CCDConfig<PCSCase, State, UserRole> {
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         log.info("Recieved: {}", eventPayload);
-        return SubmitResponse.defaultResponse();
+        return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
     }
 
 }
