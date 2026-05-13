@@ -111,7 +111,7 @@ public class CaseSummaryTabViewTest {
         // Then
         assertThat(summaryTab.getRepossessedPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(summaryTab.getGroundsForPossession().getGrounds())
-            .isEqualTo("Rent arrears (ground 10), Condition 1 of Section 84A of the Housing Act 1985");
+            .isEqualTo("Rent arrears (ground 10)\nCondition 1 of Section 84A of the Housing Act 1985");
         assertThat(summaryTab.getClaimSubmittedDate()).isEqualTo("11 May 2026, 5:02:31PM");
         assertThat(summaryTab.getReasonsForPossession().getGround10()).isEqualTo("Ground 10 reason");
         assertThat(summaryTab.getReasonsForPossession().getCondition1OfSection84A())
@@ -305,6 +305,40 @@ public class CaseSummaryTabViewTest {
         assertThat(reasons.getCondition1OfSection84A()).isEqualTo("Condition 1 reason");
         assertThat(reasons.getGround10()).isEqualTo("Works reason");
         assertThat(reasons.getGround14()).isEqualTo("Housing reason");
+    }
+
+    @Test
+    void shouldGroupSection84AConditionsUnderAntisocialBehaviourInGrounds() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .claimGroundSummaries(List.of(
+                groundSummary("Antisocial behaviour", "Antisocial reason"),
+                groundSummary("Nuisance, annoyance, illegal or immoral use of the property (ground 2)",
+                              "Nuisance reason"),
+                groundSummary("Condition 3 of Section 84A of the Housing Act 1985", "Condition 3 reason"),
+                groundSummary("Condition 1 of Section 84A of the Housing Act 1985", "Condition 1 reason"),
+                groundSummary("Condition 5 of Section 84A of the Housing Act 1985", "Condition 5 reason"),
+                groundSummary("Condition 2 of Section 84A of the Housing Act 1985", "Condition 2 reason"),
+                groundSummary("Condition 4 of Section 84A of the Housing Act 1985", "Condition 4 reason"),
+                groundSummary("Landlord’s works (ground 10)", "Works reason")
+            ))
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getGroundsForPossession().getGrounds()).isEqualTo(String.join("\n",
+            "Antisocial behaviour: " + String.join(", ",
+                "Condition 1 of Section 84A of the Housing Act 1985",
+                "Condition 2 of Section 84A of the Housing Act 1985",
+                "Condition 3 of Section 84A of the Housing Act 1985",
+                "Condition 4 of Section 84A of the Housing Act 1985",
+                "Condition 5 of Section 84A of the Housing Act 1985"
+            ),
+            "Nuisance, annoyance, illegal or immoral use of the property (ground 2)",
+            "Landlord’s works (ground 10)"
+        ));
     }
 
     @Test
