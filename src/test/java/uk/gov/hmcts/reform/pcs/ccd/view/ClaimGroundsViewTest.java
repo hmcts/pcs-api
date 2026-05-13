@@ -12,6 +12,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
@@ -34,6 +37,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
@@ -217,6 +222,10 @@ class ClaimGroundsViewTest {
     void shouldBuildClaimGroundSummariesFromDraft() {
         // Given
         PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                       .build())
+            .claimDueToRentArrears(YesOrNo.YES)
             .assuredRentArrearsPossessionGrounds(AssuredRentArrearsPossessionGrounds.builder()
                                                     .rentArrearsGrounds(Set.of(
                                                         AssuredRentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8,
@@ -291,21 +300,7 @@ class ClaimGroundsViewTest {
                 "Serious rent arrears (ground 8)",
                 "Rent arrears (ground 10)",
                 "Owner occupier (ground 1)",
-                "Breach of tenancy conditions (ground 12)",
-                "Holiday let (ground 3)",
-                "Deterioration in the condition of the property (ground 13)",
-                "Antisocial behaviour",
-                "Rent arrears or breach of the tenancy (ground 1)",
-                "Condition 1 of Section 84A of the Housing Act 1985",
-                "Property sold for redevelopment (ground 10A)",
-                "Adapted accommodation (ground 13)",
-                "Antisocial behaviour",
-                "Notice given under a landlord’s break clause (section 199)",
-                "Rent arrears (breach of contract) (section 157)",
-                "Redevelopment schemes (ground B)",
-                "Landlord’s notice in connection with end of fixed term given (section 186)",
-                "Antisocial behaviour (breach of contract) (section 157)",
-                "Reserve successors (ground G)"
+                "Breach of tenancy conditions (ground 12)"
             );
     }
 
@@ -314,6 +309,216 @@ class ClaimGroundsViewTest {
         // When
         List<ListValue<ClaimGroundSummary>> summaries =
             underTest.buildClaimGroundSummariesFromDraft(PCSCase.builder().build());
+
+        // Then
+        assertThat(summaries).isEmpty();
+    }
+
+    @Test
+    void shouldBuildSecureContractWalesClaimGroundSummariesFromDraft() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
+                                               .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
+                                               .build())
+            .secureContractGroundsForPossessionWales(SecureContractGroundsForPossessionWales.builder()
+                                                        .mandatoryGrounds(Set.of(
+                                                            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186
+                                                        ))
+                                                        .discretionaryGrounds(Set.of(
+                                                            SecureContractDiscretionaryGroundsWales
+                                                                .ANTISOCIAL_BEHAVIOUR_S157
+                                                        ))
+                                                        .estateManagementGrounds(Set.of(
+                                                            EstateManagementGroundsWales.RESERVE_SUCCESSORS
+                                                        ))
+                                                        .build())
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            underTest.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries)
+            .map(ListValue::getValue)
+            .map(ClaimGroundSummary::getLabel)
+            .containsExactlyInAnyOrder(
+                SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186.getLabel(),
+                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157.getLabel(),
+                EstateManagementGroundsWales.RESERVE_SUCCESSORS.getLabel()
+            );
+    }
+
+    @Test
+    void shouldBuildStandardContractWalesClaimGroundSummariesFromDraft() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
+                                               .occupationLicenceTypeWales(OccupationLicenceTypeWales.STANDARD_CONTRACT)
+                                               .build())
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                                           .mandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
+                                           .discretionaryGrounds(Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157))
+                                           .estateManagementGrounds(Set.of(
+                                               EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
+                                           ))
+                                           .build())
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            underTest.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries)
+            .map(ListValue::getValue)
+            .map(ClaimGroundSummary::getLabel)
+            .containsExactlyInAnyOrder(
+                MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
+                DiscretionaryGroundWales.RENT_ARREARS_S157.getLabel(),
+                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel()
+            );
+    }
+
+    @Test
+    void shouldBuildAssuredNoRentArrearsClaimGroundSummariesFromDraft() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                       .build())
+            .claimDueToRentArrears(YesOrNo.NO)
+            .noRentArrearsGroundsOptions(AssuredNoArrearsPossessionGrounds.builder()
+                                            .mandatoryGrounds(Set.of(AssuredMandatoryGround.HOLIDAY_LET_GROUND3))
+                                            .discretionaryGrounds(Set.of(
+                                                AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13
+                                            ))
+                                            .build())
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            underTest.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries)
+            .map(ListValue::getValue)
+            .map(ClaimGroundSummary::getLabel)
+            .containsExactlyInAnyOrder(
+                AssuredMandatoryGround.HOLIDAY_LET_GROUND3.getLabel(),
+                AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13.getLabel()
+            );
+    }
+
+    @Test
+    void shouldBuildSecureOrFlexibleClaimGroundSummariesFromDraft() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.SECURE_TENANCY)
+                                       .build())
+            .secureOrFlexiblePossessionGrounds(SecureOrFlexiblePossessionGrounds.builder()
+                                                   .secureOrFlexibleMandatoryGrounds(Set.of(
+                                                       SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL
+                                                   ))
+                                                   .secureOrFlexibleDiscretionaryGrounds(Set.of(
+                                                       SecureOrFlexibleDiscretionaryGrounds
+                                                           .RENT_ARREARS_OR_BREACH_OF_TENANCY
+                                                   ))
+                                                   .secureAntisocialAdditionalGrounds(Set.of(
+                                                       SecureAntisocialAdditionalGrounds.S84A_CONDITION_1
+                                                   ))
+                                                   .secureOrFlexibleMandatoryGroundsAlt(Set.of(
+                                                       SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD
+                                                   ))
+                                                   .secureOrFlexibleDiscretionaryGroundsAlt(Set.of(
+                                                       SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm
+                                                           .ADAPTED_ACCOMMODATION
+                                                   ))
+                                                   .build())
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            underTest.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries)
+            .map(ListValue::getValue)
+            .map(ClaimGroundSummary::getLabel)
+            .containsExactlyInAnyOrder(
+                SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.getLabel(),
+                SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.getLabel(),
+                SecureAntisocialAdditionalGrounds.S84A_CONDITION_1.getLabel(),
+                SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD.getLabel(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.ADAPTED_ACCOMMODATION.getLabel()
+            );
+    }
+
+    @Test
+    void shouldBuildIntroductoryDemotedOrOtherClaimGroundSummariesFromDraft() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                                       .build())
+            .introductoryDemotedOrOtherGroundsForPossession(
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                    .introductoryDemotedOrOtherGrounds(Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL))
+                    .build()
+            )
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            underTest.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries)
+            .map(ListValue::getValue)
+            .map(ClaimGroundSummary::getLabel)
+            .containsExactly(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL.getLabel());
+    }
+
+    @Test
+    void shouldBuildNoGroundsSummaryForIntroductoryDemotedOrOtherDraft() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.DEMOTED_TENANCY)
+                                       .build())
+            .introductoryDemotedOrOtherGroundsForPossession(
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+                    .build()
+            )
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            underTest.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries)
+            .map(ListValue::getValue)
+            .map(ClaimGroundSummary::getLabel)
+            .containsExactly(IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS.getLabel());
+    }
+
+    @Test
+    void shouldReturnEmptyClaimGroundSummariesForIntroductoryDraftWithoutSelectedGrounds() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.OTHER)
+                                       .build())
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            underTest.buildClaimGroundSummariesFromDraft(draftCaseData);
 
         // Then
         assertThat(summaries).isEmpty();

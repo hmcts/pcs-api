@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -11,12 +10,9 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -44,7 +40,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -90,10 +85,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         long caseReference = request.caseRef();
         State state = request.state();
         PCSCase pcsCase = getSubmittedCase(caseReference);
-        Optional<PCSCase> draftCaseData = getUnsubmittedCaseData(caseReference, state);
-        boolean hasUnsubmittedCaseData = draftCaseData.isPresent();
+        boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
-        draftCaseData.ifPresent(draft -> setSummaryTabFromDraftData(pcsCase, draft));
+        if (hasUnsubmittedCaseData) {
+            draftCaseDataService
+                .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
+                .ifPresent(draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft));
+        }
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
@@ -106,63 +104,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return pcsCase;
     }
 
-    private Optional<PCSCase> getUnsubmittedCaseData(long caseReference, State state) {
+    private boolean caseHasUnsubmittedData(long caseReference, State state) {
         if (State.AWAITING_SUBMISSION_TO_HMCTS == state) {
-            return draftCaseDataService.getUnsubmittedCaseData(caseReference, resumePossessionClaim);
+            return draftCaseDataService.hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
         }
 
-        return Optional.empty();
-    }
-
-    private void setSummaryTabFromDraftData(PCSCase pcsCase, PCSCase draftCaseData) {
-        draftCaseData.setPropertyAddress(Optional.ofNullable(draftCaseData.getPropertyAddress())
-                                             .orElse(pcsCase.getPropertyAddress()));
-
-        if (CollectionUtils.isEmpty(draftCaseData.getAllClaimants())) {
-            draftCaseData.setAllClaimants(pcsCase.getAllClaimants());
-        }
-
-        if (draftCaseData.getDefendant1() != null) {
-            draftCaseData.setAllDefendants(buildDefendants(draftCaseData));
-        } else if (CollectionUtils.isEmpty(draftCaseData.getAllDefendants())) {
-            draftCaseData.setAllDefendants(pcsCase.getAllDefendants());
-        }
-
-        List<ListValue<ClaimGroundSummary>> draftGrounds =
-            claimGroundsView.buildClaimGroundSummariesFromDraft(draftCaseData);
-        draftCaseData.setClaimGroundSummaries(CollectionUtils.isEmpty(draftGrounds)
-                                                 ? pcsCase.getClaimGroundSummaries()
-                                                 : draftGrounds);
-
-        caseTabView.setCaseTabFields(draftCaseData);
-        pcsCase.setSummaryTab(draftCaseData.getSummaryTab());
-    }
-
-    private List<ListValue<Party>> buildDefendants(PCSCase draftCaseData) {
-        List<ListValue<Party>> defendants = new ArrayList<>();
-        defendants.add(buildDefendant(draftCaseData.getDefendant1()));
-
-        if (draftCaseData.getAddAnotherDefendant() == VerticalYesNo.YES
-            && !CollectionUtils.isEmpty(draftCaseData.getAdditionalDefendants())) {
-            draftCaseData.getAdditionalDefendants().stream()
-                .map(ListValue::getValue)
-                .map(this::buildDefendant)
-                .forEach(defendants::add);
-        }
-
-        return defendants;
-    }
-
-    private ListValue<Party> buildDefendant(DefendantDetails defendant) {
-        return ListValue.<Party>builder()
-            .value(Party.builder()
-                       .nameKnown(defendant.getNameKnown())
-                       .firstName(defendant.getFirstName())
-                       .lastName(defendant.getLastName())
-                       .addressKnown(defendant.getAddressKnown())
-                       .address(defendant.getCorrespondenceAddress())
-                       .build())
-            .build();
+        return false;
     }
 
     private PCSCase getSubmittedCase(long caseReference) {
