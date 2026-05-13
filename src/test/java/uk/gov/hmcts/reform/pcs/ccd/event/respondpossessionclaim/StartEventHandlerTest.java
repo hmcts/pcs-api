@@ -55,11 +55,11 @@ class StartEventHandlerTest {
         // given
         List<String> userRoles = List.of(UserRole.CITIZEN.getRole());
         PCSCase pcsCase = PCSCase.builder().build();
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(pcsCase);
         when(citizenStartEventStrategy.supports(userRoles)).thenReturn(true);
         when(legalRepStartEventStrategy.supports(userRoles)).thenReturn(false);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(userRoles);
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(pcsCase);
 
         // when
         underTest.start(eventPayload);
@@ -74,11 +74,10 @@ class StartEventHandlerTest {
         // given
         List<String> userRoles = List.of(UserRole.DEFENDANT_SOLICITOR.getRole());
         PCSCase pcsCase = PCSCase.builder().build();
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(pcsCase);
         when(legalRepStartEventStrategy.supports(userRoles)).thenReturn(true);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(userRoles);
-
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(pcsCase);
         // when
         underTest.start(eventPayload);
 

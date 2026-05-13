@@ -169,7 +169,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
             .isInstanceOf(ClaimNotFoundException.class)
-            .hasMessage("No claim found for case reference "+ CASE_REFERENCE);
+            .hasMessage("No claim found for case reference " + CASE_REFERENCE);
     }
 
     @Test

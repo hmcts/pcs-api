@@ -52,12 +52,11 @@ class SubmitEventHandlerTest {
     void shouldLoadCitizenStrategyForCitizenUser() {
         // given
         List<String> userRoles = List.of(UserRole.CITIZEN.getRole());
-        EventPayload<PCSCase, State> eventPayload = createEventPayload();
         when(citizenSubmissionEventStrategy.supports(userRoles)).thenReturn(true);
         when(legalRepSubmissionEventStrategy.supports(userRoles)).thenReturn(false);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(userRoles);
-
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
         // when
         underTest.submit(eventPayload);
 
@@ -70,10 +69,10 @@ class SubmitEventHandlerTest {
     void shouldLoadLegalRepStrategyForNoCitizenUser() {
         // given
         List<String> userRoles = List.of(UserRole.DEFENDANT_SOLICITOR.getRole());
-        EventPayload<PCSCase, State> eventPayload = createEventPayload();
         when(legalRepSubmissionEventStrategy.supports(userRoles)).thenReturn(true);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(userRoles);
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
         // when
         underTest.submit(eventPayload);

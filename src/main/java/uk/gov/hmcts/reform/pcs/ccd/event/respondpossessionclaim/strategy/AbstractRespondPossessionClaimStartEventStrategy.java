@@ -14,7 +14,8 @@ import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class AbstractRespondPossessionClaimStartEventStrategy implements RespondPossessionClaimStartEventStrategy {
+public abstract class AbstractRespondPossessionClaimStartEventStrategy
+    implements RespondPossessionClaimStartEventStrategy {
 
     protected final PossessionClaimResponseMapper responseMapper;
     protected final DraftCaseDataService draftCaseDataService;

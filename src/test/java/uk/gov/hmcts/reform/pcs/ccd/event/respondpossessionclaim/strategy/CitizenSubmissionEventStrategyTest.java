@@ -25,8 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -90,7 +88,8 @@ class CitizenSubmissionEventStrategyTest {
 
         PCSCase caseData = createDraftSaveCaseData(null, responses);
 
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(Optional.empty());
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.empty());
 
         // when
         assertThat(assertThrows(
@@ -103,7 +102,8 @@ class CitizenSubmissionEventStrategyTest {
         verify(submitResponseFactory, never()).success();
         verify(submitResponseFactory, never()).validate(any(), anyLong());
         verify(claimResponseService, never()).saveDraftData(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
-        verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE, caseData.getPossessionClaimResponse());
+        verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE,
+                                                                        caseData.getPossessionClaimResponse());
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
@@ -137,7 +137,8 @@ class CitizenSubmissionEventStrategyTest {
         // then
         verify(submitResponseFactory, never()).success();
         verify(claimResponseService, never()).saveDraftData(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
-        verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE, caseData.getPossessionClaimResponse());
+        verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE,
+                                                                        caseData.getPossessionClaimResponse());
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
