@@ -753,6 +753,42 @@ class DefendantResponseServiceTest {
 
     }
 
+    @ParameterizedTest(name = "tenancyTypeConfirmation={0}")
+    @MethodSource("tenancyTypeConfirmationScenarios")
+    void shouldPersistTenancyTypeConfirmation(YesNoNotSure tenancyTypeConfirmation) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeConfirmation(tenancyTypeConfirmation)
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+        assertThat(saved.getTenancyTypeConfirmation()).isEqualTo(tenancyTypeConfirmation);
+    }
+
+    private static Stream<Arguments> tenancyTypeConfirmationScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of(YesNoNotSure.NOT_SURE),
+            Arguments.of((YesNoNotSure) null)
+        );
+    }
+
     @ParameterizedTest(name = "disputeClaim={0}")
     @MethodSource("disputeClaimPersistenceScenarios")
     void shouldPersistDisputeClaim(VerticalYesNo disputeClaim) {
