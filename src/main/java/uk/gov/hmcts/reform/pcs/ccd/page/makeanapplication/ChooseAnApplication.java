@@ -22,7 +22,7 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             </li>
             <li class="govuk-!-font-size-19">
                 <a href="https://www.gov.uk/government/publications/form-n244-application-notice"
-                target="_blank" rel="noopener noreferrer" class="govuk-link">fill in the N244a form</a>
+                target="_blank" rel="noopener noreferrer" class="govuk-link">fill in the N244 form</a>
             </li>
             <li class="govuk-!-font-size-19"><a href="https://www.gov.uk/find-court-tribunal" target="_blank"
                 rel="noopener noreferrer" class="govuk-link">find the defendant’s local court</a>

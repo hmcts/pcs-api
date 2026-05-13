@@ -91,9 +91,13 @@ public class PCSCase {
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
+        searchable = false,
         typeOverride = DynamicRadioList
     )
     private DynamicList representedPartyNames;
+
+    @CCD(searchable = false)
+    private VerticalYesNo multipleRepresentedParties;
 
     @CCD(
         label = "Property address",

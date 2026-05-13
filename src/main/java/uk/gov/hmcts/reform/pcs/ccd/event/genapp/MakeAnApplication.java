@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -55,14 +56,14 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
         EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(makeAnApplication.name(), this::submit, this::start)
             .forAllStates() // TODO: Adjust once target states are known and available
-            .name("Make a general application")
+            .name("Make an application")
             .grant(Permission.CRUD, UserRole.DEFENDANT)
             .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
             .showSummary();
 
         new PageBuilder(eventBuilder)
-            .add(new SelectParty())
-            .add(new ChooseAnApplication());
+            .add(new ChooseAnApplication())
+            .add(new SelectParty());
 
     }
 
@@ -73,7 +74,11 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
         // Set represented parties if the current user is a legal rep
         UUID currentUserId = securityContextService.getCurrentUserId();
         legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, caseReference)
-            .ifPresent(caseData::setRepresentedPartyNames);
+            .ifPresent(representedPartyNames -> {
+                caseData.setRepresentedPartyNames(representedPartyNames);
+                boolean representingMultipleParties = representedPartyNames.getListItems().size() > 1;
+                caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
+            });
 
         return caseData;
     }

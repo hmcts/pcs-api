@@ -5,6 +5,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -13,6 +16,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -28,10 +32,13 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -73,9 +80,11 @@ class MakeAnApplicationTest extends BaseEventTest {
     @DisplayName("Start event tests")
     class StartEventTests {
         @Test
-        void shouldSetRepresentedPartiesFieldWhenUserRepresentsSome() {
+        void shouldSetRepresentedPartiesFieldWhenUserRepresentsOne() {
             // Given
             DynamicList expectedPartyNameList = mock(DynamicList.class);
+            DynamicListElement party1Element = mock(DynamicListElement.class);
+            when(expectedPartyNameList.getListItems()).thenReturn(List.of(party1Element));
 
             UUID currentUserId = UUID.randomUUID();
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
@@ -90,6 +99,39 @@ class MakeAnApplicationTest extends BaseEventTest {
 
             // Then
             assertThat(caseData.getRepresentedPartyNames()).isEqualTo(expectedPartyNameList);
+        }
+
+        @ParameterizedTest
+        @MethodSource("multipleRepresentedPartiesScenarios")
+        void shouldSetMultipleRepresentedPartiesFlag(int numRepresentedParties, VerticalYesNo expectedFlag) {
+            // Given
+            DynamicList expectedPartyNameList = mock(DynamicList.class);
+            @SuppressWarnings("unchecked") List<DynamicListElement> listItems = mock(List.class);
+            when(expectedPartyNameList.getListItems()).thenReturn(listItems);
+            when(listItems.size()).thenReturn(numRepresentedParties);
+
+            UUID currentUserId = UUID.randomUUID();
+            when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
+            when(legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, TEST_CASE_REFERENCE))
+                .thenReturn(Optional.of(expectedPartyNameList));
+
+            PCSCase caseData = PCSCase.builder()
+                .build();
+
+            // When
+            callStartHandler(caseData);
+
+            // Then
+            assertThat(caseData.getMultipleRepresentedParties()).isEqualTo(expectedFlag);
+        }
+
+        private static Stream<Arguments> multipleRepresentedPartiesScenarios() {
+            return Stream.of(
+                // Represented party count, expected flag
+                arguments(0, VerticalYesNo.NO),
+                arguments(1, VerticalYesNo.NO),
+                arguments(2, VerticalYesNo.YES)
+            );
         }
 
         @Test
