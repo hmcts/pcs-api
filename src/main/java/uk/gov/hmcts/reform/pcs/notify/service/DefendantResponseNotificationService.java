@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -21,7 +20,6 @@ public class DefendantResponseNotificationService {
 
     private static final String PENDING_CASE_ISSUED = "PENDING_CASE_ISSUED";
 
-    @Async
     public void sendEmailNotification(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));

@@ -104,7 +104,7 @@ public class PaymentService {
             FeePaymentEntity feePaymentEntity = byCaseReference.get();
             feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
             feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
-            feePaymentRepository.saveAndFlush(feePaymentEntity);
+            feePaymentRepository.save(feePaymentEntity);
 
             if (feePaymentEntity.getPaymentStatus() == PaymentStatus.PAID) {
                 paymentNotificationService.sendCounterClaimPaymentSuccessNotification(feePaymentEntity.getId());
