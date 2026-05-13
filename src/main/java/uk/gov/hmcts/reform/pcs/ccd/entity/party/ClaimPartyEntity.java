@@ -26,6 +26,8 @@ public class ClaimPartyEntity {
     @Builder.Default
     private ClaimPartyId id = new ClaimPartyId();
 
+    private Integer rank;
+
     @ManyToOne
     @MapsId("claimId")
     @JsonBackReference
