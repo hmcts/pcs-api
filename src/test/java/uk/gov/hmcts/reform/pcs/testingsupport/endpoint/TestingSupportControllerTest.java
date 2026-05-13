@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -26,8 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
-import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
-import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -36,21 +33,19 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
-import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.Set;
-import java.util.ArrayList;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -63,8 +58,6 @@ class TestingSupportControllerTest {
     private SchedulerClient schedulerClient;
     @Mock
     private Task<Void> helloWorldTask;
-    @Mock
-    private DocAssemblyService docAssemblyService;
     @Mock
     private EligibilityService eligibilityService;
     @Mock
@@ -92,7 +85,7 @@ class TestingSupportControllerTest {
     @BeforeEach
     void setUp() {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
-                                                 docAssemblyService, eligibilityService,
+                                                 eligibilityService,
                                                  pcsCaseRepository, partyAccessCodeRepository,
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  caseRoleAssignmentService,
@@ -187,436 +180,6 @@ class TestingSupportControllerTest {
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).contains("Hello World task scheduled successfully with ID:");
         verify(schedulerClient).scheduleIfNotExists(any(TaskInstance.class), any(Instant.class));
-    }
-
-    @Test
-    void testGenerateDocument_WithBasicCaseInformation() {
-        final JsonNode formPayload = createJsonNodeFormPayload("John Smith");
-
-        String expectedDocumentUrl = "http://dm-store/documents/123";
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenReturn(expectedDocumentUrl);
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
-
-        // Verify the request was passed correctly
-        ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
-        ArgumentCaptor<String> templateIdCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<OutputType> outputTypeCaptor = ArgumentCaptor.forClass(OutputType.class);
-        ArgumentCaptor<String> outputFilenameCaptor = ArgumentCaptor.forClass(String.class);
-
-        verify(docAssemblyService).generateDocument(
-            formPayloadCaptor.capture(),
-            templateIdCaptor.capture(),
-            outputTypeCaptor.capture(),
-            outputFilenameCaptor.capture()
-        );
-
-        JsonNode capturedFormPayload = formPayloadCaptor.getValue();
-        assertThat(capturedFormPayload).isSameAs(formPayload);
-        assertThat(templateIdCaptor.getValue()).isEqualTo("CV-SPC-CLM-ENG-01356.docx");
-        assertThat(outputTypeCaptor.getValue()).isEqualTo(OutputType.PDF);
-        assertThat(outputFilenameCaptor.getValue()).isEqualTo("generated-document.pdf");
-    }
-
-
-    @Test
-    void testGenerateDocument_WithCustomTemplateId() {
-        // Note: Controller uses hardcoded template, but keeping test pattern for consistency
-        final JsonNode formPayload = createJsonNodeFormPayload("Jane Doe");
-
-        String expectedDocumentUrl = "http://dm-store/documents/456";
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenReturn(expectedDocumentUrl);
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
-
-        // Verify the request was passed correctly with hardcoded template
-        ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
-        verify(docAssemblyService).generateDocument(
-            formPayloadCaptor.capture(),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        );
-
-        JsonNode capturedFormPayload = formPayloadCaptor.getValue();
-        // Access JsonNode fields directly
-        assertThat(capturedFormPayload.get("applicantName").asText()).isEqualTo("Jane Doe");
-        assertThat(capturedFormPayload.get("caseNumber").asText()).isEqualTo("PCS-123456789");
-    }
-
-    @Test
-    void testGenerateDocument_WithEmptyTemplateId() {
-        // Keeping test pattern
-        final JsonNode formPayload = createJsonNodeFormPayload("Test User");
-
-        String expectedDocumentUrl = "http://dm-store/documents/789";
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenReturn(expectedDocumentUrl);
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
-
-        // Verify the request was passed correctly with hardcoded template
-        ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
-        verify(docAssemblyService).generateDocument(
-            formPayloadCaptor.capture(),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        );
-
-        JsonNode capturedFormPayload = formPayloadCaptor.getValue();
-        // Access JsonNode fields directly
-        assertThat(capturedFormPayload.get("caseNumber").asText()).isEqualTo("PCS-123456789");
-    }
-
-    @Test
-    void testGenerateDocument_Success() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test Case");
-
-        String expectedDocumentUrl = "http://dm-store/documents/123";
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenReturn(expectedDocumentUrl);
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
-        verify(docAssemblyService).generateDocument(
-            eq(formPayload),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        );
-    }
-
-    @Test
-    void testGenerateDocument_Failure() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1");
-
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenThrow(new RuntimeException("Document generation failed"));
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
-        assertThat(response.getBody()).contains("An error occurred while processing your request.");
-    }
-
-    @Test
-    void testGenerateDocument_NullRequest() {
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", null);
-        assertThat(response.getStatusCode().value()).isEqualTo(400);
-        assertThat(response.getBody()).isEqualTo("FormPayload is required");
-    }
-
-
-    @Test
-    void testGenerateDocument_WhitespaceAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test");
-
-        String expectedDocumentUrl = "http://dm-store/documents/123";
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenReturn(expectedDocumentUrl);
-
-        ResponseEntity<String> response = underTest.generateDocument("   ", "test-s2s", formPayload);
-
-        // Controller doesn't validate authorization, so request succeeds
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-    }
-
-    @Test
-    void testGenerateDocument_NullAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test");
-
-        String expectedDocumentUrl = "http://dm-store/documents/123";
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenReturn(expectedDocumentUrl);
-
-        ResponseEntity<String> response = underTest.generateDocument(null, "test-s2s", formPayload);
-
-        // Controller doesn't validate authorization, so request succeeds
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-    }
-
-    @Test
-    void testGenerateDocument_EmptyAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test");
-
-        String expectedDocumentUrl = "http://dm-store/documents/123";
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenReturn(expectedDocumentUrl);
-
-        ResponseEntity<String> response = underTest.generateDocument("", "test-s2s", formPayload);
-
-        // Controller doesn't validate authorization, so request succeeds
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-    }
-
-    // Similar fixes for service authorization tests
-    @Test
-    void testGenerateDocument_NullServiceAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test");
-
-        String expectedDocumentUrl = "http://dm-store/documents/123";
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenReturn(expectedDocumentUrl);
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", null, formPayload);
-
-        // Controller doesn't validate service authorization, so request succeeds
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-    }
-
-    @Test
-    void testGenerateDocument_EmptyServiceAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test");
-
-        String expectedDocumentUrl = "http://dm-store/documents/123";
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenReturn(expectedDocumentUrl);
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "", formPayload);
-
-        // Controller doesn't validate service authorization, so request succeeds
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-    }
-
-    @Test
-    void testGenerateDocument_WhitespaceServiceAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test");
-
-        String expectedDocumentUrl = "http://dm-store/documents/123";
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenReturn(expectedDocumentUrl);
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "   ", formPayload);
-
-        // Controller doesn't validate service authorization, so request succeeds
-        assertThat(response.getStatusCode().value()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-    }
-
-    @Test
-    void testGenerateDocument_DocAssemblyBadRequestException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1");
-
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenThrow(new DocAssemblyException("Bad request to Doc Assembly service: Invalid template"));
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(400);
-        assertThat(response.getBody()).contains(
-            "Bad request to Doc Assembly service: Bad request to Doc Assembly service: Invalid template");
-    }
-
-    @Test
-    void testGenerateDocument_DocAssemblyAuthorizationException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1");
-
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenThrow(new DocAssemblyException(
-            "Authorization failed for Doc Assembly service: Unauthorized"));
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(401);
-        assertThat(response.getBody()).contains(
-            "Authorization failed: Authorization failed for Doc Assembly service: Unauthorized");
-    }
-
-    @Test
-    void testGenerateDocument_DocAssemblyNotFoundException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1");
-
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenThrow(new DocAssemblyException(
-            "Doc Assembly service endpoint not found: Not found"));
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(404);
-        assertThat(response.getBody()).contains(
-            "Doc Assembly service endpoint not found: Doc Assembly service endpoint not found: Not found");
-    }
-
-    @Test
-    void testGenerateDocument_DocAssemblyServiceUnavailableException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1");
-
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenThrow(new DocAssemblyException(
-            "Doc Assembly service is temporarily unavailable: Service unavailable"));
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(503);
-        assertThat(response.getBody()).contains(
-            "Doc Assembly service is temporarily unavailable: "
-                + "Doc Assembly service is temporarily unavailable: Service unavailable");
-    }
-
-    @Test
-    void testGenerateDocument_DocAssemblyServiceErrorException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1");
-
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenThrow(new DocAssemblyException("Doc Assembly service error: Internal server error"));
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(503);
-        assertThat(response.getBody()).contains(
-            "Doc Assembly service is temporarily unavailable: Doc Assembly service error: Internal server error");
-    }
-
-    @Test
-    void testGenerateDocument_DocAssemblyServiceErrorOnly() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1");
-
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenThrow(new DocAssemblyException("service error occurred"));
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(503);
-        assertThat(response.getBody()).contains(
-            "Doc Assembly service is temporarily unavailable: service error occurred");
-    }
-
-    @Test
-    void testGenerateDocument_DocAssemblyGenericException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1");
-
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenThrow(new DocAssemblyException("Some other error occurred"));
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(500);
-        assertThat(response.getBody()).contains("Doc Assembly service error: Some other error occurred");
-    }
-
-    @Test
-    void testGenerateDocument_IllegalArgumentException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1");
-
-        when(docAssemblyService.generateDocument(
-            any(JsonNode.class),
-            eq("CV-SPC-CLM-ENG-01356.docx"),
-            eq(OutputType.PDF),
-            eq("generated-document.pdf")
-        )).thenThrow(new IllegalArgumentException("Request cannot be null"));
-
-        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(400);
-        assertThat(response.getBody()).contains("Invalid request: Request cannot be null");
     }
 
     @Test
