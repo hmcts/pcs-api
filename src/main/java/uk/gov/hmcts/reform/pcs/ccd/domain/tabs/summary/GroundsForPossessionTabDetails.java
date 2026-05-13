@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+
 @Builder
 @Data
 @NoArgsConstructor
@@ -13,7 +15,8 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 public class GroundsForPossessionTabDetails {
 
     @CCD(
-        label = "Grounds"
+        label = "Grounds",
+        typeOverride = TextArea
     )
     private String grounds;
 }
