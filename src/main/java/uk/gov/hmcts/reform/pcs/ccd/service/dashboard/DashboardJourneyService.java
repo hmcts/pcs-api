@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.Comparator;
-
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +56,6 @@ public class DashboardJourneyService {
             .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
             .toList();
     }
-
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
 
@@ -130,5 +128,10 @@ public class DashboardJourneyService {
                     .build())
                 .toList()
         );
+    }
+
+    private static int orderIndex(TaskGroupId id) {
+        int idx = TASK_GROUP_ORDER.indexOf(id);
+        return idx >= 0 ? idx : Integer.MAX_VALUE;
     }
 }

@@ -48,8 +48,14 @@
               },
               {
                 "value": {
-                  "templateId": "ViewResponse",
-                  "status": "NOT_AVAILABLE"
+                  "templateId": "ReviewResponse",
+                  "status": "IN_PROGRESS"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "SubmitResponse",
+                  "status": "COMPLETED"
                 }
               }
             ]
@@ -76,6 +82,25 @@
                 "value": {
                   "templateId": "ViewOrdersAndNotices",
                   "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "APPLICATIONS",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "MakeGeneralApplication",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ViewAllApplications",
+                  "status": "NOT_AVAILABLE"
                 }
               }
             ]
