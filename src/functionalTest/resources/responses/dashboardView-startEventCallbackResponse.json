@@ -49,7 +49,7 @@
               {
                 "value": {
                   "templateId": "ReviewResponse",
-                  "status": "IN_PROGRESS"
+                  "status": "NOT_AVAILABLE"
                 }
               },
               {
