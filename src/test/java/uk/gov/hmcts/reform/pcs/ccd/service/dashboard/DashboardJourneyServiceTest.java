@@ -109,7 +109,7 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.NOT_STARTED),
-                tuple(DashboardTaskTemplateIds.SUBMIT_RESPONSE, TaskStatus.COMPLETED)
+                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.COMPLETED)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
