@@ -2,6 +2,14 @@ server:
   port: 3206
   shutdown: "graceful"
 
+logging:
+  level:
+    # TODO: revert to default once OAuth2/IDAM password-grant 401 is diagnosed
+    org.springframework.security.oauth2.client: DEBUG
+    org.springframework.security.oauth2.client.endpoint: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
+    org.springframework.http.client: DEBUG
+
 # If you use a database then uncomment the `group:, readiness: and include: "db"` lines in the health probes and uncomment the datasource section
 management:
   endpoint:
@@ -91,12 +99,14 @@ spring:
             provider: idam
             client-id: ${IDAM_CLIENT_ID:pcs-api}
             client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
+            client-authentication-method: client_secret_post
             authorization-grant-type: password
             scope: openid,profile,roles
           system-user:
             provider: idam
             client-id: ${IDAM_CLIENT_ID:pcs-api}
             client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
+            client-authentication-method: client_secret_post
             authorization-grant-type: password
             scope: openid,profile,roles
         provider:
