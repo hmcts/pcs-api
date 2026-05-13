@@ -33,15 +33,15 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         """)
                 .mandatory(PCSCase::getMediationAttempted)
                 .label("settlement-section",
-                        """
-                        ---
-                        <section tabindex="0">
-                            <p class="govuk-body">
-                                If your claim is on the grounds of rent arrears, this includes any steps you’ve taken \
-                                to agree a repayment plan.
-                            </p>
-                        </section>
-                        """)
+                       """
+                       ---
+                       <section tabindex="0">
+                           <p class="govuk-body">
+                               If your claim is on the grounds of rent arrears, this includes any steps you’ve taken \
+                               to agree a repayment plan.
+                           </p>
+                       </section>
+                       """)
                 .mandatory(PCSCase::getSettlementAttempted)
                 .label("mediationAndSettlement-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
