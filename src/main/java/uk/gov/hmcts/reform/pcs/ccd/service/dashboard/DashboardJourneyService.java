@@ -96,13 +96,6 @@ public class DashboardJourneyService {
                 .templateValues(toTemplateValues(Map.of()))
                 .build(),
             DashboardNotification.builder()
-                .templateId("Defendant.CaseIssued")
-                .templateValues(toTemplateValues(Map.of(
-                    "hearingDateTime", "2026-06-15T10:30:00Z",
-                    "responseEndDate", "2026-05-15"
-                )))
-                .build(),
-            DashboardNotification.builder()
                 .templateId(responseTemplateId)
                 .templateValues(toTemplateValues(Map.of()))
                 .build()
