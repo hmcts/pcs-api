@@ -38,7 +38,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Case Flags]', async () => {
-  test('Case Flags - Create New Case Flag when case level is selected @caseflags @nightly', async () => {
+  test('End-to-End Create and Manage New Case Flag at Case Level @caseflags @PR @nightly', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
@@ -92,4 +92,13 @@ test.describe('[Common Component Case Flags]', async () => {
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
     });
+    test('Validate Create and Manage Case Flag Menu @smoke', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
+    await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
+    await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
+    await performAction('clickButton', manageCaseFlags.goButton);
+    await performAction('clickButton', manageCaseFlags.cancelButton);
+      });
 });
