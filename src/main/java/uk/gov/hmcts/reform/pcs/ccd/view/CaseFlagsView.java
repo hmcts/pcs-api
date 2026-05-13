@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,8 +19,8 @@ import java.util.List;
 @AllArgsConstructor
 public class CaseFlagsView {
 
-    public static  String PATHS_DELIMITER = ",";
-    public static  String PATH_DELIMITER = ":";
+    public static final String PATHS_DELIMITER = ",";
+    public static final String PATH_DELIMITER = ":";
 
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -72,7 +73,9 @@ public class CaseFlagsView {
 
     private List<ListValue<String>> getPaths(String entityPaths) {
 
-        return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
+        return entityPaths == null
+            ? new ArrayList<>()
+            : Arrays.stream(entityPaths.split(PATHS_DELIMITER))
                 .map(pathPairs -> pathPairs.split(PATH_DELIMITER))
                 .map(paths -> ListValue.<String>builder()
                     .id(paths[0])

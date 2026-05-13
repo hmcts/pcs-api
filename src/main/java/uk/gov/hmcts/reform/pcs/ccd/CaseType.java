@@ -30,9 +30,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
 
-    @Value("${hmcts.alternativeHmctsOrgId}")
-    private String alternativeHmctsOrgId;
-
     public static String getCaseType() {
         return withSuffix(CASE_TYPE_ID, "-");
     }
@@ -57,7 +54,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
-        builder.hmctsServiceId(alternativeHmctsOrgId);
+        builder.hmctsServiceId(hmctsServiceId);
 
         builder.searchInputFields()
             .caseReferenceField();
@@ -100,7 +97,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
         builder.tab("caseLinks", "Linked Cases")
-            .forRoles(UserRole.PCS_SOLICITOR)
+            .forRoles(UserRole.CTSC_ADMIN, UserRole.PCS_SOLICITOR)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
@@ -108,6 +105,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .forRoles(UserRole.PCS_CASE_WORKER)
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"");
+
+        buildCasePartiesTab(builder);
 
         configureCaseFileCategories(builder);
     }
@@ -120,5 +119,13 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+    }
+
+    private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.tab("caseParties", "Case Parties")
+            .label("Case Parties", null, "#### Case Parties")
+            .field("casePartiesTab_ClaimantDetails")
+            .field("casePartiesTab_DefendantOneDetails")
+            .field("casePartiesTab_DefendantsDetails");
     }
 }

@@ -6,15 +6,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 
 @Builder
@@ -24,19 +27,34 @@ import java.time.LocalDate;
 public class DefendantResponses {
 
     @CCD
+    private YesNoNotSure tenancyTypeConfirmation;
+
+    /**
+     * Legacy field replaced by {@link #tenancyTypeConfirmation}.
+     *
+     * @deprecated use {@link #tenancyTypeConfirmation} instead.
+     */
+    @Deprecated(forRemoval = true)
+    @CCD
     private YesNoNotSure tenancyTypeCorrect;
 
     @CCD
     private String tenancyType;
 
     @CCD
+    private YesNoNotSure tenancyStartDateConfirmation;
+
+    /**
+     * Legacy field replaced by {@link #tenancyStartDateConfirmation}.
+     *
+     * @deprecated use {@link #tenancyStartDateConfirmation} instead.
+     */
+    @Deprecated(forRemoval = true)
+    @CCD
     private YesNoNotSure tenancyStartDateCorrect;
 
     @CCD
     private LocalDate tenancyStartDate;
-
-    @CCD
-    private YesNoNotSure tenancyStartDateConfirmation;
 
     @CCD
     private YesNoNotSure rentArrearsAmountConfirmation;
@@ -102,6 +120,12 @@ public class DefendantResponses {
     @CCD(access = {CitizenAccess.class})
     private PaymentAgreement paymentAgreement;
 
+    @CCD(access = {CitizenAccess.class})
+    private List<ListValue<UploadedDocument>> defendantDocuments;
+
+    @CCD(access = {CitizenAccess.class})
+    private List<ListValue<UploadedDocument>> counterClaimDocuments;
+
     private LanguageUsed languageUsed;
 
     private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
@@ -110,4 +134,6 @@ public class DefendantResponses {
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;
+    @CCD
+    private VerticalYesNo makeCounterClaim;
 }

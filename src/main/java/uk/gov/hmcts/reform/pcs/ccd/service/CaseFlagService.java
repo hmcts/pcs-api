@@ -54,6 +54,13 @@ public class CaseFlagService {
             if ("CREATE".equals(flow)) {
                 flagEntity.setFlagComment(incomingFlagDetail.getFlagComment());
                 flagEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+            } else {
+                if ("Inactive".equals(flagEntity.getDefaultStatus())) {
+                    flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagUpdateComment());
+                } else {
+                    flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
+                }
+                flagEntity.setFlagUpdateCommentWelsh(incomingFlagDetail.getFlagCommentCy());
             }
 
             flagEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
@@ -64,11 +71,6 @@ public class CaseFlagService {
             flagEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
             flagEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
             flagEntity.setFlagRefData(flagRefDataEntity);
-
-            if ("UPDATE".equals(flow)) {
-                flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
-                flagEntity.setFlagUpdateCommentWelsh(incomingFlagDetail.getFlagCommentCy());
-            }
 
             flagEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
@@ -85,11 +87,8 @@ public class CaseFlagService {
     private FlagRefDataEntity getRefDataEntity(Flags incomingCaseFlags, FlagDetail incomingFlagDetail) {
 
         FlagRefDataEntity refDataFlagsEntity = flagRefDataRepository.findByFlagCode(
-            incomingFlagDetail.getFlagCode()).orElse(null);
+            incomingFlagDetail.getFlagCode()).orElse(new FlagRefDataEntity());
 
-        if (refDataFlagsEntity == null) {
-            refDataFlagsEntity = new FlagRefDataEntity();
-        }
         refDataFlagsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
         refDataFlagsEntity.setFlagName(incomingFlagDetail.getName());
         refDataFlagsEntity.setFlagNameWelsh(incomingFlagDetail.getNameCy());

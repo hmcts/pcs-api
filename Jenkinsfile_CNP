@@ -53,7 +53,6 @@ withPipeline(type, product, component) {
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
-      env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
       enableHighLevelDataSetup()
     } else {
       env.CCD_ENABLED = "false"
@@ -81,10 +80,12 @@ withPipeline(type, product, component) {
 
   onDemo {
     setDemoEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onIthc {
     setIthcEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onPerftest {
@@ -112,7 +113,23 @@ withPipeline(type, product, component) {
       env.CASE_API_URL = "http://pcs-api-perftest.service.core-compute-perftest.internal"
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-perftest.service.core-compute-perftest.internal"
     }
+    onDemo {
+      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-demo.service.core-compute-demo.internal"
+      env.CASE_API_URL = "http://pcs-api-demo.service.core-compute-demo.internal"
+      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-demo.service.core-compute-demo.internal"
+    }
+    onIthc{
+      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-ithc.service.core-compute-ithc.internal"
+      env.CASE_API_URL = "http://pcs-api-ithc.service.core-compute-ithc.internal"
+      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-ithc.service.core-compute-ithc.internal"
+    }
     generateDefinitions(builder)
+  }
+
+  before('smoketest:preview') {
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+      sh "./bin/trigger-global-search-index.sh"
+    }
   }
 
   before('smoketest:aat') {

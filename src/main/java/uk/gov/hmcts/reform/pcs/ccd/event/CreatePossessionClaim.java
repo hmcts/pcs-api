@@ -54,6 +54,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
+                .grant(Permission.CRUD, UserRole.CTSC_ADMIN)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
         new PageBuilder(eventBuilder)

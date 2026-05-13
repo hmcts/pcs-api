@@ -85,7 +85,7 @@ class CaseFlagServiceTest {
         String savedPaths = savedFlags.getFirst().getPaths();
         assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
         assertEquals(1, savedFlags.size());
-        assertThat(savedPaths).isEqualTo(null);
+        assertThat(savedPaths).isNull();
     }
 
     @Test

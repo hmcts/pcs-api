@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
@@ -40,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -121,7 +123,7 @@ public class PCSCase {
     @External
     private String crossBorderCountry2;
 
-    @CCD(access = {CaseLinkingAccess.class},
+    @CCD(access = {ClaimantAccess.class},
         typeOverride = FieldType.Collection,
         label = "Linked cases",
         typeParameterOverride = "CaseLink")
@@ -522,12 +524,12 @@ public class PCSCase {
     )
     private DynamicList testCaseSupportFileList;
 
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
     @CCD(
         label = "Case file view",
-        access = {ClaimantAccess.class}
+        access = {DocumentAccess.class}
     )
     private ComponentLauncher caseFileView;
 
@@ -588,6 +590,9 @@ public class PCSCase {
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
 
+    @JsonUnwrapped(prefix = "casePartiesTab_")
+    @CCD
+    private CasePartiesTab casePartiesTab;
     @CCD(
         access = {InternalCaseFlagAccess.class},
         label = "Case Flags"
@@ -598,7 +603,7 @@ public class PCSCase {
         access = {InternalCaseFlagAccess.class},
         label = "Launch the flags screen"
     )
-    @JsonProperty("flagLauncherInternal")
+
     private FlagLauncher flagLauncherInternal;
 
 }

@@ -37,7 +37,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEli
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CompletingYourClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyHousingActOptions;
@@ -156,6 +155,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
     private final RentDetailsPage rentDetailsPage;
+    private final RentArrears rentArrears;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -166,18 +166,19 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CTSC_ADMIN)
                 .showSummary()
                 .endButtonLabel("${endButtonLabel}");
 
         savingPageBuilderFactory.create(eventBuilder, resumePossessionClaim)
             .add(resumeClaim)
+            .add(claimantInformationPage)
             .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
             .add(new ClaimantTypeNotEligibleWales())
             .add(new SelectClaimType())
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
-            .add(claimantInformationPage)
             .add(claimantDetailsWales)
             .add(contactPreferences)
             .add(defendantsDetails)
@@ -204,8 +205,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(walesCheckingNotice)
             .add(noticeDetails)
             .add(rentDetailsPage)
-            .add(new DailyRentAmount())
-            .add(new RentArrears())
+            .add(rentArrears)
             .add(new MoneyJudgment())
             .add(claimantCircumstancesPage)
             .add(defendantCircumstancesPage)
