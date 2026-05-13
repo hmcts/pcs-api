@@ -82,14 +82,14 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
-         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
-         question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
+        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -183,14 +183,14 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
-        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -299,14 +299,14 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.noRadioOption,
-         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.noRadioOption,
-         question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.noRadioOption});
+        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.noRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -405,14 +405,14 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.notApplicableRadioOption,
-         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.notApplicableRadioOption,
-         question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.notApplicableRadioOption});
+        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.noRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -505,14 +505,14 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
-        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -633,14 +633,14 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
-        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -729,14 +729,14 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
-        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
