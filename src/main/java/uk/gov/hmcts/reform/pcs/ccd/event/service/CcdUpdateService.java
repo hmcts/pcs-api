@@ -1,0 +1,40 @@
+package uk.gov.hmcts.reform.pcs.ccd.event.service;
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
+import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.payment;
+
+@AllArgsConstructor
+@Service
+@Slf4j
+public class CcdUpdateService {
+
+    private final IdamService idamService;
+    private final AuthTokenGenerator s2sAuthTokenGenerator;
+    private final CoreCaseDataApi coreCaseDataApi;
+
+    public CaseResource submitPaymentSuccess(String caseId) {
+        String s2sToken = s2sAuthTokenGenerator.generate();
+        String idamToken = idamService.getSystemUserAuthorisation();
+        log.debug("Submitting payment event for case: {}", caseId);
+        StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, s2sToken, caseId, payment.name());
+        log.debug("StartEventResponse: {}", startEventResponse);
+        CaseDataContent submitContent = CaseDataContent.builder().event(Event.builder().id(payment.name()).build())
+            .eventToken(startEventResponse.getToken()).data(PCSCase.builder().build()).build();
+        log.debug("submitContent: {}", submitContent);
+        CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, s2sToken, caseId, submitContent);
+        log.debug("CaseResouce response : {}", caseResource);
+        return caseResource;
+    }
+
+}
