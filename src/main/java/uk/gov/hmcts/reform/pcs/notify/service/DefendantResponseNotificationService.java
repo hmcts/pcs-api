@@ -51,6 +51,7 @@ public class DefendantResponseNotificationService {
         log.info("Sending counterclaim no payment required email for defendant response {}",
                  defendantResponse.getId());
         notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
+        notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
     }
 
     private CounterClaimEntity getAssociatedCounterClaim(DefendantResponseEntity defendantResponse) {

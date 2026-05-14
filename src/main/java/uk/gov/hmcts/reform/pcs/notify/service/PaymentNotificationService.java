@@ -63,11 +63,12 @@ public class PaymentNotificationService {
         }
 
         if (!CASE_ISSUED.equals(counterClaim.getStatus())) {
-            log.info("Counterclaim status not eligible for AC04 email: {}", counterClaim.getStatus());
+            log.info("Counterclaim status not eligible for email: {}", counterClaim.getStatus());
             return;
         }
 
         log.info("Sending counterclaim payment success email for claim {}", claim.getId());
         notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+        notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
     }
 }
