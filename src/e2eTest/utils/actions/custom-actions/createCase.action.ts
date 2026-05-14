@@ -49,13 +49,23 @@ import {
   statementOfExpressTerms,
   suspensionOfRightToBuyOrderReason,
   suspensionToBuyDemotionOfTenancyOrderReasons,
-  underlesseeMortgageeDetails
+  underlesseeMortgageeDetails,
+  addCaseNote
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
+import {caseInfo} from './createCaseAPI.action';
+import { createCaseApiData } from '@data/api-data';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
+
+export const addressInfoCaseTab = {
+  buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
+  addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
+  townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
+  engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
+};
 export const caseTabMap = new Map<string, string>();
 
 export class CreateCaseAction implements IAction {
@@ -113,6 +123,7 @@ export class CreateCaseAction implements IAction {
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
       ['validateClaimantDetails', () => this.validateClaimantDetails(page, fieldName as actionRecord)],
+      ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -874,6 +885,13 @@ export class CreateCaseAction implements IAction {
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${caseNumber.replace(/-/g, '')}#Next%20steps`);
     //Skipping Find Case search as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
     //await performAction('searchCaseFromFindCase', caseNumber);
+  }
+
+  private async addCaseNotes(caseNote: actionRecord){
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {elementType: 'paragraph', text: `Property address: ${addressInfoCaseTab.buildingStreet}, ${addressInfoCaseTab.townCity}, ${addressInfoCaseTab.engOrWalPostcode}`});
+    await performAction('inputText', caseNote.label, caseNote.input);
+    await performAction('clickButton', addCaseNote.continueButton);
   }
 
   private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {

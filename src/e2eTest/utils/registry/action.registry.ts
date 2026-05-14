@@ -98,6 +98,7 @@ export class ActionRegistry {
     ['claimSaved', new CreateCaseAction()],
     ['validateDefendantDetails', new CreateCaseAction()],
     ['validateClaimantDetails', new CreateCaseAction()],
+    ['addCaseNotes', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],

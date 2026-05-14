@@ -1,11 +1,14 @@
 import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
-import { initializeExecutor, performAction } from '@utils/controller';
+import { initializeExecutor, performAction, performValidation } from '@utils/controller';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { home } from '@data/page-data';
+import { caseSummary, home } from '@data/page-data';
+import { addCaseNote } from '@data/page-data-figma';
+import { checkYourAnswersCaseNote } from '@data/page-data/checkYourAnswersCaseNote.page.data';
+import { getCurrentGMTTime } from '@utils/common/string.utils';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -40,6 +43,31 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       payLoad: submitCaseApiData.submitCasePayloadCaseTab,
       table: 'Claimant'
     });
+  });
+
+  test('Case tabs - Notes tab test @MAC @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.addCaseNote);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', addCaseNote.mainHeader);
+    await performAction('addCaseNotes', {
+      label: addCaseNote.addNoteTextLabel,
+      input: addCaseNote.addNoteTextInput
+    })
+    await performValidation('text', {
+      "text": checkYourAnswersCaseNote.header,
+      "elementType": "subHeading"
+    });
+    const currentTime = getCurrentGMTTime();
+
+    console.log('Captured GMT time:', currentTime);
+    await performAction('clickButton', checkYourAnswersCaseNote.submitNote);
+
+    const currentTime1 = getCurrentGMTTime();
+
+    console.log('After click Captured GMT time:', currentTime1);
+
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a case note');
+    await performAction('clickTab', home.caseNotes);
   });
 
 });
