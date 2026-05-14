@@ -14,6 +14,7 @@ class NotificationClaimTypeTest {
     void shouldReturnCorrectValue(NotificationClaimType claimType) {
         String expectedValue = switch (claimType) {
             case COUNTER_CLAIM -> "counter_claim";
+            case NO_COUNTER_CLAIM -> "no_counter_claim";
             case POSSESSION_CLAIM -> "possession_claim";
             case GENERAL_APPLICATION_CLAIM -> "general_application_claim";
         };
@@ -25,6 +26,8 @@ class NotificationClaimTypeTest {
     void shouldReturnClaimTypeFromValidString() {
         assertThat(NotificationClaimType.fromString("counter_claim"))
             .isEqualTo(NotificationClaimType.COUNTER_CLAIM);
+        assertThat(NotificationClaimType.fromString("no_counter_claim"))
+            .isEqualTo(NotificationClaimType.NO_COUNTER_CLAIM);
         assertThat(NotificationClaimType.fromString("possession_claim"))
             .isEqualTo(NotificationClaimType.POSSESSION_CLAIM);
         assertThat(NotificationClaimType.fromString("general_application_claim"))
