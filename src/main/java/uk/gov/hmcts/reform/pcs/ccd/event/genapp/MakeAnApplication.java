@@ -99,7 +99,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
         GenAppEntity genAppEntity = genAppService
             .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty);
 
-        createSubmissionDocument(caseReference, createGenAppRequest, genAppEntity);
+        createSubmissionDocument(caseReference, createGenAppRequest, genAppEntity, applicantParty);
 
         return SubmitResponse.<State>builder()
             .build();
@@ -124,19 +124,22 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .orElseGet(caseData::getCitizenGenAppRequest);
     }
 
-    private boolean isDuplicateRequest(GenAppRequest createGenAppRequest, PcsCaseEntity pcsCaseEntity) {
-        String clientReference = createGenAppRequest.getClientReference();
+    private boolean isDuplicateRequest(GenAppRequest genAppRequest, PcsCaseEntity pcsCaseEntity) {
+        String clientReference = genAppRequest.getClientReference();
         return clientReference != null
             && genAppRepository.existsByPcsCaseAndClientReference(pcsCaseEntity, clientReference);
     }
 
     private void createSubmissionDocument(long caseReference,
-                                          GenAppRequest citizenGenAppRequest,
-                                          GenAppEntity genAppEntity) {
+                                          GenAppRequest genAppRequest,
+                                          GenAppEntity genAppEntity,
+                                          PartyEntity applicantParty) {
+
         String documentUrl = genAppDocumentGenerator.generateSubmissionDocument(
             caseReference,
-            citizenGenAppRequest,
-            genAppEntity
+            genAppRequest,
+            genAppEntity,
+            applicantParty
         );
 
         documentImportService.addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);

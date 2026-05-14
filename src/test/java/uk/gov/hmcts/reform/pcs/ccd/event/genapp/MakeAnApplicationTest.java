@@ -276,7 +276,8 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .thenReturn(genAppEntity);
 
             String documentUrl = "some document URL";
-            when(genAppDocumentGenerator.generateSubmissionDocument(TEST_CASE_REFERENCE, genAppRequest, genAppEntity))
+            when(genAppDocumentGenerator
+                     .generateSubmissionDocument(TEST_CASE_REFERENCE, genAppRequest, genAppEntity, applicantParty))
                 .thenReturn(documentUrl);
 
             // When
