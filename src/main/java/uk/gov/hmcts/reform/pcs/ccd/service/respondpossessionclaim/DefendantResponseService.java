@@ -168,6 +168,7 @@ public class DefendantResponseService {
             .disputeClaimDetails(responses.getDisputeClaimDetails())
             .makeCounterClaim(responses.getMakeCounterClaim())
             .tenancyStartDateConfirmation(responses.getTenancyStartDateConfirmation())
+            .tenancyTypeConfirmation(responses.getTenancyTypeConfirmation())
             .landlordLicensed(responses.getLandlordLicensed())
             .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
             .languageUsed(responses.getLanguageUsed())
