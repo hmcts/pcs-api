@@ -9,9 +9,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.RelatedApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
@@ -147,10 +149,11 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(GenAppEntity.builder().build()))
             .build();
 
+        PartyEntity defendant = PartyEntity.builder().idamId(UUID.randomUUID()).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, null)
+            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(5).getTasks())
@@ -175,10 +178,11 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(genApp))
             .build();
 
+        PartyEntity defendant = PartyEntity.builder().idamId(UUID.randomUUID()).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, null)
+            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
@@ -190,6 +194,71 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
             .extracting(RelatedApplication::getId)
             .allMatch(id -> id != null && !id.isBlank());
+    }
+
+    @Test
+    void shouldOmitWithoutNoticeApplicationsRaisedByAnotherUser() {
+        PCSCase submitted = PCSCase.builder().build();
+        UUID applicantId = UUID.randomUUID();
+        UUID viewerId = UUID.randomUUID();
+
+        PartyEntity applicant = PartyEntity.builder().idamId(applicantId).build();
+        GenAppEntity hiddenGenApp = GenAppEntity.builder()
+            .id(UUID.randomUUID())
+            .type(GenAppType.ADJOURN)
+            .withoutNotice(VerticalYesNo.YES)
+            .party(applicant)
+            .applicationSubmittedDate(LocalDateTime.of(2026, 4, 28, 10, 30))
+            .build();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .genApps(Set.of(hiddenGenApp))
+            .build();
+
+        PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            submitted,
+            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications())).isEmpty();
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(5).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple(DashboardTaskTemplateIds.MAKE_GENERAL_APPLICATION, TaskStatus.AVAILABLE),
+                tuple(DashboardTaskTemplateIds.VIEW_ALL_APPLICATIONS, TaskStatus.NOT_AVAILABLE)
+            );
+    }
+
+    @Test
+    void shouldIncludeWithoutNoticeApplicationForApplicantIdamUser() {
+        PCSCase submitted = PCSCase.builder().build();
+        UUID applicantId = UUID.randomUUID();
+
+        PartyEntity applicant = PartyEntity.builder().idamId(applicantId).build();
+        GenAppEntity ownGenApp = GenAppEntity.builder()
+            .id(UUID.randomUUID())
+            .type(GenAppType.ADJOURN)
+            .withoutNotice(VerticalYesNo.YES)
+            .party(applicant)
+            .applicationSubmittedDate(LocalDateTime.of(2026, 4, 28, 10, 30))
+            .build();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .genApps(Set.of(ownGenApp))
+            .build();
+
+        PartyEntity defendant = PartyEntity.builder().idamId(applicantId).build();
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            submitted,
+            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
+            .extracting(RelatedApplication::getType)
+            .containsExactly(GenAppType.ADJOURN);
     }
 
     @Test

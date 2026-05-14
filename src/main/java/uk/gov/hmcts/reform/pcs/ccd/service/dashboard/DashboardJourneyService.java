@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Computes dashboard data (notifications + task groups) from submitted case data.
@@ -101,9 +102,21 @@ public class DashboardJourneyService {
             || dashboardContext.caseEntity().getGenApps().isEmpty()) {
             return List.of();
         }
-    
+
+        UUID viewerIdamId = dashboardContext.defendant() != null
+            ? dashboardContext.defendant().getIdamId()
+            : null;
+
+        var visibleApps = dashboardContext.caseEntity().getGenApps().stream()
+            .filter(genApp -> dashboardContext.isVisibleToUser(genApp, viewerIdamId))
+            .toList();
+
+        if (visibleApps.isEmpty()) {
+            return List.of();
+        }
+
         return ListValueUtils.wrapListItems(
-            dashboardContext.caseEntity().getGenApps().stream()
+            visibleApps.stream()
                 .map(genApp -> RelatedApplication.builder()
                     .id(genApp.getId() != null ? genApp.getId().toString() : null)
                     .type(genApp.getType())
