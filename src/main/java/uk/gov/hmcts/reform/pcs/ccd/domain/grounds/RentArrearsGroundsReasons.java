@@ -167,4 +167,12 @@ public class RentArrearsGroundsReasons {
         typeOverride = TextArea
     )
     private String tenancyByFalseStatementReason;
+
+    @CCD(
+            label = "Give details about your reasons for claiming possession (Other grounds)",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                    + "You can enter up to 500 characters",
+            typeOverride = TextArea
+    )
+    private String otherGroundReason;
 }

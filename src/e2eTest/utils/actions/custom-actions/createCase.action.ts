@@ -197,6 +197,8 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
     if(caseData === claimType.yesRadioOption){    
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
+    } else {
+      await performAction('clickButton', claimType.continueButton);
     }
   }
 
@@ -259,6 +261,7 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', claimantInformation.whatIsCorrectClaimantNameHiddenQuestion, claimantInformation.ClaimantNameTextInput);
     }
     claimantsName = caseData == "No" ? claimantInformation.ClaimantNameTextInput : await this.extractClaimantName(page, claimantInformation.yourClaimantNameRegisteredParagraph);
+    await performAction('clickButton', claimantInformation.continueButton);
   }
 
   private async selectContactPreferences(preferences: actionRecord) {
@@ -439,6 +442,10 @@ export class CreateCaseAction implements IAction {
           break;
         case 'discretionaryAccommodation':
           await performAction('check', {question: whatAreYourGroundsForPossession.discretionaryWithAccommodation.discretionaryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.discretionaryAccommodation});
+          break;
+        case 'other':
+          await performAction('check', {question: whatAreYourGroundsForPossession.additionalGrounds, option: possessionGrounds.other});
+          await performAction('inputText', whatAreYourGroundsForPossession.giveDetailsHiddenTextLabel, whatAreYourGroundsForPossession.giveDetailsHiddenTextInput);
           break;
       }
     }
