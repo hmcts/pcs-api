@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -148,7 +149,7 @@ class DocumentServiceTest {
     @ParameterizedTest
     @MethodSource("additionalDocumentCategoryScenarios")
     void shouldMapAdditionalDocumentsToCaseFileCategories(AdditionalDocumentType additionalDocumentType,
-                                                          CaseFileCategory expectedCategory) {
+                                                          String expectedCategoryId) {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
@@ -170,7 +171,7 @@ class DocumentServiceTest {
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getCategoryId)
-            .containsExactly(expectedCategory.getId());
+            .containsExactly(expectedCategoryId);
     }
 
     @Test
@@ -345,6 +346,35 @@ class DocumentServiceTest {
         assertThat(capturedEntities)
                 .extracting(DocumentEntity::getType)
                 .containsExactly(expectedDocumentType);
+    }
+
+    @Test
+    void shouldPersistNullCategoryForPoliceReportEvidenceDocuments() {
+        EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
+            .document(Document.builder()
+                .url("url-POLICE_REPORT")
+                .filename("file-POLICE_REPORT")
+                .binaryUrl("bin-POLICE_REPORT")
+                .build())
+            .documentType(EvidenceDocumentType.POLICE_REPORT)
+            .build();
+
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .warrantOfRestitutionDetails(WarrantOfRestitutionDetails.builder()
+                .additionalDocuments(List.of(ListValue.<EvidenceOfDefendants>builder()
+                    .id("1")
+                    .value(evidenceDocument)
+                    .build()))
+                .build())
+            .build();
+
+        underTest.createAllDocuments(enforcementOrder);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+        assertThat(capturedEntities.getFirst().getCategoryId()).isNull();
     }
 
     @Test
@@ -575,7 +605,7 @@ class DocumentServiceTest {
 
         assertThat(entities).allSatisfy(entity -> {
             assertThat(entity.getType()).isNull();
-            assertThat(entity.getCategoryId()).isEqualTo("uncategorised");
+            assertThat(entity.getCategoryId()).isNull();
             assertThat(entity.getDefendantResponse()).isEqualTo(response);
             assertThat(entity.getPcsCase()).isEqualTo(pcsCase);
             assertThat(entity.getParty()).isEqualTo(party);
@@ -693,20 +723,21 @@ class DocumentServiceTest {
         return Stream.of(
             Arguments.of(
                 AdditionalDocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
-                CaseFileCategory.STATEMENTS_OF_CASE
+                CaseFileCategory.STATEMENTS_OF_CASE.getId()
             ),
-            Arguments.of(AdditionalDocumentType.RENT_STATEMENT, CaseFileCategory.PROPERTY_DOCUMENTS),
-            Arguments.of(AdditionalDocumentType.TENANCY_AGREEMENT, CaseFileCategory.PROPERTY_DOCUMENTS),
-            Arguments.of(AdditionalDocumentType.POSSESSION_NOTICE, CaseFileCategory.PROPERTY_DOCUMENTS),
-            Arguments.of(AdditionalDocumentType.WITNESS_STATEMENT, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SERVICE, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.PHOTOGRAPHIC_EVIDENCE, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE),
-            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF, CaseFileCategory.CORRESPONDENCE),
-            Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE),
-            Arguments.of(AdditionalDocumentType.OTHER, CaseFileCategory.UNCATEGORISED)
+            Arguments.of(AdditionalDocumentType.RENT_STATEMENT, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
+            Arguments.of(AdditionalDocumentType.TENANCY_AGREEMENT, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
+            Arguments.of(AdditionalDocumentType.POSSESSION_NOTICE, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
+            Arguments.of(AdditionalDocumentType.WITNESS_STATEMENT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SERVICE, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.PHOTOGRAPHIC_EVIDENCE, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF,
+                         CaseFileCategory.CORRESPONDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.OTHER, null)
         );
     }
 }
