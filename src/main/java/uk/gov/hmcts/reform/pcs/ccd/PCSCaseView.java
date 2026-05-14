@@ -91,6 +91,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresent(draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft));
+        } else {
+            caseTabView.setCaseTabFields(pcsCase);
         }
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
@@ -142,7 +144,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
-        caseTabView.setCaseTabFields(pcsCase);
 
         return pcsCase;
     }

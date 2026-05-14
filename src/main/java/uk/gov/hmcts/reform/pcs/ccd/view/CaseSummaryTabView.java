@@ -53,6 +53,48 @@ public class CaseSummaryTabView {
     private static final Pattern SECTION_84A_CONDITION_PATTERN =
         Pattern.compile("^Condition ([1-5]) of Section 84A of the Housing Act 1985$");
     private static final String ANTISOCIAL_BEHAVIOUR = "Antisocial behaviour";
+    private static final String GROUND_1 = "1";
+    private static final String GROUND_2 = "2";
+    private static final String GROUND_2A = "2A";
+    private static final String GROUND_2ZA = "2ZA";
+    private static final String GROUND_3 = "3";
+    private static final String GROUND_4 = "4";
+    private static final String GROUND_5 = "5";
+    private static final String GROUND_6 = "6";
+    private static final String GROUND_7 = "7";
+    private static final String GROUND_7A = "7A";
+    private static final String GROUND_7B = "7B";
+    private static final String GROUND_8 = "8";
+    private static final String GROUND_9 = "9";
+    private static final String GROUND_10 = "10";
+    private static final String GROUND_10A = "10A";
+    private static final String GROUND_11 = "11";
+    private static final String GROUND_12 = "12";
+    private static final String GROUND_13 = "13";
+    private static final String GROUND_14 = "14";
+    private static final String GROUND_14A = "14A";
+    private static final String GROUND_14ZA = "14ZA";
+    private static final String GROUND_15 = "15";
+    private static final String GROUND_15A = "15A";
+    private static final String GROUND_16 = "16";
+    private static final String GROUND_17 = "17";
+    private static final String GROUND_A = "A";
+    private static final String GROUND_B = "B";
+    private static final String GROUND_C = "C";
+    private static final String GROUND_D = "D";
+    private static final String GROUND_E = "E";
+    private static final String GROUND_F = "F";
+    private static final String GROUND_G = "G";
+    private static final String GROUND_H = "H";
+    private static final String GROUND_I = "I";
+    private static final String SECTION_157 = "157";
+    private static final String SECTION_170 = "170";
+    private static final String SECTION_178 = "178";
+    private static final String SECTION_181 = "181";
+    private static final String SECTION_186 = "186";
+    private static final String SECTION_187 = "187";
+    private static final String SECTION_191 = "191";
+    private static final String SECTION_199 = "199";
 
     public SummaryTab buildSummaryTab(PCSCase pcsCase) {
         ReasonsForPossessionTabDetails reasonsForPossession = buildReasonsForPossession(pcsCase);
@@ -180,7 +222,7 @@ public class CaseSummaryTabView {
 
     private AddressUK getSummaryDefendantAddressForService(Party defendant, PCSCase pcsCase) {
         if (defendant.getAddressKnown() != VerticalYesNo.YES) {
-            return null;
+            return pcsCase.getPropertyAddress();
         }
 
         return defendant.getAddress() != null ? defendant.getAddress() : pcsCase.getPropertyAddress();
@@ -270,40 +312,40 @@ public class CaseSummaryTabView {
                                        String ground,
                                        String reason) {
         switch (ground) {
-            case "1" -> reasonsForPossession.setGround1(reason);
-            case "2" -> reasonsForPossession.setGround2(reason);
-            case "2A" -> reasonsForPossession.setGround2A(reason);
-            case "2ZA" -> reasonsForPossession.setGround2ZA(reason);
-            case "3" -> reasonsForPossession.setGround3(reason);
-            case "4" -> reasonsForPossession.setGround4(reason);
-            case "5" -> reasonsForPossession.setGround5(reason);
-            case "6" -> reasonsForPossession.setGround6(reason);
-            case "7" -> reasonsForPossession.setGround7(reason);
-            case "7A" -> reasonsForPossession.setGround7A(reason);
-            case "7B" -> reasonsForPossession.setGround7B(reason);
-            case "8" -> reasonsForPossession.setGround8(reason);
-            case "9" -> reasonsForPossession.setGround9(reason);
-            case "10" -> reasonsForPossession.setGround10(reason);
-            case "10A" -> reasonsForPossession.setGround10A(reason);
-            case "11" -> reasonsForPossession.setGround11(reason);
-            case "12" -> reasonsForPossession.setGround12(reason);
-            case "13" -> reasonsForPossession.setGround13(reason);
-            case "14" -> reasonsForPossession.setGround14(reason);
-            case "14A" -> reasonsForPossession.setGround14A(reason);
-            case "14ZA" -> reasonsForPossession.setGround14ZA(reason);
-            case "15" -> reasonsForPossession.setGround15(reason);
-            case "15A" -> reasonsForPossession.setGround15A(reason);
-            case "16" -> reasonsForPossession.setGround16(reason);
-            case "17" -> reasonsForPossession.setGround17(reason);
-            case "A" -> reasonsForPossession.setGroundA(reason);
-            case "B" -> reasonsForPossession.setGroundB(reason);
-            case "C" -> reasonsForPossession.setGroundC(reason);
-            case "D" -> reasonsForPossession.setGroundD(reason);
-            case "E" -> reasonsForPossession.setGroundE(reason);
-            case "F" -> reasonsForPossession.setGroundF(reason);
-            case "G" -> reasonsForPossession.setGroundG(reason);
-            case "H" -> reasonsForPossession.setGroundH(reason);
-            case "I" -> reasonsForPossession.setGroundI(reason);
+            case GROUND_1 -> reasonsForPossession.setGround1(reason);
+            case GROUND_2 -> reasonsForPossession.setGround2(reason);
+            case GROUND_2A -> reasonsForPossession.setGround2A(reason);
+            case GROUND_2ZA -> reasonsForPossession.setGround2ZA(reason);
+            case GROUND_3 -> reasonsForPossession.setGround3(reason);
+            case GROUND_4 -> reasonsForPossession.setGround4(reason);
+            case GROUND_5 -> reasonsForPossession.setGround5(reason);
+            case GROUND_6 -> reasonsForPossession.setGround6(reason);
+            case GROUND_7 -> reasonsForPossession.setGround7(reason);
+            case GROUND_7A -> reasonsForPossession.setGround7A(reason);
+            case GROUND_7B -> reasonsForPossession.setGround7B(reason);
+            case GROUND_8 -> reasonsForPossession.setGround8(reason);
+            case GROUND_9 -> reasonsForPossession.setGround9(reason);
+            case GROUND_10 -> reasonsForPossession.setGround10(reason);
+            case GROUND_10A -> reasonsForPossession.setGround10A(reason);
+            case GROUND_11 -> reasonsForPossession.setGround11(reason);
+            case GROUND_12 -> reasonsForPossession.setGround12(reason);
+            case GROUND_13 -> reasonsForPossession.setGround13(reason);
+            case GROUND_14 -> reasonsForPossession.setGround14(reason);
+            case GROUND_14A -> reasonsForPossession.setGround14A(reason);
+            case GROUND_14ZA -> reasonsForPossession.setGround14ZA(reason);
+            case GROUND_15 -> reasonsForPossession.setGround15(reason);
+            case GROUND_15A -> reasonsForPossession.setGround15A(reason);
+            case GROUND_16 -> reasonsForPossession.setGround16(reason);
+            case GROUND_17 -> reasonsForPossession.setGround17(reason);
+            case GROUND_A -> reasonsForPossession.setGroundA(reason);
+            case GROUND_B -> reasonsForPossession.setGroundB(reason);
+            case GROUND_C -> reasonsForPossession.setGroundC(reason);
+            case GROUND_D -> reasonsForPossession.setGroundD(reason);
+            case GROUND_E -> reasonsForPossession.setGroundE(reason);
+            case GROUND_F -> reasonsForPossession.setGroundF(reason);
+            case GROUND_G -> reasonsForPossession.setGroundG(reason);
+            case GROUND_H -> reasonsForPossession.setGroundH(reason);
+            case GROUND_I -> reasonsForPossession.setGroundI(reason);
             default -> {
             }
         }
@@ -313,14 +355,14 @@ public class CaseSummaryTabView {
                                   String section,
                                   String reason) {
         switch (section) {
-            case "157" -> reasonsForPossession.setSection157(reason);
-            case "170" -> reasonsForPossession.setSection170(reason);
-            case "178" -> reasonsForPossession.setSection178(reason);
-            case "181" -> reasonsForPossession.setSection181(reason);
-            case "186" -> reasonsForPossession.setSection186(reason);
-            case "187" -> reasonsForPossession.setSection187(reason);
-            case "191" -> reasonsForPossession.setSection191(reason);
-            case "199" -> reasonsForPossession.setSection199(reason);
+            case SECTION_157 -> reasonsForPossession.setSection157(reason);
+            case SECTION_170 -> reasonsForPossession.setSection170(reason);
+            case SECTION_178 -> reasonsForPossession.setSection178(reason);
+            case SECTION_181 -> reasonsForPossession.setSection181(reason);
+            case SECTION_186 -> reasonsForPossession.setSection186(reason);
+            case SECTION_187 -> reasonsForPossession.setSection187(reason);
+            case SECTION_191 -> reasonsForPossession.setSection191(reason);
+            case SECTION_199 -> reasonsForPossession.setSection199(reason);
             default -> {
             }
         }
@@ -476,11 +518,6 @@ public class CaseSummaryTabView {
     }
 
     private void groupSection84AConditions(List<String> grounds) {
-        int antisocialIndex = grounds.indexOf(ANTISOCIAL_BEHAVIOUR);
-        if (antisocialIndex < 0) {
-            return;
-        }
-
         List<String> section84AConditions = grounds.stream()
             .filter(this::isSection84ACondition)
             .sorted(this::compareSection84AConditions)
@@ -490,7 +527,9 @@ public class CaseSummaryTabView {
             return;
         }
 
-        grounds.set(antisocialIndex, ANTISOCIAL_BEHAVIOUR + ": " + String.join(", ", section84AConditions));
+        int antisocialIndex = grounds.indexOf(ANTISOCIAL_BEHAVIOUR);
+        int groupIndex = antisocialIndex >= 0 ? antisocialIndex : grounds.indexOf(section84AConditions.getFirst());
+        grounds.set(groupIndex, ANTISOCIAL_BEHAVIOUR + ": " + String.join(", ", section84AConditions));
         grounds.removeAll(section84AConditions);
     }
 

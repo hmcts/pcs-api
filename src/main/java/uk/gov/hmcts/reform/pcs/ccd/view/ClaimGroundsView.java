@@ -38,7 +38,8 @@ public class ClaimGroundsView {
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
             .ifPresent(mainClaim -> setClaimGroundFields(pcsCase, mainClaim));
-        }
+    }
+
     private void setClaimGroundFields(PCSCase pcsCase,
                                       ClaimEntity mainClaim) {
 
