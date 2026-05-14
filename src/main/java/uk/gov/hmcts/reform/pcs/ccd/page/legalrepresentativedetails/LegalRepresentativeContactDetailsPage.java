@@ -1,26 +1,43 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.legalrepresentativedetails;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Component
+@AllArgsConstructor
 public class LegalRepresentativeContactDetailsPage implements CcdPageConfiguration {
 
     private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
     private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
+    private static final String EMAIL_LABEL = "Enter email address";
+
+    private final AddressValidator addressValidator;
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("legalRepresentativeContactDetails")
+            .page("legalRepresentativeContactDetails", this::midEvent)
             .pageLabel("Amend representative's details")
             .complex(PCSCase::getLegalRepresentativeContactDetails)
             .label("legalRepresentativeDetails-reference",  """
@@ -114,6 +131,35 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                 .mandatory(LegalRepresentativeDetails::getContactPhoneNumber, "provideContactPhoneNumber=\"YES\"")
             .done()
             .label("legalRepresentativeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+        List<String> validationErrors = new ArrayList<>();
+        LegalRepresentativeDetails legalRepresentativeDetails = caseData.getLegalRepresentativeContactDetails();
+
+        if (legalRepresentativeDetails != null) {
+
+            if (legalRepresentativeDetails.getDifferentPostalAddress() == VerticalYesNo.YES
+                || legalRepresentativeDetails.getOrgAddressFound() == YesOrNo.NO) {
+                AddressUK contactAddress = legalRepresentativeDetails.getCorrespondenceAddress();
+                validationErrors.addAll(addressValidator.validateAddressFields(contactAddress));
+
+            }
+
+            if (legalRepresentativeDetails.getUseEmailAddress() == VerticalYesNo.NO ) {
+                validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+                    legalRepresentativeDetails.getEmailAddress(), EMAIL_LABEL, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
+                );
+            }
+        }
+
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
+            .data(caseData)
+            .build();
+
     }
 
 }
