@@ -132,4 +132,6 @@ class LegalRepStartEventStrategyTest {
 
         verify(legalRepPartySelectionService).getDraft(pcsCase, List.of(defendant1, defendant2), CASE_REFERENCE);
     }
+
+
 }

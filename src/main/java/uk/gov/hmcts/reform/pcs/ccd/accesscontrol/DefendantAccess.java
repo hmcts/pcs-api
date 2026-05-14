@@ -16,7 +16,7 @@ public class DefendantAccess implements HasAccessControl {
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(DEFENDANT, Permission.CRU);
-        grants.putAll(DEFENDANT_SOLICITOR, Permission.CRUD);
+        grants.putAll(DEFENDANT_SOLICITOR, Permission.CRU);
         return grants;
     }
 

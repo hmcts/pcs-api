@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -38,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
@@ -368,6 +370,30 @@ class CitizenStartEventStrategyTest {
         verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
         verify(responseMapper).buildPartyFromEntity(eq(matchedDefendant), any(PCSCase.class));
         verify(possessionClaimDraftBuilder).buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNoDraft() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+        PCSCase caseData = PCSCase.builder().build();
+
+        PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
+            .defendantContactDetails(null).defendantResponses(null)
+            .build();
+
+        lenient().when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(true);
+
+        // When
+        assertThatThrownBy(() -> underTest.loadDraft(CASE_REFERENCE, caseData))
+            .isInstanceOf(DraftNotFoundException.class);
+
+        // Then
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+        verify(possessionClaimDraftBuilder, never()).buildCaseWithDraft(eq(caseData),
+                                                                        any(PossessionClaimResponse.class));
+        verify(possessionClaimMerger, never()).mergeLatestCaseData(caseData, draftResponse);
     }
 
     @Test

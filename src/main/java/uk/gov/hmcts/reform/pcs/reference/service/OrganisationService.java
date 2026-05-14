@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
+import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -68,7 +69,7 @@ public class OrganisationService {
 
             return organisationDetailsService.getOrganisationIdentifier(userId.toString());
 
-        } catch (OrganisationDetailsException ex) {
+        } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation ID from rd-professional API. Error: {}",
                 ex.getMessage(), ex);
             return null;

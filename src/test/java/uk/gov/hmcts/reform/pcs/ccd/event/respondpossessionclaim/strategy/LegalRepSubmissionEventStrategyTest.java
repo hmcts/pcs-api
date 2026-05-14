@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -17,13 +16,17 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,8 +39,6 @@ class LegalRepSubmissionEventStrategyTest {
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
-    @Mock
-    private EventPayload<PCSCase, State> eventPayload;
     @Mock
     private ClaimResponseService claimResponseService;
     @Mock
@@ -165,6 +166,21 @@ class LegalRepSubmissionEventStrategyTest {
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
                                                                representedPartyId);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNoDraft() {
+        // Given
+        UUID representedPartyId = UUID.randomUUID();
+        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.of(representedPartyId));
+        // When
+        assertThatThrownBy(() -> underTest.process(CASE_REFERENCE))
+            .isInstanceOf(DraftNotFoundException.class);
+
+        // Then
+        verify(claimResponseService, never()).saveDraftDataForParty(any(), anyLong(), any());
+        verify(defendantResponseService, never()).saveDefendantResponse(anyLong(), any(), any());
+        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any(), any());
     }
 
     @Test

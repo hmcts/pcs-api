@@ -48,9 +48,6 @@ class LegalRepPartySelectionServiceTest {
     @Mock
     private PossessionClaimResponseMapper responseMapper;
 
-    @Mock
-    private ClaimantOrgNameListCreator claimantOrgNameListCreator;
-
     private LegalRepPartySelectionService underTest;
 
     @BeforeEach
@@ -304,9 +301,9 @@ class LegalRepPartySelectionServiceTest {
 
         assertThat(result.getAllLinkedDefendants()).hasSize(1);
 
-        assertThat(result.getAllLinkedDefendants().get(0).getId()).isEqualTo(matchedPartyId.toString());
+        assertThat(result.getAllLinkedDefendants().getFirst().getId()).isEqualTo(matchedPartyId.toString());
 
-        assertThat(result.getAllLinkedDefendants().get(0).getValue().getFirstName()).isEqualTo("Matched");
+        assertThat(result.getAllLinkedDefendants().getFirst().getValue().getFirstName()).isEqualTo("Matched");
 
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
     }
