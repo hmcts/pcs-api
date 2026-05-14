@@ -28,7 +28,7 @@ public class MakeAClaimPaymentCallbackStrategy implements PaymentCallbackStrateg
         ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(feePaymentEntity.getClaim(),
                                                                      feesAndPayTaskData.getResponsibleParty());
         feePaymentEntity.setParty(claimPartyEntity.getParty());
-        ccdUpdateService.submitPaymentSuccess(paymentStatusCallback.getCcdCaseNumber());
+        ccdUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
     }
 
     private FeesAndPayTaskData toFeesAndPayTaskData(String feesAndPayTaskDataAsString) {

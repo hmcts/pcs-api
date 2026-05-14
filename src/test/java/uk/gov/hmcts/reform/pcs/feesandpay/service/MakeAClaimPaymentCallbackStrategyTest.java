@@ -65,7 +65,7 @@ class MakeAClaimPaymentCallbackStrategyTest {
 
         // Then
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
-        verify(ccdUpdateService).submitPaymentSuccess(CCD_CASE_NUMBER);
+        verify(ccdUpdateService).submitPaymentSuccess(taskData.getCaseReference());
     }
 
     @Test
