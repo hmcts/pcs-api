@@ -129,10 +129,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field("summaryTab_RepossessedPropertyAddress")
             .field("summaryTab_GroundsForPossession")
             .field("summaryTab_ClaimSubmittedDate")
-            .field("summaryTab_ReasonsForPossession",
-                   "summaryTab_ReasonsForPossession!=\"\"")
-            .field("summaryTab_PossessionReasonsSubmittedDate",
-                   "summaryTab_ReasonsForPossession!=\"\"")
+            .field("summaryTab_ReasonsForPossession", null)
+            .field("summaryTab_PossessionReasonsSubmittedDate", null)
             .field("summaryTab_ClaimSubmittedDate")
             .label("Claimant details",
                    "summaryTab_ClaimantDetails!=\"\"",
@@ -141,10 +139,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("Defendant details",
                    "summaryTab_DefendantDetails!=\"\"",
                    "## Defendant details")
-            .field("summaryTab_DefendantDetails",
-                   "summaryTab_DefendantDetails!=\"\"")
-            .field("summaryTab_AdditionalDefendants",
-                   "summaryTab_AdditionalDefendants!=\"\"")
+            .field("summaryTab_DefendantDetails", null)
+            .field("summaryTab_AdditionalDefendants", null)
             .label("Rent arrears",
                    "summaryTab_RentArrearsDetails!=\"\"",
                    "## Rent arrears")
@@ -156,7 +152,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("Notice",
                    "summaryTab_NoticeDetails!=\"\"",
                    "## Notice")
-            .field("summaryTab_NoticeDetails",
-                   "summaryTab_NoticeDetails!=\"\"");
+            .field("summaryTab_NoticeDetails", null);
     }
 }
