@@ -96,8 +96,8 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "tenancy_type_correct")
-    private YesNoNotSure tenancyTypeCorrect;
+    @Column(name = "tenancy_type_confirmation")
+    private YesNoNotSure tenancyTypeConfirmation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

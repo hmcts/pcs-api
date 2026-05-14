@@ -166,6 +166,7 @@ public class DefendantResponseService {
             .disputeClaimDetails(responses.getDisputeClaimDetails())
             .makeCounterClaim(responses.getMakeCounterClaim())
             .counterClaimWantToUploadFiles(responses.getCounterClaimWantToUploadFiles())
+            .tenancyTypeConfirmation(responses.getTenancyTypeConfirmation())
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
             .tenancyStartDate(
                 responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
