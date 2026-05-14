@@ -31,6 +31,7 @@ import {
   rentDetails,
   noticeDetails,
   checkingNotice,
+  checkingNoticeWales,
   additionalReasonsForPossession,
   generalApplication,
   completingYourClaim,
@@ -112,16 +113,18 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     });
     await performValidation('text', {"text": preactionProtocol.walesCommunityLandlordsDynamicParagraph, "elementType": "paragraph"})
     await performAction('selectPreActionProtocol', preactionProtocol.noRadioOption);
+
+
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('clickLinkAndVerifyNewTabTitle', checkingNotice.guidanceOnPossessionLink, checkingNotice.mainHeaderWalesNewTab);
-    await performAction('selectNoticeOfYourIntention', {
-      question: checkingNotice.haveYouServedNoticeToQuestion,
-      option: checkingNotice.noRadioOption
+    await performValidation('mainHeader', checkingNoticeWales.mainHeader);
+    await performAction('selectNoticeDetails', {
+      question: checkingNoticeWales.haveYouServedNoticeToQuestion,
+      howDidYouServeNotice: checkingNoticeWales.noRadioOption,
+      walesNoticeStatement: checkingNoticeWales.sampleStatementTextInput,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -225,7 +228,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('mainHeader', checkingNoticeWales.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption
@@ -339,7 +342,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('mainHeader', checkingNoticeWales.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption,
@@ -449,7 +452,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('mainHeader', checkingNoticeWales.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.yesRadioOption,
@@ -551,7 +554,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('mainHeader', checkingNoticeWales.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption
@@ -671,7 +674,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('mainHeader', checkingNoticeWales.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption
@@ -768,7 +771,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('mainHeader', checkingNoticeWales.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption
