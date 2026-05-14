@@ -1,11 +1,13 @@
 import {IdamUtils, ServiceAuthUtils} from '@hmcts/playwright-common';
 import {chromium} from '@playwright/test';
+import Axios from 'axios';
+import {amOrgRoleMappingServiceApiData} from '@data/api-data/amOrgRoleMappingService.api.data';
 import {user} from '@data/user-data';
 import * as path from 'path';
 import * as fs from 'fs';
 import {LONG_TIMEOUT} from "../playwright.config";
 import { dismissCookieBanner } from '@config/cookie-banner';
-import {staff} from "@data/user-data/staff.user.data";
+import {staff, type StaffEntity} from '@data/user-data/staff.user.data';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
@@ -30,6 +32,15 @@ function applyPlaywrightServiceUrls(): void {
     process.env.AM_ORG_ROLE_MAPPING = `http://am-org-role-mapping-service-aat.service.core-compute-aat.internal`;
   }
 }
+function uidsForRoleMapping(): string[] {
+  return [
+    ...new Set(
+      Object.values(staff)
+        .map((s) => s.uid)
+        .filter((id): id is string => typeof id === 'string' && id.length > 0)
+    )
+  ];
+}
 
 async function globalSetupConfig(): Promise<void> {
   applyPlaywrightServiceUrls();
@@ -37,29 +48,69 @@ async function globalSetupConfig(): Promise<void> {
   process.env.BEARER_TOKEN_AM = await getAccessToken(idamCCDGatewayBody);
   process.env.SERVICE_AUTH_TOKEN = await getS2SToken('pcs_api');
   process.env.SERVICE_AUTH_TOKEN_AM = await getS2SToken('am_org_role_mapping_service');
-  createTempUser(staff);
+  await createTempUsersFromStaff(staff);
+  await createOrgMapping('CASEWORKER', uidsForRoleMapping());
   await authenticateAndSaveState();
 }
 
-async function createTempUser(body: { CTSCAdmin?: { email: string; uid: string | undefined; }; CTSCAdminTaskSupervisor?: { email: string; uid: string | undefined; }; CTSCAdminCaseAllocator?: { email: string; uid: string | undefined; }; CTSCAdminCaseAllocAndTaskSup?: { email: string; uid: string | undefined; }; uid?: any; email?: any; role?: any; }): Promise<void> {
+async function createOrgMapping(userType: string, orgMappingPayload: string[]): Promise<void> {
+  const baseURL = process.env.AM_ORG_ROLE_MAPPING;
+  if (!baseURL) {
+    throw new Error(
+      'AM_ORG_ROLE_MAPPING is not set (set ENVIRONMENT to aat|demo|perftest|ithc, or export AM_ORG_ROLE_MAPPING).'
+    );
+  }
+  if (!process.env.BEARER_TOKEN_AM || !process.env.SERVICE_AUTH_TOKEN_AM) {
+    throw new Error('createOrgMapping requires BEARER_TOKEN_AM and SERVICE_AUTH_TOKEN_AM (run after token setup).');
+  }
+
+  if (orgMappingPayload.length === 0) {
+    console.warn(
+      'createOrgMapping: no staff user uids; skipping AM createOrgMapping (set uid on staff entries or PCS_SOLICITOR_AUTOMATION_UID).'
+    );
+    return;
+  }
+
+  const client = Axios.create(amOrgRoleMappingServiceApiData.amOrgRoleMappingServiceApiInstance());
+  const url = amOrgRoleMappingServiceApiData.createOrgMappingApiEndpoint(userType);
+
+  try {
+    await client.post(url, orgMappingPayload);
+  } catch (error: unknown) {
+    const err = error as { response?: { status?: number; data?: unknown } };
+    const status = err.response?.status;
+    const body = err.response?.data;
+    console.error('createOrgMapping failed:', status, body);
+    throw new Error(
+      `createOrgMapping failed${status != null ? ` with HTTP ${status}` : ''}: ${JSON.stringify(body)}`
+    );
+  }
+}
+
+async function createTempUsersFromStaff(
+  staffUsers: Record<string, StaffEntity>
+): Promise<void> {
+  for (const entity of Object.values(staffUsers)) {
+    await createTempUser(entity);
+  }
+}
+
+async function createTempUser(body: StaffEntity): Promise<void> {
   const token = process.env.BEARER_TOKEN as string;
   const password = process.env.IDAM_PCS_USER_PASSWORD as string;
-  const uniqueId = body.uid;
-  const email: string = body.email;
-const [forename, surname]: [string, string] = email.split('-') as [
-  string,
-  string
-];
-await new IdamUtils().createUser({
-  bearerToken: token,
-  password,
-  user: {
-    email,
-    forename,
-    surname,
-    roleNames: body.role
-  }
-});
+  const email = body.email;
+  const [forename, surname] = email.split('-') as [string, string];
+  const roleNames: string[] = ['caseworker'];
+  await new IdamUtils().createUser({
+    bearerToken: token,
+    password,
+    user: {
+      email,
+      forename,
+      surname,
+      roleNames
+    }
+  });
 }
 
 async function authenticateAndSaveState(): Promise<string> {
@@ -146,9 +197,9 @@ export const idamPCSBody = {
 }
 
 export const idamCCDGatewayBody = {
-  email: user.claimantSolicitor.email,
-  password: user.claimantSolicitor.password,
-  clientSecret: process.env.PCS_API_IDAM_SECRET as string,
+  email: process.env.IDAM_DATA_STORE_SYSTEM_USER_USERNAME,
+  password: process.env.IDAM_DATA_STORE_SYSTEM_USER_PASSWORD,
+  clientSecret: process.env.CCD_API_GATEWAY_IDAM_CLIENT_SECRET as string,
   clientId: 'pcs-api'
 }
 

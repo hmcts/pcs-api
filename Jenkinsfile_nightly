@@ -83,11 +83,17 @@ def pcsE2eVaultSecrets = [
   secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
 ]
 
+def ccdVaultSecrets = [
+  secret('idam-data-store-system-user-username', 'IDAM_DATA_STORE_SYSTEM_USER_USERNAME'),
+  secret('idam-data-store-system-user-password', 'IDAM_DATA_STORE_SYSTEM_USER_PASSWORD'),
+  secret('ccd-api-gateway-oauth2-client-secret', 'CCD_API_GATEWAY_IDAM_CLIENT_SECRET'),
+  ]
 withNightlyPipeline(type, product, component) {
   validateInputs()
   enableSlackNotifications('#pcs-tech')
   handleEnvironmentSetting()
   loadVaultSecrets(["pcs-${env.ENVIRONMENT}": pcsE2eVaultSecrets])
+  loadVaultSecrets(["ccd-${env.ENVIRONMENT}": ccdVaultSecrets])
   enableFortifyScan()
 
   afterAlways('fortify-scan') {
