@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.model;
+package uk.gov.hmcts.reform.pcs.ccd.domain.grounds;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -15,7 +15,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class NoRentArrearsReasonForGrounds {
+public class NoRentArrearsGroundsReasons {
 
     // Ground 1
     @CCD(
@@ -187,4 +187,12 @@ public class NoRentArrearsReasonForGrounds {
             typeOverride = TextArea
     )
     private String falseStatement;
+
+    @CCD(
+            label = "Give details about your reasons for claiming possession (Other grounds)",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                    + "You can enter up to 500 characters",
+            typeOverride = TextArea
+    )
+    private String otherGround;
 }
