@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 import java.time.LocalDateTime;
@@ -23,7 +24,7 @@ public class GeneralApplication {
 
     private LocalDateTime submittedOn;
 
-    private Document submissionDocument;
+    private DocumentWithId submissionDocument;
 
     private List<ListValue<Document>> supportingDocuments;
 

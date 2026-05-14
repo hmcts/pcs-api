@@ -5,6 +5,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -65,9 +66,13 @@ public class GenAppsView {
             .orElse(null);
     }
 
-    private Document getSubmissionDocument(GenAppEntity genAppEntity) {
+    private DocumentWithId getSubmissionDocument(GenAppEntity genAppEntity) {
         return Optional.ofNullable(genAppEntity.getSubmissionDocument())
-            .map(documentEntity -> modelMapper.map(documentEntity, Document.class))
+            .map(documentEntity -> DocumentWithId.builder()
+                .id(documentEntity.getId().toString())
+                .document(modelMapper.map(documentEntity, Document.class))
+                .build()
+            )
             .orElse(null);
     }
 

@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -181,10 +182,13 @@ class GenAppsViewTest {
     @Test
     void shouldSetSubmissionDocument() {
         // Given
+        UUID pcsDocumentId = UUID.randomUUID();
+
         LocalDateTime genApp1SubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
         GenAppEntity genAppEntity1 = createGenAppEntity(UUID.randomUUID(), genApp1SubmittedDate);
         DocumentEntity submissionDocumentEntity = mock(DocumentEntity.class);
         genAppEntity1.setSubmissionDocument(submissionDocumentEntity);
+        when(submissionDocumentEntity.getId()).thenReturn(pcsDocumentId);
 
         Document expectedSubmissionDocument = mock(Document.class);
         when(modelMapper.map(submissionDocumentEntity, Document.class)).thenReturn(expectedSubmissionDocument);
@@ -198,9 +202,10 @@ class GenAppsViewTest {
 
         assertThat(genApps).hasSize(1);
 
-        Document actualSubmission = genApps.getFirst().getValue().getSubmissionDocument();
+        DocumentWithId actualSubmission = genApps.getFirst().getValue().getSubmissionDocument();
 
-        assertThat(actualSubmission).isEqualTo(expectedSubmissionDocument);
+        assertThat(actualSubmission.getId()).isEqualTo(pcsDocumentId.toString());
+        assertThat(actualSubmission.getDocument()).isEqualTo(expectedSubmissionDocument);
     }
 
     private static PartyEntity createPartyEntityWithIdamId(UUID currentUserIdamId) {
