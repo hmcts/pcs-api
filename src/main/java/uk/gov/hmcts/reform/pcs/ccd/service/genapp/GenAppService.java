@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -110,7 +109,7 @@ public class GenAppService {
                 .url(defDoc.getDocument().getUrl())
                 .fileName(defDoc.getDocument().getFilename())
                 .binaryUrl(defDoc.getDocument().getBinaryUrl())
-                .categoryId(CaseFileCategory.UNCATEGORISED.getId())
+                .categoryId(null)
                 .contentType(defDoc.getContentType())
                 .size(defDoc.getSizeInBytes())
                 .build())
