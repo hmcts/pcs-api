@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
@@ -28,19 +29,26 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                 .decentralisedEvent(EventId.createFlags.name(), this::submit)
-                .forAllStates()
+                .forState(State.PENDING_CASE_ISSUED)
                 .name("Create case flags")
                 .description("To create flags")
                 .showSummary()
-                .grant(Permission.CRU, UserRole.PCS_CASE_WORKER))
+                .grant(Permission.CRU,
+                       UserRole.PCS_CASE_WORKER,
+                       UserRole.CTSC_ADMIN,
+                       UserRole.HEARING_CENTER_ADMIN,
+                       UserRole.WLU_ADMIN,
+                       UserRole.BAILIFF_ADMIN))
                 .page("caseworkerCaseFlag")
-                .pageLabel("Case Flags")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
-                .optional(
-                PCSCase::getFlagLauncherInternal,
-                null, null, null, null,
-                "#ARGUMENT(CREATE)"
-            );
+                .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
+                .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
+                    .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
+                .done()
+                .optional(PCSCase::getFlagLauncherInternal,
+                      null, null, null, null,
+                      "#ARGUMENT(CREATE)");
+
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -54,4 +62,3 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.defaultResponse();
     }
 }
-

@@ -16,6 +16,7 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -24,10 +25,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -287,6 +288,9 @@ class PcsCaseServiceTest {
             .caseFlags(flags)
             .build();
 
+        List<ListValue<Party>> parties = createParties();
+        caseData.setParties(parties);
+
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(caseFlagService.mergeCaseFlags(flags, pcsCaseEntity,
                                             EventFlow.UPDATE.name())).thenReturn(createCaseFlagEntity());
@@ -300,22 +304,46 @@ class PcsCaseServiceTest {
                                                          EventFlow.UPDATE.name());
     }
 
-    private List<BaseCaseFlag> createCaseFlagEntity() {
+    private List<CaseFlagEntity> createCaseFlagEntity() {
 
 
         FlagRefDataEntity flagRefDataEntity = new FlagRefDataEntity();
-        BaseCaseFlag caseFlagEntity = new CaseFlagEntity();
+        CaseFlagEntity caseFlagEntity = new CaseFlagEntity();
         caseFlagEntity.setFlagRefData(flagRefDataEntity);
         caseFlagEntity.setDefaultStatus("Active");
         caseFlagEntity.getFlagRefData().setFlagCode("CF0008");
         caseFlagEntity.setFlagComment("Police arrest inactive");
         caseFlagEntity.setDateTimeModified(LocalDateTime.now());
 
-        List<BaseCaseFlag> caseFlagEntities = new ArrayList<>();
+        List<CaseFlagEntity> caseFlagEntities = new ArrayList<>();
         caseFlagEntities.add(caseFlagEntity);
 
         return caseFlagEntities;
     }
+
+    private List<ListValue<Party>> createParties() {
+        List<ListValue<Party>> parties = new ArrayList<>();
+        parties.add(ListValue.<Party>builder().value(Party.builder().build()).build());
+
+        return parties;
+    }
+
+    /*private List<CaseFlagEntity> createCaseFlagEntity() {
+
+
+        FlagRefDataEntity flagRefDataEntity = new FlagRefDataEntity();
+        CaseFlagEntity caseFlagEntity = new CaseFlagEntity();
+        caseFlagEntity.setFlagRefData(flagRefDataEntity);
+        caseFlagEntity.setDefaultStatus("Active");
+        caseFlagEntity.getFlagRefData().setFlagCode("CF0008");
+        caseFlagEntity.setFlagComment("Police arrest inactive");
+        caseFlagEntity.setDateTimeModified(LocalDateTime.now());
+
+        List<CaseFlagEntity> caseFlagEntities = new ArrayList<>();
+        caseFlagEntities.add(caseFlagEntity);
+
+        return caseFlagEntities;
+    }*/
 
     private ListValue<FlagDetail> createFlagDetails() {
 
@@ -325,6 +353,70 @@ class PcsCaseServiceTest {
                 .flagCode("CF0007")
                 .name("Urgent case")
                 .flagComment("Needs to be handled ASAP")
+                .build())
+            .build();
+    }
+
+    @Test
+    void shouldPatchCaseFlagsWithCaseData() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+
+        List<ListValue<FlagDetail>> flagDetails = List.of(createFlagDetail());
+        Flags flags = createFlags(flagDetails);
+
+        PCSCase caseData = PCSCase.builder()
+            .caseFlags(flags)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        List<ListValue<Party>> parties = createParties();
+
+        caseData.setParties(parties);
+
+        // When
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.UPDATE.name());
+
+        // Then
+        assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
+        verify(caseFlagService).mergeCaseFlags(flags, pcsCaseEntity, EventFlow.UPDATE.name());
+    }
+
+    @Test
+    void shouldGracefullyThrowErrorWhenNoCaseFlags() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        Flags flags = Flags.builder().build();
+
+        PCSCase caseData = PCSCase.builder()
+                .caseFlags(flags)
+                .build();
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        underTest.patchCaseFlags(CASE_REFERENCE, caseData, EventFlow.CREATE.name());
+
+        // Then
+        assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
+    }
+
+    private Flags createFlags(List<ListValue<FlagDetail>> flagDetails) {
+
+        return Flags.builder()
+            .details(flagDetails)
+            .visibility(FlagVisibility.INTERNAL)
+            .build();
+    }
+
+    private ListValue<FlagDetail> createFlagDetail() {
+
+        return ListValue.<FlagDetail>builder()
+            .id(UUID.randomUUID().toString())
+            .value(FlagDetail.builder()
+                .flagCode("CF002")
+                .flagComment("Complex case")
+                .name("Complex Case")
                 .build())
             .build();
     }

@@ -24,7 +24,6 @@ globalsearch:
 
 hmcts:
   hmctsOrgId: AAA3
-  alternativeHmctsOrgId: AAA7
 
 springdoc:
   swagger-ui:
@@ -100,8 +99,8 @@ idam:
     username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
     password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
   prd-admin:
-    username: ${PCS_PRD_ADMIN_USERNAME:}
-    password: ${PCS_PRD_ADMIN_PASSWORD:}
+    username: ${PCS_PRD_ADMIN_USERNAME:prd-admin-user@localhost}
+    password: ${PCS_PRD_ADMIN_PASSWORD:password}
     scope: ${IDAM_PRD_ADMIN_SCOPE:openid profile roles}
   client:
     id: ${IDAM_CLIENT_ID:pcs-api}
@@ -147,12 +146,14 @@ doc_assembly:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
 
 rd-professional:
-  api-url: ${RD_PROFESSIONAL_API_URL:http://localhost:8085}
+  api-url: ${RD_PROFESSIONAL_API_URL:http://localhost:8083}
+
+case_document_am:
+  url: ${CASE_DOCUMENT_AM_URL:http://ccd-case-document-am-api-aat.service.core-compute-aat.internal}
 
 fees:
-  mock: false
   api:
-    url: ${FEES_REGISTER_API_URL:http://localhost:8991}
+    url: ${FEES_REGISTER_API_URL:http://localhost:8083}
   lookup:
     caseIssueFee:
       service: possession claim
@@ -207,3 +208,4 @@ payments:
 core_case_data:
   api:
     url: ${CCD_DATA_STORE_URL:localhost:4452}
+  defaultCaseApiUrl: http://localhost:3206

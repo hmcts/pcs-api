@@ -5,11 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -56,7 +60,54 @@ class CaseFlagsViewTest {
         // Then
         assertNotNull(pcsCase.getCaseFlags());
         assertEquals(1, pcsCase.getCaseFlags().getDetails().size());
-        assertEquals("CF0007", pcsCase.getCaseFlags().getDetails().get(0).getValue().getFlagCode());
+        assertEquals("CF0007", pcsCase.getCaseFlags().getDetails().getFirst().getValue().getFlagCode());
+    }
+
+    @Test
+    void shouldMapComplexPartyFlagFieldsWhenPartiesExist() {
+        // Given
+        PartyEntity partyEntity = new PartyEntity();
+        partyEntity.setId(UUID.randomUUID());
+
+        CasePartyFlagEntity appellantFlags = createMockCasePartyFlagsEntity();
+        partyEntity.setDefendantFlags(List.of(appellantFlags));
+
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+
+        pcsCaseEntity.setParties(Set.of(partyEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertNotNull(pcsCase.getParties());
+        assertEquals(1, pcsCase.getParties().size());
+        Party party = pcsCase.getParties().getFirst().getValue();
+        assertNotNull(party.getDefendantFlags());
+        assertEquals(1, party.getDefendantFlags().getDetails().size());
+        assertEquals("PF0015", party.getDefendantFlags().getDetails().getFirst().getValue().getFlagCode());
+    }
+
+    @Test
+    void shouldMapComplexPartyFlagFieldsWhenPartiesExistsWithNoFlags() {
+        // Given
+        PartyEntity partyEntity = new PartyEntity();
+        partyEntity.setId(UUID.randomUUID());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(partyEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertNotNull(pcsCase.getParties());
+        assertEquals(1, pcsCase.getParties().size());
+        Party party = pcsCase.getParties().getFirst().getValue();
+        assertNotNull(party.getDefendantFlags());
+        assertEquals(0, party.getDefendantFlags().getDetails().size());
     }
 
     @Test
@@ -72,26 +123,47 @@ class CaseFlagsViewTest {
         assertNull(pcsCase.getCaseFlags().getDetails());
     }
 
+    @Test
+    void shouldHandleNullPartiesGracefully() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertEquals(0, pcsCase.getParties().size());
+    }
+
     private CaseFlagEntity createMockCaseFlagsEntity() {
 
-        FlagRefDataEntity flagRefDataEntity = new FlagRefDataEntity();
         CaseFlagEntity  caseFlagEntity = new CaseFlagEntity();
-        caseFlagEntity.setFlagRefData(flagRefDataEntity);
         caseFlagEntity.setId(UUID.randomUUID());
-        caseFlagEntity.getFlagRefData().setFlagCode("CF0007");
         caseFlagEntity.setFlagComment("Urgent case");
         caseFlagEntity.setPaths(UUID.randomUUID() + ":"  + "Case");
-        caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity());
+        caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity("CF0007", "Urgent case"));
 
         return  caseFlagEntity;
     }
 
-    private FlagRefDataEntity createMockRefDataFlagsEntity() {
+    private CasePartyFlagEntity createMockCasePartyFlagsEntity() {
+
+        CasePartyFlagEntity  casePartyFlagEntity = new CasePartyFlagEntity();
+
+        casePartyFlagEntity.setId(UUID.randomUUID());
+        casePartyFlagEntity.setFlagComment("Language Interpreter");
+        casePartyFlagEntity.setPaths(UUID.randomUUID() + ":" + "Case");
+        casePartyFlagEntity.setFlagRefData(createMockRefDataFlagsEntity("PF0015", "Language Interpreter"));
+
+        return  casePartyFlagEntity;
+    }
+
+    private FlagRefDataEntity createMockRefDataFlagsEntity(String flagCode, String flagName) {
 
         return FlagRefDataEntity.builder()
-            .flagCode("CF0007")
-            .flagName("Urgent case")
+            .flagCode(flagCode)
+            .flagName(flagName)
             .build();
     }
 }
-

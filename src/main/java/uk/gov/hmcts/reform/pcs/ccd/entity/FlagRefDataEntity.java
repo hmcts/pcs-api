@@ -40,7 +40,7 @@ public class FlagRefDataEntity {
 
     @OneToMany(mappedBy = "flagRefData", cascade = ALL, orphanRemoval = true)
     @Builder.Default
-    private List<CaseFlagEntity> caseFlags = new ArrayList<>();
+    private List<BaseCaseFlag> caseFlags = new ArrayList<>();
 
     private String flagCode;
 

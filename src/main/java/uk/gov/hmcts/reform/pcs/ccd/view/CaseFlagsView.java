@@ -7,38 +7,49 @@ import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @AllArgsConstructor
 public class CaseFlagsView {
 
-    public static  String PATHS_DELIMITER = ",";
-    public static  String PATH_DELIMITER = ":";
+    private static final String DEFENDANT = "defendant";
+    private static final String CLAIMANT = "claimant";
+    public static final String PATHS_DELIMITER = "_";
+    public static final String PATH_DELIMITER = ":";
 
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
 
         mapBasicCaseFlagFields(pcsCase, pcsCaseEntity);
+        mapComplexPartyFlagFields(pcsCase, pcsCaseEntity);
     }
 
     private void mapBasicCaseFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        List<BaseCaseFlag> baseCaseFlags = new ArrayList<>(pcsCaseEntity.getCaseFlags());
+
         Flags caseFlags = pcsCaseEntity.getCaseFlags().isEmpty()
             ? Flags.builder().build()
             : Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(mapFlagDetails(pcsCaseEntity.getCaseFlags()))
+            .details(mapFlagDetails(baseCaseFlags))
             .build();
         pcsCase.setCaseFlags(caseFlags);
     }
 
     private List<ListValue<FlagDetail>> mapFlagDetails(List<BaseCaseFlag> flagsEntities) {
-
 
         return flagsEntities.stream()
             .map(caseFlagEntity -> ListValue.<FlagDetail>builder()
@@ -72,12 +83,66 @@ public class CaseFlagsView {
 
     private List<ListValue<String>> getPaths(String entityPaths) {
 
-        return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
+        return entityPaths == null
+            ? new ArrayList<>()
+            : Arrays.stream(entityPaths.split(PATHS_DELIMITER))
                 .map(pathPairs -> pathPairs.split(PATH_DELIMITER))
                 .map(paths -> ListValue.<String>builder()
                     .id(paths[0])
                     .value(paths[1])
                     .build())
                 .toList();
+    }
+
+    private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        List<ListValue<Party>> mappedParties = pcsCaseEntity.getParties().stream()
+            .filter(partyEntity -> partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty())
+            .map(this::mapPartyWithDefendantFlags)
+            .toList();
+
+        pcsCase.setParties(mappedParties);
+    }
+
+    private ListValue<Party> mapPartyWithDefendantFlags(PartyEntity partyEntity) {
+        return ListValue.<Party>builder()
+            .id(partyEntity.getId().toString())
+            .value(
+                Party.builder()
+                    .nameKnown(partyEntity.getNameKnown())
+                    .addressKnown(partyEntity.getAddressKnown())
+                    .phoneNumberProvided(partyEntity.getPhoneNumberProvided())
+                    .emailAddress(partyEntity.getEmailAddress())
+                    .firstName(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
+                                 ? partyEntity.getFirstName() : partyEntity.getOrgName())
+                    .lastName(partyEntity.getLastName())
+                    .defendantFlags(mapDefendantFlags(partyEntity))
+                    .build()
+            )
+            .build();
+    }
+
+    private Flags mapDefendantFlags(PartyEntity partyEntity) {
+        if (partyEntity.getDefendantFlags() == null || partyEntity.getDefendantFlags().isEmpty()) {
+            return Flags.builder()
+                .partyName(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
+                               ? partyEntity.getFirstName() + " " + partyEntity.getLastName()
+                               : partyEntity.getOrgName())
+                .roleOnCase(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
+                                ? DEFENDANT : CLAIMANT)
+                .details(new ArrayList<>())
+                .build();
+        }
+
+        List<BaseCaseFlag> respondentFlags = new ArrayList<>(partyEntity.getDefendantFlags());
+
+        return Flags.builder()
+            .partyName(Stream.of(partyEntity.getFirstName(), partyEntity.getLastName(),
+                                 partyEntity.getOrgName()).filter(
+                Objects::nonNull).collect(Collectors.joining(" ")))
+            .roleOnCase(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
+                            ? DEFENDANT : CLAIMANT)
+            .details(mapFlagDetails(respondentFlags))
+            .visibility(FlagVisibility.INTERNAL)
+            .build();
     }
 }

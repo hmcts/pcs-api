@@ -26,28 +26,21 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequ
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
 class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
-    @Mock
-    private ImmutablePartyFieldValidator immutableFieldValidator;
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Captor
@@ -55,7 +48,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RespondToPossessionDraftSavePage(immutableFieldValidator, draftCaseDataService));
+        setPageUnderTest(new RespondToPossessionDraftSavePage(draftCaseDataService));
     }
 
     @Test
@@ -74,15 +67,12 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantResponses(responses)
                                              .build());
 
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
-
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         assertThat(response.getErrors()).isNull();
 
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
 
@@ -94,10 +84,12 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
-    void shouldReturnErrorsWhenImmutableFieldViolationsFound() {
+    void shouldSavePartyDataIncludingImmutableFields() {
         //Given
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(Party.builder()
+                       .firstName("Jack")
+                       .lastName("Smith")
                        .nameKnown(VerticalYesNo.YES)
                        .addressKnown(VerticalYesNo.YES)
                        .addressSameAsProperty(VerticalYesNo.NO)
@@ -108,19 +100,14 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantContactDetails(contactDetails)
                                              .build());
 
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of("nameKnown", "addressKnown", "addressSameAsProperty"));
-
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-        assertThat(response.getErrors()).containsExactly(
-            "Invalid submission: immutable field must not be sent: nameKnown",
-            "Invalid submission: immutable field must not be sent: addressKnown",
-            "Invalid submission: immutable field must not be sent: addressSameAsProperty"
+        //Then
+        assertThat(response.getErrors()).isNull();
+        verify(draftCaseDataService).saveUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
-        assertThat(response.getData()).isNull();
-        verify(draftCaseDataService, never()).patchUnsubmittedEventData(anyLong(), any(), any());
     }
 
     @Test
@@ -131,7 +118,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
@@ -145,8 +132,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -177,15 +163,12 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantContactDetails(contactDetails)
                                              .build());
 
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
-
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -203,7 +186,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     void shouldSaveDefendantResponsesData() {
         //Given
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .contactByEmail(VerticalYesNo.YES)
@@ -217,13 +200,12 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         DefendantResponses savedResponses = savedDraft.getPossessionClaimResponse().getDefendantResponses();
-        assertThat(savedResponses.getTenancyTypeCorrect()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedResponses.getTenancyTypeConfirmation()).isEqualTo(YesNoNotSure.YES);
         assertThat(savedResponses.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponses.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
@@ -251,7 +233,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .dependantChildren(VerticalYesNo.YES)
+            .dependantChildren(YesOrNo.YES)
             .build();
 
         PaymentAgreement paymentAgreement = PaymentAgreement.builder()
@@ -271,15 +253,12 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantResponses(responses)
                                              .build());
 
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
-
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -314,8 +293,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -324,7 +302,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
-    void shouldSkipValidationWhenDefendantContactDetailsIsNull() {
+    void shouldSaveWhenDefendantContactDetailsIsNull() {
         //Given
         DefendantResponses responses = DefendantResponses.builder()
             .freeLegalAdvice(YesNoPreferNotToSay.NO)
@@ -338,8 +316,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrors()).isNull();
-        verifyNoInteractions(immutableFieldValidator);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -350,14 +327,14 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     @Test
     void shouldSaveRegularIncomeFieldsInDraft() {
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .shareIncomeExpenseDetails(VerticalYesNo.YES)
+            .shareIncomeExpenseDetails(YesOrNo.YES)
             .incomeFromJobs(YesOrNo.YES)
             .incomeFromJobsAmount(new BigDecimal("150000")) // £1500.00 in pence
             .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
             .pension(YesOrNo.YES)
             .pensionAmount(new BigDecimal("50000")) // £500.00 in pence
             .pensionFrequency(RecurrenceFrequency.MONTHLY)
-            .universalCredit(VerticalYesNo.YES)
+            .universalCredit(YesOrNo.YES)
             .ucApplicationDate(LocalDate.of(2024, 1, 15))
             .universalCreditAmount(new BigDecimal("80000")) // £800.00 in pence
             .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
@@ -381,7 +358,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
 
@@ -391,7 +368,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .getHouseholdCircumstances();
 
         // Assert all regular income fields are saved correctly
-        assertThat(savedHousehold.getShareIncomeExpenseDetails()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedHousehold.getShareIncomeExpenseDetails()).isEqualTo(YesOrNo.YES);
 
         assertThat(savedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("150000");
@@ -401,7 +378,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedHousehold.getPensionAmount()).isEqualByComparingTo("50000");
         assertThat(savedHousehold.getPensionFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
 
-        assertThat(savedHousehold.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 1, 15));
         assertThat(savedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("80000");
         assertThat(savedHousehold.getUniversalCreditFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
@@ -427,12 +404,9 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .defendantContactDetails(contactDetails)
                                              .build());
 
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
-
         doThrow(new RuntimeException("DB connection failed"))
             .when(draftCaseDataService)
-            .patchUnsubmittedEventData(anyLong(), any(), any());
+            .saveUnsubmittedEventData(anyLong(), any(), any());
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -451,4 +425,3 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
     }
 }
-

@@ -92,7 +92,20 @@ class DraftCaseJsonMergerTest {
                             "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.positionLegalRep",
                             "enforcementOrder.rawWarrantDetails.selectedDefendants",
                             "enforcementOrder.rawWarrantDetails.vulnerablePeoplePresent",
-                            "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren")
+                            "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
+                            "parties",
+                            "allClaimants",
+                            "allDefendants",
+                            "allUnderlesseeOrMortgagees",
+                            "possessionClaimResponse",
+                            "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
+                            "casePartiesTab.claimantDetails.emailAddress",
+                            "casePartiesTab.claimantDetails.name",
+                            "casePartiesTab.claimantDetails.serviceAddress",
+                            "casePartiesTab.claimantDetails.telephoneNumber",
+                            "casePartiesTab.defendantOneDetails.firstName",
+                            "casePartiesTab.defendantOneDetails.lastName",
+                            "casePartiesTab.defendantOneDetails.serviceAddress")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()

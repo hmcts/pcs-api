@@ -10,10 +10,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Column;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
@@ -23,9 +21,7 @@ import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@Getter
-@Setter
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
 @SuperBuilder
 public abstract class BaseCaseFlag {
@@ -33,10 +29,6 @@ public abstract class BaseCaseFlag {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pcs_case_id")
-    private PcsCaseEntity pcsCase;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "flag_ref_data_id")

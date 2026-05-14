@@ -17,6 +17,7 @@ import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.a
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action'; 
+import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -96,6 +97,8 @@ export class ActionRegistry {
     ['selectAsb', new CreateCaseWalesAction()],
     ['payClaimFee', new CreateCaseAction()],
     ['claimSaved', new CreateCaseAction()],
+    ['validateDefendantDetails', new CreateCaseAction()],
+    ['validateClaimantDetails', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
@@ -108,6 +111,10 @@ export class ActionRegistry {
     ['viewCaseFlags', new CaseFlagAction()],
     ['manageCaseFlags', new CaseFlagAction()],
     ['makeFlagInactive', new CaseFlagAction()]
+    ['selectCasesToLink', new CaseLinking()],
+    ['selectCasesToUnLink', new CaseLinking()],
+    ['verifyLinkedCases', new CaseLinking()],
+    ['enterPaymentDetails', new FeeAndPayAction()]
   ]);
 
   static getAction(actionName: string): IAction {
