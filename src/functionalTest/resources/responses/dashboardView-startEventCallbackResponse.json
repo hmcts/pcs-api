@@ -48,14 +48,8 @@
               },
               {
                 "value": {
-                  "templateId": "ReviewResponse",
+                  "templateId": "ViewResponse",
                   "status": "NOT_AVAILABLE"
-                }
-              },
-              {
-                "value": {
-                  "templateId": "SubmitResponse",
-                  "status": "COMPLETED"
                 }
               }
             ]
