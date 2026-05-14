@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -64,6 +65,7 @@ class StartDashboardViewHandlerTest {
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
         AddressUK propertyAddress = AddressUK.builder().addressLine1("10 Test Road").build();
         PCSCase caseData = PCSCase.builder().propertyAddress(propertyAddress).build();
+        PartyEntity defendant = PartyEntity.builder().idamId(defendantUserId).build();
         DashboardData dashboardData = DashboardData.builder()
             .caseId(String.valueOf(CASE_REFERENCE))
             .notifications(List.of())
@@ -75,8 +77,12 @@ class StartDashboardViewHandlerTest {
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(accessValidator.validateAndGetDefendant(caseEntity, defendantUserId))
-            .thenReturn(PartyEntity.builder().idamId(defendantUserId).build());
-        when(dashboardJourneyService.computeDashboardData(CASE_REFERENCE, caseData))
+            .thenReturn(defendant);
+        when(dashboardJourneyService.computeDashboardData(
+            CASE_REFERENCE,
+            caseData,
+            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+        ))
             .thenReturn(dashboardData);
 
         PCSCase result = underTest.start(eventPayload);
@@ -85,7 +91,11 @@ class StartDashboardViewHandlerTest {
         assertThat(result.getDashboardData()).isSameAs(dashboardData);
         verify(pcsCaseService).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(caseEntity, defendantUserId);
-        verify(dashboardJourneyService).computeDashboardData(CASE_REFERENCE, caseData);
+        verify(dashboardJourneyService).computeDashboardData(
+            CASE_REFERENCE,
+            caseData,
+            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+        );
     }
 
     @ParameterizedTest(name = "{0}")
