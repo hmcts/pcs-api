@@ -128,10 +128,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("Summary", null, "## Summary")
             .field("summaryTab_RepossessedPropertyAddress")
             .field("summaryTab_GroundsForPossession")
-            .field("summaryTab_ClaimSubmittedDate")
             .field("summaryTab_ReasonsForPossession", null)
-            .field("summaryTab_PossessionReasonsSubmittedDate", null)
-            .field("summaryTab_ClaimSubmittedDate")
+            .field("summaryTab_DateClaimSubmitted", null)
             .label("Claimant details",
                    "summaryTab_ClaimantDetails!=\"\"",
                    "## Claimant details")

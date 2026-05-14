@@ -34,11 +34,6 @@ public class SummaryTab {
     private GroundsForPossessionTabDetails groundsForPossession;
 
     @CCD(
-        label = "Date claim Submitted"
-    )
-    private String claimSubmittedDate;
-
-    @CCD(
         label = "Reasons for possession"
     )
     private ReasonsForPossessionTabDetails reasonsForPossession;
@@ -46,7 +41,7 @@ public class SummaryTab {
     @CCD(
         label = "Date claim Submitted"
     )
-    private String possessionReasonsSubmittedDate;
+    private String dateClaimSubmitted;
 
     @CCD(
         label = "Claimant"
