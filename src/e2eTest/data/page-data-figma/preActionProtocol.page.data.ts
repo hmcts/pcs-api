@@ -11,6 +11,8 @@ export const preactionProtocol = {
   //offeredToAssistTheDefendantsParagraph: `offered to assist the defendants in a claim for housing benefit or Universal Credit`,
   //yourCaseCouldBeDelayedParagraph: `Your case could be delayed or rejected if you have not followed the  pre-action protocol and completed all the steps.`
   haveYouFollowedThePreactionQuestion: `Have you followed the pre-action protocol?`,
+  explainWhyYouHaveNoFollowedHiddenTextLabel:`Explain why you have not followed the pre-action protocol`,
+  explainWhyYouHaveNoFollowedHiddenTextInput:`User Input explaining why you have not followed the pre-action protocol`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
   previousButton: `Previous`,
