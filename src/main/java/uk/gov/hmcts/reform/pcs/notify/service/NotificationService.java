@@ -6,23 +6,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
-import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
@@ -33,80 +27,80 @@ import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
+    private final PartyService partyService;
     private final SchedulerClient schedulerClient;
     private final NotificationTemplateConfiguration templateConfiguration;
-    private final PartyService partyService;
-
-    private static final String NO_CLAIMANT_PARTY_FOUND_MSG = "No claimant party found for defendant response: %s";
+    private final NotificationPersonalisationFactory notificationPersonalisationFactory;
 
     public EmailNotificationResponse sendDefendantResponseNoCounterclaimEmailNotification(
         DefendantResponseEntity defendantResponse
     ) {
-        return sendDefendantEmail(
-            defendantResponse,
+        return sendEmail(
+            defendantRecipient(defendantResponse),
             EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
             NotificationClaimType.COUNTER_CLAIM,
-            NotificationService::buildBasePersonalisation
+            notificationPersonalisationFactory.forDefendant(defendantResponse)
         );
     }
 
     public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(
         DefendantResponseEntity defendantResponse
     ) {
-        return sendDefendantEmail(
-            defendantResponse,
+        return sendEmail(
+            defendantRecipient(defendantResponse),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            NotificationService::buildBasePersonalisation
+            notificationPersonalisationFactory.forDefendant(defendantResponse)
         );
     }
 
     public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
         DefendantResponseEntity defendantResponse
     ) {
-        return sendDefendantEmail(
-            defendantResponse,
+        return sendEmail(
+            defendantRecipient(defendantResponse),
             EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS,
             NotificationClaimType.COUNTER_CLAIM,
-            NotificationService::buildCounterclaimPaymentSuccessPersonalisation
+            notificationPersonalisationFactory.counterclaimSuccess(defendantResponse)
         );
     }
 
     public EmailNotificationResponse sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(
         DefendantResponseEntity defendantResponse
     ) {
-        return sendDefendantEmail(
-            defendantResponse,
+        return sendEmail(
+            defendantRecipient(defendantResponse),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            NotificationService::buildBasePersonalisation
+            notificationPersonalisationFactory.forDefendant(defendantResponse)
         );
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLater(long caseReference, PCSCase pcsCase) {
-        return sendClaimantEmail(
-            caseReference,
-            pcsCase,
+        NotificationRecipient recipient = claimantRecipient(pcsCase);
+
+        if (recipient.email() == null) {
+            log.info("Skipping email notification to claimant on case: {}", caseReference);
+            return null;
+        }
+
+        return sendEmail(
+            recipient,
             EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER,
             NotificationClaimType.POSSESSION_CLAIM,
-            NotificationService::buildBasePersonalisation
+            notificationPersonalisationFactory.forClaimant(caseReference, pcsCase)
         );
     }
 
@@ -323,63 +317,28 @@ public class NotificationService {
         }
     }
 
-    protected static TemplatePersonalisation buildBasePersonalisation(long caseReference, PCSCase pcsCase) {
-        String toLineClaimantName = getClaimantName(pcsCase.getClaimantInformation());
-        String claimantNameUpper = toLineClaimantName.toUpperCase(Locale.ROOT);
-
-        DefendantDetails primaryDefendantDetails = pcsCase.getDefendant1();
-        String primaryDefendantName = formatNameUpperForNotification(
-            primaryDefendantDetails.getFirstName(), primaryDefendantDetails.getLastName()
-        );
-
-        return ClaimantBasePersonalisation.builder()
-            .toLineClaimantName(toLineClaimantName)
-            .caseNumber(Long.toString(caseReference))
-            .claimantName(claimantNameUpper)
-            .primaryDefendantName(primaryDefendantName)
-            .build();
-    }
-
-    protected static DefendantBasePersonalisation buildBasePersonalisation(DefendantResponseEntity defendantResponse) {
-        PartyEntity defendant = defendantResponse.getParty();
-
-        PartyEntity claimant = defendantResponse.getClaim().getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole().equals(PartyRole.CLAIMANT))
-            .map(ClaimPartyEntity::getParty)
-            .findFirst()
-            .orElseThrow(
-                () -> new PartyNotFoundException(
-                    String.format(NO_CLAIMANT_PARTY_FOUND_MSG, defendantResponse.getId())
-                )
-            );
-
-        String claimantName = claimant.getOrgName() != null
-            ? claimant.getOrgName().toUpperCase(Locale.ROOT)
-            : formatNameUpperForNotification(claimant.getFirstName(), claimant.getLastName());
-        String primaryDefendantName = formatNameUpperForNotification(defendant.getFirstName(), defendant.getLastName());
-
-        return DefendantBasePersonalisation.builder()
-            .firstName(defendant.getFirstName())
-            .lastName(defendant.getLastName())
-            .caseNumber(defendantResponse.getPcsCase().getCaseReference().toString())
-            .claimantName(claimantName)
-            .primaryDefendantName(primaryDefendantName)
-            .build();
-    }
-
-    protected static TemplatePersonalisation buildCounterclaimPaymentSuccessPersonalisation(
-        DefendantResponseEntity defendantResponse) {
-
-        FeePaymentEntity defendantFeePayment = defendantResponse.getClaim().getFeePayment();
-        if (defendantFeePayment == null || !defendantFeePayment.getPaymentStatus().equals(PaymentStatus.PAID)) {
-            throw new FeePaymentNotFoundException(
-                "Paid fee payment not found for defendant response: " + defendantResponse.getId());
+    private EmailNotificationResponse sendEmail(
+        NotificationRecipient recipient,
+        EmailTemplate template,
+        NotificationClaimType claimType,
+        TemplatePersonalisation personalisation
+    ) {
+        if (recipient.party() != null && !partyService.canSendEmailNotification(recipient.party())) {
+            log.info("Skipping email notification to user: {}", recipient.party().getId());
+            return null;
         }
 
-        return CounterclaimPaymentSuccessPersonalisation.builder()
-            .base(buildBasePersonalisation(defendantResponse))
-            .paymentReferenceNumber(defendantFeePayment.getExternalReference())
-            .build();
+        return scheduleEmailNotification(
+            buildRequest(
+                templateConfiguration.getTemplateId(template),
+                recipient.email(),
+                claimType,
+                personalisation
+            ),
+            recipient.pcsCase(),
+            recipient.claim(),
+            recipient.party()
+        );
     }
 
     private EmailNotificationResponse sendClaimantEmail(
@@ -408,31 +367,6 @@ public class NotificationService {
         );
     }
 
-    private EmailNotificationResponse sendDefendantEmail(
-        DefendantResponseEntity defendantResponse,
-        EmailTemplate template,
-        NotificationClaimType claimType,
-        Function<DefendantResponseEntity, TemplatePersonalisation> personalisationBuilder
-    ) {
-        if (!partyService.canSendEmailNotification(defendantResponse.getParty())) {
-            log.info("Skipping email notification to user: {}", defendantResponse.getParty().getId());
-            return null;
-        }
-
-        PartyEntity recipientParty = defendantResponse.getParty();
-        return scheduleEmailNotification(
-            buildRequest(
-                templateConfiguration.getTemplateId(template),
-                recipientParty.getEmailAddress(),
-                claimType,
-                personalisationBuilder.apply(defendantResponse)
-            ),
-            defendantResponse.getPcsCase(),
-            defendantResponse.getClaim(),
-            recipientParty
-        );
-    }
-
     protected static EmailNotificationRequest buildRequest(
         String templateId,
         String email,
@@ -454,14 +388,42 @@ public class NotificationService {
             : claimantContactPreferences.getOverriddenClaimantContactEmail();
     }
 
-    private static String getClaimantName(ClaimantInformation claimantInformation) {
-        VerticalYesNo isClaimantNameOverridden = claimantInformation.getIsClaimantNameCorrect();
-        return isClaimantNameOverridden == null || isClaimantNameOverridden.toBoolean()
-            ? claimantInformation.getClaimantName()
-            : claimantInformation.getOverriddenClaimantName();
+    private NotificationRecipient claimantRecipient(PCSCase pcsCase) {
+        return new NotificationRecipient(
+            getClaimantEmailAddress(pcsCase.getClaimantContactPreferences()),
+            null,
+            null,
+            null
+        );
     }
 
-    private static String formatNameUpperForNotification(String firstName, String lastName) {
-        return String.format("%s %s", firstName, lastName).toUpperCase(Locale.ROOT);
+    private NotificationRecipient claimantRecipient(ClaimEntity claim) {
+        PartyEntity claimant = claim.getClaimantParty();
+
+        if (claimant == null) {
+            throw new PartyNotFoundException("No claimant party found for claim: " + claim.getId());
+        }
+
+        return new NotificationRecipient(
+            claimant.getEmailAddress(),
+            claimant,
+            claim.getPcsCase(),
+            claim
+        );
+    }
+
+    private NotificationRecipient defendantRecipient(DefendantResponseEntity response) {
+        PartyEntity defendant = response.getParty();
+
+        if (defendant == null) {
+            throw new PartyNotFoundException("No defendant party found for response: " + response.getId());
+        }
+
+        return new NotificationRecipient(
+            defendant.getEmailAddress(),
+            defendant,
+            response.getPcsCase(),
+            response.getClaim()
+        );
     }
 }
