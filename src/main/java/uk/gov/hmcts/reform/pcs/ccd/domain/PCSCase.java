@@ -99,6 +99,9 @@ public class PCSCase {
     private DynamicList representedPartyNames;
 
     @CCD(searchable = false)
+    private String currentRepresentedPartyId;
+
+    @CCD(searchable = false)
     private VerticalYesNo multipleRepresentedParties;
 
     @CCD(

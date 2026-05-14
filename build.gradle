@@ -560,6 +560,7 @@ tasks.register('e2eTest') {
 check.dependsOn cftlibTest
 
 // Add wiremock docker compose dependency
+dockerCompose.isRequiredBy bootWithCCD
 dockerCompose.isRequiredBy cftlibTest
 
 def cleanUpContainers = System.getenv("CI") != null

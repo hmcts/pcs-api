@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -21,7 +20,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ChooseAnApplication;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HearingInNext14Days;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HelpWithFeesNeeded;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.SelectParty;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartAdjourn;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSetAside;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSomethingElse;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhichLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
@@ -62,25 +67,38 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .showSummary();
 
         new PageBuilder(eventBuilder)
-            .add(new ChooseAnApplication())
-            .add(new SelectParty());
-
+                .add(new ChooseAnApplication())
+                .add(new StartAdjourn())
+                .add(new StartSetAside())
+                .add(new StartSomethingElse())
+                .add(new SelectParty())
+                .add(new HearingInNext14Days())
+                .add(new HelpWithFeesNeeded())
+                .add(new WhichLanguage());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        // Set represented parties if the current user is a legal rep
+        setRepresentedParties(caseReference, caseData);
+
+        return caseData;
+    }
+
+    // Set represented parties if the current user is a legal rep
+    private void setRepresentedParties(long caseReference, PCSCase caseData) {
         UUID currentUserId = securityContextService.getCurrentUserId();
         legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, caseReference)
             .ifPresent(representedPartyNames -> {
-                caseData.setRepresentedPartyNames(representedPartyNames);
                 boolean representingMultipleParties = representedPartyNames.getListItems().size() > 1;
                 caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
+                caseData.setRepresentedPartyNames(representedPartyNames);
+                if (representedPartyNames.getListItems().size() == 1) {
+                    UUID soleRepresentedParty = representedPartyNames.getListItems().getFirst().getCode();
+                    caseData.setCurrentRepresentedPartyId(soleRepresentedParty.toString());
+                }
             });
-
-        return caseData;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -106,9 +124,8 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private PartyEntity getApplicantParty(long caseReference, PCSCase caseData) {
-        if (caseData.getRepresentedPartyNames() != null) {
-            DynamicListElement selectedPartyElement = caseData.getRepresentedPartyNames().getValue();
-            UUID partyId = selectedPartyElement.getCode();
+        if (caseData.getCurrentRepresentedPartyId() != null) {
+            UUID partyId = UUID.fromString(caseData.getCurrentRepresentedPartyId());
             return partyService.getPartyEntityByEntityId(partyId, caseReference);
         } else {
             UUID partyIdamId = securityContextService.getCurrentUserId();

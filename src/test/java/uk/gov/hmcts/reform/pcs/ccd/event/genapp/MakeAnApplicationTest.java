@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,9 +83,9 @@ class MakeAnApplicationTest extends BaseEventTest {
         @Test
         void shouldSetRepresentedPartiesFieldWhenUserRepresentsOne() {
             // Given
-            DynamicList expectedPartyNameList = mock(DynamicList.class);
-            DynamicListElement party1Element = mock(DynamicListElement.class);
-            when(expectedPartyNameList.getListItems()).thenReturn(List.of(party1Element));
+            DynamicList expectedPartyNameList = DynamicList.builder()
+                .listItems(List.of(DynamicListElement.builder().code(UUID.randomUUID()).build()))
+                .build();
 
             UUID currentUserId = UUID.randomUUID();
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
@@ -105,10 +106,14 @@ class MakeAnApplicationTest extends BaseEventTest {
         @MethodSource("multipleRepresentedPartiesScenarios")
         void shouldSetMultipleRepresentedPartiesFlag(int numRepresentedParties, VerticalYesNo expectedFlag) {
             // Given
-            DynamicList expectedPartyNameList = mock(DynamicList.class);
-            @SuppressWarnings("unchecked") List<DynamicListElement> listItems = mock(List.class);
-            when(expectedPartyNameList.getListItems()).thenReturn(listItems);
-            when(listItems.size()).thenReturn(numRepresentedParties);
+            List<DynamicListElement> listItems = IntStream.range(0, numRepresentedParties)
+                .boxed()
+                .map(i -> DynamicListElement.builder().code(UUID.randomUUID()).build())
+                .toList();
+
+            DynamicList expectedPartyNameList = DynamicList.builder()
+                .listItems(listItems)
+                .build();
 
             UUID currentUserId = UUID.randomUUID();
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
@@ -171,16 +176,12 @@ class MakeAnApplicationTest extends BaseEventTest {
             UUID representedPartyUuid = UUID.randomUUID();
             PartyEntity representedParty = mock(PartyEntity.class);
 
-            DynamicList representedParties = DynamicList.builder()
-                .value(DynamicListElement.builder().code(representedPartyUuid).build())
-                .build();
-
             CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
                 .applicationType(GenAppType.SET_ASIDE)
                 .build();
 
             PCSCase caseData = PCSCase.builder()
-                .representedPartyNames(representedParties)
+                .currentRepresentedPartyId(representedPartyUuid.toString())
                 .citizenGenAppRequest(genAppRequest)
                 .build();
 
