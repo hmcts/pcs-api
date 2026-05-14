@@ -99,7 +99,7 @@ public class PartyAttributeAssertationService {
      */
     private void addTenancyTypeAssertion(DefendantResponses responses,
                                          PartyEntity partyEntity, List<PartyAttributeAssertationEntity> assertions) {
-        if (responses.getTenancyTypeCorrect() == YesNoNotSure.NO && responses.getTenancyType() != null) {
+        if (responses.getTenancyTypeConfirmation() == YesNoNotSure.NO && responses.getTenancyType() != null) {
             assertions.add(buildAssertion(PartyAttributeType.TENANCY_TYPE,
                 responses.getTenancyType(), partyEntity));
         }
@@ -112,7 +112,7 @@ public class PartyAttributeAssertationService {
     private void addTenancyStartDateAssertion(DefendantResponses responses,
                                              PartyEntity partyEntity,
                                              List<PartyAttributeAssertationEntity> assertions) {
-        YesNoNotSure tenancyStartDateCorrect = responses.getTenancyStartDateCorrect();
+        YesNoNotSure tenancyStartDateCorrect = responses.getTenancyStartDateConfirmation();
         if (responses.getTenancyStartDate() != null
             && (tenancyStartDateCorrect == null || tenancyStartDateCorrect == YesNoNotSure.NO)) {
             assertions.add(buildAssertion(PartyAttributeType.TENANCY_START_DATE,

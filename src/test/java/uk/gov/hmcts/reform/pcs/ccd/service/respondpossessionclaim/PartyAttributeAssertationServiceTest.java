@@ -174,7 +174,7 @@ class PartyAttributeAssertationServiceTest {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
             .defendantResponses(DefendantResponses.builder()
-                .tenancyTypeCorrect(YesNoNotSure.NO)
+                .tenancyTypeConfirmation(YesNoNotSure.NO)
                 .tenancyType("ASSURED_SHORTHOLD")
                 .build())
             .build();
@@ -193,7 +193,7 @@ class PartyAttributeAssertationServiceTest {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
             .defendantResponses(DefendantResponses.builder()
-                .tenancyTypeCorrect(YesNoNotSure.YES)
+                .tenancyTypeConfirmation(YesNoNotSure.YES)
                 .tenancyType("ASSURED_SHORTHOLD")
                 .build())
             .build();
@@ -208,7 +208,7 @@ class PartyAttributeAssertationServiceTest {
     void shouldNotSaveTenancyTypeWhenDisputedButTypeIsNull() {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
-            .defendantResponses(DefendantResponses.builder().tenancyTypeCorrect(YesNoNotSure.NO).build())
+            .defendantResponses(DefendantResponses.builder().tenancyTypeConfirmation(YesNoNotSure.NO).build())
             .build();
 
         underTest.buildPartyAttributeEntities(response, partyEntity);
@@ -222,7 +222,7 @@ class PartyAttributeAssertationServiceTest {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
             .defendantResponses(DefendantResponses.builder()
-                .tenancyStartDateCorrect(YesNoNotSure.NO)
+                .tenancyStartDateConfirmation(YesNoNotSure.NO)
                 .tenancyStartDate(LocalDate.of(2020, 6, 1))
                 .build())
             .build();
@@ -241,7 +241,7 @@ class PartyAttributeAssertationServiceTest {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
             .defendantResponses(DefendantResponses.builder()
-                .tenancyStartDateCorrect(null)
+                .tenancyStartDateConfirmation(null)
                 .tenancyStartDate(LocalDate.of(2020, 6, 1))
                 .build())
             .build();
@@ -258,7 +258,7 @@ class PartyAttributeAssertationServiceTest {
     void shouldNotSaveStartDateWhenDateIsNull() {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
-            .defendantResponses(DefendantResponses.builder().tenancyStartDateCorrect(YesNoNotSure.NO).build())
+            .defendantResponses(DefendantResponses.builder().tenancyStartDateConfirmation(YesNoNotSure.NO).build())
             .build();
 
         underTest.buildPartyAttributeEntities(response, partyEntity);
@@ -272,7 +272,7 @@ class PartyAttributeAssertationServiceTest {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
             .defendantResponses(DefendantResponses.builder()
-                .tenancyStartDateCorrect(YesNoNotSure.YES)
+                .tenancyStartDateConfirmation(YesNoNotSure.YES)
                 .tenancyStartDate(LocalDate.of(2020, 6, 1))
                 .build())
             .build();

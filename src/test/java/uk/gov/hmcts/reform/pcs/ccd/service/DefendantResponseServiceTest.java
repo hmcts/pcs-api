@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -35,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.ReasonableAdjus
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.HouseholdCircumstancesService;
@@ -579,7 +581,7 @@ class DefendantResponseServiceTest {
             .reasonableAdjustmentsRequired("Wheelchair access")
             .build();
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .dependantChildren(VerticalYesNo.YES)
+            .dependantChildren(YesOrNo.YES)
             .build();
         PaymentAgreement paymentAgreement = PaymentAgreement.builder()
             .anyPaymentsMade(VerticalYesNo.NO)
@@ -634,6 +636,42 @@ class DefendantResponseServiceTest {
             Arguments.of(YesNoNotSure.YES),
             Arguments.of(YesNoNotSure.NOT_SURE),
             Arguments.of(YesNoNotSure.NO),
+            Arguments.of((YesNoNotSure) null)
+        );
+    }
+
+    @ParameterizedTest(name = "tenancyTypeConfirmation={0}")
+    @MethodSource("tenancyTypeConfirmationScenarios")
+    void shouldPersistTenancyTypeConfirmation(YesNoNotSure tenancyTypeConfirmation) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeConfirmation(tenancyTypeConfirmation)
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+        assertThat(saved.getTenancyTypeConfirmation()).isEqualTo(tenancyTypeConfirmation);
+    }
+
+    private static Stream<Arguments> tenancyTypeConfirmationScenarios() {
+        return Stream.of(
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of(YesNoNotSure.NOT_SURE),
             Arguments.of((YesNoNotSure) null)
         );
     }
