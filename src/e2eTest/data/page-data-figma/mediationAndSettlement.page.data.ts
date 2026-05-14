@@ -8,7 +8,7 @@ export const mediationAndSettlement = {
   giveDetailsAboutTheAttemptedHiddenTextLabel: `Give details about the attempted mediation and what the outcome was`,
   giveDetailsAboutTheAttemptedHiddenTextInput: `Sample mediation input data`,
   youCanEnterUpToHiddenHintText: `You can enter up to 250 characters`,
-  ifYourClaimIsOnParagraph: `If your claim is on the grounds of rent arrears, this includes any steps you’ve taken to recover the arrears or to agree a repayment plan.`,
+  ifYourClaimIsOnParagraph: `If your claim is on the grounds of rent arrears, this includes any steps you’ve taken to agree a repayment plan.`,
   haveYouTriedToReachQuestion: `Have you tried to reach a settlement with the defendants?`,
   explainWhatStepsYouHaveTakenHiddenTextLabel: `Explain what steps you’ve taken to reach a settlement`,
   explainWhatStepsYouHaveTakenHiddenTextInput: `Sample settlement input data`,
