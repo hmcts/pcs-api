@@ -18,8 +18,7 @@ public class TenancyTabDetails {
     private String agreementType;
 
     @CCD(
-        label = "Tenancy, occupation contract or licence agreement start date",
-        showCondition = "agreementStartDate!=\"\""
+        label = "Tenancy, occupation contract or licence agreement start date"
     )
     private String agreementStartDate;
 }
