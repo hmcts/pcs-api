@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.Map;
 
 @Builder
-public class DefendantBasePersonalisation implements TemplatePersonalisation {
+public class BasePersonalisation implements TemplatePersonalisation {
     protected final String firstName;
     protected final String lastName;
     protected final String caseNumber;
