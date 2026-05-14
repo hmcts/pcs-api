@@ -36,18 +36,12 @@ public class CaseFlagService {
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity, String flow) {
 
-        if (incomingCaseFlags != null && incomingCaseFlags.getDetails() != null) {
-
-            Map<UUID, CaseFlagEntity> existingCaseFlagEntitiesMap =
+        Map<UUID, CaseFlagEntity> existingCaseFlagEntitiesMap =
                 pcsCaseEntity.getCaseFlags().stream()
                     .collect(Collectors.toMap(BaseCaseFlag::getId, Function.identity()));
 
-            return mergeFlagDetails(
-                        existingCaseFlagEntitiesMap, incomingCaseFlags, pcsCaseEntity,null, flow,
+        return mergeFlagDetails(existingCaseFlagEntitiesMap, incomingCaseFlags, pcsCaseEntity,null, flow,
                         CaseFlagEntity::new);
-        } else {
-            return new ArrayList<>();
-        }
     }
 
     public void mergePartyFlags(List<ListValue<Party>> incomingParties, PcsCaseEntity pcsCaseEntity,
@@ -64,7 +58,7 @@ public class CaseFlagService {
 
                 PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
 
-                if (partyEntity != null && incomingParty.getDefendantFlags() != null
+                if (incomingParty.getDefendantFlags() != null
                     && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
                     mergePartyFlagGroup(incomingParty.getDefendantFlags(), partyEntity.getDefendantFlags(),
                                         partyEntity, pcsCaseEntity, flow
@@ -90,7 +84,7 @@ public class CaseFlagService {
     }
 
     private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(
-                        Map<UUID, T> existingCaseFlagEntitiesMap, Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,
+                        Map<UUID, T> existingFlagEntitiesMap, Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,
                         PartyEntity partyEntity, String flow, Supplier<T> flagEntitySupplier) {
 
         List<T> mergedFlagDetails = new ArrayList<>();
@@ -102,7 +96,7 @@ public class CaseFlagService {
             FlagRefDataEntity flagRefDataEntity = getRefDataEntity(incomingCaseFlags, incomingFlagDetail);
             flagRefDataEntities.add(flagRefDataEntity);
 
-            T flagEntity = existingCaseFlagEntitiesMap.remove(UUID.fromString(incomingFlagDetailListValue.getId()));
+            T flagEntity = existingFlagEntitiesMap.remove(UUID.fromString(incomingFlagDetailListValue.getId()));
 
 
             if (flagEntity == null) {

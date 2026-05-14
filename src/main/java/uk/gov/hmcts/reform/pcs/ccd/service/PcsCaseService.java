@@ -68,13 +68,15 @@ public class PcsCaseService {
         }
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
-        if (pcsCase.getCaseFlags() != null && pcsCase.getCaseFlags().getDetails() != null
-            || pcsCase.getParties() != null) {
+        if (pcsCase.getCaseFlags() != null && pcsCase.getCaseFlags().getDetails() != null) {
             List<CaseFlagEntity> mergedFlagDetails = caseFlagService.mergeCaseFlags(pcsCase.getCaseFlags(),
-                                                                                    pcsCaseEntity, flow);
+                pcsCaseEntity, flow);
+
             pcsCaseEntity.getCaseFlags().clear();
             pcsCaseEntity.getCaseFlags().addAll(mergedFlagDetails);
+        }
 
+        if (pcsCase.getParties() != null) {
             caseFlagService.mergePartyFlags(pcsCase.getParties(), pcsCaseEntity, flow);
         }
     }
