@@ -3,7 +3,8 @@ import {
   performAction,
   performValidation
 } from '@utils/controller';
-import {manageCaseFlags,
+import {
+  manageCaseFlags,
   addCommentsForFlag,
   caseSummary,
   reviewFlagDetails,
@@ -39,7 +40,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Case Flags]', async () => {
-  test('Case Flags - Create New Case Flag when case level is selected @caseFlags @nightly', async () => {
+  test('Case Flags - Create case level Flag @PR @caseFlags @nightly', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
@@ -65,7 +66,7 @@ test.describe('[Common Component Case Flags]', async () => {
       rowLabel: reviewFlagDetails.rowLabel,
       changeLinkText: reviewFlagDetails.changeLink
     });
-     await performAction('selectFlagType', {
+    await performAction('selectFlagType', {
       selectFlagQuestion: selectFlagType.selectFlagTypeLabel,
       selectFlagOption: selectFlagType.urgentCaseRadioOption,
       continueButton: selectFlagType.continueButton
@@ -83,7 +84,7 @@ test.describe('[Common Component Case Flags]', async () => {
     await performAction('manageCaseFlags', {
       flagOption: manageCaseFlags.caseLevelUrgentCaseRadioOption,
       continueButton: manageCaseFlags.continueButton
-    }); 
+    });
     await performAction('makeFlagInactive', {
       inactiveButton: updateFlagComments.makeInactiveButton,
       continueButton: updateFlagComments.continueButton
@@ -92,19 +93,18 @@ test.describe('[Common Component Case Flags]', async () => {
       saveButton: reviewFlagDetails.saveAndContinueButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
-    });
+  });
 
-    test('Case Flags - Create New Case Flag when defendant is selected @caseFlags @nightly', async () => {
+  test('Case Flags - Create Party Level Case Flag @PR @caseFlags @nightly', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
-    //I have commented out because the main header is not matching in both the PR HDPI-3503 and HDPI-5740
-    //await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
+    await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
     await performAction('whereShouldThisFlagBeAdded', {
       flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
       flagLevelOption: whereShouldThisFlagBeAdded.respondentRadioOption,
       continueButton: whereShouldThisFlagBeAdded.continueButton
     });
-    //await performValidation('mainHeader', selectFlagType.mainHeader);
+    await performValidation('mainHeader', selectFlagType.mainHeader);
     await performAction('selectFlagType', {
       selectFlaglabel: selectFlagType.selectFlagTypeLabel,
       selectFlagOption: selectFlagType.specialMeasureRadioOption,
@@ -116,7 +116,7 @@ test.describe('[Common Component Case Flags]', async () => {
       specialMeasureOption: specialMeasureForFlag.screeningWitnessFromAccusedRadioOption,
       continueButton: specialMeasureForFlag.continueButton
     });
-    //await performValidation('mainHeader', addCommentsForFlag.mainHeader);
+    await performValidation('mainHeader', addCommentsForFlag.mainHeader);
     await performAction('addCommentsForFlag', {
       label: addCommentsForFlag.addCommentsLabel,
       input: addCommentsForFlag.addCommentTextInput,
@@ -127,7 +127,7 @@ test.describe('[Common Component Case Flags]', async () => {
       rowLabel: reviewFlagDetails.rowLabel,
       changeLinkText: reviewFlagDetails.changeLink
     });
-     await performAction('selectSpecialMeasureForFlag', {
+    await performAction('selectSpecialMeasureForFlag', {
       specialMeasurelabel: specialMeasureForFlag.specialMeasureLabel,
       specialMeasureOption: specialMeasureForFlag.evidenceByLiveLinkRadioOption,
       continueButton: specialMeasureForFlag.continueButton
@@ -145,7 +145,7 @@ test.describe('[Common Component Case Flags]', async () => {
     await performAction('manageCaseFlags', {
       flagOption: manageCaseFlags.respondentRadioOption,
       continueButton: manageCaseFlags.continueButton
-    }); 
+    });
     await performAction('makeFlagInactive', {
       inactiveButton: updateFlagComments.makeInactiveButton,
       continueButton: updateFlagComments.continueButton
@@ -154,5 +154,14 @@ test.describe('[Common Component Case Flags]', async () => {
       saveButton: reviewFlagDetails.saveAndContinueButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
-    });
+  });
+  test('Case Flags - Verify the create and manage case flag menu @smoke', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
+    await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
+    await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
+    await performAction('clickButton', manageCaseFlags.goButton);
+    await performAction('clickButton', manageCaseFlags.cancelButton);
+  });
 });

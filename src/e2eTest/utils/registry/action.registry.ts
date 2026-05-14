@@ -110,7 +110,7 @@ export class ActionRegistry {
     ['reviewFlagDetails', new CaseFlagAction()],
     ['viewCaseFlags', new CaseFlagAction()],
     ['manageCaseFlags', new CaseFlagAction()],
-    ['makeFlagInactive', new CaseFlagAction()]
+    ['makeFlagInactive', new CaseFlagAction()],
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
