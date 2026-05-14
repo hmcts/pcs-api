@@ -18,8 +18,6 @@ public class DefendantResponseNotificationService {
     private final NotificationService notificationService;
     private final DefendantResponseRepository defendantResponseRepository;
 
-    private static final String PENDING_CASE_ISSUED = "PENDING_CASE_ISSUED";
-
     public void sendEmailNotification(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
@@ -29,12 +27,6 @@ public class DefendantResponseNotificationService {
             log.info("Sending no counter claim email for defendant response {}",
                      defendantResponse.getId());
             notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
-            return;
-        }
-
-        if (!PENDING_CASE_ISSUED.equals(counterClaim.getStatus())) {
-            log.info("Counterclaim status not eligible for email. status={}, defendantResponseId={}",
-                     counterClaim.getStatus(), defendantResponse.getId());
             return;
         }
 
