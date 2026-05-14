@@ -135,6 +135,7 @@ notify:
     counterclaim-payment-success: 8d726681-78a7-4ed5-9201-4354bb04f8ad
     counterclaim-no-payment-required: a6a6e7ce-e47f-4a85-9d98-cc9c924bdb5e
     make-a-claim-claim-saved-for-later: bf648abe-5a45-4cc2-8d5b-d1e817ace18b
+    make-a-claim-defendant-made-counterclaim: 6f583b02-6857-4207-a7ae-8c73d2310a80
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}
