@@ -30,9 +30,13 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
                             .name("Manage case flags")
                             .description("To manage flags")
                             .showSummary()
-                            .grant(Permission.CRU, UserRole.PCS_CASE_WORKER))
+                            .grant(Permission.CRU,
+                                   UserRole.PCS_CASE_WORKER,
+                                   UserRole.CTSC_ADMIN,
+                                   UserRole.HEARING_CENTER_ADMIN,
+                                   UserRole.WLU_ADMIN,
+                                   UserRole.BAILIFF_ADMIN))
             .page("caseworkerCaseFlag")
-            .pageLabel("Case Flags")
             .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
             .optional(PCSCase::getFlagLauncherInternal,null, null,
                 null, null, "#ARGUMENT(UPDATE)");
