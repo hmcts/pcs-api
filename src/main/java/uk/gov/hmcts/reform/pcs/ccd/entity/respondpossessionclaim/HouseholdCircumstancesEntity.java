@@ -20,8 +20,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -122,7 +124,8 @@ public class HouseholdCircumstancesEntity {
 
     private BigDecimal debtContribution;
 
-    private String debtContributionFrequency;
+    @Enumerated(EnumType.STRING)
+    private RecurrenceFrequency debtContributionFrequency;
 
     public void addRegularExpense(RegularExpenseEntity expense) {
         regularExpenses.add(expense);
