@@ -68,6 +68,10 @@ export const whatAreYourGroundsForPossession = {
     specialNeeds: 'Special needs accommodation (ground 15)',
     underOccupying: 'Under occupying after succession (ground 15A)'
   },
+  additionalGrounds: 'Additional grounds (Optional)',
+  otherAdditionalGrounds: 'Other',
+  giveDetailsHiddenTextLabel : 'Give details of your other grounds for possession',
+  giveDetailsHiddenTextInput : 'Other grounds for possession text input',
   continueButton: 'Continue',
   moreInfoLink: 'More information about possession grounds (opens in new tab)'
 };
