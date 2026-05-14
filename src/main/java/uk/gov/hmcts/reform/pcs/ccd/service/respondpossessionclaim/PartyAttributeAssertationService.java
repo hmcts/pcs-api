@@ -61,8 +61,8 @@ public class PartyAttributeAssertationService {
     }
 
     /**
-     * Saves the defendant's asserted name when they dispute or have not confirmed the claimant-provided name.
-     * Condition: defendantNameConfirmation is NO or null (question not shown / fresh entry).
+     * Adds a name assertion when disputed or not provided by the claimant.
+     * Condition: defendantNameConfirmation is NO (disputed) or null (claimant did not provide a name).
      */
     private void addNameAssertion(DefendantContactDetails defendantContact, DefendantResponses responses,
                                   PartyEntity partyEntity, List<PartyAttributeAssertationEntity> assertions) {
@@ -72,28 +72,29 @@ public class PartyAttributeAssertationService {
         VerticalYesNo nameConfirmation = responses.getDefendantNameConfirmation();
         if (nameConfirmation == null || nameConfirmation == VerticalYesNo.NO) {
             Party defendantParty = defendantContact.getParty();
-            assertions.add(buildJsonAssertion(PartyAttributeType.NAME,
+            assertions.add(buildJsonAssertion(PartyAttributeType.DEFENDANT_NAME,
                 toNameMap(defendantParty.getFirstName(), defendantParty.getLastName()), partyEntity));
         }
     }
 
     /**
-     * Saves the defendant's asserted correspondence address when they dispute the claimant-provided address.
-     * Condition: correspondenceAddressConfirmation is NO.
+     * Adds a correspondence address assertion when disputed or not provided by the claimant.
+     * Condition: correspondenceAddressConfirmation is NO (disputed) or null (claimant did not provide an address).
      */
     private void addAddressAssertion(DefendantContactDetails defendantContact, DefendantResponses responses,
                                      PartyEntity partyEntity, List<PartyAttributeAssertationEntity> assertions) {
         if (defendantContact == null || defendantContact.getParty() == null) {
             return;
         }
-        if (responses.getCorrespondenceAddressConfirmation() == VerticalYesNo.NO) {
-            assertions.add(buildJsonAssertion(PartyAttributeType.ADDRESS,
+        VerticalYesNo addressConfirmation = responses.getCorrespondenceAddressConfirmation();
+        if (addressConfirmation == null || addressConfirmation == VerticalYesNo.NO) {
+            assertions.add(buildJsonAssertion(PartyAttributeType.CORRESPONDENCE_ADDRESS,
                 defendantContact.getParty().getAddress(), partyEntity));
         }
     }
 
     /**
-     * Saves the defendant's asserted tenancy type when they dispute the claimant-provided type.
+     * Adds a tenancy type assertion when disputed by the claimant.
      * Condition: tenancyTypeCorrect is NO and the defendant has supplied an alternative tenancy type.
      */
     private void addTenancyTypeAssertion(DefendantResponses responses,
@@ -105,9 +106,8 @@ public class PartyAttributeAssertationService {
     }
 
     /**
-     * Saves the defendant's asserted tenancy start date when they dispute or the claimant did not provide one.
-     * Condition: a date is present AND tenancyStartDateCorrect is NO or null
-     * (null means the claimant did not supply a date, so the question was never shown).
+     * Adds a tenancy start date assertion when disputed or not provided by the claimant.
+     * Condition: a date is present AND tenancyStartDateCorrect is NO (disputed) or null (claimant did not provide one).
      */
     private void addTenancyStartDateAssertion(DefendantResponses responses,
                                              PartyEntity partyEntity,
@@ -121,7 +121,7 @@ public class PartyAttributeAssertationService {
     }
 
     /**
-     * Saves the defendant's assertion that they did not receive the possession notice.
+     * Adds a possession notice assertion when the defendant disputes receiving it.
      * Condition: possessionNoticeReceived is NO.
      */
     private void addPossessionNoticeAssertion(DefendantResponses responses,
@@ -134,8 +134,8 @@ public class PartyAttributeAssertationService {
     }
 
     /**
-     * Saves the date the defendant claims to have received the possession notice.
-     * Condition: possessionNoticeReceived is YES and the defendant has supplied a date.
+     * Adds a notice received date assertion when provided or not provided by the claimant.
+     * Condition: a date is present AND possessionNoticeReceived is YES
      */
     private void addNoticeDateAssertion(DefendantResponses responses,
                                         PartyEntity partyEntity, List<PartyAttributeAssertationEntity> assertions) {
@@ -147,7 +147,7 @@ public class PartyAttributeAssertationService {
     }
 
     /**
-     * Saves the defendant's asserted rent arrears amount when they dispute the claimant-provided figure.
+     * Adds a rent arrears amount assertion when disputed by the claimant.
      * Condition: rentArrearsAmountConfirmation is NO and the defendant has supplied an amount.
      */
     private void addRentArrearsAssertion(DefendantResponses responses,

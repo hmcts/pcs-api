@@ -68,7 +68,7 @@ class PartyAttributeAssertationServiceTest {
         verify(repository).saveAll(savedAssertionsCaptor.capture());
         List<PartyAttributeAssertationEntity> saved = savedAssertionsCaptor.getValue();
         assertThat(saved).isNotEmpty();
-        assertThat(saved.get(0).getAttributesName()).isEqualTo(PartyAttributeType.NAME);
+        assertThat(saved.get(0).getAttributesName()).isEqualTo(PartyAttributeType.DEFENDANT_NAME);
         assertThat(saved.get(0).getAssertedValue()).contains("Jane").contains("Doe");
     }
 
@@ -85,7 +85,7 @@ class PartyAttributeAssertationServiceTest {
         verify(repository).saveAll(savedAssertionsCaptor.capture());
         List<PartyAttributeAssertationEntity> saved = savedAssertionsCaptor.getValue();
         assertThat(saved).isNotEmpty();
-        assertThat(saved.get(0).getAttributesName()).isEqualTo(PartyAttributeType.NAME);
+        assertThat(saved.get(0).getAttributesName()).isEqualTo(PartyAttributeType.DEFENDANT_NAME);
     }
 
     @Test
@@ -130,7 +130,25 @@ class PartyAttributeAssertationServiceTest {
         verify(repository).saveAll(savedAssertionsCaptor.capture());
         List<PartyAttributeAssertationEntity> saved = savedAssertionsCaptor.getValue();
         assertThat(saved).isNotEmpty();
-        assertThat(saved.get(0).getAttributesName()).isEqualTo(PartyAttributeType.ADDRESS);
+        assertThat(saved.get(0).getAttributesName()).isEqualTo(PartyAttributeType.CORRESPONDENCE_ADDRESS);
+        assertThat(saved.get(0).getAssertedValue()).contains("1 High St").contains("SW1A 1AA");
+    }
+
+    @Test
+    void shouldSaveAddressWhenCorrespondenceAddressFreshEntryPath() {
+        AddressUK address = AddressUK.builder().addressLine1("1 High St").postCode("SW1A 1AA").build();
+        Party party = Party.builder().address(address).build();
+        PossessionClaimResponse response =  PossessionClaimResponse.builder()
+            .defendantContactDetails(DefendantContactDetails.builder().party(party).build())
+            .defendantResponses(DefendantResponses.builder().correspondenceAddressConfirmation(null).build())
+            .build();
+
+        underTest.buildPartyAttributeEntities(response, partyEntity);
+
+        verify(repository).saveAll(savedAssertionsCaptor.capture());
+        List<PartyAttributeAssertationEntity> saved = savedAssertionsCaptor.getValue();
+        assertThat(saved).isNotEmpty();
+        assertThat(saved.get(0).getAttributesName()).isEqualTo(PartyAttributeType.CORRESPONDENCE_ADDRESS);
         assertThat(saved.get(0).getAssertedValue()).contains("1 High St").contains("SW1A 1AA");
     }
 
@@ -219,7 +237,7 @@ class PartyAttributeAssertationServiceTest {
     }
 
     @Test
-    void shouldSaveStartDateWhenTenancyStartDateCorrectIsNullFreshEntryPath() {
+    void shouldSaveStartDateWhenFreshEntryPath() {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
             .defendantResponses(DefendantResponses.builder()

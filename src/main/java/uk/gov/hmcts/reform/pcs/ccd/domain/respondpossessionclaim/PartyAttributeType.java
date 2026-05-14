@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 @AllArgsConstructor
 public enum PartyAttributeType implements HasLabel {
 
-    NAME("Name"),
-    ADDRESS("Address"),
+    DEFENDANT_NAME("Defendant name"),
+    CORRESPONDENCE_ADDRESS("Correspondence address"),
     TENANCY_TYPE("Tenancy type"),
     TENANCY_START_DATE("Tenancy start date"),
     POSSESSION_NOTICE_RECEIVED("Possession notice received"),
