@@ -27,7 +27,7 @@ public class CaseFlagsView {
 
     private static final String DEFENDANT = "defendant";
     private static final String CLAIMANT = "claimant";
-    public static final String PATHS_DELIMITER = ",";
+    public static final String PATHS_DELIMITER = "_";
     public static final String PATH_DELIMITER = ":";
 
 
