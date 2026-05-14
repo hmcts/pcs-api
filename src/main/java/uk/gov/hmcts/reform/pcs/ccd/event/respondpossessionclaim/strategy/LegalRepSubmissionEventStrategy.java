@@ -46,10 +46,10 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
 
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
 
-        SubmitResponse<State> validationError = submitResponseFactory.validate(responseDraftData, caseReference);
+        SubmitResponse<State> validationResult = submitResponseFactory.validate(responseDraftData, caseReference);
 
-        if (validationError != null) {
-            return validationError;
+        if (validationResult != null) {
+            return validationResult;
         }
 
         claimResponseService.saveDraftDataForParty(responseDraftData, caseReference, representedPartyId);

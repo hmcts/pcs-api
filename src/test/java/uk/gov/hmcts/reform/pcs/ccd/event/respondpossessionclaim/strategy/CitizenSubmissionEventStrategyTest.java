@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -63,7 +62,7 @@ class CitizenSubmissionEventStrategyTest {
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
-        PCSCase caseData = createDraftSaveCaseData(null, responses);
+        PCSCase caseData = createDraftSaveCaseData(responses);
 
         stubDraft(caseData);
 
@@ -86,7 +85,7 @@ class CitizenSubmissionEventStrategyTest {
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
-        PCSCase caseData = createDraftSaveCaseData(null, responses);
+        PCSCase caseData = createDraftSaveCaseData(responses);
 
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
             .thenReturn(Optional.empty());
@@ -147,9 +146,8 @@ class CitizenSubmissionEventStrategyTest {
             .thenReturn(Optional.of(draft));
     }
 
-    private PCSCase createDraftSaveCaseData(DefendantContactDetails contactDetails, DefendantResponses responses) {
+    private PCSCase createDraftSaveCaseData(DefendantResponses responses) {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
             .defendantResponses(responses != null ? responses : DefendantResponses.builder().build())
             .build();
 

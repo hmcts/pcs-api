@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -83,7 +83,7 @@ class OrganisationServiceTest {
     @Test
     @DisplayName("Should return null when exception thrown")
     void getOrganisationIdForCurrentUser_ShouldReturnNullWhenExceptionThrown() {
-        when(securityContextService.getCurrentUserId()).thenThrow(new SecurityContextException(""));
+        when(securityContextService.getCurrentUserId()).thenThrow(new OrganisationDetailsException("", null));
 
         String result = organisationService.getOrganisationIdForCurrentUser();
 

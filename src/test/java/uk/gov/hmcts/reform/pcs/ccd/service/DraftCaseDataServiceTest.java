@@ -414,4 +414,31 @@ class DraftCaseDataServiceTest {
             .hasCause(jsonProcessingException);
     }
 
+    @Test
+    void shouldPatchUnsubmittedCaseData_WithPartyId() {
+        // Given
+        String existingJson = "existing json";
+        UUID partyId = UUID.randomUUID();
+        UUID userId = USER_ID;
+
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+
+        when(draftCaseDataEntity.getCaseData()).thenReturn(existingJson);
+
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(userId.toString()).build());
+
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+            CASE_REFERENCE, eventId, userId, partyId))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+        String patchJson = "patch json";
+        // When
+        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, patchJson, partyId);
+
+        // Then
+        verify(draftCaseDataEntity).getCaseData();
+        verify(draftCaseDataEntity).setCaseData(any()); // safer than strict match here
+        verify(draftCaseDataRepository).save(draftCaseDataEntity);
+    }
+
 }

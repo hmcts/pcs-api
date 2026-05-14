@@ -18,6 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.DefendantOnlyDraftBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimDraftBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
@@ -54,17 +57,26 @@ class CitizenStartEventStrategyTest {
     private PossessionClaimResponseMapper responseMapper;
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private PossessionClaimMerger possessionClaimMerger;
+    @Mock
+    private PossessionClaimDraftBuilder possessionClaimDraftBuilder;
+    @Mock
+    private DefendantOnlyDraftBuilder defendantOnlyDraftBuilder;
 
     private CitizenStartEventStrategy underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new CitizenStartEventStrategy(
-            responseMapper,
-            draftCaseDataService,
             pcsCaseService,
             securityContextService,
-            accessValidator
+            accessValidator,
+            responseMapper,
+            draftCaseDataService,
+            possessionClaimMerger,
+            possessionClaimDraftBuilder,
+            defendantOnlyDraftBuilder
         );
     }
 
@@ -125,19 +137,14 @@ class CitizenStartEventStrategyTest {
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(true);
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
             .thenReturn(Optional.of(savedDraft));
+        when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse)).thenReturn(draftResponse);
 
         // When
-        PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
+        underTest.loadDraft(CASE_REFERENCE, caseData);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getPossessionClaimResponse().getDefendantContactDetails()).isNull();
-        assertThat(result.getPossessionClaimResponse().getDefendantResponses()).isNull();
-        assertThat(result.getPossessionClaimResponse().getClaimantOrganisations())
-            .as("Should return empty list when no claimants in incoming case")
-            .isEmpty();
-        assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+        verify(possessionClaimDraftBuilder).buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class));
     }
 
     @Test
@@ -351,38 +358,16 @@ class CitizenStartEventStrategyTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(matchedDefendant);
         when(responseMapper.buildPartyFromEntity(eq(matchedDefendant), any(PCSCase.class))).thenReturn(originalParty);
+        when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse)).thenReturn(draftResponse);
 
         // When
-        PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
+        underTest.loadDraft(CASE_REFERENCE, caseData);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getPossessionClaimResponse()).isNotNull();
-
-        // Verify claimantEnteredDefendantDetails has original data
-        assertThat(result.getPossessionClaimResponse().getClaimantEnteredDefendantDetails()).isNotNull();
-        assertThat(result.getPossessionClaimResponse().getClaimantEnteredDefendantDetails().getFirstName())
-            .isEqualTo("Arun");
-        assertThat(result.getPossessionClaimResponse().getClaimantEnteredDefendantDetails().getLastName())
-            .isEqualTo("Kumar");
-        assertThat(result.getPossessionClaimResponse().getClaimantOrganisations().getFirst().getId())
-            .isEqualTo(claimantPartyId.toString());
-        assertThat(result.getPossessionClaimResponse().getClaimantOrganisations().getFirst().getValue())
-            .isEqualTo(orgName);
-
-        // Verify defendantContactDetails has draft edits
-        assertThat(result.getPossessionClaimResponse().getDefendantContactDetails().getParty().getFirstName())
-            .isEqualTo("Lax");
-        assertThat(result.getPossessionClaimResponse().getDefendantContactDetails().getParty().getLastName())
-            .isEqualTo("lax");
-
-        // Verify different (comparison possible)
-        assertThat(result.getPossessionClaimResponse().getClaimantEnteredDefendantDetails().getFirstName())
-            .isNotEqualTo(result.getPossessionClaimResponse().getDefendantContactDetails().getParty().getFirstName());
-
         verify(pcsCaseService).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
         verify(responseMapper).buildPartyFromEntity(eq(matchedDefendant), any(PCSCase.class));
+        verify(possessionClaimDraftBuilder).buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class));
     }
 
     @Test

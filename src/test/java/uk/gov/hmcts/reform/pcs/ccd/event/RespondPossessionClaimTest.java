@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -12,6 +13,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
@@ -23,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.CitizenStartEventStrategy;
@@ -30,6 +33,9 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.Citizen
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.LegalRepStartEventStrategy;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.LegalRepSubmissionEventStrategy;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.SubmitResponseFactory;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.DefendantOnlyDraftBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimDraftBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -98,6 +104,18 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
+    @Mock
+    private PossessionClaimMerger possessionClaimMerger;
+
+    @Mock
+    private PossessionClaimDraftBuilder possessionClaimDraftBuilder;
+
+    @Mock
+    private DefendantOnlyDraftBuilder defendantOnlyDraftBuilder;
+
+    @Mock
+    private SubmitResponseFactory submitResponseFactory;
+
     @BeforeEach
     void setUp() {
 
@@ -105,18 +123,22 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         StartEventHandler startEventHandler = new StartEventHandler(
             securityContextService,
-            List.of(new CitizenStartEventStrategy(responseMapper,
-                                                  draftCaseDataService,
-                                                  pcsCaseService,
+            List.of(new CitizenStartEventStrategy(pcsCaseService,
                                                   securityContextService,
-                                                  accessValidator),
-                    new LegalRepStartEventStrategy(responseMapper,
-                                                            draftCaseDataService,
-                                                            pcsCaseService,
-                                                            defendantResponseRepository,
+                                                  accessValidator,
+                                                  responseMapper,
+                                                  draftCaseDataService,
+                                                  possessionClaimMerger,
+                                                  possessionClaimDraftBuilder,
+                                                  defendantOnlyDraftBuilder),
+                    new LegalRepStartEventStrategy(pcsCaseService,
                                                             legalRepForDefendantAccessValidator,
                                                             securityContextService,
-                                                            selectedPartyRetriever)
+                                                   new LegalRepPartySelectionService(selectedPartyRetriever,
+                                                                                     defendantResponseRepository,
+                                                                                     draftCaseDataService,
+                                                                                     responseMapper,
+                                                                                     possessionClaimMerger))
             )
         );
 
@@ -124,12 +146,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
             List.of(new CitizenSubmissionEventStrategy(draftCaseDataService,
                                                        claimResponseService,
                                                        defendantResponseService,
-                                                       new SubmitResponseFactory()),
+                                                       submitResponseFactory),
                     new LegalRepSubmissionEventStrategy(draftCaseDataService,
                                                    claimResponseService,
                                                    defendantResponseService,
                                                    selectedPartyRetriever,
-                                                        new SubmitResponseFactory())
+                                                        submitResponseFactory)
             ),
             securityContextService
         );
@@ -234,6 +256,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
         );
+        verify(defendantOnlyDraftBuilder).createDefendantOnlyDraft(mockResponse);
     }
 
     @Test
@@ -408,8 +431,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(contactDetails.getParty().getFirstName()).isEqualTo("Jane");
         assertThat(contactDetails.getParty().getLastName()).isEqualTo("Smith");
         assertThat(contactDetails.getParty().getAddress()).isEqualTo(propertyAddress);
-
+        verify(defendantOnlyDraftBuilder).createDefendantOnlyDraft(mockResponse);
         verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
+        verify(defendantOnlyDraftBuilder).createDefendantOnlyDraft(mockResponse);
     }
 
     @Test
@@ -483,6 +507,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
         );
+        verify(defendantOnlyDraftBuilder).createDefendantOnlyDraft(mockResponse);
+
     }
 
     @Test
@@ -542,17 +568,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(Optional.of(draftData)); // Return saved draft data
 
         PCSCase caseData = PCSCase.builder().build();
+        when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse)).thenReturn(draftResponse);
 
-        PCSCase result = callStartHandler(caseData);
+        callStartHandler(caseData);
 
-        // Should return draft data (user's saved progress), NOT database defendant data
-        assertThat(result.getPossessionClaimResponse()).isNotNull();
-        DefendantContactDetails contactDetails = result.getPossessionClaimResponse().getDefendantContactDetails();
-        assertThat(contactDetails.getParty()).isNotNull();
-        assertThat(contactDetails.getParty().getFirstName()).isEqualTo("SavedFirstName");
-        assertThat(contactDetails.getParty().getLastName()).isEqualTo("SavedLastName");
-        assertThat(contactDetails.getParty().getEmailAddress()).isEqualTo("saved@example.com");
-
+        verify(possessionClaimDraftBuilder).buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class));
         verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
         verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
 
@@ -566,14 +586,22 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldReturnErrorWhenPossessionClaimResponseIsNull_ForCitizenUser() {
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(null)
+            .build();
         PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(null)
+            .possessionClaimResponse(possessionClaimResponse)
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(Optional.of(caseData));
+        SubmitResponse<State> submitResponse = SubmitResponse.<State>builder()
+            .errors(List.of("Invalid submission: missing response data"))
+            .build();
+
+        when(submitResponseFactory.validate(possessionClaimResponse, TEST_CASE_REFERENCE)).thenReturn(submitResponse);
 
         var response = callSubmitHandler(caseData);
 
@@ -592,16 +620,22 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldReturnErrorWhenDefendantResponseIsNull_ForCitizenUser() {
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(null)
+            .build();
         PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder()
-                                         .defendantResponses(null)
-                                         .build())
+            .possessionClaimResponse(possessionClaimResponse)
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(Optional.of(caseData));
+        SubmitResponse<State> submitResponse = SubmitResponse.<State>builder()
+            .errors(List.of("Invalid submission: missing defendant response data"))
+            .build();
+
+        when(submitResponseFactory.validate(possessionClaimResponse, TEST_CASE_REFERENCE)).thenReturn(submitResponse);
 
         var response = callSubmitHandler(caseData);
 
@@ -744,6 +778,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(Optional.of(savedDraft));
         when(responseMapper.buildPartyFromEntity(representedParty, caseData))
             .thenReturn(uk.gov.hmcts.reform.pcs.ccd.domain.Party.builder().build());
+        when(possessionClaimMerger.mergeLatestCaseData(caseData, savedResponse)).thenReturn(savedResponse);
 
         // when
         PCSCase result = callStartHandler(caseData);
@@ -875,7 +910,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         var response = callSubmitHandler(caseData);
 
         // then
-        assertThat(response.getErrors()).isNullOrEmpty();
         verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, TEST_CASE_REFERENCE,
                                                            representedPartyId);
         verify(defendantResponseService).saveDefendantResponse(TEST_CASE_REFERENCE, possessionClaimResponse,
