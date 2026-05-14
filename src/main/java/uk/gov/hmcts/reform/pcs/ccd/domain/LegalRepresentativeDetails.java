@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 @Builder
 @Data
@@ -14,11 +15,16 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 @AllArgsConstructor
 public class LegalRepresentativeDetails {
 
+    @CCD(label = "Do you want to use this email address for notifications?")
+    private VerticalYesNo useEmailAddress;
+
     @CCD(
         label = "Defendant’s legal representative's email address",
         typeOverride = FieldType.Email
     )
     private String emailAddress;
+
+    private String originalEmailAddress;
 
     @CCD(
         label = "Defendant’s legal representative's reference",
@@ -45,6 +51,14 @@ public class LegalRepresentativeDetails {
 
     @CCD(label = "Enter address details")
     private AddressUK correspondenceAddress;
+
+    @CCD
+    private AddressUK organisationAddress;
+
+    @CCD
+    private YesOrNo orgAddressFound;
+
+    private String formattedClaimantContactAddress;
 
 }
 

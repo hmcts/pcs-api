@@ -265,8 +265,4 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .collect(Collectors.toList());
     }
 
-    private YesOrNo isLegalRepresentativeUser(PcsCaseEntity pcsCaseEntity) {
-//        pcsCaseEntity.getClaims().stream().forEach(p);
-        return YesOrNo.YES;
-    }
 }
