@@ -29,7 +29,7 @@ export class ActionRegistry {
     ['check', new CheckAction()],
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
-    ['createUserAndLogin', new LoginAction()],
+    ['createTempUser', new LoginAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
     ['signOut', new signOutAction()],

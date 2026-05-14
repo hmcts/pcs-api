@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import {LONG_TIMEOUT} from "../playwright.config";
 import { dismissCookieBanner } from '@config/cookie-banner';
+import {staff} from "@data/user-data/staff.user.data";
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
@@ -20,19 +21,45 @@ function applyPlaywrightServiceUrls(): void {
     process.env.IDAM_WEB_URL ||= `https://idam-api.${e}.platform.hmcts.net`;
     process.env.IDAM_TESTING_SUPPORT_URL ||= `https://idam-testing-support-api.${e}.platform.hmcts.net`;
     process.env.S2S_URL ||= `http://rpe-service-auth-provider-${e}.service.core-compute-${e}.internal/testing-support/lease`;
+    process.env.AM_ORG_ROLE_MAPPING =`http://am-org-role-mapping-service-${e}.service.core-compute-${e}.internal`;
   } else {
     // preview, empty ENVIRONMENT, etc.: AAT IdAM/S2S (same as Jenkinsfile_CNP defaults). MANAGE_CASE / data-store from Jenkins or exports.
     process.env.IDAM_WEB_URL ||= 'https://idam-api.aat.platform.hmcts.net';
     process.env.IDAM_TESTING_SUPPORT_URL ||= 'https://idam-testing-support-api.aat.platform.hmcts.net';
     process.env.S2S_URL ||= 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal/testing-support/lease';
+    process.env.AM_ORG_ROLE_MAPPING = `http://am-org-role-mapping-service-aat.service.core-compute-aat.internal`;
   }
 }
 
 async function globalSetupConfig(): Promise<void> {
   applyPlaywrightServiceUrls();
-  await getAccessToken();
-  await getS2SToken();
+  process.env.BEARER_TOKEN = await getAccessToken(idamPCSBody);
+  process.env.BEARER_TOKEN_AM = await getAccessToken(idamCCDGatewayBody);
+  process.env.SERVICE_AUTH_TOKEN = await getS2SToken('pcs_api');
+  process.env.SERVICE_AUTH_TOKEN_AM = await getS2SToken('am_org_role_mapping_service');
+  createTempUser(staff);
   await authenticateAndSaveState();
+}
+
+async function createTempUser(body: { CTSCAdmin?: { email: string; uid: string | undefined; }; CTSCAdminTaskSupervisor?: { email: string; uid: string | undefined; }; CTSCAdminCaseAllocator?: { email: string; uid: string | undefined; }; CTSCAdminCaseAllocAndTaskSup?: { email: string; uid: string | undefined; }; uid?: any; email?: any; role?: any; }): Promise<void> {
+  const token = process.env.BEARER_TOKEN as string;
+  const password = process.env.IDAM_PCS_USER_PASSWORD as string;
+  const uniqueId = body.uid;
+  const email: string = body.email;
+const [forename, surname]: [string, string] = email.split('-') as [
+  string,
+  string
+];
+await new IdamUtils().createUser({
+  bearerToken: token,
+  password,
+  user: {
+    email,
+    forename,
+    surname,
+    roleNames: body.role
+  }
+});
 }
 
 async function authenticateAndSaveState(): Promise<string> {
@@ -104,25 +131,39 @@ async function authenticateAndSaveState(): Promise<string> {
   }
 }
 
-export const getS2SToken = async (): Promise<void> => {
+export const getS2SToken = async (microServiceName: string): Promise<string> => {
   if (!process.env.S2S_URL) {
     throw new Error('S2S_URL is not set (set ENVIRONMENT to aat|demo|perftest|ithc, or preview/empty for AAT default, or export S2S_URL)');
   }
-  process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({ microservice: 'pcs_api' });
+  return await new ServiceAuthUtils().retrieveToken({ microservice: microServiceName });
 };
 
-export const getAccessToken = async (): Promise<void> => {
+export const idamPCSBody = {
+  email: user.claimantSolicitor.email,
+  password: user.claimantSolicitor.password,
+  clientSecret: process.env.PCS_API_IDAM_SECRET as string,
+  clientId: 'pcs-api'
+}
+
+export const idamCCDGatewayBody = {
+  email: user.claimantSolicitor.email,
+  password: user.claimantSolicitor.password,
+  clientSecret: process.env.PCS_API_IDAM_SECRET as string,
+  clientId: 'pcs-api'
+}
+
+export const getAccessToken = async (body: { email: any; password: any; clientSecret: any; clientId: any; }): Promise<string> => {
   if (!process.env.IDAM_WEB_URL || !process.env.IDAM_TESTING_SUPPORT_URL) {
     throw new Error(
       'IDAM_WEB_URL and IDAM_TESTING_SUPPORT_URL are not set (set ENVIRONMENT to aat|demo|perftest|ithc, preview defaults AAT, or export both URLs)'
     );
   }
-  process.env.BEARER_TOKEN = await new IdamUtils().generateIdamToken({
-    username: user.claimantSolicitor.email,
-    password: user.claimantSolicitor.password,
+  return await new IdamUtils().generateIdamToken({
+    username: body.email,
+    password: body.password,
     grantType: 'password',
-    clientId: 'pcs-api',
-    clientSecret: process.env.PCS_API_IDAM_SECRET as string,
+    clientId: body.clientId,
+    clientSecret: body.clientSecret,
     scope: 'profile openid roles'
   });
 };
