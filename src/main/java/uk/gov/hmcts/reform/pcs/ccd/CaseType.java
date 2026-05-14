@@ -128,8 +128,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("Summary", null, "## Summary")
             .field("summaryTab_RepossessedPropertyAddress")
             .field("summaryTab_GroundsForPossession")
-            .field("summaryTab_ReasonsForPossession", null)
-            .field("summaryTab_DateClaimSubmitted", null)
+            .field("summaryTab_ReasonsForPossession")
+            .field("summaryTab_DateClaimSubmitted")
             .label("Claimant details",
                    "summaryTab_ClaimantDetails!=\"\"",
                    "## Claimant details")
@@ -137,8 +137,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("Defendant details",
                    "summaryTab_DefendantDetails!=\"\"",
                    "## Defendant details")
-            .field("summaryTab_DefendantDetails", null)
-            .field("summaryTab_AdditionalDefendants", null)
+            .field("summaryTab_DefendantDetails")
+            .field("summaryTab_AdditionalDefendants")
             .label("Rent arrears",
                    "summaryTab_RentArrearsDetails!=\"\"",
                    "## Rent arrears")
@@ -150,6 +150,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("Notice",
                    "summaryTab_NoticeDetails!=\"\"",
                    "## Notice")
-            .field("summaryTab_NoticeDetails", null);
+            .field("summaryTab_NoticeDetails");
     }
 }

@@ -24,7 +24,7 @@ public class CaseTabView {
 
     static final String NAME_UNKNOWN = "Person unknown";
 
-    private final ClaimGroundsView claimGroundsView;
+    private final ClaimGroundSummaryBuilder claimGroundSummaryBuilder;
     private final CaseSummaryTabView caseSummaryTabView;
 
     public void setCaseTabFields(PCSCase pcsCase) {
@@ -49,7 +49,7 @@ public class CaseTabView {
         }
 
         List<ListValue<ClaimGroundSummary>> draftGrounds =
-            claimGroundsView.buildClaimGroundSummariesFromDraft(draftCaseData);
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
         draftCaseData.setClaimGroundSummaries(CollectionUtils.isEmpty(draftGrounds)
                                                  ? pcsCase.getClaimGroundSummaries()
                                                  : draftGrounds);

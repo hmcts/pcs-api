@@ -28,11 +28,11 @@ public class CaseTabViewTest {
     private CaseTabView underTest;
 
     @Mock
-    private ClaimGroundsView claimGroundsView;
+    private ClaimGroundSummaryBuilder claimGroundSummaryBuilder;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseTabView(claimGroundsView, new CaseSummaryTabView());
+        underTest = new CaseTabView(claimGroundSummaryBuilder, new CaseSummaryTabView());
     }
 
     @Test
@@ -291,7 +291,7 @@ public class CaseTabViewTest {
             .build();
         PCSCase draftCaseData = PCSCase.builder().build();
 
-        when(claimGroundsView.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
+        when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
 
         // When
         underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
@@ -345,7 +345,7 @@ public class CaseTabViewTest {
             listValue(ClaimGroundSummary.builder().label("Draft ground").build())
         );
 
-        when(claimGroundsView.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(draftGrounds);
+        when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(draftGrounds);
 
         // When
         underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
