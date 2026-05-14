@@ -112,13 +112,12 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getRepossessedPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(summaryTab.getGroundsForPossession().getGrounds())
             .isEqualTo("Rent arrears (ground 10)\nCondition 1 of Section 84A of the Housing Act 1985");
-        assertThat(summaryTab.getClaimSubmittedDate()).isEqualTo("11 May 2026, 5:02:31PM");
         assertThat(summaryTab.getReasonsForPossession().getGround10()).isEqualTo("Ground 10 reason");
         assertThat(summaryTab.getReasonsForPossession().getCondition1OfSection84A())
             .isEqualTo("Condition 1 reason");
         assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsForPossession())
             .isEqualTo("Additional reasons");
-        assertThat(summaryTab.getPossessionReasonsSubmittedDate()).isEqualTo("11 May 2026, 5:02:31PM");
+        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 May 2026, 5:02:31PM");
         assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Fallback claimant");
         assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("One");
@@ -201,7 +200,7 @@ public class CaseSummaryTabViewTest {
         // Then
         assertThat(summaryTab.getGroundsForPossession().getGrounds()).isNull();
         assertThat(summaryTab.getReasonsForPossession()).isNull();
-        assertThat(summaryTab.getPossessionReasonsSubmittedDate()).isNull();
+        assertThat(summaryTab.getDateClaimSubmitted()).isNull();
         assertThat(summaryTab.getClaimantDetails()).isNull();
         assertThat(summaryTab.getDefendantDetails()).isNull();
         assertThat(summaryTab.getAdditionalDefendants()).isNull();
