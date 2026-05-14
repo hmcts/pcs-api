@@ -290,11 +290,11 @@ class PaymentServiceTest {
     void shouldThrowPaymentExceptionWhenFeesAndPayTaskDataCannotBeSerialisedToJson() throws Exception {
         // Given
         FeeDetails feeDetails = createFeeDetails();
-        FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
-        paymentsClientDependencies(feeDetails);
         ObjectMapper mapper = mock(ObjectMapper.class);
         when(mapper.writeValueAsString(any())).thenThrow(new JsonProcessingException("Unable to write to json") {});
         setPrivateField(underTest, "objectMapper", mapper);
+        FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
+        paymentsClientDependencies(feeDetails);
 
         // When / Then
         assertThatExceptionOfType(PaymentException.class)
