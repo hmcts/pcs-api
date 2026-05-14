@@ -197,6 +197,8 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
     if(caseData === claimType.yesRadioOption){    
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
+    } else {
+      await performAction('clickButton', claimType.continueButton);
     }
   }
 
@@ -230,6 +232,9 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:preactionProtocol.haveYouFollowedThePreactionQuestion, option: caseData});
+    if(caseData === 'No' && addressInfo.townCity !== addressDetails.walesTownOrCityTextInput){
+      await performAction('inputText', preactionProtocol.explainWhyYouHaveNoFollowedHiddenTextLabel, preactionProtocol.explainWhyYouHaveNoFollowedHiddenTextInput);
+    }
     await performAction('clickButton', preactionProtocol.continueButton);
   }
 
@@ -256,6 +261,7 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', claimantInformation.whatIsCorrectClaimantNameHiddenQuestion, claimantInformation.ClaimantNameTextInput);
     }
     claimantsName = caseData == "No" ? claimantInformation.ClaimantNameTextInput : await this.extractClaimantName(page, claimantInformation.yourClaimantNameRegisteredParagraph);
+    await performAction('clickButton', claimantInformation.continueButton);
   }
 
   private async selectContactPreferences(preferences: actionRecord) {
@@ -437,6 +443,10 @@ export class CreateCaseAction implements IAction {
         case 'discretionaryAccommodation':
           await performAction('check', {question: whatAreYourGroundsForPossession.discretionaryWithAccommodation.discretionaryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.discretionaryAccommodation});
           break;
+        case 'other':
+          await performAction('check', {question: whatAreYourGroundsForPossession.additionalGrounds, option: possessionGrounds.other});
+          await performAction('inputText', whatAreYourGroundsForPossession.giveDetailsHiddenTextLabel, whatAreYourGroundsForPossession.giveDetailsHiddenTextInput);
+          break;
       }
     }
     await performAction('clickButton', whatAreYourGroundsForPossession.continueButton);
@@ -474,16 +484,10 @@ export class CreateCaseAction implements IAction {
       question: mediationAndSettlement.haveYouAttemptedMediationWithQuestion,
       option: mediationSettlement.attemptedMediationWithDefendantsOption
     });
-    if (mediationSettlement.attemptedMediationWithDefendantsOption == mediationAndSettlement.yesRadioOption) {
-      await performAction('inputText', mediationAndSettlement.giveDetailsAboutTheAttemptedHiddenTextLabel, mediationAndSettlement.giveDetailsAboutTheAttemptedHiddenTextInput);
-    }
     await performAction('clickRadioButton', {
       question: mediationAndSettlement.haveYouTriedToReachQuestion,
       option: mediationSettlement.settlementWithDefendantsOption
     });
-    if (mediationSettlement.settlementWithDefendantsOption == mediationAndSettlement.yesRadioOption) {
-      await performAction('inputText', mediationAndSettlement.explainWhatStepsYouHaveTakenHiddenTextLabel, mediationAndSettlement.explainWhatStepsYouHaveTakenHiddenTextInput);
-    }
     await performAction('clickButton', mediationAndSettlement.continueButton);
   }
 
