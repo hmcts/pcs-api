@@ -111,7 +111,10 @@ public class CaseSummaryTabViewTest {
         // Then
         assertThat(summaryTab.getRepossessedPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(summaryTab.getGroundsForPossession().getGrounds())
-            .isEqualTo("Rent arrears (ground 10)\nCondition 1 of Section 84A of the Housing Act 1985");
+            .isEqualTo(
+                "Rent arrears (ground 10)\n"
+                    + "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985"
+            );
         assertThat(summaryTab.getReasonsForPossession().getGround10()).isEqualTo("Ground 10 reason");
         assertThat(summaryTab.getReasonsForPossession().getCondition1OfSection84A())
             .isEqualTo("Condition 1 reason");
@@ -122,11 +125,17 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("One");
         assertThat(summaryTab.getDefendantDetails().getAddressForService()).isEqualTo(propertyAddress);
-        assertThat(summaryTab.getAdditionalDefendants()).hasSize(1);
+        assertThat(summaryTab.getAdditionalDefendants()).hasSize(2);
         assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getLastName()).isEqualTo("Two");
         assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getAddressForService())
             .isEqualTo(defendantAddress);
+        assertThat(summaryTab.getAdditionalDefendants().get(1).getValue().getFirstName())
+            .isEqualTo(CaseTabView.NAME_UNKNOWN);
+        assertThat(summaryTab.getAdditionalDefendants().get(1).getValue().getLastName())
+            .isEqualTo(CaseTabView.NAME_UNKNOWN);
+        assertThat(summaryTab.getAdditionalDefendants().get(1).getValue().getAddressForService())
+            .isEqualTo(propertyAddress);
         assertThat(summaryTab.getRentArrearsDetails().getRentAmount()).isEqualTo("£100");
         assertThat(summaryTab.getRentArrearsDetails().getCalculationFrequency()).isEqualTo("Every 4 weeks");
         assertThat(summaryTab.getRentArrearsDetails().getDailyRate()).isEqualTo("£12.30");
@@ -231,6 +240,27 @@ public class CaseSummaryTabViewTest {
     }
 
     @Test
+    void shouldDefaultDefendantAddressForServiceToPropertyAddressWhenAddressNotKnown() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
+        PCSCase pcsCase = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .allDefendants(List.of(listValue(Party.builder()
+                                                .nameKnown(VerticalYesNo.NO)
+                                                .addressKnown(VerticalYesNo.NO)
+                                                .build())))
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo(CaseTabView.NAME_UNKNOWN);
+        assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo(CaseTabView.NAME_UNKNOWN);
+        assertThat(summaryTab.getDefendantDetails().getAddressForService()).isEqualTo(propertyAddress);
+    }
+
+    @Test
     void shouldSetUnknownAdditionalDefendantNameWhenNameNotKnownButAddressKnown() {
         // Given
         AddressUK address = AddressUK.builder().postCode("SW1A 1AA").build();
@@ -260,6 +290,38 @@ public class CaseSummaryTabViewTest {
             .isEqualTo(CaseTabView.NAME_UNKNOWN);
         assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getAddressForService())
             .isEqualTo(address);
+    }
+
+    @Test
+    void shouldDefaultAdditionalDefendantAddressForServiceToPropertyAddressWhenAddressNotKnown() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
+        PCSCase pcsCase = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .allDefendants(List.of(
+                listValue(Party.builder()
+                              .nameKnown(VerticalYesNo.YES)
+                              .firstName("Defendant")
+                              .lastName("One")
+                              .build()),
+                listValue(Party.builder()
+                              .nameKnown(VerticalYesNo.NO)
+                              .addressKnown(VerticalYesNo.NO)
+                              .build())
+            ))
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getAdditionalDefendants()).hasSize(1);
+        assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getFirstName())
+            .isEqualTo(CaseTabView.NAME_UNKNOWN);
+        assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getLastName())
+            .isEqualTo(CaseTabView.NAME_UNKNOWN);
+        assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getAddressForService())
+            .isEqualTo(propertyAddress);
     }
 
     @Test
@@ -336,6 +398,30 @@ public class CaseSummaryTabViewTest {
                 "Condition 5 of Section 84A of the Housing Act 1985"
             ),
             "Nuisance, annoyance, illegal or immoral use of the property (ground 2)",
+            "Landlord’s works (ground 10)"
+        ));
+    }
+
+    @Test
+    void shouldGroupSection84AConditionsUnderAntisocialBehaviourWhenParentGroundIsMissing() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .claimGroundSummaries(List.of(
+                groundSummary("Condition 2 of Section 84A of the Housing Act 1985", "Condition 2 reason"),
+                groundSummary("Condition 1 of Section 84A of the Housing Act 1985", "Condition 1 reason"),
+                groundSummary("Landlord’s works (ground 10)", "Works reason")
+            ))
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getGroundsForPossession().getGrounds()).isEqualTo(String.join("\n",
+            "Antisocial behaviour: " + String.join(", ",
+                "Condition 1 of Section 84A of the Housing Act 1985",
+                "Condition 2 of Section 84A of the Housing Act 1985"
+            ),
             "Landlord’s works (ground 10)"
         ));
     }
