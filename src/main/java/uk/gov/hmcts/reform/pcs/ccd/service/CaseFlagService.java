@@ -163,11 +163,11 @@ public class CaseFlagService {
     private void setFlagPath(FlagDetail incomingFlagDetail, BaseCaseFlag flagEntity) {
 
         if (incomingFlagDetail.getPath() != null) {
-            List<String> pathLists = incomingFlagDetail.getPath().stream()
-                .map(pathLists1 -> pathLists1.getId() + CaseFlagsView.PATH_DELIMITER + pathLists1.getValue())
-                .toList();
             StringBuilder paths = new StringBuilder();
-            pathLists.forEach(s -> paths.append(s).append(CaseFlagsView.PATHS_DELIMITER));
+            incomingFlagDetail.getPath().stream()
+                .map(pathListValue -> pathListValue.getId() + CaseFlagsView.PATH_DELIMITER + pathListValue.getValue())
+                .forEach(path -> paths.append(path).append(CaseFlagsView.PATHS_DELIMITER));
+
             paths.deleteCharAt(paths.lastIndexOf(CaseFlagsView.PATHS_DELIMITER));
             flagEntity.setPaths(paths.toString());
         }
