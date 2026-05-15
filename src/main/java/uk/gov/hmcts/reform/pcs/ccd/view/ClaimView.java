@@ -26,16 +26,16 @@ public class ClaimView {
         pcsCase.setClaimDueToRentArrears(claim.getDueToRentArrears());
         pcsCase.setClaimingCostsWanted(claim.getClaimCosts());
         pcsCase.setPreActionProtocolCompleted(claim.getPreActionProtocolFollowed());
+        pcsCase.setPreActionProtocolIncompleteExplanation(claim.getPreActionProtocolIncompleteExplanation());
         pcsCase.setMediationAttempted(claim.getMediationAttempted());
-        pcsCase.setMediationAttemptedDetails(claim.getMediationDetails());
         pcsCase.setSettlementAttempted(claim.getSettlementAttempted());
-        pcsCase.setSettlementAttemptedDetails(claim.getSettlementDetails());
         pcsCase.setAddAnotherDefendant(claim.getAdditionalDefendants());
         pcsCase.setHasUnderlesseeOrMortgagee(claim.getUnderlesseeOrMortgagee());
         pcsCase.setAddAdditionalUnderlesseeOrMortgagee(claim.getAdditionalUnderlesseesOrMortgagees());
         pcsCase.setApplicationWithClaim(claim.getGenAppExpected());
         pcsCase.setLanguageUsed(claim.getLanguageUsed());
         pcsCase.setWantToUploadDocuments(claim.getAdditionalDocsProvided());
+        pcsCase.setIsExemptLandlord(claim.getIsExemptLandlord());
     }
 
     private void mapComplexClaimFields(PCSCase pcsCase, ClaimEntity claim) {

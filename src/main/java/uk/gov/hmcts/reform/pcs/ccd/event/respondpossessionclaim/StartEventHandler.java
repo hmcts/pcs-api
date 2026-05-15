@@ -51,13 +51,13 @@ public class StartEventHandler implements Start<PCSCase, State> {
         log.info("RespondPossessionClaim start callback invoked for Case Reference: {}", caseReference);
 
         PCSCase pcsCase = eventPayload.caseData();
-        PartyEntity matchedDefendant = loadAndValidateDefendant(caseReference);
+        PartyEntity currentDefendant = loadAndValidateDefendant(caseReference);
 
         if (hasDraftInProgress(caseReference)) {
-            return restoreSavedDraftAnswers(caseReference, pcsCase, matchedDefendant);
+            return restoreSavedDraftAnswers(caseReference, pcsCase, currentDefendant);
         }
 
-        return initializeFirstTimeResponse(caseReference, pcsCase, matchedDefendant);
+        return initializeFirstTimeResponse(caseReference, pcsCase, currentDefendant);
     }
 
     private PartyEntity loadAndValidateDefendant(long caseReference) {
@@ -69,8 +69,8 @@ public class StartEventHandler implements Start<PCSCase, State> {
         return draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim);
     }
 
-    private PCSCase initializeFirstTimeResponse(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant) {
-        PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, matchedDefendant);
+    private PCSCase initializeFirstTimeResponse(long caseReference, PCSCase pcsCase, PartyEntity currentDefendant) {
+        PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, currentDefendant);
         createInitialDraft(caseReference, response);
 
         return pcsCase.toBuilder()
@@ -78,14 +78,15 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .build();
     }
 
-    private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant) {
+    private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase pcsCase, PartyEntity currentDefendant) {
         PCSCase savedDraft = loadSavedDraft(caseReference);
-        Party claimantEnteredDetails = responseMapper.buildPartyFromEntity(matchedDefendant, pcsCase);
+        Party claimantEnteredDetails = responseMapper.buildPartyFromEntity(currentDefendant, pcsCase);
 
         PossessionClaimResponse mergedResponse = buildMergedResponse(
             pcsCase,
             savedDraft.getPossessionClaimResponse(),
-            claimantEnteredDetails
+            claimantEnteredDetails,
+            currentDefendant
         );
 
         return buildCaseWithDraft(pcsCase, mergedResponse);
@@ -98,10 +99,13 @@ public class StartEventHandler implements Start<PCSCase, State> {
 
     private PossessionClaimResponse buildMergedResponse(PCSCase latestCase,
                                                          PossessionClaimResponse savedResponses,
-                                                         Party claimantEnteredDetails) {
+                                                         Party claimantEnteredDetails,
+                                                         PartyEntity currentDefendant) {
+        String currentDefendantPartyId = currentDefendant.getId() != null ? currentDefendant.getId().toString() : null;
         return mergeLatestCaseData(latestCase, savedResponses)
             .toBuilder()
             .claimantEnteredDefendantDetails(claimantEnteredDetails)
+            .currentDefendantPartyId(currentDefendantPartyId)
             .build();
     }
 
@@ -138,6 +142,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
     /**
      * Merges latest case data with saved defendant responses.
      * Takes fresh claimant organisations from latest case and combines with saved defendant answers.
+     * Builds a list of claim parties with their roles.
      *
      * @param latestCase Latest case data from CCD (has up-to-date claimant info)
      * @param savedResponses Saved defendant responses from draft
