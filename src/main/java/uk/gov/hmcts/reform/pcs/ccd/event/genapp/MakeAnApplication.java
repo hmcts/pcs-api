@@ -33,6 +33,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
@@ -55,6 +57,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final DocumentImportService documentImportService;
     private final LegalRepresentativeService legalRepresentativeService;
+    private final FeeApplier feeApplier;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -83,6 +86,8 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
 
         setRepresentedParties(caseReference, caseData);
 
+        applyApplicationFeeAmounts(caseData);
+
         return caseData;
     }
 
@@ -99,6 +104,21 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
                     caseData.setCurrentRepresentedPartyId(soleRepresentedParty.toString());
                 }
             });
+    }
+
+    private void applyApplicationFeeAmounts(PCSCase caseData) {
+
+        feeApplier.applyFeeAmount(
+            caseData,
+            FeeType.GEN_APP_STANDARD_FEE,
+            (suppliedCaseData, feeString) -> suppliedCaseData.getXuiGenAppRequest().setStandardFee(feeString)
+        );
+
+        feeApplier.applyFeeAmount(
+            caseData,
+            FeeType.GEN_APP_MAX_FEE,
+            (suppliedCaseData, feeString) -> suppliedCaseData.getXuiGenAppRequest().setMaxFee(feeString)
+        );
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

@@ -7,6 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 @Slf4j
 @AllArgsConstructor
 public class ChooseAnApplication implements CcdPageConfiguration {
@@ -41,6 +43,8 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             .label("chooseAnApplication-lineSeparator", "---")
             .label("chooseAnApplication-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
+            .readonly(XuiGenAppRequest::getStandardFee, NEVER_SHOW, true)
+            .readonly(XuiGenAppRequest::getMaxFee, NEVER_SHOW, true)
             .mandatory(XuiGenAppRequest::getApplicationType)
             .done();
     }
