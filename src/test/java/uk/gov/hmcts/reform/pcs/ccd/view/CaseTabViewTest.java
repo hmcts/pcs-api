@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +31,15 @@ class CaseTabViewTest {
     @Mock
     private ClaimGroundSummaryBuilder claimGroundSummaryBuilder;
 
+    @Mock
+    private CaseSummaryTabView caseSummaryTabView;
+
+    @Mock
+    private CaseDetailsTabView caseDetailsTabView;
+
     @BeforeEach
     void setUp() {
-        underTest = new CaseTabView(claimGroundSummaryBuilder, new CaseSummaryTabView());
+        underTest = new CaseTabView(claimGroundSummaryBuilder, caseSummaryTabView, caseDetailsTabView);
     }
 
     @Test

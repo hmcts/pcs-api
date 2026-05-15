@@ -93,6 +93,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
+        buildCaseDetailsTab(builder);
+
         builder.tab("caseLinks", "Linked Cases")
             .forRoles(UserRole.PCS_SOLICITOR)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
@@ -151,5 +153,26 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                    "summaryTab_NoticeDetails!=\"\"",
                    "## Notice")
             .field("summaryTab_NoticeDetails");
+    }
+
+    private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.tab("caseDetails", "Case Details")
+            .label("Case details", null, "### Case details")
+            .field("caseDetailsTab_ClaimDetails")
+            .field("caseDetailsTab_PropertyAddress")
+            .field("caseDetailsTab_GroundsForPossessionDetails")
+            .field("caseDetailsTab_TenancyLicenceDetails")
+            .field("caseDetailsTab_NoticeDetails")
+            .field("caseDetailsTab_ActionsTakenDetails")
+            .field("caseDetailsTab_RentArrearsDetails")
+            .label("Claimant Details", null, "### Claimant Details")
+            .label("Defendant Details", null, "### Defendant Details")
+            .label(
+                "Underlessee or mortgagee",
+                null,
+                "### Underlessee or mortgagee entitled to claim relief against forfeiture"
+            )
+            .label("Demotion of tenancy", null, "### Demotion of tenancy")
+            .label("Suspension of right to buy", null, "### Suspension of right to buy");
     }
 }

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.view;
+package uk.gov.hmcts.reform.pcs.ccd.view.builder;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -164,10 +164,21 @@ public class ClaimGroundSummaryBuilder {
                     .code(((Enum<?>) ground).name())
                     .label(ground.getLabel())
                     .reason(getDraftReason(draftCaseData, ground))
+                    .description(getDescription(draftCaseData, ground))
                     .build())
                 .map(summary -> ListValue.<ClaimGroundSummary>builder().value(summary).build())
                 .forEach(summaries::add);
         }
+    }
+
+    private String getDescription(PCSCase draftCaseData, PossessionGroundEnum ground) {
+        if (ground != IntroductoryDemotedOrOtherGrounds.OTHER) {
+            return null;
+        }
+
+        IntroductoryDemotedOtherGroundsForPossession otherGroundsForPossession =
+            draftCaseData.getIntroductoryDemotedOrOtherGroundsForPossession();
+        return otherGroundsForPossession != null ? otherGroundsForPossession.getOtherGroundDescription() : null;
     }
 
     private String getDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {

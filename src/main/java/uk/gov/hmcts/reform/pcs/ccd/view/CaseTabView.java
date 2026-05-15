@@ -13,7 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +28,15 @@ public class CaseTabView {
 
     private final ClaimGroundSummaryBuilder claimGroundSummaryBuilder;
     private final CaseSummaryTabView caseSummaryTabView;
+    private final CaseDetailsTabView caseDetailsTabView;
 
     public void setCaseTabFields(PCSCase pcsCase) {
         CasePartiesTab casePartiesTab = buildCasePartiesTab(pcsCase);
         SummaryTab summaryTab = caseSummaryTabView.buildSummaryTab(pcsCase);
+        CaseDetailsTab detailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
         pcsCase.setCasePartiesTab(casePartiesTab);
         pcsCase.setSummaryTab(summaryTab);
+        pcsCase.setCaseDetailsTab(detailsTab);
     }
 
     public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draftCaseData) {
@@ -56,6 +61,7 @@ public class CaseTabView {
 
         setCaseTabFields(draftCaseData);
         pcsCase.setSummaryTab(draftCaseData.getSummaryTab());
+        pcsCase.setCaseDetailsTab(draftCaseData.getCaseDetailsTab());
     }
 
     private List<ListValue<Party>> buildDefendants(PCSCase draftCaseData) {

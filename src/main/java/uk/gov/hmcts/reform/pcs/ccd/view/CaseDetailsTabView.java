@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -9,46 +12,36 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ActionsTakenTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.GroundsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Set;
+import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.DEMOTED_TENANCY;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.FLEXIBLE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.INTRODUCTORY_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 
+@AllArgsConstructor
 @Component
 public class CaseDetailsTabView {
 
     private static final String NO_ANSWER = " ";
     private static final DateTimeFormatter PATTERN = DateTimeFormatter.ofPattern("d MMMM yyyy");
-    private static final String SEPARATE = ", ";
+
+    private final GroundsBuilder groundsBuilder;
+    private final RentArrearsTabDetailsBuilder rentArrearsTabDetailsBuilder;
 
     public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
@@ -56,6 +49,7 @@ public class CaseDetailsTabView {
         TenancyLicenceTabDetails tenancyLicenceTabDetails = buildTenancyLicenceTabDetails(pcsCase);
         NoticeTabDetails noticeTabDetails = buildNoticeTabDetails(pcsCase);
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
+        RentArrearsTabDetails rentArrearsTabDetails = buildRentArrearsTabDetails(pcsCase);
 
         return CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
@@ -64,6 +58,7 @@ public class CaseDetailsTabView {
             .tenancyLicenceDetails(tenancyLicenceTabDetails)
             .noticeDetails(noticeTabDetails)
             .actionsTakenDetails(actionsTakenTabDetails)
+            .rentArrearsDetails(rentArrearsTabDetails)
             .build();
     }
 
@@ -79,177 +74,35 @@ public class CaseDetailsTabView {
     }
 
     private GroundsForPossessionTabDetails buildGroundsForPossessionTabDetails(PCSCase pcsCase) {
-        AssuredRentArrearsPossessionGrounds assuredRentArrearsPossessionGrounds =
-            pcsCase.getAssuredRentArrearsPossessionGrounds();
-        AssuredNoArrearsPossessionGrounds  noRentArrearsPossessionGrounds = pcsCase.getNoRentArrearsGroundsOptions();
-        SecureOrFlexiblePossessionGrounds secureOrFlexiblePossessionGrounds =
-            pcsCase.getSecureOrFlexiblePossessionGrounds();
-        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession =
-            pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession();
-
-        if(
-            assuredRentArrearsPossessionGrounds == null &&
-            noRentArrearsPossessionGrounds == null &&
-            secureOrFlexiblePossessionGrounds == null
-        ) {
+        List<ListValue<ClaimGroundSummary>> groundSummaries = pcsCase.getClaimGroundSummaries();
+        if (CollectionUtils.isEmpty(groundSummaries)) {
             return GroundsForPossessionTabDetails.builder()
                 .grounds(NO_ANSWER)
                 .build();
         }
 
-        String grounds = NO_ANSWER;
-        String otherGroundsDescription = "";
         TenancyLicenceDetails tenancyLicenceDetails = pcsCase.getTenancyLicenceDetails();
         TenancyLicenceType tenancyType = tenancyLicenceDetails != null ?
             tenancyLicenceDetails.getTypeOfTenancyLicence() : null;
+        String otherGroundsDescription = "";
 
-        if (
-            assuredRentArrearsPossessionGrounds != null &&
-            pcsCase.getClaimDueToRentArrears() == YesOrNo.YES &&
-            tenancyType == ASSURED_TENANCY
-        ) {
-            grounds = getAssuredRentArrearsPossessionGrounds(assuredRentArrearsPossessionGrounds);
-        } else if (
-            noRentArrearsPossessionGrounds != null &&
-            pcsCase.getClaimDueToRentArrears() == YesOrNo.NO &&
-            tenancyType == ASSURED_TENANCY
-        ) {
-            grounds = getAssuredNoArrearsPossessionGrounds(noRentArrearsPossessionGrounds);
-        } else if (
-            secureOrFlexiblePossessionGrounds != null &&
-            (tenancyType == SECURE_TENANCY || tenancyType == FLEXIBLE_TENANCY)
-        ) {
-            grounds = getSecureOrFlexiblePossessionGrounds(secureOrFlexiblePossessionGrounds);
-        } else if (
-            introductoryDemotedOrOtherGroundsForPossession != null &&
-            (tenancyType == INTRODUCTORY_TENANCY || tenancyType == DEMOTED_TENANCY || tenancyType == OTHER)
-        ) {
-            grounds = getIntroductoryDemotedOrOtherGrounds(introductoryDemotedOrOtherGroundsForPossession);
-            otherGroundsDescription = introductoryDemotedOrOtherGroundsForPossession.getOtherGroundDescription();
+        if (tenancyType == INTRODUCTORY_TENANCY || tenancyType == DEMOTED_TENANCY || tenancyType == OTHER) {
+            otherGroundsDescription = groundSummaries.stream().filter(
+                claimGroundSummaryListValue -> {
+                    ClaimGroundSummary claimGroundSummary = claimGroundSummaryListValue.getValue();
+                    return claimGroundSummary.getCode().equals(IntroductoryDemotedOrOtherGrounds.OTHER.name());
+                })
+                .map(ListValue::getValue)
+                .map(ClaimGroundSummary::getDescription)
+                .findFirst()
+                .orElse("");
         }
 
         return GroundsForPossessionTabDetails
             .builder()
-            .grounds(grounds)
+            .grounds(groundsBuilder.getGrounds(pcsCase))
             .otherGroundsDescription(otherGroundsDescription)
             .build();
-    }
-
-    private String getAssuredRentArrearsPossessionGrounds(AssuredRentArrearsPossessionGrounds grounds) {
-        StringBuilder allGrounds = new StringBuilder();
-        Set<AssuredRentArrearsGround> rentArrearsGrounds =
-            grounds.getRentArrearsGrounds();
-        Set<AssuredAdditionalMandatoryGrounds> additionalMandatoryGrounds =
-            grounds.getAdditionalMandatoryGrounds();
-        Set<AssuredAdditionalDiscretionaryGrounds> additionalDiscretionaryGrounds =
-            grounds.getAdditionalDiscretionaryGrounds();
-
-        if (rentArrearsGrounds != null) {
-            for (AssuredRentArrearsGround rentArrearsGround : rentArrearsGrounds) {
-                allGrounds.append(rentArrearsGround.getLabel()).append(SEPARATE);
-            }
-        }
-
-        if (additionalMandatoryGrounds != null) {
-            for(AssuredAdditionalMandatoryGrounds mandatoryGround : additionalMandatoryGrounds) {
-                allGrounds.append(mandatoryGround.getLabel()).append(SEPARATE);
-            }
-        }
-
-        if (additionalDiscretionaryGrounds != null) {
-            for(AssuredAdditionalDiscretionaryGrounds discretionaryGround : additionalDiscretionaryGrounds) {
-                allGrounds.append(discretionaryGround.getLabel()).append(SEPARATE);
-            }
-        }
-
-        return allGrounds.toString();
-    }
-
-    private String getAssuredNoArrearsPossessionGrounds(AssuredNoArrearsPossessionGrounds grounds) {
-        StringBuilder allGrounds = new StringBuilder();
-        Set<AssuredMandatoryGround> mandatoryGrounds = grounds.getMandatoryGrounds();
-        Set<AssuredDiscretionaryGround> discretionaryGrounds =
-            grounds.getDiscretionaryGrounds();
-
-        for(AssuredMandatoryGround mandatoryGround : mandatoryGrounds) {
-            allGrounds.append(mandatoryGround.getLabel()).append(SEPARATE);
-        }
-
-        for(AssuredDiscretionaryGround discretionaryGround : discretionaryGrounds) {
-            allGrounds.append(discretionaryGround.getLabel()).append(SEPARATE);
-        }
-
-        return allGrounds.toString();
-    }
-
-    private String getSecureOrFlexiblePossessionGrounds(SecureOrFlexiblePossessionGrounds grounds) {
-        StringBuilder allGrounds = new StringBuilder();
-
-        Set<SecureOrFlexibleDiscretionaryGrounds> secureOrFlexibleDiscretionaryGrounds =
-            grounds.getSecureOrFlexibleDiscretionaryGrounds();
-        Set<SecureOrFlexibleMandatoryGrounds> secureOrFlexibleMandatoryGrounds =
-            grounds.getSecureOrFlexibleMandatoryGrounds();
-        Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> secureOrFlexibleDiscretionaryGroundsAlt
-            = grounds.getSecureOrFlexibleDiscretionaryGroundsAlt();
-        Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> secureOrFlexibleMandatoryGroundsAlt
-            = grounds.getSecureOrFlexibleMandatoryGroundsAlt();
-        Set<SecureAntisocialAdditionalGrounds> secureAntisocialAdditionalGrounds
-            = grounds.getSecureAntisocialAdditionalGrounds();
-
-        if (secureOrFlexibleDiscretionaryGrounds != null) {
-            for (SecureOrFlexibleDiscretionaryGrounds discretionaryGround : secureOrFlexibleDiscretionaryGrounds) {
-                allGrounds.append(discretionaryGround.getLabel()).append(SEPARATE);
-            }
-        }
-
-        if (secureOrFlexibleMandatoryGrounds != null) {
-            for (SecureOrFlexibleMandatoryGrounds mandatoryGround : secureOrFlexibleMandatoryGrounds) {
-                allGrounds.append(mandatoryGround.getLabel()).append(SEPARATE);
-            }
-        }
-
-        if (secureOrFlexibleDiscretionaryGroundsAlt != null) {
-            for (
-                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm altDiscretionaryGround :
-                secureOrFlexibleDiscretionaryGroundsAlt
-            ) {
-                allGrounds.append(altDiscretionaryGround.getLabel()).append(SEPARATE);
-            }
-        }
-
-        if (secureOrFlexibleMandatoryGroundsAlt != null) {
-            for (
-                SecureOrFlexibleMandatoryGroundsAlternativeAccomm altMandatoryGround :
-                secureOrFlexibleMandatoryGroundsAlt
-            ) {
-                allGrounds.append(altMandatoryGround.getLabel()).append(SEPARATE);
-            }
-        }
-
-        if (secureAntisocialAdditionalGrounds != null) {
-            for (SecureAntisocialAdditionalGrounds antisocialGround : secureAntisocialAdditionalGrounds) {
-                allGrounds.append(antisocialGround.getLabel()).append(SEPARATE);
-            }
-        }
-
-        return allGrounds.toString();
-    }
-
-    private String getIntroductoryDemotedOrOtherGrounds(
-        IntroductoryDemotedOtherGroundsForPossession grounds
-    ) {
-        StringBuilder allGrounds = new StringBuilder();
-
-        Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds =
-            grounds.getIntroductoryDemotedOrOtherGrounds();
-
-        if (introductoryDemotedOrOtherGrounds != null) {
-            for (IntroductoryDemotedOrOtherGrounds otherGrounds : introductoryDemotedOrOtherGrounds) {
-                allGrounds.append(otherGrounds.getLabel()).append(SEPARATE);
-            }
-        }
-
-        return allGrounds.toString();
     }
 
     private TenancyLicenceTabDetails buildTenancyLicenceTabDetails(PCSCase pcsCase) {
@@ -345,5 +198,27 @@ public class CaseDetailsTabView {
             .mediationAttempted(mediationAttempted != null ? mediationAttempted.getLabel() : NO_ANSWER)
             .settlementAttempted(settlementAttempted != null ? settlementAttempted.getLabel() : NO_ANSWER)
             .build();
+    }
+
+    private RentArrearsTabDetails buildRentArrearsTabDetails(PCSCase pcsCase) {
+        if (pcsCase.getShowRentSectionPage() != YesOrNo.YES) {
+            return null;
+        }
+
+        RentArrearsTabDetails rentArrearsTabDetails = rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase);
+
+        if (rentArrearsTabDetails == null) {
+            return RentArrearsTabDetails.builder()
+                .rentAmount(NO_ANSWER)
+                .calculationFrequency(NO_ANSWER)
+                .frequency(NO_ANSWER)
+                .dailyRate(NO_ANSWER)
+                .stepsToRecoverArrears(NO_ANSWER)
+                .arrearsTotal(NO_ANSWER)
+                .judgmentRequested(NO_ANSWER)
+                .build();
+        }
+
+        return rentArrearsTabDetails;
     }
 }

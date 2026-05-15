@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -22,6 +23,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDet
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,11 +35,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CaseSummaryTabViewTest {
 
+    @Mock
+    private GroundsBuilder groundsBuilder;
+
+    @Mock
+    private RentArrearsTabDetailsBuilder rentArrearsTabDetailsBuilder;
+
     private CaseSummaryTabView underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseSummaryTabView();
+        underTest = new CaseSummaryTabView(groundsBuilder, rentArrearsTabDetailsBuilder);
     }
 
     @Test

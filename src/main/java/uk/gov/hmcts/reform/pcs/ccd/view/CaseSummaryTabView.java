@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -28,11 +29,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.TenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -40,6 +42,7 @@ import java.util.regex.Pattern;
 
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
 
+@AllArgsConstructor
 @Component
 public class CaseSummaryTabView {
 
@@ -107,6 +110,9 @@ public class CaseSummaryTabView {
     private static final String SECTION_191 = "191";
     private static final String SECTION_199 = "199";
 
+    private final GroundsBuilder groundsBuilder;
+    private final RentArrearsTabDetailsBuilder rentArrearsTabDetailsBuilder;
+
     public SummaryTab buildSummaryTab(PCSCase pcsCase) {
         ReasonsForPossessionTabDetails reasonsForPossession = buildReasonsForPossession(pcsCase);
         String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
@@ -114,7 +120,7 @@ public class CaseSummaryTabView {
         return SummaryTab.builder()
             .repossessedPropertyAddress(pcsCase.getPropertyAddress())
             .groundsForPossession(GroundsForPossessionTabDetails.builder()
-                                      .grounds(getGrounds(pcsCase))
+                                      .grounds(groundsBuilder.getGrounds(pcsCase))
                                       .build())
             .reasonsForPossession(reasonsForPossession)
             .dateClaimSubmitted(dateSubmitted)
@@ -380,31 +386,7 @@ public class CaseSummaryTabView {
     }
 
     private RentArrearsTabDetails buildRentArrearsTabDetails(PCSCase pcsCase) {
-        RentDetails rentDetails = pcsCase.getRentDetails();
-        RentArrearsSection rentArrears = pcsCase.getRentArrears();
-
-        String rentAmount = rentDetails == null ? null : formatMoney(rentDetails.getCurrentRent());
-        String calculationFrequency = getRentCalculationFrequency(rentDetails);
-        String dailyRate = getDailyRate(rentDetails);
-        String arrearsTotal = rentArrears == null ? null : formatMoney(rentArrears.getTotal());
-        String judgmentRequested = pcsCase.getArrearsJudgmentWanted() == null
-            ? null : pcsCase.getArrearsJudgmentWanted().getLabel();
-
-        if (rentAmount == null
-            && calculationFrequency == null
-            && dailyRate == null
-            && arrearsTotal == null
-            && judgmentRequested == null) {
-            return null;
-        }
-
-        return RentArrearsTabDetails.builder()
-            .rentAmount(rentAmount)
-            .calculationFrequency(calculationFrequency)
-            .dailyRate(dailyRate)
-            .arrearsTotal(arrearsTotal)
-            .judgmentRequested(judgmentRequested)
-            .build();
+        return rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase);
     }
 
     private TenancyTabDetails buildTenancyTabDetails(PCSCase pcsCase) {
@@ -465,98 +447,5 @@ public class CaseSummaryTabView {
         return NoticeTabDetails.builder()
             .noticeServedDate(noticeServedDetails.getNoticeEmailSentDateTime().format(SUMMARY_DATE_FORMATTER))
             .build();
-    }
-
-    private String getRentCalculationFrequency(RentDetails rentDetails) {
-        if (rentDetails == null || rentDetails.getFrequency() == null) {
-            return null;
-        }
-
-        if (rentDetails.getFrequency() == RentPaymentFrequency.OTHER && rentDetails.getOtherFrequency() != null) {
-            return rentDetails.getOtherFrequency();
-        }
-
-        return rentDetails.getFrequency().getLabel();
-    }
-
-    private String getDailyRate(RentDetails rentDetails) {
-        if (rentDetails == null) {
-            return null;
-        }
-
-        if (rentDetails.getPerDayCorrect() == VerticalYesNo.NO && rentDetails.getAmendedDailyCharge() != null) {
-            return formatMoney(rentDetails.getAmendedDailyCharge());
-        }
-
-        if (rentDetails.getDailyCharge() != null) {
-            return formatMoney(rentDetails.getDailyCharge());
-        }
-
-        if (rentDetails.getFormattedCalculatedDailyCharge() != null) {
-            return rentDetails.getFormattedCalculatedDailyCharge();
-        }
-
-        return formatMoney(rentDetails.getCalculatedDailyCharge());
-    }
-
-    private String formatMoney(BigDecimal amount) {
-        if (amount == null) {
-            return null;
-        }
-
-        if (amount.stripTrailingZeros().scale() <= 0) {
-            amount = amount.stripTrailingZeros();
-        }
-
-        return "£" + amount.toPlainString();
-    }
-
-    private String getGrounds(PCSCase pcsCase) {
-        if (CollectionUtils.isEmpty(pcsCase.getClaimGroundSummaries())) {
-            return null;
-        }
-
-        List<String> grounds = new ArrayList<>(pcsCase.getClaimGroundSummaries().stream()
-            .map(ListValue::getValue)
-            .map(ClaimGroundSummary::getLabel)
-            .toList());
-
-        groupSection84AConditions(grounds);
-
-        return grounds.stream()
-            .reduce((firstGround, secondGround) -> firstGround + "\n" + secondGround)
-            .orElse(null);
-    }
-
-    private void groupSection84AConditions(List<String> grounds) {
-        List<String> section84AConditions = grounds.stream()
-            .filter(this::isSection84ACondition)
-            .sorted(this::compareSection84AConditions)
-            .toList();
-
-        if (section84AConditions.isEmpty()) {
-            return;
-        }
-
-        int antisocialIndex = grounds.indexOf(ANTISOCIAL_BEHAVIOUR);
-        int groupIndex = antisocialIndex >= 0 ? antisocialIndex : grounds.indexOf(section84AConditions.getFirst());
-        grounds.set(groupIndex, ANTISOCIAL_BEHAVIOUR + ": " + String.join(", ", section84AConditions));
-        grounds.removeAll(section84AConditions);
-    }
-
-    private boolean isSection84ACondition(String label) {
-        return SECTION_84A_CONDITION_PATTERN.matcher(label).matches();
-    }
-
-    private int compareSection84AConditions(String firstCondition, String secondCondition) {
-        return Integer.compare(
-            getSection84AConditionNumber(firstCondition),
-            getSection84AConditionNumber(secondCondition)
-        );
-    }
-
-    private int getSection84AConditionNumber(String label) {
-        Matcher matcher = SECTION_84A_CONDITION_PATTERN.matcher(label);
-        return matcher.matches() ? Integer.parseInt(matcher.group(1)) : 0;
     }
 }
