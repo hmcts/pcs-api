@@ -6,17 +6,13 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-
 import java.util.List;
 import java.util.Map;
 
@@ -36,25 +32,25 @@ public class DashboardJourneyService {
         TaskGroupId.APPLICATIONS
     );
 
-    private static int orderIndex(TaskGroupId id) {
-        int idx = TASK_GROUP_ORDER.indexOf(id);
-        return idx >= 0 ? idx : Integer.MAX_VALUE; 
-    }
+    private final List<TaskGroupEvaluator> taskGroupEvaluators;
 
-    private final List<TaskGroupEvaluator> evaluatorsInOrder;
-
-    public DashboardJourneyService(
-        List<TaskGroupEvaluator> evaluators
-    ) {
-        this.evaluatorsInOrder = evaluators.stream()
-            .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
+    public DashboardJourneyService(List<TaskGroupEvaluator> taskGroupEvaluators) {
+        this.taskGroupEvaluators = taskGroupEvaluators.stream()
+            .sorted(Comparator.comparingInt(evaluator -> orderIndex(evaluator.groupId())))
             .toList();
     }
 
-
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
+        return computeDashboardData(caseReference, submittedCaseData, null);
+    }
+
+    public DashboardData computeDashboardData(
+        long caseReference,
+        PCSCase submittedCaseData,
+        DashboardContext dashboardContext
+    ) {
         List<ListValue<DashboardNotification>> notifications = computeNotifications();
-        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups();
+        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(dashboardContext);
 
         log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for case={}",
                  notifications.size(), taskGroups.size(), caseReference);
@@ -85,36 +81,12 @@ public class DashboardJourneyService {
         ));
     }
 
-    private List<ListValue<TaskGroup>> computeTaskGroups() {
-        DashboardContext ctx = null;
-
-        List<TaskGroup> groups = new ArrayList<>(
-            evaluatorsInOrder.stream()
-                .map(e -> e.evaluate(ctx))
+    private List<ListValue<TaskGroup>> computeTaskGroups(DashboardContext dashboardContext) {
+        return ListValueUtils.wrapListItems(
+            taskGroupEvaluators.stream()
+                .map(evaluator -> evaluator.evaluate(dashboardContext))
                 .toList()
         );
-
-        groups.add(
-            TaskGroup.builder()
-                .groupId(TaskGroupId.RESPONSE)
-                .tasks(ListValueUtils.wrapListItems(List.of(
-                    Task.builder()
-                        .templateId("Defendant.RespondToClaim")
-                        .status(TaskStatus.NOT_STARTED)
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.ReviewResponse")
-                        .status(TaskStatus.IN_PROGRESS)
-                        .build(),
-                    Task.builder()
-                        .templateId("Defendant.SubmitResponse")
-                        .status(TaskStatus.COMPLETED)
-                        .build()
-                )))
-                .build()
-        );
-        
-        return ListValueUtils.wrapListItems(groups);
     }
 
     /**
@@ -131,5 +103,10 @@ public class DashboardJourneyService {
                     .build())
                 .toList()
         );
+    }
+
+    private static int orderIndex(TaskGroupId id) {
+        int idx = TASK_GROUP_ORDER.indexOf(id);
+        return idx >= 0 ? idx : Integer.MAX_VALUE;
     }
 }
