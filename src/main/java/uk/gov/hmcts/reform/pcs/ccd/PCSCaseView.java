@@ -15,11 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -27,21 +24,21 @@ import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -75,6 +72,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
     private final CaseTabView caseTabView;
+    private final PartiesView partiesView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -109,20 +107,16 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private PCSCase getSubmittedCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
-        Map<PartyRole, List<ListValue<Party>>> partyMap = getPartyMap(pcsCaseEntity);
-
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
-            .allClaimants(partyMap.get(PartyRole.CLAIMANT))
-            .allDefendants(partyMap.get(PartyRole.DEFENDANT))
-            .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
             .allDocuments(mapAndWrapDocuments(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
 
+        partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
         tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
         claimGroundsView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -138,30 +132,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseTabView.setCaseTabFields(pcsCase);
 
         return pcsCase;
-    }
-
-    private Map<PartyRole, List<ListValue<Party>>> getPartyMap(PcsCaseEntity pcsCaseEntity) {
-        List<ClaimEntity> claims = pcsCaseEntity.getClaims();
-
-        if (claims.isEmpty()) {
-            return Map.of();
-        }
-
-        ClaimEntity mainClaim = claims.getFirst();
-        return mainClaim.getClaimParties().stream()
-            .collect(Collectors.groupingBy(
-                ClaimPartyEntity::getRole,
-                Collectors.mapping(this::getPartyListValue, Collectors.toList())
-            ));
-    }
-
-    private ListValue<Party> getPartyListValue(ClaimPartyEntity claimPartyEntity) {
-        Party party = modelMapper.map(claimPartyEntity.getParty(), Party.class);
-
-        return ListValue.<Party>builder()
-            .id(claimPartyEntity.getId().getPartyId().toString())
-            .value(party)
-            .build();
     }
 
     private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
