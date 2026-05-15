@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInfomationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.GroundsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.NoticeTabDetails;
@@ -169,7 +169,7 @@ public class CaseSummaryTabView {
         return pcsCase.getAllClaimants().getFirst().getValue().getOrgName();
     }
 
-    private DefendantInfomationTabDetails createSummaryDefendantOneDetails(PCSCase pcsCase) {
+    private DefendantInformationTabDetails createSummaryDefendantOneDetails(PCSCase pcsCase) {
         if (CollectionUtils.isEmpty(pcsCase.getAllDefendants())) {
             return null;
         }
@@ -209,14 +209,14 @@ public class CaseSummaryTabView {
             .build();
     }
 
-    private DefendantInfomationTabDetails createSummaryDefendantDetails(Party defendant, PCSCase pcsCase) {
+    private DefendantInformationTabDetails createSummaryDefendantDetails(Party defendant, PCSCase pcsCase) {
         AddressUK addressForService = getSummaryDefendantAddressForService(defendant, pcsCase);
 
         if (defendant.getNameKnown() != VerticalYesNo.YES && addressForService == null) {
             return null;
         }
 
-        return DefendantInfomationTabDetails.builder()
+        return DefendantInformationTabDetails.builder()
             .firstName(getDefendantFirstName(defendant))
             .lastName(getDefendantLastName(defendant))
             .addressForService(addressForService)
