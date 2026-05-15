@@ -22,8 +22,6 @@ public class PaymentNotificationService {
     private final NotificationService notificationService;
     private final FeePaymentRepository feePaymentRepository;
 
-    private static final String CASE_ISSUED = "CASE_ISSUED";
-
     public void sendCounterClaimPaymentSuccessNotification(UUID feePaymentId) {
         FeePaymentEntity feePayment = feePaymentRepository.findById(feePaymentId)
             .orElseThrow(() -> new IllegalArgumentException("Fee payment not found: " + feePaymentId));
@@ -59,11 +57,6 @@ public class PaymentNotificationService {
 
         if (defendantResponse == null) {
             log.warn("No defendant response found for claim {}", claim.getId());
-            return;
-        }
-
-        if (!CASE_ISSUED.equals(counterClaim.getStatus())) {
-            log.info("Counterclaim status not eligible for AC04 email: {}", counterClaim.getStatus());
             return;
         }
 

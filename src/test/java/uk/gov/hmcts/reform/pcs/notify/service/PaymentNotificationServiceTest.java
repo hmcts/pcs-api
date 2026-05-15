@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +56,6 @@ class PaymentNotificationServiceTest {
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         when(counterClaim.getParty()).thenReturn(defendant);
-        when(counterClaim.getStatus()).thenReturn("CASE_ISSUED");
 
         DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
         when(defendantResponse.getParty()).thenReturn(defendant);
@@ -72,42 +70,6 @@ class PaymentNotificationServiceTest {
         underTest.sendCounterClaimPaymentSuccessNotification(feePaymentId);
 
         verify(notificationService)
-            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
-    }
-
-    @Test
-    void shouldNotSendCounterClaimPaymentSuccessEmailWhenStatusNotIssued() {
-        UUID feePaymentId = UUID.randomUUID();
-        UUID defendantId = UUID.randomUUID();
-
-        FeePaymentEntity feePayment = mock(FeePaymentEntity.class);
-        ClaimEntity claim = mock(ClaimEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-
-        PartyEntity defendant = mock(PartyEntity.class);
-        when(defendant.getId()).thenReturn(defendantId);
-
-        ClaimPartyEntity claimParty = mock(ClaimPartyEntity.class);
-        when(claimParty.getRole()).thenReturn(PartyRole.DEFENDANT);
-        when(claimParty.getParty()).thenReturn(defendant);
-
-        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getParty()).thenReturn(defendant);
-        when(counterClaim.getStatus()).thenReturn("PENDING");
-
-        DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
-        when(defendantResponse.getParty()).thenReturn(defendant);
-
-        when(feePaymentRepository.findById(feePaymentId)).thenReturn(java.util.Optional.of(feePayment));
-        when(feePayment.getClaim()).thenReturn(claim);
-        when(claim.getClaimParties()).thenReturn(List.of(claimParty));
-        when(claim.getPcsCase()).thenReturn(pcsCase);
-        when(pcsCase.getCounterClaims()).thenReturn(List.of(counterClaim));
-        when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
-
-        underTest.sendCounterClaimPaymentSuccessNotification(feePaymentId);
-
-        verify(notificationService, never())
             .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
     }
 }

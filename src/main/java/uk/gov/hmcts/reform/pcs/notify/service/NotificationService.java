@@ -62,7 +62,7 @@ public class NotificationService {
         return sendDefendantEmail(
             defendantResponse,
             EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
-            NotificationClaimType.COUNTER_CLAIM,
+            NotificationClaimType.NO_COUNTER_CLAIM,
             NotificationService::buildBasePersonalisation
         );
     }
