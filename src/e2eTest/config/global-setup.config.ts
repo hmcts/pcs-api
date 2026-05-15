@@ -23,23 +23,14 @@ function applyPlaywrightServiceUrls(): void {
     process.env.IDAM_WEB_URL ||= `https://idam-api.${e}.platform.hmcts.net`;
     process.env.IDAM_TESTING_SUPPORT_URL ||= `https://idam-testing-support-api.${e}.platform.hmcts.net`;
     process.env.S2S_URL ||= `http://rpe-service-auth-provider-${e}.service.core-compute-${e}.internal/testing-support/lease`;
-    process.env.AM_ORG_ROLE_MAPPING =`http://am-org-role-mapping-service-${e}.service.core-compute-${e}.internal`;
+    process.env.AM_ORG_ROLE_MAPPING ||= `http://am-org-role-mapping-service-${e}.service.core-compute-${e}.internal`;
   } else {
     // preview, empty ENVIRONMENT, etc.: AAT IdAM/S2S (same as Jenkinsfile_CNP defaults). MANAGE_CASE / data-store from Jenkins or exports.
     process.env.IDAM_WEB_URL ||= 'https://idam-api.aat.platform.hmcts.net';
     process.env.IDAM_TESTING_SUPPORT_URL ||= 'https://idam-testing-support-api.aat.platform.hmcts.net';
     process.env.S2S_URL ||= 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal/testing-support/lease';
-    process.env.AM_ORG_ROLE_MAPPING = `http://am-org-role-mapping-service-aat.service.core-compute-aat.internal`;
+    process.env.AM_ORG_ROLE_MAPPING ||= `http://am-org-role-mapping-service-aat.service.core-compute-aat.internal`
   }
-}
-function uidsForRoleMapping(): string[] {
-  return [
-    ...new Set(
-      Object.values(staff)
-        .map((s) => s.uid)
-        .filter((id): id is string => typeof id === 'string' && id.length > 0)
-    )
-  ];
 }
 
 async function globalSetupConfig(): Promise<void> {
@@ -49,11 +40,11 @@ async function globalSetupConfig(): Promise<void> {
   process.env.SERVICE_AUTH_TOKEN = await getS2SToken('pcs_api');
   process.env.SERVICE_AUTH_TOKEN_AM = await getS2SToken('am_org_role_mapping_service');
   await createTempUsersFromStaff(staff);
-  await createOrgMapping('CASEWORKER', uidsForRoleMapping());
+  await createOrgMapping('CASEWORKER');
   await authenticateAndSaveState();
 }
 
-async function createOrgMapping(userType: string, orgMappingPayload: string[]): Promise<void> {
+async function createOrgMapping(userType: string): Promise<void> {
   const baseURL = process.env.AM_ORG_ROLE_MAPPING;
   if (!baseURL) {
     throw new Error(
@@ -64,22 +55,42 @@ async function createOrgMapping(userType: string, orgMappingPayload: string[]): 
     throw new Error('createOrgMapping requires BEARER_TOKEN_AM and SERVICE_AUTH_TOKEN_AM (run after token setup).');
   }
 
-  if (orgMappingPayload.length === 0) {
-    console.warn(
-      'createOrgMapping: no staff user uids; skipping AM createOrgMapping (set uid on staff entries or PCS_SOLICITOR_AUTOMATION_UID).'
-    );
+  const payload = amOrgRoleMappingServiceApiData.createOrgMappingPayload();
+  if (payload.userIds.length === 0) {
+    console.warn('createOrgMapping: no uids in staff.user.data; skipping AM createOrgMapping.');
     return;
   }
 
   const client = Axios.create(amOrgRoleMappingServiceApiData.amOrgRoleMappingServiceApiInstance());
   const url = amOrgRoleMappingServiceApiData.createOrgMappingApiEndpoint(userType);
 
+  console.log(`createOrgMapping POST ${url} body: ${JSON.stringify(payload)}`);
+
   try {
-    await client.post(url, orgMappingPayload);
+    await client.post(url, payload);
   } catch (error: unknown) {
-    const err = error as { response?: { status?: number; data?: unknown } };
+    const err = error as {
+      code?: string;
+      response?: { status?: number; data?: unknown };
+    };
     const status = err.response?.status;
     const body = err.response?.data;
+
+    if (status === 409) {
+      console.log(
+        `createOrgMapping: org mapping already exists (409), continuing. body=${JSON.stringify(payload)}`
+      );
+      return;
+    }
+
+    if (!status && (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND')) {
+      throw new Error(
+        `createOrgMapping: cannot reach ${baseURL} (${err.code}). ` +
+          'From a laptop use the public AM URL (set AM_ORG_ROLE_MAPPING to ' +
+          `https://am-org-role-mapping-service-aat.platform.hmcts.net) or run inside the cluster (CI).`
+      );
+    }
+
     console.error('createOrgMapping failed:', status, body);
     throw new Error(
       `createOrgMapping failed${status != null ? ` with HTTP ${status}` : ''}: ${JSON.stringify(body)}`
@@ -95,22 +106,45 @@ async function createTempUsersFromStaff(
   }
 }
 
+function isIdamUserAlreadyExistsError(error: unknown): boolean {
+  return error instanceof Error && /Status Code:\s*409\b/.test(error.message);
+}
+
 async function createTempUser(body: StaffEntity): Promise<void> {
+  if (!body.uid) {
+    throw new Error(
+      `staff.user.data: missing uid for ${body.email} (set uid on the staff entry, e.g. PCS_SOLICITOR_AUTOMATION_UID).`
+    );
+  }
+
   const token = process.env.BEARER_TOKEN as string;
   const password = process.env.IDAM_PCS_USER_PASSWORD as string;
   const email = body.email;
-  const [forename, surname] = email.split('-') as [string, string];
+  const [forename, surnameWithDomain] = email.split('-');
+  const surname = surnameWithDomain.split('@')[0];
   const roleNames: string[] = ['caseworker'];
-  await new IdamUtils().createUser({
-    bearerToken: token,
-    password,
-    user: {
-      email,
-      forename,
-      surname,
-      roleNames
+
+  try {
+    await new IdamUtils().createUser({
+      bearerToken: token,
+      password,
+      user: {
+        id: body.uid,
+        email,
+        forename,
+        surname,
+        roleNames
+      }
+    });
+  } catch (error: unknown) {
+    if (isIdamUserAlreadyExistsError(error)) {
+      console.log(
+        `IdAM user already exists (409), continuing: ${email} (uid: ${body.uid})`
+      );
+      return;
     }
-  });
+    throw error;
+  }
 }
 
 async function authenticateAndSaveState(): Promise<string> {
@@ -200,7 +234,7 @@ export const idamCCDGatewayBody = {
   email: process.env.IDAM_DATA_STORE_SYSTEM_USER_USERNAME,
   password: process.env.IDAM_DATA_STORE_SYSTEM_USER_PASSWORD,
   clientSecret: process.env.CCD_API_GATEWAY_IDAM_CLIENT_SECRET as string,
-  clientId: 'pcs-api'
+  clientId: 'ccd_gateway'
 }
 
 export const getAccessToken = async (body: { email: any; password: any; clientSecret: any; clientId: any; }): Promise<string> => {

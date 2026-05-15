@@ -2,7 +2,7 @@ import { IdamUtils } from '@hmcts/playwright-common';
 import { Page } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 import { performAction, performValidation } from '../../controller';
-import { IAction, actionData, actionRecord } from '../../interfaces/action.interface';
+import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { signInOrCreateAnAccount } from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 export class LoginAction implements IAction {
@@ -18,7 +18,7 @@ export class LoginAction implements IAction {
 
   private async login(user: string | actionRecord) {
     const userEmail = typeof user === 'string' ? process.env.IDAM_PCS_USER_EMAIL : user.email;
-    const userPassword = typeof user === 'string' ?  process.env.IDAM_PCS_USER_PASSWORD : user.password;
+    const userPassword = process.env.IDAM_PCS_USER_PASSWORD;
     if (!userEmail || !userPassword) {
       throw new Error('Login failed: missing credentials');
     }

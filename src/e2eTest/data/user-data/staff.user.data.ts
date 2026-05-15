@@ -4,21 +4,20 @@ export type StaffEntity = {
   uid?: string | undefined;
 };
 
+/** IdAM user ids from `staff` for AM org-role mapping (deduped, order preserved). */
+export function staffUidsForOrgMapping(): string[] {
+  return [
+    ...new Set(
+      Object.values(staff)
+        .map((s) => s.uid)
+        .filter((id): id is string => typeof id === 'string' && id.length > 0)
+    )
+  ];
+}
+
 export const staff = {
   CTSCAdmin: {
     email: 'PCS-CTSCAdmin01@justice.gov.uk',
-    uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
-  },
-  CTSCAdminTaskSupervisor: {
-    email: 'PCS-CTSCAdminTaskSupervisor01@justice.gov.uk',
-    uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
-  },
-  CTSCAdminCaseAllocator: {
-    email: 'PCS-CTSCAdminCaseAllocator01@justice.gov.uk',
-    uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
-  },
-  CTSCAdminCaseAllocAndTaskSup: {
-    email: 'PCS-CTSCAdminCaseAllocAndTaskSup01@justice.gov.uk',
-    uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
+    uid: process.env.PCS_CTSC_ADMIN_01_UID
   }
 } as const satisfies Record<string, StaffEntity>;

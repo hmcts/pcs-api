@@ -25,7 +25,7 @@ test.beforeEach(async ({ page, context }) => {
   });
 
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', staff.CTSCAdmin.email);
+  await performAction('login', staff.CTSCAdmin);
   await dismissCookieBanner(page, 'analytics');
 });
 
