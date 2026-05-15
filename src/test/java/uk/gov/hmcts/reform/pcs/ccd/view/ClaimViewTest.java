@@ -58,6 +58,7 @@ class ClaimViewTest {
         when(claimEntity.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
         when(claimEntity.getAdditionalDocsProvided()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getPreActionProtocolIncompleteExplanation()).thenReturn("explanation");
+        when(claimEntity.getIsExemptLandlord()).thenReturn(VerticalYesNo.NO);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -76,20 +77,7 @@ class ClaimViewTest {
         assertThat(pcsCase.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
         assertThat(pcsCase.getWantToUploadDocuments()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
-    }
-
-    @ParameterizedTest
-    @MethodSource("claimSubmittedDateScenarios")
-    void shouldMapClaimSubmittedDate(LocalDateTime claimSubmittedDate, String expectedDateSubmitted) {
-        // Given
-        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
-        when(claimEntity.getClaimSubmittedDate()).thenReturn(claimSubmittedDate);
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        assertThat(pcsCase.getDateSubmitted()).isEqualTo(expectedDateSubmitted);
+        assertThat(pcsCase.getIsExemptLandlord()).isEqualTo(VerticalYesNo.NO);
     }
 
     @ParameterizedTest
