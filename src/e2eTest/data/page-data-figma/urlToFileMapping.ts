@@ -40,7 +40,7 @@ export default {
   'resumePossessionClaimdemotionOfTenancyOrderReason': 'demotionOfTenancyOrderReason',
   'resumePossessionClaimsuspensionToBuyDemotionOfTenancyOrderReasons': 'suspensionToBuyDemotionOfTenancyOrderReasons',
   'resumePossessionClaimrentArrearsOrBreachOfTenancyGround': 'rentArrearsOrBreachOfTenancyGround',
-  'resumePossessionClaimclaimantDetailsWales': 'claimantDetailsWales',
+  'resumePossessionClaimexemptLandlord': 'exemptLandlord',
   'resumePossessionClaimOccupationLicenceDetailsWales': 'occupationLicenceDetailsWales',
   'resumePossessionClaimprohibitedConductWales': 'prohibitedConductWales',
   'resumePossessionClaimrentArrearsOrBreachOfTenancy': 'rentArrearsOrBreachOfTenancyGround',
