@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -57,7 +56,7 @@ public class PartyAttributeAssertationService {
         addNoticeDateAssertion(responses, partyEntity, assertions);
         addRentArrearsAssertion(responses, partyEntity, assertions);
 
-        repository.saveAll(assertions.stream().filter(Objects::nonNull).toList());
+        repository.saveAll(assertions);
     }
 
     /**
@@ -72,8 +71,10 @@ public class PartyAttributeAssertationService {
         VerticalYesNo nameConfirmation = responses.getDefendantNameConfirmation();
         if (nameConfirmation == null || nameConfirmation == VerticalYesNo.NO) {
             Party defendantParty = defendantContact.getParty();
-            assertions.add(buildJsonAssertion(PartyAttributeType.DEFENDANT_NAME,
-                toNameMap(defendantParty.getFirstName(), defendantParty.getLastName()), partyEntity));
+            Map<String, String> nameMap = toNameMap(defendantParty.getFirstName(), defendantParty.getLastName());
+            if (!nameMap.isEmpty()) {
+                addJsonAssertion(PartyAttributeType.DEFENDANT_NAME, nameMap, partyEntity, assertions);
+            }
         }
     }
 
@@ -88,14 +89,16 @@ public class PartyAttributeAssertationService {
         }
         VerticalYesNo addressConfirmation = responses.getCorrespondenceAddressConfirmation();
         if (addressConfirmation == null || addressConfirmation == VerticalYesNo.NO) {
-            assertions.add(buildJsonAssertion(PartyAttributeType.CORRESPONDENCE_ADDRESS,
-                defendantContact.getParty().getAddress(), partyEntity));
+            AddressUK address = defendantContact.getParty().getAddress();
+            if (address != null) {
+                addJsonAssertion(PartyAttributeType.CORRESPONDENCE_ADDRESS, address, partyEntity, assertions);
+            }
         }
     }
 
     /**
-     * Adds a tenancy type assertion when disputed by the claimant.
-     * Condition: tenancyTypeCorrect is NO and the defendant has supplied an alternative tenancy type.
+     * Adds a tenancy type assertion when disputed by the defendant.
+     * Condition: tenancyTypeConfirmation is NO and the defendant has supplied an alternative tenancy type.
      */
     private void addTenancyTypeAssertion(DefendantResponses responses,
                                          PartyEntity partyEntity, List<PartyAttributeAssertationEntity> assertions) {
@@ -107,14 +110,14 @@ public class PartyAttributeAssertationService {
 
     /**
      * Adds a tenancy start date assertion when disputed or not provided by the claimant.
-     * Condition: a date is present AND tenancyStartDateCorrect is NO (disputed) or null (claimant did not provide one).
+     * Condition: a date is present AND tenancyStartDateConfirmation is NO (disputed) or null (not provided).
      */
     private void addTenancyStartDateAssertion(DefendantResponses responses,
-                                             PartyEntity partyEntity,
-                                             List<PartyAttributeAssertationEntity> assertions) {
-        YesNoNotSure tenancyStartDateCorrect = responses.getTenancyStartDateConfirmation();
+                                              PartyEntity partyEntity,
+                                              List<PartyAttributeAssertationEntity> assertions) {
+        YesNoNotSure tenancyStartDateConfirmation = responses.getTenancyStartDateConfirmation();
         if (responses.getTenancyStartDate() != null
-            && (tenancyStartDateCorrect == null || tenancyStartDateCorrect == YesNoNotSure.NO)) {
+            && (tenancyStartDateConfirmation == null || tenancyStartDateConfirmation == YesNoNotSure.NO)) {
             assertions.add(buildAssertion(PartyAttributeType.TENANCY_START_DATE,
                 responses.getTenancyStartDate().toString(), partyEntity));
         }
@@ -134,8 +137,8 @@ public class PartyAttributeAssertationService {
     }
 
     /**
-     * Adds a notice received date assertion when provided or not provided by the claimant.
-     * Condition: a date is present AND possessionNoticeReceived is YES
+     * Adds a notice received date assertion when the defendant confirms receiving the notice and provides a date.
+     * Condition: possessionNoticeReceived is YES and a date is present.
      */
     private void addNoticeDateAssertion(DefendantResponses responses,
                                         PartyEntity partyEntity, List<PartyAttributeAssertationEntity> assertions) {
@@ -147,7 +150,7 @@ public class PartyAttributeAssertationService {
     }
 
     /**
-     * Adds a rent arrears amount assertion when disputed by the claimant.
+     * Adds a rent arrears amount assertion when disputed by the defendant.
      * Condition: rentArrearsAmountConfirmation is NO and the defendant has supplied an amount.
      */
     private void addRentArrearsAssertion(DefendantResponses responses,
@@ -170,31 +173,12 @@ public class PartyAttributeAssertationService {
         return map;
     }
 
-    private PartyAttributeAssertationEntity buildJsonAssertion(PartyAttributeType attributeType,
-                                                               Map<String, String> value,
-                                                               PartyEntity partyEntity) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
+    private void addJsonAssertion(PartyAttributeType attributeType, Object value,
+                                 PartyEntity partyEntity, List<PartyAttributeAssertationEntity> assertions) {
         try {
-            return buildAssertion(attributeType, objectMapper.writeValueAsString(value), partyEntity);
+            assertions.add(buildAssertion(attributeType, objectMapper.writeValueAsString(value), partyEntity));
         } catch (JsonProcessingException e) {
             log.error("Failed to serialise assertion value for attribute: {}", attributeType, e);
-            return null;
-        }
-    }
-
-    private PartyAttributeAssertationEntity buildJsonAssertion(PartyAttributeType attributeType,
-                                                               AddressUK value,
-                                                               PartyEntity partyEntity) {
-        if (value == null) {
-            return null;
-        }
-        try {
-            return buildAssertion(attributeType, objectMapper.writeValueAsString(value), partyEntity);
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialise assertion value for attribute: {}", attributeType, e);
-            return null;
         }
     }
 
