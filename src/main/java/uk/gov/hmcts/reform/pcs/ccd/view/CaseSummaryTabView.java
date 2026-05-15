@@ -21,9 +21,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInforma
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.GroundsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.NoticeTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.ReasonsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.TenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;

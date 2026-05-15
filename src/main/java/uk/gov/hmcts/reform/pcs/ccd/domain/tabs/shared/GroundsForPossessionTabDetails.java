@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary;
+package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,4 +19,9 @@ public class GroundsForPossessionTabDetails {
         typeOverride = TextArea
     )
     private String grounds;
+
+    @CCD(
+        label = "Description of other grounds"
+    )
+    private String otherGroundsDescription;
 }

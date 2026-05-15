@@ -9,7 +9,12 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 
 import java.util.List;
 
@@ -55,10 +60,10 @@ public class CaseDetailsTab {
     )
     private RentArrearsTabDetails rentArrearsDetails;
 
-//    @CCD(
-//        label = "Reasons for possession"
-//    )
-//    private ReasonsForPossessionTabDetails reasonsForPossessionDetails;
+    @CCD(
+        label = "Reasons for possession"
+    )
+    private ReasonsForPossessionTabDetails reasonsForPossessionDetails;
 
     @CCD(
         label = "Applications"
@@ -78,7 +83,7 @@ public class CaseDetailsTab {
     @CCD(
         label = "Claimant contact details"
     )
-    private ClaimantTabDetails claimantContactDetails;
+    private ClaimantInformationTabDetails claimantContactDetails;
 
     @CCD(
         label = "Claimant circumstances"
@@ -94,6 +99,11 @@ public class CaseDetailsTab {
         label = "Defendant 1 address for service"
     )
     private AddressUK defendantOneAddress;
+
+    @CCD(
+        label = "Additional defendant"
+    )
+    private AdditionalDefendantInformationTabDetails additionalDefendantDetails;
 
     @CCD(
         label = "Defendant’ circumstances"
