@@ -88,7 +88,7 @@ public class PCSCase {
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
@@ -320,7 +320,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
@@ -389,8 +389,8 @@ public class PCSCase {
     private YesOrNo showRentArrearsPage;
 
     @CCD(
-        label = "Which language did you use to complete this service?",
-        hint = "If someone else helped you to answer a question in this service, "
+        label = "Which language did you use to complete this claim?",
+        hint = "If someone else helped you to answer a question in this claim, "
             + "ask them if they answered any questions in Welsh. We’ll use this to "
             + "make sure your claim is processed correctly"
     )
