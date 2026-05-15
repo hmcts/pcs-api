@@ -28,15 +28,16 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -102,6 +103,8 @@ class PCSCaseViewTest {
     private CaseLinkView caseLinkView;
     @Mock
     private CaseTabView caseTabView;
+    @Mock
+    private PartiesView partiesView;
 
     private PCSCaseView underTest;
 
@@ -115,7 +118,7 @@ class PCSCaseViewTest {
                                     alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseTabView
+                                    caseTabView, partiesView
         );
     }
 
@@ -207,63 +210,6 @@ class PCSCaseViewTest {
 
         // Then
         assertThat(pcsCase.getLegislativeCountry()).isEqualTo(expectedLegislativeCountry);
-    }
-
-    @Test
-    void shouldMapAllParties() {
-        // Given
-        Party claimant = mock(Party.class);
-        UUID claimantId = UUID.randomUUID();
-        ClaimPartyEntity claimantClaimParty = createClaimPartyEntity(claimant, claimantId, PartyRole.CLAIMANT);
-
-        Party defendant1 = mock(Party.class);
-        UUID defendant1Id = UUID.randomUUID();
-        ClaimPartyEntity defendant1ClaimParty = createClaimPartyEntity(defendant1, defendant1Id, PartyRole.DEFENDANT);
-
-        Party defendant2 = mock(Party.class);
-        UUID defendant2Id = UUID.randomUUID();
-        ClaimPartyEntity defendant2ClaimParty = createClaimPartyEntity(defendant2, defendant2Id, PartyRole.DEFENDANT);
-
-        Party underlessee1 = mock(Party.class);
-        UUID underlessee1Id = UUID.randomUUID();
-        ClaimPartyEntity underlessee1ClaimParty = createClaimPartyEntity(
-            underlessee1,
-            underlessee1Id,
-            PartyRole.UNDERLESSEE_OR_MORTGAGEE
-        );
-
-        Party underlessee2 = mock(Party.class);
-        UUID underlessee2Id = UUID.randomUUID();
-        ClaimPartyEntity underlessee2ClaimParty = createClaimPartyEntity(
-            underlessee2,
-            underlessee2Id,
-            PartyRole.UNDERLESSEE_OR_MORTGAGEE
-        );
-
-        when(claimEntity.getClaimParties()).thenReturn(
-            List.of(claimantClaimParty, defendant1ClaimParty, defendant2ClaimParty,
-                    underlessee1ClaimParty, underlessee2ClaimParty
-            ));
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getAllClaimants())
-            .containsExactly(asListValue(claimantId, claimant));
-
-        assertThat(pcsCase.getAllDefendants())
-            .containsExactly(
-                asListValue(defendant1Id, defendant1),
-                asListValue(defendant2Id, defendant2)
-            );
-
-        assertThat(pcsCase.getAllUnderlesseeOrMortgagees())
-            .containsExactly(
-                asListValue(underlessee1Id, underlessee1),
-                asListValue(underlessee2Id, underlessee2)
-            );
-
     }
 
     @Test
