@@ -3,22 +3,13 @@ import {
   performAction,
   performValidation
 } from '@utils/controller';
-import {
-  manageCaseFlags,
-  addCommentsForFlag,
-  caseSummary,
-  reviewFlagDetails,
-  selectFlagType,
-  updateFlagComments,
-  viewCaseFlag,
-  whereShouldThisFlagBeAdded
-} from '@data/page-data';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { specialMeasureForFlag } from '@data/page-data/specialMeasureForFlag.page.data';
+import { caseSummary } from '@data/page-data';
+import { specialMeasureForFlag, whereShouldThisFlagBeAdded,selectFlagType, addCommentsForFlag, reviewFlagDetails, viewCaseFlag, manageCaseFlags, updateFlagComments } from '@data/page-data-figma';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);

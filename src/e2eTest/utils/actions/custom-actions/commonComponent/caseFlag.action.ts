@@ -1,6 +1,7 @@
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { performAction } from '@utils/controller';
+import { performAction, performValidation } from '@utils/controller';
+import { addressInfo, caseNumber } from '../createCase.action';
 
 export class CaseFlagAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -21,7 +22,13 @@ export class CaseFlagAction implements IAction {
     await actionToPerform();
   }
 
+  private async validateCaseContext(): Promise<void> {
+    if (caseNumber) await performValidation('text', { elementType: 'paragraph', text: `Case number: ${caseNumber}` });
+    if (addressInfo) await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+  }
+
   private async whereShouldThisFlagBeAdded(flagOptions: actionRecord, page: Page) {
+    await this.validateCaseContext();
     const radio = page.locator(`label >> text=${flagOptions.flagLevelOption}`);
     await radio.waitFor({ state: 'visible' });
     await performAction('clickRadioButton', { question: flagOptions.flagLevelQuestion, option: flagOptions.flagLevelOption });
@@ -29,6 +36,7 @@ export class CaseFlagAction implements IAction {
   }
 
   private async selectFlagType(selectOptions: actionRecord, page: Page) {
+    await this.validateCaseContext();
     const radio = page.locator(`label >> text=${selectOptions.selectFlagOption}`);
     await radio.waitFor({ state: 'visible' });
     await performAction('clickRadioButton', { question: selectOptions.selectFlagQuestion, option: selectOptions.selectFlagOption });
@@ -36,6 +44,7 @@ export class CaseFlagAction implements IAction {
   }
 
   private async selectSpecialMeasureForFlag(selectOptions: actionRecord, page: Page) {
+    await this.validateCaseContext();
     const radio = page.locator(`label >> text=${selectOptions.specialMeasureOption}`);
     await radio.waitFor({ state: 'visible' });
     await performAction('clickRadioButton', { label: selectOptions.specialMeasureLabel, option: selectOptions.specialMeasureOption });
@@ -43,15 +52,15 @@ export class CaseFlagAction implements IAction {
   }
 
   private async addCommentsForFlag(addComments: actionRecord, page: Page) {
+    await this.validateCaseContext();
+    if (addComments.addCommentHintText) await performValidation('text', { elementType: 'inlineText', text: String(addComments.addCommentHintText) });
     await performAction('inputText', addComments.label, addComments.input);
     await performAction('clickButton', addComments.continueButton);
   }
 
   private async clickChangeLinkForRow(changeOptions: actionRecord, page: Page) {
     const rowLabel = String(changeOptions.rowLabel ?? '').trim();
-    if (!rowLabel) {
-      throw new Error('clickChangeLinkForRow requires rowLabel');
-    }
+    if (!rowLabel) throw new Error('clickChangeLinkForRow requires rowLabel');
 
     const changeLinkText = String(changeOptions.changeLinkText ?? 'Change').trim();
     const propertyChangeLink = page
@@ -64,6 +73,7 @@ export class CaseFlagAction implements IAction {
   }
 
   private async reviewFlagDetails(reviewOptions: actionRecord, page: Page) {
+    await this.validateCaseContext();
     await performAction('clickButton', reviewOptions.saveButton);
   }
 
@@ -73,6 +83,7 @@ export class CaseFlagAction implements IAction {
   }
 
   private async manageCaseFlags(selectOptions: actionRecord, page: Page) {
+    await this.validateCaseContext();
     const radio = page.locator(`label >> text=${selectOptions.flagOption}`);
     await radio.waitFor({ state: 'visible' });
     await performAction('clickRadioButton', { option: selectOptions.flagOption });
@@ -80,6 +91,7 @@ export class CaseFlagAction implements IAction {
   }
 
   private async makeFlagInactive(commentUpdate: actionRecord, page: Page) {
+    await this.validateCaseContext();
     await performAction('clickButton', commentUpdate.inactiveButton);
     await performAction('clickButton', commentUpdate.continueButton);
   }
