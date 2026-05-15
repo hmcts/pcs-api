@@ -286,4 +286,20 @@ public class ClaimEntity {
             document.getClaimDocuments().add(claimDocument);
         }
     }
+
+    public PartyEntity getClaimantParty() {
+        return getPartyForRole(PartyRole.CLAIMANT);
+    }
+
+    public PartyEntity getDefendantParty() {
+        return getPartyForRole(PartyRole.DEFENDANT);
+    }
+
+    private PartyEntity getPartyForRole(PartyRole role) {
+        return claimParties.stream()
+            .filter(claimPartyEntity -> claimPartyEntity.getRole() == role)
+            .map(ClaimPartyEntity::getParty)
+            .findFirst()
+            .orElse(null);
+    }
 }
