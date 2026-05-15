@@ -1,13 +1,13 @@
 import {IdamUtils, ServiceAuthUtils} from '@hmcts/playwright-common';
 import {chromium} from '@playwright/test';
-import Axios from 'axios';
-import {amOrgRoleMappingServiceApiData} from '@data/api-data/amOrgRoleMappingService.api.data';
 import {user} from '@data/user-data';
 import * as path from 'path';
 import * as fs from 'fs';
 import {LONG_TIMEOUT} from "../playwright.config";
 import { dismissCookieBanner } from '@config/cookie-banner';
-import {staff, type StaffEntity} from '@data/user-data/staff.user.data';
+import {staff} from '@data/user-data/staff.user.data';
+import {createOrgMapping} from "@config/createRoleMapping";
+import {createTempUsers} from "@config/createTempUser";
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
@@ -39,112 +39,9 @@ async function globalSetupConfig(): Promise<void> {
   process.env.BEARER_TOKEN_AM = await getAccessToken(idamCCDGatewayBody);
   process.env.SERVICE_AUTH_TOKEN = await getS2SToken('pcs_api');
   process.env.SERVICE_AUTH_TOKEN_AM = await getS2SToken('am_org_role_mapping_service');
-  await createTempUsersFromStaff(staff);
+  await createTempUsers(staff);
   await createOrgMapping('CASEWORKER');
   await authenticateAndSaveState();
-}
-
-async function createOrgMapping(userType: string): Promise<void> {
-  const baseURL = process.env.AM_ORG_ROLE_MAPPING;
-  if (!baseURL) {
-    throw new Error(
-      'AM_ORG_ROLE_MAPPING is not set (set ENVIRONMENT to aat|demo|perftest|ithc, or export AM_ORG_ROLE_MAPPING).'
-    );
-  }
-  if (!process.env.BEARER_TOKEN_AM || !process.env.SERVICE_AUTH_TOKEN_AM) {
-    throw new Error('createOrgMapping requires BEARER_TOKEN_AM and SERVICE_AUTH_TOKEN_AM (run after token setup).');
-  }
-
-  const payload = amOrgRoleMappingServiceApiData.createOrgMappingPayload();
-  if (payload.userIds.length === 0) {
-    console.warn('createOrgMapping: no uids in staff.user.data; skipping AM createOrgMapping.');
-    return;
-  }
-
-  const client = Axios.create(amOrgRoleMappingServiceApiData.amOrgRoleMappingServiceApiInstance());
-  const url = amOrgRoleMappingServiceApiData.createOrgMappingApiEndpoint(userType);
-
-  console.log(`createOrgMapping POST ${url} body: ${JSON.stringify(payload)}`);
-
-  try {
-    await client.post(url, payload);
-  } catch (error: unknown) {
-    const err = error as {
-      code?: string;
-      response?: { status?: number; data?: unknown };
-    };
-    const status = err.response?.status;
-    const body = err.response?.data;
-
-    if (status === 409) {
-      console.log(
-        `createOrgMapping: org mapping already exists (409), continuing. body=${JSON.stringify(payload)}`
-      );
-      return;
-    }
-
-    if (!status && (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND')) {
-      throw new Error(
-        `createOrgMapping: cannot reach ${baseURL} (${err.code}). ` +
-          'From a laptop use the public AM URL (set AM_ORG_ROLE_MAPPING to ' +
-          `https://am-org-role-mapping-service-aat.platform.hmcts.net) or run inside the cluster (CI).`
-      );
-    }
-
-    console.error('createOrgMapping failed:', status, body);
-    throw new Error(
-      `createOrgMapping failed${status != null ? ` with HTTP ${status}` : ''}: ${JSON.stringify(body)}`
-    );
-  }
-}
-
-async function createTempUsersFromStaff(
-  staffUsers: Record<string, StaffEntity>
-): Promise<void> {
-  for (const entity of Object.values(staffUsers)) {
-    await createTempUser(entity);
-  }
-}
-
-function isIdamUserAlreadyExistsError(error: unknown): boolean {
-  return error instanceof Error && /Status Code:\s*409\b/.test(error.message);
-}
-
-async function createTempUser(body: StaffEntity): Promise<void> {
-  if (!body.uid) {
-    throw new Error(
-      `staff.user.data: missing uid for ${body.email} (set uid on the staff entry, e.g. PCS_SOLICITOR_AUTOMATION_UID).`
-    );
-  }
-
-  const token = process.env.BEARER_TOKEN as string;
-  const password = process.env.IDAM_PCS_USER_PASSWORD as string;
-  const email = body.email;
-  const [forename, surnameWithDomain] = email.split('-');
-  const surname = surnameWithDomain.split('@')[0];
-  const roleNames: string[] = ['caseworker'];
-
-  try {
-    await new IdamUtils().createUser({
-      bearerToken: token,
-      password,
-      user: {
-        id: body.uid,
-        email,
-        forename,
-        surname,
-        roleNames
-      }
-    });
-  } catch (error: unknown) {
-    if (isIdamUserAlreadyExistsError(error)) {
-      console.log(
-        `IdAM user already exists (409), continuing: ${email} (uid: ${body.uid})`
-      );
-      return;
-    }
-    throw error;
-  }
 }
 
 async function authenticateAndSaveState(): Promise<string> {

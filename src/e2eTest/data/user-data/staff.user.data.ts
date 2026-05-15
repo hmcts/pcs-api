@@ -3,7 +3,6 @@ export type StaffEntity = {
   uid?: string | undefined;
 };
 
-/** IdAM user ids from `staff` for AM org-role mapping (deduped, order preserved). */
 export function staffUidsForOrgMapping(): string[] {
   return [
     ...new Set(
