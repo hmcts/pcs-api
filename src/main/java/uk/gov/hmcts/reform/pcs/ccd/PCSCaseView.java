@@ -86,7 +86,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         if (hasUnsubmittedCaseData) {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
-                .ifPresent(draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft));
+                .ifPresentOrElse(
+                    draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
+                    () -> caseTabView.setCaseTabFields(pcsCase)
+                );
         } else {
             caseTabView.setCaseTabFields(pcsCase);
         }

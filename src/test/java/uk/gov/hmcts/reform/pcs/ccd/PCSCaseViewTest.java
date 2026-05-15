@@ -321,6 +321,25 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldSetSubmittedCaseTabFieldsWhenUnsubmittedCaseDataIsExpectedButDraftIsMissing() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(Optional.empty());
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+
+        // Then
+        verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
+        verify(caseTabView).setCaseTabFields(pcsCase);
+        assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+    }
+
+    @Test
     void shouldNotFetchUnsubmittedCaseDataWhenNoUnsubmittedCaseDataExists() {
         // When
         underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
