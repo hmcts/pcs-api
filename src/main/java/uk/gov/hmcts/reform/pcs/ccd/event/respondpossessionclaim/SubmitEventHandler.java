@@ -22,7 +22,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final List<RespondPossessionClaimSubmissionEventStrategy> strategies;
     private final SecurityContextService securityContextService;
 
-    @Transactional
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();

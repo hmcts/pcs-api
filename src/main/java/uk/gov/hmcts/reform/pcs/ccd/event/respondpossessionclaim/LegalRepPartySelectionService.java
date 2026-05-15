@@ -108,8 +108,6 @@ public class LegalRepPartySelectionService {
         pcsCase.setAllLinkedDefendants(matchedDefendant);
     }
 
-
-    // extract to method
     private PCSCase buildCaseWithDraft(PCSCase pcsCase, PossessionClaimResponse response) {
         return pcsCase.toBuilder()
             .possessionClaimResponse(response)
@@ -157,12 +155,10 @@ public class LegalRepPartySelectionService {
             .build();
     }
 
-    // extract to method
     protected PossessionClaimResponse createDefendantOnlyDraft(PossessionClaimResponse response) {
         return PossessionClaimResponse.builder()
             .defendantContactDetails(response.getDefendantContactDetails())
             .build();
     }
-
 
 }
