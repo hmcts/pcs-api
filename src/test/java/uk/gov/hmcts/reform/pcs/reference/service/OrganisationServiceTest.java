@@ -84,12 +84,13 @@ class OrganisationServiceTest {
     @Test
     @DisplayName("Should return null when exception thrown")
     void getOrganisationIdForCurrentUser_ShouldReturnNullWhenOrganisationDetailsExceptionThrown() {
-        when(securityContextService.getCurrentUserId()).thenThrow(new OrganisationDetailsException("", null));
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationIdentifier(USER_ID.toString()))
+            .thenThrow(new OrganisationDetailsException("", null));
 
         String result = organisationService.getOrganisationIdForCurrentUser();
 
         assertThat(result).isNull();
-        verify(organisationDetailsService, never()).getOrganisationIdentifier(USER_ID.toString());
     }
 
     @Test
