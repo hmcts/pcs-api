@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
@@ -34,7 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGround
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
@@ -68,6 +69,8 @@ public class PCSCase {
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
+    public static final String PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL =
+        "Explain why you have not followed the pre-action protocol";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
@@ -175,6 +178,13 @@ public class PCSCase {
     private VerticalYesNo preActionProtocolCompleted;
 
     @CCD(
+        label = PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL,
+        hint = "You can enter up to 250 characters",
+        typeOverride = TextArea
+    )
+    private String preActionProtocolIncompleteExplanation;
+
+    @CCD(
         label = "Do your grounds for possession include rent arrears?",
         hint = "You’ll be able to add additional grounds later if you select yes"
     )
@@ -201,6 +211,7 @@ public class PCSCase {
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
+    @Deprecated
     private String mediationAttemptedDetails;
 
     @CCD(
@@ -213,6 +224,7 @@ public class PCSCase {
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
+    @Deprecated
     private String settlementAttemptedDetails;
 
     @CCD(
@@ -256,10 +268,6 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
-
-    @JsonUnwrapped(prefix = "wales")
-    @CCD
-    private WalesHousingAct walesHousingAct;
 
     @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
     private VerticalYesNo prohibitedConductWalesClaim;
@@ -369,7 +377,7 @@ public class PCSCase {
     private AssuredNoArrearsPossessionGrounds noRentArrearsGroundsOptions;
 
     @JsonUnwrapped(prefix = "assuredNoArrearsReasons_")
-    private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
+    private NoRentArrearsGroundsReasons noRentArrearsGroundsReasons;
 
     private YesOrNo showRentSectionPage;
 
@@ -377,8 +385,8 @@ public class PCSCase {
     private YesOrNo showRentArrearsPage;
 
     @CCD(
-        label = "Which language did you use to complete this service?",
-        hint = "If someone else helped you to answer a question in this service, "
+        label = "Which language did you use to complete this claim?",
+        hint = "If someone else helped you to answer a question in this claim, "
             + "ask them if they answered any questions in Welsh. We’ll use this to "
             + "make sure your claim is processed correctly"
     )
@@ -509,6 +517,11 @@ public class PCSCase {
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
     @CCD(
+        label = "Are you an exempt landlord under Part 1 of the Housing (Wales) Act 2014?"
+    )
+    private VerticalYesNo isExemptLandlord;
+
+    @CCD(
         access = {DefendantAccess.class},
         searchable = false
     )
@@ -520,12 +533,12 @@ public class PCSCase {
     )
     private DynamicList testCaseSupportFileList;
 
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
     @CCD(
         label = "Case file view",
-        access = {ClaimantAccess.class}
+        access = {DocumentAccess.class}
     )
     private ComponentLauncher caseFileView;
 
