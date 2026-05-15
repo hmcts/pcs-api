@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,13 +36,9 @@ class LegalRepresentativeServiceTest {
     @Mock
     private AddressMapper addressMapper;
 
-    @Captor
-    private ArgumentCaptor<LegalRepresentativeEntity> legalRepresentativeEntityCaptor;
-
     @Test
     void save_WithDifferentPostalAddress() {
         // given
-        String email = "email";
         UUID userIdamId = UUID.randomUUID();
 
         AddressUK address = AddressUK.builder().build();
@@ -52,7 +47,6 @@ class LegalRepresentativeServiceTest {
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .differentPostalAddress(VerticalYesNo.YES)
             .correspondenceAddress(address)
-            .emailAddress(email)
             .build();
 
         LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
@@ -67,7 +61,6 @@ class LegalRepresentativeServiceTest {
         legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertEquals(email, legalRepresentativeEntity.getEmail());
         assertEquals(mappedAddress, legalRepresentativeEntity.getAddress());
 
         verify(addressMapper).toAddressEntityAndNormalise(address);
@@ -75,14 +68,12 @@ class LegalRepresentativeServiceTest {
     }
 
     @Test
-    void save_WithSamePostalAddress() {
+    void save_WithDifferentPostalAddressAndNullCorrespondenceAddress() {
         // given
-        String email = "email";
         UUID userIdamId = UUID.randomUUID();
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
-            .differentPostalAddress(VerticalYesNo.NO)
-            .emailAddress(email)
+            .differentPostalAddress(VerticalYesNo.YES)
             .build();
 
         LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
@@ -94,8 +85,30 @@ class LegalRepresentativeServiceTest {
         legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertEquals(email, legalRepresentativeEntity.getEmail());
+        assertThat(legalRepresentativeEntity.getAddress()).isNull();
 
+        verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
+        verify(legalRepresentativeRepository).save(legalRepresentativeEntity);
+    }
+
+    @Test
+    void save_WithSamePostalAddress() {
+        // given
+        UUID userIdamId = UUID.randomUUID();
+
+        LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
+            .differentPostalAddress(VerticalYesNo.NO)
+            .build();
+
+        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+
+        when(legalRepresentativeRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeEntity));
+
+        // when
+        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+
+        // then
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(legalRepresentativeRepository).save(legalRepresentativeEntity);
     }
@@ -215,26 +228,47 @@ class LegalRepresentativeServiceTest {
     }
 
     @Test
-    void save_WhenLegalRepresentativeDoesNotExist_CreatesNewEntity() {
+    void save_WithUseEmailNo_SetsEmail() {
         // given
         UUID userIdamId = UUID.randomUUID();
+        String email = "email";
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
-            .emailAddress("email@test.com")
-            .differentPostalAddress(VerticalYesNo.NO)
+            .useEmailAddress(VerticalYesNo.NO)
+            .emailAddress(email)
             .build();
 
+        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+
         when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.empty());
+            .thenReturn(Optional.of(legalRepresentativeEntity));
 
         // when
         legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        verify(legalRepresentativeRepository).save(legalRepresentativeEntityCaptor.capture());
-
-        LegalRepresentativeEntity savedEntity = legalRepresentativeEntityCaptor.getValue();
-
-        assertEquals("email@test.com", savedEntity.getEmail());
+        assertEquals(email, legalRepresentativeEntity.getEmail());
     }
+
+    @Test
+    void save_WithUseEmailYes_DoesNotSetEmail() {
+        // given
+        UUID userIdamId = UUID.randomUUID();
+
+        LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
+            .useEmailAddress(VerticalYesNo.YES)
+            .build();
+
+        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+
+        when(legalRepresentativeRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeEntity));
+
+        // when
+        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+
+        // then
+        assertThat(legalRepresentativeEntity.getEmail()).isNull();
+    }
+
 }

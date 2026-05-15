@@ -30,7 +30,7 @@ public class LegalRepresentativeService {
         LegalRepresentativeEntity legalRepresentativeEntity =
             legalRepresentative.orElseGet(LegalRepresentativeEntity::new);
 
-        if (legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
+        if (legalRepresentativeDetails.getDifferentPostalAddress() != null && legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
             legalRepresentativeEntity.setAddress(mapAddress(legalRepresentativeDetails.getCorrespondenceAddress()));
         }
 
