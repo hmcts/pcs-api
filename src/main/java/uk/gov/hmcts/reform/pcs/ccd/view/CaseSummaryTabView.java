@@ -53,6 +53,17 @@ public class CaseSummaryTabView {
     private static final Pattern SECTION_84A_CONDITION_PATTERN =
         Pattern.compile("^Condition ([1-5]) of Section 84A of the Housing Act 1985$");
     private static final String ANTISOCIAL_BEHAVIOUR = "Antisocial behaviour";
+    private static final String SECTION_84A_CONDITION_1_PREFIX = "Condition 1";
+    private static final String SECTION_84A_CONDITION_2_PREFIX = "Condition 2";
+    private static final String SECTION_84A_CONDITION_3_PREFIX = "Condition 3";
+    private static final String SECTION_84A_CONDITION_4_PREFIX = "Condition 4";
+    private static final String SECTION_84A_CONDITION_5_PREFIX = "Condition 5";
+    private static final String BREACH_OF_THE_TENANCY = "Breach of the tenancy";
+    private static final String ABSOLUTE_GROUNDS = "Absolute grounds";
+    private static final String OTHER = "Other";
+    private static final String OTHER_GROUNDS = "Other grounds";
+    private static final String NO_GROUNDS = "No grounds";
+    private static final String PARAGRAPH_25B_2_SCHEDULE_12 = "paragraph 25B(2) of Schedule 12";
     private static final String GROUND_1 = "1";
     private static final String GROUND_2 = "2";
     private static final String GROUND_2A = "2A";
@@ -283,27 +294,27 @@ public class CaseSummaryTabView {
             return;
         }
 
-        if (groundLabel.startsWith("Condition 1")) {
+        if (groundLabel.startsWith(SECTION_84A_CONDITION_1_PREFIX)) {
             reasonsForPossession.setCondition1OfSection84A(reason);
-        } else if (groundLabel.startsWith("Condition 2")) {
+        } else if (groundLabel.startsWith(SECTION_84A_CONDITION_2_PREFIX)) {
             reasonsForPossession.setCondition2OfSection84A(reason);
-        } else if (groundLabel.startsWith("Condition 3")) {
+        } else if (groundLabel.startsWith(SECTION_84A_CONDITION_3_PREFIX)) {
             reasonsForPossession.setCondition3OfSection84A(reason);
-        } else if (groundLabel.startsWith("Condition 4")) {
+        } else if (groundLabel.startsWith(SECTION_84A_CONDITION_4_PREFIX)) {
             reasonsForPossession.setCondition4OfSection84A(reason);
-        } else if (groundLabel.startsWith("Condition 5")) {
+        } else if (groundLabel.startsWith(SECTION_84A_CONDITION_5_PREFIX)) {
             reasonsForPossession.setCondition5OfSection84A(reason);
-        } else if ("Antisocial behaviour".equals(groundLabel)) {
+        } else if (ANTISOCIAL_BEHAVIOUR.equals(groundLabel)) {
             reasonsForPossession.setAntisocialBehaviour(reason);
-        } else if ("Breach of the tenancy".equals(groundLabel)) {
+        } else if (BREACH_OF_THE_TENANCY.equals(groundLabel)) {
             reasonsForPossession.setBreachOfTheTenancy(reason);
-        } else if ("Absolute grounds".equals(groundLabel)) {
+        } else if (ABSOLUTE_GROUNDS.equals(groundLabel)) {
             reasonsForPossession.setAbsoluteGrounds(reason);
-        } else if ("Other".equals(groundLabel) || "Other grounds".equals(groundLabel)) {
+        } else if (OTHER.equals(groundLabel) || OTHER_GROUNDS.equals(groundLabel)) {
             reasonsForPossession.setOtherGrounds(reason);
-        } else if ("No grounds".equals(groundLabel)) {
+        } else if (NO_GROUNDS.equals(groundLabel)) {
             reasonsForPossession.setNoGrounds(reason);
-        } else if (groundLabel.contains("paragraph 25B(2) of Schedule 12")) {
+        } else if (groundLabel.contains(PARAGRAPH_25B_2_SCHEDULE_12)) {
             reasonsForPossession.setParagraph25B2Schedule12(reason);
         }
     }
