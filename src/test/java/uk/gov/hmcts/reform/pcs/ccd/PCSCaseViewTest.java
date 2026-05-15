@@ -18,10 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -29,16 +26,16 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
-import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -84,8 +81,6 @@ class PCSCaseViewTest {
     @Mock
     private AlternativesToPossessionView alternativesToPossessionView;
     @Mock
-    private HousingActWalesView housingActWalesView;
-    @Mock
     private AsbProhibitedConductView asbProhibitedConductView;
     @Mock
     private RentArrearsView rentArrearsView;
@@ -105,9 +100,11 @@ class PCSCaseViewTest {
     @Mock
     private CaseLinkView caseLinkView;
     @Mock
+    private CaseNoteView caseNoteView;
+    @Mock
     private CaseTabView caseTabView;
     @Mock
-    private CaseNoteView caseNoteView;
+    private PartiesView partiesView;
 
     private PCSCaseView underTest;
 
@@ -118,10 +115,10 @@ class PCSCaseViewTest {
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
-                                    alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
+                                    alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseNoteView, caseTabView
+                                    caseNoteView, caseTabView, partiesView
         );
     }
 
@@ -216,63 +213,6 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldMapAllParties() {
-        // Given
-        Party claimant = mock(Party.class);
-        UUID claimantId = UUID.randomUUID();
-        ClaimPartyEntity claimantClaimParty = createClaimPartyEntity(claimant, claimantId, PartyRole.CLAIMANT);
-
-        Party defendant1 = mock(Party.class);
-        UUID defendant1Id = UUID.randomUUID();
-        ClaimPartyEntity defendant1ClaimParty = createClaimPartyEntity(defendant1, defendant1Id, PartyRole.DEFENDANT);
-
-        Party defendant2 = mock(Party.class);
-        UUID defendant2Id = UUID.randomUUID();
-        ClaimPartyEntity defendant2ClaimParty = createClaimPartyEntity(defendant2, defendant2Id, PartyRole.DEFENDANT);
-
-        Party underlessee1 = mock(Party.class);
-        UUID underlessee1Id = UUID.randomUUID();
-        ClaimPartyEntity underlessee1ClaimParty = createClaimPartyEntity(
-            underlessee1,
-            underlessee1Id,
-            PartyRole.UNDERLESSEE_OR_MORTGAGEE
-        );
-
-        Party underlessee2 = mock(Party.class);
-        UUID underlessee2Id = UUID.randomUUID();
-        ClaimPartyEntity underlessee2ClaimParty = createClaimPartyEntity(
-            underlessee2,
-            underlessee2Id,
-            PartyRole.UNDERLESSEE_OR_MORTGAGEE
-        );
-
-        when(claimEntity.getClaimParties()).thenReturn(
-            List.of(claimantClaimParty, defendant1ClaimParty, defendant2ClaimParty,
-                    underlessee1ClaimParty, underlessee2ClaimParty
-            ));
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getAllClaimants())
-            .containsExactly(asListValue(claimantId, claimant));
-
-        assertThat(pcsCase.getAllDefendants())
-            .containsExactly(
-                asListValue(defendant1Id, defendant1),
-                asListValue(defendant2Id, defendant2)
-            );
-
-        assertThat(pcsCase.getAllUnderlesseeOrMortgagees())
-            .containsExactly(
-                asListValue(underlessee1Id, underlessee1),
-                asListValue(underlessee2Id, underlessee2)
-            );
-
-    }
-
-    @Test
     void shouldReturnEmptyListWhenNoDocumentsExist() {
         // Given
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
@@ -310,25 +250,6 @@ class PCSCaseViewTest {
             .containsExactly("doc1.pdf", "doc2.pdf");
     }
 
-    private static ListValue<Party> asListValue(UUID id, Party party) {
-        return ListValue.<Party>builder().id(id.toString()).value(party).build();
-    }
-
-    private ClaimPartyEntity createClaimPartyEntity(Party party, UUID partyId, PartyRole partyRole) {
-        PartyEntity partyEntity = mock(PartyEntity.class);
-
-        when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
-
-        ClaimPartyId claimPartyId = new ClaimPartyId();
-        claimPartyId.setPartyId(partyId);
-
-        return ClaimPartyEntity.builder()
-            .id(claimPartyId)
-            .role(partyRole)
-            .party(partyEntity)
-            .build();
-    }
-
     @Test
     void shouldSetCaseFieldsInViewHelpers() {
         // When
@@ -340,7 +261,6 @@ class PCSCaseViewTest {
         verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(alternativesToPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(housingActWalesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(asbProhibitedConductView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
