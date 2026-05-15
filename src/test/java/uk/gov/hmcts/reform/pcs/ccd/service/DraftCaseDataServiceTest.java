@@ -441,4 +441,56 @@ class DraftCaseDataServiceTest {
         verify(draftCaseDataRepository).save(draftCaseDataEntity);
     }
 
+    @Test
+    void shouldThrowWhenNoDraftExistsForSave_WithPartyId() throws JsonProcessingException {
+        // Given
+        PCSCase caseData = mock(PCSCase.class);
+        UUID partyId = UUID.randomUUID();
+
+        when(objectMapper.writeValueAsString(caseData)).thenReturn("case data json");
+
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                                          USER_ID, partyId))
+            .thenReturn(Optional.empty());
+
+        // When / Then
+        assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId))
+            .isInstanceOf(UnsubmittedDataException.class)
+            .hasMessageContaining("No draft found");
+
+        verify(draftCaseDataRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldReplaceExistingUnsubmittedEventData_WithPartyId() throws JsonProcessingException {
+
+        // Given
+        String newCaseDataJson = "new case data json";
+        UUID partyId = UUID.randomUUID();
+
+        PCSCase newCaseData = mock(PCSCase.class);
+
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn(newCaseDataJson);
+
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                                          USER_ID, partyId))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, partyId);
+
+        // Then
+        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+
+        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
+
+        assertThat(savedEntity).isSameAs(draftCaseDataEntity);
+
+        verify(draftCaseDataEntity).setCaseData(newCaseDataJson);
+    }
 }

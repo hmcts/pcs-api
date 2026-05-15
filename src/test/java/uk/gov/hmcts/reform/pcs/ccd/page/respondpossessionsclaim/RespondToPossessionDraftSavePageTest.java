@@ -457,7 +457,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         assertThat(response.getErrors()).isNull();
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId)
         );
     }
