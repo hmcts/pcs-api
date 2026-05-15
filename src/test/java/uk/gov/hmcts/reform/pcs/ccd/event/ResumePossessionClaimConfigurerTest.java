@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,17 +19,16 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CompletingYourClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyHousingActOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ExemptLandlord;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
@@ -67,6 +67,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -125,11 +130,17 @@ public class ResumePossessionClaimConfigurerTest {
     @Mock
     private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     @Mock
+    private OrganisationService organisationService;
+    @Mock
     private ClaimantInformationPage claimantInformationPage;
     @Mock
-    private ClaimantDetailsWalesPage claimantDetailsWales;
+    private ExemptLandlord exemptLandlord;
     @Mock
     private ProhibitedConductWales prohibitedConductWalesPage;
+    @Mock
+    private SchedulerClient schedulerClient;
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
     @Mock
     private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     @Mock
@@ -138,6 +149,8 @@ public class ResumePossessionClaimConfigurerTest {
     private SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     @Mock
     private ReasonsForPossessionWales reasonsForPossessionWales;
+    @Mock
+    private AddressFormatter addressFormatter;
     @Mock
     private RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
     @Mock
@@ -153,7 +166,15 @@ public class ResumePossessionClaimConfigurerTest {
     @Mock
     private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     @Mock
+    private FeeService feeService;
+    @Mock
+    private MoneyFormatter moneyFormatter;
+    @Mock
     private RentDetailsPage rentDetailsPage;
+    @Mock
+    private RentArrears rentArrears;
+    @Mock
+    private PreActionProtocol preActionProtocol;
 
     @Test
     @SuppressWarnings("squid:S5961")
@@ -172,14 +193,14 @@ public class ResumePossessionClaimConfigurerTest {
         AtomicInteger verificationCount = new AtomicInteger(0);
 
         verifyAndCount(inOrder, pageBuilder, resumeClaim, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, claimantInformationPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, selectClaimantType, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ClaimantTypeNotEligibleEngland.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ClaimantTypeNotEligibleWales.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, SelectClaimType.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ClaimTypeNotEligibleEngland.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ClaimTypeNotEligibleWales.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, claimantInformationPage, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, claimantDetailsWales, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, exemptLandlord, verificationCount);
         verifyAndCount(inOrder, pageBuilder, contactPreferences, verificationCount);
         verifyAndCount(inOrder, pageBuilder, defendantsDetails, verificationCount);
         verifyAndCount(inOrder, pageBuilder, tenancyLicenceDetails, verificationCount);
@@ -205,8 +226,7 @@ public class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, walesCheckingNotice, verificationCount);
         verifyAndCount(inOrder, pageBuilder, noticeDetails, verificationCount);
         verifyAndCount(inOrder, pageBuilder, rentDetailsPage, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, DailyRentAmount.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, RentArrears.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, rentArrears, verificationCount);
         verifyAndCount(inOrder, pageBuilder, MoneyJudgment.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, claimantCircumstancesPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, defendantCircumstancesPage, verificationCount);

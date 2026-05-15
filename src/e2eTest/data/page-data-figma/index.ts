@@ -36,7 +36,7 @@ export * from '@data/page-data-figma/demotionOfTenancyOrderReason.page.data';
 export * from '@data/page-data-figma/suspensionOfRightToBuyOrderReason.page.data';
 export * from '@data/page-data-figma/suspensionToBuyDemotionOfTenancyOrderReasons.page.data';
 export * from '@data/page-data-figma/underlesseeMortgageeDetails.page.data';
-export * from '@data/page-data-figma/claimantDetailsWales.page.data';
+export * from '@data/page-data-figma/exemptLandlord.page.data';
 export * from '@data/page-data-figma/OccupationLicenceDetailsWales.page.data';
 export * from '@data/page-data-figma/prohibitedConductWales.page.data';
 export * from '@data/page-data-figma/rentArrearsOrBreachOfTenancyGround.page.data';

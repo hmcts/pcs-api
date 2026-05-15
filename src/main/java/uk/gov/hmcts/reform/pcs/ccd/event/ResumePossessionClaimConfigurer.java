@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -12,17 +13,16 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CompletingYourClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyHousingActOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ExemptLandlord;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
@@ -61,6 +61,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 @Component
 @AllArgsConstructor
@@ -86,13 +91,17 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
     private final StatementOfExpressTerms statementOfExpressTerms;
     private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
+    private final OrganisationService organisationService;
     private final ClaimantInformationPage claimantInformationPage;
-    private final ClaimantDetailsWalesPage claimantDetailsWales;
+    private final ExemptLandlord exemptLandlord;
     private final ProhibitedConductWales prohibitedConductWalesPage;
+    private final SchedulerClient schedulerClient;
+    private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     private final GroundsForPossessionWalesPage groundsForPossessionWales;
     private final SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     private final ReasonsForPossessionWales reasonsForPossessionWales;
+    private final AddressFormatter addressFormatter;
     private final RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final AssuredNoArrearsGroundsForPossessionPage noRentArrearsGroundsForPossessionOptions;
@@ -100,19 +109,24 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final WalesCheckingNotice walesCheckingNotice;
     private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
+    private final FeeService feeService;
+    private final MoneyFormatter moneyFormatter;
     private final RentDetailsPage rentDetailsPage;
+    private final RentArrears rentArrears;
+    private final PreActionProtocol preActionProtocol;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
-        pageBuilder.add(resumeClaim)
+        pageBuilder
+            .add(resumeClaim)
+            .add(claimantInformationPage)
             .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
             .add(new ClaimantTypeNotEligibleWales())
             .add(new SelectClaimType())
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
-            .add(claimantInformationPage)
-            .add(claimantDetailsWales)
+            .add(exemptLandlord)
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
@@ -132,14 +146,13 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(rentArrearsGroundsForPossessionReasons)
             .add(noRentArrearsGroundsForPossessionOptions)
             .add(noRentArrearsGroundsForPossessionReason)
-            .add(new PreActionProtocol())
+            .add(preActionProtocol)
             .add(mediationAndSettlement)
             .add(checkingNotice)
             .add(walesCheckingNotice)
             .add(noticeDetails)
             .add(rentDetailsPage)
-            .add(new DailyRentAmount())
-            .add(new RentArrears())
+            .add(rentArrears)
             .add(new MoneyJudgment())
             .add(claimantCircumstancesPage)
             .add(defendantCircumstancesPage)
