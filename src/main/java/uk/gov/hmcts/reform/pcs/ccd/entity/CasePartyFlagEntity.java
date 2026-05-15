@@ -26,4 +26,8 @@ public class CasePartyFlagEntity extends BaseCaseFlag {
     @JoinColumn(name = "party_id")
     private PartyEntity party;
 
+    @Override
+    public void setParentEntity(PcsCaseEntity caseEntity, PartyEntity partyEntity) {
+        this.party = partyEntity;
+    }
 }

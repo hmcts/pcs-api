@@ -78,7 +78,7 @@ public class PcsCaseService {
         }
 
         if (pcsCase.getParties() != null) {
-            caseFlagService.mergePartyFlags(pcsCase.getParties(), pcsCaseEntity, flow);
+            caseFlagService.mergePartyFlags(pcsCase.getParties(), pcsCaseEntity.getParties(), flow);
         }
     }
 

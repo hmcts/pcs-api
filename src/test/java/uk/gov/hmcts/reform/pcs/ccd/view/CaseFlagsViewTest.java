@@ -66,16 +66,17 @@ class CaseFlagsViewTest {
     @Test
     void shouldMapComplexPartyFlagFieldsWhenPartiesExist() {
         // Given
-        PartyEntity partyEntity = new PartyEntity();
-        partyEntity.setId(UUID.randomUUID());
+        PartyEntity partyEntityFirst = createPartyEntity(null);
+        PartyEntity partyEntitySecond = createPartyEntity("King Smith");
 
-        CasePartyFlagEntity appellantFlags = createMockCasePartyFlagsEntity();
-        partyEntity.setDefendantFlags(List.of(appellantFlags));
+
+        CasePartyFlagEntity defendantFlags = createMockCasePartyFlagsEntity();
+        partyEntityFirst.setDefendantFlags(List.of(defendantFlags));
 
         PCSCase pcsCase = PCSCase.builder().build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
-        pcsCaseEntity.setParties(Set.of(partyEntity));
+        pcsCaseEntity.setParties(Set.of(partyEntityFirst, partyEntitySecond));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -87,6 +88,14 @@ class CaseFlagsViewTest {
         assertNotNull(party.getDefendantFlags());
         assertEquals(1, party.getDefendantFlags().getDetails().size());
         assertEquals("PF0015", party.getDefendantFlags().getDetails().getFirst().getValue().getFlagCode());
+    }
+
+    private PartyEntity createPartyEntity(String orgName) {  //, String firstName, String lastName
+
+        return PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .orgName(orgName)
+            .build();
     }
 
     @Test

@@ -30,8 +30,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
 
-    @Value("${core_case_data.defaultCaseApiUrl}")
-    private String defaultCaseApiUrl;
+    @Value("${caseApi.url}")
+    private String caseApiUrl;
 
     public static String getCaseType() {
         return withSuffix(CASE_TYPE_ID, "-");
@@ -53,7 +53,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
-        builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", defaultCaseApiUrl));
+        builder.setCallbackHost(caseApiUrl);
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
@@ -105,8 +105,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
         builder.tab("caseFlags", "Case flags")
-            .forRoles(UserRole.PCS_CASE_WORKER,
-                      UserRole.CTSC_ADMIN,
+            .forRoles(UserRole.CTSC_ADMIN,
                       UserRole.HEARING_CENTER_ADMIN,
                       UserRole.WLU_ADMIN,
                       UserRole.BAILIFF_ADMIN)

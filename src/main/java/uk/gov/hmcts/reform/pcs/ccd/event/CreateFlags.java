@@ -34,7 +34,6 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .description("To create flags")
                 .showSummary()
                 .grant(Permission.CRU,
-                       UserRole.PCS_CASE_WORKER,
                        UserRole.CTSC_ADMIN,
                        UserRole.HEARING_CENTER_ADMIN,
                        UserRole.WLU_ADMIN,

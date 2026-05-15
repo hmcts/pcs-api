@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 @Entity
 @Table(name = "case_flag")
@@ -24,5 +25,10 @@ public class CaseFlagEntity extends BaseCaseFlag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pcs_case_id")
     private PcsCaseEntity pcsCase;
+
+    @Override
+    public void setParentEntity(PcsCaseEntity caseEntity, PartyEntity partyEntity) {
+        this.pcsCase = caseEntity;
+    }
 }
 
