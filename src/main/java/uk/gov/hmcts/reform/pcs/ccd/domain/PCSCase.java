@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
-import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
+import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
@@ -23,8 +23,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
@@ -88,7 +88,7 @@ public class PCSCase {
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
@@ -269,10 +269,6 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
 
-    @JsonUnwrapped(prefix = "wales")
-    @CCD
-    private WalesHousingAct walesHousingAct;
-
     @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
     private VerticalYesNo prohibitedConductWalesClaim;
 
@@ -320,7 +316,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
@@ -389,8 +385,8 @@ public class PCSCase {
     private YesOrNo showRentArrearsPage;
 
     @CCD(
-        label = "Which language did you use to complete this service?",
-        hint = "If someone else helped you to answer a question in this service, "
+        label = "Which language did you use to complete this claim?",
+        hint = "If someone else helped you to answer a question in this claim, "
             + "ask them if they answered any questions in Welsh. We’ll use this to "
             + "make sure your claim is processed correctly"
     )
@@ -521,7 +517,12 @@ public class PCSCase {
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
     @CCD(
-        access = {DefendantAccess.class, DefendantSolicitorAccess.class},
+        label = "Are you an exempt landlord under Part 1 of the Housing (Wales) Act 2014?"
+    )
+    private VerticalYesNo isExemptLandlord;
+
+    @CCD(
+        access = {DefendantAccess.class},
         searchable = false
     )
     private PossessionClaimResponse possessionClaimResponse;
@@ -545,7 +546,7 @@ public class PCSCase {
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, DefendantSolicitorAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
     @CCD(

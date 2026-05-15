@@ -198,6 +198,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
 
         PartyEntity matchingDefendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
             .idamId(defendantUserId)
             .firstName("John")
             .lastName("Doe")
@@ -514,6 +515,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldNotOverwriteDraftWhenDraftAlreadyExists_ForCitizenUser() {
         UUID defendantUserId = UUID.randomUUID();
+        UUID defendantId = UUID.randomUUID();
 
         AddressEntity addressEntity = AddressEntity.builder()
             .addressLine1("123 Test Street")
@@ -523,6 +525,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PartyEntity matchingDefendant = PartyEntity.builder()
             .idamId(defendantUserId)
+            .id(defendantId)
             .firstName("John")
             .lastName("Doe")
             .address(addressEntity)
@@ -566,9 +569,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(true); // Draft already exists - should NOT seed
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(Optional.of(draftData)); // Return saved draft data
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(matchingDefendant);
+        when(responseMapper.buildPartyFromEntity(eq(matchingDefendant), any(PCSCase.class)))
+            .thenReturn(Party.builder().build());
 
         PCSCase caseData = PCSCase.builder().build();
-        when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse)).thenReturn(draftResponse);
+        when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse, defendantId)).thenReturn(draftResponse);
 
         callStartHandler(caseData);
 
@@ -778,7 +785,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(Optional.of(savedDraft));
         when(responseMapper.buildPartyFromEntity(representedParty, caseData))
             .thenReturn(uk.gov.hmcts.reform.pcs.ccd.domain.Party.builder().build());
-        when(possessionClaimMerger.mergeLatestCaseData(caseData, savedResponse)).thenReturn(savedResponse);
+        when(possessionClaimMerger.mergeLatestCaseData(caseData, savedResponse, representedPartyId))
+            .thenReturn(savedResponse);
 
         // when
         PCSCase result = callStartHandler(caseData);

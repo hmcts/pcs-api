@@ -30,7 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ExemptLandlord;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
@@ -136,7 +136,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     private final OrganisationService organisationService;
     private final ClaimantInformationPage claimantInformationPage;
-    private final ClaimantDetailsWalesPage claimantDetailsWales;
+    private final ExemptLandlord exemptLandlord;
     private final ProhibitedConductWales prohibitedConductWalesPage;
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
@@ -179,7 +179,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SelectClaimType())
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
-            .add(claimantDetailsWales)
+            .add(exemptLandlord)
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)

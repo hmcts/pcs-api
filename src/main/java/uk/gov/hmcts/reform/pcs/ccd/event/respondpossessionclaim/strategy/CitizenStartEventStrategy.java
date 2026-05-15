@@ -71,10 +71,10 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
     private PCSCase restoreDraft(long caseReference, PCSCase pcsCase, PartyEntity defendant) {
         PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
             .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
-
         PossessionClaimResponse merged = possessionClaimMerger.mergeLatestCaseData(pcsCase,
                                                                                    savedDraft
-                                                                                       .getPossessionClaimResponse())
+                                                                                       .getPossessionClaimResponse(),
+                                                                                   defendant.getId())
             .toBuilder()
             .claimantEnteredDefendantDetails(responseMapper.buildPartyFromEntity(defendant, pcsCase))
             .build();

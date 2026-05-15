@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsF
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ExemptLandlord;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
@@ -161,7 +161,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ClaimantInformationPage claimantInformationPage;
     @Mock
-    private ClaimantDetailsWalesPage claimantDetailsWalesPage;
+    private ExemptLandlord exemptLandlord;
     @Mock
     private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageePage;
     @Mock
@@ -221,7 +221,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
             rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
             defendantCircumstancesPage, suspensionOfRightToBuyOrderReason, statementOfExpressTerms,
-            demotionOfTenancyOrderReason, organisationService, claimantInformationPage, claimantDetailsWalesPage,
+            demotionOfTenancyOrderReason, organisationService, claimantInformationPage, exemptLandlord,
             prohibitedConductWalesPage, schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage,
             groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
             addressFormatter, rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,

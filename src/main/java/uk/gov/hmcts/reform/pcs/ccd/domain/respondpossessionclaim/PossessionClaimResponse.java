@@ -44,5 +44,8 @@ public class PossessionClaimResponse {
     @CCD(access = {DefendantAccess.class})
     private DefendantResponses defendantResponses;
 
+    @CCD(access = {DefendantAccess.class})
+    private String currentDefendantPartyId;
+
 }
 

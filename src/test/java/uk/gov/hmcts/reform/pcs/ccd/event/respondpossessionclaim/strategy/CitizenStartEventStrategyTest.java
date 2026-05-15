@@ -124,10 +124,12 @@ class CitizenStartEventStrategyTest {
     void shouldLoadExistingDraftWhenDraftAlreadyExists() {
         // Given
         UUID defendantUserId = UUID.randomUUID();
+        UUID defendantId = UUID.randomUUID();
         PCSCase caseData = PCSCase.builder().build();
 
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
-            .defendantContactDetails(null).defendantResponses(null)
+            .defendantContactDetails(null)
+            .defendantResponses(null)
             .build();
 
         PCSCase savedDraft = PCSCase.builder()
@@ -135,18 +137,25 @@ class CitizenStartEventStrategyTest {
             .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
 
+        PartyEntity defendant = PartyEntity.builder()
+            .id(defendantId)
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         lenient().when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendant);
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(true);
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
             .thenReturn(Optional.of(savedDraft));
-        when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse)).thenReturn(draftResponse);
+        when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse, defendantId))
+            .thenReturn(draftResponse);
 
         // When
         underTest.loadDraft(CASE_REFERENCE, caseData);
 
         // Then
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
-        verify(possessionClaimDraftBuilder).buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class));
+        verify(possessionClaimDraftBuilder).buildCaseWithDraft(caseData, draftResponse);
     }
 
     @Test
@@ -316,6 +325,7 @@ class CitizenStartEventStrategyTest {
         String orgName = "org";
         UUID claimantPartyId = UUID.randomUUID();
         UUID defendantUserId = UUID.randomUUID();
+        UUID defendantId = UUID.randomUUID();
         Party claimantParty = Party.builder().orgName(orgName).build();
         ListValue<Party> claimantPartyListValue = ListValue.<Party>builder().id(claimantPartyId.toString())
             .value(claimantParty).build();
@@ -338,6 +348,7 @@ class CitizenStartEventStrategyTest {
         // Original party data from party table
         PartyEntity matchedDefendant = PartyEntity.builder()
             .idamId(defendantUserId)
+            .id(defendantId)
             .firstName("Arun")
             .lastName("Kumar")
             .nameKnown(VerticalYesNo.YES)
@@ -360,7 +371,7 @@ class CitizenStartEventStrategyTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(matchedDefendant);
         when(responseMapper.buildPartyFromEntity(eq(matchedDefendant), any(PCSCase.class))).thenReturn(originalParty);
-        when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse)).thenReturn(draftResponse);
+        when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse, defendantId)).thenReturn(draftResponse);
 
         // When
         underTest.loadDraft(CASE_REFERENCE, caseData);
@@ -393,7 +404,7 @@ class CitizenStartEventStrategyTest {
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
         verify(possessionClaimDraftBuilder, never()).buildCaseWithDraft(eq(caseData),
                                                                         any(PossessionClaimResponse.class));
-        verify(possessionClaimMerger, never()).mergeLatestCaseData(caseData, draftResponse);
+        verify(possessionClaimMerger, never()).mergeLatestCaseData(any(), any(), any());
     }
 
     @Test

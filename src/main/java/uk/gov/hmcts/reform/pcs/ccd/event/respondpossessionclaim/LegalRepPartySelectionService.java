@@ -86,7 +86,7 @@ public class LegalRepPartySelectionService {
         ).orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
         PossessionClaimResponse mergedResponse = possessionClaimMerger
-            .mergeLatestCaseData(pcsCase, savedDraft.getPossessionClaimResponse())
+            .mergeLatestCaseData(pcsCase, savedDraft.getPossessionClaimResponse(), matchedDefendant.getId())
             .toBuilder()
             .claimantEnteredDefendantDetails(responseMapper.buildPartyFromEntity(matchedDefendant, pcsCase))
             .build();
