@@ -20,12 +20,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ChooseAnApplication;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.DocumentUploadWanted;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HearingInNext14Days;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HelpWithFeesNeeded;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.OtherPartiesAgreed;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.SelectParty;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartAdjourn;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSetAside;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSomethingElse;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StatementOfTruth;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhatOrderWanted;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhichLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -70,14 +74,18 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .showSummary();
 
         new PageBuilder(eventBuilder)
-                .add(new ChooseAnApplication())
-                .add(new StartAdjourn())
-                .add(new StartSetAside())
-                .add(new StartSomethingElse())
-                .add(new SelectParty())
-                .add(new HearingInNext14Days())
-                .add(new HelpWithFeesNeeded())
-                .add(new WhichLanguage());
+            .add(new ChooseAnApplication())
+            .add(new StartAdjourn())
+            .add(new StartSetAside())
+            .add(new StartSomethingElse())
+            .add(new SelectParty())
+            .add(new HearingInNext14Days())
+            .add(new HelpWithFeesNeeded())
+            .add(new OtherPartiesAgreed())
+            .add(new WhatOrderWanted())
+            .add(new DocumentUploadWanted())
+            .add(new WhichLanguage())
+            .add(new StatementOfTruth());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
