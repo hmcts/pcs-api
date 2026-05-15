@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,9 +23,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -60,6 +63,8 @@ public class PcsCaseEntity {
 
     private Boolean preActionProtocolCompleted;
 
+    private LocalDateTime createdAt;
+
     @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private TenancyLicenceEntity tenancyLicence;
@@ -77,6 +82,7 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    @OrderBy("rank ASC")
     private Set<GenAppEntity> genApps = new HashSet<>();
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
@@ -118,6 +124,8 @@ public class PcsCaseEntity {
     }
 
     public void addGenApp(GenAppEntity genApp) {
+        int rank = countNumberOfGenAppsForParty(genApp.getParty()) + 1;
+        genApp.setRank(rank);
         genApps.add(genApp);
         genApp.setPcsCase(this);
     }
@@ -143,4 +151,17 @@ public class PcsCaseEntity {
         counterClaims.add(counterClaim);
         counterClaim.setPcsCase(this);
     }
+
+    private int countNumberOfGenAppsForParty(PartyEntity party) {
+        if (party == null || party.getId() == null) {
+            return 0;
+        }
+
+        return (int) genApps.stream()
+            .map(GenAppEntity::getParty)
+            .filter(Objects::nonNull)
+            .filter(genAppParty -> party.getId().equals(genAppParty.getId()))
+            .count();
+    }
+
 }

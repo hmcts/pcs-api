@@ -5,35 +5,84 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@AllArgsConstructor
 @Component
+@AllArgsConstructor
 public class CaseTabView {
 
-    private final CaseDetailsTabView caseDetailsTabView;
+    static final String NAME_UNKNOWN = "Person unknown";
 
-    private static final String NAME_UNKNOWN = "Person unknown";
+    private final ClaimGroundSummaryBuilder claimGroundSummaryBuilder;
+    private final CaseSummaryTabView caseSummaryTabView;
 
     public void setCaseTabFields(PCSCase pcsCase) {
         CasePartiesTab casePartiesTab = buildCasePartiesTab(pcsCase);
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        SummaryTab summaryTab = caseSummaryTabView.buildSummaryTab(pcsCase);
         pcsCase.setCasePartiesTab(casePartiesTab);
-        pcsCase.setCaseDetailsTab(caseDetailsTab);
+        pcsCase.setSummaryTab(summaryTab);
     }
 
-    public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draft) {
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(draft);
-        pcsCase.setCaseDetailsTab(caseDetailsTab);
+    public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draftCaseData) {
+        draftCaseData.setPropertyAddress(java.util.Optional.ofNullable(draftCaseData.getPropertyAddress())
+                                             .orElse(pcsCase.getPropertyAddress()));
+
+        if (CollectionUtils.isEmpty(draftCaseData.getAllClaimants())) {
+            draftCaseData.setAllClaimants(pcsCase.getAllClaimants());
+        }
+
+        if (draftCaseData.getDefendant1() != null) {
+            draftCaseData.setAllDefendants(buildDefendants(draftCaseData));
+        } else if (CollectionUtils.isEmpty(draftCaseData.getAllDefendants())) {
+            draftCaseData.setAllDefendants(pcsCase.getAllDefendants());
+        }
+
+        List<ListValue<ClaimGroundSummary>> draftGrounds =
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
+        draftCaseData.setClaimGroundSummaries(CollectionUtils.isEmpty(draftGrounds)
+                                                 ? pcsCase.getClaimGroundSummaries()
+                                                 : draftGrounds);
+
+        setCaseTabFields(draftCaseData);
+        pcsCase.setSummaryTab(draftCaseData.getSummaryTab());
+    }
+
+    private List<ListValue<Party>> buildDefendants(PCSCase draftCaseData) {
+        List<ListValue<Party>> defendants = new ArrayList<>();
+        defendants.add(buildDefendant(draftCaseData.getDefendant1()));
+
+        if (draftCaseData.getAddAnotherDefendant() == VerticalYesNo.YES
+            && !CollectionUtils.isEmpty(draftCaseData.getAdditionalDefendants())) {
+            draftCaseData.getAdditionalDefendants().stream()
+                .map(ListValue::getValue)
+                .map(this::buildDefendant)
+                .forEach(defendants::add);
+        }
+
+        return defendants;
+    }
+
+    private ListValue<Party> buildDefendant(DefendantDetails defendant) {
+        return ListValue.<Party>builder()
+            .value(Party.builder()
+                       .nameKnown(defendant.getNameKnown())
+                       .firstName(defendant.getFirstName())
+                       .lastName(defendant.getLastName())
+                       .addressKnown(defendant.getAddressKnown())
+                       .address(defendant.getCorrespondenceAddress())
+                       .build())
+            .build();
     }
 
     private CasePartiesTab buildCasePartiesTab(PCSCase pcsCase) {

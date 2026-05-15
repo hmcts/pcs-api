@@ -21,11 +21,15 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +46,12 @@ import static org.mockito.Mockito.times;
 class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
+    private static final ZoneId UK_ZONE_ID = ZoneId.of("Europe/London");
+    private static final LocalDateTime FIXED_DATE_TIME = LocalDateTime.of(2026, 5, 14, 10, 30);
+    private static final Clock FIXED_UK_CLOCK = Clock.fixed(
+        FIXED_DATE_TIME.atZone(UK_ZONE_ID).toInstant(),
+        UK_ZONE_ID
+    );
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -73,7 +83,8 @@ class PcsCaseServiceTest {
             documentService,
             tenancyLicenceService,
             addressMapper,
-            caseLinkService
+            caseLinkService,
+            FIXED_UK_CLOCK
         );
     }
 
@@ -138,6 +149,21 @@ class PcsCaseServiceTest {
         // Then
         verify(claimService).createMainClaimEntity(caseData);
         verify(pcsCaseEntity).addClaim(mainClaimEntity);
+    }
+
+    @Test
+    void shouldSetCreatedAtUsingUkClockWhenCreatingMainClaim() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        stubClaimCreation();
+
+        PCSCase caseData = PCSCase.builder().build();
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
+
+        // Then
+        verify(pcsCaseEntity).setCreatedAt(FIXED_DATE_TIME);
     }
 
     @Test

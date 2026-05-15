@@ -18,30 +18,28 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
-import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -53,8 +51,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
 class PCSCaseViewTest {
@@ -83,8 +83,6 @@ class PCSCaseViewTest {
     @Mock
     private AlternativesToPossessionView alternativesToPossessionView;
     @Mock
-    private HousingActWalesView housingActWalesView;
-    @Mock
     private AsbProhibitedConductView asbProhibitedConductView;
     @Mock
     private RentArrearsView rentArrearsView;
@@ -105,6 +103,8 @@ class PCSCaseViewTest {
     private CaseLinkView caseLinkView;
     @Mock
     private CaseTabView caseTabView;
+    @Mock
+    private PartiesView partiesView;
 
     private PCSCaseView underTest;
 
@@ -115,10 +115,10 @@ class PCSCaseViewTest {
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
-                                    alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
+                                    alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseTabView
+                                    caseTabView, partiesView
         );
     }
 
@@ -213,60 +213,16 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldMapAllParties() {
+    void shouldMapDateSubmittedFromCaseCreatedAt() {
         // Given
-        Party claimant = mock(Party.class);
-        UUID claimantId = UUID.randomUUID();
-        ClaimPartyEntity claimantClaimParty = createClaimPartyEntity(claimant, claimantId, PartyRole.CLAIMANT);
-
-        Party defendant1 = mock(Party.class);
-        UUID defendant1Id = UUID.randomUUID();
-        ClaimPartyEntity defendant1ClaimParty = createClaimPartyEntity(defendant1, defendant1Id, PartyRole.DEFENDANT);
-
-        Party defendant2 = mock(Party.class);
-        UUID defendant2Id = UUID.randomUUID();
-        ClaimPartyEntity defendant2ClaimParty = createClaimPartyEntity(defendant2, defendant2Id, PartyRole.DEFENDANT);
-
-        Party underlessee1 = mock(Party.class);
-        UUID underlessee1Id = UUID.randomUUID();
-        ClaimPartyEntity underlessee1ClaimParty = createClaimPartyEntity(
-            underlessee1,
-            underlessee1Id,
-            PartyRole.UNDERLESSEE_OR_MORTGAGEE
-        );
-
-        Party underlessee2 = mock(Party.class);
-        UUID underlessee2Id = UUID.randomUUID();
-        ClaimPartyEntity underlessee2ClaimParty = createClaimPartyEntity(
-            underlessee2,
-            underlessee2Id,
-            PartyRole.UNDERLESSEE_OR_MORTGAGEE
-        );
-
-        when(claimEntity.getClaimParties()).thenReturn(
-            List.of(claimantClaimParty, defendant1ClaimParty, defendant2ClaimParty,
-                    underlessee1ClaimParty, underlessee2ClaimParty
-            ));
+        LocalDateTime createdAt = LocalDateTime.of(2026, 5, 12, 14, 30);
+        when(pcsCaseEntity.getCreatedAt()).thenReturn(createdAt);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        assertThat(pcsCase.getAllClaimants())
-            .containsExactly(asListValue(claimantId, claimant));
-
-        assertThat(pcsCase.getAllDefendants())
-            .containsExactly(
-                asListValue(defendant1Id, defendant1),
-                asListValue(defendant2Id, defendant2)
-            );
-
-        assertThat(pcsCase.getAllUnderlesseeOrMortgagees())
-            .containsExactly(
-                asListValue(underlessee1Id, underlessee1),
-                asListValue(underlessee2Id, underlessee2)
-            );
-
+        assertThat(pcsCase.getDateSubmitted()).isEqualTo(createdAt);
     }
 
     @Test
@@ -307,37 +263,18 @@ class PCSCaseViewTest {
             .containsExactly("doc1.pdf", "doc2.pdf");
     }
 
-    private static ListValue<Party> asListValue(UUID id, Party party) {
-        return ListValue.<Party>builder().id(id.toString()).value(party).build();
-    }
-
-    private ClaimPartyEntity createClaimPartyEntity(Party party, UUID partyId, PartyRole partyRole) {
-        PartyEntity partyEntity = mock(PartyEntity.class);
-
-        when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
-
-        ClaimPartyId claimPartyId = new ClaimPartyId();
-        claimPartyId.setPartyId(partyId);
-
-        return ClaimPartyEntity.builder()
-            .id(claimPartyId)
-            .role(partyRole)
-            .party(partyEntity)
-            .build();
-    }
-
     @Test
     void shouldSetCaseFieldsInViewHelpers() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
+        verify(partiesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(alternativesToPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(housingActWalesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(asbProhibitedConductView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
@@ -354,6 +291,66 @@ class PCSCaseViewTest {
 
         // Then
         verify(caseFieldsView).setCaseFields(pcsCase);
+    }
+
+    @Test
+    void shouldSetDraftCaseTabFieldsWhenUnsubmittedCaseDataExists() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder().build();
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(Optional.of(draftCaseData));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+
+        // Then
+        verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData);
+        verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class));
+        assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+    }
+
+    @Test
+    void shouldSetSubmittedCaseTabFieldsWhenUnsubmittedCaseDataIsExpectedButDraftIsMissing() {
+        // Given
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(Optional.empty());
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+
+        // Then
+        verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
+        verify(caseTabView).setCaseTabFields(pcsCase);
+        assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+    }
+
+    @Test
+    void shouldNotFetchUnsubmittedCaseDataWhenNoUnsubmittedCaseDataExists() {
+        // When
+        underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+
+        // Then
+        verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(any(Long.class), any());
+        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
+        verify(caseTabView).setCaseTabFields(any(PCSCase.class));
+    }
+
+    @Test
+    void shouldNotLoadUnsubmittedCaseDataWhenCaseIsNotAwaitingSubmission() {
+        // When
+        underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(any(Long.class), any());
     }
 
     @Test
