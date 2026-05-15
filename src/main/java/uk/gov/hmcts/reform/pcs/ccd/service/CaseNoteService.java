@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @AllArgsConstructor
@@ -20,7 +20,7 @@ public class CaseNoteService {
     private final PcsCaseService pcsCaseService;
     private final ClaimRepository claimRepository;
     private final SecurityContextService securityContextService;
-    private final Clock ukClock;
+    private final Clock utcClock;
 
     public void addCaseNote(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -38,7 +38,7 @@ public class CaseNoteService {
             .builder()
             .createdBy(userInfo.getName())
             .note(pcsCase.getNote())
-            .createdOn(LocalDateTime.now(ukClock))
+            .createdOn(Instant.now(utcClock))
             .build();
     }
 }

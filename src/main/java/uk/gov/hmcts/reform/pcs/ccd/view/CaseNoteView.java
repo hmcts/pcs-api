@@ -24,7 +24,7 @@ public class CaseNoteView {
         List<ListValue<CaseNote>> caseNotes = caseNoteEntities.stream().map(caseNoteEntity -> {
             CaseNote caseNote = CaseNote.builder()
                 .note(caseNoteEntity.getNote())
-                .createdOn(caseNoteEntity.getCreatedOn())
+                .createdOn(CaseNoteEntity.fromEntity(caseNoteEntity).getCreatedOn())
                 .createdBy(caseNoteEntity.getCreatedBy())
                 .build();
 

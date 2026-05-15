@@ -15,10 +15,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @Entity
 @Table(name = "case_note")
@@ -40,9 +43,21 @@ public class CaseNoteEntity {
 
     private String createdBy;
 
-    @CreationTimestamp
     @Column(updatable = false, nullable = false)
-    private LocalDateTime createdOn;
+    private Instant createdOn;
 
     private String note;
+
+    public static CaseNote fromEntity(uk.gov.hmcts.reform.pcs.ccd.entity.CaseNoteEntity entity) {
+        LocalDateTime ukDateTime = LocalDateTime.ofInstant(
+                entity.getCreatedOn(),
+                UK_ZONE_ID
+        );
+
+        return CaseNote.builder()
+                .createdBy(entity.getCreatedBy())
+                .createdOn(ukDateTime)  // Displays in BST/GMT automatically
+                .note(entity.getNote())
+                .build();
+    }
 }
