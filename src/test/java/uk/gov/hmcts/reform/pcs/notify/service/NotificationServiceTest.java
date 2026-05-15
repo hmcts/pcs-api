@@ -38,7 +38,10 @@ import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -54,6 +57,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -76,6 +81,9 @@ class NotificationServiceTest {
     @Mock
     private PartyService partyService;
 
+    @Mock
+    private NotificationPersonalisationFactory notificationPersonalisationFactory;
+
     private NotificationService notificationService;
 
     private static final String TEST_EMAIL = "test@example.com";
@@ -87,7 +95,11 @@ class NotificationServiceTest {
     @BeforeEach
     void setUp() {
         notificationService = new NotificationService(
-            notificationRepository, schedulerClient, templateConfiguration, partyService
+            notificationRepository,
+            partyService,
+            schedulerClient,
+            templateConfiguration,
+            notificationPersonalisationFactory
         );
     }
 
@@ -327,7 +339,11 @@ class NotificationServiceTest {
         @DisplayName("Should create service with dependencies")
         void shouldCreateServiceWithDependencies() {
             NotificationService service = new NotificationService(
-                notificationRepository, schedulerClient, templateConfiguration, partyService
+                notificationRepository,
+                partyService,
+                schedulerClient,
+                templateConfiguration,
+                notificationPersonalisationFactory
             );
 
             assertThat(service).isNotNull();
@@ -410,6 +426,27 @@ class NotificationServiceTest {
                 .build();
             claim.setClaimParties(new ArrayList<>(List.of(claimParty)));
             defendantResponse.setClaim(claim);
+
+            lenient().when(notificationPersonalisationFactory.forDefendant(any()))
+                .thenReturn(BasePersonalisation.builder()
+                    .firstName("John")
+                    .lastName("Doe")
+                    .caseNumber("1234567890")
+                    .claimantName("JANE SMITH")
+                    .primaryDefendantName("JOHN DOE")
+                    .build());
+
+            lenient().when(notificationPersonalisationFactory.counterclaimSuccess(any()))
+                .thenReturn(CounterclaimPaymentSuccessPersonalisation.builder()
+                    .base(BasePersonalisation.builder()
+                        .firstName("John")
+                        .lastName("Doe")
+                        .caseNumber("1234567890")
+                        .claimantName("JANE SMITH")
+                        .primaryDefendantName("JOHN DOE")
+                        .build())
+                    .paymentReferenceNumber("PAY-123")
+                    .build());
         }
 
         @Test
@@ -533,11 +570,13 @@ class NotificationServiceTest {
     @Nested
     @DisplayName("buildBasePersonalisation")
     class BuildBaseTemplatePersonalisationTests {
+        private final NotificationPersonalisationFactory factory = new NotificationPersonalisationFactory();
+
         @Test
         @DisplayName("Should build correct base personalisation")
         void shouldBuildBasePersonalisation() {
             Map<String, Object> result =
-                NotificationService.buildBasePersonalisation(createDefendantResponse()).toMap();
+                factory.forDefendant(createDefendantResponse()).toMap();
 
             assertThat(result)
                 .hasSize(5)
@@ -555,7 +594,7 @@ class NotificationServiceTest {
             response.getClaim().getClaimParties().getFirst().getParty().setOrgName("Claimant Corp");
 
             Map<String, Object> result =
-                NotificationService.buildBasePersonalisation(response).toMap();
+                factory.forDefendant(response).toMap();
 
             assertThat(result)
                 .containsEntry("claimantName", "CLAIMANT CORP");
@@ -567,7 +606,7 @@ class NotificationServiceTest {
             DefendantResponseEntity response = createDefendantResponse();
             response.getClaim().getClaimParties().clear();
 
-            assertThatThrownBy(() -> NotificationService.buildBasePersonalisation(response))
+            assertThatThrownBy(() -> factory.forDefendant(response))
                 .isInstanceOf(PartyNotFoundException.class)
                 .hasMessageContaining("No claimant party found");
         }
@@ -583,7 +622,7 @@ class NotificationServiceTest {
             response.getClaim().setFeePayment(feePayment);
 
             Map<String, Object> result =
-                NotificationService.buildCounterclaimPaymentSuccessPersonalisation(response).toMap();
+                factory.counterclaimSuccess(response).toMap();
 
             assertThat(result)
                 .containsKey("paymentReferenceNumber")
@@ -604,7 +643,7 @@ class NotificationServiceTest {
                 .build();
             response.getClaim().setFeePayment(feePayment);
 
-            assertThatThrownBy(() -> NotificationService.buildCounterclaimPaymentSuccessPersonalisation(response))
+            assertThatThrownBy(() -> factory.counterclaimSuccess(response))
                 .isInstanceOf(FeePaymentNotFoundException.class)
                 .hasMessageContaining("Paid fee payment not found");
         }
@@ -629,6 +668,17 @@ class NotificationServiceTest {
     @Nested
     @DisplayName("Claimant Draft Saved For Later Tests")
     class ClaimantDraftSavedForLaterTests {
+        @BeforeEach
+        void setUp() {
+            lenient().when(notificationPersonalisationFactory.forClaimant(anyLong(), any()))
+                .thenReturn(ClaimantBasePersonalisation.builder()
+                    .toLineClaimantName("Jane Smith")
+                    .caseNumber("1234567890")
+                    .claimantName("JANE SMITH")
+                    .primaryDefendantName("JOHN DOE")
+                    .build());
+        }
+
         @Test
         @DisplayName("Should use claimant email when contact email flag is YES")
         void shouldUseClaimantEmailWhenFlagIsYes() {
@@ -781,6 +831,7 @@ class NotificationServiceTest {
     @Nested
     @DisplayName("TemplatePersonalisation Method Tests")
     class TemplatePersonalisationMethodTests {
+        private final NotificationPersonalisationFactory factory = new NotificationPersonalisationFactory();
 
         @Test
         @DisplayName("Should use overridden claimant name when name flag is NO")
@@ -795,7 +846,7 @@ class NotificationServiceTest {
             );
 
             Map<String, Object> result =
-                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+                factory.forClaimant(1234567890L, pcsCase).toMap();
 
             assertThat(result)
                 .containsEntry("toLineClaimantName", "Override Name")
@@ -815,7 +866,7 @@ class NotificationServiceTest {
             );
 
             Map<String, Object> result =
-                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+                factory.forClaimant(1234567890L, pcsCase).toMap();
 
             assertThat(result)
                 .containsEntry("toLineClaimantName", "Jane Smith")

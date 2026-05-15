@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -23,9 +24,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DefendantResponseNotificationServiceTest {
-
-    private static final String PENDING_CASE_ISSUED = "PENDING_CASE_ISSUED";
-    private static final String OTHER_STATUS = "OTHER_STATUS";
 
     @Mock
     private NotificationService notificationService;
@@ -89,42 +87,6 @@ class DefendantResponseNotificationServiceTest {
     }
 
     @Test
-    void shouldNotSendEmailWhenCounterclaimStatusNotEligible() {
-        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
-        PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
-        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        PartyEntity party = mock(PartyEntity.class);
-
-        UUID defendantResponseId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-
-        when(defendantResponseRepository.findById(defendantResponseId))
-            .thenReturn(Optional.of(response));
-
-        when(response.getPcsCase()).thenReturn(caseEntity);
-        when(response.getParty()).thenReturn(party);
-        when(response.getId()).thenReturn(defendantResponseId);
-
-        when(party.getId()).thenReturn(partyId);
-
-        when(counterClaim.getParty()).thenReturn(party);
-        when(counterClaim.getStatus()).thenReturn(OTHER_STATUS);
-
-        when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
-
-        underTest.sendEmailNotification(defendantResponseId);
-
-        verify(notificationService, never())
-            .sendDefendantResponseNoCounterclaimEmailNotification(response);
-
-        verify(notificationService, never())
-            .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
-
-        verify(notificationService, never())
-            .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(response);
-    }
-
-    @Test
     void shouldSendNoPaymentRequiredEmail() {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
@@ -144,7 +106,6 @@ class DefendantResponseNotificationServiceTest {
         when(party.getId()).thenReturn(partyId);
 
         when(counterClaim.getParty()).thenReturn(party);
-        when(counterClaim.getStatus()).thenReturn(PENDING_CASE_ISSUED);
         when(counterClaim.getHwfReferenceNumber()).thenReturn("HWF123");
 
         when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
@@ -153,6 +114,8 @@ class DefendantResponseNotificationServiceTest {
 
         verify(notificationService)
             .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(response);
+
+        verify(notificationService).sendClaimantDefendantHasMadeCounterclaimEmail(any());
 
         verify(notificationService, never())
             .sendDefendantResponseNoCounterclaimEmailNotification(response);
@@ -181,7 +144,6 @@ class DefendantResponseNotificationServiceTest {
         when(party.getId()).thenReturn(partyId);
 
         when(counterClaim.getParty()).thenReturn(party);
-        when(counterClaim.getStatus()).thenReturn(PENDING_CASE_ISSUED);
         when(counterClaim.getHwfReferenceNumber()).thenReturn(null);
 
         when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
@@ -218,7 +180,6 @@ class DefendantResponseNotificationServiceTest {
         when(party.getId()).thenReturn(partyId);
 
         when(counterClaim.getParty()).thenReturn(party);
-        when(counterClaim.getStatus()).thenReturn(PENDING_CASE_ISSUED);
         when(counterClaim.getHwfReferenceNumber()).thenReturn(" ");
 
         when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
@@ -301,7 +262,6 @@ class DefendantResponseNotificationServiceTest {
         when(otherCounterClaim.getParty()).thenReturn(otherParty);
 
         when(matchingCounterClaim.getParty()).thenReturn(defendantParty);
-        when(matchingCounterClaim.getStatus()).thenReturn(PENDING_CASE_ISSUED);
         when(matchingCounterClaim.getHwfReferenceNumber()).thenReturn("HWF123");
 
         when(caseEntity.getCounterClaims())
@@ -311,6 +271,8 @@ class DefendantResponseNotificationServiceTest {
 
         verify(notificationService)
             .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(response);
+
+        verify(notificationService).sendClaimantDefendantHasMadeCounterclaimEmail(any());
 
         verify(notificationService, never())
             .sendDefendantResponseNoCounterclaimEmailNotification(response);

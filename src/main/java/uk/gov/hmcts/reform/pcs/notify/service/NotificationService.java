@@ -50,7 +50,7 @@ public class NotificationService {
         return sendEmail(
             defendantRecipient(defendantResponse),
             EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
-            NotificationClaimType.COUNTER_CLAIM,
+            NotificationClaimType.NO_COUNTER_CLAIM,
             notificationPersonalisationFactory.forDefendant(defendantResponse)
         );
     }
@@ -347,32 +347,6 @@ public class NotificationService {
             recipient.pcsCase(),
             recipient.claim(),
             recipient.party()
-        );
-    }
-
-    private EmailNotificationResponse sendClaimantEmail(
-        long caseReference,
-        PCSCase pcsCase,
-        EmailTemplate template,
-        NotificationClaimType claimType,
-        BiFunction<Long, PCSCase, TemplatePersonalisation> personalisationBuilder
-    ) {
-        String claimantEmail = getClaimantEmailAddress(pcsCase.getClaimantContactPreferences());
-        if (claimantEmail == null) {
-            log.info("Skipping email notification to claimant on case: {}", caseReference);
-            return null;
-        }
-
-        return scheduleEmailNotification(
-            buildRequest(
-                templateConfiguration.getTemplateId(template),
-                claimantEmail,
-                claimType,
-                personalisationBuilder.apply(caseReference, pcsCase)
-            ),
-            null,
-            null,
-            null
         );
     }
 
