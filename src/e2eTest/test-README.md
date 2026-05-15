@@ -180,7 +180,7 @@ Tests reuse a saved **storage state** so each run does not log in again. Login a
 
 ### Specs that do not use storage state
 
-**`amRoleStaff.spec.ts`** calls `test.use({ storageState: undefined })` so it **does not use** the saved storage state.
+**`createCase.saveResume.spec.ts`** calls `test.use({ storageState: undefined })` so it **does not use** the saved storage state.
 
 **Reason:** Those tests validate resume & find-case behaviour from a **fresh session**, including the full sign-out/re-login flow. They need to run without storage state so they can:
 - Start from a clean context (no cookies, no persisted login),

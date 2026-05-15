@@ -81,6 +81,7 @@ def pcsE2eVaultSecrets = [
   secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
   secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
   secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
+  secret('pcs-ctsc-admin-01-uid','PCS_CTSC_ADMIN_01_UID'),
 ]
 
 def ccdVaultSecrets = [

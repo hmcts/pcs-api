@@ -1,4 +1,3 @@
-/** One IdAM-backed staff user entry (global setup creates each in turn). */
 export type StaffEntity = {
   email: string;
   uid?: string | undefined;
