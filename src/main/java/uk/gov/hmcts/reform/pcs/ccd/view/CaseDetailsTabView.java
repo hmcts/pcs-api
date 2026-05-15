@@ -15,13 +15,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ActionsTakenTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ApplicationsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 
 import java.time.LocalDate;
@@ -42,6 +47,8 @@ public class CaseDetailsTabView {
 
     private final GroundsBuilder groundsBuilder;
     private final RentArrearsTabDetailsBuilder rentArrearsTabDetailsBuilder;
+    private final ReasonsForPossessionTabDetailsBuilder reasonsForPossessionTabDetailsBuilder;
+    private final ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
 
     public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
@@ -50,6 +57,9 @@ public class CaseDetailsTabView {
         NoticeTabDetails noticeTabDetails = buildNoticeTabDetails(pcsCase);
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
         RentArrearsTabDetails rentArrearsTabDetails = buildRentArrearsTabDetails(pcsCase);
+        ReasonsForPossessionTabDetails reasonsForPossessionTabDetails = buildReasonsForPossession(pcsCase);
+        ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
+        ClaimantInformationTabDetails claimantInformationTabDetails = buildClaimantInformationTabDetails(pcsCase);
 
         return CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
@@ -59,6 +69,9 @@ public class CaseDetailsTabView {
             .noticeDetails(noticeTabDetails)
             .actionsTakenDetails(actionsTakenTabDetails)
             .rentArrearsDetails(rentArrearsTabDetails)
+            .reasonsForPossessionDetails(reasonsForPossessionTabDetails)
+            .applicationsDetails(applicationsTabDetails)
+            .claimantInformation(claimantInformationTabDetails)
             .build();
     }
 
@@ -220,5 +233,23 @@ public class CaseDetailsTabView {
         }
 
         return rentArrearsTabDetails;
+    }
+
+    private ReasonsForPossessionTabDetails buildReasonsForPossession(PCSCase pcsCase) {
+        return reasonsForPossessionTabDetailsBuilder.buildReasonsForPossessionFromGroundSummaries(pcsCase);
+    }
+
+    private ApplicationsTabDetails buildApplicationsTabDetails(PCSCase pcsCase) {
+        VerticalYesNo applicationWithClaim = pcsCase.getApplicationWithClaim();
+        String planToMakeGeneralApplication = applicationWithClaim != null ?
+            applicationWithClaim.getLabel() : NO_ANSWER;
+
+        return ApplicationsTabDetails.builder()
+            .planToMakeGeneralApplication(planToMakeGeneralApplication)
+            .build();
+    }
+
+    private ClaimantInformationTabDetails buildClaimantInformationTabDetails(PCSCase pcsCase) {
+        return claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase);
     }
 }

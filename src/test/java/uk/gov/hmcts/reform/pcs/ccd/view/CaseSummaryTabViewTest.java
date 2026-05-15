@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 
 import java.math.BigDecimal;
@@ -41,11 +42,18 @@ public class CaseSummaryTabViewTest {
     @Mock
     private RentArrearsTabDetailsBuilder rentArrearsTabDetailsBuilder;
 
+    @Mock
+    private ReasonsForPossessionTabDetailsBuilder reasonsForPossessionTabDetailsBuilder;
+
     private CaseSummaryTabView underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseSummaryTabView(groundsBuilder, rentArrearsTabDetailsBuilder);
+        underTest = new CaseSummaryTabView(
+            groundsBuilder,
+            rentArrearsTabDetailsBuilder,
+            reasonsForPossessionTabDetailsBuilder
+        );
     }
 
     @Test
