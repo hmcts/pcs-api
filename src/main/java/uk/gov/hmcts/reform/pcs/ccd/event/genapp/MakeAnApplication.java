@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartAdjourn;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSetAside;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSomethingElse;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StatementOfTruth;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.UploadSupportingDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhatOrderWanted;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhichLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
@@ -90,6 +91,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .add(new ReasonsNotToShare())
             .add(new WhatOrderWanted())
             .add(new DocumentUploadWanted())
+            .add(new UploadSupportingDocuments())
             .add(new WhichLanguage())
             .add(new StatementOfTruth());
     }

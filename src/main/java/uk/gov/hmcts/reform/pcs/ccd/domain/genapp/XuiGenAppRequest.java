@@ -8,8 +8,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+
+import java.util.List;
 
 @Builder
 @Data
@@ -63,6 +67,15 @@ public class XuiGenAppRequest implements GenAppRequest {
         max = 6800
     )
     private String whatOrderWanted;
+
+    @CCD(label = "Do you want to upload documents to support the defendant’s application?")
+    private VerticalYesNo hasSupportingDocuments;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system"
+    )
+    private List<ListValue<UploadedDocument>> uploadedDocuments;
 
     @CCD(label = "Which language did you use to complete this service?")
     private LanguageUsed languageUsed;

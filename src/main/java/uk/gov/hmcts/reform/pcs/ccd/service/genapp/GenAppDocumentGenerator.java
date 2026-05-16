@@ -18,13 +18,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.document.model.genapp.GenAppFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -46,6 +46,7 @@ public class GenAppDocumentGenerator {
     private final AddressFormatter addressFormatter;
     private final CaseReferenceFormatter caseReferenceFormatter;
     private final CaseNameFormatter caseNameFormatter;
+    private final DocumentNameService documentNameService;
     private final ModelMapper modelMapper;
     private final Clock ukClock;
 
@@ -56,6 +57,7 @@ public class GenAppDocumentGenerator {
                                    AddressFormatter addressFormatter,
                                    CaseReferenceFormatter caseReferenceFormatter,
                                    CaseNameFormatter caseNameFormatter,
+                                   DocumentNameService documentNameService,
                                    ModelMapper modelMapper,
                                    @Qualifier("ukClock") Clock ukClock) {
         this.pcsCaseService = pcsCaseService;
@@ -65,6 +67,7 @@ public class GenAppDocumentGenerator {
         this.addressFormatter = addressFormatter;
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.caseNameFormatter = caseNameFormatter;
+        this.documentNameService = documentNameService;
         this.modelMapper = modelMapper;
         this.ukClock = ukClock;
     }
@@ -77,7 +80,8 @@ public class GenAppDocumentGenerator {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         UUID applicantPartyId = applicantParty.getId();
-        String outputFilename = getDocumentFilename(mainClaim, genAppEntity, applicantPartyId);
+        String outputFilename = documentNameService
+            .appendGenAppPostfix(OUTPUT_FILENAME_PREFIX, genAppEntity, mainClaim, applicantPartyId);
 
         GenAppFormPayload genAppFormPayload
             = createGenAppFormPayload(caseReference, pcsCaseEntity, mainClaim, citizenGenAppRequest, applicantPartyId);
@@ -168,36 +172,6 @@ public class GenAppDocumentGenerator {
 
     private Party toParty(ClaimPartyEntity claimPartyEntity) {
         return modelMapper.map(claimPartyEntity.getParty(), Party.class);
-    }
-
-    private String getDocumentFilename(ClaimEntity mainClaim, GenAppEntity genAppEntity, UUID applicantPartyId) {
-        ClaimPartyEntity applicantClaimParty = getClaimParty(mainClaim, applicantPartyId);
-
-        // Example label: General Application (GA2) - Defendant 1.pdf
-        String applicantLabel = getPartyLabel(applicantClaimParty);
-        String filename = "%s GA%d".formatted(OUTPUT_FILENAME_PREFIX, genAppEntity.getRank());
-        if (applicantLabel != null) {
-            filename += " - " + applicantLabel;
-        }
-
-        return filename;
-    }
-
-    private static ClaimPartyEntity getClaimParty(ClaimEntity claim, UUID partyId) {
-        return claim.getClaimParties().stream()
-            .filter(claimPartyEntity -> partyId.equals(claimPartyEntity.getParty().getId()))
-            .findFirst()
-            .orElseThrow(() -> new PartyNotFoundException("Party not found"));
-    }
-
-    private static String getPartyLabel(ClaimPartyEntity applicantClaimParty) {
-        if (applicantClaimParty.getRole() == PartyRole.CLAIMANT) {
-            return "Claimant %d".formatted(applicantClaimParty.getRank());
-        } else if (applicantClaimParty.getRole() == PartyRole.DEFENDANT) {
-            return "Defendant %d".formatted(applicantClaimParty.getRank());
-        } else {
-            return null;
-        }
     }
 
 }
