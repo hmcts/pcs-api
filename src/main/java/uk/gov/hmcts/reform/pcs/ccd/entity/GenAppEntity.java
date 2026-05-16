@@ -24,8 +24,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -45,6 +47,8 @@ public class GenAppEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    private Integer rank;
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
     @JsonBackReference
@@ -55,6 +59,8 @@ public class GenAppEntity {
 
     @Enumerated(EnumType.STRING)
     private GenAppState state;
+
+    private String clientReference;
 
     @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "party_id")
@@ -93,4 +99,11 @@ public class GenAppEntity {
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
+
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "sot_id")
+    @JsonManagedReference
+    private StatementOfTruthEntity statementOfTruth;
+
+    private LocalDateTime applicationSubmittedDate;
 }

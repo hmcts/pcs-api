@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.math.BigDecimal;
@@ -37,7 +37,7 @@ class PaymentCallBackControllerTest {
         // Given
         String ccdCaseNumber = "123123123123";
         BigDecimal amount = new BigDecimal("123.11");
-        ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
+        PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
             .serviceRequestReference("SR-123")
             .ccdCaseNumber(ccdCaseNumber)
             .serviceRequestAmount(amount)
@@ -51,13 +51,13 @@ class PaymentCallBackControllerTest {
                          .build())
             .build();
 
-        String requestBody = objectMapper.writeValueAsString(serviceRequestUpdate);
+        String requestBody = objectMapper.writeValueAsString(paymentStatusCallback);
 
         // When
         underTest.processPaymentCallback("s2s", requestBody);
 
         // Then
-        verify(paymentService).processPaymentResponse(any(ServiceRequestUpdate.class));
+        verify(paymentService).processPaymentResponse(any(PaymentStatusCallback.class));
     }
 
     @Test
@@ -65,7 +65,7 @@ class PaymentCallBackControllerTest {
         // Given
         String ccdCaseNumber = "123123123123";
         BigDecimal amount = new BigDecimal("123.11");
-        ServiceRequestUpdate serviceRequestUpdate = ServiceRequestUpdate.builder()
+        PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
             .serviceRequestReference("SR-123")
             .ccdCaseNumber(ccdCaseNumber)
             .serviceRequestAmount(amount)
@@ -79,13 +79,13 @@ class PaymentCallBackControllerTest {
                          .build())
             .build();
 
-        String requestBody = objectMapper.writeValueAsString(serviceRequestUpdate);
+        String requestBody = objectMapper.writeValueAsString(paymentStatusCallback);
 
         // When
         underTest.processRequestBody(requestBody);
 
         // Then
-        verify(paymentService).processPaymentResponse(any(ServiceRequestUpdate.class));
+        verify(paymentService).processPaymentResponse(any(PaymentStatusCallback.class));
     }
 
     @Test

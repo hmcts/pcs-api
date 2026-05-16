@@ -3,11 +3,14 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
@@ -20,7 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
@@ -183,15 +186,20 @@ public class ClaimGroundService {
                                         .build());
         }
 
+        if (!CollectionUtils.isEmpty(groundsForPossession.getAdditionalOtherGround())) {
+            addOtherGroundToClaimEntity(claimGroundEntities,
+                    groundsForPossession.getAdditionalOtherGroundDescription(), reasons.getOtherGroundReason());
+        }
+
         return claimGroundEntities;
     }
 
     private List<ClaimGroundEntity> assuredTenancyNoRentArrearsGroundsWithReason(PCSCase pcsCase) {
 
-        Set<AssuredMandatoryGround> mandatoryGrounds = pcsCase.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
-        Set<AssuredDiscretionaryGround> discretionaryGrounds = pcsCase
-                .getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
-        NoRentArrearsReasonForGrounds reasons = pcsCase.getNoRentArrearsReasonForGrounds();
+        AssuredNoArrearsPossessionGrounds groundsForPossession = pcsCase.getNoRentArrearsGroundsOptions();
+        Set<AssuredMandatoryGround> mandatoryGrounds = groundsForPossession.getMandatoryGrounds();
+        Set<AssuredDiscretionaryGround> discretionaryGrounds = groundsForPossession.getDiscretionaryGrounds();
+        NoRentArrearsGroundsReasons reasons = pcsCase.getNoRentArrearsGroundsReasons();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
 
@@ -245,6 +253,11 @@ public class ClaimGroundService {
                                  .isRentArrears(isRentArrearsGround)
                                  .build());
             }
+        }
+
+        if (!CollectionUtils.isEmpty(groundsForPossession.getOtherGround())) {
+            addOtherGroundToClaimEntity(entities, groundsForPossession.getOtherGroundDescription(),
+                    reasons.getOtherGround());
         }
 
         return entities;
@@ -343,25 +356,27 @@ public class ClaimGroundService {
             }
         );
 
-        possessionGrounds.getSecureAntisocialAdditionalGrounds().forEach(
+        if (!CollectionUtils.isEmpty(possessionGrounds.getSecureAntisocialAdditionalGrounds())) {
+            possessionGrounds.getSecureAntisocialAdditionalGrounds().forEach(
                 antisocialGround -> {
-                String reasonText = switch (antisocialGround) {
-                    case S84A_CONDITION_1 -> reasons.getAntiSocialCondition1OfS84AGround();
-                    case S84A_CONDITION_2 -> reasons.getAntiSocialCondition2OfS84AGround();
-                    case S84A_CONDITION_3 -> reasons.getAntiSocialCondition3OfS84AGround();
-                    case S84A_CONDITION_4 -> reasons.getAntiSocialCondition4OfS84AGround();
-                    case S84A_CONDITION_5 -> reasons.getAntiSocialCondition5OfS84AGround();
-                };
+                    String reasonText = switch (antisocialGround) {
+                        case S84A_CONDITION_1 -> reasons.getAntiSocialCondition1OfS84AGround();
+                        case S84A_CONDITION_2 -> reasons.getAntiSocialCondition2OfS84AGround();
+                        case S84A_CONDITION_3 -> reasons.getAntiSocialCondition3OfS84AGround();
+                        case S84A_CONDITION_4 -> reasons.getAntiSocialCondition4OfS84AGround();
+                        case S84A_CONDITION_5 -> reasons.getAntiSocialCondition5OfS84AGround();
+                    };
 
-                claimGroundEntities.add(
-                    ClaimGroundEntity.builder()
-                        .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
-                        .code(antisocialGround.name())
-                        .reason(reasonText)
-                        .isRentArrears(false)
-                        .build());
+                    claimGroundEntities.add(
+                        ClaimGroundEntity.builder()
+                            .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                            .code(antisocialGround.name())
+                            .reason(reasonText)
+                            .isRentArrears(false)
+                            .build());
                 }
-        );
+            );
+        }
 
         possessionGrounds.getSecureOrFlexibleDiscretionaryGroundsAlt().forEach(
             discretionaryGroundAlt -> {
@@ -405,4 +420,14 @@ public class ClaimGroundService {
         return claimGroundEntities;
     }
 
+    private void addOtherGroundToClaimEntity(List<ClaimGroundEntity> entities, String otherGroundDescription,
+                                             String reasonsTxt) {
+        entities.add(ClaimGroundEntity.builder()
+            .category(ClaimGroundCategory.ASSURED_OTHER)
+            .code(AssuredAdditionalOtherGround.OTHER.name())
+            .description(otherGroundDescription)
+            .reason(reasonsTxt)
+            .isRentArrears(false)
+            .build());
+    }
 }
