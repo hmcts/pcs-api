@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HearingInNext14Days;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HelpWithFeesNeeded;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.MustApplyForHelpWithFees;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.OtherPartiesAgreed;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ReasonsNotToShare;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.SelectParty;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartAdjourn;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSetAside;
@@ -86,6 +87,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .add(new AppliedForHelpWithFees())
             .add(new MustApplyForHelpWithFees())
             .add(new OtherPartiesAgreed())
+            .add(new ReasonsNotToShare())
             .add(new WhatOrderWanted())
             .add(new DocumentUploadWanted())
             .add(new WhichLanguage())

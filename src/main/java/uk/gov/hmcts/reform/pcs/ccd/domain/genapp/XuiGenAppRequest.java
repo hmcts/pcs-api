@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
@@ -40,11 +41,20 @@ public class XuiGenAppRequest implements GenAppRequest {
     )
     private String hwfReference;
 
+    @CCD(
+        label = "Have the other parties agreed to this application?",
+        hint = "If you ask the court for more than one thing, this answer will apply to all of them"
+    )
     private VerticalYesNo otherPartiesAgreed;
 
+    @CCD(label = "Are there any reasons that this application should not be shared with the other parties?")
     private VerticalYesNo withoutNotice;
 
-    @CCD(max = 6800)
+    @CCD(
+        label = "Provide the reason this application should not be shared with the other party",
+        typeOverride = FieldType.TextArea,
+        max = 6800
+    )
     private String withoutNoticeReason;
 
     @CCD(max = 6800)
