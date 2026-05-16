@@ -12,8 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.ConfirmEvictionConfigurer;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 
@@ -23,14 +22,13 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
 
-
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(legalRepDocumentUpload.name(), this::submit)
                 .forAllStates()
-                .name("Upload legal rep document")
+                .name("Upload additional documents")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
         legalRepDocumentUploadConfigurer.configurePages(new PageBuilder(eventBuilder));

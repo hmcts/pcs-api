@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.legalrepdocumentupload;
+package uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;

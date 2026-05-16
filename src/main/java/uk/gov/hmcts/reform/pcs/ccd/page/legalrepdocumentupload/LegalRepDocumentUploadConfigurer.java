@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.legalrepdocumentupload;
+package uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -12,6 +12,7 @@ public class LegalRepDocumentUploadConfigurer implements PageConfigurer {
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
-            .add(new UploadAdditionalDocumentsPage());
+            .add(new UploadAdditionalDocumentsPage())
+            .add(new ExistingApplicationPage());
     }
 }
