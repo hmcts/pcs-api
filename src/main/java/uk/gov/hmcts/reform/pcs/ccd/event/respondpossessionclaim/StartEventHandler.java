@@ -10,9 +10,12 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
@@ -21,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -44,6 +48,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private final DefendantAccessValidator accessValidator;
     private final PossessionClaimResponseMapper responseMapper;
     private final DraftCaseDataService draftCaseDataService;
+    private final DefendantResponseRepository defendantResponseRepository;
 
     @Override
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -53,11 +58,31 @@ public class StartEventHandler implements Start<PCSCase, State> {
         PCSCase pcsCase = eventPayload.caseData();
         PartyEntity currentDefendant = loadAndValidateDefendant(caseReference);
 
+        if (hasSubmittedResponse(caseReference, securityContextService.getCurrentUserId())) {
+            return buildSubmittedResponseCase(pcsCase);
+        }
+
         if (hasDraftInProgress(caseReference)) {
             return restoreSavedDraftAnswers(caseReference, pcsCase, currentDefendant);
         }
 
         return initializeFirstTimeResponse(caseReference, pcsCase, currentDefendant);
+    }
+
+    private boolean hasSubmittedResponse(long caseReference, UUID userId) {
+        return userId != null
+            && defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
+    }
+
+    private PCSCase buildSubmittedResponseCase(PCSCase pcsCase) {
+        return pcsCase.toBuilder()
+            .possessionClaimResponse(PossessionClaimResponse.builder()
+                .defendantResponses(DefendantResponses.builder()
+                    .status(DefendantResponseStatus.SUBMITTED)
+                    .build())
+                .build())
+            .hasUnsubmittedCaseData(YesOrNo.NO)
+            .build();
     }
 
     private PartyEntity loadAndValidateDefendant(long caseReference) {

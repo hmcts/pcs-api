@@ -118,4 +118,7 @@ public class DefendantResponses {
     private String otherConsiderationsDetails;
     @CCD
     private VerticalYesNo makeCounterClaim;
+
+    @CCD
+    private DefendantResponseStatus status;
 }
