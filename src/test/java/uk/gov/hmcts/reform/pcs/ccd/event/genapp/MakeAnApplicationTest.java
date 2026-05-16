@@ -105,6 +105,7 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .thenReturn(Optional.of(expectedPartyNameList));
 
             PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
                 .build();
 
             // When
@@ -133,6 +134,7 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .thenReturn(Optional.of(expectedPartyNameList));
 
             PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
                 .build();
 
             // When
@@ -160,6 +162,7 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .thenReturn(Optional.empty());
 
             PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
                 .build();
 
             // When
