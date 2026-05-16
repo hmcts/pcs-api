@@ -193,6 +193,20 @@ class MakeAnApplicationTest extends BaseEventTest {
             feeSetterCaptor.getValue().accept(caseData, formattedMaxFee);
             assertThat(caseData.getXuiGenAppRequest().getMaxFee()).isEqualTo(formattedMaxFee);
         }
+
+        @Test
+        void shouldShowHwfScreensFlagToYes() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
+                .build();
+
+            // When
+            callStartHandler(caseData);
+
+            // Then
+            assertThat(caseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(VerticalYesNo.YES);
+        }
     }
 
     @Nested
