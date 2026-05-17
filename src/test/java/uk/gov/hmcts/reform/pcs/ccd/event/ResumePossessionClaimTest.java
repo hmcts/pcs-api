@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsF
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ExemptLandlord;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettle
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
@@ -160,7 +161,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ClaimantInformationPage claimantInformationPage;
     @Mock
-    private ClaimantDetailsWalesPage claimantDetailsWalesPage;
+    private ExemptLandlord exemptLandlord;
     @Mock
     private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageePage;
     @Mock
@@ -199,6 +200,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private RentDetailsPage rentDetailsPage;
     @Mock
     private RentArrears rentArrears;
+    @Mock
+    private PreActionProtocol preActionProtocol;
 
     @BeforeEach
     void setUp() {
@@ -218,12 +221,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
             introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
             rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
             defendantCircumstancesPage, suspensionOfRightToBuyOrderReason, statementOfExpressTerms,
-            demotionOfTenancyOrderReason, organisationService, claimantInformationPage, claimantDetailsWalesPage,
+            demotionOfTenancyOrderReason, organisationService, claimantInformationPage, exemptLandlord,
             prohibitedConductWalesPage, schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage,
             groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
             addressFormatter, rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage, rentArrears
+            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage, rentArrears, preActionProtocol
         );
 
         setEventUnderTest(underTest);

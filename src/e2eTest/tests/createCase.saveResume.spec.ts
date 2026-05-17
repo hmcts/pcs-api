@@ -97,7 +97,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
@@ -185,6 +185,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
       option: claimLanguageUsed.englishLRadioOption
@@ -219,7 +220,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);    
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
@@ -229,7 +230,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, false);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performValidation('mainHeader', claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption, false);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performValidation('radioButtonChecked', claimType.noRadioOption, false);
@@ -306,6 +307,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
       option: claimLanguageUsed.englishLRadioOption

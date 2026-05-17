@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
@@ -50,8 +49,6 @@ class ClaimServiceTest {
     @Mock
     private PossessionAlternativesService possessionAlternativesService;
     @Mock
-    private HousingActWalesService housingActWalesService;
-    @Mock
     private AsbProhibitedConductService asbProhibitedConductService;
     @Mock
     private RentArrearsService rentArrearsService;
@@ -67,7 +64,7 @@ class ClaimServiceTest {
     @BeforeEach
     void setUp() {
         claimService = new ClaimService(claimRepository, claimGroundService, possessionAlternativesService,
-                                        housingActWalesService, asbProhibitedConductService, rentArrearsService,
+                                        asbProhibitedConductService, rentArrearsService,
                                         noticeOfPossessionService, statementOfTruthService);
     }
 
@@ -79,15 +76,14 @@ class ClaimServiceTest {
         when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getPreActionProtocolCompleted()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getMediationAttempted()).thenReturn(VerticalYesNo.NO);
-        when(pcsCase.getMediationAttemptedDetails()).thenReturn("mediation details");
         when(pcsCase.getSettlementAttempted()).thenReturn(VerticalYesNo.YES);
-        when(pcsCase.getSettlementAttemptedDetails()).thenReturn("settlement details");
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getWantToUploadDocuments()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getApplicationWithClaim()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
+        when(pcsCase.getPreActionProtocolIncompleteExplanation()).thenReturn("explanation");
 
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.createClaimGroundEntities(pcsCase)).thenReturn(expectedClaimGrounds);
@@ -101,9 +97,7 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getClaimCosts()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getPreActionProtocolFollowed()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getMediationAttempted()).isEqualTo(VerticalYesNo.NO);
-        assertThat(createdClaimEntity.getMediationDetails()).isEqualTo("mediation details");
         assertThat(createdClaimEntity.getSettlementAttempted()).isEqualTo(VerticalYesNo.YES);
-        assertThat(createdClaimEntity.getSettlementDetails()).isEqualTo("settlement details");
         assertThat(createdClaimEntity.getAdditionalDefendants()).isEqualTo(VerticalYesNo.NO);
         assertThat(createdClaimEntity.getUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getAdditionalUnderlesseesOrMortgagees()).isEqualTo(VerticalYesNo.NO);
@@ -111,6 +105,7 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getGenAppExpected()).isEqualTo(VerticalYesNo.NO);
         assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
         assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
+        assertThat(createdClaimEntity.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
 
         verify(claimRepository).save(createdClaimEntity);
     }
@@ -227,35 +222,6 @@ class ClaimServiceTest {
 
         // Then
         assertThat(createdClaimEntity.getPossessionAlternativesEntity()).isEqualTo(possessionAlternativesEntity);
-    }
-
-    @Test
-    void shouldSetWalesHousingActForWalesProperties() {
-        // Given
-        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
-
-        HousingActWalesEntity housingActWalesEntity = mock(HousingActWalesEntity.class);
-        when(housingActWalesService.createHousingActWalesEntity(pcsCase))
-            .thenReturn(housingActWalesEntity);
-
-        // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
-
-        // Then
-        assertThat(createdClaimEntity.getHousingActWales()).isEqualTo(housingActWalesEntity);
-    }
-
-    @Test
-    void shouldNotSetWalesHousingActForNonWalesProperties() {
-        // Given
-        when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
-
-        // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
-
-        // Then
-        assertThat(createdClaimEntity.getHousingActWales()).isNull();
-        verify(housingActWalesService, never()).createHousingActWalesEntity(pcsCase);
     }
 
     @Test

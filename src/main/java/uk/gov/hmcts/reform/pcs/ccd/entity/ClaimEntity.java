@@ -25,7 +25,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
@@ -84,17 +83,15 @@ public class ClaimEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo preActionProtocolFollowed;
 
+    private String preActionProtocolIncompleteExplanation;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo mediationAttempted;
 
-    private String mediationDetails;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo settlementAttempted;
-
-    private String settlementDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -160,10 +157,6 @@ public class ClaimEntity {
 
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
     @JsonManagedReference
-    private HousingActWalesEntity housingActWales;
-
-    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
-    @JsonManagedReference
     private AsbProhibitedConductEntity asbProhibitedConductEntity;
 
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
@@ -182,17 +175,9 @@ public class ClaimEntity {
     @JsonManagedReference
     private StatementOfTruthEntity statementOfTruth;
 
-    public void setHousingActWales(HousingActWalesEntity housingActWales) {
-        if (this.housingActWales != null) {
-            this.housingActWales.setClaim(null);
-        }
-
-        this.housingActWales = housingActWales;
-
-        if (this.housingActWales != null) {
-            this.housingActWales.setClaim(this);
-        }
-    }
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo isExemptLandlord;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
