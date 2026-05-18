@@ -1,6 +1,7 @@
 import { LoginAction, NavigateToUrlAction, CreateCaseAPIAction } from "@utils/actions/custom-actions";
 import { GenAppsAction } from "@utils/actions/custom-actions/custom-actions-genApps/genApps.action";
 import { RecordAnswers } from "@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action";
+import { LinkSolicitorAPIAction } from "@utils/actions/custom-actions/linkSolicitorAPI.action";
 import { CheckAction, ClickButtonAction, ClickRadioButtonAction, ClickTabAction, InputTextAction, SelectAction, UploadFileAction } from "@utils/actions/element-actions";
 import { ClickLinkAction } from "@utils/actions/element-actions/clickLink.action";
 import { ClickSummaryAction } from "@utils/actions/element-actions/clickSummary.action";
@@ -27,6 +28,8 @@ export class ActionGenAppsRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
+    ['getCaseAPI', new CreateCaseAPIAction()],
+    ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     // ['fetchPINsAPI', new FetchPINsAndValidateAccessCodeAPIAction()],
     // ['validateAccessCodeAPI', new FetchPINsAndValidateAccessCodeAPIAction()],
     

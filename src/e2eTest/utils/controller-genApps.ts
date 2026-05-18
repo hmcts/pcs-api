@@ -6,6 +6,7 @@ import { ActionEnforcementRegistry } from './registry/registry-enforcement/actio
 import { AxeUtils } from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from './test-logger';
+import { ActionGenAppsRegistry } from './registry/registry-genApps/action-genApps.registry';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
@@ -81,7 +82,7 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
 
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
-  const actionInstance = ActionEnforcementRegistry.getAction(action);
+  const actionInstance = ActionGenAppsRegistry.getAction(action);
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;
 

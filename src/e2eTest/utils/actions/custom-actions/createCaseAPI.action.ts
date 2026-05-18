@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData } from '@data/api-data';
+import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
 
@@ -14,6 +14,7 @@ export class CreateCaseAPIAction implements IAction {
       ['submitCaseAPI', () => this.submitCaseAPI(fieldName)],
       ['deleteCaseRole', () => this.deleteCaseRole(fieldName)],
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
+      ['getCaseAPI', () => this.getCaseAPI()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -164,5 +165,26 @@ export class CreateCaseAPIAction implements IAction {
         console.warn(`Case user removal failed with status ${status}. ${errorMessage}`);
       }
     }
+  }
+
+  private async getCaseAPI(): Promise<void> {
+    const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+    
+      process.env.CREATE_EVENT_TOKEN = (await getCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
+
+      const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+      process.env.Defendant_ID = await createResponse.data.data.allDefendants[0].id;
+      // console.log(createResponse.data.casePartiesTab_DefendantOneDetails.length);
+      // process.env.CASE_NUMBER = createResponse.data.id;
+      // caseInfo.id = createResponse.data.id;
+      // caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+      // caseInfo.state = createResponse.data.state;
+   
+
+      // if (!status) {
+      //   throw new Error(`Case creation failed: no response from server`);
+      // }
+      //throw new Error(`Case creation failed with status ${status}.Response received is ${responseBody?.message}}`);
+    //}
   }
 }
