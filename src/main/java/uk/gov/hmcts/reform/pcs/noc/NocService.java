@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersResponse;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersRequest;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocQuestionBuilder;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocQuestionsResponse;
+import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmitContext;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmissionResponse;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -21,8 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
-import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
 import java.util.List;
@@ -38,7 +37,6 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
     public static final String LAST_NAME_QUESTION_ID = "pcs-defendant-last-name";
 
     private final PcsCaseService pcsCaseService;
-    private final IdamService idamService;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
 
@@ -62,16 +60,20 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     @Transactional
-    public NocSubmissionResponse submit(String authorisation, NocAnswersRequest request) {
+    public NocSubmissionResponse submit(NocSubmitContext context, NocAnswersRequest request) {
         DefendantResolution resolution = resolveDefendantParty(request);
         if (!resolution.isResolved()) {
             return NocSubmissionResponse.invalid(resolution.error().code(), resolution.error().message());
         }
 
         PartyEntity defendant = resolution.defendant();
-        User user = idamService.validateAuthToken(authorisation);
-        UserInfo userDetails = user.getUserDetails();
+        UserInfo userDetails = toUserInfo(context);
 
+        // TODO: Move NoC side effects behind a durable job boundary. The synchronous submit path should
+        // only resolve and accept or reject the NoC request; RAS role assignment, RAS role revocation,
+        // and outgoing representative notification should be retried from the PCS job queue. Use the
+        // AAC outgoing representative Notify template as the content baseline:
+        // https://github.com/hmcts/aac-manage-case-assignment/blob/master/src/main/resources/application.yaml#L131
         caseRoleAssignmentService.assignRasRole(
             request.caseId(),
             userDetails.getUid(),
@@ -92,6 +94,17 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
             ));
 
         return NocSubmissionResponse.approved();
+    }
+
+    private UserInfo toUserInfo(NocSubmitContext context) {
+        return new UserInfo(
+            context.email(),
+            context.userId(),
+            context.name(),
+            context.givenName(),
+            context.familyName(),
+            context.roles()
+        );
     }
 
     private DefendantResolution resolveDefendantParty(NocAnswersRequest request) {
