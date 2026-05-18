@@ -394,10 +394,10 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
-    void shouldRoundTripConfirmedSectionsInDraft() {
+    void shouldRoundTripCompletedSectionsInDraft() {
         //Given
         DefendantResponses responses = DefendantResponses.builder()
-            .confirmedSections(java.util.List.of(
+            .completedSections(java.util.List.of(
                 RespondToClaimSection.START_NOW_AND_DETAILS,
                 RespondToClaimSection.PERSONAL_DETAILS))
             .build();
@@ -415,7 +415,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses().getConfirmedSections())
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses().getCompletedSections())
             .containsExactly(
                 RespondToClaimSection.START_NOW_AND_DETAILS,
                 RespondToClaimSection.PERSONAL_DETAILS);

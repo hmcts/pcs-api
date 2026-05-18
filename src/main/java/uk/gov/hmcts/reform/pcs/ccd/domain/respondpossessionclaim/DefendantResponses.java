@@ -124,5 +124,5 @@ public class DefendantResponses {
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "RespondToClaimSection"
     )
-    private List<RespondToClaimSection> confirmedSections;
+    private List<RespondToClaimSection> completedSections;
 }
