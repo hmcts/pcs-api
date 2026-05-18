@@ -11,8 +11,9 @@ import static org.assertj.core.api.Assertions.entry;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTER_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HMCTS_JUDICIARY;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 
 class InternalCaseFlagAccessTest {
@@ -34,9 +35,10 @@ class InternalCaseFlagAccessTest {
         assertThat(grants.asMap()).contains(entry(CTSC_ADMIN, Permission.CRU));
         assertThat(grants.asMap()).contains(entry(HEARING_CENTER_ADMIN, Permission.CRU));
         assertThat(grants.asMap()).contains(entry(WLU_ADMIN, Permission.CRU));
-        assertThat(grants.get(HMCTS_JUDICIARY)).contains(Permission.R);
+        assertThat(grants.get(FEE_PAID_JUDGE)).contains(Permission.R);
         assertThat(grants.get(CIRCUIT_JUDGE)).contains(Permission.R);
+        assertThat(grants.get(LEADERSHIP_JUDGE)).contains(Permission.R);
         assertThat(grants.get(JUDGE)).contains(Permission.R);
-        assertThat(grants.asMap().size()).isEqualTo(6);
+        assertThat(grants.asMap().size()).isEqualTo(7);
     }
 }
