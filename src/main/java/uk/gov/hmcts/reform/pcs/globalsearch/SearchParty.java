@@ -18,13 +18,9 @@ public class SearchParty implements CCDConfig<PCSCase, State, UserRole> {
     private static final List<SearchPartyField> SEARCH_PARTY_LIST = of(
         SearchPartyField.builder()
             // TODO: replace firstName with a computed fullName field on Party
-            .searchPartyName("firstName")
-            .searchPartyEmailAddress("emailAddress")
-            .searchPartyAddressLine1("address.AddressLine1")
-            .searchPartyPostCode("address.PostCode")
-            .searchPartyDOB("dateOfBirth")
-            .searchPartyCollectionFieldName("parties")
-            .searchPartyDOD("")
+            .searchPartyName("fallbackClaimantName")
+            .caseTypeId("PCS")
+            .searchPartyEmailAddress("claimantContactEmail")
             .build()
     );
 
