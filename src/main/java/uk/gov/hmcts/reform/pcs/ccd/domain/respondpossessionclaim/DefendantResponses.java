@@ -119,6 +119,10 @@ public class DefendantResponses {
     @CCD
     private VerticalYesNo makeCounterClaim;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(
+        access = {CitizenAccess.class},
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "RespondToClaimSection"
+    )
     private List<RespondToClaimSection> confirmedSections;
 }
