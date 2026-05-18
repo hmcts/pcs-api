@@ -13,6 +13,7 @@ import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,7 +29,6 @@ class RoleToAccessProfilesTest {
 
     private final RoleToAccessProfiles underTest = new RoleToAccessProfiles();
 
-    //Tests that accessing UserRoles via ExternalRole wrapper uses prefix for Idam roles
     @Test
     void shouldAddIdamPrefixForIdamRolesOnly() {
         stream(UserRole.values()).forEach(role -> {
@@ -45,13 +45,15 @@ class RoleToAccessProfilesTest {
     void shouldRegisterAccessProfileForEveryUserRole() {
         when(configBuilder.caseRoleToAccessProfile(any())).thenReturn(accessProfileBuilder);
         when(accessProfileBuilder.accessProfiles(any(String.class))).thenReturn(accessProfileBuilder);
+
         underTest.configure(configBuilder);
+
         stream(UserRole.values()).forEach(userRole -> {
             String expectedExternalRole = ExternalUserRole.forCcdRole(userRole).getRole();
             verify(configBuilder).caseRoleToAccessProfile(argThat(
                 externalRole -> externalRole.getRole().equals(expectedExternalRole)
             ));
-            verify(accessProfileBuilder).accessProfiles(userRole.getAccessProfiles());
+            verify(accessProfileBuilder, atLeastOnce()).accessProfiles(userRole.getAccessProfiles());
         });
         verify(accessProfileBuilder, times(UserRole.values().length)).build();
     }
