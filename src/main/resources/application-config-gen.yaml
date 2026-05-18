@@ -1,0 +1,20 @@
+# Stubs for the CCD-config generation task — it boots the Spring context only to scan
+# @CCD annotations, and never makes a real IDAM call. These dummies just satisfy bean
+# construction. Do NOT use this profile at runtime.
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          prd-admin:
+            client-secret: config-gen-stub
+          system-user:
+            client-secret: config-gen-stub
+
+idam:
+  system-user:
+    username: config-gen-stub
+    password: config-gen-stub
+  prd-admin:
+    username: config-gen-stub
+    password: config-gen-stub
