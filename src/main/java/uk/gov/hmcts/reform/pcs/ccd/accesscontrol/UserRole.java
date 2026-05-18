@@ -5,7 +5,6 @@ import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
@@ -26,27 +25,23 @@ public enum UserRole implements HasRole {
     PCS_SOLICITOR("caseworker-pcs-solicitor", Permission.CRU, IDAM),
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", Permission.CRU, RAS),
-
-    HMCTS_CTSC("hmcts-ctsc", Set.of(R), RAS, "GS_profile"),
-    HMCTS_ADMIN("hmcts-admin", Set.of(R), RAS, "GS_profile"),
-    HMCTS_LEGAL_OPERATIONS("hmcts-legal-operations", Set.of(R), RAS, "GS_profile"),
-    HMCTS_JUDICIARY("hmcts-judiciary", Set.of(R), RAS, "GS_profile");
-
+    HMCTS_STAFF("GS_profile", Set.of(R), RAS, "hmcts-staff"),
+    HMCTS_JUDICIARY("GS_profile", Set.of(R), RAS, "hmcts-judiciary");
     @JsonValue
     private final String role;
     private final Set<Permission> caseTypePermissions;
     private final RoleType roleType;
-    private final String[] accessProfiles;
+    private final String externalRoleName;
 
     UserRole(String role, Set<Permission> permissions, RoleType roleType) {
-        this(role, permissions, roleType, role);
+        this(role, permissions, roleType, null);
     }
 
-    UserRole(String role, Set<Permission> permissions, RoleType roleType, String... accessProfiles) {
+    UserRole(String role, Set<Permission> permissions, RoleType roleType, String externalRoleName) {
         this.role = role;
         this.caseTypePermissions = permissions;
         this.roleType = roleType;
-        this.accessProfiles = accessProfiles;
+        this.externalRoleName = externalRoleName;
     }
 
     public String getCaseTypePermissions() {
