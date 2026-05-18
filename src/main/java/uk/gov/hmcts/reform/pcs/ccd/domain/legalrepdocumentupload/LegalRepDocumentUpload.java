@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+
+import java.util.List;
 
 @Builder
 @Data
@@ -20,4 +23,10 @@ public class LegalRepDocumentUpload {
     )
     @JsonProperty("DocumentUploadCategories")
     private DocumentUploadCategory uploadCategories;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system"
+    )
+    private List<ListValue<LegalRepDocument>> additionalDocuments;
 }
