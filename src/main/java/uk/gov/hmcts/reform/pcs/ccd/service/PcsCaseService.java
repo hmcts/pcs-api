@@ -68,9 +68,8 @@ public class PcsCaseService {
 
     public void createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
-        pcsCaseEntity.setCreatedAt(LocalDateTime.now(ukClock));
 
-        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, LocalDateTime.now(ukClock));
         List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
         documentEntities.forEach(doc -> doc.setClaim(claimEntity));
         pcsCaseEntity.addDocuments(documentEntities);

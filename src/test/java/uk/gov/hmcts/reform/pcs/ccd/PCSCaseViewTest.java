@@ -213,16 +213,16 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldMapDateSubmittedFromCaseCreatedAt() {
+    void shouldMapDateSubmittedFromClaimSubmittedDate() {
         // Given
-        LocalDateTime createdAt = LocalDateTime.of(2026, 5, 12, 14, 30);
-        when(pcsCaseEntity.getCreatedAt()).thenReturn(createdAt);
+        LocalDateTime claimSubmittedDate = LocalDateTime.of(2026, 5, 12, 14, 30);
+        when(claimEntity.getClaimSubmittedDate()).thenReturn(claimSubmittedDate);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        assertThat(pcsCase.getDateSubmitted()).isEqualTo(createdAt);
+        assertThat(pcsCase.getDateSubmitted()).isEqualTo(claimSubmittedDate);
     }
 
     @Test

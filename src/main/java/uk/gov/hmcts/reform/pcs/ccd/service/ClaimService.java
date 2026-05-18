@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,9 +28,8 @@ public class ClaimService {
     private final NoticeOfPossessionService noticeOfPossessionService;
     private final StatementOfTruthService statementOfTruthService;
 
-    public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
-
-        ClaimEntity claimEntity = buildClaimEntity(pcsCase);
+    public ClaimEntity createMainClaimEntity(PCSCase pcsCase, LocalDateTime claimSubmittedDate) {
+        ClaimEntity claimEntity = buildClaimEntity(pcsCase, claimSubmittedDate);
 
         List<ClaimGroundEntity> claimGrounds = claimGroundService.createClaimGroundEntities(pcsCase);
         claimEntity.addClaimGrounds(claimGrounds);
@@ -52,7 +52,7 @@ public class ClaimService {
     }
 
 
-    private ClaimEntity buildClaimEntity(PCSCase pcsCase) {
+    private ClaimEntity buildClaimEntity(PCSCase pcsCase, LocalDateTime claimSubmittedDate) {
         AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
 
         ClaimantCircumstances claimantCircumstances = pcsCase.getClaimantCircumstances();
@@ -87,6 +87,7 @@ public class ClaimService {
             .genAppExpected(pcsCase.getApplicationWithClaim())
             .languageUsed(pcsCase.getLanguageUsed())
             .isExemptLandlord(pcsCase.getIsExemptLandlord())
+            .claimSubmittedDate(claimSubmittedDate)
             .build();
     }
 

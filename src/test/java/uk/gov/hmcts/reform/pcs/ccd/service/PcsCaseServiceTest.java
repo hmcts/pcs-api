@@ -147,14 +147,14 @@ class PcsCaseServiceTest {
         underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
-        verify(claimService).createMainClaimEntity(caseData);
+        verify(claimService).createMainClaimEntity(caseData, FIXED_DATE_TIME);
         verify(pcsCaseEntity).addClaim(mainClaimEntity);
     }
 
     @Test
-    void shouldSetCreatedAtUsingUkClockWhenCreatingMainClaim() {
+    void shouldSetClaimSubmittedDateUsingUkClockWhenCreatingMainClaim() {
         // Given
-        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        stubFindCase();
         stubClaimCreation();
 
         PCSCase caseData = PCSCase.builder().build();
@@ -163,7 +163,7 @@ class PcsCaseServiceTest {
         underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
-        verify(pcsCaseEntity).setCreatedAt(FIXED_DATE_TIME);
+        verify(claimService).createMainClaimEntity(caseData, FIXED_DATE_TIME);
     }
 
     @Test
@@ -273,7 +273,7 @@ class PcsCaseServiceTest {
 
     private ClaimEntity stubClaimCreation() {
         ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimService.createMainClaimEntity(any(PCSCase.class))).thenReturn(claimEntity);
+        when(claimService.createMainClaimEntity(any(PCSCase.class), any(LocalDateTime.class))).thenReturn(claimEntity);
         return claimEntity;
     }
 

@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -41,6 +42,8 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 
 @ExtendWith(MockitoExtension.class)
 class ClaimServiceTest {
+
+    private static final LocalDateTime CLAIM_SUBMITTED_DATE = LocalDateTime.of(2026, 5, 18, 12, 30);
 
     @Mock
     private ClaimRepository claimRepository;
@@ -89,7 +92,7 @@ class ClaimServiceTest {
         when(claimGroundService.createClaimGroundEntities(pcsCase)).thenReturn(expectedClaimGrounds);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getAgainstTrespassers()).isEqualTo(VerticalYesNo.YES);
@@ -111,6 +114,15 @@ class ClaimServiceTest {
     }
 
     @Test
+    void shouldCreateMainClaimWithClaimSubmittedDate() {
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
+
+        // Then
+        assertThat(createdClaimEntity.getClaimSubmittedDate()).isEqualTo(CLAIM_SUBMITTED_DATE);
+    }
+
+    @Test
     void shouldCreateMainClaim_WithAdditionalReasonsWhenPresent() {
         // Given
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
@@ -119,7 +131,7 @@ class ClaimServiceTest {
 
         // When
         ClaimEntity createdClaimEntity =
-            claimService.createMainClaimEntity(pcsCase);
+            claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getAdditionalReasons())
@@ -138,7 +150,7 @@ class ClaimServiceTest {
         when(defendantCircumstances.getHasDefendantCircumstancesInfo()).thenReturn(defendantInfoProvided);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getDefendantCircumstances()).isEqualTo(circumstancesInfo);
@@ -157,7 +169,7 @@ class ClaimServiceTest {
         when(claimantCircumstances.getClaimantCircumstancesDetails()).thenReturn(circumstancesInfo);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getClaimantCircumstances()).isEqualTo(circumstancesInfo);
@@ -170,7 +182,7 @@ class ClaimServiceTest {
         when(pcsCase.getClaimantType()).thenReturn(null);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getClaimantType()).isNull();
@@ -184,7 +196,7 @@ class ClaimServiceTest {
         when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getClaimantType()).isNull();
@@ -204,7 +216,7 @@ class ClaimServiceTest {
         when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getClaimantType()).isEqualTo(claimantType);
@@ -218,7 +230,7 @@ class ClaimServiceTest {
             .thenReturn(possessionAlternativesEntity);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getPossessionAlternativesEntity()).isEqualTo(possessionAlternativesEntity);
@@ -234,7 +246,7 @@ class ClaimServiceTest {
             .thenReturn(asbProhibitedConductEntity);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getAsbProhibitedConductEntity()).isEqualTo(asbProhibitedConductEntity);
@@ -246,7 +258,7 @@ class ClaimServiceTest {
         when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getAsbProhibitedConductEntity()).isNull();
@@ -261,7 +273,7 @@ class ClaimServiceTest {
             .thenReturn(rentArrearsEntity);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getRentArrears()).isEqualTo(rentArrearsEntity);
@@ -275,7 +287,7 @@ class ClaimServiceTest {
             .thenReturn(noticeOfPossessionEntity);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getNoticeOfPossession()).isEqualTo(noticeOfPossessionEntity);
@@ -289,7 +301,7 @@ class ClaimServiceTest {
             .thenReturn(statementOfTruthEntity);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, CLAIM_SUBMITTED_DATE);
 
         // Then
         assertThat(createdClaimEntity.getStatementOfTruth()).isEqualTo(statementOfTruthEntity);

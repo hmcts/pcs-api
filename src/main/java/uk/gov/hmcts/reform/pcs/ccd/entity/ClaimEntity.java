@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -178,6 +179,8 @@ public class ClaimEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo isExemptLandlord;
+
+    private LocalDateTime claimSubmittedDate;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
