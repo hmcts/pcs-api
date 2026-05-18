@@ -401,6 +401,32 @@ class RestExceptionHandlerTest {
     }
 
     @Test
+    void shouldMapIdamExceptionWithOAuth2InvalidTokenResponseToServiceUnavailable() {
+        // Spring's OAuth2 client may raise OAuth2AuthorizationException with errorCode
+        // "invalid_token_response" when it can't parse a 429 body — no RestClient in the chain.
+        OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "throttled by IDAM", null);
+        OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError);
+        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
+
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("5");
+    }
+
+    @Test
+    void shouldMapIdamExceptionWithOAuth2TemporarilyUnavailableToServiceUnavailable() {
+        OAuth2Error oauthError = new OAuth2Error("temporarily_unavailable", "IDAM rate limited", null);
+        OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError);
+        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
+
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("5");
+    }
+
+    @Test
     void shouldMapIdamExceptionWithNon429OAuth2CauseToInternalServerError() {
         HttpClientErrorException internal = HttpClientErrorException.create(
             HttpStatus.INTERNAL_SERVER_ERROR, "Server Error", HttpHeaders.EMPTY, new byte[0], null);

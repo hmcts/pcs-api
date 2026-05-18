@@ -9,6 +9,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -20,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
+
+import java.util.Set;
 
 @Slf4j
 @ControllerAdvice
@@ -110,14 +113,25 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(new Error("Invalid data"));
     }
 
-    // Spring's OAuth2 password client wraps any non-2xx RestClient call in OAuth2AuthorizationException
-    // with the original RestClientResponseException set as the cause. We walk the chain looking for a 429.
+    // IDAM throttles by returning HTTP 429 with no Retry-After (per RateLimitService in idam-api).
+    // Spring's OAuth2 password client may surface this two ways depending on version + body:
+    //   1. RestClientResponseException(429) somewhere in the cause chain
+    //   2. OAuth2AuthorizationException with errorCode "invalid_token_response" (Spring couldn't
+    //      parse the 429 body as a TokenResponse) or "temporarily_unavailable" (RFC 6749).
+    // Match either shape so the throttle response is always surfaced as 503 + Retry-After.
+    private static final Set<String> THROTTLE_ERROR_CODES = Set.of(
+        "invalid_token_response", "temporarily_unavailable");
+
     private static boolean isUpstreamThrottled(Throwable ex) {
         Throwable cause = ex;
         int depth = 0;
         while (cause != null && depth++ < 10) {
             if (cause instanceof RestClientResponseException restEx
                 && restEx.getStatusCode().value() == HttpStatus.TOO_MANY_REQUESTS.value()) {
+                return true;
+            }
+            if (cause instanceof OAuth2AuthorizationException oauthEx
+                && THROTTLE_ERROR_CODES.contains(oauthEx.getError().getErrorCode())) {
                 return true;
             }
             cause = cause.getCause();
