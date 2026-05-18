@@ -44,12 +44,12 @@ test('test', async ({page, request}) => {
   const createOrg = 'true';
   const orgApprovalNeeded = 'true';
   const userCreationNeeded = 'true';
-  const newTempUser = 'true';
+  const newTempUser = 'false';
   const inviteTheUserToOrg = 'true';
   const updateIDAMRoles = 'true';
 
   /** Namespace for org emails/names (e.g. `org1` → …Org1, …org1…). Change only here to retarget all derived ids. */
-  const org = 'org1';
+  const org = 'org auto';
   /** How many solicitors to provision (emails `pcs-${org}-solicitor1@test.com`, …solicitor2…, etc.). */
   const numberOfSolicitorUsers = 1;
   const solicitorEmailStartsWith = 1;
@@ -58,10 +58,10 @@ test('test', async ({page, request}) => {
   const orgName = `Possession Claims Solicitor Org`;
   const postCode = 'SW1H 9AJ';
   const orgRegistrationRef = `PCS ${orgDisplay}`;
-  const PBA1 = 'PBA0093901';
+  const PBA1 = 'PBA0089864';
   const orgFirstName = 'Solicitor';
   const orgLastName = `Admin Org`;
-  const orgEmailAddress = `pcs-solicitor-org-adm@mailinator.com`;
+  const orgEmailAddress = `pcs-solicitor-org-adm-auto@mailinator.com`;
   const orgManageOrgLoginPassword = 'Pa$$w0rd';
 
   const solicitorLastName = `PCS`;
@@ -152,7 +152,7 @@ test('test', async ({page, request}) => {
   let sol = solicitorEmailStartsWith;
 
   for (let index = 1; index <= numberOfSolicitorUsers; index += 1) {
-    const solicitorEmailAddress = `pcs-solicitor-automation@test.com`;
+    const solicitorEmailAddress = `pcs-solicitor-automation01@test.com`;
     const solicitorFirstName = solicitorForenameForSol(sol);
     // @ts-ignore
     if (userCreationNeeded == 'true') {
