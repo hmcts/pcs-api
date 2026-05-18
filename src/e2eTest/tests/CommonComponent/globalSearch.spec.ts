@@ -1,38 +1,63 @@
 import { test } from '@utils/test-fixtures';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation
-} from '@utils/controller';
-import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { globalSearch } from '@data/page-data';
+import { initializeExecutor, performAction, performValidation } from '@utils/controller';
+import { globalSearch } from '@data/page-data-figma';
+import { user } from '@data/user-data';
+
+test.use({ storageState: { cookies: [], origins: [] } });
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('login', user.hearingCenterAdmin);
 });
 
-test.afterEach(async () => {
-  if (caseInfo.id) {
-    await performAction('deleteCaseRole', '[CREATOR]');
-  }
-});
+test.describe('[Global Search - Hearing Center Admin]', () => {
+  test('Should find a case by case reference @regression @globalSearch', async () => {
+    await performAction('navigateToGlobalSearch');
+    await performValidation('mainHeader', globalSearch.mainHeader);
+    await performAction('searchByCaseReference', globalSearch.caseReferenceInputText);
+    await performAction('clickButton', globalSearch.search);
+  });  });
 
-test.describe('[Global Search]', () => {
-  test('Should load the global search page with correct header @PR', async () => {
-  await performAction('navigateToUrl', 'navigateToGlobalSearch');
-  await performValidation('mainHeader', globalSearch.mainHeader);
-});
+  test('Should find a case by name @regression @globalSearch', async () => {
+    await performAction('navigateToGlobalSearch');
+    await performAction('searchByName', globalSearch.searchPartyNameInputText);
+    await performAction('clickButton', globalSearch.search);
 
-test('Should find a case by 16-digit case reference @PR', async () => {
-  await performAction('navigateToUrl', 'navigateToGlobalSearch');
-  await performAction('searchByCaseReference', caseInfo.fid);
-  await performValidation('text', {
-    text: caseInfo.fid,
-    elementType: 'paragraph'
   });
-});
-});
+
+  test('Should find a case by first line of address @regression @globalSearch', async () => {
+    await performAction('navigateToGlobalSearch');
+    await performAction('searchByFirstLineOfAddress', globalSearch.firstLineOfAddressInputText);
+    await performAction('clickButton', globalSearch.search);
+
+  });
+
+  test('Should find a case by postcode @regression @globalSearch', async () => {
+    await performAction('navigateToGlobalSearch');
+    await performAction('searchByPostcode', globalSearch.searchPostcodeInputText);
+    await performAction('clickButton', globalSearch.search);
+
+  });
+
+  test('Should find a case by email address @regression @globalSearch', async () => {
+    await performAction('navigateToGlobalSearch');
+    await performAction('searchByEmailAddress', globalSearch.searchEmailAddressInputText);
+    await performAction('clickButton', globalSearch.search);
+
+  });
+
+  test('Should find a case by date of birth @regression @globalSearch', async () => {
+    await performAction('navigateToGlobalSearch');
+    await performAction('searchByDateOfBirth', {
+      day: globalSearch.searchDateOfBirthDayInputText,
+      month: globalSearch.searchDateOfBirthMonthInputText,
+      year: globalSearch.searchDateOfBirthYearInputText
+    });
+    await performAction('clickButton', globalSearch.search);
+  });
+  test('Should find cases by service @regression @globalSearch', async () => {
+    await performAction('navigateToGlobalSearch');
+    await performAction('searchByService', globalSearch.servicesDropdownOption2);
+    await performAction('clickButton', globalSearch.search);
+  });

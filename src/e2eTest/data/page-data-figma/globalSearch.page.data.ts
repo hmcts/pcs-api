@@ -15,11 +15,22 @@ export const globalSearch =
     caseReferenceLabel: '16-digit case reference',
     nameOfAPartyLabel:'Name',
     firstLineOfAddressLabel: 'First line of address',
+    firstLineOfAddressInputText: '2 Second Avenue',
     postCodeLabel: 'Postcode',
     emailAddressLabel: 'Email address',
     dateOfBirthLabel: 'Date of birth',
     servicesDropdownLabel: 'Services',
     servicesDropdownOption1: 'All',
     servicesDropdownOption2: 'Mortgage and Landlord Possession Claims',
-    search: 'Search'    
+    search: 'Search',
+    caseReferenceInputText: '1710487227220264',
+    searchPartyNameInputText: 'Smith',
+    searchPostcodeInputText: 'W3 7RX',
+    searchEmailAddressInputText: 'test@test.com',
+    searchDateOfBirthDayInputText: '01',
+    searchDateOfBirthMonthInputText: '01',
+    searchDateOfBirthYearInputText: '1990',
+    dateOfBirthDayLabel: 'Day',
+    dateOfBirthMonthLabel: 'Month',
+    dateOfBirthYearLabel: 'Year'
   }

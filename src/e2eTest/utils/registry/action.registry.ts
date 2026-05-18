@@ -19,6 +19,7 @@ import {ExpandSummaryAction} from '@utils/actions/element-actions';
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 
+
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
     ['clickButton', new ClickButtonAction()],
@@ -88,6 +89,11 @@ export class ActionRegistry {
     ['navigateToGlobalSearch', new GlobalSearchCaseAction()],
     ['searchByCaseReference', new GlobalSearchCaseAction()],
     ['searchByName', new GlobalSearchCaseAction()],
+    ['searchByFirstLineOfAddress', new GlobalSearchCaseAction()],
+    ['searchByPostcode', new GlobalSearchCaseAction()],
+    ['searchByEmailAddress', new GlobalSearchCaseAction()],
+    ['searchByDateOfBirth', new GlobalSearchCaseAction()],
+    ['searchByService', new GlobalSearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],
