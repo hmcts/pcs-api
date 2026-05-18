@@ -36,17 +36,9 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
 
     public static final String FIRST_NAME_QUESTION_ID = "pcs-defendant-first-name";
     public static final String LAST_NAME_QUESTION_ID = "pcs-defendant-last-name";
-    public static final String ANSWERS_EMPTY = "Challenge question answers can not be empty";
-    public static final String ANSWERS_MISMATCH_QUESTIONS =
-        "The number of provided answers must match the number of questions";
-    public static final String ANSWERS_NOT_IDENTIFY_LITIGANT = "The answers did not uniquely identify a litigant";
-    public static final String ANSWERS_NOT_MATCHED_ANY_LITIGANT = "The answers did not match those for any litigant";
-    public static final String ANSWERS_EMPTY_CODE = "answers-empty";
-    public static final String ANSWERS_MISMATCH_QUESTIONS_CODE = "answers-mismatch-questions";
-    public static final String ANSWERS_NOT_IDENTIFY_LITIGANT_CODE = "answers-not-identify-litigant";
-    public static final String ANSWERS_NOT_MATCHED_ANY_LITIGANT_CODE = "answers-not-matched-any-litigant";
 
     private static final String CASE_TYPE_ID = "PCS";
+    private static final int EXPECTED_ANSWER_COUNT = 2;
 
     private final PcsCaseService pcsCaseService;
     private final IdamService idamService;
@@ -126,17 +118,11 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
             .toList();
 
         if (matches.isEmpty()) {
-            return DefendantResolution.invalid(NocAnswersResponse.invalid(
-                ANSWERS_NOT_MATCHED_ANY_LITIGANT_CODE,
-                ANSWERS_NOT_MATCHED_ANY_LITIGANT
-            ));
+            return DefendantResolution.invalid(NocAnswersResponse.answersNotMatchedAnyLitigant());
         }
 
         if (matches.size() > 1) {
-            return DefendantResolution.invalid(NocAnswersResponse.invalid(
-                ANSWERS_NOT_IDENTIFY_LITIGANT_CODE,
-                ANSWERS_NOT_IDENTIFY_LITIGANT
-            ));
+            return DefendantResolution.invalid(NocAnswersResponse.answersNotIdentifyLitigant());
         }
 
         return DefendantResolution.resolved(matches.getFirst());
@@ -144,16 +130,22 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
 
     private Optional<NocAnswersResponse> validateRequest(NocAnswersRequest request) {
         if (request == null || request.answers() == null || request.answers().isEmpty()) {
-            return Optional.of(NocAnswersResponse.invalid(ANSWERS_EMPTY_CODE, ANSWERS_EMPTY));
+            return Optional.of(NocAnswersResponse.answersEmpty());
         }
 
-        if (request.answers().size() != 2
-            || request.answers().stream().noneMatch(answer -> FIRST_NAME_QUESTION_ID.equals(answer.questionId()))
-            || request.answers().stream().noneMatch(answer -> LAST_NAME_QUESTION_ID.equals(answer.questionId()))) {
-            return Optional.of(NocAnswersResponse.invalid(
-                ANSWERS_MISMATCH_QUESTIONS_CODE,
-                ANSWERS_MISMATCH_QUESTIONS
+        if (request.answers().size() != EXPECTED_ANSWER_COUNT) {
+            return Optional.of(NocAnswersResponse.answersMismatchQuestions(
+                EXPECTED_ANSWER_COUNT,
+                request.answers().size()
             ));
+        }
+
+        if (request.answers().stream().noneMatch(answer -> FIRST_NAME_QUESTION_ID.equals(answer.questionId()))) {
+            return Optional.of(NocAnswersResponse.noAnswerProvidedForQuestion(FIRST_NAME_QUESTION_ID));
+        }
+
+        if (request.answers().stream().noneMatch(answer -> LAST_NAME_QUESTION_ID.equals(answer.questionId()))) {
+            return Optional.of(NocAnswersResponse.noAnswerProvidedForQuestion(LAST_NAME_QUESTION_ID));
         }
 
         return Optional.empty();
