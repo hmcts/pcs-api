@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 
@@ -25,9 +26,11 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
     clients = {
         HmcHearingApi.class,
         LocationReferenceApi.class,
+        IdamUserInfoApi.class,
         // Required for ccd-sdk's CcdSdkIdamService → IdamClient → IdamApi chain.
-        // pcs-api code does not use IdamApi directly (token-fetch uses Spring OAuth2,
-        // user-info uses JwtDecoder). Cannot remove until ccd-sdk drops idam-java-client.
+        // pcs-api code uses IdamUserInfoApi (our own Feign) for inbound bearer validation
+        // and Spring OAuth2 for system-user token fetch. Cannot drop IdamApi.class until
+        // ccd-sdk stops using idam-java-client.
         IdamApi.class,
         RdProfessionalApi.class,
         FeesApi.class,

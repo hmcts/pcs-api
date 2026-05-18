@@ -17,8 +17,8 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -85,7 +85,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     private AuthTokenGenerator authTokenGenerator;
 
     @MockitoBean
-    private JwtDecoder idamJwtDecoder;
+    private IdamUserInfoApi idamUserInfoApi;
 
     @MockitoBean
     private OAuth2AuthorizedClientManager authorizedClientManager;
@@ -100,12 +100,9 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void setUp() {
         idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_TOKEN);
 
-        // Stub JWT decode for incoming bearer token validation
-        Jwt jwt = Jwt.withTokenValue("test-token")
-            .header("alg", "RS256")
-            .claim("uid", USER_ID.toString())
-            .build();
-        when(idamJwtDecoder.decode(anyString())).thenReturn(jwt);
+        // Stub IDAM /o/userinfo for incoming bearer token validation
+        UserInfo userInfo = UserInfo.builder().uid(USER_ID.toString()).build();
+        when(idamUserInfoApi.getUserInfo(anyString())).thenReturn(userInfo);
 
         // Mock CaseAssignmentApi for all tests
         CaseAssignmentUserRolesResponse mockedResponse = CaseAssignmentUserRolesResponse.builder()
@@ -150,8 +147,8 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Should call JwtDecoder with the bearer token stripped of the Bearer prefix")
-    void shouldCallJwtDecoderWithStrippedToken() throws Exception {
+    @DisplayName("Should call IdamUserInfoApi with the exact Authorization header value")
+    void shouldCallIdamUserInfoApiWithExactAuthHeader() throws Exception {
         // Given
         long caseReference = 12355L;
         PcsCaseEntity caseEntity = caseCreationHelper
@@ -171,8 +168,8 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk());
 
-        // Then - JwtDecoder receives the raw token (Bearer prefix stripped by IdamAuthenticator)
-        verify(idamJwtDecoder).decode(eq("test-token"));
+        // Then - getBearerToken keeps the "Bearer " prefix if already present
+        verify(idamUserInfoApi).getUserInfo(eq(AUTH_HEADER));
     }
 
     @Test
