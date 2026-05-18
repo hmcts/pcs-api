@@ -546,6 +546,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'XUI_SYSTEM_USER_NAME', 'pcs-system-user@localhost'
   environment 'XUI_SYSTEM_USER_PASSWORD', 'password'
   environment 'SESSION_SECRET', 'local-session-secret'
+  environment 'S2S_NAMES_WHITELIST', 'pcs_api,pcs_frontend,xui_webapp,ccd_data,payment_app'
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api,xui_webapp'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
 }
