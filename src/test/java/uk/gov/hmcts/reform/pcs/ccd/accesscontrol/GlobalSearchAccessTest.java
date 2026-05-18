@@ -4,10 +4,7 @@ package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HMCTS_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HMCTS_CTSC;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HMCTS_JUDICIARY;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HMCTS_LEGAL_OPERATIONS;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HMCTS_STAFF;
 
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
@@ -30,10 +27,7 @@ class GlobalSearchAccessTest {
     @Test
     void shouldGrantGlobalSearchAccess() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
-        assertThat(grants.asMap()).contains(entry(HMCTS_ADMIN, Set.of(R)));
-        assertThat(grants.asMap()).contains(entry(HMCTS_CTSC, Set.of(R)));
-        assertThat(grants.asMap()).contains(entry(HMCTS_LEGAL_OPERATIONS, Set.of(R)));
-        assertThat(grants.asMap()).contains(entry(HMCTS_JUDICIARY, Set.of(R)));
+        assertThat(grants.asMap()).contains(entry(HMCTS_STAFF, Set.of(R)));
     }
 
 }
