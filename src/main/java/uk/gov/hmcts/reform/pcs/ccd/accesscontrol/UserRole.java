@@ -25,8 +25,11 @@ public enum UserRole implements HasRole {
     PCS_SOLICITOR("caseworker-pcs-solicitor", Permission.CRU, IDAM),
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", Permission.CRU, RAS),
-    HMCTS_STAFF("GS_profile", Set.of(R), RAS, "hmcts-staff"),
-    HMCTS_JUDICIARY("GS_profile", Set.of(R), RAS, "hmcts-judiciary");
+    HMCTS_ADMIN("GS_profile", Set.of(R), RAS, "hmcts-admin"),
+    HMCTS_JUDICIARY("GS_profile", Set.of(R), RAS, "hmcts-judiciary"),
+    HMCTS_CTSC("GS_profile", Set.of(R), RAS, "hmcts-ctsc"),
+    HMCTS_LEGAL_OPERATIONS("GS_profile", Set.of(R), RAS, "hmcts-legal-operations"),;
+
     @JsonValue
     private final String role;
     private final Set<Permission> caseTypePermissions;
