@@ -609,6 +609,6 @@ public class PCSCase {
     private CasePartiesTab casePartiesTab;
 
     @JsonUnwrapped(prefix = "summaryTab_")
-    @CCD
+    @CCD(searchable = false)
     private SummaryTab summaryTab;
 }
