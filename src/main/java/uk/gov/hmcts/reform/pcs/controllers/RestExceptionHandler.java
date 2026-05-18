@@ -28,7 +28,10 @@ import java.util.Set;
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private static final String RETRY_AFTER_SECONDS = "5";
+    // IDAM's password-grant bucket refills continuously (per RateLimitService in idam-api) — AAT
+    // bucket is 100/5min ≈ 0.33 tokens/sec, so 5s of backoff only earns ~1.5 tokens and guarantees
+    // a retry storm. 30s earns ~10 tokens, enough for a meaningful retry to succeed.
+    private static final String RETRY_AFTER_SECONDS = "30";
 
     @ExceptionHandler(CaseNotFoundException.class)
     public ResponseEntity<Error> handleCaseNotFoundException(CaseNotFoundException caseNotFoundException) {

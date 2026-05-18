@@ -380,7 +380,7 @@ class RestExceptionHandlerTest {
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("5");
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message())
             .isEqualTo("Authentication service temporarily unavailable, please retry");
@@ -397,7 +397,7 @@ class RestExceptionHandlerTest {
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("5");
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
     }
 
     @Test
@@ -411,7 +411,7 @@ class RestExceptionHandlerTest {
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("5");
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
     }
 
     @Test
@@ -423,7 +423,7 @@ class RestExceptionHandlerTest {
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("5");
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
     }
 
     @Test
