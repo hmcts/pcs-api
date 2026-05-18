@@ -51,10 +51,7 @@ class RoleToAccessProfilesTest {
             verify(configBuilder).caseRoleToAccessProfile(argThat(
                 externalRole -> externalRole.getRole().equals(expectedExternalRole)
             ));
-            int sharedRoleCount = (int) stream(UserRole.values())
-                .filter(r -> r.getRole().equals(userRole.getRole()))
-                .count();
-            verify(accessProfileBuilder, times(sharedRoleCount)).accessProfiles(userRole.getRole());
+            verify(accessProfileBuilder).accessProfiles(userRole.getAccessProfiles());
         });
         verify(accessProfileBuilder, times(UserRole.values().length)).build();
     }
