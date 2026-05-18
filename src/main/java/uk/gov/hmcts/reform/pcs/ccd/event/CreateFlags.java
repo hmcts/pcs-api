@@ -36,8 +36,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRU,
                        UserRole.CTSC_ADMIN,
                        UserRole.HEARING_CENTER_ADMIN,
-                       UserRole.WLU_ADMIN,
-                       UserRole.BAILIFF_ADMIN))
+                       UserRole.WLU_ADMIN))
                 .page("caseworkerCaseFlag")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
                 .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
@@ -56,7 +55,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("Caseworker created case flag for {}", caseReference);
 
-        pcsCaseService.patchCaseFlags(caseReference, pcsCase, EventFlow.CREATE.name());
+        pcsCaseService.patchCaseFlags(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }

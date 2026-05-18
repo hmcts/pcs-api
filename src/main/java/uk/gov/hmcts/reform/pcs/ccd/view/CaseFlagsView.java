@@ -65,9 +65,7 @@ public class CaseFlagsView {
                    .subTypeKey(caseFlagEntity.getSubTypeKey())
                    .subTypeValue(caseFlagEntity.getSubTypeValue())
                    .subTypeValueCy(caseFlagEntity.getSubTypeValueWelsh())
-                   .flagUpdateComment(caseFlagEntity.getFlagUpdateComment() != null
-                                      ? caseFlagEntity.getFlagUpdateComment()
-                                      : caseFlagEntity.getFlagUpdateCommentWelsh())
+                   .flagUpdateComment(caseFlagEntity.getFlagUpdateComment())
                    .dateTimeCreated(caseFlagEntity.getDateTimeCreated())
                    .dateTimeModified(caseFlagEntity.getDateTimeModified())
                    .otherDescription(caseFlagEntity.getOtherDescription())

@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTER_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_ADMIN;
 
 
 public class InternalCaseFlagAccess implements HasAccessControl {
@@ -20,7 +19,6 @@ public class InternalCaseFlagAccess implements HasAccessControl {
         grants.putAll(CTSC_ADMIN, Permission.CRU);
         grants.putAll(HEARING_CENTER_ADMIN, Permission.CRU);
         grants.putAll(WLU_ADMIN, Permission.CRU);
-        grants.putAll(BAILIFF_ADMIN, Permission.CRU);
 
         return grants;
     }

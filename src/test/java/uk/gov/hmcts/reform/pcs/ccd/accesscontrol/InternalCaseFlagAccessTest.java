@@ -11,8 +11,6 @@ import static org.assertj.core.api.Assertions.entry;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTER_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_ADMIN;
-
 
 class InternalCaseFlagAccessTest {
 
@@ -33,7 +31,6 @@ class InternalCaseFlagAccessTest {
         assertThat(grants.asMap()).contains(entry(CTSC_ADMIN, Permission.CRU));
         assertThat(grants.asMap()).contains(entry(HEARING_CENTER_ADMIN, Permission.CRU));
         assertThat(grants.asMap()).contains(entry(WLU_ADMIN, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(BAILIFF_ADMIN, Permission.CRU));
-        assertThat(grants.asMap().size()).isEqualTo(4);
+        assertThat(grants.asMap().size()).isEqualTo(3);
     }
 }
