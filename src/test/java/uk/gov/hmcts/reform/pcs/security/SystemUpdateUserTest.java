@@ -79,16 +79,13 @@ class SystemUpdateUserTest {
     }
 
     @Test
-    @DisplayName("Should wrap unexpected exceptions when fetching system update user token")
-    void shouldWrapUnexpectedExceptionGettingAuthToken() {
+    @DisplayName("Should propagate unexpected exceptions unchanged (no catch-all wrapping)")
+    void shouldPropagateUnexpectedExceptionUnchanged() {
         RuntimeException unexpected = new RuntimeException("boom");
         given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(unexpected);
 
         Throwable throwable = catchThrowable(() -> underTest.getAuthToken());
 
-        assertThat(throwable)
-            .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response")
-            .hasCause(unexpected);
+        assertThat(throwable).isSameAs(unexpected);
     }
 }

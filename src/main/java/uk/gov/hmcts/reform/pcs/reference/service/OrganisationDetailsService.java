@@ -35,7 +35,7 @@ public class OrganisationDetailsService {
     public OrganisationDetailsResponse getOrganisationDetails(String userId) {
         try {
             String s2sToken = authTokenGenerator.generate();
-            String prdAdminToken = prdAdminTokenService.getPrdAdminToken();
+            String prdAdminToken = prdAdminTokenService.getAuthToken();
 
             OrganisationDetailsResponse details = rdProfessionalApi.getOrganisationDetails(
                 userId, s2sToken, prdAdminToken

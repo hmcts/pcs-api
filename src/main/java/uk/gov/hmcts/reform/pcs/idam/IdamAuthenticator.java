@@ -6,12 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
+import uk.gov.hmcts.reform.pcs.security.IdamServiceAccountTokenProvider;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class IdamAuthenticator {
-    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String BEARER_PREFIX = IdamServiceAccountTokenProvider.BEARER_PREFIX;
 
     private final IdamClient idamClient;
 
