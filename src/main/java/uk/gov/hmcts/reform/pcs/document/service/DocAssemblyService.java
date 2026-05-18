@@ -11,22 +11,22 @@ import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.security.SystemUpdateUser;
 
 @Slf4j
 @Service
 public class DocAssemblyService {
     private final DocAssemblyClient docAssemblyClient;
-    private final IdamService idamService;
+    private final SystemUpdateUser systemUpdateUser;
     private final AuthTokenGenerator authTokenGenerator;
 
     public DocAssemblyService(
         DocAssemblyClient docAssemblyClient,
-        IdamService idamService,
+        SystemUpdateUser systemUpdateUser,
         AuthTokenGenerator authTokenGenerator
     ) {
         this.docAssemblyClient = docAssemblyClient;
-        this.idamService = idamService;
+        this.systemUpdateUser = systemUpdateUser;
         this.authTokenGenerator = authTokenGenerator;
     }
 
@@ -41,7 +41,7 @@ public class DocAssemblyService {
                 throw new IllegalArgumentException("formPayload cannot be null");
             }
 
-            String authorization = idamService.getSystemUserAuthorisation();
+            String authorization = systemUpdateUser.getAuthToken();
             String serviceAuthorization = authTokenGenerator.generate();
 
             DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()

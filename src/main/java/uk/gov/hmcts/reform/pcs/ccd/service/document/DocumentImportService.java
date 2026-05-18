@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.security.SystemUpdateUser;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +20,7 @@ public class DocumentImportService {
 
     private final PcsCaseService pcsCaseService;
     private final CaseDocumentClientApi caseDocumentClientApi;
-    private final IdamService idamService;
+    private final SystemUpdateUser systemUpdateUser;
     private final AuthTokenGenerator authTokenGenerator;
 
     public void addDocumentToCase(long caseReference,
@@ -30,7 +30,7 @@ public class DocumentImportService {
         String[] urlParts = documentUrl.split("/");
         UUID documentId = UUID.fromString(urlParts[urlParts.length - 1]);
 
-        String authorization = idamService.getSystemUserAuthorisation();
+        String authorization = systemUpdateUser.getAuthToken();
         String serviceAuthorization = authTokenGenerator.generate();
 
         Document documentMetadata = caseDocumentClientApi.getMetadataForDocument(

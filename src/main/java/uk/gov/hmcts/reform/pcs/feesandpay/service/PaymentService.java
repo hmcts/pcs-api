@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.security.SystemUpdateUser;
 
 import java.util.Optional;
 
@@ -34,7 +34,7 @@ public class PaymentService {
 
     private final PaymentsClient paymentsClient;
     private final PaymentRequestMapper paymentRequestMapper;
-    private final IdamService idamService;
+    private final SystemUpdateUser systemUpdateUser;
     private final FeePaymentRepository feePaymentRepository;
     private final PcsCaseService pcsCaseService;
 
@@ -83,7 +83,7 @@ public class PaymentService {
         log.info("Calling ServiceCreateRequest with callback url: {} using hmctsOrgId: {} for caseReference: {}",
                  callbackUrl, hmctsOrgId, caseReference);
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
-            idamService.getSystemUserAuthorisation(), requestDto);
+            systemUpdateUser.getAuthToken(), requestDto);
 
         ClaimEntity claimEntity = retrieveClaimEntity(Long.parseLong(caseReference));
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);

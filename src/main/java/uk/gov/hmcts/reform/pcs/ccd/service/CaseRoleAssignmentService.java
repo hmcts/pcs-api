@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisati
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.security.SystemUpdateUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +20,13 @@ import java.util.List;
 public class CaseRoleAssignmentService {
 
     private final AuthTokenGenerator authTokenGenerator;
-    private final IdamService idamService;
+    private final SystemUpdateUser systemUpdateUser;
     private final CaseAssignmentApi caseAssignmentApi;
 
     public CaseAssignmentUserRolesResponse assignRasRole(long caseReference, String userId,
                                                          UserRole role) {
         String s2s = authTokenGenerator.generate();
-        String userToken = idamService.getSystemUserAuthorisation();
+        String userToken = systemUpdateUser.getAuthToken();
 
         CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
             = CaseAssignmentUserRoleWithOrganisation.builder()
@@ -48,7 +48,7 @@ public class CaseRoleAssignmentService {
 
     public CaseAssignmentUserRolesResponse revokeRasRole(long caseReference, String userId, UserRole role) {
         String s2s = authTokenGenerator.generate();
-        String userToken = idamService.getSystemUserAuthorisation();
+        String userToken = systemUpdateUser.getAuthToken();
 
         CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
             = CaseAssignmentUserRoleWithOrganisation.builder()

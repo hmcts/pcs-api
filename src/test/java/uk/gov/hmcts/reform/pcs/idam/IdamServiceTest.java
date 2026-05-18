@@ -1,31 +1,21 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
 import feign.FeignException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
-import org.springframework.security.oauth2.core.OAuth2Error;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -35,78 +25,12 @@ import static org.mockito.Mockito.when;
 class IdamServiceTest {
 
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final String SYSTEM_USERNAME = "system-user@test.com";
-    private static final String SYSTEM_PASSWORD = "top-secret";
 
     @Mock
     private IdamClient idamClient;
 
-    @Mock
-    private OAuth2AuthorizedClientManager authorizedClientManager;
-
+    @InjectMocks
     private IdamService underTest;
-
-    @BeforeEach
-    void setUp() {
-        underTest = new IdamService(idamClient, authorizedClientManager, SYSTEM_USERNAME, SYSTEM_PASSWORD);
-    }
-
-    @Test
-    @DisplayName("Should get the access token for the system user via OAuth2 client manager")
-    void shouldGetSystemUserAccessToken() {
-        String expectedAccessToken = "some access token";
-        OAuth2AuthorizedClient authorizedClient = mock(OAuth2AuthorizedClient.class);
-        OAuth2AccessToken accessToken = mock(OAuth2AccessToken.class);
-        given(authorizedClient.getAccessToken()).willReturn(accessToken);
-        given(accessToken.getTokenValue()).willReturn(expectedAccessToken);
-        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willReturn(authorizedClient);
-
-        String systemUserToken = underTest.getSystemUserAuthorisation();
-
-        assertThat(systemUserToken).isEqualTo("Bearer %s", expectedAccessToken);
-        verifyNoInteractions(idamClient);
-    }
-
-    @Test
-    @DisplayName("Should throw IdamException when OAuth2 client manager returns null")
-    void shouldThrowIdamExceptionWhenAuthorizedClientIsNull() {
-        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willReturn(null);
-
-        Throwable throwable = catchThrowable(() -> underTest.getSystemUserAuthorisation());
-
-        assertThat(throwable)
-            .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response");
-    }
-
-    @Test
-    @DisplayName("Should wrap OAuth2AuthorizationException thrown when fetching system user token")
-    void shouldWrapOAuth2AuthorizationExceptionGettingSystemUserToken() {
-        OAuth2Error error = new OAuth2Error("invalid_token_response", "throttled", null);
-        OAuth2AuthorizationException oauthException = new OAuth2AuthorizationException(error);
-        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(oauthException);
-
-        Throwable throwable = catchThrowable(() -> underTest.getSystemUserAuthorisation());
-
-        assertThat(throwable)
-            .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response")
-            .hasCause(oauthException);
-    }
-
-    @Test
-    @DisplayName("Should wrap unexpected exceptions when fetching system user token")
-    void shouldWrapUnexpectedExceptionGettingSystemUserToken() {
-        RuntimeException unexpected = new RuntimeException("boom");
-        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(unexpected);
-
-        Throwable throwable = catchThrowable(() -> underTest.getSystemUserAuthorisation());
-
-        assertThat(throwable)
-            .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response")
-            .hasCause(unexpected);
-    }
 
     @ParameterizedTest
     @NullAndEmptySource
