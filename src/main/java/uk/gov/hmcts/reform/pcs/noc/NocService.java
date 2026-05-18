@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.noc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
+import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswer;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersRequest;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocQuestion;
@@ -11,6 +13,8 @@ import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmissionResponse;
 import uk.gov.hmcts.ccd.sdk.api.noc.NoticeOfChangeAnswersException;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -28,7 +32,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class NocService {
+public class NocService implements CCDConfig<PCSCase, State, UserRole> {
 
     public static final String FIRST_NAME_QUESTION_ID = "pcs-defendant-first-name";
     public static final String LAST_NAME_QUESTION_ID = "pcs-defendant-last-name";
@@ -44,6 +48,14 @@ public class NocService {
     private final IdamService idamService;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
+
+    @Override
+    public void configure(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.noc()
+            .questions(this::getQuestions)
+            .verifyAnswers(this::verifyAnswers)
+            .submit(this::submit);
+    }
 
     public NocQuestionsResponse getQuestions(long caseId) {
         pcsCaseService.loadCase(caseId);
