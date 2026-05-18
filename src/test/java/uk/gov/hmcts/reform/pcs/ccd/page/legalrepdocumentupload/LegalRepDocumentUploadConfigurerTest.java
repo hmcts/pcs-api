@@ -44,7 +44,7 @@ class LegalRepDocumentUploadConfigurerTest extends BasePageTest {
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
 
-        verifyAndCount(inOrder, pageBuilder, UploadAdditionalDocumentsPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, UploadAdditionalDocumentsInformationPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ExistingApplicationPage.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
