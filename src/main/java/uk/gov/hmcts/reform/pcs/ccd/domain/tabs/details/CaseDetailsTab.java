@@ -83,7 +83,7 @@ public class CaseDetailsTab {
     @CCD(
         label = "Claimant contact details"
     )
-    private ClaimantInformationTabDetails claimantContactDetails;
+    private ClaimantContactTabDetails claimantContactDetails;
 
     @CCD(
         label = "Claimant circumstances"
@@ -103,7 +103,7 @@ public class CaseDetailsTab {
     @CCD(
         label = "Additional defendant"
     )
-    private AdditionalDefendantInformationTabDetails additionalDefendantDetails;
+    private List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendantDetails;
 
     @CCD(
         label = "Defendant’ circumstances"

@@ -24,7 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CaseTabView {
 
-    static final String NAME_UNKNOWN = "Person unknown";
+    public static final String NAME_UNKNOWN = "Person unknown";
 
     private final ClaimGroundSummaryBuilder claimGroundSummaryBuilder;
     private final CaseSummaryTabView caseSummaryTabView;

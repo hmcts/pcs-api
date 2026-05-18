@@ -3,12 +3,15 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -18,13 +21,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ActionsTakenTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ApplicationsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantContactTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
@@ -49,6 +57,8 @@ public class CaseDetailsTabView {
     private final RentArrearsTabDetailsBuilder rentArrearsTabDetailsBuilder;
     private final ReasonsForPossessionTabDetailsBuilder reasonsForPossessionTabDetailsBuilder;
     private final ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
+    private final DefendantInformationTabDetailsBuilder defendantInformationTabDetailsBuilder;
+    private final AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
 
     public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
@@ -60,8 +70,10 @@ public class CaseDetailsTabView {
         ReasonsForPossessionTabDetails reasonsForPossessionTabDetails = buildReasonsForPossession(pcsCase);
         ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
         ClaimantInformationTabDetails claimantInformationTabDetails = buildClaimantInformationTabDetails(pcsCase);
+        DefendantInformationTabDetails defendantInformationTabDetails =
+            defendantInformationTabDetailsBuilder.buildDefendantOneDetails(pcsCase);
 
-        return CaseDetailsTab.builder()
+        CaseDetailsTab caseDetailsTab = CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
             .propertyAddress(pcsCase.getPropertyAddress())
             .groundsForPossessionDetails(groundsForPossessionTabDetails)
@@ -72,7 +84,20 @@ public class CaseDetailsTabView {
             .reasonsForPossessionDetails(reasonsForPossessionTabDetails)
             .applicationsDetails(applicationsTabDetails)
             .claimantInformation(claimantInformationTabDetails)
+            .defendantInformationDetails(defendantInformationTabDetails)
             .build();
+
+        if (claimantInformationTabDetails != null) {
+            caseDetailsTab.setClaimantAddress(getClaimantAddress(pcsCase));
+            caseDetailsTab.setClaimantContactDetails(buildClaimantContactTabDetails(pcsCase));
+        }
+
+        if (defendantInformationTabDetails != null) {
+            List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendantInformationTabDetails =
+                additionalDefendantInformationTabDetailsBuilder.buildAdditionalDefendantsDetails(pcsCase);
+            caseDetailsTab.setAdditionalDefendantDetails(additionalDefendantInformationTabDetails);
+        }
+        return caseDetailsTab;
     }
 
     private ClaimTabDetails buildClaimTabDetails(PCSCase pcsCase) {
@@ -251,5 +276,56 @@ public class CaseDetailsTabView {
 
     private ClaimantInformationTabDetails buildClaimantInformationTabDetails(PCSCase pcsCase) {
         return claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase);
+    }
+
+    private AddressUK getClaimantAddress(PCSCase pcsCase) {
+        List<ListValue<Party>> claimants = pcsCase.getAllClaimants();
+        if (!CollectionUtils.isEmpty(claimants)) {
+            Party claimant = claimants.getFirst().getValue();
+            return claimant.getAddress();
+        }
+
+        ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
+        if (claimantContactPreferences != null ) {
+            YesOrNo orgAddressFound = claimantContactPreferences.getOrgAddressFound();
+            VerticalYesNo correctClaimantAddress = claimantContactPreferences.getIsCorrectClaimantContactAddress();
+            if (orgAddressFound == YesOrNo.YES && correctClaimantAddress == VerticalYesNo.YES) {
+                return claimantContactPreferences.getOrganisationAddress();
+            }
+
+            return claimantContactPreferences.getOverriddenClaimantContactAddress();
+        }
+
+        return AddressUK.builder()
+            .addressLine1(NO_ANSWER)
+            .postTown(NO_ANSWER)
+            .postCode(NO_ANSWER)
+            .country(NO_ANSWER)
+            .build();
+    }
+
+    private ClaimantContactTabDetails buildClaimantContactTabDetails(PCSCase pcsCase) {
+        List<ListValue<Party>> claimants = pcsCase.getAllClaimants();
+        ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
+        String emailAddress = null;
+        String phoneNumber = null;
+
+        if (!CollectionUtils.isEmpty(claimants)) {
+            Party claimant = claimants.getFirst().getValue();
+            emailAddress = claimant.getEmailAddress();
+            phoneNumber = claimant.getPhoneNumber();
+        } else if (claimantContactPreferences != null) {
+            VerticalYesNo isCorrectClaimantContactEmail = claimantContactPreferences.getIsCorrectClaimantContactEmail();
+            emailAddress = isCorrectClaimantContactEmail == VerticalYesNo.YES ?
+                claimantContactPreferences.getClaimantContactEmail() :
+                claimantContactPreferences.getOverriddenClaimantContactEmail();
+            phoneNumber = claimantContactPreferences.getClaimantContactPhoneNumber();
+        }
+
+
+        return ClaimantContactTabDetails.builder()
+            .emailAddress(emailAddress != null ? emailAddress : NO_ANSWER)
+            .phoneNumber(phoneNumber != null ? phoneNumber : NO_ANSWER)
+            .build();
     }
 }

@@ -23,7 +23,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.TenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
@@ -47,6 +49,8 @@ public class CaseSummaryTabView {
     private final RentArrearsTabDetailsBuilder rentArrearsTabDetailsBuilder;
     private final ReasonsForPossessionTabDetailsBuilder reasonsForPossessionTabDetailsBuilder;
     private final ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
+    private final DefendantInformationTabDetailsBuilder defendantInformationTabDetailsBuilder;
+    private final AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
 
     public SummaryTab buildSummaryTab(PCSCase pcsCase) {
         ReasonsForPossessionTabDetails reasonsForPossession =
@@ -61,8 +65,10 @@ public class CaseSummaryTabView {
             .reasonsForPossession(reasonsForPossession)
             .dateClaimSubmitted(dateSubmitted)
             .claimantDetails(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase))
-            .defendantDetails(createSummaryDefendantOneDetails(pcsCase))
-            .additionalDefendants(createAdditionalSummaryDefendantsDetails(pcsCase))
+            .defendantDetails(defendantInformationTabDetailsBuilder.buildDefendantOneDetails(pcsCase))
+            .additionalDefendants(
+                additionalDefendantInformationTabDetailsBuilder.buildAdditionalDefendantsDetails(pcsCase)
+            )
             .rentArrearsDetails(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase))
             .tenancyDetails(buildTenancyTabDetails(pcsCase))
             .noticeDetails(buildNoticeTabDetails(pcsCase))
@@ -75,76 +81,6 @@ public class CaseSummaryTabView {
         }
 
         return dateSubmitted.format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM");
-    }
-
-    private DefendantInformationTabDetails createSummaryDefendantOneDetails(PCSCase pcsCase) {
-        if (CollectionUtils.isEmpty(pcsCase.getAllDefendants())) {
-            return null;
-        }
-
-        return createSummaryDefendantDetails(pcsCase.getAllDefendants().getFirst().getValue(), pcsCase);
-    }
-
-    private List<ListValue<AdditionalDefendantInformationTabDetails>> createAdditionalSummaryDefendantsDetails(
-        PCSCase pcsCase) {
-        if (CollectionUtils.isEmpty(pcsCase.getAllDefendants()) || pcsCase.getAllDefendants().size() < 2) {
-            return null;
-        }
-
-        return pcsCase.getAllDefendants().stream()
-            .skip(1)
-            .map(ListValue::getValue)
-            .map(defendant -> createAdditionalSummaryDefendantDetails(defendant, pcsCase))
-            .filter(defendantDetails -> defendantDetails != null)
-            .map(defendantDetails -> ListValue.<AdditionalDefendantInformationTabDetails>builder()
-                .value(defendantDetails)
-                .build())
-            .toList();
-    }
-
-    private AdditionalDefendantInformationTabDetails createAdditionalSummaryDefendantDetails(Party defendant,
-                                                                                            PCSCase pcsCase) {
-        AddressUK addressForService = getSummaryDefendantAddressForService(defendant, pcsCase);
-
-        if (defendant.getNameKnown() != VerticalYesNo.YES && addressForService == null) {
-            return null;
-        }
-
-        return AdditionalDefendantInformationTabDetails.builder()
-            .firstName(getDefendantFirstName(defendant))
-            .lastName(getDefendantLastName(defendant))
-            .addressForService(addressForService)
-            .build();
-    }
-
-    private DefendantInformationTabDetails createSummaryDefendantDetails(Party defendant, PCSCase pcsCase) {
-        AddressUK addressForService = getSummaryDefendantAddressForService(defendant, pcsCase);
-
-        if (defendant.getNameKnown() != VerticalYesNo.YES && addressForService == null) {
-            return null;
-        }
-
-        return DefendantInformationTabDetails.builder()
-            .firstName(getDefendantFirstName(defendant))
-            .lastName(getDefendantLastName(defendant))
-            .addressForService(addressForService)
-            .build();
-    }
-
-    private String getDefendantFirstName(Party defendant) {
-        return defendant.getNameKnown() == VerticalYesNo.YES ? defendant.getFirstName() : CaseTabView.NAME_UNKNOWN;
-    }
-
-    private String getDefendantLastName(Party defendant) {
-        return defendant.getNameKnown() == VerticalYesNo.YES ? defendant.getLastName() : CaseTabView.NAME_UNKNOWN;
-    }
-
-    private AddressUK getSummaryDefendantAddressForService(Party defendant, PCSCase pcsCase) {
-        if (defendant.getAddressKnown() != VerticalYesNo.YES) {
-            return pcsCase.getPropertyAddress();
-        }
-
-        return defendant.getAddress() != null ? defendant.getAddress() : pcsCase.getPropertyAddress();
     }
 
     private TenancyTabDetails buildTenancyTabDetails(PCSCase pcsCase) {
