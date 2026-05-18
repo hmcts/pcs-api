@@ -137,6 +137,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
 
         PartyEntity matchingDefendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
             .idamId(defendantUserId)
             .firstName("John")
             .lastName("Doe")
@@ -491,6 +492,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(true); // Draft already exists - should NOT seed
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(Optional.of(draftData)); // Return saved draft data
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(matchingDefendant);
+        when(responseMapper.buildPartyFromEntity(eq(matchingDefendant), any(PCSCase.class)))
+            .thenReturn(Party.builder().build());
 
         PCSCase caseData = PCSCase.builder().build();
 
