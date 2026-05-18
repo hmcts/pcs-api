@@ -120,7 +120,7 @@ public class CaseSummaryTabViewTest {
             .isEqualTo("Condition 1 reason");
         assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsForPossession())
             .isEqualTo("Additional reasons");
-        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 May 2026, 5:02:31PM");
+        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 May 2026, 6:02:31PM");
         assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Fallback claimant");
         assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("One");
@@ -144,6 +144,20 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Licence details");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("16/04/2024");
         assertThat(summaryTab.getNoticeDetails().getNoticeServedDate()).isEqualTo("11/05/2026");
+    }
+
+    @Test
+    void shouldDisplaySubmittedDateInGmtWhenNotBritishSummerTime() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .dateSubmitted(LocalDateTime.of(2026, 1, 11, 17, 2, 31))
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
     }
 
     @Test

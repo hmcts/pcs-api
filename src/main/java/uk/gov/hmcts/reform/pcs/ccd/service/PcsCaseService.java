@@ -31,7 +31,7 @@ public class PcsCaseService {
     private final TenancyLicenceService tenancyLicenceService;
     private final AddressMapper addressMapper;
     private final CaseLinkService caseLinkService;
-    private final Clock ukClock;
+    private final Clock utcClock;
 
     public PcsCaseService(PcsCaseRepository pcsCaseRepository,
                           ClaimService claimService,
@@ -40,7 +40,7 @@ public class PcsCaseService {
                           TenancyLicenceService tenancyLicenceService,
                           AddressMapper addressMapper,
                           CaseLinkService caseLinkService,
-                          @Qualifier("ukClock") Clock ukClock) {
+                          @Qualifier("utcClock") Clock utcClock) {
         this.pcsCaseRepository = pcsCaseRepository;
         this.claimService = claimService;
         this.partyService = partyService;
@@ -48,7 +48,7 @@ public class PcsCaseService {
         this.tenancyLicenceService = tenancyLicenceService;
         this.addressMapper = addressMapper;
         this.caseLinkService = caseLinkService;
-        this.ukClock = ukClock;
+        this.utcClock = utcClock;
     }
 
     public PcsCaseEntity createCase(long caseReference,
@@ -69,7 +69,7 @@ public class PcsCaseService {
     public void createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
-        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, LocalDateTime.now(ukClock));
+        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, LocalDateTime.now(utcClock));
         List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
         documentEntities.forEach(doc -> doc.setClaim(claimEntity));
         pcsCaseEntity.addDocuments(documentEntities);

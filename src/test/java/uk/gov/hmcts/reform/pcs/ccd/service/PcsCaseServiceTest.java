@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,11 +46,10 @@ import static org.mockito.Mockito.times;
 class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
-    private static final ZoneId UK_ZONE_ID = ZoneId.of("Europe/London");
     private static final LocalDateTime FIXED_DATE_TIME = LocalDateTime.of(2026, 5, 14, 10, 30);
-    private static final Clock FIXED_UK_CLOCK = Clock.fixed(
-        FIXED_DATE_TIME.atZone(UK_ZONE_ID).toInstant(),
-        UK_ZONE_ID
+    private static final Clock FIXED_UTC_CLOCK = Clock.fixed(
+        FIXED_DATE_TIME.atZone(ZoneOffset.UTC).toInstant(),
+        ZoneOffset.UTC
     );
 
     @Mock
@@ -84,7 +83,7 @@ class PcsCaseServiceTest {
             tenancyLicenceService,
             addressMapper,
             caseLinkService,
-            FIXED_UK_CLOCK
+            FIXED_UTC_CLOCK
         );
     }
 
@@ -152,7 +151,7 @@ class PcsCaseServiceTest {
     }
 
     @Test
-    void shouldSetClaimSubmittedDateUsingUkClockWhenCreatingMainClaim() {
+    void shouldSetClaimSubmittedDateUsingUtcClockWhenCreatingMainClaim() {
         // Given
         stubFindCase();
         stubClaimCreation();
