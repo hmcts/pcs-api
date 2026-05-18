@@ -439,7 +439,7 @@ class RestExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isNull();
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Unable to get access token response");
+        assertThat(response.getBody().message()).isEqualTo("Authentication service error");
     }
 
     @Test
@@ -450,7 +450,7 @@ class RestExceptionHandlerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Unable to get access token response");
+        assertThat(response.getBody().message()).isEqualTo("Authentication service error");
     }
 
     @Test

@@ -98,9 +98,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .header(HttpHeaders.RETRY_AFTER, RETRY_AFTER_SECONDS)
                 .body(new Error("Authentication service temporarily unavailable, please retry"));
         }
+        // Generic message to avoid leaking upstream OAuth2 error descriptions / internal URLs.
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new Error(ex.getMessage()));
+            .body(new Error("Authentication service error"));
     }
 
     @Override
