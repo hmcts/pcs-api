@@ -5,7 +5,7 @@ export const submitCaseApiData = {
     claimantType: {
       value: {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
-        label: 'Registered provider of social housing'
+        label: 'Registered provider of social housing or local authority'
       },
       list_items: [
         {
@@ -14,7 +14,7 @@ export const submitCaseApiData = {
         },
         {
           code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing'
+          label: 'Registered provider of social housing or local authority'
         },
         {
           code: 'MORTGAGE_LENDER',
@@ -72,6 +72,7 @@ export const submitCaseApiData = {
     introGrounds_HasIntroductoryDemotedOtherGroundsForPossession: 'NO',
     noGrounds: 'text no grounds',
     preActionProtocolCompleted: 'NO',
+    preActionProtocolIncompleteExplanation: 'preAction protocol completed',
     mediationAttempted: 'NO',
     settlementAttempted: 'NO',
     noticeServed: 'No',
@@ -82,7 +83,6 @@ export const submitCaseApiData = {
     demotionOfTenancy_ShowHousingActsPage: 'No',
     suspensionToBuyDemotionOfTenancyPages: 'No',
     alternativesToPossession: [],
-    claimingCostsWanted: 'NO',
     additionalReasonsForPossession: {
       hasReasons: 'NO',
       reasons: null
@@ -98,7 +98,7 @@ export const submitCaseApiData = {
     claimantType: {
       value: {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
-        label: 'Registered provider of social housing'
+        label: 'Registered provider of social housing or local authority'
       },
       list_items: [
         {
@@ -107,7 +107,7 @@ export const submitCaseApiData = {
         },
         {
           code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing'
+          label: 'Registered provider of social housing or local authority'
         },
         {
           code: 'MORTGAGE_LENDER',
@@ -141,6 +141,7 @@ export const submitCaseApiData = {
     introGrounds_HasIntroductoryDemotedOtherGroundsForPossession: 'NO',
     noGrounds: 'text no grounds',
     preActionProtocolCompleted: 'NO',
+    preActionProtocolIncompleteExplanation: 'preAction protocol completed',
     mediationAttempted: 'NO',
     settlementAttempted: 'NO',
     noticeServed: 'No',
@@ -151,7 +152,6 @@ export const submitCaseApiData = {
     demotionOfTenancy_ShowHousingActsPage: 'No',
     suspensionToBuyDemotionOfTenancyPages: 'No',
     alternativesToPossession: [],
-    claimingCostsWanted: 'NO',
     additionalReasonsForPossession: {
       hasReasons: 'NO',
       reasons: null
@@ -167,7 +167,7 @@ export const submitCaseApiData = {
     claimantType: {
       value: {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
-        label: 'Registered provider of social housing'
+        label: 'Registered provider of social housing or local authority'
       },
       list_items: [
         {
@@ -176,7 +176,7 @@ export const submitCaseApiData = {
         },
         {
           code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing'
+          label: 'Registered provider of social housing or local authority'
         },
         {
           code: 'MORTGAGE_LENDER',
@@ -230,6 +230,7 @@ export const submitCaseApiData = {
     introGrounds_HasIntroductoryDemotedOtherGroundsForPossession: 'NO',
     noGrounds: 'text no grounds',
     preActionProtocolCompleted: 'NO',
+    preActionProtocolIncompleteExplanation: 'preAction protocol completed',
     mediationAttempted: 'NO',
     settlementAttempted: 'NO',
     noticeServed: 'No',
@@ -240,7 +241,6 @@ export const submitCaseApiData = {
     demotionOfTenancy_ShowHousingActsPage: 'No',
     suspensionToBuyDemotionOfTenancyPages: 'No',
     alternativesToPossession: [],
-    claimingCostsWanted: 'NO',
     additionalReasonsForPossession: {
       hasReasons: 'NO',
       reasons: null
@@ -253,10 +253,11 @@ export const submitCaseApiData = {
   },
   submitCasePayloadCaseTab: {
     legislativeCountry: 'England',
+    orgNameFound: 'Yes',
     claimantType: {
       value: {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
-        label: 'Registered provider of social housing'
+        label: 'Registered provider of social housing or local authority'
       },
       list_items: [
         {
@@ -265,7 +266,7 @@ export const submitCaseApiData = {
         },
         {
           code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing'
+          label: 'Registered provider of social housing or local authority'
         },
         {
           code: 'MORTGAGE_LENDER',
@@ -332,22 +333,23 @@ export const submitCaseApiData = {
     ],
     tenancy_TypeOfTenancyLicence: 'DEMOTED_TENANCY',
     tenancy_TenancyLicenceDate: null,
-    tenancy_TenancyLicenceDocuments: [],
+    tenancy_HasCopyOfTenancyLicence: 'NO',
+    tenancy_ReasonsForNoTenancyLicenceDocuments: 'tet',
     showIntroductoryDemotedOtherGroundReasonPage: 'Yes',
     introGrounds_HasIntroductoryDemotedOtherGroundsForPossession: 'NO',
     noGrounds: 'text no grounds',
     preActionProtocolCompleted: 'NO',
+    preActionProtocolIncompleteExplanation: 'preAction protocol completed',
     mediationAttempted: 'NO',
     settlementAttempted: 'NO',
     noticeServed: 'No',
-    claimantNamePossessiveForm: null,
+    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
     claimantCircumstancesSelect: 'NO',
     hasDefendantCircumstancesInfo: 'NO',
     suspensionOfRTB_ShowHousingActsPage: 'No',
     demotionOfTenancy_ShowHousingActsPage: 'No',
     suspensionToBuyDemotionOfTenancyPages: 'No',
     alternativesToPossession: [],
-    claimingCostsWanted: 'NO',
     additionalReasonsForPossession: {
       hasReasons: 'NO',
       reasons: null

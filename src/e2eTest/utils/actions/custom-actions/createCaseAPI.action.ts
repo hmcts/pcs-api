@@ -57,9 +57,10 @@ export class CreateCaseAPIAction implements IAction {
 
   private async submitCaseAPI(caseData: actionData): Promise<void> {
     const submitCaseApi = Axios.create(submitCaseEventTokenApiData.submitCaseEventTokenApiInstance());
+    let submitCasePayloadData;
     try {
       process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint())).data.token;
-      const submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+      submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
       const submitResponse = await submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
         data: submitCasePayloadData,
         event: { id: submitCaseApiData.submitCaseEventName },
@@ -72,8 +73,8 @@ export class CreateCaseAPIAction implements IAction {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
       if (status === 404) {
-        console.error(submitCaseApiData.submitCasePayload);
-        throw new Error(`Submission failed: endpoint not found (404).please check the payload above \n ${error}`);
+        console.error(submitCasePayloadData);
+        throw new Error(`Submission failed: endpoint not found (404).please check the payload below \n ${error}`);
       }
       console.error("=== ERROR RESPONSE ===");
       console.error("HTTP Status:", status);
