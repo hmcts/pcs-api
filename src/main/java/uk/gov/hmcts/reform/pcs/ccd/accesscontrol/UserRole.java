@@ -5,7 +5,6 @@ import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
