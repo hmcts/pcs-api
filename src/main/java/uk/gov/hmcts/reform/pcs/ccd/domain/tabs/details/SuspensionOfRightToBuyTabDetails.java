@@ -15,7 +15,7 @@ public class SuspensionOfRightToBuyTabDetails {
     @CCD(
         label = "Section of the Housing Act suspension of right to buy claim made under"
     )
-    private String section;
+    private String housingAct;
 
     @CCD(
         label = "Reasons for requesting suspension of right to buy order"

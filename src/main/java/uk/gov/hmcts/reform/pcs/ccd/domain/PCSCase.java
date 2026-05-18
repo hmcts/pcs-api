@@ -613,7 +613,7 @@ public class PCSCase {
     @CCD
     private SummaryTab summaryTab;
 
-    @JsonUnwrapped(prefix = "caseDetailsTab_")
+    @JsonUnwrapped(prefix = "detailsTab_")
     @CCD
     private CaseDetailsTab caseDetailsTab;
 }

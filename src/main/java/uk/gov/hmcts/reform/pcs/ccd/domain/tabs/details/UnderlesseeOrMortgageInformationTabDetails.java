@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 
 @Builder
 @Data
@@ -13,7 +14,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 public class UnderlesseeOrMortgageInformationTabDetails {
 
     @CCD(
-        label = "Underlessee or mortgagee’s address for service known?"
+        label = "Underlessee or mortgagee’s address for name known?"
     )
     private String nameKnown;
 
@@ -21,4 +22,14 @@ public class UnderlesseeOrMortgageInformationTabDetails {
         label = "Name"
     )
     private String name;
+
+    @CCD(
+        label = "Underlessee or mortgagee’s address for service known?"
+    )
+    private String addressKnown;
+
+    @CCD(
+        label = "Underlessee or mortgagee correspondence address"
+    )
+    private AddressUK address;
 }

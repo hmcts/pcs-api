@@ -5,9 +5,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
@@ -19,6 +24,10 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.DEMOTION_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY;
 
 @Component
 @AllArgsConstructor
@@ -51,6 +60,25 @@ public class CaseTabView {
             draftCaseData.setAllDefendants(buildDefendants(draftCaseData));
         } else if (CollectionUtils.isEmpty(draftCaseData.getAllDefendants())) {
             draftCaseData.setAllDefendants(pcsCase.getAllDefendants());
+        }
+
+        if (CollectionUtils.isEmpty(draftCaseData.getAllUnderlesseeOrMortgagees())) {
+            draftCaseData.setAllUnderlesseeOrMortgagees(buildUnderlesseeOrMortgageParties(draftCaseData));
+        }
+
+        Set<AlternativesToPossession> alternativesToPossessionSet = pcsCase.getAlternativesToPossession();
+        SuspensionOfRightToBuyDemotionOfTenancy suspensionOfRightToBuyDemotionOfTenancy =
+            pcsCase.getSuspensionOfRightToBuyDemotionOfTenancy();
+
+        if (
+            suspensionOfRightToBuyDemotionOfTenancy != null &&
+            !CollectionUtils.isEmpty(alternativesToPossessionSet) &&
+            alternativesToPossessionSet.containsAll(Set.of(SUSPENSION_OF_RIGHT_TO_BUY, DEMOTION_OF_TENANCY))
+        ) {
+            draftCaseData.setDemotionOfTenancy(buildDemotionOfTenancy(suspensionOfRightToBuyDemotionOfTenancy));
+            draftCaseData.setSuspensionOfRightToBuy(
+                buildSuspensionOfRightToBuyHousingAct(suspensionOfRightToBuyDemotionOfTenancy)
+            );
         }
 
         List<ListValue<ClaimGroundSummary>> draftGrounds =
@@ -88,6 +116,48 @@ public class CaseTabView {
                        .addressKnown(defendant.getAddressKnown())
                        .address(defendant.getCorrespondenceAddress())
                        .build())
+            .build();
+    }
+
+    private List<ListValue<Party>> buildUnderlesseeOrMortgageParties(PCSCase draftCaseData) {
+        UnderlesseeMortgageeDetails underlesseeOrMortgagee1 = draftCaseData.getUnderlesseeOrMortgagee1();
+
+        if (underlesseeOrMortgagee1 == null) {
+            return null;
+        }
+
+        List<ListValue<Party>> underlesseeMortgageParties = new ArrayList<>();
+        underlesseeMortgageParties.add(buildUnderlesseeOrMortgageParty(underlesseeOrMortgagee1));
+
+        return underlesseeMortgageParties;
+    }
+
+    private ListValue<Party> buildUnderlesseeOrMortgageParty(UnderlesseeMortgageeDetails underlesseeMortgageeDetails) {
+        return ListValue.<Party>builder()
+            .value(Party.builder()
+                       .nameKnown(underlesseeMortgageeDetails.getNameKnown())
+                       .orgName(underlesseeMortgageeDetails.getName())
+                       .addressKnown(underlesseeMortgageeDetails.getAddressKnown())
+                       .address(underlesseeMortgageeDetails.getAddress())
+                       .build())
+            .build();
+    }
+
+    private DemotionOfTenancy buildDemotionOfTenancy(
+        SuspensionOfRightToBuyDemotionOfTenancy suspensionOfRightToBuyDemotionOfTenancy
+    ) {
+        return DemotionOfTenancy.builder()
+            .housingAct(suspensionOfRightToBuyDemotionOfTenancy.getDemotionOfTenancyActs())
+            .reason(suspensionOfRightToBuyDemotionOfTenancy.getDemotionOrderReason())
+            .build();
+    }
+
+    private SuspensionOfRightToBuy buildSuspensionOfRightToBuyHousingAct(
+        SuspensionOfRightToBuyDemotionOfTenancy suspensionOfRightToBuyDemotionOfTenancy
+    ) {
+        return SuspensionOfRightToBuy.builder()
+            .housingAct(suspensionOfRightToBuyDemotionOfTenancy.getSuspensionOfRightToBuyActs())
+            .reason(suspensionOfRightToBuyDemotionOfTenancy.getSuspensionOrderReason())
             .build();
     }
 

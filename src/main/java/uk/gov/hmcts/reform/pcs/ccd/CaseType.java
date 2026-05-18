@@ -158,21 +158,51 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.tab("caseDetails", "Case Details")
             .label("Case details", null, "### Case details")
-            .field("caseDetailsTab_ClaimDetails")
-            .field("caseDetailsTab_PropertyAddress")
-            .field("caseDetailsTab_GroundsForPossessionDetails")
-            .field("caseDetailsTab_TenancyLicenceDetails")
-            .field("caseDetailsTab_NoticeDetails")
-            .field("caseDetailsTab_ActionsTakenDetails")
-            .field("caseDetailsTab_RentArrearsDetails")
-            .label("Claimant Details", null, "### Claimant Details")
-            .label("Defendant Details", null, "### Defendant Details")
+            .field("detailsTab_ClaimDetails")
+            .field("detailsTab_PropertyAddress")
+            .field("detailsTab_GroundsForPossessionDetails")
+            .field("detailsTab_TenancyLicenceDetails")
+            .field("detailsTab_NoticeDetails")
+            .field("detailsTab_ActionsTakenDetails")
+            .field("detailsTab_RentArrearsDetails")
+            .field("detailsTab_CostsDetails")
+            .field("detailsTab_ReasonsForPossessionDetails")
+            .field("detailsTab_ApplicationsDetails")
+            .label(
+                "Claimant Details",
+                "detailsTab_ClaimantInformation!=\"\"",
+                "### Claimant Details"
+            )
+            .field("detailsTab_ClaimantInformation")
+            .field("detailsTab_ClaimantAddress")
+            .field("detailsTab_ClaimantContactDetails")
+            .field("detailsTab_ClaimantCircumstances")
+            .label(
+                "Defendant Details",
+                "detailsTab_DefendantInformationDetails!=\"\"",
+                "### Defendant Details"
+            )
+            .field("detailsTab_DefendantInformationDetails")
+            .field("detailsTab_DefendantOneAddress")
+            .field("detailsTab_AdditionalDefendants")
+            .field("detailsTab_DefendantCircumstanceDetails")
             .label(
                 "Underlessee or mortgagee",
-                null,
+                "detailsTab_MortgageDetails!=\"\"",
                 "### Underlessee or mortgagee entitled to claim relief against forfeiture"
             )
-            .label("Demotion of tenancy", null, "### Demotion of tenancy")
-            .label("Suspension of right to buy", null, "### Suspension of right to buy");
+            .field("detailsTab_MortgageDetails")
+            .label(
+                "Demotion of tenancy",
+                "detailsTab_DemotionOfTenancyDetails!=\"\"",
+                "### Demotion of tenancy"
+            )
+            .field("detailsTab_DemotionOfTenancyDetails")
+            .label(
+                "Suspension of right to buy",
+                "detailsTab_SuspensionOfRightToBuyDetails!=\"\"",
+                "### Suspension of right to buy"
+            )
+            .field("detailsTab_SuspensionOfRightToBuyDetails");
     }
 }

@@ -6,12 +6,18 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -22,8 +28,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ApplicationsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantContactTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CostsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DefendantCircumstanceTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DemotionOfTenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.SuspensionOfRightToBuyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.UnderlesseeOrMortgageInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
@@ -41,7 +52,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.DEMOTION_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.DEMOTED_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.INTRODUCTORY_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
@@ -67,11 +81,17 @@ public class CaseDetailsTabView {
         NoticeTabDetails noticeTabDetails = buildNoticeTabDetails(pcsCase);
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
         RentArrearsTabDetails rentArrearsTabDetails = buildRentArrearsTabDetails(pcsCase);
+        CostsTabDetails costsTabDetails = buildCostsTabDetails(pcsCase);
         ReasonsForPossessionTabDetails reasonsForPossessionTabDetails = buildReasonsForPossession(pcsCase);
         ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
         ClaimantInformationTabDetails claimantInformationTabDetails = buildClaimantInformationTabDetails(pcsCase);
         DefendantInformationTabDetails defendantInformationTabDetails =
             defendantInformationTabDetailsBuilder.buildDefendantOneDetails(pcsCase);
+        List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> underlesseeMortgageTabDetailsList =
+            buildUnderlesseeMortgageTabDetailsList(pcsCase);
+        DemotionOfTenancyTabDetails demotionOfTenancyTabDetails = buildDemotionOfTenancyTabDetails(pcsCase);
+        SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyTabDetails =
+            buildSuspensionOfRightToBuyTabDetails(pcsCase);
 
         CaseDetailsTab caseDetailsTab = CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
@@ -81,10 +101,14 @@ public class CaseDetailsTabView {
             .noticeDetails(noticeTabDetails)
             .actionsTakenDetails(actionsTakenTabDetails)
             .rentArrearsDetails(rentArrearsTabDetails)
+            .costsDetails(costsTabDetails)
             .reasonsForPossessionDetails(reasonsForPossessionTabDetails)
             .applicationsDetails(applicationsTabDetails)
             .claimantInformation(claimantInformationTabDetails)
             .defendantInformationDetails(defendantInformationTabDetails)
+            .mortgageDetails(underlesseeMortgageTabDetailsList)
+            .demotionOfTenancyDetails(demotionOfTenancyTabDetails)
+            .suspensionOfRightToBuyDetails(suspensionOfRightToBuyTabDetails)
             .build();
 
         if (claimantInformationTabDetails != null) {
@@ -95,7 +119,8 @@ public class CaseDetailsTabView {
         if (defendantInformationTabDetails != null) {
             List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendantInformationTabDetails =
                 additionalDefendantInformationTabDetailsBuilder.buildAdditionalDefendantsDetails(pcsCase);
-            caseDetailsTab.setAdditionalDefendantDetails(additionalDefendantInformationTabDetails);
+            caseDetailsTab.setAdditionalDefendants(additionalDefendantInformationTabDetails);
+            caseDetailsTab.setDefendantCircumstanceDetails(buildDefendantCircumstanceTabDetails(pcsCase));
         }
         return caseDetailsTab;
     }
@@ -175,14 +200,15 @@ public class CaseDetailsTabView {
                 .build();
         }
 
+        YesOrNo noticeServed = pcsCase.getNoticeServed();
         NoticeTabDetails noticeTabDetails = NoticeTabDetails.builder()
-            .noticeServed(pcsCase.getNoticeServed().getValue())
+            .noticeServed(noticeServed.getValue())
             .noticeMethod(NO_ANSWER)
             .noticeDate(NO_ANSWER)
             .build();
 
         NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
-        if (noticeTabDetails != null) {
+        if (noticeServed == YesOrNo.YES && noticeTabDetails != null) {
             NoticeServiceMethod method = noticeServedDetails.getNoticeServiceMethod();
             noticeTabDetails.setNoticeDocuments(noticeServedDetails.getNoticeDocuments());
 
@@ -260,6 +286,13 @@ public class CaseDetailsTabView {
         return rentArrearsTabDetails;
     }
 
+    private CostsTabDetails buildCostsTabDetails(PCSCase pcsCase) {
+        VerticalYesNo claimingCostsWanted = pcsCase.getClaimingCostsWanted();
+        return CostsTabDetails.builder()
+            .askingForCosts(claimingCostsWanted != null ? claimingCostsWanted.getLabel() : NO_ANSWER)
+            .build();
+    }
+
     private ReasonsForPossessionTabDetails buildReasonsForPossession(PCSCase pcsCase) {
         return reasonsForPossessionTabDetailsBuilder.buildReasonsForPossessionFromGroundSummaries(pcsCase);
     }
@@ -280,20 +313,24 @@ public class CaseDetailsTabView {
 
     private AddressUK getClaimantAddress(PCSCase pcsCase) {
         List<ListValue<Party>> claimants = pcsCase.getAllClaimants();
+        ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
+        AddressUK address = null;
+
         if (!CollectionUtils.isEmpty(claimants)) {
             Party claimant = claimants.getFirst().getValue();
-            return claimant.getAddress();
-        }
-
-        ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
-        if (claimantContactPreferences != null ) {
+            address = claimant.getAddress();
+        } else if (claimantContactPreferences != null ) {
             YesOrNo orgAddressFound = claimantContactPreferences.getOrgAddressFound();
             VerticalYesNo correctClaimantAddress = claimantContactPreferences.getIsCorrectClaimantContactAddress();
             if (orgAddressFound == YesOrNo.YES && correctClaimantAddress == VerticalYesNo.YES) {
-                return claimantContactPreferences.getOrganisationAddress();
+                address = claimantContactPreferences.getOrganisationAddress();
+            } else {
+                address = claimantContactPreferences.getOverriddenClaimantContactAddress();
             }
+        }
 
-            return claimantContactPreferences.getOverriddenClaimantContactAddress();
+        if (address != null) {
+            return address;
         }
 
         return AddressUK.builder()
@@ -319,13 +356,125 @@ public class CaseDetailsTabView {
             emailAddress = isCorrectClaimantContactEmail == VerticalYesNo.YES ?
                 claimantContactPreferences.getClaimantContactEmail() :
                 claimantContactPreferences.getOverriddenClaimantContactEmail();
-            phoneNumber = claimantContactPreferences.getClaimantContactPhoneNumber();
+            if (claimantContactPreferences.getClaimantProvidePhoneNumber() == VerticalYesNo.YES) {
+                phoneNumber = claimantContactPreferences.getClaimantContactPhoneNumber();
+            }
         }
 
 
         return ClaimantContactTabDetails.builder()
             .emailAddress(emailAddress != null ? emailAddress : NO_ANSWER)
             .phoneNumber(phoneNumber != null ? phoneNumber : NO_ANSWER)
+            .build();
+    }
+
+    private DefendantCircumstanceTabDetails buildDefendantCircumstanceTabDetails(PCSCase pcsCase) {
+        DefendantCircumstances defendantCircumstances = pcsCase.getDefendantCircumstances();
+        String circumstances = null;
+        VerticalYesNo circumstancesGiven = null;
+
+        if (defendantCircumstances != null) {
+            circumstancesGiven = defendantCircumstances.getHasDefendantCircumstancesInfo();
+            circumstances = defendantCircumstances.getDefendantCircumstancesInfo();
+        }
+
+
+        return DefendantCircumstanceTabDetails.builder()
+            .defendantCircumstancesGiven(circumstancesGiven != null ? circumstancesGiven.getLabel() : NO_ANSWER)
+            .defendantCircumstances(circumstances)
+            .build();
+    }
+
+    private List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> buildUnderlesseeMortgageTabDetailsList(
+        PCSCase pcsCase
+    ) {
+        List<ListValue<Party>> underlesseeMortgageParties = pcsCase.getAllUnderlesseeOrMortgagees();
+        if (CollectionUtils.isEmpty(underlesseeMortgageParties)) {
+            return null;
+        }
+
+        return underlesseeMortgageParties.stream()
+            .map(this::buildUnderlesseeMortgageTabDetails)
+            .toList();
+    }
+
+    private ListValue<UnderlesseeOrMortgageInformationTabDetails> buildUnderlesseeMortgageTabDetails(
+        ListValue<Party> underlesseeMortgageePartyListValue
+    ) {
+        Party underlesseeMortgageeParty = underlesseeMortgageePartyListValue.getValue();
+        VerticalYesNo nameKnown = underlesseeMortgageeParty.getNameKnown();
+        String name = nameKnown == VerticalYesNo.YES ? underlesseeMortgageeParty.getOrgName() : null;
+        VerticalYesNo addressKnown = underlesseeMortgageeParty.getAddressKnown();
+        AddressUK address = addressKnown == VerticalYesNo.YES ? underlesseeMortgageeParty.getAddress() : null;
+
+        return ListValue.<UnderlesseeOrMortgageInformationTabDetails>builder()
+            .value(UnderlesseeOrMortgageInformationTabDetails.builder()
+                       .nameKnown(nameKnown.getLabel())
+                       .name(name)
+                       .addressKnown(addressKnown.getLabel())
+                       .address(address)
+                       .build())
+            .build();
+    }
+
+    private DemotionOfTenancyTabDetails buildDemotionOfTenancyTabDetails(PCSCase pcsCase) {
+        Set<AlternativesToPossession> alternativesToPossessionSet = pcsCase.getAlternativesToPossession();
+
+        if (
+            CollectionUtils.isEmpty(alternativesToPossessionSet) ||
+            !alternativesToPossessionSet.contains(DEMOTION_OF_TENANCY)
+        ) {
+            return null;
+        }
+
+        DemotionOfTenancy demotionOfTenancy = pcsCase.getDemotionOfTenancy();
+        if (demotionOfTenancy == null) {
+            return DemotionOfTenancyTabDetails.builder()
+                .housingAct(NO_ANSWER)
+                .statementOfExpressTermsServed(NO_ANSWER)
+                .reasons(NO_ANSWER)
+                .build();
+        }
+
+        DemotionOfTenancyHousingAct housingAct = demotionOfTenancy.getHousingAct();
+        VerticalYesNo statementOfExpressTermsServed = demotionOfTenancy.getStatementOfExpressTermsServed();
+        String statementOfExpressTermsDetails = null;
+
+        if (statementOfExpressTermsServed == VerticalYesNo.YES) {
+            statementOfExpressTermsDetails = demotionOfTenancy.getStatementOfExpressTermsDetails();
+        }
+        String reason = demotionOfTenancy.getReason();
+
+        return DemotionOfTenancyTabDetails.builder()
+            .housingAct(housingAct != null ? housingAct.getLabel() : NO_ANSWER)
+            .statementOfExpressTermsServed(
+                statementOfExpressTermsServed != null ? statementOfExpressTermsServed.getLabel() : NO_ANSWER
+            )
+            .terms(statementOfExpressTermsDetails)
+            .reasons(reason != null ? reason : NO_ANSWER)
+            .build();
+    }
+
+    private SuspensionOfRightToBuyTabDetails buildSuspensionOfRightToBuyTabDetails(PCSCase pcsCase) {
+        Set<AlternativesToPossession> alternativesToPossessionSet = pcsCase.getAlternativesToPossession();
+        if (!alternativesToPossessionSet.contains(SUSPENSION_OF_RIGHT_TO_BUY)) {
+            return null;
+        }
+
+        SuspensionOfRightToBuy suspensionOfRightToBuyDemotionOfTenancy = pcsCase.getSuspensionOfRightToBuy();
+        if (suspensionOfRightToBuyDemotionOfTenancy == null) {
+            return SuspensionOfRightToBuyTabDetails.builder()
+                .housingAct(NO_ANSWER)
+                .reasons(NO_ANSWER)
+                .build();
+        }
+
+        SuspensionOfRightToBuyHousingAct housingAct = suspensionOfRightToBuyDemotionOfTenancy.getHousingAct();
+        String reason = suspensionOfRightToBuyDemotionOfTenancy.getReason();
+
+        return SuspensionOfRightToBuyTabDetails.builder()
+            .housingAct(housingAct != null ? housingAct.getLabel() : NO_ANSWER)
+            .reasons(reason != null ? reason : NO_ANSWER)
             .build();
     }
 }

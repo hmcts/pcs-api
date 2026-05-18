@@ -61,6 +61,11 @@ public class CaseDetailsTab {
     private RentArrearsTabDetails rentArrearsDetails;
 
     @CCD(
+        label = "Costs"
+    )
+    private CostsTabDetails costsDetails;
+
+    @CCD(
         label = "Reasons for possession"
     )
     private ReasonsForPossessionTabDetails reasonsForPossessionDetails;
@@ -103,7 +108,7 @@ public class CaseDetailsTab {
     @CCD(
         label = "Additional defendant"
     )
-    private List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendantDetails;
+    private List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendants;
 
     @CCD(
         label = "Defendant’ circumstances"
