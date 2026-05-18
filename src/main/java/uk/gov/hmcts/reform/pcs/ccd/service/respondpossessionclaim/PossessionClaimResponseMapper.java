@@ -38,6 +38,7 @@ public class PossessionClaimResponseMapper {
      */
     public PossessionClaimResponse mapFrom(PCSCase pcsCase, PartyEntity matchedDefendant) {
         DefendantContactDetails contactDetails = buildContactDetails(pcsCase, matchedDefendant);
+        String currentDefendantPartyId = matchedDefendant.getId() != null ? matchedDefendant.getId().toString() : null;
 
         Party claimantEnteredDetails = buildPartyFromEntity(matchedDefendant, pcsCase);
 
@@ -48,6 +49,7 @@ public class PossessionClaimResponseMapper {
             .claimantOrganisations(claimantOrgs)
             .defendantContactDetails(contactDetails)
             .claimantEnteredDefendantDetails(claimantEnteredDetails)
+            .currentDefendantPartyId(currentDefendantPartyId)
             .build();
     }
 

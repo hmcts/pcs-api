@@ -88,7 +88,7 @@ public class PCSCase {
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
@@ -269,10 +269,6 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
 
-    @JsonUnwrapped(prefix = "wales")
-    @CCD
-    private WalesHousingAct walesHousingAct;
-
     @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
     private VerticalYesNo prohibitedConductWalesClaim;
 
@@ -320,7 +316,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
@@ -389,8 +385,8 @@ public class PCSCase {
     private YesOrNo showRentArrearsPage;
 
     @CCD(
-        label = "Which language did you use to complete this service?",
-        hint = "If someone else helped you to answer a question in this service, "
+        label = "Which language did you use to complete this claim?",
+        hint = "If someone else helped you to answer a question in this claim, "
             + "ask them if they answered any questions in Welsh. We’ll use this to "
             + "make sure your claim is processed correctly"
     )
@@ -519,6 +515,11 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     @CCD
     private ASBQuestionsDetailsWales asbQuestionsWales;
+
+    @CCD(
+        label = "Are you an exempt landlord under Part 1 of the Housing (Wales) Act 2014?"
+    )
+    private VerticalYesNo isExemptLandlord;
 
     @CCD(
         access = {DefendantAccess.class},
