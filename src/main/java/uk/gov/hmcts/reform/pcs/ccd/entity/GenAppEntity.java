@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -28,6 +29,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -46,6 +49,8 @@ public class GenAppEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    private Integer rank;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
@@ -94,6 +99,15 @@ public class GenAppEntity {
     private String withoutNoticeReason;
 
     private String whatOrderWanted;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo documentsUploaded;
+
+    @OneToMany(cascade = ALL, mappedBy = "generalApplication")
+    @Builder.Default
+    @JsonManagedReference
+    private List<DocumentEntity> documents = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;

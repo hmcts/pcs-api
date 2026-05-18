@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -30,7 +29,6 @@ import java.util.UUID;
 public class ClaimResponseService {
 
     private final PartyService partyService;
-    private final PartyRepository partyRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
@@ -112,8 +110,6 @@ public class ClaimResponseService {
                 existingAddress.setCountry(newAddress.getCountry());
             } else {
                 party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
-                //only need to trigger save when object is newly created
-                partyRepository.save(party);
             }
         }
     }
@@ -124,12 +120,10 @@ public class ClaimResponseService {
      */
     private void saveContactPreferences(PartyEntity party, DefendantResponses defendantResponse) {
         ContactPreferencesEntity contactPrefs = party.getContactPreferences();
-        boolean saveNeeded = false;
 
         if (contactPrefs == null) {
             contactPrefs = new ContactPreferencesEntity();
             party.setContactPreferences(contactPrefs);
-            saveNeeded = true;
         }
 
         contactPrefs.setContactByEmail(defendantResponse.getContactByEmail());
@@ -138,11 +132,6 @@ public class ClaimResponseService {
 
         if (isContactByPhoneSelected(defendantResponse.getContactByPhone())) {
             contactPrefs.setContactByText(defendantResponse.getContactByText());
-        }
-
-        //only need to trigger save when object is newly created
-        if (saveNeeded) {
-            partyRepository.save(party);
         }
 
         log.debug("Saved contact preferences for party ID: {}", party.getId());

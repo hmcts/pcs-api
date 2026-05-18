@@ -32,7 +32,7 @@ class RealFeeServiceTest {
     private PCSFeesClient pcsFeesClient;
 
     @InjectMocks
-    private RealFeeService underTest;
+    private FeeService underTest;
 
     private static final FeeType FEE_TYPE = FeeType.CASE_ISSUE_FEE;
 

@@ -47,18 +47,16 @@ class ClaimViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(claimEntity.getAgainstTrespassers()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getDueToRentArrears()).thenReturn(YesOrNo.NO);
-        when(claimEntity.getClaimCosts()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getPreActionProtocolFollowed()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getMediationAttempted()).thenReturn(VerticalYesNo.NO);
-        when(claimEntity.getMediationDetails()).thenReturn("mediation details");
         when(claimEntity.getSettlementAttempted()).thenReturn(VerticalYesNo.YES);
-        when(claimEntity.getSettlementDetails()).thenReturn("settlement details");
         when(claimEntity.getAdditionalDefendants()).thenReturn(VerticalYesNo.NO);
         when(claimEntity.getUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getAdditionalUnderlesseesOrMortgagees()).thenReturn(VerticalYesNo.NO);
         when(claimEntity.getGenAppExpected()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
         when(claimEntity.getAdditionalDocsProvided()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getPreActionProtocolIncompleteExplanation()).thenReturn("explanation");
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -66,18 +64,16 @@ class ClaimViewTest {
         // Then
         assertThat(pcsCase.getClaimAgainstTrespassers()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getClaimDueToRentArrears()).isEqualTo(YesOrNo.NO);
-        assertThat(pcsCase.getClaimingCostsWanted()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getMediationAttempted()).isEqualTo(VerticalYesNo.NO);
-        assertThat(pcsCase.getMediationAttemptedDetails()).isEqualTo("mediation details");
         assertThat(pcsCase.getSettlementAttempted()).isEqualTo(VerticalYesNo.YES);
-        assertThat(pcsCase.getSettlementAttemptedDetails()).isEqualTo("settlement details");
         assertThat(pcsCase.getAddAnotherDefendant()).isEqualTo(VerticalYesNo.NO);
         assertThat(pcsCase.getHasUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.NO);
         assertThat(pcsCase.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
         assertThat(pcsCase.getWantToUploadDocuments()).isEqualTo(VerticalYesNo.YES);
+        assertThat(pcsCase.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
     }
 
     @ParameterizedTest
@@ -132,7 +128,6 @@ class ClaimViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         assertThat(pcsCase.getClaimAgainstTrespassers()).isNull();
-        assertThat(pcsCase.getClaimingCostsWanted()).isNull();
         assertThat(pcsCase.getClaimantCircumstances()).isNull();
         assertThat(pcsCase.getDefendantCircumstances()).isNull();
         assertThat(pcsCase.getAdditionalReasonsForPossession()).isNull();

@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -36,8 +35,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
-import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
-import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -46,7 +43,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
-import java.net.URI;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -69,7 +65,6 @@ public class TestingSupportController {
 
     private final SchedulerClient schedulerClient;
     private final Task<Void> helloWorldTask;
-    private final DocAssemblyService docAssemblyService;
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
@@ -126,77 +121,6 @@ public class TestingSupportController {
             log.error("Failed to schedule Hello World task", e);
             return ResponseEntity.internalServerError()
                 .body("Failed to schedule Hello World task: " + e.getMessage());
-        }
-    }
-
-    @Operation(
-        summary = "Generate a document using Doc Assembly API",
-        description = "Generates a document by sending a request to the Doc Assembly service "
-            + "with template ID and form payload. Returns the URL of the generated document."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Document generated successfully"),
-        @ApiResponse(responseCode = "400", description = "Bad request - formPayload is required"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @PostMapping(value = "/generate-document", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> generateDocument(
-        @Parameter(
-            description = "Bearer token for user authentication",
-            required = true,
-            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        )
-        @RequestHeader(value = "Authorization") String authorization,
-        @Parameter(
-            description = "Service-to-Service (S2S) authorization token",
-            required = true,
-            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        )
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @Parameter(
-            description = "Document generation request containing template ID and form data",
-            required = true
-        )
-        @RequestBody JsonNode formPayload) {
-        try {
-            if (formPayload == null) {
-                return ResponseEntity.badRequest().body("FormPayload is required");
-            }
-            String documentUrl = docAssemblyService.generateDocument(
-                formPayload,
-                "CV-SPC-CLM-ENG-01356.docx",
-                OutputType.PDF,
-                "generated-document.pdf"
-            );
-            return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
-        } catch (DocAssemblyException e) {
-            log.error("Doc Assembly service error: {}", e.getMessage(), e);
-            return handleDocAssemblyException(e);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid request: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body("Invalid request: " + e.getMessage());
-        } catch (Exception e) {
-            log.error("Failed to generate document", e);
-            return ResponseEntity.internalServerError()
-                .body("An error occurred while processing your request.");
-        }
-    }
-
-    private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
-        String message = e.getMessage();
-
-        if (message.contains("Bad request")) {
-            return ResponseEntity.badRequest().body("Bad request to Doc Assembly service: " + message);
-        } else if (message.contains("Authorization failed")) {
-            return ResponseEntity.status(401).body("Authorization failed: " + message);
-        } else if (message.contains("endpoint not found")) {
-            return ResponseEntity.status(404).body("Doc Assembly service endpoint not found: " + message);
-        } else if (message.contains("temporarily unavailable") || message.contains("service error")) {
-            return ResponseEntity.status(503).body("Doc Assembly service is temporarily unavailable: " + message);
-        } else {
-            return ResponseEntity.internalServerError().body("Doc Assembly service error: " + message);
         }
     }
 
