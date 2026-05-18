@@ -265,29 +265,11 @@ class CaseTabViewTest {
     }
 
     @Test
-    void shouldSetDraftSummaryTabFieldsUsingPreFilledDraftDataAndSubmittedFallbacks() {
+    void shouldSetDraftSummaryTabFieldsUsingDraftDataOnly() {
         // Given
         AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
-        List<ListValue<Party>> submittedClaimants = List.of(
-            listValue(Party.builder().orgName("Submitted claimant").build())
-        );
-        List<ListValue<Party>> submittedDefendants = List.of(
-            listValue(Party.builder()
-                          .nameKnown(VerticalYesNo.YES)
-                          .firstName("Submitted")
-                          .lastName("Defendant")
-                          .addressKnown(VerticalYesNo.YES)
-                          .address(propertyAddress)
-                          .build())
-        );
-        List<ListValue<ClaimGroundSummary>> submittedGrounds = List.of(
-            listValue(ClaimGroundSummary.builder().label("Submitted ground").build())
-        );
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(propertyAddress)
-            .allClaimants(submittedClaimants)
-            .allDefendants(submittedDefendants)
-            .claimGroundSummaries(submittedGrounds)
             .build();
         PCSCase draftCaseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
@@ -301,11 +283,9 @@ class CaseTabViewTest {
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
         assertThat(summaryTab.getRepossessedPropertyAddress()).isEqualTo(propertyAddress);
-        assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Submitted claimant");
-        assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Submitted");
-        assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("Defendant");
-        assertThat(summaryTab.getDefendantDetails().getAddressForService()).isEqualTo(propertyAddress);
-        assertThat(summaryTab.getGroundsForPossession().getGrounds()).isEqualTo("Submitted ground");
+        assertThat(summaryTab.getClaimantDetails()).isNull();
+        assertThat(summaryTab.getDefendantDetails()).isNull();
+        assertThat(summaryTab.getGroundsForPossession().getGrounds()).isNull();
     }
 
     @Test

@@ -35,21 +35,13 @@ public class CaseTabView {
     }
 
     public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draftCaseData) {
-        if (CollectionUtils.isEmpty(draftCaseData.getAllClaimants())) {
-            draftCaseData.setAllClaimants(pcsCase.getAllClaimants());
-        }
-
         if (draftCaseData.getDefendant1() != null) {
             draftCaseData.setAllDefendants(buildDefendants(draftCaseData));
-        } else if (CollectionUtils.isEmpty(draftCaseData.getAllDefendants())) {
-            draftCaseData.setAllDefendants(pcsCase.getAllDefendants());
         }
 
         List<ListValue<ClaimGroundSummary>> draftGrounds =
             claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
-        draftCaseData.setClaimGroundSummaries(CollectionUtils.isEmpty(draftGrounds)
-                                                 ? pcsCase.getClaimGroundSummaries()
-                                                 : draftGrounds);
+        draftCaseData.setClaimGroundSummaries(draftGrounds);
 
         setCaseTabFields(draftCaseData);
         pcsCase.setSummaryTab(draftCaseData.getSummaryTab());
