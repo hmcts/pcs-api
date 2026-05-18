@@ -21,11 +21,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestClient;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
@@ -58,10 +54,10 @@ class CreatePossessionClaimTest extends CftlibTest {
     private CoreCaseDataApi ccdApi;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private IdamClient idamClient;
 
-    @Value("${idam.api.url}")
-    private String idamApiUrl;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private String idamToken;
     private String s2sToken;
@@ -69,28 +65,8 @@ class CreatePossessionClaimTest extends CftlibTest {
 
     @BeforeAll
     void setup() {
-        idamToken = fetchTestUserAccessToken("pcs-solicitor1@test.com", "password");
+        idamToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
         s2sToken = generateDummyS2SToken("ccd_gw");
-    }
-
-    @SuppressWarnings("unchecked")
-    private String fetchTestUserAccessToken(String username, String password) {
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("grant_type", "password");
-        form.add("client_id", "pcs-api");
-        form.add("client_secret", "dummy-secret-for-local");
-        form.add("scope", "openid profile roles");
-        form.add("username", username);
-        form.add("password", password);
-
-        java.util.Map<String, Object> response = RestClient.create().post()
-            .uri(idamApiUrl + "/o/token")
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .body(form)
-            .retrieve()
-            .body(java.util.Map.class);
-
-        return (String) response.get("access_token");
     }
 
     @Test
