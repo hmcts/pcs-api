@@ -63,6 +63,13 @@ public class PartyService {
                 "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
     }
 
+    public PartyEntity getPartyEntityById(UUID partyId, long caseReference) {
+        return partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
+            .orElseThrow(() -> new IllegalStateException(
+                "No party found for party ID: " + partyId + " and case reference: " + caseReference
+            ));
+    }
+
     private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();

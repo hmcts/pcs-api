@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -59,8 +58,6 @@ class PartyServiceTest {
     private PartyRepository partyRepository;
     @Mock
     private AddressMapper addressMapper;
-    @Mock
-    private OrganisationService organisationService;
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
     @Mock
@@ -113,7 +110,43 @@ class PartyServiceTest {
 
             // Then
             assertThat(throwable)
-                .isInstanceOf(PartyNotFoundException.class);
+                .isInstanceOf(PartyNotFoundException.class)
+                .hasMessage("No party found for IDAM ID: " + idamId + " and case reference: " + caseReference);
+
+        }
+
+        @Test
+        void shouldGetPartyEntityById() {
+            // Given
+            UUID id = UUID.randomUUID();
+            long caseReference = 1234L;
+
+            PartyEntity expectedPartyEntity = mock(PartyEntity.class);
+            when(partyRepository.findByIdAndPcsCaseCaseReference(id, caseReference))
+                .thenReturn(Optional.of(expectedPartyEntity));
+
+            // When
+            PartyEntity actualPartyEntity = underTest.getPartyEntityById(id, caseReference);
+
+            // Then
+            assertThat(actualPartyEntity).isEqualTo(expectedPartyEntity);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenNoPartyEntityById() {
+            // Given
+            UUID id = UUID.randomUUID();
+            long caseReference = 1234L;
+
+            when(partyRepository.findByIdAndPcsCaseCaseReference(id, caseReference)).thenReturn(Optional.empty());
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.getPartyEntityById(id, caseReference));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("No party found for party ID: " + id + " and case reference: " + caseReference);
         }
 
     }

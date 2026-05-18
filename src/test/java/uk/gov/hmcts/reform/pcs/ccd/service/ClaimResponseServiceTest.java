@@ -17,14 +17,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,8 +44,6 @@ class ClaimResponseServiceTest {
     @Mock
     private PartyService partyService;
     @Mock
-    private PartyRepository partyRepository;
-    @Mock
     private SecurityContextService securityContextService;
     @Mock
     private ModelMapper modelMapper;
@@ -65,7 +61,7 @@ class ClaimResponseServiceTest {
         testParty.setId(TEST_PARTY_ID);
         testParty.setIdamId(TEST_IDAM_ID);
 
-        underTest = new ClaimResponseService(partyService, partyRepository, securityContextService, modelMapper);
+        underTest = new ClaimResponseService(partyService, securityContextService, modelMapper);
     }
 
     @Test
@@ -356,8 +352,8 @@ class ClaimResponseServiceTest {
 
         AddressEntity addressEntity = new AddressEntity();
         UUID partyId = UUID.randomUUID();
-        when(partyRepository.findByIdAndPcsCaseCaseReference(partyId, TEST_CASE_REFERENCE))
-            .thenReturn(Optional.of(testParty));
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE))
+            .thenReturn(testParty);
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
@@ -396,8 +392,8 @@ class ClaimResponseServiceTest {
 
         AddressEntity addressEntity = new AddressEntity();
         UUID partyId = UUID.randomUUID();
-        when(partyRepository.findByIdAndPcsCaseCaseReference(partyId, TEST_CASE_REFERENCE))
-            .thenReturn(Optional.of(testParty));
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE))
+            .thenReturn(testParty);
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
@@ -414,31 +410,6 @@ class ClaimResponseServiceTest {
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
-    }
-
-    @Test
-    void saveDraftDataForParty_WithNoPartyId_ThrowsException() {
-        // Given
-        PossessionClaimResponse response = buildResponse(
-            Party.builder()
-                .phoneNumber("07123456789")
-                .emailAddress("defendant@example.com")
-                .address(TEST_ADDRESS)
-                .build(),
-            DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
-                .contactByPost(VerticalYesNo.NO)
-                .contactByPhone(VerticalYesNo.YES)
-                .contactByText(VerticalYesNo.YES)
-                .build()
-        );
-
-        UUID partyId = UUID.randomUUID();
-
-        // When / then
-        assertThatThrownBy(() -> underTest.saveDraftDataForParty(response, TEST_CASE_REFERENCE, partyId))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("No party found for party ID: " + partyId + " and case reference: " + TEST_CASE_REFERENCE);
     }
 
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {

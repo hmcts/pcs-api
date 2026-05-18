@@ -341,8 +341,7 @@ public class DraftCaseDataService {
         return pcsCase;
     }
 
-    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId,
-                                                UUID userId, String caseData) {
+    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, UUID userId, String caseData) {
         DraftCaseDataEntity newDraft = new DraftCaseDataEntity();
         newDraft.setCaseReference(caseReference);
         newDraft.setCaseData(caseData);
@@ -351,8 +350,8 @@ public class DraftCaseDataService {
         return newDraft;
     }
 
-    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId,
-                                               UUID userId, String caseData, UUID partyId) {
+    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, UUID userId, String caseData,
+                                               UUID partyId) {
         DraftCaseDataEntity newDraft = createNewDraft(caseReference, eventId, userId, caseData);
         newDraft.setPartyId(partyId);
         return newDraft;
