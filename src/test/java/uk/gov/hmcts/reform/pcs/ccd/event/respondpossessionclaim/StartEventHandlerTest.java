@@ -72,6 +72,7 @@ class StartEventHandlerTest {
             defendantResponseRepository
         );
     }
+    
     @Test
     void shouldBuildInitialResponseAndInitializeDraftWhenNoDraftExists() {
         // Given
