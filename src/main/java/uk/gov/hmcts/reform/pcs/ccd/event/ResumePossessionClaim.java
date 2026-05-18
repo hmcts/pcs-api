@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -158,6 +159,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final RentDetailsPage rentDetailsPage;
     private final RentArrears rentArrears;
     private final PreActionProtocol preActionProtocol;
+
+    @Value("${scheduleFeeCaseIssuedInSeconds:10}")
+    private int scheduleFeeCaseIssuedInSeconds = 10;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -367,9 +371,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulerClient.scheduleIfNotExists(
             FEE_CASE_ISSUED_TASK_DESCRIPTOR
+
                 .instance(UUID.randomUUID().toString())
                 .data(taskData)
-                .scheduledTo(Instant.now().plusSeconds(10))
+                .scheduledTo(Instant.now().plusSeconds(scheduleFeeCaseIssuedInSeconds))
         );
 
         return feeDetails;

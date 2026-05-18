@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdUpdateService;
+import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -19,7 +19,7 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService.PARTY_NO
 @Component
 public class MakeAClaimPaymentCallbackStrategy implements PaymentCallbackStrategy {
 
-    private final CcdUpdateService ccdUpdateService;
+    private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -28,7 +28,7 @@ public class MakeAClaimPaymentCallbackStrategy implements PaymentCallbackStrateg
         ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(feePaymentEntity.getClaim(),
                                                                      feesAndPayTaskData.getResponsibleParty());
         feePaymentEntity.setParty(claimPartyEntity.getParty());
-        ccdUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
+        ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
     }
 
     private FeesAndPayTaskData toFeesAndPayTaskData(String feesAndPayTaskDataAsString) {

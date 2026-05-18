@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.payment;
 
 @ExtendWith(MockitoExtension.class)
-class CcdUpdateServiceTest {
+class CcdPaymentStateUpdateServiceTest {
 
     private static final String CASE_ID = "1111-2222-3333-4444";
     private static final String IDAM_TOKEN = "Bearer idam";
@@ -41,7 +41,7 @@ class CcdUpdateServiceTest {
     private ObjectMapper objectMapper;
 
     @InjectMocks
-    private CcdUpdateService underTest;
+    private CcdPaymentStateUpdateService underTest;
 
     @Test
     void shouldStartEventAndSubmitPaymentSuccessfully() {

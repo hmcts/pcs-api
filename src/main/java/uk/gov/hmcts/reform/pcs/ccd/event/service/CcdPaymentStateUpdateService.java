@@ -19,7 +19,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.payment;
 @AllArgsConstructor
 @Service
 @Slf4j
-public class CcdUpdateService {
+public class CcdPaymentStateUpdateService {
 
     private final IdamService idamService;
     private final AuthTokenGenerator s2sAuthTokenGenerator;

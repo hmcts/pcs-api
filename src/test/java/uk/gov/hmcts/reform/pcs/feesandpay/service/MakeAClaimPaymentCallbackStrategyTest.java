@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdUpdateService;
+import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -37,7 +37,7 @@ class MakeAClaimPaymentCallbackStrategyTest {
     private static final String RESPONSIBLE_PARTY = "Claimant Org Ltd";
 
     @Mock
-    private CcdUpdateService ccdUpdateService;
+    private CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -65,7 +65,7 @@ class MakeAClaimPaymentCallbackStrategyTest {
 
         // Then
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
-        verify(ccdUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+        verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
     }
 
     @Test
@@ -126,7 +126,7 @@ class MakeAClaimPaymentCallbackStrategyTest {
         assertThatExceptionOfType(PartyNotFoundException.class)
             .isThrownBy(() -> underTest.handle(callback, feePaymentEntity));
 
-        verifyNoInteractions(ccdUpdateService);
+        verifyNoInteractions(ccdPaymentStateUpdateService);
     }
 
     private FeesAndPayTaskData buildTaskData(String responsibleParty) {
