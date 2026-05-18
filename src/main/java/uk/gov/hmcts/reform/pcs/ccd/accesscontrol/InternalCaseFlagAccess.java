@@ -9,6 +9,10 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTER_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HMCTS_JUDICIARY;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
+
 
 
 public class InternalCaseFlagAccess implements HasAccessControl {
@@ -19,6 +23,9 @@ public class InternalCaseFlagAccess implements HasAccessControl {
         grants.putAll(CTSC_ADMIN, Permission.CRU);
         grants.putAll(HEARING_CENTER_ADMIN, Permission.CRU);
         grants.putAll(WLU_ADMIN, Permission.CRU);
+        grants.put(HMCTS_JUDICIARY, Permission.R);
+        grants.put(CIRCUIT_JUDGE, Permission.R);
+        grants.put(JUDGE, Permission.R);
 
         return grants;
     }
