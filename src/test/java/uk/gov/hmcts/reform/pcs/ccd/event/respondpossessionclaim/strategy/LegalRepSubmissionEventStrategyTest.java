@@ -152,7 +152,8 @@ class LegalRepSubmissionEventStrategyTest {
         when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
             .thenReturn(Optional.of(caseData));
-        when(submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE)).thenReturn(submitResponse);
+        when(submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE))
+            .thenReturn(Optional.of(submitResponse));
 
         // when
         SubmitResponse<State> result = underTest.process(CASE_REFERENCE);

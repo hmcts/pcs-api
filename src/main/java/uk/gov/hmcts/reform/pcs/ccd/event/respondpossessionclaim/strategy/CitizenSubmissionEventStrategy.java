@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantRespo
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -40,10 +41,11 @@ public class CitizenSubmissionEventStrategy implements RespondPossessionClaimSub
 
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
 
-        SubmitResponse<State> validationResult = submitResponseFactory.validate(responseDraftData, caseReference);
+        Optional<SubmitResponse<State>> validationResult =
+            submitResponseFactory.validate(responseDraftData, caseReference);
 
-        if (validationResult != null) {
-            return validationResult;
+        if (validationResult.isPresent()) {
+            return validationResult.get();
         }
 
         claimResponseService.saveDraftData(responseDraftData, caseReference);

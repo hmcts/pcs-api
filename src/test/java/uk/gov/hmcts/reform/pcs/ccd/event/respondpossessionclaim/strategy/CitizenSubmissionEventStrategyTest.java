@@ -128,7 +128,8 @@ class CitizenSubmissionEventStrategyTest {
             .errors(List.of("error"))
             .build();
 
-        when(submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE)).thenReturn(submitResponse);
+        when(submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE))
+            .thenReturn(Optional.of(submitResponse));
 
         // when
         underTest.process(CASE_REFERENCE);

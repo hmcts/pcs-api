@@ -3,8 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
@@ -49,9 +47,6 @@ class ClaimResponseServiceTest {
     private ModelMapper modelMapper;
 
     private ClaimResponseService underTest;
-
-    @Captor
-    private ArgumentCaptor<PartyEntity> partyCaptor;
 
     private PartyEntity testParty;
 

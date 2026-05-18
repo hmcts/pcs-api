@@ -608,7 +608,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .errors(List.of("Invalid submission: missing response data"))
             .build();
 
-        when(submitResponseFactory.validate(possessionClaimResponse, TEST_CASE_REFERENCE)).thenReturn(submitResponse);
+        when(submitResponseFactory.validate(possessionClaimResponse, TEST_CASE_REFERENCE))
+            .thenReturn(Optional.of(submitResponse));
 
         var response = callSubmitHandler(caseData);
 
@@ -642,13 +643,15 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .errors(List.of("Invalid submission: missing defendant response data"))
             .build();
 
-        when(submitResponseFactory.validate(possessionClaimResponse, TEST_CASE_REFERENCE)).thenReturn(submitResponse);
+        when(submitResponseFactory.validate(possessionClaimResponse, TEST_CASE_REFERENCE))
+            .thenReturn(Optional.of(submitResponse));
 
         var response = callSubmitHandler(caseData);
 
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
-        assertThat(response.getErrors().getFirst()).isEqualTo("Invalid submission: missing defendant response data");
+        assertThat(response.getErrors().getFirst())
+            .isEqualTo("Invalid submission: missing defendant response data");
 
         verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
 

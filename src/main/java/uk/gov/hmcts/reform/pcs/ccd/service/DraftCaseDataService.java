@@ -527,7 +527,6 @@ public class DraftCaseDataService {
         UUID userId = getCurrentUserId();
 
         if (partyId != null) {
-            Objects.requireNonNull(partyId, "partyId must not be null");
             log.info("Patching draft: caseReference={}, eventId={}, userId={}, partyId={}",
                      caseReference, eventId, userId, partyId);
         } else {

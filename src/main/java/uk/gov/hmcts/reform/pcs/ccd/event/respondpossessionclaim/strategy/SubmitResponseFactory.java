@@ -7,24 +7,26 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
 public class SubmitResponseFactory {
 
-    public SubmitResponse<State> validate(PossessionClaimResponse possessionClaimResponse, long caseReference) {
+    public Optional<SubmitResponse<State>> validate(PossessionClaimResponse possessionClaimResponse,
+                                                    long caseReference) {
 
         if (possessionClaimResponse == null) {
             log.error("Submit failed for case {}: possession claim response is null", caseReference);
-            return error("Invalid submission: missing response data");
+            return Optional.of(error("Invalid submission: missing response data"));
         }
 
         if (possessionClaimResponse.getDefendantResponses() == null) {
             log.error("Submit failed for case {}: defendant responses is null", caseReference);
-            return error("Invalid submission: missing defendant response data");
+            return Optional.of(error("Invalid submission: missing defendant response data"));
         }
 
-        return null;
+        return Optional.empty();
     }
 
     public SubmitResponse<State> success() {

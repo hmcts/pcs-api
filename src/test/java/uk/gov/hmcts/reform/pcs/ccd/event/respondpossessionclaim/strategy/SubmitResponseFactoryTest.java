@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,15 +17,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SubmitResponseFactoryTest {
     private static final long CASE_REFERENCE = 1234567890L;
 
-    private SubmitResponseFactory submitResponseFactory = new SubmitResponseFactory();
+    private final SubmitResponseFactory submitResponseFactory = new SubmitResponseFactory();
 
     @Test
     void validate_WithNullPossessionClaimResponse_ReturnsError() {
         // when
-        SubmitResponse<State> result = submitResponseFactory.validate(null, CASE_REFERENCE);
+        Optional<SubmitResponse<State>> result = submitResponseFactory
+            .validate(null, CASE_REFERENCE);
 
         // then
-        assertThat(result.getErrors()).contains("Invalid submission: missing response data");
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get().getErrors()).contains("Invalid submission: missing response data");
     }
 
     @Test
@@ -32,10 +36,12 @@ class SubmitResponseFactoryTest {
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder().build();
 
         // when
-        SubmitResponse<State> result = submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE);
+        Optional<SubmitResponse<State>> result = submitResponseFactory
+            .validate(possessionClaimResponse, CASE_REFERENCE);
 
         // then
-        assertThat(result.getErrors()).contains("Invalid submission: missing defendant response data");
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get().getErrors()).contains("Invalid submission: missing defendant response data");
     }
 
     @Test
@@ -47,10 +53,11 @@ class SubmitResponseFactoryTest {
             .build();
 
         // when
-        SubmitResponse<State> result = submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE);
+        Optional<SubmitResponse<State>> result = submitResponseFactory
+            .validate(possessionClaimResponse, CASE_REFERENCE);
 
         // then
-        assertThat(result).isNull();
+        assertThat(result).isEmpty();
     }
 
     @Test
