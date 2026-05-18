@@ -54,20 +54,13 @@ public class CaseFlagService {
 
             if (incomingParty.getDefendantFlags() != null
                 && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
-                mergePartyFlagGroup(incomingParty.getDefendantFlags(), partyEntity.getDefendantFlags(),
-                                    partyEntity);
+                List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
+                    incomingParty.getDefendantFlags(), null, partyEntity, CasePartyFlagEntity::new);
+
+                partyEntity.getDefendantFlags().clear();
+                partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
             }
         }
-    }
-
-    private void mergePartyFlagGroup(Flags incomingPartyFlags, List<CasePartyFlagEntity> existingFlags,
-                                     PartyEntity partyEntity) {
-
-        List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(incomingPartyFlags, null,
-            partyEntity, CasePartyFlagEntity::new);
-
-        partyEntity.getDefendantFlags().clear();
-        partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
     }
 
     private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,
