@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
@@ -15,18 +16,18 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Objects.requireNonNullElse;
+
 @Component
 @AllArgsConstructor
 public class CaseFlagsView {
 
-    private static final String DEFENDANT = "defendant";
-    private static final String CLAIMANT = "claimant";
+    private static final String DEFENDANT = "Defendant";
     public static final String PATHS_DELIMITER = "_";
     public static final String PATH_DELIMITER = ":";
 
@@ -64,9 +65,7 @@ public class CaseFlagsView {
                    .subTypeKey(caseFlagEntity.getSubTypeKey())
                    .subTypeValue(caseFlagEntity.getSubTypeValue())
                    .subTypeValueCy(caseFlagEntity.getSubTypeValueWelsh())
-                   .flagUpdateComment(caseFlagEntity.getFlagUpdateComment() != null
-                                      ? caseFlagEntity.getFlagUpdateComment()
-                                      : caseFlagEntity.getFlagUpdateCommentWelsh())
+                   .flagUpdateComment(caseFlagEntity.getFlagUpdateComment())
                    .dateTimeCreated(caseFlagEntity.getDateTimeCreated())
                    .dateTimeModified(caseFlagEntity.getDateTimeModified())
                    .otherDescription(caseFlagEntity.getOtherDescription())
@@ -83,9 +82,7 @@ public class CaseFlagsView {
 
     private List<ListValue<String>> getPaths(String entityPaths) {
 
-        return entityPaths == null
-            ? new ArrayList<>()
-            : Arrays.stream(entityPaths.split(PATHS_DELIMITER))
+        return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
                 .map(pathPairs -> pathPairs.split(PATH_DELIMITER))
                 .map(paths -> ListValue.<String>builder()
                     .id(paths[0])
@@ -112,8 +109,7 @@ public class CaseFlagsView {
                     .addressKnown(partyEntity.getAddressKnown())
                     .phoneNumberProvided(partyEntity.getPhoneNumberProvided())
                     .emailAddress(partyEntity.getEmailAddress())
-                    .firstName(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
-                                 ? partyEntity.getFirstName() : partyEntity.getOrgName())
+                    .firstName(partyEntity.getFirstName())
                     .lastName(partyEntity.getLastName())
                     .defendantFlags(mapDefendantFlags(partyEntity))
                     .build()
@@ -122,26 +118,24 @@ public class CaseFlagsView {
     }
 
     private Flags mapDefendantFlags(PartyEntity partyEntity) {
-        if (partyEntity.getDefendantFlags() == null || partyEntity.getDefendantFlags().isEmpty()) {
+        if (CollectionUtils.isEmpty(partyEntity.getDefendantFlags())) {
             return Flags.builder()
-                .partyName(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
-                               ? partyEntity.getFirstName() + " " + partyEntity.getLastName()
-                               : partyEntity.getOrgName())
-                .roleOnCase(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
-                                ? DEFENDANT : CLAIMANT)
+                .partyName((requireNonNullElse(partyEntity.getFirstName(), "")
+                    + " " + requireNonNullElse(partyEntity.getLastName(), "")))
+                .roleOnCase(DEFENDANT)
                 .details(new ArrayList<>())
                 .build();
         }
 
-        List<BaseCaseFlag> respondentFlags = new ArrayList<>(partyEntity.getDefendantFlags());
+        List<BaseCaseFlag> defendantFlags = new ArrayList<>(partyEntity.getDefendantFlags());
 
         return Flags.builder()
             .partyName(Stream.of(partyEntity.getFirstName(), partyEntity.getLastName(),
                                  partyEntity.getOrgName()).filter(
                 Objects::nonNull).collect(Collectors.joining(" ")))
-            .roleOnCase(partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty()
-                            ? DEFENDANT : CLAIMANT)
-            .details(mapFlagDetails(respondentFlags))
+            .roleOnCase(
+                DEFENDANT)
+            .details(mapFlagDetails(defendantFlags))
             .visibility(FlagVisibility.INTERNAL)
             .build();
     }

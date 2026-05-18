@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventFlow;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 
 import java.time.LocalDateTime;
@@ -56,12 +55,11 @@ class CaseFlagServiceTest {
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(createFlagDetail(null,"CF0002", "Complex Case",
-                                              "Complicated case", "Active", false))
+                                              "Complicated case", "Active"))
             .build();
 
         // When
-        List<CaseFlagEntity> savedFlags = underTest.mergeCaseFlags(incomingFlags,
-                                                                   pcsCaseEntity, EventFlow.CREATE.name());
+        List<CaseFlagEntity> savedFlags = underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
 
         // Then
         assertEquals("CF0002", savedFlags.getFirst().getFlagRefData().getFlagCode());
@@ -75,25 +73,24 @@ class CaseFlagServiceTest {
     }
 
     @Test
-    void shouldMergeNewCaseFlagsWithNoPaths() {
+    void shouldMergeNewCaseFlagsWithPaths() {
         // Given
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(createFlagDetail(null,"CF0007", "Urgent case",
-                                      "Urgent case test", "Active", true))
+                                      "Urgent case test", "Active"))
             .build();
 
         // When
-        List<CaseFlagEntity> savedFlags = underTest.mergeCaseFlags(incomingFlags,
-                                                                   pcsCaseEntity, EventFlow.CREATE.name());
+        List<CaseFlagEntity> savedFlags = underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
 
         // Then
         String savedPaths = savedFlags.getFirst().getPaths();
         assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
         assertEquals(1, savedFlags.size());
-        assertThat(savedPaths).isNull();
+        assertThat(savedPaths).contains("Case");
     }
 
     @Test
@@ -103,14 +100,14 @@ class CaseFlagServiceTest {
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity(id);
         List<ListValue<FlagDetail>> flagDetails = new ArrayList<>();
         flagDetails.addAll(createFlagDetail(id.toString(),"CF0008", "Power of arrest with Police ",
-                                            "Police arrest inactive", "Inactive", false));
+                                            "Police arrest inactive", "Inactive"));
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(flagDetails)
             .build();
 
         // When
-        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity, EventFlow.UPDATE.name());
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
 
         // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
@@ -129,13 +126,13 @@ class CaseFlagServiceTest {
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(createFlagDetail(null,"CF0002", "Complex Case",
-                                      "Complicated case", "Active", false))
+                                      "Complicated case", "Active"))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
         List<ListValue<Party>> parties = List.of(createPartyListValue(partyId.toString(), incomingParty));
 
-        underTest.mergePartyFlags(parties, pcsCaseEntity, EventFlow.CREATE.name());
+        underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
 
         assertEquals(1, pcsCaseEntity.getParties().size());
         PartyEntity savedParty = pcsCaseEntity.getParties().iterator().next();
@@ -144,6 +141,9 @@ class CaseFlagServiceTest {
         assertEquals(1, savedParty.getDefendantFlags().size());
 
         BaseCaseFlag savedFlags = savedParty.getDefendantFlags().getFirst();
+        assertThat(savedFlags.getFlagComment()).isEqualTo("Complicated case");
+        assertThat(savedFlags.getDefaultStatus()).isEqualTo("Active");
+
     }
 
     private Set<PartyEntity> createPartyEntities(UUID partyId) {
@@ -162,11 +162,18 @@ class CaseFlagServiceTest {
         // Given
         UUID existingPartyId = UUID.randomUUID();
 
-        List<CasePartyFlagEntity> existingPartyFlagsEntity = createCasePartyFlagEntity(existingPartyId);
+        CasePartyFlagEntity existingPartyFlagsEntityFirst = createCasePartyFlagEntity(
+            existingPartyId, "Active", "Spanish Language Interpreter");
+        CasePartyFlagEntity existingPartyFlagsEntitySecond = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Inactive", "German Language Interpreter");
+
+        List<CasePartyFlagEntity> casePartyFlagEntities = new ArrayList<>();
+        casePartyFlagEntities.add(existingPartyFlagsEntityFirst);
+        casePartyFlagEntities.add(existingPartyFlagsEntitySecond);
 
         PartyEntity existingParty = PartyEntity.builder()
             .id(existingPartyId)
-            .defendantFlags(new ArrayList<>(existingPartyFlagsEntity))
+            .defendantFlags(casePartyFlagEntities)
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
@@ -175,8 +182,8 @@ class CaseFlagServiceTest {
 
         Flags updatedFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details((createFlagDetail(null,"CF0008", "Power of arrest with Police ",
-                                       "Police arrest inactive", "Inactive", false)))
+            .details((createFlagDetail(existingPartyId.toString(),"PF00015", "Language Interpreter ",
+                                       "Spanish Language Interpreter inactive", "Inactive")))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(updatedFlags).build();
@@ -186,14 +193,16 @@ class CaseFlagServiceTest {
         ));
 
         // When
-        underTest.mergePartyFlags(incomingParties, pcsCaseEntity, EventFlow.UPDATE.name());
+        underTest.mergePartyFlags(incomingParties, pcsCaseEntity.getParties());
 
         // Then
-        assertEquals(1, pcsCaseEntity.getParties().size());
+        assertThat(pcsCaseEntity.getParties()).hasSize(1);
         PartyEntity updatedParty = pcsCaseEntity.getParties().iterator().next();
 
         assertNotNull(updatedParty.getDefendantFlags());
-        assertEquals(1, updatedParty.getDefendantFlags().size());
+        assertThat(updatedParty.getDefendantFlags()).hasSize(1);
+        assertThat(updatedParty.getDefendantFlags().getLast().getFlagComment()).isEqualTo(
+            "Spanish Language Interpreter inactive");
 
     }
 
@@ -210,7 +219,7 @@ class CaseFlagServiceTest {
             .parties(new HashSet<>(List.of(existingParty)))
             .build();
 
-        underTest.mergePartyFlags(new ArrayList<>(), pcsCaseEntity, EventFlow.UPDATE.name());
+        underTest.mergePartyFlags(new ArrayList<>(), pcsCaseEntity.getParties());
 
         assertEquals(1, pcsCaseEntity.getParties().size());
         PartyEntity retainedParty = pcsCaseEntity.getParties().iterator().next();
@@ -229,7 +238,7 @@ class CaseFlagServiceTest {
     }
 
     private List<ListValue<FlagDetail>> createFlagDetail(String id, String flagCode, String name,
-                                                         String flagComment, String status, boolean isPathEmpty) {
+                                                         String flagComment, String status) {
         List<ListValue<FlagDetail>> flagDetails = new ArrayList<>();
 
         ListValue<FlagDetail> flagDetailListValue = ListValue.<FlagDetail>builder()
@@ -241,7 +250,7 @@ class CaseFlagServiceTest {
                        .status(status)
                        .availableExternally(YesOrNo.NO)
                        .hearingRelevant(YesOrNo.YES)
-                       .path(createPathListValue(isPathEmpty))
+                       .path(createPathListValue())
                        .build())
             .build();
         flagDetails.add(flagDetailListValue);
@@ -258,7 +267,7 @@ class CaseFlagServiceTest {
         return casePartyFlagEntities;
     }
 
-    private List<ListValue<String>> createPathListValue(boolean isPathEmpty) {
+    private List<ListValue<String>> createPathListValue() {
         List<ListValue<String>> paths = new ArrayList<>();
 
         ListValue<String> path = ListValue.<String>builder()
@@ -267,7 +276,7 @@ class CaseFlagServiceTest {
             .build();
         paths.add(path);
 
-        return isPathEmpty ? null : paths;
+        return paths;
     }
 
     private List<CaseFlagEntity> createCaseFlagEntity(UUID id) {
@@ -289,21 +298,18 @@ class CaseFlagServiceTest {
         return caseFlagEntities;
     }
 
-    private List<CasePartyFlagEntity> createCasePartyFlagEntity(UUID id) {
+    private CasePartyFlagEntity createCasePartyFlagEntity(UUID id, String status, String flagComment) {
 
 
         CasePartyFlagEntity casePartyFlagEntity = new CasePartyFlagEntity();
         casePartyFlagEntity.setId(id);
-        casePartyFlagEntity.setDefaultStatus("Active");
+        casePartyFlagEntity.setDefaultStatus(status);
         casePartyFlagEntity.setFlagRefData(FlagRefDataEntity.builder().flagCode("PF00015").build());
-        casePartyFlagEntity.setFlagComment("Language Interpreter");
+        casePartyFlagEntity.setFlagComment(flagComment);
         casePartyFlagEntity.setPaths("Party");
         casePartyFlagEntity.setDateTimeModified(LocalDateTime.now());
 
-        List<CasePartyFlagEntity> casePartyFlagEntities = new ArrayList<>();
-        casePartyFlagEntities.add(casePartyFlagEntity);
-
-        return casePartyFlagEntities;
+        return casePartyFlagEntity;
     }
 
     private ListValue<Party> createPartyListValue(String id, Party party) {

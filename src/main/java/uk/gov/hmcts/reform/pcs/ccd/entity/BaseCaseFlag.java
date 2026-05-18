@@ -13,6 +13,7 @@ import jakarta.persistence.Column;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.LocalDateTime;
 
@@ -53,9 +54,6 @@ public abstract class BaseCaseFlag {
 
     private String flagUpdateComment;
 
-    @Column(name = "flag_update_comment_cy")
-    private String flagUpdateCommentWelsh;
-
     private LocalDateTime dateTimeCreated;
 
     private LocalDateTime dateTimeModified;
@@ -64,4 +62,6 @@ public abstract class BaseCaseFlag {
     private String defaultStatus;
 
     private String paths;
+
+    public abstract void setParentEntity(PcsCaseEntity caseEntity, PartyEntity partyEntity);
 }

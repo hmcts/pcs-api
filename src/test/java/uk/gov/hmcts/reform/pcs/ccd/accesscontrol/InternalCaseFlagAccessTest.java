@@ -8,7 +8,9 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTER_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
 
 class InternalCaseFlagAccessTest {
 
@@ -26,6 +28,9 @@ class InternalCaseFlagAccessTest {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
         // Then
-        assertThat(grants.asMap()).contains(entry(PCS_CASE_WORKER, Permission.CRU));
+        assertThat(grants.asMap()).contains(entry(CTSC_ADMIN, Permission.CRU));
+        assertThat(grants.asMap()).contains(entry(HEARING_CENTER_ADMIN, Permission.CRU));
+        assertThat(grants.asMap()).contains(entry(WLU_ADMIN, Permission.CRU));
+        assertThat(grants.asMap().size()).isEqualTo(3);
     }
 }

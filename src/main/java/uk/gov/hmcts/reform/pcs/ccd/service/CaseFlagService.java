@@ -34,92 +34,59 @@ public class CaseFlagService {
 
     private FlagRefDataRepository flagRefDataRepository;
 
-    public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity, String flow) {
+    public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
 
-        Map<UUID, CaseFlagEntity> existingCaseFlagEntitiesMap =
-                pcsCaseEntity.getCaseFlags().stream()
-                    .collect(Collectors.toMap(BaseCaseFlag::getId, Function.identity()));
-
-        return mergeFlagDetails(existingCaseFlagEntitiesMap, incomingCaseFlags, pcsCaseEntity,null, flow,
+        return mergeFlagDetails(incomingCaseFlags, pcsCaseEntity,null,
                         CaseFlagEntity::new);
     }
 
-    public void mergePartyFlags(List<ListValue<Party>> incomingParties, PcsCaseEntity pcsCaseEntity,
-                                             String flow) {
-        if (incomingParties != null) {
-            Map<UUID, PartyEntity> existingPartiesMap = pcsCaseEntity.getParties().stream()
-                .collect(Collectors.toMap(
-                    PartyEntity::getId,
-                    Function.identity()
-                ));
+    public void mergePartyFlags(List<ListValue<Party>> incomingParties, Set<PartyEntity> existingParties) {
+        Map<UUID, PartyEntity> existingPartiesMap = existingParties.stream()
+            .collect(Collectors.toMap(
+                PartyEntity::getId,
+                Function.identity()
+            ));
 
-            for (ListValue<Party> incomingPartyValue : incomingParties) {
-                Party incomingParty = incomingPartyValue.getValue();
+        for (ListValue<Party> incomingPartyValue : incomingParties) {
+            Party incomingParty = incomingPartyValue.getValue();
 
-                PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
+            PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
 
-                if (incomingParty.getDefendantFlags() != null
-                    && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
-                    mergePartyFlagGroup(incomingParty.getDefendantFlags(), partyEntity.getDefendantFlags(),
-                                        partyEntity, pcsCaseEntity, flow
-                    );
-                }
+            if (incomingParty.getDefendantFlags() != null
+                && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
+                List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
+                    incomingParty.getDefendantFlags(), null, partyEntity, CasePartyFlagEntity::new);
+
+                partyEntity.getDefendantFlags().clear();
+                partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
             }
         }
     }
 
-    private void mergePartyFlagGroup(Flags incomingPartyFlags, List<CasePartyFlagEntity> existingFlags,
-                                     PartyEntity partyEntity, PcsCaseEntity pcsCaseEntity, String flow) {
-
-        Map<UUID, CasePartyFlagEntity> existingPartyFlagEntityMap =
-            existingFlags.stream()
-                .collect(Collectors.toMap(BaseCaseFlag::getId, Function.identity()));
-
-        List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
-            existingPartyFlagEntityMap, incomingPartyFlags, pcsCaseEntity,
-            partyEntity, flow, CasePartyFlagEntity::new);
-
-        partyEntity.getDefendantFlags().clear();
-        partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
-    }
-
-    private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(
-                        Map<UUID, T> existingFlagEntitiesMap, Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,
-                        PartyEntity partyEntity, String flow, Supplier<T> flagEntitySupplier) {
+    private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,
+                        PartyEntity partyEntity, Supplier<T> flagEntitySupplier) {
 
         List<T> mergedFlagDetails = new ArrayList<>();
         Set<FlagRefDataEntity> flagRefDataEntities = new HashSet<>();
 
+        String flagVisibility = incomingCaseFlags.getVisibility() != null
+            ? incomingCaseFlags.getVisibility().getValue()
+            : FlagVisibility.INTERNAL.getValue();
+
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
-            FlagRefDataEntity flagRefDataEntity = getRefDataEntity(incomingCaseFlags, incomingFlagDetail);
+            FlagRefDataEntity flagRefDataEntity = mergeFlagRefData(incomingFlagDetail, flagVisibility);
             flagRefDataEntities.add(flagRefDataEntity);
 
-            T flagEntity = existingFlagEntitiesMap.remove(UUID.fromString(incomingFlagDetailListValue.getId()));
+            T flagEntity = flagEntitySupplier.get();
+
+            flagEntity.setParentEntity(pcsCaseEntity, partyEntity);
 
 
-            if (flagEntity == null) {
-                flagEntity = flagEntitySupplier.get();
-            }
-
-            if (flagEntity instanceof CasePartyFlagEntity casePartyFlagEntity) {
-                casePartyFlagEntity.setParty(partyEntity);
-            } else if (flagEntity instanceof CaseFlagEntity caseFlagEntity) {
-                caseFlagEntity.setPcsCase(pcsCaseEntity);
-            }
-
-            if ("CREATE".equals(flow)) {
-                flagEntity.setFlagComment(incomingFlagDetail.getFlagComment());
-                flagEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
-            } else {
-                if ("Inactive".equals(flagEntity.getDefaultStatus())) {
-                    flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagUpdateComment());
-                } else {
-                    flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagComment());
-                }
-                flagEntity.setFlagUpdateCommentWelsh(incomingFlagDetail.getFlagCommentCy());
-            }
+            flagEntity.setFlagComment(incomingFlagDetail.getFlagComment());
+            flagEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+            flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagUpdateComment());
 
             flagEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
             flagEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
@@ -142,34 +109,31 @@ public class CaseFlagService {
         return mergedFlagDetails;
     }
 
-    private FlagRefDataEntity getRefDataEntity(Flags incomingCaseFlags, FlagDetail incomingFlagDetail) {
+    private FlagRefDataEntity mergeFlagRefData(FlagDetail incomingFlagDetail,
+                                               String visibility) {
 
-        FlagRefDataEntity refDataFlagsEntity = flagRefDataRepository.findByFlagCode(
+        FlagRefDataEntity flagRefDataEntity = flagRefDataRepository.findByFlagCode(
             incomingFlagDetail.getFlagCode()).orElse(new FlagRefDataEntity());
 
-        refDataFlagsEntity.setFlagCode(incomingFlagDetail.getFlagCode());
-        refDataFlagsEntity.setFlagName(incomingFlagDetail.getName());
-        refDataFlagsEntity.setFlagNameWelsh(incomingFlagDetail.getNameCy());
-        refDataFlagsEntity.setVisibility(incomingCaseFlags.getVisibility() != null
-                                             ? incomingCaseFlags.getVisibility().getValue()
-                                             : FlagVisibility.INTERNAL.getValue());
-        refDataFlagsEntity.setHearingRelevant(YesOrNoConverter.toBoolean(incomingFlagDetail.getHearingRelevant()));
-        refDataFlagsEntity.setAvailableExternally(YesOrNoConverter.toBoolean(
+        flagRefDataEntity.setFlagCode(incomingFlagDetail.getFlagCode());
+        flagRefDataEntity.setFlagName(incomingFlagDetail.getName());
+        flagRefDataEntity.setFlagNameWelsh(incomingFlagDetail.getNameCy());
+        flagRefDataEntity.setVisibility(visibility);
+        flagRefDataEntity.setHearingRelevant(YesOrNoConverter.toBoolean(incomingFlagDetail.getHearingRelevant()));
+        flagRefDataEntity.setAvailableExternally(YesOrNoConverter.toBoolean(
             incomingFlagDetail.getAvailableExternally()));
 
-        return refDataFlagsEntity;
+        return flagRefDataEntity;
     }
 
     private void setFlagPath(FlagDetail incomingFlagDetail, BaseCaseFlag flagEntity) {
 
         if (incomingFlagDetail.getPath() != null) {
-            StringBuilder paths = new StringBuilder();
-            incomingFlagDetail.getPath().stream()
+            String paths = incomingFlagDetail.getPath().stream()
                 .map(pathListValue -> pathListValue.getId() + CaseFlagsView.PATH_DELIMITER + pathListValue.getValue())
-                .forEach(path -> paths.append(path).append(CaseFlagsView.PATHS_DELIMITER));
+                .collect(Collectors.joining(CaseFlagsView.PATHS_DELIMITER));
 
-            paths.deleteCharAt(paths.lastIndexOf(CaseFlagsView.PATHS_DELIMITER));
-            flagEntity.setPaths(paths.toString());
+            flagEntity.setPaths(paths);
         }
     }
 }

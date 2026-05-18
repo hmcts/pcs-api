@@ -32,11 +32,9 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
                             .description("To manage flags")
                             .showSummary()
                             .grant(Permission.CRU,
-                                   UserRole.PCS_CASE_WORKER,
                                    UserRole.CTSC_ADMIN,
                                    UserRole.HEARING_CENTER_ADMIN,
-                                   UserRole.WLU_ADMIN,
-                                   UserRole.BAILIFF_ADMIN))
+                                   UserRole.WLU_ADMIN))
             .page("caseworkerCaseFlag")
             .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
             .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
@@ -53,7 +51,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("Caseworker updated case flag for {}", caseReference);
 
-        pcsCaseService.patchCaseFlags(caseReference, pcsCase, EventFlow.UPDATE.name());
+        pcsCaseService.patchCaseFlags(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }

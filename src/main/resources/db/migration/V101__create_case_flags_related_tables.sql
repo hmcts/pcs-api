@@ -20,11 +20,10 @@ CREATE TABLE case_party_flag (
                                flag_comment VARCHAR(255),
                                flag_comment_cy VARCHAR(255),
                                flag_update_comment VARCHAR(255),
-                               flag_update_comment_cy VARCHAR(255),
                                date_time_created TIMESTAMP,
                                date_time_modified TIMESTAMP,
                                status VARCHAR(50) NOT NULL,
-                               paths VARCHAR(300)
+                               paths VARCHAR(300) NOT NULL
 );
 
 CREATE TABLE case_flag (
@@ -39,10 +38,9 @@ CREATE TABLE case_flag (
                             flag_comment VARCHAR(255),
                             flag_comment_cy VARCHAR(255),
                             flag_update_comment VARCHAR(255),
-                            flag_update_comment_cy VARCHAR(255),
                             date_time_created TIMESTAMP,
                             date_time_modified TIMESTAMP,
                             status VARCHAR(50) NOT NULL,
-                            paths VARCHAR(255)
+                            paths VARCHAR(255) NOT NULL
 );
 
