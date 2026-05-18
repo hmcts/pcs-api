@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -45,8 +44,6 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     private static final String AUTH_HEADER = "Bearer test-token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
 
-    @MockitoBean
-    private IdamClient idamClient;
     @Autowired
     private MockMvc mockMvc;
     @Autowired

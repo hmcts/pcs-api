@@ -1,22 +1,24 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
-import feign.FeignException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import org.springframework.security.oauth2.jwt.BadJwtException;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -25,9 +27,11 @@ import static org.mockito.Mockito.when;
 class IdamAuthenticatorTest {
 
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String RAW_TOKEN = "valid-token";
+    private static final String BEARER_TOKEN = BEARER_PREFIX + RAW_TOKEN;
 
     @Mock
-    private IdamClient idamClient;
+    private JwtDecoder idamJwtDecoder;
 
     @InjectMocks
     private IdamAuthenticator underTest;
@@ -38,104 +42,89 @@ class IdamAuthenticatorTest {
     void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenIsNullOrBlank(String authToken) {
         assertThatThrownBy(() -> underTest.validateAuthToken(authToken))
             .isInstanceOf(InvalidAuthTokenException.class)
-                .hasMessage("Authorization token is null or blank");
+            .hasMessage("Authorization token is null or blank");
 
-        verifyNoInteractions(idamClient);
+        verifyNoInteractions(idamJwtDecoder);
     }
 
-    @DisplayName("Should throw InvalidAuthTokenException when token is malformed")
     @Test
+    @DisplayName("Should throw InvalidAuthTokenException when token is malformed")
     void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenMalformed() {
         assertThatThrownBy(() -> underTest.validateAuthToken("InvalidToken"))
             .isInstanceOf(InvalidAuthTokenException.class)
-                .hasMessageContaining("Malformed Authorization token");
+            .hasMessageContaining("Malformed Authorization token");
 
-        verifyNoInteractions(idamClient);
+        verifyNoInteractions(idamJwtDecoder);
     }
 
-    @DisplayName("Should return user if token is valid")
     @Test
+    @DisplayName("Should return user with claims mapped from decoded JWT")
     void shouldReturnUserWhenTokenIsValid() {
-        String token = BEARER_PREFIX + "valid-token";
-        when(idamClient.getUserInfo(token)).thenReturn(mock(UserInfo.class));
+        Jwt jwt = jwtWithClaims(Map.of(
+            "sub", "user@test.com",
+            "uid", "abc-123",
+            "name", "Alice Smith",
+            "given_name", "Alice",
+            "family_name", "Smith",
+            "roles", List.of("caseworker", "caseworker-pcs")
+        ));
+        when(idamJwtDecoder.decode(RAW_TOKEN)).thenReturn(jwt);
 
-        User user = underTest.validateAuthToken(token);
+        User user = underTest.validateAuthToken(BEARER_TOKEN);
 
         assertThat(user).isNotNull();
-        assertThat(user.getAuthToken()).isEqualTo(token);
-
-        verify(idamClient).getUserInfo(token);
+        assertThat(user.getAuthToken()).isEqualTo(BEARER_TOKEN);
+        assertThat(user.getUserDetails().getUid()).isEqualTo("abc-123");
+        assertThat(user.getUserDetails().getSub()).isEqualTo("user@test.com");
+        assertThat(user.getUserDetails().getName()).isEqualTo("Alice Smith");
+        assertThat(user.getUserDetails().getGivenName()).isEqualTo("Alice");
+        assertThat(user.getUserDetails().getFamilyName()).isEqualTo("Smith");
+        assertThat(user.getUserDetails().getRoles()).containsExactly("caseworker", "caseworker-pcs");
+        verify(idamJwtDecoder).decode(RAW_TOKEN);
     }
 
     @Test
-    @DisplayName("Should throw InvalidAuthTokenException when IDAM returns Unauthorized")
-    void shouldThrowInvalidAuthTokenExceptionWhenIdamReturnsUnauthorized() {
-        String token = BEARER_PREFIX + "invalid-token";
-        FeignException.Unauthorized unauthorizedException = mock(FeignException.Unauthorized.class);
-        when(idamClient.getUserInfo(token)).thenThrow(unauthorizedException);
+    @DisplayName("Should throw InvalidAuthTokenException when JWT decode fails")
+    void shouldThrowInvalidAuthTokenExceptionWhenJwtDecodeFails() {
+        BadJwtException badJwt = new BadJwtException("expired or signature mismatch");
+        when(idamJwtDecoder.decode(RAW_TOKEN)).thenThrow(badJwt);
 
-        assertThatThrownBy(() -> underTest.validateAuthToken(token))
+        assertThatThrownBy(() -> underTest.validateAuthToken(BEARER_TOKEN))
             .isInstanceOf(InvalidAuthTokenException.class)
             .hasMessage("The Authorization token provided is expired or invalid")
-            .hasCause(unauthorizedException);
+            .hasCause(badJwt);
     }
 
     @Test
-    @DisplayName("Should throw InvalidAuthTokenException when unexpected exception occurs")
-    void shouldThrowInvalidAuthTokenExceptionWhenUnexpectedExceptionOccurs() {
-        String token = BEARER_PREFIX + "valid-token";
-        RuntimeException unexpectedException = new RuntimeException("Network error");
-        when(idamClient.getUserInfo(token)).thenThrow(unexpectedException);
+    @DisplayName("retrieveUser strips Bearer prefix before decoding")
+    void retrieveUserStripsBearerPrefixBeforeDecoding() {
+        Jwt jwt = jwtWithClaims(Map.of("uid", "abc-123"));
+        when(idamJwtDecoder.decode(RAW_TOKEN)).thenReturn(jwt);
 
-        assertThatThrownBy(() -> underTest.validateAuthToken(token))
-            .isInstanceOf(InvalidAuthTokenException.class)
-            .hasMessage("Unexpected error while validating token")
-            .hasCause(unexpectedException);
+        User user = underTest.retrieveUser(BEARER_TOKEN);
+
+        assertThat(user.getAuthToken()).isEqualTo(BEARER_TOKEN);
+        assertThat(user.getUserDetails().getUid()).isEqualTo("abc-123");
+        verify(idamJwtDecoder).decode(RAW_TOKEN);
     }
 
     @Test
-    @DisplayName("Should retrieve user successfully")
-    void shouldRetrieveUserSuccessfully() {
-        String token = BEARER_PREFIX + "valid-token";
-        UserInfo userInfo = mock(UserInfo.class);
-        when(idamClient.getUserInfo(token)).thenReturn(userInfo);
+    @DisplayName("retrieveUser handles raw token without Bearer prefix")
+    void retrieveUserHandlesRawTokenWithoutBearerPrefix() {
+        Jwt jwt = jwtWithClaims(Map.of("uid", "abc-123"));
+        when(idamJwtDecoder.decode(RAW_TOKEN)).thenReturn(jwt);
 
-        User user = underTest.retrieveUser(token);
+        User user = underTest.retrieveUser(RAW_TOKEN);
 
-        assertThat(user).isNotNull();
-        assertThat(user.getAuthToken()).isEqualTo(token);
-        assertThat(user.getUserDetails()).isEqualTo(userInfo);
-        verify(idamClient).getUserInfo(token);
+        assertThat(user.getAuthToken()).isEqualTo(BEARER_TOKEN);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"", "   ", "token-without-bearer"})
-    @DisplayName("Should handle getBearerToken with different token formats")
-    void shouldHandleGetBearerTokenWithDifferentFormats(String inputToken) {
-        // This tests the private getBearerToken method indirectly through retrieveUser
-        String token = inputToken;
-        if (!inputToken.startsWith(BEARER_PREFIX) && !inputToken.trim().isEmpty()) {
-            token = BEARER_PREFIX + inputToken;
-        }
-
-        UserInfo userInfo = mock(UserInfo.class);
-        when(idamClient.getUserInfo(token)).thenReturn(userInfo);
-
-        User user = underTest.retrieveUser(inputToken);
-
-        assertThat(user).isNotNull();
-        assertThat(user.getAuthToken()).isEqualTo(token);
-    }
-
-    @Test
-    @DisplayName("Should handle null token in retrieveUser")
-    void shouldHandleNullTokenInRetrieveUser() {
-        UserInfo userInfo = mock(UserInfo.class);
-        when(idamClient.getUserInfo(null)).thenReturn(userInfo);
-
-        User user = underTest.retrieveUser(null);
-
-        assertThat(user).isNotNull();
-        assertThat(user.getAuthToken()).isNull();
+    private Jwt jwtWithClaims(Map<String, Object> claims) {
+        return Jwt.withTokenValue("token-value")
+            .header("alg", "RS256")
+            .issuedAt(Instant.now())
+            .expiresAt(Instant.now().plusSeconds(3600))
+            .claims(c -> c.putAll(claims))
+            .build();
     }
 }

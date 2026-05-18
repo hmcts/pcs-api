@@ -110,6 +110,7 @@ flyway:
 idam:
   api:
     url: ${IDAM_API_URL:http://localhost:5062}
+  jwk-set-uri: ${IDAM_JWK_SET_URI:${IDAM_API_URL:http://localhost:5062}/o/jwks}
   s2s-auth:
     url: ${IDAM_S2S_AUTH_URL:http://localhost:4502}
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}

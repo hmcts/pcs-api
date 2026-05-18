@@ -1,10 +1,11 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.security.IdamServiceAccountTokenProvider;
 
@@ -14,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.security.IdamServiceAccountTokenProvider;
 public class IdamAuthenticator {
     private static final String BEARER_PREFIX = IdamServiceAccountTokenProvider.BEARER_PREFIX;
 
-    private final IdamClient idamClient;
+    private final JwtDecoder idamJwtDecoder;
 
     public User validateAuthToken(String authorisation) {
         if (authorisation == null || authorisation.isBlank()) {
@@ -29,20 +30,30 @@ public class IdamAuthenticator {
             User user = retrieveUser(authorisation);
             log.info("Successfully authenticated Idam token");
             return user;
-        } catch (FeignException.Unauthorized ex) {
+        } catch (JwtException ex) {
             log.error("The Authorization token provided is expired or invalid", ex);
             throw new InvalidAuthTokenException("The Authorization token provided is expired or invalid", ex);
-        } catch (Exception ex) {
-            log.error("Unexpected error while validating Authorization token", ex);
-            throw new InvalidAuthTokenException("Unexpected error while validating token", ex);
         }
     }
 
     public User retrieveUser(String authorisation) {
         final String bearerToken = getBearerToken(authorisation);
-        final var userDetails = idamClient.getUserInfo(bearerToken);
-
+        final UserInfo userDetails = decode(bearerToken);
         return new User(bearerToken, userDetails);
+    }
+
+    private UserInfo decode(String bearerToken) {
+        String rawToken = bearerToken == null ? null
+            : bearerToken.startsWith(BEARER_PREFIX) ? bearerToken.substring(BEARER_PREFIX.length()) : bearerToken;
+        Jwt jwt = idamJwtDecoder.decode(rawToken);
+        return UserInfo.builder()
+            .sub(jwt.getClaimAsString("sub"))
+            .uid(jwt.getClaimAsString("uid"))
+            .name(jwt.getClaimAsString("name"))
+            .givenName(jwt.getClaimAsString("given_name"))
+            .familyName(jwt.getClaimAsString("family_name"))
+            .roles(jwt.getClaimAsStringList("roles"))
+            .build();
     }
 
     private String getBearerToken(String token) {

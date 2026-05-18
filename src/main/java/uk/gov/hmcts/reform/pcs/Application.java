@@ -25,6 +25,9 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
     clients = {
         HmcHearingApi.class,
         LocationReferenceApi.class,
+        // Required for ccd-sdk's CcdSdkIdamService → IdamClient → IdamApi chain.
+        // pcs-api code does not use IdamApi directly (token-fetch uses Spring OAuth2,
+        // user-info uses JwtDecoder). Cannot remove until ccd-sdk drops idam-java-client.
         IdamApi.class,
         RdProfessionalApi.class,
         FeesApi.class,

@@ -15,7 +15,6 @@ import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
@@ -66,8 +65,6 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
 
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
-    @MockitoBean
-    private IdamClient idamClient;
     @MockitoBean
     private OAuth2AuthorizedClientManager authorizedClientManager;
     @MockitoBean
