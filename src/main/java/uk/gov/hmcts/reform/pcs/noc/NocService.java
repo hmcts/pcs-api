@@ -3,6 +3,12 @@ package uk.gov.hmcts.reform.pcs.noc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswer;
+import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersRequest;
+import uk.gov.hmcts.ccd.sdk.api.noc.NocQuestion;
+import uk.gov.hmcts.ccd.sdk.api.noc.NocQuestionsResponse;
+import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmissionResponse;
+import uk.gov.hmcts.ccd.sdk.api.noc.NoticeOfChangeAnswersException;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -18,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +33,8 @@ public class NocService {
     public static final String FIRST_NAME_QUESTION_ID = "pcs-defendant-first-name";
     public static final String LAST_NAME_QUESTION_ID = "pcs-defendant-last-name";
     public static final String ANSWERS_EMPTY = "Challenge question answers can not be empty";
-    public static final String ANSWERS_MISMATCH_QUESTIONS = "The number of provided answers must match the number of questions";
+    public static final String ANSWERS_MISMATCH_QUESTIONS =
+        "The number of provided answers must match the number of questions";
     public static final String ANSWERS_NOT_IDENTIFY_LITIGANT = "The answers did not uniquely identify a litigant";
     public static final String ANSWERS_NOT_MATCHED_ANY_LITIGANT = "The answers did not match those for any litigant";
 
@@ -56,14 +64,26 @@ public class NocService {
         User user = idamService.validateAuthToken(authorisation);
         UserInfo userDetails = user.getUserDetails();
 
-        caseRoleAssignmentService.assignRasRole(request.caseId(), userDetails.getUid(), UserRole.DEFENDANT_SOLICITOR);
-        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+        caseRoleAssignmentService.assignRasRole(
             request.caseId(),
-            defendant.getId().toString(),
-            userDetails
+            userDetails.getUid(),
+            UserRole.DEFENDANT_SOLICITOR
         );
+        Optional<String> previousLegalRepresentativeId = legalRepresentativePartyLinkService
+            .linkLegalRepresentativeToParty(
+                request.caseId(),
+                defendant.getId().toString(),
+                userDetails
+            ).map(Object::toString);
+        previousLegalRepresentativeId
+            .filter(previousUserId -> !previousUserId.equals(userDetails.getUid()))
+            .ifPresent(previousUserId -> caseRoleAssignmentService.revokeRasRole(
+                request.caseId(),
+                previousUserId,
+                UserRole.DEFENDANT_SOLICITOR
+            ));
 
-        return new NocSubmissionResponse("APPROVED");
+        return NocSubmissionResponse.approved();
     }
 
     private PartyEntity resolveDefendantParty(NocAnswersRequest request) {
@@ -122,15 +142,6 @@ public class NocService {
     }
 
     private NocQuestion textQuestion(String order, String text, String questionId) {
-        return new NocQuestion(
-            CASE_TYPE_ID,
-            order,
-            text,
-            new NocQuestion.AnswerFieldType("Text", "Text", null, null, null, List.of(), List.of(), null),
-            "1",
-            "NoC",
-            null,
-            questionId
-        );
+        return NocQuestion.text(CASE_TYPE_ID, order, text, "NoC", questionId);
     }
 }

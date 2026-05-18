@@ -36,7 +36,7 @@ public class LegalRepresentativePartyLinkService {
     private final AddressMapper addressMapper;
 
     @Transactional
-    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user) {
+    public Optional<UUID> linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
@@ -47,7 +47,8 @@ public class LegalRepresentativePartyLinkService {
                 "Legal Representative [" + user.getUid() + "] already linked to Party [" + partyId + "]");
         }
 
-        unlinkExistingRepresentation(UUID.fromString(partyId));
+        final Optional<UUID> previousLegalRepresentativeIdamId =
+            unlinkExistingRepresentation(UUID.fromString(partyId));
 
         Optional<LegalRepresentativeEntity> legalRepresentativeEntity =
             legalRepresentativeRepository.findByIdamId(UUID.fromString(user.getUid()));
@@ -75,6 +76,7 @@ public class LegalRepresentativePartyLinkService {
         legalRepresentative.addParty(defendantPartyEntity);
 
         legalRepresentativeRepository.saveAndFlush(legalRepresentative);
+        return previousLegalRepresentativeIdamId;
     }
 
     private PartyEntity getDefendantPartyEntity(PcsCaseEntity caseEntity, String partyId) {
@@ -90,20 +92,19 @@ public class LegalRepresentativePartyLinkService {
             });
     }
 
-    private void unlinkExistingRepresentation(UUID partyId) {
+    private Optional<UUID> unlinkExistingRepresentation(UUID partyId) {
         Optional<LegalRepresentativeEntity> partyLinkedToLegalRepresentativeAndActive =
             legalRepresentativeRepository.isPartyLinkedToLegalRepresentativeAndActive(partyId);
 
-        if (partyLinkedToLegalRepresentativeAndActive.isPresent()) {
-            LegalRepresentativeEntity existingLegalRepresentative = partyLinkedToLegalRepresentativeAndActive.get();
-
+        return partyLinkedToLegalRepresentativeAndActive.map(existingLegalRepresentative -> {
             existingLegalRepresentative.getClaimPartyLegalRepresentativeList().stream()
-                .filter(claimPartyLegalRepresentative ->
-                            claimPartyLegalRepresentative.getParty().getId().equals(partyId))
-                .forEach(this::invalidateLegalRepresentativeClaimParty);
+                    .filter(claimPartyLegalRepresentative ->
+                                claimPartyLegalRepresentative.getParty().getId().equals(partyId))
+                    .forEach(this::invalidateLegalRepresentativeClaimParty);
 
             legalRepresentativeRepository.saveAndFlush(existingLegalRepresentative);
-        }
+            return existingLegalRepresentative.getIdamId();
+        });
     }
 
     private void invalidateLegalRepresentativeClaimParty(ClaimPartyLegalRepresentativeEntity claimParty) {
