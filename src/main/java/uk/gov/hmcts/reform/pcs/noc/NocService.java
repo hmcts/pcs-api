@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswer;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersResponse;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersRequest;
-import uk.gov.hmcts.ccd.sdk.api.noc.NocQuestion;
+import uk.gov.hmcts.ccd.sdk.api.noc.NocQuestionBuilder;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocQuestionsResponse;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmissionResponse;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -37,9 +37,6 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
     public static final String FIRST_NAME_QUESTION_ID = "pcs-defendant-first-name";
     public static final String LAST_NAME_QUESTION_ID = "pcs-defendant-last-name";
 
-    private static final String CASE_TYPE_ID = "PCS";
-    private static final int EXPECTED_ANSWER_COUNT = 2;
-
     private final PcsCaseService pcsCaseService;
     private final IdamService idamService;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
@@ -53,12 +50,11 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
             .submit(this::submit);
     }
 
-    public NocQuestionsResponse getQuestions(long caseId) {
-        pcsCaseService.loadCase(caseId);
-        return new NocQuestionsResponse(List.of(
-            textQuestion("1", "What is the defendant's first name?", FIRST_NAME_QUESTION_ID),
-            textQuestion("2", "What is the defendant's last name?", LAST_NAME_QUESTION_ID)
-        ));
+    public NocQuestionsResponse getQuestions(long caseId, NocQuestionBuilder questions) {
+        return questions.response(
+            questions.text("What is the defendant's first name?", "NoC", FIRST_NAME_QUESTION_ID),
+            questions.text("What is the defendant's last name?", "NoC", LAST_NAME_QUESTION_ID)
+        );
     }
 
     public NocAnswersResponse verifyAnswers(NocAnswersRequest request) {
@@ -133,9 +129,9 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
             return Optional.of(NocAnswersResponse.answersEmpty());
         }
 
-        if (request.answers().size() != EXPECTED_ANSWER_COUNT) {
+        if (request.answers().size() != 2) {
             return Optional.of(NocAnswersResponse.answersMismatchQuestions(
-                EXPECTED_ANSWER_COUNT,
+                2,
                 request.answers().size()
             ));
         }
@@ -166,10 +162,6 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
 
     private String normalise(String value) {
         return value == null ? "" : value.trim().replaceAll("\\s+", " ").toLowerCase();
-    }
-
-    private NocQuestion textQuestion(String order, String text, String questionId) {
-        return NocQuestion.text(CASE_TYPE_ID, order, text, "NoC", questionId);
     }
 
     private record DefendantResolution(PartyEntity defendant, NocAnswersResponse error) {
