@@ -11,7 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DefendantInfomationTabDetails {
+public class DefendantInformationTabDetails {
 
     @CCD(
         label = "First name"

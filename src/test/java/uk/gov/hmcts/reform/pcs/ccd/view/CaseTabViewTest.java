@@ -265,7 +265,7 @@ class CaseTabViewTest {
     }
 
     @Test
-    void shouldSetDraftSummaryTabFieldsUsingSubmittedFallbacks() {
+    void shouldSetDraftSummaryTabFieldsUsingPreFilledDraftDataAndSubmittedFallbacks() {
         // Given
         AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
         List<ListValue<Party>> submittedClaimants = List.of(
@@ -289,7 +289,9 @@ class CaseTabViewTest {
             .allDefendants(submittedDefendants)
             .claimGroundSummaries(submittedGrounds)
             .build();
-        PCSCase draftCaseData = PCSCase.builder().build();
+        PCSCase draftCaseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
 
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
 

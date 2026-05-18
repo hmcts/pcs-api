@@ -35,9 +35,6 @@ public class CaseTabView {
     }
 
     public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draftCaseData) {
-        draftCaseData.setPropertyAddress(java.util.Optional.ofNullable(draftCaseData.getPropertyAddress())
-                                             .orElse(pcsCase.getPropertyAddress()));
-
         if (CollectionUtils.isEmpty(draftCaseData.getAllClaimants())) {
             draftCaseData.setAllClaimants(pcsCase.getAllClaimants());
         }
