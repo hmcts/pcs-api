@@ -92,6 +92,7 @@ class StartEventHandlerTest {
         assertThat(result.getPossessionClaimResponse().getDefendantResponses().getStatus())
             .isEqualTo(DefendantResponseStatus.SUBMITTED);
     }
+    
     @Test
     void shouldBuildInitialResponseAndInitializeDraftWhenNoDraftExists() {
         // Given
