@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -73,6 +74,24 @@ class StartEventHandlerTest {
         );
     }
     
+    @Test
+    void shouldReturnSubmittedStatusWhenResponseAlreadySubmitted() {
+        UUID defendantUserId = UUID.randomUUID();
+        PartyEntity defendantEntity = PartyEntity.builder().idamId(defendantUserId).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, defendantUserId))
+            .thenReturn(true);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
+
+        PCSCase result = underTest.start(createEventPayload());
+
+        assertThat(result.getPossessionClaimResponse().getDefendantResponses().getStatus())
+            .isEqualTo(DefendantResponseStatus.SUBMITTED);
+    }
     @Test
     void shouldBuildInitialResponseAndInitializeDraftWhenNoDraftExists() {
         // Given
