@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class IdamService {
+public class IdamAuthenticator {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final IdamClient idamClient;

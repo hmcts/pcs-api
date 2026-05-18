@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class IdamServiceTest {
+class IdamAuthenticatorTest {
 
     private static final String BEARER_PREFIX = "Bearer ";
 
@@ -30,7 +30,7 @@ class IdamServiceTest {
     private IdamClient idamClient;
 
     @InjectMocks
-    private IdamService underTest;
+    private IdamAuthenticator underTest;
 
     @ParameterizedTest
     @NullAndEmptySource

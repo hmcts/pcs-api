@@ -7,7 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 class IdamAuthenticationFilterTest {
 
     @Mock
-    private IdamService idamService;
+    private IdamAuthenticator idamAuthenticator;
     @Mock
     private HttpServletRequest request;
 
@@ -24,7 +24,7 @@ class IdamAuthenticationFilterTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new IdamAuthenticationFilter(idamService);
+        underTest = new IdamAuthenticationFilter(idamAuthenticator);
     }
 
     @ParameterizedTest

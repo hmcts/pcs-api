@@ -35,7 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -72,7 +72,7 @@ public class TestingSupportController {
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
-    private final IdamService idamService;
+    private final IdamAuthenticator idamAuthenticator;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -365,7 +365,7 @@ public class TestingSupportController {
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
     ) {
 
-        User user = idamService.validateAuthToken(authorization);
+        User user = idamAuthenticator.validateAuthToken(authorization);
         UserInfo userDetails = user.getUserDetails();
 
         caseRoleAssignmentService.assignRasRole(caseReference, userDetails.getUid(), UserRole.DEFENDANT_SOLICITOR);
