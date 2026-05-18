@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import uk.gov.hmcts.ccd.sdk.api.noc.NoticeOfChangeAnswersException;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
@@ -77,14 +76,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Case assignment failed", ex);
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new Error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(NoticeOfChangeAnswersException.class)
-    public ResponseEntity<Error> handleNoticeOfChangeAnswersException(NoticeOfChangeAnswersException ex) {
-        log.error("Notice of change answer validation failed", ex);
-        return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
             .body(new Error(ex.getMessage()));
     }
 

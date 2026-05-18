@@ -6,11 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswer;
+import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersResponse;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersRequest;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocQuestion;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocQuestionsResponse;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmissionResponse;
-import uk.gov.hmcts.ccd.sdk.api.noc.NoticeOfChangeAnswersException;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -41,6 +41,10 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
         "The number of provided answers must match the number of questions";
     public static final String ANSWERS_NOT_IDENTIFY_LITIGANT = "The answers did not uniquely identify a litigant";
     public static final String ANSWERS_NOT_MATCHED_ANY_LITIGANT = "The answers did not match those for any litigant";
+    public static final String ANSWERS_EMPTY_CODE = "answers-empty";
+    public static final String ANSWERS_MISMATCH_QUESTIONS_CODE = "answers-mismatch-questions";
+    public static final String ANSWERS_NOT_IDENTIFY_LITIGANT_CODE = "answers-not-identify-litigant";
+    public static final String ANSWERS_NOT_MATCHED_ANY_LITIGANT_CODE = "answers-not-matched-any-litigant";
 
     private static final String CASE_TYPE_ID = "PCS";
 
@@ -65,14 +69,18 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
         ));
     }
 
-    public boolean verifyAnswers(NocAnswersRequest request) {
-        resolveDefendantParty(request);
-        return true;
+    public NocAnswersResponse verifyAnswers(NocAnswersRequest request) {
+        return resolveDefendantParty(request).toVerificationResponse();
     }
 
     @Transactional
     public NocSubmissionResponse submit(String authorisation, NocAnswersRequest request) {
-        PartyEntity defendant = resolveDefendantParty(request);
+        DefendantResolution resolution = resolveDefendantParty(request);
+        if (!resolution.isResolved()) {
+            return NocSubmissionResponse.invalid(resolution.error().code(), resolution.error().message());
+        }
+
+        PartyEntity defendant = resolution.defendant();
         User user = idamService.validateAuthToken(authorisation);
         UserInfo userDetails = user.getUserDetails();
 
@@ -98,8 +106,12 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
         return NocSubmissionResponse.approved();
     }
 
-    private PartyEntity resolveDefendantParty(NocAnswersRequest request) {
-        validateRequest(request);
+    private DefendantResolution resolveDefendantParty(NocAnswersRequest request) {
+        Optional<NocAnswersResponse> validationError = validateRequest(request);
+        if (validationError.isPresent()) {
+            return DefendantResolution.invalid(validationError.get());
+        }
+
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(request.caseId());
         Map<String, String> answersById = Map.of(
             FIRST_NAME_QUESTION_ID, getAnswer(request, FIRST_NAME_QUESTION_ID),
@@ -114,26 +126,37 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
             .toList();
 
         if (matches.isEmpty()) {
-            throw new NoticeOfChangeAnswersException(ANSWERS_NOT_MATCHED_ANY_LITIGANT);
+            return DefendantResolution.invalid(NocAnswersResponse.invalid(
+                ANSWERS_NOT_MATCHED_ANY_LITIGANT_CODE,
+                ANSWERS_NOT_MATCHED_ANY_LITIGANT
+            ));
         }
 
         if (matches.size() > 1) {
-            throw new NoticeOfChangeAnswersException(ANSWERS_NOT_IDENTIFY_LITIGANT);
+            return DefendantResolution.invalid(NocAnswersResponse.invalid(
+                ANSWERS_NOT_IDENTIFY_LITIGANT_CODE,
+                ANSWERS_NOT_IDENTIFY_LITIGANT
+            ));
         }
 
-        return matches.getFirst();
+        return DefendantResolution.resolved(matches.getFirst());
     }
 
-    private void validateRequest(NocAnswersRequest request) {
+    private Optional<NocAnswersResponse> validateRequest(NocAnswersRequest request) {
         if (request == null || request.answers() == null || request.answers().isEmpty()) {
-            throw new NoticeOfChangeAnswersException(ANSWERS_EMPTY);
+            return Optional.of(NocAnswersResponse.invalid(ANSWERS_EMPTY_CODE, ANSWERS_EMPTY));
         }
 
         if (request.answers().size() != 2
             || request.answers().stream().noneMatch(answer -> FIRST_NAME_QUESTION_ID.equals(answer.questionId()))
             || request.answers().stream().noneMatch(answer -> LAST_NAME_QUESTION_ID.equals(answer.questionId()))) {
-            throw new NoticeOfChangeAnswersException(ANSWERS_MISMATCH_QUESTIONS);
+            return Optional.of(NocAnswersResponse.invalid(
+                ANSWERS_MISMATCH_QUESTIONS_CODE,
+                ANSWERS_MISMATCH_QUESTIONS
+            ));
         }
+
+        return Optional.empty();
     }
 
     private String getAnswer(NocAnswersRequest request, String questionId) {
@@ -155,5 +178,24 @@ public class NocService implements CCDConfig<PCSCase, State, UserRole> {
 
     private NocQuestion textQuestion(String order, String text, String questionId) {
         return NocQuestion.text(CASE_TYPE_ID, order, text, "NoC", questionId);
+    }
+
+    private record DefendantResolution(PartyEntity defendant, NocAnswersResponse error) {
+
+        static DefendantResolution resolved(PartyEntity defendant) {
+            return new DefendantResolution(defendant, null);
+        }
+
+        static DefendantResolution invalid(NocAnswersResponse error) {
+            return new DefendantResolution(null, error);
+        }
+
+        boolean isResolved() {
+            return defendant != null;
+        }
+
+        NocAnswersResponse toVerificationResponse() {
+            return isResolved() ? NocAnswersResponse.verified() : error;
+        }
     }
 }
