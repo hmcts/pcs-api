@@ -54,9 +54,10 @@ export class GlobalSearchCaseAction implements IAction {
   }
 
   private async searchByDateOfBirth(dob: actionRecord, page: Page): Promise<void> {
-    await performAction('inputText', globalSearch.dateOfBirthDayLabel, dob.day as string);
-    await performAction('inputText', globalSearch.dateOfBirthMonthLabel, dob.month as string);
-    await performAction('inputText', globalSearch.dateOfBirthYearLabel, dob.year as string);
+    const dobGroup = page.getByRole('group', { name: /date of birth/i });
+    await dobGroup.getByLabel(/day/i).fill(dob.day as string);
+    await dobGroup.getByLabel(/month/i).fill(dob.month as string);
+    await dobGroup.getByLabel(/year/i).fill(dob.year as string);
     await performAction('clickButton', globalSearch.search);
   }
 

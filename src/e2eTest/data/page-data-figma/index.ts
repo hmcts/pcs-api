@@ -44,4 +44,4 @@ export * from '@data/page-data-figma/rentArrearsOrBreachOfTenancyGround.page.dat
 export * from '@data/page-data-figma/demotionOfTenancyHousingActOptions.page.data';
 export * from '@data/page-data-figma/suspensionOfRightToBuyHousingActOptions.page.data';
 export * from '@data/page-data-figma/suspensionToBuyDemotionOfTenancyActs.page.data';
-export * from '@data/page-data-figma/globalSearch.page.data';
+export * from '@data/page-data-figma/page-data-common-component/globalSearch.page.data';

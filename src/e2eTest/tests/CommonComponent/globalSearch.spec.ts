@@ -16,35 +16,31 @@ test.describe('[Global Search - Hearing Center Admin]', () => {
     await performAction('navigateToGlobalSearch');
     await performValidation('mainHeader', globalSearch.mainHeader);
     await performAction('searchByCaseReference', globalSearch.caseReferenceInputText);
-    await performAction('clickButton', globalSearch.search);
-  });  });
+    await performValidation('link', { text: globalSearch.caseReferenceInputText });
+  });
 
   test('Should find a case by name @regression @globalSearch', async () => {
     await performAction('navigateToGlobalSearch');
     await performAction('searchByName', globalSearch.searchPartyNameInputText);
-    await performAction('clickButton', globalSearch.search);
-
+    await performValidation('link', { text: globalSearch.caseReferenceInputText });
   });
 
   test('Should find a case by first line of address @regression @globalSearch', async () => {
     await performAction('navigateToGlobalSearch');
     await performAction('searchByFirstLineOfAddress', globalSearch.firstLineOfAddressInputText);
-    await performAction('clickButton', globalSearch.search);
-
+    await performValidation('link', { text: globalSearch.caseReferenceInputText });
   });
 
   test('Should find a case by postcode @regression @globalSearch', async () => {
     await performAction('navigateToGlobalSearch');
     await performAction('searchByPostcode', globalSearch.searchPostcodeInputText);
-    await performAction('clickButton', globalSearch.search);
-
+    await performValidation('link', { text: globalSearch.caseReferenceInputText });
   });
 
   test('Should find a case by email address @regression @globalSearch', async () => {
     await performAction('navigateToGlobalSearch');
     await performAction('searchByEmailAddress', globalSearch.searchEmailAddressInputText);
-    await performAction('clickButton', globalSearch.search);
-
+    await performValidation('link', { text: globalSearch.caseReferenceInputText });
   });
 
   test('Should find a case by date of birth @regression @globalSearch', async () => {
@@ -54,10 +50,12 @@ test.describe('[Global Search - Hearing Center Admin]', () => {
       month: globalSearch.searchDateOfBirthMonthInputText,
       year: globalSearch.searchDateOfBirthYearInputText
     });
-    await performAction('clickButton', globalSearch.search);
+    await performValidation('link', { text: globalSearch.caseReferenceInputText });
   });
+
   test('Should find cases by service @regression @globalSearch', async () => {
     await performAction('navigateToGlobalSearch');
     await performAction('searchByService', globalSearch.servicesDropdownOption2);
-    await performAction('clickButton', globalSearch.search);
+    await performValidation('link', { text: globalSearch.caseReferenceInputText });
   });
+});
