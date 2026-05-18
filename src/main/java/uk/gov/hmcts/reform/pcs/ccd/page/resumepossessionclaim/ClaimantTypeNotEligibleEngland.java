@@ -15,7 +15,7 @@ public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("claimantTypeNotEligibleEngland", this::midEvent)
-            .pageLabel("You’re not eligible for this online service")
+            .pageLabel("You cannot use this online service")
             .showCondition("showClaimantTypeNotEligibleEngland=\"Yes\"")
             .readonly(PCSCase::getShowClaimantTypeNotEligibleEngland, NEVER_SHOW)
             .label("claimantTypeNotEligibleEngland-info", """
@@ -27,14 +27,13 @@ public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
 
                 <ul class="govuk-list">
                   <li class="govuk-!-font-size-19">
-                    <span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims</span> – use the
+                    for rent or mortgage arrears claims, use the
                     <a href="https://www.gov.uk/possession-claim-online-recover-property"
                         target="_blank"
                         class="govuk-link">Possession Claim Online (PCOL) service (opens in a new tab)</a>.
                   </li>
                   <li class="govuk-!-font-size-19">
-                    <span class="govuk-!-font-weight-bold">For other types of claims</span> – use form N5
-                    and the correct particulars of claim form.
+                    for other claim types, use form N5 and the correct particulars of claim form.
                   </li>
                 </ul>
 
@@ -48,7 +47,7 @@ public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-warning-text__assistive">Warning</span>
                     <span id="warning-message">
-                      To exit to the case overview, select ‘Cancel’
+                      To exit to the case list, select ‘Cancel’
                     </span>
                   </strong>
                 </div>
@@ -59,7 +58,7 @@ public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errorMessageOverride("You’re not eligible for this online service")
+            .errorMessageOverride("You cannot use this online service")
             .build();
     }
 
