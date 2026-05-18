@@ -4,7 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 
-public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdPage {
+public class UploadAdditionalDocumentsInformationPage implements CcdPageConfiguration, CcdPage {
 
     public static final String CONFIRM_EVICTION_DETAILS_CONTENT  = """
                     <p class="govuk-body">
