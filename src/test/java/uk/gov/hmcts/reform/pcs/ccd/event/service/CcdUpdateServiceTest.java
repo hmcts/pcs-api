@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -14,7 +16,9 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.payment;
@@ -33,6 +37,8 @@ class CcdUpdateServiceTest {
     private AuthTokenGenerator s2sAuthTokenGenerator;
     @Mock
     private CoreCaseDataApi coreCaseDataApi;
+    @Mock
+    private ObjectMapper objectMapper;
 
     @InjectMocks
     private CcdUpdateService underTest;
@@ -51,6 +57,7 @@ class CcdUpdateServiceTest {
         when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(S2S_TOKEN), eq(CASE_ID),
                                          org.mockito.ArgumentMatchers.any(CaseDataContent.class)))
             .thenReturn(expectedCaseResource);
+        when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
 
         // When
         CaseResource result = underTest.submitPaymentSuccess(CASE_ID);

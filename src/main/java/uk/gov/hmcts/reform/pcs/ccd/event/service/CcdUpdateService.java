@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class CcdUpdateService {
     private final IdamService idamService;
     private final AuthTokenGenerator s2sAuthTokenGenerator;
     private final CoreCaseDataApi coreCaseDataApi;
+    private final ObjectMapper objectMapper;
 
     public CaseResource submitPaymentSuccess(String caseId) {
         String s2sToken = s2sAuthTokenGenerator.generate();
@@ -30,11 +33,15 @@ public class CcdUpdateService {
         StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, s2sToken, caseId, payment.name());
         log.debug("StartEventResponse: {}", startEventResponse);
         CaseDataContent submitContent = CaseDataContent.builder().event(Event.builder().id(payment.name()).build())
-            .eventToken(startEventResponse.getToken()).data(PCSCase.builder().build()).build();
+            .eventToken(startEventResponse.getToken()).data(toJsonNode(PCSCase.builder().build())).build();
         log.debug("submitContent: {}", submitContent);
         CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, s2sToken, caseId, submitContent);
         log.debug("CaseResouce response : {}", caseResource);
         return caseResource;
+    }
+
+    private JsonNode toJsonNode(PCSCase pcsCase) {
+        return objectMapper.valueToTree(pcsCase);
     }
 
 }
