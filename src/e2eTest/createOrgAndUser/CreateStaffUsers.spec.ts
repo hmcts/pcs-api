@@ -11,20 +11,11 @@ import {
 
 /** Forename shown in IdAM / forms: `Solicitor First`, `Solicitor Second`, … aligned with email `…caseworker${sol}@…`. */
 function caseworkerForenameForSol(sol: number): string {
-  const ordinals = [
-    'First',
-    'Second',
-    'Third',
-    'Fourth',
-    'Fifth',
-    'Sixth',
-    'Seventh',
-    'Eighth',
-    'Ninth',
-    'Tenth',
-    'Eleventh',
-    'Twelfth',
-  ] as const;
+  const users = [
+    {email: 'pcs-ctsc-admin-01@hmcts.in', role: [], jobTitle: ['CTSC Administrator']},
+    {email: 'pcs-ctsc-admin-ts-ca-01@hmcts.in', role:['Case allocator','Task Supervisor'], jobTitle: ['CTSC Administrator']},
+    {email: 'pcs-ctsc-admin-team-leader-01@hmcts.in', role:[], jobTitle: ['CTSC Team Leader']}
+  ];
   const word = ordinals[sol - 1];
   return word != null ? `Solicitor ${word}` : `Solicitor ${String(sol)}`;
 }
@@ -74,7 +65,7 @@ test('test', async ({page, request}) => {
   }) as IdamOAuthTokenResponse;
   expect(accessToken, 'idamToken.sh JSON must include access_token').toBeTruthy();
 
-    const caseworkerEmailAddress = `pcs-caseworker-automation01@test.com`;
+    const caseworkerEmailAddress = users[0];
 
 
   const namePart = caseworkerEmailAddress.split("@")[0];
@@ -82,13 +73,9 @@ test('test', async ({page, request}) => {
   const firstName = namePart.split("-")[0];
 
   const surname = namePart
-
     .split("-")
-
     .slice(1)
-
     .join(" ")
-
     .replace(/-/g, " ");
     // @ts-ignore
     if (userCreationNeeded == 'true') {
@@ -118,11 +105,12 @@ test('test', async ({page, request}) => {
         });
         await resetCookiesBeforeIdamAccess(page);
         await completeIdamPasswordActivation(page, activationUrl, caseworkerPassword);
+        uid = await getUidFor(caseworkerEmailAddress);
+       add this to rray and use in
       }
     }
 
     if(triggerAMRefresh == 'true')
-
     {
 
     }
