@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPos
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
@@ -68,6 +69,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private DefendantResponseService defendantResponseService;
 
     @Mock
+    private DefendantResponseRepository defendantResponseRepository;
+
+    @Mock
     private RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
 
     @BeforeEach
@@ -79,7 +83,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             securityContextService,
             accessValidator,
             responseMapper,
-            draftCaseDataService
+            draftCaseDataService,
+            defendantResponseRepository
         );
 
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
