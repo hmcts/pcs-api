@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.reference.service;
 
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -10,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.idam.PrdAdminTokenService;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class OrganisationDetailsService {
@@ -17,6 +20,9 @@ public class OrganisationDetailsService {
     private final RdProfessionalApi rdProfessionalApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final PrdAdminTokenService prdAdminTokenService;
+
+    @Value("${reference-data.dev-organisation-fallback-enabled:false}")
+    private boolean devOrganisationFallbackEnabled;
 
     public OrganisationDetailsService(
             RdProfessionalApi rdProfessionalApi,
@@ -48,10 +54,18 @@ public class OrganisationDetailsService {
             return details;
 
         } catch (FeignException ex) {
+            if (devOrganisationFallbackEnabled) {
+                log.warn("Using dev organisation details fallback for userId: {}", userId);
+                return devOrganisationDetails();
+            }
             log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
                 userId, ex.status(), ex.getMessage(), ex);
             throw new OrganisationDetailsException("Failed to retrieve organisation details", ex);
         } catch (Exception ex) {
+            if (devOrganisationFallbackEnabled) {
+                log.warn("Using dev organisation details fallback for userId: {}", userId);
+                return devOrganisationDetails();
+            }
             log.error("Unexpected error retrieving organisation details for userId: {}. Error: {}",
                 userId, ex.getMessage(), ex);
             throw new OrganisationDetailsException("Unexpected error retrieving organisation details", ex);
@@ -112,5 +126,19 @@ public class OrganisationDetailsService {
     public String getOrganisationIdentifier(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
         return details.getOrganisationIdentifier();
+    }
+
+    private OrganisationDetailsResponse devOrganisationDetails() {
+        return OrganisationDetailsResponse.builder()
+            .name("PCS Local Solicitor Organisation")
+            .organisationIdentifier("PCSLOCAL")
+            .status("ACTIVE")
+            .contactInformation(List.of(OrganisationDetailsResponse.ContactInformation.builder()
+                .addressLine1("1 Local Solicitor Street")
+                .townCity("London")
+                .country("United Kingdom")
+                .postCode("SW1A 1AA")
+                .build()))
+            .build();
     }
 }

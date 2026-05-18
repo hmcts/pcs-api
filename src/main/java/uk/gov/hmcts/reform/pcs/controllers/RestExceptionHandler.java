@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
+import uk.gov.hmcts.reform.pcs.noc.NoticeOfChangeAnswersException;
 
 @Slf4j
 @ControllerAdvice
@@ -76,6 +77,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Case assignment failed", ex);
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new Error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(NoticeOfChangeAnswersException.class)
+    public ResponseEntity<Error> handleNoticeOfChangeAnswersException(NoticeOfChangeAnswersException ex) {
+        log.error("Notice of change answer validation failed", ex);
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
             .body(new Error(ex.getMessage()));
     }
 
