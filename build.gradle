@@ -467,6 +467,9 @@ dependencies {
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
 
+  // cftlib does not pull oauth2-client transitively from `implementation`; needed by OAuth2ClientConfig
+  cftlibImplementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
   mockitoAgentConfig group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   mockitoAgent 'org.mockito:mockito-core'
 
