@@ -1,15 +1,17 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
-import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -366,10 +368,14 @@ class RestExceptionHandlerTest {
     }
 
     @Test
-    void shouldMapIdamExceptionWith429CauseToServiceUnavailable() {
-        FeignException tooMany = mock(FeignException.class);
-        when(tooMany.status()).thenReturn(429);
-        IdamException ex = new IdamException("Unable to get access token response", tooMany);
+    void shouldMapIdamExceptionWrappingOAuth2WithRestClient429ToServiceUnavailable() {
+        // Real production shape: Spring's OAuth2 password client wraps a RestClient 429 in
+        // OAuth2AuthorizationException, then IdamService wraps that in IdamException.
+        HttpClientErrorException tooMany = HttpClientErrorException.create(
+            HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null);
+        OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "throttled by IDAM", null);
+        OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError, tooMany);
+        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
@@ -381,11 +387,12 @@ class RestExceptionHandlerTest {
     }
 
     @Test
-    void shouldMapIdamExceptionWithNestedFeign429CauseToServiceUnavailable() {
-        FeignException tooMany = mock(FeignException.class);
-        when(tooMany.status()).thenReturn(429);
-        RuntimeException wrapper = new RuntimeException("outer", tooMany);
-        IdamException ex = new IdamException("Unable to get access token response", wrapper);
+    void shouldMapIdamExceptionWithDirectRestClient429CauseToServiceUnavailable() {
+        // Defense-in-depth: handler should also recognise a RestClient 429 set directly as the cause,
+        // not only when buried under OAuth2AuthorizationException.
+        HttpClientErrorException tooMany = HttpClientErrorException.create(
+            HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null);
+        IdamException ex = new IdamException("Unable to get access token response", tooMany);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
@@ -394,10 +401,12 @@ class RestExceptionHandlerTest {
     }
 
     @Test
-    void shouldMapIdamExceptionWithNon429FeignCauseToInternalServerError() {
-        FeignException internal = mock(FeignException.class);
-        when(internal.status()).thenReturn(500);
-        IdamException ex = new IdamException("Unable to get access token response", internal);
+    void shouldMapIdamExceptionWithNon429OAuth2CauseToInternalServerError() {
+        HttpClientErrorException internal = HttpClientErrorException.create(
+            HttpStatus.INTERNAL_SERVER_ERROR, "Server Error", HttpHeaders.EMPTY, new byte[0], null);
+        OAuth2Error oauthError = new OAuth2Error("server_error", "IDAM down", null);
+        OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError, internal);
+        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 

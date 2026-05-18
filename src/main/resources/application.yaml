@@ -122,11 +122,6 @@ idam:
   prd-admin:
     username: ${PCS_PRD_ADMIN_USERNAME:prd-admin-user@localhost}
     password: ${PCS_PRD_ADMIN_PASSWORD:password}
-    scope: ${IDAM_PRD_ADMIN_SCOPE:openid profile roles}
-  client:
-    id: ${IDAM_CLIENT_ID:pcs-api}
-    secret: ${IDAM_CLIENT_SECRET:123456}
-    redirect_uri: ${IDAM_API_REDIRECT_URL:http://localhost:3001/oauth2/callback}
 
 azure:
   application-insights:

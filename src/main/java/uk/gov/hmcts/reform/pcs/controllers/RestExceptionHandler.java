@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
-import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,6 +9,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
@@ -110,10 +110,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(new Error("Invalid data"));
     }
 
+    // Spring's OAuth2 password client wraps any non-2xx RestClient call in OAuth2AuthorizationException
+    // with the original RestClientResponseException set as the cause. We walk the chain looking for a 429.
     private static boolean isUpstreamThrottled(Throwable ex) {
-        Throwable cause = ex.getCause();
-        while (cause != null) {
-            if (cause instanceof FeignException feign && feign.status() == HttpStatus.TOO_MANY_REQUESTS.value()) {
+        Throwable cause = ex;
+        int depth = 0;
+        while (cause != null && depth++ < 10) {
+            if (cause instanceof RestClientResponseException restEx
+                && restEx.getStatusCode().value() == HttpStatus.TOO_MANY_REQUESTS.value()) {
                 return true;
             }
             cause = cause.getCause();
