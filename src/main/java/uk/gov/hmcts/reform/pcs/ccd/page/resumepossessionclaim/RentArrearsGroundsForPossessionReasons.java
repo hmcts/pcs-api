@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
@@ -24,6 +25,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
 
     private static final String ADDITIONAL_MANDATORY_GROUNDS = "rentArrears_AdditionalMandatoryGrounds";
     private static final String ADDITIONAL_DISCRETIONARY_GROUNDS = "rentArrears_AdditionalDiscretionaryGrounds";
+    private static final String ADDITIONAL_OTHER_GROUND = "rentArrears_AdditionalOtherGround";
 
     private final TextAreaValidationService textAreaValidationService;
 
@@ -293,6 +295,20 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 ShowConditions.fieldContains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17))
+            .label("rentArrears-otherGround-label","""
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Other grounds
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """,ShowConditions.fieldContains(
+                    ADDITIONAL_OTHER_GROUND,
+                    AssuredAdditionalOtherGround.OTHER))
+            .mandatory(RentArrearsGroundsReasons::getOtherGroundReason,
+                    ShowConditions.fieldContains(
+                            ADDITIONAL_OTHER_GROUND,
+                            AssuredAdditionalOtherGround.OTHER))
             .done()
             .label("rentArrearsGroundsForPossessionReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -367,6 +383,11 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
             TextAreaValidationService.FieldValidation.of(
                 grounds.getNoRightToRentReason(),
                 AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getOtherGroundReason(),
+                AssuredAdditionalOtherGround.OTHER.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         };

@@ -47,7 +47,6 @@ class ClaimViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(claimEntity.getAgainstTrespassers()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getDueToRentArrears()).thenReturn(YesOrNo.NO);
-        when(claimEntity.getClaimCosts()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getPreActionProtocolFollowed()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getMediationAttempted()).thenReturn(VerticalYesNo.NO);
         when(claimEntity.getSettlementAttempted()).thenReturn(VerticalYesNo.YES);
@@ -65,7 +64,6 @@ class ClaimViewTest {
         // Then
         assertThat(pcsCase.getClaimAgainstTrespassers()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getClaimDueToRentArrears()).isEqualTo(YesOrNo.NO);
-        assertThat(pcsCase.getClaimingCostsWanted()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getMediationAttempted()).isEqualTo(VerticalYesNo.NO);
         assertThat(pcsCase.getSettlementAttempted()).isEqualTo(VerticalYesNo.YES);
@@ -130,7 +128,6 @@ class ClaimViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         assertThat(pcsCase.getClaimAgainstTrespassers()).isNull();
-        assertThat(pcsCase.getClaimingCostsWanted()).isNull();
         assertThat(pcsCase.getClaimantCircumstances()).isNull();
         assertThat(pcsCase.getDefendantCircumstances()).isNull();
         assertThat(pcsCase.getAdditionalReasonsForPossession()).isNull();
