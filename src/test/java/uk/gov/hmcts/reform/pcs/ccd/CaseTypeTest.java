@@ -69,6 +69,7 @@ class CaseTypeTest {
         final Tab.TabBuilder<PCSCase, UserRole> caseLinksTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, UserRole> caseFileViewTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, UserRole> casePartiesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
+        final Tab.TabBuilder<PCSCase, UserRole> testingTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Search.SearchBuilder<PCSCase, UserRole> searchBuilder =
             Search.SearchBuilder.builder(PCSCase.class, utils);
         final SearchCases.SearchCasesBuilder<PCSCase> searchCasesBuilder =
@@ -86,6 +87,7 @@ class CaseTypeTest {
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
         when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
+        when(builder.tab("TestingTab", "TestingTab")).thenReturn(casePartiesTabBuilder);
         when(builder.categories(UserRole.PCS_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(UserRole.PCS_SOLICITOR));
 
