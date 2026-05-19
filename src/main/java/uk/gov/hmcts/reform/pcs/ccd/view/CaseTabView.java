@@ -129,7 +129,23 @@ public class CaseTabView {
         List<ListValue<Party>> underlesseeMortgageParties = new ArrayList<>();
         underlesseeMortgageParties.add(buildUnderlesseeOrMortgageParty(underlesseeOrMortgagee1));
 
+        List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee =
+            draftCaseData.getAdditionalUnderlesseeOrMortgagee();
+        if (!CollectionUtils.isEmpty(additionalUnderlesseeOrMortgagee)) {
+            underlesseeMortgageParties.addAll(
+                additionalUnderlesseeOrMortgagee.stream()
+                    .map(this::buildUnderlesseeOrMortgageParty)
+                    .toList()
+            );
+        }
+
         return underlesseeMortgageParties;
+    }
+
+    private ListValue<Party> buildUnderlesseeOrMortgageParty(
+        ListValue<UnderlesseeMortgageeDetails> underlesseeMortgageeDetails
+    ) {
+        return buildUnderlesseeOrMortgageParty(underlesseeMortgageeDetails.getValue());
     }
 
     private ListValue<Party> buildUnderlesseeOrMortgageParty(UnderlesseeMortgageeDetails underlesseeMortgageeDetails) {
