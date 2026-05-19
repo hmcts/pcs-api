@@ -36,7 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGround
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUpload;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
@@ -471,7 +471,7 @@ public class PCSCase {
     private EnforcementOrder enforcementOrder;
 
     @JsonUnwrapped
-    private LegalRepDocumentUpload legalRepDocumentUpload;
+    private LegalRepDocumentUploadDetails legalRepDocumentUploadDetails;
 
     @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
     private VerticalYesNo hasUnderlesseeOrMortgagee;

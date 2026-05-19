@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PageConfigurerHelper.verifyAndCount;
 
 @ExtendWith(MockitoExtension.class)
-class LegalRepDocumentUploadConfigurerTest extends BasePageTest {
+class LegalRepDocumentUploadDetailsConfigurerTest extends BasePageTest {
 
     @InjectMocks
     private LegalRepDocumentUploadConfigurer underTest;
