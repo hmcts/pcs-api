@@ -37,7 +37,8 @@ public class CcdPaymentStateUpdateService {
         CaseDataContent submitContent = CaseDataContent.builder().event(Event.builder().id(payment.name()).build())
             .eventToken(startEventResponse.getToken()).data(toJsonNode(PCSCase.builder().build())).build();
         log.debug("submitContent: {}", submitContent);
-        CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization, caseId, submitContent);
+        CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
+                                                                caseId, submitContent);
         log.debug("CaseResouce response : {}", caseResource);
         return caseResource;
     }

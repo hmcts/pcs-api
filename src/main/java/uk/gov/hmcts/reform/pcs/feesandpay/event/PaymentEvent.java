@@ -24,15 +24,14 @@ public class PaymentEvent implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(payment.name(), this::submit)
-            .forStates(State.PENDING_CASE_ISSUED)
+            .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
             .name("Payment Confirmation")
             .showCondition(ShowConditions.NEVER_SHOW)
-            .grant(Permission.CRU, UserRole.DEFENDANT)
-            .grant(Permission.CRU, UserRole.PCS_SOLICITOR);
+            .grant(Permission.CRU, UserRole.SYSTEM_USER);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        log.info("Recieved: {}", eventPayload);
+        log.info("Received: {}", eventPayload);
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
     }
 

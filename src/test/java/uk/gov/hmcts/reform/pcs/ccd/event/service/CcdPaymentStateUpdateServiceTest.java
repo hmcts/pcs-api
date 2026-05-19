@@ -29,7 +29,6 @@ class CcdPaymentStateUpdateServiceTest {
     private static final String CASE_ID = "1111-2222-3333-4444";
     private static final String IDAM_TOKEN = "Bearer idam";
     private static final String S2S_TOKEN = "Bearer s2s";
-    private static final String EVENT_TOKEN = "event-token";
 
     @Mock
     private IdamService idamService;
@@ -49,7 +48,7 @@ class CcdPaymentStateUpdateServiceTest {
         when(idamService.getSystemUserAuthorisation()).thenReturn(IDAM_TOKEN);
         when(s2sAuthTokenGenerator.generate()).thenReturn(S2S_TOKEN);
 
-        StartEventResponse startEventResponse = StartEventResponse.builder().token(EVENT_TOKEN).build();
+        StartEventResponse startEventResponse = StartEventResponse.builder().token(IDAM_TOKEN).build();
         when(coreCaseDataApi.startEvent(IDAM_TOKEN, S2S_TOKEN, CASE_ID, payment.name()))
             .thenReturn(startEventResponse);
 
@@ -68,7 +67,7 @@ class CcdPaymentStateUpdateServiceTest {
         ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
         verify(coreCaseDataApi).createEvent(eq(IDAM_TOKEN), eq(S2S_TOKEN), eq(CASE_ID), contentCaptor.capture());
         CaseDataContent submitted = contentCaptor.getValue();
-        assertThat(submitted.getEventToken()).isEqualTo(EVENT_TOKEN);
+        assertThat(submitted.getEventToken()).isEqualTo(IDAM_TOKEN);
         assertThat(submitted.getEvent().getId()).isEqualTo(payment.name());
     }
 }
