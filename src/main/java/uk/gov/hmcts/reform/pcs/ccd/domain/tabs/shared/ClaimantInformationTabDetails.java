@@ -12,8 +12,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class ClaimantInformationTabDetails {
 
-    @CCD(
-        label = "Claimant name"
-    )
+    @CCD(label = "Claimant name")
     private String claimantName;
 }

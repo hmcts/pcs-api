@@ -12,28 +12,18 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class RentArrearsTabDetails {
 
-    @CCD(
-        label = "Rent amount"
-    )
+    @CCD(label = "Rent amount")
     private String rentAmount;
 
-    @CCD(
-        label = "How rent is calculated"
-    )
+    @CCD(label = "How rent is calculated")
     private String calculationFrequency;
 
-    @CCD(
-        label = "Daily rate"
-    )
+    @CCD(label = "Daily rate")
     private String dailyRate;
 
-    @CCD(
-        label = "Rent arrears total at the time of claim issue"
-    )
+    @CCD(label = "Rent arrears total at the time of claim issue")
     private String arrearsTotal;
 
-    @CCD(
-        label = "Judgment requested for the outstanding arrears?"
-    )
+    @CCD(label = "Judgment requested for the outstanding arrears?")
     private String judgmentRequested;
 }

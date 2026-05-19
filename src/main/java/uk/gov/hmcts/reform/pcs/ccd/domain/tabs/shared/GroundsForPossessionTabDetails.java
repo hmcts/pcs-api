@@ -14,9 +14,6 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @AllArgsConstructor
 public class GroundsForPossessionTabDetails {
 
-    @CCD(
-        label = "Grounds",
-        typeOverride = TextArea
-    )
+    @CCD(label = "Grounds", typeOverride = TextArea)
     private String grounds;
 }
