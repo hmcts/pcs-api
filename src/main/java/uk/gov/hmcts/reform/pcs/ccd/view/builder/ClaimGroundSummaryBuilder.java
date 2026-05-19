@@ -9,9 +9,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
@@ -29,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -72,6 +76,7 @@ public class ClaimGroundSummaryBuilder {
                 Optional.ofNullable(draftCaseData.getNoRentArrearsGroundsOptions()).ifPresent(selected -> {
                     addGrounds(summaries, selected.getMandatoryGrounds(), draftCaseData);
                     addGrounds(summaries, selected.getDiscretionaryGrounds(), draftCaseData);
+                    addGrounds(summaries, selected.getOtherGround(), draftCaseData);
                 });
             }
         } else if (tenancyType == TenancyLicenceType.SECURE_TENANCY
@@ -108,6 +113,11 @@ public class ClaimGroundSummaryBuilder {
             if (!CollectionUtils.isEmpty(selected.getAdditionalDiscretionaryGrounds())) {
                 addGrounds(summaries, selected.getAdditionalDiscretionaryGrounds().stream()
                     .map(ground -> AssuredDiscretionaryGround.valueOf(ground.name()))
+                    .toList(), draftCaseData);
+            }
+            if(!CollectionUtils.isEmpty(selected.getAdditionalOtherGround())) {
+                addGrounds(summaries, selected.getAdditionalOtherGround().stream()
+                    .map(ground -> AssuredAdditionalOtherGround.valueOf(ground.name()))
                     .toList(), draftCaseData);
             }
         });
@@ -172,13 +182,23 @@ public class ClaimGroundSummaryBuilder {
     }
 
     private String getDescription(PCSCase draftCaseData, PossessionGroundEnum ground) {
-        if (ground != IntroductoryDemotedOrOtherGrounds.OTHER) {
-            return null;
+        if (ground == IntroductoryDemotedOrOtherGrounds.OTHER) {
+            IntroductoryDemotedOtherGroundsForPossession otherGroundsForPossession =
+                draftCaseData.getIntroductoryDemotedOrOtherGroundsForPossession();
+            return otherGroundsForPossession != null ? otherGroundsForPossession.getOtherGroundDescription() : null;
         }
 
-        IntroductoryDemotedOtherGroundsForPossession otherGroundsForPossession =
-            draftCaseData.getIntroductoryDemotedOrOtherGroundsForPossession();
-        return otherGroundsForPossession != null ? otherGroundsForPossession.getOtherGroundDescription() : null;
+        if (ground == AssuredAdditionalOtherGround.OTHER) {
+            if (draftCaseData.getClaimDueToRentArrears() == YesOrNo.YES) {
+                AssuredRentArrearsPossessionGrounds grounds = draftCaseData.getAssuredRentArrearsPossessionGrounds();
+                return grounds != null ? grounds.getAdditionalOtherGroundDescription() : null;
+            } else {
+                AssuredNoArrearsPossessionGrounds grounds = draftCaseData.getNoRentArrearsGroundsOptions();
+                return grounds != null ? grounds.getOtherGroundDescription() : null;
+            }
+        }
+
+        return null;
     }
 
     private String getDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {

@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ActionsTakenTabDetails;
@@ -56,6 +57,7 @@ import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.DEMOTION_OF_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.DEMOTED_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.INTRODUCTORY_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
@@ -155,6 +157,16 @@ public class CaseDetailsTabView {
                     ClaimGroundSummary claimGroundSummary = claimGroundSummaryListValue.getValue();
                     return claimGroundSummary.getCode().equals(IntroductoryDemotedOrOtherGrounds.OTHER.name());
                 })
+                .map(ListValue::getValue)
+                .map(ClaimGroundSummary::getDescription)
+                .findFirst()
+                .orElse("");
+        } else if (tenancyType == ASSURED_TENANCY) {
+            otherGroundsDescription = groundSummaries.stream().filter(
+                    claimGroundSummaryListValue -> {
+                        ClaimGroundSummary claimGroundSummary = claimGroundSummaryListValue.getValue();
+                        return claimGroundSummary.getCode().equals(AssuredAdditionalOtherGround.OTHER.name());
+                    })
                 .map(ListValue::getValue)
                 .map(ClaimGroundSummary::getDescription)
                 .findFirst()
