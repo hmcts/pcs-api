@@ -27,9 +27,6 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,11 +43,6 @@ import static org.mockito.Mockito.times;
 class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
-    private static final LocalDateTime FIXED_DATE_TIME = LocalDateTime.of(2026, 5, 14, 10, 30);
-    private static final Clock FIXED_UTC_CLOCK = Clock.fixed(
-        FIXED_DATE_TIME.atZone(ZoneOffset.UTC).toInstant(),
-        ZoneOffset.UTC
-    );
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -82,8 +74,7 @@ class PcsCaseServiceTest {
             documentService,
             tenancyLicenceService,
             addressMapper,
-            caseLinkService,
-            FIXED_UTC_CLOCK
+            caseLinkService
         );
     }
 
@@ -146,23 +137,8 @@ class PcsCaseServiceTest {
         underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
-        verify(claimService).createMainClaimEntity(caseData, FIXED_DATE_TIME);
+        verify(claimService).createMainClaimEntity(caseData);
         verify(pcsCaseEntity).addClaim(mainClaimEntity);
-    }
-
-    @Test
-    void shouldSetClaimSubmittedDateUsingUtcClockWhenCreatingMainClaim() {
-        // Given
-        stubFindCase();
-        stubClaimCreation();
-
-        PCSCase caseData = PCSCase.builder().build();
-
-        // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
-
-        // Then
-        verify(claimService).createMainClaimEntity(caseData, FIXED_DATE_TIME);
     }
 
     @Test
@@ -272,7 +248,7 @@ class PcsCaseServiceTest {
 
     private ClaimEntity stubClaimCreation() {
         ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimService.createMainClaimEntity(any(PCSCase.class), any(LocalDateTime.class))).thenReturn(claimEntity);
+        when(claimService.createMainClaimEntity(any(PCSCase.class))).thenReturn(claimEntity);
         return claimEntity;
     }
 

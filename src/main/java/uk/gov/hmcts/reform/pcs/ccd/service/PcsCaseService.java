@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -15,13 +15,12 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class PcsCaseService {
 
     private final PcsCaseRepository pcsCaseRepository;
@@ -31,25 +30,6 @@ public class PcsCaseService {
     private final TenancyLicenceService tenancyLicenceService;
     private final AddressMapper addressMapper;
     private final CaseLinkService caseLinkService;
-    private final Clock utcClock;
-
-    public PcsCaseService(PcsCaseRepository pcsCaseRepository,
-                          ClaimService claimService,
-                          PartyService partyService,
-                          DocumentService documentService,
-                          TenancyLicenceService tenancyLicenceService,
-                          AddressMapper addressMapper,
-                          CaseLinkService caseLinkService,
-                          @Qualifier("utcClock") Clock utcClock) {
-        this.pcsCaseRepository = pcsCaseRepository;
-        this.claimService = claimService;
-        this.partyService = partyService;
-        this.documentService = documentService;
-        this.tenancyLicenceService = tenancyLicenceService;
-        this.addressMapper = addressMapper;
-        this.caseLinkService = caseLinkService;
-        this.utcClock = utcClock;
-    }
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -69,7 +49,7 @@ public class PcsCaseService {
     public void createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
-        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, LocalDateTime.now(utcClock));
+        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
         List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
         documentEntities.forEach(doc -> doc.setClaim(claimEntity));
         pcsCaseEntity.addDocuments(documentEntities);

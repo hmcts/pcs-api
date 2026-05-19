@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.ReasonsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
@@ -120,7 +120,7 @@ public class CaseSummaryTabViewTest {
             .isEqualTo("Condition 1 reason");
         assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsForPossession())
             .isEqualTo("Additional reasons");
-        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 May 2026, 6:02:31PM");
+        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 May 2026, 5:02:31PM");
         assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Fallback claimant");
         assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("One");
@@ -147,17 +147,17 @@ public class CaseSummaryTabViewTest {
     }
 
     @Test
-    void shouldDisplaySubmittedDateInGmtWhenNotBritishSummerTime() {
+    void shouldDisplaySubmittedDateInGmtWhenBritishSummerTimeApplies() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
-            .dateSubmitted(LocalDateTime.of(2026, 1, 11, 17, 2, 31))
+            .dateSubmitted(LocalDateTime.of(2026, 7, 11, 17, 2, 31))
             .build();
 
         // When
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
         // Then
-        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
+        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 5:02:31PM");
     }
 
     @Test
