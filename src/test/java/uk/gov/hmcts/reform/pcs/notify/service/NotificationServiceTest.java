@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
@@ -891,10 +892,10 @@ class NotificationServiceTest {
             DefendantResponseEntity response = createDefendantResponse();
             response.getPcsCase().setCaseReference(1234567890123456L);
 
-            Map<String, Object> result =
+            DefendantBasePersonalisation result =
                 NotificationService.buildBasePersonalisation(response);
 
-            assertThat(result)
+            assertThat(result.toMap())
                 .containsEntry("caseNumber", "1234-5678-9012-3456");
         }
     }
