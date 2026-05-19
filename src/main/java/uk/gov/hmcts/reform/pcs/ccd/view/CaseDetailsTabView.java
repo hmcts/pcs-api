@@ -82,7 +82,8 @@ public class CaseDetailsTabView {
         NoticeTabDetails noticeTabDetails = buildNoticeTabDetails(pcsCase);
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
         RentArrearsTabDetails rentArrearsTabDetails = buildRentArrearsTabDetails(pcsCase);
-        ReasonsForPossessionTabDetails reasonsForPossessionTabDetails = buildReasonsForPossession(pcsCase);
+        ReasonsForPossessionTabDetails reasonsForPossessionTabDetails =
+            reasonsForPossessionTabDetailsBuilder.buildDetailsReasonsForPossession(pcsCase);
         ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
         ClaimantInformationTabDetails claimantInformationTabDetails = buildClaimantInformationTabDetails(pcsCase);
         DefendantInformationTabDetails defendantInformationTabDetails =
@@ -293,10 +294,6 @@ public class CaseDetailsTabView {
         }
 
         return rentArrearsTabDetails;
-    }
-
-    private ReasonsForPossessionTabDetails buildReasonsForPossession(PCSCase pcsCase) {
-        return reasonsForPossessionTabDetailsBuilder.buildReasonsForPossessionFromGroundSummaries(pcsCase);
     }
 
     private ApplicationsTabDetails buildApplicationsTabDetails(PCSCase pcsCase) {

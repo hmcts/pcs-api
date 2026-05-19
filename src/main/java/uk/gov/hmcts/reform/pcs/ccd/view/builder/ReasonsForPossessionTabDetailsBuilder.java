@@ -75,7 +75,7 @@ public class ReasonsForPossessionTabDetailsBuilder {
     private static final String SECTION_191 = "191";
     private static final String SECTION_199 = "199";
 
-    public ReasonsForPossessionTabDetails buildReasonsForPossession(PCSCase pcsCase) {
+    public ReasonsForPossessionTabDetails buildSummaryReasonsForPossession(PCSCase pcsCase) {
         AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
         ReasonsForPossessionTabDetails reasonsForPossession =
             buildReasonsForPossessionFromGroundSummaries(pcsCase);
@@ -94,7 +94,29 @@ public class ReasonsForPossessionTabDetailsBuilder {
         return reasonsForPossession;
     }
 
-    public ReasonsForPossessionTabDetails buildReasonsForPossessionFromGroundSummaries(PCSCase pcsCase) {
+    public ReasonsForPossessionTabDetails buildDetailsReasonsForPossession(PCSCase pcsCase) {
+        ReasonsForPossessionTabDetails reasonsForPossession =
+            buildReasonsForPossessionFromGroundSummaries(pcsCase);
+
+        if (reasonsForPossession == null) {
+            return null;
+        }
+
+        AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
+
+        if (additionalReasons != null) {
+            VerticalYesNo hasReasons = additionalReasons.getHasReasons();
+            reasonsForPossession.setHasAdditionalReasons(hasReasons != null ? hasReasons.getLabel() : null);
+
+            if (hasReasons == VerticalYesNo.YES) {
+                reasonsForPossession.setAdditionalReasonsDetails(additionalReasons.getReasons());
+            }
+        }
+
+        return reasonsForPossession;
+    }
+
+    private ReasonsForPossessionTabDetails buildReasonsForPossessionFromGroundSummaries(PCSCase pcsCase) {
         if (CollectionUtils.isEmpty(pcsCase.getClaimGroundSummaries())) {
             return null;
         }

@@ -175,4 +175,10 @@ public class ReasonsForPossessionTabDetails {
         label = "Additional reasons for possession"
     )
     private String additionalReasonsForPossession;
+
+    @CCD(label = "Do you have any additional reasons for possession?")
+    private String hasAdditionalReasons;
+    
+    @CCD(label = "Details of additional reasons")
+    private String additionalReasonsDetails;
 }
