@@ -84,6 +84,7 @@
       "secureOrFlexibleMandatoryGrounds": [],
       "secureOrFlexibleMandatoryGroundsAlt": [],
       "secureOrFlexibleDiscretionaryGroundsAlt": [],
+      "secureAntisocialAdditionalGrounds": [],
       "tenancyByFalseStatementGround": "test",
       "showBreachOfTenancyTextarea": null,
       "showReasonsForGroundsPage": "Yes",
@@ -98,7 +99,6 @@
       "showDemotionOfTenancyHousingActsPage": "No",
       "suspensionToBuyDemotionOfTenancyPages": "No",
       "alternativesToPossession": [],
-      "claimingCostsWanted": "NO",
       "additionalReasonsForPossession": {
         "hasReasons": "NO",
         "reasons": null

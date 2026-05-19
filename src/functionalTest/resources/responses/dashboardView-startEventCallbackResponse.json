@@ -43,13 +43,13 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.ViewClaim",
+                  "templateId": "ViewClaim",
                   "status": "AVAILABLE"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.ViewDocuments",
+                  "templateId": "ViewDocuments",
                   "status": "NOT_AVAILABLE"
                 }
               }
@@ -62,20 +62,65 @@
             "tasks": [
               {
                 "value": {
-                  "templateId": "Defendant.RespondToClaim",
+                  "templateId": "RespondToClaim",
                   "status": "NOT_STARTED"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.ReviewResponse",
+                  "templateId": "ReviewResponse",
                   "status": "IN_PROGRESS"
                 }
               },
               {
                 "value": {
-                  "templateId": "Defendant.SubmitResponse",
+                  "templateId": "SubmitResponse",
                   "status": "COMPLETED"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "HEARING",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "ViewHearingDocuments",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "NOTICE",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "ViewOrdersAndNotices",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "APPLICATIONS",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "MakeGeneralApplication",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ViewAllApplications",
+                  "status": "NOT_AVAILABLE"
                 }
               }
             ]

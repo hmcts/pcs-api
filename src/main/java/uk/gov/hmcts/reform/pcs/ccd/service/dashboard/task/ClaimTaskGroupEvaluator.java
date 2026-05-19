@@ -1,15 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task;
 
-import java.util.List;
-
 import org.springframework.stereotype.Component;
-
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+
+import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_CLAIM;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_DOCUMENTS;
 
 @Component
 public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
@@ -22,17 +24,24 @@ public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
     @Override
     public TaskGroup evaluate(DashboardContext ctx) {
         return TaskGroup.builder()
-            .groupId(TaskGroupId.CLAIM)
+            .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
-                    .templateId("Defendant.ViewClaim")
+                    .templateId(VIEW_CLAIM)
                     .status(TaskStatus.AVAILABLE)
                     .build(),
                 Task.builder()
-                    .templateId("Defendant.ViewDocuments")
-                    .status(TaskStatus.NOT_AVAILABLE)
+                    .templateId(VIEW_DOCUMENTS)
+                    .status(hasDocuments(ctx) ? TaskStatus.AVAILABLE : TaskStatus.NOT_AVAILABLE)
                     .build()
             )))
             .build();
+    }
+
+    private boolean hasDocuments(DashboardContext ctx) {
+        return ctx != null
+            && ctx.caseEntity() != null
+            && ctx.caseEntity().getDocuments() != null
+            && !ctx.caseEntity().getDocuments().isEmpty();
     }
 }
