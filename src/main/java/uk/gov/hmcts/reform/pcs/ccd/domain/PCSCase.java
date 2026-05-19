@@ -170,6 +170,7 @@ public class PCSCase {
         hint = "You do not need to provide the exact amount at this stage, but a judge will request a schedule "
             + "of costs at the hearing"
     )
+    @Deprecated
     private VerticalYesNo claimingCostsWanted;
 
     @CCD(
@@ -268,10 +269,6 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
-
-    @JsonUnwrapped(prefix = "wales")
-    @CCD
-    private WalesHousingAct walesHousingAct;
 
     @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
     private VerticalYesNo prohibitedConductWalesClaim;
@@ -519,6 +516,11 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     @CCD
     private ASBQuestionsDetailsWales asbQuestionsWales;
+
+    @CCD(
+        label = "Are you an exempt landlord under Part 1 of the Housing (Wales) Act 2014?"
+    )
+    private VerticalYesNo isExemptLandlord;
 
     @CCD(
         access = {DefendantAccess.class},
