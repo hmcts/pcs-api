@@ -31,34 +31,4 @@ public class AppliedForHelpWithFees implements CcdPageConfiguration {
             .done();
     }
 
-    /*
-
-    MyHMCTS
-Manage cases
-Sign out
-Case list
-Create case
-Find case
-PROTOTYPE
-This is a new service – your feedback will help us to improve it.
-Make an application
-Confirm if they have they already applied for help with their
-application fee
-Case number: 1234-5678-9101-1121
-15 Garden Drive, Luton, Bedfordshire, LU1 1AB
-Warrant number: 123456789
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut et massa mi. Aliquam in hendrerit urna.
-Have they already applied for help with their application fee?
-Label
-This will affect the fee you will invoice to the defendant. They will not need to pay a fee if their court hearing is (at least) 14 days away.
-Yes
-No
-Previous
-Continue
-Cancel
-All content is available under the Open Government Licence v3.0, except where otherwise stated
-© Crown copyright
-
-     */
-
 }
