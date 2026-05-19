@@ -61,11 +61,6 @@ public class CaseDetailsTab {
     private RentArrearsTabDetails rentArrearsDetails;
 
     @CCD(
-        label = "Costs"
-    )
-    private CostsTabDetails costsDetails;
-
-    @CCD(
         label = "Reasons for possession"
     )
     private ReasonsForPossessionTabDetails reasonsForPossessionDetails;

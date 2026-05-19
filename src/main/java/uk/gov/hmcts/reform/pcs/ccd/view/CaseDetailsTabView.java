@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ApplicationsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantContactTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CostsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DefendantCircumstanceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DemotionOfTenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
@@ -83,7 +82,6 @@ public class CaseDetailsTabView {
         NoticeTabDetails noticeTabDetails = buildNoticeTabDetails(pcsCase);
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
         RentArrearsTabDetails rentArrearsTabDetails = buildRentArrearsTabDetails(pcsCase);
-        CostsTabDetails costsTabDetails = buildCostsTabDetails(pcsCase);
         ReasonsForPossessionTabDetails reasonsForPossessionTabDetails = buildReasonsForPossession(pcsCase);
         ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
         ClaimantInformationTabDetails claimantInformationTabDetails = buildClaimantInformationTabDetails(pcsCase);
@@ -103,7 +101,6 @@ public class CaseDetailsTabView {
             .noticeDetails(noticeTabDetails)
             .actionsTakenDetails(actionsTakenTabDetails)
             .rentArrearsDetails(rentArrearsTabDetails)
-            .costsDetails(costsTabDetails)
             .reasonsForPossessionDetails(reasonsForPossessionTabDetails)
             .applicationsDetails(applicationsTabDetails)
             .claimantInformation(claimantInformationTabDetails)
@@ -237,7 +234,7 @@ public class CaseDetailsTabView {
                     }
                     case PERSONALLY_HANDED -> {
                         LocalDateTime dateTime = noticeServedDetails.getNoticeHandedOverDateTime();
-                        String name = noticeTabDetails.getNoticePersonName();
+                        String name = noticeServedDetails.getNoticePersonName();
                         noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(PATTERN) : NO_ANSWER);
                         noticeTabDetails.setNoticePersonName(name != null ? name : NO_ANSWER);
                     }
@@ -296,13 +293,6 @@ public class CaseDetailsTabView {
         }
 
         return rentArrearsTabDetails;
-    }
-
-    private CostsTabDetails buildCostsTabDetails(PCSCase pcsCase) {
-        VerticalYesNo claimingCostsWanted = pcsCase.getClaimingCostsWanted();
-        return CostsTabDetails.builder()
-            .askingForCosts(claimingCostsWanted != null ? claimingCostsWanted.getLabel() : NO_ANSWER)
-            .build();
     }
 
     private ReasonsForPossessionTabDetails buildReasonsForPossession(PCSCase pcsCase) {
