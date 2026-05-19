@@ -457,7 +457,10 @@ public class CaseDetailsTabView {
 
     private SuspensionOfRightToBuyTabDetails buildSuspensionOfRightToBuyTabDetails(PCSCase pcsCase) {
         Set<AlternativesToPossession> alternativesToPossessionSet = pcsCase.getAlternativesToPossession();
-        if (!alternativesToPossessionSet.contains(SUSPENSION_OF_RIGHT_TO_BUY)) {
+        if (
+            CollectionUtils.isEmpty(alternativesToPossessionSet) ||
+            !alternativesToPossessionSet.contains(SUSPENSION_OF_RIGHT_TO_BUY)
+        ) {
             return null;
         }
 
