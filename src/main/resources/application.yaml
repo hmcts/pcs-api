@@ -110,6 +110,10 @@ hmc:
   api-url: ${HMC_API_URL:http://localhost:8084}
   serviceId: ${HMC_SERVICE_ID:AAA3}
 
+ccd:
+  data-store:
+    api-url: ${CCD_DATA_STORE_API_URL:http://localhost:4452}
+
 location-reference:
   api-url: ${LOCATION_REF_URL:http://localhost:8089}
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}

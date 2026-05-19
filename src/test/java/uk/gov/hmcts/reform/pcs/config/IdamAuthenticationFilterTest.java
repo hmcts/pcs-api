@@ -28,7 +28,7 @@ class IdamAuthenticationFilterTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/ccd", "/ccd/cases"})
+    @ValueSource(strings = {"/ccd", "/ccd/cases", "/noc", "/noc/noc-questions"})
     void shouldFilterForSpecificRequestPaths(String requestURI) {
         when(request.getRequestURI()).thenReturn(requestURI);
 

@@ -12,4 +12,7 @@ public interface PcsCaseRepository extends JpaRepository<PcsCaseEntity, UUID> {
     @EntityGraph(attributePaths = {"parties"})
     Optional<PcsCaseEntity> findByCaseReference(long caseReference);
 
+    @EntityGraph(attributePaths = {"parties", "parties.claimParties"})
+    Optional<PcsCaseEntity> findWithPartiesAndClaimPartiesByCaseReference(long caseReference);
+
 }

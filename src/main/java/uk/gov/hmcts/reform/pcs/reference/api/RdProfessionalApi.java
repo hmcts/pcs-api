@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationUsersResponse;
 
 @FeignClient(name = "rd-professional", url = "${rd-professional.api-url}")
 public interface RdProfessionalApi {
@@ -12,6 +13,13 @@ public interface RdProfessionalApi {
     @GetMapping("/refdata/internal/v1/organisations/orgDetails/{userId}")
     OrganisationDetailsResponse getOrganisationDetails(
         @PathVariable("userId") String userId,
+        @RequestHeader("ServiceAuthorization") String s2sToken,
+        @RequestHeader("Authorization") String prdAdminToken
+    );
+
+    @GetMapping("/refdata/internal/v1/organisations/{orgId}/users?returnRoles=false")
+    OrganisationUsersResponse getOrganisationUsers(
+        @PathVariable("orgId") String orgId,
         @RequestHeader("ServiceAuthorization") String s2sToken,
         @RequestHeader("Authorization") String prdAdminToken
     );

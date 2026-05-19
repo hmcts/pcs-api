@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.idam.PrdAdminTokenService;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationUsersResponse;
 
 @Service
 @Slf4j
@@ -75,5 +76,22 @@ public class OrganisationDetailsService {
     public String getOrganisationIdentifier(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
         return details.getOrganisationIdentifier();
+    }
+
+    public OrganisationUsersResponse getOrganisationUsers(String organisationId) {
+        try {
+            String s2sToken = authTokenGenerator.generate();
+            String prdAdminToken = prdAdminTokenService.getPrdAdminToken();
+
+            return rdProfessionalApi.getOrganisationUsers(organisationId, s2sToken, prdAdminToken);
+        } catch (FeignException ex) {
+            log.error("Feign error retrieving users for organisation: {}. Status: {}, Message: {}",
+                organisationId, ex.status(), ex.getMessage(), ex);
+            throw new OrganisationDetailsException("Failed to retrieve organisation users", ex);
+        } catch (Exception ex) {
+            log.error("Unexpected error retrieving users for organisation: {}. Error: {}",
+                organisationId, ex.getMessage(), ex);
+            throw new OrganisationDetailsException("Unexpected error retrieving organisation users", ex);
+        }
     }
 }
