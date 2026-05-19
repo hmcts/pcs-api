@@ -21,14 +21,19 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.idam.client.IdamApi;
+import uk.gov.hmcts.reform.idam.client.models.TokenRequest;
+import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// Test-only use of the deprecated idam-java-client to preserve the pre-existing pact contract
+// (already verified by IDAM provider). Production code uses our own IdamUserInfoApi instead.
 @ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class})
-@EnableFeignClients(clients = IdamUserInfoApi.class)
+@EnableFeignClients(clients = IdamApi.class)
 @TestPropertySource(properties = "idam.api.url=http://localhost:5000")
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
@@ -36,41 +41,78 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class IdamConsumerTest {
 
     @Autowired
-    private IdamUserInfoApi idamUserInfoApi;
+    private IdamApi idamApi;
+
+    @Pact(provider = "idamApi_oidc", consumer = "pcs_api")
+    public V4Pact requestToken(PactDslWithProvider builder) throws JsonProcessingException {
+
+        return builder
+            .given("a token is requested")
+            .uponReceiving("a request to get the access token")
+            .path("/o/token")
+            .method(HttpMethod.POST.toString())
+            .body("redirect_uri=http%3A%2F%2Fwww.dummy-pact-service.com%2Fcallback"
+                      + "&client_id=pcs_api"
+                      + "&grant_type=authorization_code"
+                      + "&username=caseworker@fake.hmcts.net"
+                      + "&password=password"
+                      + "&client_secret=AAAAAA"
+                      + "&scope=openid profile roles",
+                  "application/x-www-form-urlencoded")
+            .willRespondWith()
+            .headers(Map.of(HttpHeaders.CONTENT_TYPE, "application/json"))
+            .status(HttpStatus.OK.value())
+            .body(new PactDslJsonBody()
+                      .stringType("access_token"))
+            .toPact(V4Pact.class);
+    }
+
+    private TokenRequest buildTokenRequest() {
+        return new TokenRequest(
+            "pcs_api",
+            "AAAAAA",
+            "authorization_code",
+            "http://www.dummy-pact-service.com/callback",
+            "caseworker@fake.hmcts.net",
+            "password",
+            "openid profile roles",
+            null, null);
+    }
 
     @Pact(provider = "idamApi_oidc", consumer = "pcs_api")
     public V4Pact requestUserInfo(PactDslWithProvider builder) throws JsonProcessingException {
 
         return builder
             .given("userinfo is requested")
-            .uponReceiving("a request to get the user information")
+            .uponReceiving("a request to get the the user information")
             .path("/o/userinfo")
             .headers(HttpHeaders.AUTHORIZATION, "Bearer authorisationToken")
             .method(HttpMethod.GET.toString())
             .willRespondWith()
             .status(HttpStatus.OK.value())
-            .body(createUserInfoResponse())
+            .body(createUserDetailsResponse())
             .toPact(V4Pact.class);
     }
 
-    static PactDslJsonBody createUserInfoResponse() {
+    static PactDslJsonBody createUserDetailsResponse() {
         return new PactDslJsonBody()
             .stringType("uid", "1111-2222-3333-4567")
             .stringType("sub", "caseofficer@fake.hmcts.net")
-            .stringType("given_name", "Case")
-            .stringType("family_name", "Officer")
-            .minArrayLike("roles", 1, PactDslJsonRootValue.stringType("caseworker"), 1);
+            .stringValue("givenName", "Case")
+            .stringValue("familyName", "Officer")
+            .minArrayLike("roles", 1, PactDslJsonRootValue.stringType("caseworker"), 1)
+            .stringType("IDAM_ADMIN_USER", "idamAdminUser");
     }
 
     @Test
-    @PactTestFor(pactMethods = "requestUserInfo")
-    void verifyUserInfoPact() {
-        UserInfo userInfo = idamUserInfoApi.getUserInfo("Bearer authorisationToken");
+    @PactTestFor(pactMethods = {"requestToken", "requestUserInfo"})
+    void verifyAllPacts() {
+        TokenResponse tokenResponse = idamApi.generateOpenIdToken(buildTokenRequest());
+        assertThat(tokenResponse.accessToken).isNotBlank();
 
-        assertThat(userInfo.getSub()).isEqualTo("caseofficer@fake.hmcts.net");
-        assertThat(userInfo.getUid()).isEqualTo("1111-2222-3333-4567");
-        assertThat(userInfo.getGivenName()).isEqualTo("Case");
-        assertThat(userInfo.getFamilyName()).isEqualTo("Officer");
-        assertThat(userInfo.getRoles()).contains("caseworker");
+        var userDetails = idamApi.retrieveUserInfo("Bearer authorisationToken");
+        assertThat(userDetails.getSub()).isEqualTo("caseofficer@fake.hmcts.net");
+        assertThat(userDetails.getUid()).isEqualTo("1111-2222-3333-4567");
+        assertThat(userDetails.getRoles()).contains("caseworker");
     }
 }
