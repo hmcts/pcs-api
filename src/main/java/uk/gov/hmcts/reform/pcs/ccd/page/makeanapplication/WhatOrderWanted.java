@@ -24,7 +24,7 @@ public class WhatOrderWanted implements CcdPageConfiguration {
         </ul>
         """;
     private static final String ADJOURN_EXAMPLES = """
-        <p class="govuk-body">For example, tell the court:</p>
+        <p class="govuk-body govuk-!-margin-bottom-1">For example, tell the court:</p>
 
         <ul class="govuk-list govuk-list--bullet">
         <li class="govuk-!-font-size-19">the defendant is unable to attend the hearing due a pre-existing
