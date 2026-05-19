@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
+import feign.FeignException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -119,12 +120,17 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(new Error("Invalid data"));
     }
 
-    // IDAM throttles by returning HTTP 429 with no Retry-After (per RateLimitService in idam-api).
-    // Spring's OAuth2 password client may surface this two ways depending on version + body:
-    //   1. RestClientResponseException(429) somewhere in the cause chain
+    // Decide whether the IdamException came from IDAM being unreachable / throttling us, in
+    // which case the caller should back off rather than treat it as a pcs-api bug.
+    //
+    // IDAM throttles by returning HTTP 429 with no Retry-After of its own. Depending on which
+    // HTTP client we used to make the call, the failure shows up in one of three shapes:
+    //   1. RestClientResponseException(429) — Spring's OAuth2 password client (token fetch).
     //   2. OAuth2AuthorizationException with errorCode "invalid_token_response" (Spring couldn't
     //      parse the 429 body as a TokenResponse) or "temporarily_unavailable" (RFC 6749).
-    // Match either shape so the throttle response is always surfaced as 503 + Retry-After.
+    //   3. FeignException with status 429, any 5xx, or no response (timeout/network) — comes
+    //      from our IdamUserInfoApi Feign call to /o/userinfo.
+    // Any of these means "IDAM is the problem", so surface as 503 + Retry-After.
     private static final Set<String> THROTTLE_ERROR_CODES = Set.of(
         "invalid_token_response", "temporarily_unavailable");
 
@@ -140,9 +146,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 && THROTTLE_ERROR_CODES.contains(oauthEx.getError().getErrorCode())) {
                 return true;
             }
+            if (cause instanceof FeignException feignEx && isFeignUpstreamFailure(feignEx)) {
+                return true;
+            }
             cause = cause.getCause();
         }
         return false;
+    }
+
+    private static boolean isFeignUpstreamFailure(FeignException ex) {
+        int status = ex.status();
+        // status < 0 means no response was received (timeout, connection refused, etc.)
+        return status < 0 || status == HttpStatus.TOO_MANY_REQUESTS.value() || status >= 500;
     }
 
     public record Error(String message) {}

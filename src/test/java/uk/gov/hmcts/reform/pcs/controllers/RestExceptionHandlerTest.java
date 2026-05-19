@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
@@ -440,6 +441,59 @@ class RestExceptionHandlerTest {
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isNull();
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("Authentication service error");
+    }
+
+    @Test
+    void shouldMapIdamExceptionWithFeign5xxCauseToServiceUnavailable() {
+        // IdamAuthenticator wraps non-401 FeignExceptions from /o/userinfo in IdamException.
+        // A 5xx from IDAM means upstream is unhealthy — surface as 503 + Retry-After.
+        FeignException feignEx = mock(FeignException.class);
+        when(feignEx.status()).thenReturn(500);
+        IdamException ex = new IdamException("Unable to validate authorization token", feignEx);
+
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
+    }
+
+    @Test
+    void shouldMapIdamExceptionWithFeignTimeoutCauseToServiceUnavailable() {
+        // FeignException with no response (status < 0) — connect timeout, read timeout, network.
+        FeignException feignEx = mock(FeignException.class);
+        when(feignEx.status()).thenReturn(-1);
+        IdamException ex = new IdamException("Unable to validate authorization token", feignEx);
+
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
+    }
+
+    @Test
+    void shouldMapIdamExceptionWithFeign429CauseToServiceUnavailable() {
+        FeignException feignEx = mock(FeignException.class);
+        when(feignEx.status()).thenReturn(429);
+        IdamException ex = new IdamException("Unable to validate authorization token", feignEx);
+
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
+    }
+
+    @Test
+    void shouldMapIdamExceptionWithFeign4xxCauseToInternalServerError() {
+        // A non-throttle 4xx (e.g. 400 Bad Request) is a real problem with our request, not an
+        // IDAM availability issue — should NOT be surfaced as a transient 503.
+        FeignException feignEx = mock(FeignException.class);
+        when(feignEx.status()).thenReturn(400);
+        IdamException ex = new IdamException("Unable to validate authorization token", feignEx);
+
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isNull();
     }
 
     @Test

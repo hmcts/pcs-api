@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -76,6 +77,19 @@ class IdamAuthenticatorTest {
             .isInstanceOf(InvalidAuthTokenException.class)
             .hasMessage("The Authorization token provided is expired or invalid")
             .hasCause(unauthorizedException);
+    }
+
+    @Test
+    @DisplayName("Should wrap non-401 FeignException in IdamException (transient upstream failure)")
+    void shouldWrapNon401FeignExceptionInIdamException() {
+        String token = BEARER_PREFIX + "valid-token";
+        FeignException feignEx = mock(FeignException.class);
+        when(idamUserInfoApi.getUserInfo(token)).thenThrow(feignEx);
+
+        assertThatThrownBy(() -> underTest.validateAuthToken(token))
+            .isInstanceOf(IdamException.class)
+            .hasMessage("Unable to validate authorization token")
+            .hasCause(feignEx);
     }
 
     @Test
