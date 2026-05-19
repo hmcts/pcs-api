@@ -329,15 +329,15 @@ class NotificationServiceTest {
     }
 
     @Test
-    @DisplayName("Should set submittedAt when status is SENDING")
-    void shouldSetSubmittedAtWhenStatusIsSending() {
+    @DisplayName("Should set submittedAt when status is SUBMITTED")
+    void shouldSetSubmittedAtWhenStatusIsSubmitted() {
         CaseNotification notification = createCaseNotification();
         notification.setSubmittedAt(null);
 
         when(notificationRepository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(any(CaseNotification.class))).thenReturn(notification);
 
-        notificationService.updateNotificationStatus(NOTIFICATION_ID, "SENDING");
+        notificationService.updateNotificationStatus(NOTIFICATION_ID, "SUBMITTED");
 
         verify(notificationRepository).findById(NOTIFICATION_ID);
 
