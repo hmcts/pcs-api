@@ -32,7 +32,6 @@ import {
   moneyJudgment,
   defendantCircumstances,
   claimantCircumstances,
-  claimingCosts,
   alternativesToPossession,
   provideMoreDetailsOfClaim,
   checkingNotice,
@@ -102,7 +101,6 @@ export class CreateCaseAction implements IAction {
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName as actionRecord)],
       ['selectApplications', () => this.selectApplications(fieldName)],
-      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', () => this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
@@ -624,6 +622,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', moneyJudgment.continueButton);
   }
 
+<<<<<<< HEAD
   private async selectClaimingCosts(option: actionData) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
@@ -631,6 +630,8 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', claimingCosts.continueButton);
   }
 
+=======
+>>>>>>> origin/master
   private async selectAlternativesToPossession(alternatives: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
