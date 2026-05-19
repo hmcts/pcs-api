@@ -16,6 +16,7 @@ import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-action
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
+import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -67,7 +68,6 @@ export class ActionRegistry {
     ['selectClaimantCircumstances', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()],
     ['selectMoneyJudgment', new CreateCaseAction()],
-    ['selectClaimingCosts', new CreateCaseAction()],
     ['selectLanguageUsed', new CreateCaseAction()],
     ['selectDefendantCircumstances', new CreateCaseAction()],
     ['selectApplications', new CreateCaseAction()],
@@ -95,8 +95,14 @@ export class ActionRegistry {
     ['selectAsb', new CreateCaseWalesAction()],
     ['payClaimFee', new CreateCaseAction()],
     ['claimSaved', new CreateCaseAction()],
+    ['validateDefendantDetails', new CreateCaseAction()],
+    ['validateClaimantDetails', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
+    ['enterPaymentDetails', new FeeAndPayAction()],
+    ['selectCasesToLink', new CaseLinking()],
+    ['selectCasesToUnLink', new CaseLinking()],
+    ['verifyLinkedCases', new CaseLinking()],
     ['enterPaymentDetails', new FeeAndPayAction()]
   ]);
 
