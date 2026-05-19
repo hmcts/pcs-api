@@ -26,8 +26,8 @@ import static com.github.kagkarlsson.scheduler.boot.config.DbSchedulerConfigurat
 @Getter
 public class SchedulingConfig {
 
-    @Value("${db-scheduler.polling-interval-seconds:10}")
-    private int scheduleFeeCaseIssuedInSeconds = 10;
+    @Value("${db-scheduler.start-interval-seconds:5}")
+    private int scheduleFeeCaseIssuedInSeconds = 5;
 
     /**
      * SchedulerClient bean is always on and this is  used to schedule jobs, but does NOT execute them.
