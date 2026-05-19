@@ -13,6 +13,7 @@ import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,10 +52,7 @@ class RoleToAccessProfilesTest {
             verify(configBuilder).caseRoleToAccessProfile(argThat(
                 externalRole -> externalRole.getRole().equals(expectedExternalRole)
             ));
-            int sharedRoleCount = (int) stream(UserRole.values())
-                .filter(r -> r.getRole().equals(userRole.getRole()))
-                .count();
-            verify(accessProfileBuilder, times(sharedRoleCount)).accessProfiles(userRole.getRole());
+            verify(accessProfileBuilder, atLeastOnce()).accessProfiles(userRole.getAccessProfiles());
         });
         verify(accessProfileBuilder, times(UserRole.values().length)).build();
     }

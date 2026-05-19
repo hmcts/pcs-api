@@ -16,11 +16,7 @@ public final class ExternalUserRole implements HasRole {
 
     @Override
     public String getRole() {
-        String name = ccdUserRole.getExternalRoleName() != null
-            ? ccdUserRole.getExternalRoleName()
-            : ccdUserRole.getRole();
-        String rolePrefix = (ccdUserRole.getRoleType() == RoleType.IDAM) ? "idam:" : "";
-        return rolePrefix + name;
+        return ccdUserRole.getRoleType().prefix() + ccdUserRole.getRole();
     }
 
     @Override
