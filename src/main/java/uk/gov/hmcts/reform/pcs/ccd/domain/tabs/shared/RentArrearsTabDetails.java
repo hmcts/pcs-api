@@ -16,43 +16,27 @@ import java.util.List;
 @AllArgsConstructor
 public class RentArrearsTabDetails {
 
-    @CCD(
-        label = "Rent amount"
-    )
+    @CCD(label = "Rent amount")
     private String rentAmount;
 
-    @CCD(
-        label = "How rent is calculated"
-    )
+    @CCD(label = "How rent is calculated")
     private String calculationFrequency;
 
-    @CCD(
-        label = "Frequency"
-    )
+    @CCD(label = "Frequency")
     private String frequency;
 
-    @CCD(
-        label = "Daily rate"
-    )
+    @CCD(label = "Daily rate")
     private String dailyRate;
 
-    @CCD(
-        label = "Previous steps taken to recover rent arrears?"
-    )
+    @CCD(label = "Previous steps taken to recover rent arrears?")
     private String stepsToRecoverArrears;
 
-    @CCD(
-        label = "Rent statement"
-    )
+    @CCD(label = "Rent statement")
     private List<ListValue<Document>> rentStatement;
 
-    @CCD(
-        label = "Rent arrears total at the time of claim issue"
-    )
+    @CCD(label = "Rent arrears total at the time of claim issue")
     private String arrearsTotal;
 
-    @CCD(
-        label = "Judgment requested for the outstanding arrears?"
-    )
+    @CCD(label = "Judgment requested for the outstanding arrears?")
     private String judgmentRequested;
 }

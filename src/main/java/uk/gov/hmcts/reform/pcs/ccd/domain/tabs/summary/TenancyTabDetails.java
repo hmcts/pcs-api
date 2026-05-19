@@ -12,13 +12,9 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class TenancyTabDetails {
 
-    @CCD(
-        label = "Tenancy, occupation contract or licence agreement type"
-    )
+    @CCD(label = "Tenancy, occupation contract or licence agreement type")
     private String agreementType;
 
-    @CCD(
-        label = "Tenancy, occupation contract or licence agreement start date"
-    )
+    @CCD(label = "Tenancy, occupation contract or licence agreement start date")
     private String agreementStartDate;
 }

@@ -13,28 +13,18 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @AllArgsConstructor
 public class AdditionalDefendantInformationTabDetails {
 
-    @CCD(
-        label = "Additional defendant's name known?"
-    )
+    @CCD(label = "Additional defendant's name known?")
     private String nameKnown;
 
-    @CCD(
-        label = "First name"
-    )
+    @CCD(label = "First name")
     private String firstName;
 
-    @CCD(
-        label = "Last name"
-    )
+    @CCD(label = "Last name")
     private String lastName;
 
-    @CCD(
-        label = "Additional defendant's correspondence address known"
-    )
+    @CCD(label = "Additional defendant's correspondence address known")
     private String addressKnown;
 
-    @CCD(
-        label = "Additional defendant address for service"
-    )
+    @CCD(label = "Additional defendant address for service")
     private AddressUK addressForService;
 }

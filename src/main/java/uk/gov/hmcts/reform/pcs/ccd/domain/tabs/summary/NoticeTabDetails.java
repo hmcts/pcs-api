@@ -12,8 +12,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class NoticeTabDetails {
 
-    @CCD(
-        label = "Date notice was served"
-    )
+    @CCD(label = "Date notice was served")
     private String noticeServedDate;
 }
