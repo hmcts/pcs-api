@@ -28,5 +28,5 @@ public class LegalRepDocumentUpload {
         label = "Add document",
         hint = "Upload a document to the system"
     )
-    private List<ListValue<LegalRepDocument>> additionalDocuments;
+    private List<ListValue<LegalRepDocument>> legalRepDocuments;
 }

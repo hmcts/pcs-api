@@ -14,14 +14,24 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
                     </p>
 
                     <p class="govuk-body">
-                        Before you upload the document, give it a name that tells the court what it is, for example
-                        ‘witness statement’, or ‘tenancy agreement’.
+                        Before you upload the document, give it a name that tells the court what it is,
+                        for example, ‘witness statement’, or ‘tenancy agreement’.
                     </p>
 
                     <p class="govuk-body">
-                       You can upload the following file types: DOC/DOCX (Word), XLS/XLSM (Excel), PPT/PPTX (PowerPoint)
-                       , PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP, TIF/TIFF.
+                       You can upload the following file types: DOC/DOCX (Word), XLS/XLSM
+                       (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP,
+                       TIF/TIFF.
                     </p>
+
+                    <p class="govuk-body govuk-!-font-weight-bold">
+                        Before you upload your documents
+                    </p>
+
+                    <p class="govuk-body">
+                        Give your document a name that explains what it is. \s
+                    </p>
+
                     """;
 
     @Override
@@ -33,7 +43,7 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", DOCUMENT_DETAILS_CONTENT)
             .complex(PCSCase::getLegalRepDocumentUpload)
-            .mandatory(LegalRepDocumentUpload::getAdditionalDocuments)
+            .mandatory(LegalRepDocumentUpload::getLegalRepDocuments)
             .done()
             .build();
     }
