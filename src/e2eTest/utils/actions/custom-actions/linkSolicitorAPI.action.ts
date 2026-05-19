@@ -5,7 +5,6 @@ import Axios from 'axios';
 import { IAction } from '../../interfaces';
 import { linkSolicitorTokenApiData } from '@data/api-data/linkSolicitorEventToken.api.data';
 import { user } from '@data/user-data';
-import { linkSolicitorApiData } from '@data/api-data/linkSolicitor.api.data';
 
 export let pins: string[] = [];
 export let firstName: string = '';
@@ -26,24 +25,32 @@ export class LinkSolicitorAPIAction implements IAction {
   }
 
   private async linkSolicitorAPI(): Promise<void> {
-    console.log(`${process.env.MANAGE_CASE_BASE_URL}/testing-support/link-defendant-solicitor-to-party/${process.env.CASE_NUMBER}/${process.env.Defendant_ID}`)
     await this.generateSolicitorAccessToken();
-    console.log('token1:' + process.env.SOLICITOR_ACCESS_TOKEN)
     const linkSolicitorApi = Axios.create(linkSolicitorTokenApiData.linkSolicitorTokenApiInstance());
-    const LINK_EVENT_TOKEN = (await linkSolicitorApi.get(linkSolicitorTokenApiData.linkSolicitorTokenApiEndPoint())).data.token;
-    //console.log('data is :'+JSON.stringify(LINK_EVENT_TOKEN));
+    try {
+      await linkSolicitorApi.post(linkSolicitorTokenApiData.linkSolicitorApiEndPoint());
+      console.log(`\n✅ LINK SOLICITOR TO DEFENDANT:`);
+      console.log(`   Successfully Linked case Solicitor: ${user.defendantSolicitor.email} with Defendant with id ${process.env.Defendant_ID}}`);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      if (status === 404) {
+        throw new Error(`End point not found \n ${error}`);
+      }
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
 
-
-    console.log('token2:' + LINK_EVENT_TOKEN)
-    // process.env.SOLICITOR_ACCESS_TOKEN = (await linkSolicitorApi.get(linkSolicitorTokenApiData.linkSolicitorApiEndPoint())).data.token;;
-
-    const response = await linkSolicitorApi.post(linkSolicitorApiData.linkSolicitorApiEndPoint(), {
-      event: { id: linkSolicitorApiData.makeAnApplicationEventName },
-      event_token: LINK_EVENT_TOKEN,
-
-    });
-    console.log(response.status);
-
+      if (!status) {
+        throw new Error('Linking Solicitor to Defendant failed: no response from server.');
+      }
+      throw new Error(`Linking Solicitor to Defendant failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
 
   }
 
@@ -51,7 +58,7 @@ export class LinkSolicitorAPIAction implements IAction {
     const { IdamUtils } = await import('@hmcts/playwright-common');
     process.env.SOLICITOR_ACCESS_TOKEN = await new IdamUtils().generateIdamToken({
       username: user.defendantSolicitor.email,
-      password: process.env.IDAM_PCS_USER_PASSWORD,
+      password: user.defendantSolicitor.password,
       grantType: 'password',
       clientId: 'pcs-api',
       clientSecret: process.env.PCS_API_IDAM_SECRET as string,

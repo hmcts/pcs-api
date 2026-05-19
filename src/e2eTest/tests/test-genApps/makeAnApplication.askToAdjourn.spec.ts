@@ -9,10 +9,14 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
 import { user } from '@data/user-data';
+import { dismissCookieBanner } from '@config/cookie-banner';
+import { caseInfo } from '@utils/actions/custom-actions';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
-const home_url = process.env.TEST_URL;
+test.use({ storageState: undefined });
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page, context }) => {
+  await context.clearCookies();
   initializeExecutor(page);
   initializeGenAppsExecutor(page);
   FieldsStore.clear();
@@ -20,24 +24,40 @@ test.beforeEach(async ({ page }) => {
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('getCaseAPI');
   await performAction('linkSolicitorAPI');
-   await performAction('reloginAndFindTheCase', user.defendantSolicitor);
-   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-    // Login and cookie consent are handled globally via storageState in global-setup.config.ts
-    await expect(async () => {
-      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
-    }).toPass({
-      timeout: VERY_LONG_TIMEOUT,
-    });
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  // await page.evaluate(() => {
+  //   try {
+  //     localStorage.clear();
+  //     sessionStorage.clear();
+  //   } catch (e) {
+  //     // Ignore if storage is not accessible
+  //   }
+  // });
+
+  await dismissCookieBanner(page, 'additional');
+  await performAction('login', user.defendantSolicitor);
+  await dismissCookieBanner(page, 'analytics');
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+  await expect(async () => {
+    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+  }).toPass({
+    timeout: VERY_LONG_TIMEOUT,
+  });
 });
 
 test.afterEach(async () => {
+  if (caseInfo.id) {
+    await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
+  }
+  PageContentValidation.finaliseTest();
 
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
   test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @smoke', async () => {
     console.log('testing');
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
+    await performAction('clickButton', caseSummary.go);
   });
-    
+
 });

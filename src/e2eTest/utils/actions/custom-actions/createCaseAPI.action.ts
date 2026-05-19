@@ -169,22 +169,29 @@ export class CreateCaseAPIAction implements IAction {
 
   private async getCaseAPI(): Promise<void> {
     const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
-    
-      process.env.CREATE_EVENT_TOKEN = (await getCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
 
+    process.env.CREATE_EVENT_TOKEN = (await getCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
+    try {
       const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
       process.env.Defendant_ID = await createResponse.data.data.allDefendants[0].id;
-      // console.log(createResponse.data.casePartiesTab_DefendantOneDetails.length);
-      // process.env.CASE_NUMBER = createResponse.data.id;
-      // caseInfo.id = createResponse.data.id;
-      // caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
-      // caseInfo.state = createResponse.data.state;
-   
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
 
-      // if (!status) {
-      //   throw new Error(`Case creation failed: no response from server`);
-      // }
-      //throw new Error(`Case creation failed with status ${status}.Response received is ${responseBody?.message}}`);
-    //}
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Defendant id not retrieved: no response from server.');
+      }
+      throw new Error(`Retrieving defendant id  failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+
   }
 }
