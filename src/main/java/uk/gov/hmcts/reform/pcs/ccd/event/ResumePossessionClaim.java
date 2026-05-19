@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -30,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.config.SchedulingConfig;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -66,11 +66,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final AddressFormatter addressFormatter;
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
-
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
-
-    @Value("${scheduleFeeCaseIssuedInSeconds:10}")
-    private int scheduleFeeCaseIssuedInSeconds = 10;
+    private final SchedulingConfig schedulingConfig;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -223,10 +220,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulerClient.scheduleIfNotExists(
             FEE_CASE_ISSUED_TASK_DESCRIPTOR
-
                 .instance(UUID.randomUUID().toString())
                 .data(taskData)
-                .scheduledTo(Instant.now().plusSeconds(scheduleFeeCaseIssuedInSeconds))
+                .scheduledTo(Instant.now().plusSeconds(schedulingConfig.getScheduleFeeCaseIssuedInSeconds()))
         );
 
         return feeDetails;

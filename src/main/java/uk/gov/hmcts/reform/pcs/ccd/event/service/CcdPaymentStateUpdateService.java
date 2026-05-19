@@ -22,20 +22,22 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.payment;
 public class CcdPaymentStateUpdateService {
 
     private final IdamService idamService;
-    private final AuthTokenGenerator s2sAuthTokenGenerator;
+    private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi coreCaseDataApi;
     private final ObjectMapper objectMapper;
 
     public CaseResource submitPaymentSuccess(String caseId) {
-        String s2sToken = s2sAuthTokenGenerator.generate();
+        String serviceAuthorization = authTokenGenerator.generate();
         String idamToken = idamService.getSystemUserAuthorisation();
+
         log.debug("Submitting payment event for case: {}", caseId);
-        StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, s2sToken, caseId, payment.name());
+        StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, serviceAuthorization,
+                                                                           caseId, payment.name());
         log.debug("StartEventResponse: {}", startEventResponse);
         CaseDataContent submitContent = CaseDataContent.builder().event(Event.builder().id(payment.name()).build())
             .eventToken(startEventResponse.getToken()).data(toJsonNode(PCSCase.builder().build())).build();
         log.debug("submitContent: {}", submitContent);
-        CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, s2sToken, caseId, submitContent);
+        CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization, caseId, submitContent);
         log.debug("CaseResouce response : {}", caseResource);
         return caseResource;
     }
