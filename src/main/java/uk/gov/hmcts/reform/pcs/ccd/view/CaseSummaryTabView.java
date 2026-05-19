@@ -47,7 +47,7 @@ public class CaseSummaryTabView {
 
     public SummaryTab buildSummaryTab(PCSCase pcsCase) {
         ReasonsForPossessionTabDetails reasonsForPossession =
-            reasonsForPossessionTabDetailsBuilder.buildReasonsForPossessionFromGroundSummaries(pcsCase);
+            reasonsForPossessionTabDetailsBuilder.buildReasonsForPossession(pcsCase);
         String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
 
         return SummaryTab.builder()

@@ -4,7 +4,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 
@@ -72,6 +74,25 @@ public class ReasonsForPossessionTabDetailsBuilder {
     private static final String SECTION_187 = "187";
     private static final String SECTION_191 = "191";
     private static final String SECTION_199 = "199";
+
+    public ReasonsForPossessionTabDetails buildReasonsForPossession(PCSCase pcsCase) {
+        AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
+        ReasonsForPossessionTabDetails reasonsForPossession =
+            buildReasonsForPossessionFromGroundSummaries(pcsCase);
+        String additionalReasonsText = additionalReasons == null
+            || additionalReasons.getHasReasons() != VerticalYesNo.YES ? null : additionalReasons.getReasons();
+
+        if (reasonsForPossession == null && additionalReasonsText == null) {
+            return null;
+        }
+
+        if (reasonsForPossession == null) {
+            reasonsForPossession = ReasonsForPossessionTabDetails.builder().build();
+        }
+
+        reasonsForPossession.setAdditionalReasonsForPossession(additionalReasonsText);
+        return reasonsForPossession;
+    }
 
     public ReasonsForPossessionTabDetails buildReasonsForPossessionFromGroundSummaries(PCSCase pcsCase) {
         if (CollectionUtils.isEmpty(pcsCase.getClaimGroundSummaries())) {
