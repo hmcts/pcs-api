@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.genapp;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,12 +18,16 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CitizenGenAppRequest implements GenAppRequest {
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+public class XuiGenAppRequest implements GenAppRequest {
 
+    @CCD(label = "What do you want to apply for?")
     private GenAppType applicationType;
 
+    @CCD(label = "Is the defendant’s court hearing in the next 14 days?")
     private VerticalYesNo within14Days;
 
+    @CCD(label = "Does the defendant need help paying the fee for this application?")
     private VerticalYesNo needHwf;
 
     private VerticalYesNo appliedForHwf;
@@ -49,8 +55,5 @@ public class CitizenGenAppRequest implements GenAppRequest {
 
     @CCD(max = 100)
     private String sotFullName;
-
-    @CCD(max = 60)
-    private String clientReference;
 
 }
