@@ -32,7 +32,6 @@ import {
   moneyJudgment,
   defendantCircumstances,
   claimantCircumstances,
-  claimingCosts,
   alternativesToPossession,
   provideMoreDetailsOfClaim,
   checkingNotice,
@@ -111,7 +110,6 @@ export class CreateCaseAction implements IAction {
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName as actionRecord)],
       ['selectApplications', () => this.selectApplications(fieldName)],
-      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', () => this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
@@ -208,6 +206,8 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
     if(caseData === claimType.yesRadioOption){    
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
+    } else {
+      await performAction('clickButton', claimType.continueButton);
     }
   }
 
@@ -270,6 +270,7 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', claimantInformation.whatIsCorrectClaimantNameHiddenQuestion, claimantInformation.ClaimantNameTextInput);
     }
     claimantsName = caseData == "No" ? claimantInformation.ClaimantNameTextInput : await this.extractClaimantName(page, claimantInformation.yourClaimantNameRegisteredParagraph);
+    await performAction('clickButton', claimantInformation.continueButton);
   }
 
   private async selectContactPreferences(preferences: actionRecord) {
@@ -451,6 +452,10 @@ export class CreateCaseAction implements IAction {
         case 'discretionaryAccommodation':
           await performAction('check', {question: whatAreYourGroundsForPossession.discretionaryWithAccommodation.discretionaryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.discretionaryAccommodation});
           break;
+        case 'other':
+          await performAction('check', {question: whatAreYourGroundsForPossession.additionalGrounds, option: possessionGrounds.other});
+          await performAction('inputText', whatAreYourGroundsForPossession.giveDetailsHiddenTextLabel, whatAreYourGroundsForPossession.giveDetailsHiddenTextInput);
+          break;
       }
     }
     await performAction('clickButton', whatAreYourGroundsForPossession.continueButton);
@@ -609,13 +614,6 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: moneyJudgment.doYouWantTheCourtQuestion, option: option});
     await performAction('clickButton', moneyJudgment.continueButton);
-  }
-
-  private async selectClaimingCosts(option: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question: claimingCosts.doYouWantToAskForYourCostBackQuestion, option: option});
-    await performAction('clickButton', claimingCosts.continueButton);
   }
 
   private async selectAlternativesToPossession(alternatives: actionRecord) {
