@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimTyp
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -25,6 +26,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 
 /**
  * Service for managing defendant responses.
@@ -132,6 +135,8 @@ public class DefendantResponseService {
 
         buildAndLinkChildEntities(responseEntity, responses);
 
+        buildStatementOfTruth(responses, responseEntity);
+
         saveCounterClaim(responses, partyRef, claimRef);
 
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
@@ -236,5 +241,17 @@ public class DefendantResponseService {
             .build();
 
         claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
+    }
+
+    private void buildStatementOfTruth(DefendantResponses responses, DefendantResponseEntity responseEntity) {
+        if (responses.getStatementOfTruthAccepted() == null) {
+            return;
+        }
+        StatementOfTruthEntity sot = StatementOfTruthEntity.builder()
+            .accepted(toYesOrNo(responses.getStatementOfTruthAccepted()))
+            .fullName(responses.getStatementOfTruthFullName())
+            .completedDate(LocalDateTime.now(utcClock))
+            .build();
+        responseEntity.setStatementOfTruth(sot);
     }
 }

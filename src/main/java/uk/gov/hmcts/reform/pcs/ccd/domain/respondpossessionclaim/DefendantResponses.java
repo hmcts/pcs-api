@@ -116,6 +116,7 @@ public class DefendantResponses {
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;
+
     @CCD
     private VerticalYesNo makeCounterClaim;
 
@@ -125,4 +126,10 @@ public class DefendantResponses {
         typeParameterOverride = "RespondToClaimSection"
     )
     private List<RespondToClaimSection> completedSections;
+
+    @CCD
+    private VerticalYesNo statementOfTruthAccepted;
+
+    @CCD(max = 120)
+    private String statementOfTruthFullName;
 }
