@@ -26,8 +26,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @AllArgsConstructor
 public class LegalRepresentativeContactDetailsPage implements CcdPageConfiguration {
 
-    private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
-    private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
+    private static final String ORG_ADDRESS_FOUND = "organisationAddressFound=\"Yes\"";
+    private static final String ORG_ADDRESS_NOT_FOUND = "organisationAddressFound=\"No\"";
     private static final String EMAIL_LABEL = "Enter email address";
 
     private final AddressValidator addressValidator;
@@ -38,7 +38,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
         pageBuilder
             .page("legalRepresentativeContactDetails", this::midEvent)
             .pageLabel("Amend representative's details")
-            .complex(PCSCase::getLegalRepresentativeContactDetails)
+            .complex(PCSCase::getLegalRepresentativeDetails)
             .label("legalRepresentativeDetails-reference",  """
                     ---
                     <h2 class="govuk-heading-m">Reference</h2>
@@ -66,9 +66,9 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     """)
             .mandatory(LegalRepresentativeDetails::getUseEmailAddress)
             .mandatory(LegalRepresentativeDetails::getEmailAddress, "useEmailAddress=\"NO\"")
-            .readonly(LegalRepresentativeDetails::getOrgAddressFound, NEVER_SHOW)
-            .readonly(LegalRepresentativeDetails::getOrganisationAddress, NEVER_SHOW, true)
-            .readonly(LegalRepresentativeDetails::getFormattedClaimantContactAddress, NEVER_SHOW)
+            .readonly(LegalRepresentativeDetails::getOrganisationAddressFound, NEVER_SHOW)
+            .readonly(LegalRepresentativeDetails::getLegalRepresentativeOrganisationAddress, NEVER_SHOW, true)
+            .readonly(LegalRepresentativeDetails::getFormattedContactAddress, NEVER_SHOW)
             .label("legalRepresentativeDetails-address-info-yes", """
                     ----
                     <h2 class="govuk-heading-m">Service address</h2>
@@ -84,7 +84,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                         Your My HMCTS registered address is:
                     </h3>
                     <p class="govuk-body-s govuk-!-margin-top-1">
-                        ${formattedClaimantContactAddress}
+                        ${formattedContactAddress}
                     </p>
                     """, ORG_ADDRESS_FOUND)
 
@@ -110,7 +110,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     </p>
                     """, ORG_ADDRESS_NOT_FOUND)
             .mandatory(LegalRepresentativeDetails::getDifferentPostalAddress)
-            .complex(LegalRepresentativeDetails::getCorrespondenceAddress, "differentPostalAddress=\"YES\"")
+            .complex(LegalRepresentativeDetails::getUpdatedCorrespondenceAddress, "differentPostalAddress=\"YES\"")
             .mandatory(AddressUK::getAddressLine1)
             .optional(AddressUK::getAddressLine2)
             .optional(AddressUK::getAddressLine3)
@@ -127,7 +127,8 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     </p>
                     """)
                 .optional(LegalRepresentativeDetails::getProvideContactPhoneNumber)
-                .mandatory(LegalRepresentativeDetails::getContactPhoneNumber, "provideContactPhoneNumber=\"YES\"")
+                .mandatory(LegalRepresentativeDetails::getContactPhoneNumber,
+                           "provideContactPhoneNumber=\"YES\"")
             .done()
             .label("legalRepresentativeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -136,20 +137,21 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         List<String> validationErrors = new ArrayList<>();
-        LegalRepresentativeDetails legalRepresentativeDetails = caseData.getLegalRepresentativeContactDetails();
+        LegalRepresentativeDetails legalRepresentativeDetails = caseData.getLegalRepresentativeDetails();
 
         if (legalRepresentativeDetails != null) {
 
             if (legalRepresentativeDetails.getDifferentPostalAddress() == VerticalYesNo.YES
-                || legalRepresentativeDetails.getOrgAddressFound() == YesOrNo.NO) {
-                AddressUK contactAddress = legalRepresentativeDetails.getCorrespondenceAddress();
+                || legalRepresentativeDetails.getOrganisationAddressFound() == YesOrNo.NO) {
+                AddressUK contactAddress = legalRepresentativeDetails.getUpdatedCorrespondenceAddress();
                 validationErrors.addAll(addressValidator.validateAddressFields(contactAddress));
 
             }
 
-            if (legalRepresentativeDetails.getUseEmailAddress() == VerticalYesNo.NO ) {
+            if (legalRepresentativeDetails.getUseEmailAddress() == VerticalYesNo.NO) {
                 validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                    legalRepresentativeDetails.getEmailAddress(), EMAIL_LABEL, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
+                    legalRepresentativeDetails.getEmailAddress(), EMAIL_LABEL,
+                    TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
                 );
             }
         }

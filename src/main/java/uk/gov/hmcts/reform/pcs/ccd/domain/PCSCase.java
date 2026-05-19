@@ -612,5 +612,5 @@ public class PCSCase {
      * The legal representative for a defendant on the case.
      */
     @JsonUnwrapped
-    private LegalRepresentativeDetails legalRepresentativeContactDetails;
+    private LegalRepresentativeDetails legalRepresentativeDetails;
 }

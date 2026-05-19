@@ -25,17 +25,19 @@ public class LegalRepresentativeService {
 
     @Transactional
     public void save(UUID userIdamId, LegalRepresentativeDetails legalRepresentativeDetails) {
-        Optional<LegalRepresentativeEntity> legalRepresentative = legalRepresentativeRepository.findByIdamId(userIdamId);
+        Optional<LegalRepresentativeEntity> legalRepresentative = legalRepresentativeRepository
+            .findByIdamId(userIdamId);
 
         LegalRepresentativeEntity legalRepresentativeEntity =
             legalRepresentative.orElseGet(LegalRepresentativeEntity::new);
 
-        if (legalRepresentativeDetails.getDifferentPostalAddress() != null && legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
-            legalRepresentativeEntity.setAddress(mapAddress(legalRepresentativeDetails.getCorrespondenceAddress()));
+        if (legalRepresentativeDetails.getDifferentPostalAddress() != null
+            && legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
+            legalRepresentativeEntity.setAddress(mapAddress(legalRepresentativeDetails.getUpdatedCorrespondenceAddress()));
         }
 
-        if (legalRepresentativeDetails.getProvideContactPhoneNumber() != null &&
-            legalRepresentativeDetails.getProvideContactPhoneNumber().equals(VerticalYesNo.YES)) {
+        if (legalRepresentativeDetails.getProvideContactPhoneNumber() != null
+            && legalRepresentativeDetails.getProvideContactPhoneNumber().equals(VerticalYesNo.YES)) {
             legalRepresentativeEntity.setPhone(legalRepresentativeDetails.getContactPhoneNumber());
         }
 
@@ -43,8 +45,8 @@ public class LegalRepresentativeService {
             legalRepresentativeEntity.setReference(legalRepresentativeDetails.getReference());
         }
 
-        if (legalRepresentativeDetails.getUseEmailAddress() != null &&
-            legalRepresentativeDetails.getUseEmailAddress().equals(VerticalYesNo.NO)) {
+        if (legalRepresentativeDetails.getUseEmailAddress() != null
+            && legalRepresentativeDetails.getUseEmailAddress().equals(VerticalYesNo.NO)) {
             legalRepresentativeEntity.setEmail(legalRepresentativeDetails.getEmailAddress());
         }
 

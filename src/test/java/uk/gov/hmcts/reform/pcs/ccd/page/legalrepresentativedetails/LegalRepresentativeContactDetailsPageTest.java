@@ -42,10 +42,10 @@ class LegalRepresentativeContactDetailsPageTest extends BasePageTest {
         AddressUK contactAddress = mock(AddressUK.class);
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .differentPostalAddress(VerticalYesNo.YES)
-            .correspondenceAddress(contactAddress)
+            .updatedCorrespondenceAddress(contactAddress)
             .build();
         PCSCase caseData = PCSCase.builder()
-            .legalRepresentativeContactDetails(legalRepresentativeDetails)
+            .legalRepresentativeDetails(legalRepresentativeDetails)
             .build();
 
         List<String> expectedValidationErrors = List.of("error 1", "error 2");
@@ -62,12 +62,12 @@ class LegalRepresentativeContactDetailsPageTest extends BasePageTest {
     void shouldReturnValidationErrorsWhenOrgAddressNotFoundAndOverrideAddressInvalid() {
         // Given
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
-            .orgAddressFound(YesOrNo.NO)
+            .organisationAddressFound(YesOrNo.NO)
             .useEmailAddress(null)
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .legalRepresentativeContactDetails(legalRepresentativeDetails)
+            .legalRepresentativeDetails(legalRepresentativeDetails)
             .build();
 
         String expectedError = "addressLine1 missing";
@@ -82,16 +82,16 @@ class LegalRepresentativeContactDetailsPageTest extends BasePageTest {
     }
 
     @Test
-    void shouldNotValidateOverrideAddressWhenOrgAddressFoundAndUserSaysAddressCorrect() {
+    void shouldNotValidateOverrideAddressWhenOrganisationAddressFoundAndUserSaysAddressCorrect() {
         // Given
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
-            .orgAddressFound(YesOrNo.YES)
+            .organisationAddressFound(YesOrNo.YES)
             .useEmailAddress(VerticalYesNo.YES)
             .emailAddress(null)
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .legalRepresentativeContactDetails(legalRepresentativeDetails)
+            .legalRepresentativeDetails(legalRepresentativeDetails)
             .build();
 
         // When
@@ -105,7 +105,7 @@ class LegalRepresentativeContactDetailsPageTest extends BasePageTest {
     @Test
     void shouldNotErrorWhenContactPreferencesNull() {
         // Given
-        PCSCase caseData = PCSCase.builder().legalRepresentativeContactDetails(null).build();
+        PCSCase caseData = PCSCase.builder().legalRepresentativeDetails(null).build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -119,14 +119,14 @@ class LegalRepresentativeContactDetailsPageTest extends BasePageTest {
     void shouldValidateEmailWhenCorrectLength() {
         //Given
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
-            .orgAddressFound(YesOrNo.YES)
+            .organisationAddressFound(YesOrNo.YES)
             .useEmailAddress(VerticalYesNo.YES)
             .useEmailAddress(VerticalYesNo.NO)
             .emailAddress("John.Smith@hotmail.com")
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .legalRepresentativeContactDetails(legalRepresentativeDetails)
+            .legalRepresentativeDetails(legalRepresentativeDetails)
             .build();
 
         //When
@@ -141,14 +141,14 @@ class LegalRepresentativeContactDetailsPageTest extends BasePageTest {
         //Given
         String longEmail = "John.Smith@hotmail.com".repeat(4);
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
-            .orgAddressFound(YesOrNo.YES)
+            .organisationAddressFound(YesOrNo.YES)
             .differentPostalAddress(VerticalYesNo.NO)
             .useEmailAddress(VerticalYesNo.NO)
             .emailAddress(longEmail)
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .legalRepresentativeContactDetails(legalRepresentativeDetails)
+            .legalRepresentativeDetails(legalRepresentativeDetails)
             .build();
 
         //When

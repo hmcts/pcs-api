@@ -46,7 +46,7 @@ class LegalRepresentativeServiceTest {
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .differentPostalAddress(VerticalYesNo.YES)
-            .correspondenceAddress(address)
+            .updatedCorrespondenceAddress(address)
             .build();
 
         LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();

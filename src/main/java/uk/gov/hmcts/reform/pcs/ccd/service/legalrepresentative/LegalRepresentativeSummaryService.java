@@ -46,8 +46,8 @@ public class LegalRepresentativeSummaryService {
                 .stream().anyMatch(claimPartyLegalRepresentative ->
                                        claimPartyLegalRepresentative.getLegalRepresentative()
                                            .getIdamId().equals(
-                                               securityContextService.getCurrentUserId()) &&
-                                           claimPartyLegalRepresentative.getActive().equals(YesOrNo.YES)));
+                                               securityContextService.getCurrentUserId())
+                                           && claimPartyLegalRepresentative.getActive().equals(YesOrNo.YES)));
     }
 
 }

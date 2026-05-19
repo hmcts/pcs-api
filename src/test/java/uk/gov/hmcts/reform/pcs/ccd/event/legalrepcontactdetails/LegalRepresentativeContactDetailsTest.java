@@ -13,9 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepresentativedetails.LegalRepresentativeContactDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -25,8 +22,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,20 +45,15 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
 
     @Mock
     private UserInfo userDetails;
-    @Mock
-    private SavingPageBuilderFactory savingPageBuilderFactory;
 
     @BeforeEach
     void setUp() {
-        SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
-        when(savingPageBuilderFactory.create(any(), any(EventId.class))).thenReturn(savingPageBuilder);
         LegalRepresentativeContactDetails legalRepresentativeContactDetails = new LegalRepresentativeContactDetails(
             legalRepresentativeContactDetailsPage,
             securityContextService,
             organisationService,
             legalRepresentativeService,
-            addressFormatter,
-            savingPageBuilderFactory
+            addressFormatter
         );
         setEventUnderTest(legalRepresentativeContactDetails);
     }
@@ -86,13 +76,13 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
 
         // then
         LegalRepresentativeDetails legalRepresentativeContactDetails = updatedCaseData
-            .getLegalRepresentativeContactDetails();
+            .getLegalRepresentativeDetails();
 
-        assertThat(legalRepresentativeContactDetails.getOrganisationAddress())
+        assertThat(legalRepresentativeContactDetails.getLegalRepresentativeOrganisationAddress())
             .isEqualTo(orgAddress);
-        assertThat(legalRepresentativeContactDetails.getOrgAddressFound()).isEqualTo(YesOrNo.YES);
+        assertThat(legalRepresentativeContactDetails.getOrganisationAddressFound()).isEqualTo(YesOrNo.YES);
         assertThat(legalRepresentativeContactDetails.getOriginalEmailAddress()).isEqualTo(userEmail);
-        assertThat(legalRepresentativeContactDetails.getFormattedClaimantContactAddress())
+        assertThat(legalRepresentativeContactDetails.getFormattedContactAddress())
             .isEqualTo(formatedAddress);
     }
 
@@ -112,14 +102,39 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
 
         // then
         LegalRepresentativeDetails legalRepresentativeContactDetails = updatedCaseData
-            .getLegalRepresentativeContactDetails();
+            .getLegalRepresentativeDetails();
 
-        assertThat(legalRepresentativeContactDetails.getOrganisationAddress())
+        assertThat(legalRepresentativeContactDetails.getLegalRepresentativeOrganisationAddress())
             .isNull();
-        assertThat(legalRepresentativeContactDetails.getOrgAddressFound()).isEqualTo(YesOrNo.NO);
+        assertThat(legalRepresentativeContactDetails.getOrganisationAddressFound()).isEqualTo(YesOrNo.NO);
         assertThat(legalRepresentativeContactDetails.getOriginalEmailAddress()).isEqualTo(userEmail);
-        assertThat(legalRepresentativeContactDetails.getFormattedClaimantContactAddress())
+        assertThat(legalRepresentativeContactDetails.getFormattedContactAddress())
             .isEqualTo(formatedAddress);
+    }
+
+    @Test
+    void start_WithLegalRepresentativeEntity() {
+        // given
+        String userEmail = "email";
+        String formatedAddress = "address";
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
+        when(userDetails.getSub()).thenReturn(userEmail);
+        when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER))
+            .thenReturn(formatedAddress);
+        LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder().build();
+        PCSCase caseData = PCSCase.builder()
+            .legalRepresentativeDetails(legalRepresentativeDetails)
+            .build();
+
+        // when
+        PCSCase updatedCase = callStartHandler(caseData);
+
+        // then
+        LegalRepresentativeDetails actual = updatedCase.getLegalRepresentativeDetails();
+        assertThat(actual.getLegalRepresentativeOrganisationAddress()).isNull();
+        assertThat(actual.getOrganisationAddressFound()).isEqualTo(YesOrNo.NO);
+        assertThat(actual.getOriginalEmailAddress()).isEqualTo(userEmail);
+        assertThat(actual.getFormattedContactAddress()).isEqualTo(formatedAddress);
     }
 
     @Test
@@ -128,7 +143,7 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
         UUID userId = UUID.randomUUID();
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder().build();
         PCSCase caseData = PCSCase.builder()
-            .legalRepresentativeContactDetails(legalRepresentativeDetails)
+            .legalRepresentativeDetails(legalRepresentativeDetails)
             .build();
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
 

@@ -11,11 +11,10 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepresentativedetails.LegalRepresentativeContactDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -37,7 +36,6 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
     private final OrganisationService organisationService;
     private final LegalRepresentativeService legalRepresentativeService;
     private final AddressFormatter addressFormatter;
-    private final SavingPageBuilderFactory savingPageBuilderFactory;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -47,39 +45,38 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
                 .forAllStates()
                 .name("Amend representative's details")
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR);
-        SavingPageBuilder savingPageBuilder = savingPageBuilderFactory.create(
-            eventBuilder,
-            legalRepresentativeContactDetails
-        );
 
-        savingPageBuilder.add(legalRepresentativeContactDetailsPage);
+        new PageBuilder(eventBuilder)
+            .add(legalRepresentativeContactDetailsPage);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
 
-        LegalRepresentativeDetails legalRepresentativeDetails = pcsCase.getLegalRepresentativeContactDetails();
+        LegalRepresentativeDetails legalRepresentativeDetails = pcsCase.getLegalRepresentativeDetails();
         if (legalRepresentativeDetails == null) {
             legalRepresentativeDetails = LegalRepresentativeDetails.builder().build();
         }
 
-        legalRepresentativeDetails.setOrganisationAddress(organisationService.getOrganisationAddressForCurrentUser());
+        legalRepresentativeDetails
+            .setLegalRepresentativeOrganisationAddress(organisationService.getOrganisationAddressForCurrentUser());
 
         legalRepresentativeDetails
-            .setFormattedClaimantContactAddress(addressFormatter.formatMediumAddress(legalRepresentativeDetails
-                                                                                         .getOrganisationAddress(),
-                                                                                     BR_DELIMITER));
+            .setFormattedContactAddress(addressFormatter
+                                            .formatMediumAddress(legalRepresentativeDetails
+                                                                     .getLegalRepresentativeOrganisationAddress(),
+                                                                 BR_DELIMITER));
 
-        if (legalRepresentativeDetails.getOrganisationAddress() != null) {
-            legalRepresentativeDetails.setOrgAddressFound(YesOrNo.YES);
+        if (legalRepresentativeDetails.getLegalRepresentativeOrganisationAddress() != null) {
+            legalRepresentativeDetails.setOrganisationAddressFound(YesOrNo.YES);
         } else {
-            legalRepresentativeDetails.setOrgAddressFound(YesOrNo.NO);
+            legalRepresentativeDetails.setOrganisationAddressFound(YesOrNo.NO);
         }
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
 
         legalRepresentativeDetails.setOriginalEmailAddress(userEmail);
-        pcsCase.setLegalRepresentativeContactDetails(legalRepresentativeDetails);
+        pcsCase.setLegalRepresentativeDetails(legalRepresentativeDetails);
 
         return pcsCase;
     }
@@ -87,7 +84,7 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         UUID currentUserId = securityContextService.getCurrentUserId();
         PCSCase pcsCase = eventPayload.caseData();
-        legalRepresentativeService.save(currentUserId, pcsCase.getLegalRepresentativeContactDetails());
+        legalRepresentativeService.save(currentUserId, pcsCase.getLegalRepresentativeDetails());
         return SubmitResponse.<State>builder()
             .confirmationBody(getUpdatedInformationConfirmationMarkdown())
             .build();

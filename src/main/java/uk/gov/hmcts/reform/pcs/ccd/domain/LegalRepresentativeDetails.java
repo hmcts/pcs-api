@@ -24,6 +24,7 @@ public class LegalRepresentativeDetails {
     )
     private String emailAddress;
 
+    @CCD(typeOverride = FieldType.Email)
     private String originalEmailAddress;
 
     @CCD(
@@ -50,15 +51,14 @@ public class LegalRepresentativeDetails {
     private VerticalYesNo differentPostalAddress;
 
     @CCD(label = "Enter address details")
-    private AddressUK correspondenceAddress;
+    private AddressUK updatedCorrespondenceAddress;
 
     @CCD
-    private AddressUK organisationAddress;
+    private AddressUK legalRepresentativeOrganisationAddress;
 
-    @CCD
-    private YesOrNo orgAddressFound;
+    private YesOrNo organisationAddressFound;
 
-    private String formattedClaimantContactAddress;
+    private String formattedContactAddress;
 
 }
 
