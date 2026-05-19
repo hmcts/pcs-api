@@ -23,6 +23,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDet
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
@@ -45,6 +48,15 @@ public class CaseSummaryTabViewTest {
     @Mock
     private ReasonsForPossessionTabDetailsBuilder reasonsForPossessionTabDetailsBuilder;
 
+    @Mock
+    private ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
+
+    @Mock
+    private DefendantInformationTabDetailsBuilder defendantInformationTabDetailsBuilder;
+
+    @Mock
+    private AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
+
     private CaseSummaryTabView underTest;
 
     @BeforeEach
@@ -52,7 +64,10 @@ public class CaseSummaryTabViewTest {
         underTest = new CaseSummaryTabView(
             groundsBuilder,
             rentArrearsTabDetailsBuilder,
-            reasonsForPossessionTabDetailsBuilder
+            reasonsForPossessionTabDetailsBuilder,
+            claimantInformationTabDetailsBuilder,
+            defendantInformationTabDetailsBuilder,
+            additionalDefendantInformationTabDetailsBuilder
         );
     }
 
