@@ -88,7 +88,7 @@ To access the swagger documentation for the API, go to http://localhost:3206/swa
 - To get document upload working locally, it's easier to connect to AAT dependencies using a VPN.
 - Set the authentication mode to `AuthMode.AAT` as described above.
 
-#### Generateeing xlsx
+#### Generating the CCD definition XLS
 We can generate the xlsx spreadsheet by running the script:
 ```
 ./bin/create-xlsx.sh 
