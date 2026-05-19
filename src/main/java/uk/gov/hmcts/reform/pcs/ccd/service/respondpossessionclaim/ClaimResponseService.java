@@ -3,14 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -30,7 +27,6 @@ public class ClaimResponseService {
 
     private final PartyService partyService;
     private final SecurityContextService securityContextService;
-    private final ModelMapper modelMapper;
 
     /**
      * Saves defendant's contact preferences and contact details.
@@ -64,21 +60,11 @@ public class ClaimResponseService {
     }
 
     /**
-     * Updates party's contact details (phone number, email address, first name, and last name).
+     * Updates party's details (phone number, email address, date of birth ).
      * Only updates if the values are provided (non-blank).
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantContactDetails,
                                            DefendantResponses defendantResponses) {
-        if (StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())) {
-            party.setFirstName(defendantContactDetails.getParty().getFirstName());
-            log.debug("Updated first name for party ID: {}", party.getId());
-        }
-
-        if (StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName())) {
-            party.setLastName(defendantContactDetails.getParty().getLastName());
-            log.debug("Updated last name for party ID: {}", party.getId());
-        }
-
         if (defendantContactDetails.getParty().getDateOfBirth() != null) {
             party.setDateOfBirth(defendantContactDetails.getParty().getDateOfBirth());
             log.debug("Updated date of birth for party ID: {}", party.getId());
@@ -93,24 +79,6 @@ public class ClaimResponseService {
         if (StringUtils.isNotBlank(defendantContactDetails.getParty().getEmailAddress())) {
             party.setEmailAddress(defendantContactDetails.getParty().getEmailAddress());
             log.debug("Updated email address for party ID: {}", party.getId());
-        }
-
-        AddressUK newAddress = defendantContactDetails.getParty().getAddress();
-
-        if (newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
-            AddressEntity existingAddress = party.getAddress();
-
-            if (existingAddress != null) {
-                existingAddress.setAddressLine1(newAddress.getAddressLine1());
-                existingAddress.setAddressLine2(newAddress.getAddressLine2());
-                existingAddress.setAddressLine3(newAddress.getAddressLine3());
-                existingAddress.setPostTown(newAddress.getPostTown());
-                existingAddress.setCounty(newAddress.getCounty());
-                existingAddress.setPostcode(newAddress.getPostCode());
-                existingAddress.setCountry(newAddress.getCountry());
-            } else {
-                party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
-            }
         }
     }
 
