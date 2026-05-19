@@ -28,9 +28,11 @@ import java.util.Set;
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // IDAM's password-grant bucket refills continuously (per RateLimitService in idam-api) — AAT
-    // bucket is 100/5min ≈ 0.33 tokens/sec, so 5s of backoff only earns ~1.5 tokens and guarantees
-    // a retry storm. 30s earns ~10 tokens, enough for a meaningful retry to succeed.
+    // When IDAM throttles us, this is how long we ask the caller to wait before trying again.
+    // IDAM refills its rate-limit bucket slowly (about 100 tokens every 5 minutes in AAT), so
+    // telling clients to retry after just a few seconds means they all come back at once and get
+    // throttled again — a retry storm. 30 seconds gives the bucket time to refill enough that
+    // most retries should actually succeed.
     private static final String RETRY_AFTER_SECONDS = "30";
 
     @ExceptionHandler(CaseNotFoundException.class)
