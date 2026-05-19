@@ -54,7 +54,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     ---
                     <h2 class="govuk-heading-m">Notifications</h2>
                     <p class="govuk-body-m govuk-!-margin-bottom-2">
-                        You’ll receive updates about your claim by email. For example, when a hearing
+                        You’ll receive updates about the claim by email. For example when a hearing
                         has been scheduled or when a document is ready to view.
                     </p>
                     <p class="govuk-body-m govuk-!-margin-bottom-1 govuk-!-font-weight-bold">
@@ -71,12 +71,12 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
             .readonly(LegalRepresentativeDetails::getFormattedContactAddress, NEVER_SHOW)
             .label("legalRepresentativeDetails-address-info-yes", """
                     ----
-                    <h2 class="govuk-heading-m">Service address</h2>
+                    <h2 class="govuk-heading-m">Correspondence address</h2>
                     <p class="govuk-body-m">
                         Court documents like orders and notices will be sent by post to the address registered with
                         My HMCTS.<br><br>
-                        You can change this service address if, for example, you work in a different office from
-                        the address registered with My HMCTS.
+                        You can change this correspondence address if, for example, you work in a
+                        different office from the address registered with My HMCTS.
                     </p>
                     """, ORG_ADDRESS_FOUND)
             .label("contactPreferences-address-registered", """
@@ -91,13 +91,14 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
             // Address not found
             .label("legalRepresentativeDetails-address-info-no", """
                 ----
-                <h2 class="govuk-heading-m">Service address</h2>
+                <h2 class="govuk-heading-m">Correspondence address</h2>
                 <p class="govuk-body-m">
                     Court documents like orders and notices will be sent by post to the address registered with
                     My HMCTS.
                 </p>
                 <p class="govuk-body-m">
-                    You can change this service address if, for example, you work in a different address with My HMCTS.
+                    You can change this correspondence address if, for example, you work in a
+                     different address with My HMCTS.
                 </p>
                 """, ORG_ADDRESS_NOT_FOUND)
             .label("contactPreferences-address-missing", """
