@@ -33,7 +33,8 @@ public class LegalRepresentativeService {
 
         if (legalRepresentativeDetails.getDifferentPostalAddress() != null
             && legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
-            legalRepresentativeEntity.setAddress(mapAddress(legalRepresentativeDetails.getUpdatedCorrespondenceAddress()));
+            legalRepresentativeEntity.setAddress(mapAddress(legalRepresentativeDetails
+                                                                .getUpdatedCorrespondenceAddress()));
         }
 
         if (legalRepresentativeDetails.getProvideContactPhoneNumber() != null
