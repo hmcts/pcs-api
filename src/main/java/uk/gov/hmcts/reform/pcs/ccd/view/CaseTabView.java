@@ -57,16 +57,17 @@ public class CaseTabView {
             draftCaseData.setAllUnderlesseeOrMortgagees(buildUnderlesseeOrMortgageParties(draftCaseData));
         }
 
-        Set<AlternativesToPossession> alternativesToPossessionSet = pcsCase.getAlternativesToPossession();
+        Set<AlternativesToPossession> alternativesToPossessionSet = draftCaseData.getAlternativesToPossession();
         SuspensionOfRightToBuyDemotionOfTenancy suspensionOfRightToBuyDemotionOfTenancy =
-            pcsCase.getSuspensionOfRightToBuyDemotionOfTenancy();
+            draftCaseData.getSuspensionOfRightToBuyDemotionOfTenancy();
 
         if (
             suspensionOfRightToBuyDemotionOfTenancy != null &&
             !CollectionUtils.isEmpty(alternativesToPossessionSet) &&
             alternativesToPossessionSet.containsAll(Set.of(SUSPENSION_OF_RIGHT_TO_BUY, DEMOTION_OF_TENANCY))
         ) {
-            draftCaseData.setDemotionOfTenancy(buildDemotionOfTenancy(suspensionOfRightToBuyDemotionOfTenancy));
+            DemotionOfTenancy demotionOfTenancy = draftCaseData.getDemotionOfTenancy();
+            setDemotionOfTenancy(suspensionOfRightToBuyDemotionOfTenancy, demotionOfTenancy);
             draftCaseData.setSuspensionOfRightToBuy(
                 buildSuspensionOfRightToBuyHousingAct(suspensionOfRightToBuyDemotionOfTenancy)
             );
@@ -148,13 +149,12 @@ public class CaseTabView {
             .build();
     }
 
-    private DemotionOfTenancy buildDemotionOfTenancy(
-        SuspensionOfRightToBuyDemotionOfTenancy suspensionOfRightToBuyDemotionOfTenancy
+    private void setDemotionOfTenancy(
+        SuspensionOfRightToBuyDemotionOfTenancy suspensionOfRightToBuyDemotionOfTenancy,
+        DemotionOfTenancy demotionOfTenancy
     ) {
-        return DemotionOfTenancy.builder()
-            .housingAct(suspensionOfRightToBuyDemotionOfTenancy.getDemotionOfTenancyActs())
-            .reason(suspensionOfRightToBuyDemotionOfTenancy.getDemotionOrderReason())
-            .build();
+        demotionOfTenancy.setHousingAct(suspensionOfRightToBuyDemotionOfTenancy.getDemotionOfTenancyActs());
+        demotionOfTenancy.setReason(suspensionOfRightToBuyDemotionOfTenancy.getDemotionOrderReason());
     }
 
     private SuspensionOfRightToBuy buildSuspensionOfRightToBuyHousingAct(
