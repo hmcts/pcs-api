@@ -9,7 +9,10 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 public enum DocumentType implements HasLabel {
 
     RENT_STATEMENT("Rent statement"),
-    OCCUPATION_LICENCE("Occupation licence"),
+    OCCUPATION_LICENCE("Occupation contract or licence"),
+    ENERGY_PERFORMANCE_CERTIFICATE("Energy performance certificate"),
+    GAS_SAFETY_CERTIFICATE("Gas safety certificate"),
+    EICR_REPORT("Electrical Installation Condition Report (EICR)"),
     TENANCY_LICENCE("Tenancy licence"),
     NOTICE_SERVED("Notice served"),
     WITNESS_STATEMENT("Witness statement"),

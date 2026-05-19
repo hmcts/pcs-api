@@ -76,6 +76,7 @@ class DraftCaseJsonMergerTest {
                             "noRentArrearsReasonForGrounds.holidayLet",
                             "waysToPay",
                             "caseLinks",
+                            "additionalDocs",
                             "claimGroundSummaries",
                             "enforcementOrder.showChangeNameAddressPage",
                             "enforcementOrder.showPeopleWhoWillBeEvictedPage",
@@ -143,7 +144,7 @@ class DraftCaseJsonMergerTest {
             }
           }
         }
-            """;
+        """;
 
         String patchJson = """
             {
@@ -184,7 +185,7 @@ class DraftCaseJsonMergerTest {
             }
           }
         }
-            """;
+        """;
 
         String patchJson = """
             {

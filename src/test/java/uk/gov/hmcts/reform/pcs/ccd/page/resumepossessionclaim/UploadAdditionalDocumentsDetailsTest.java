@@ -1,12 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -29,13 +29,13 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     @Test
     void shouldNotReturnErrorsWhenDescriptionIsCorrectLength() {
         // Given
-        AdditionalDocument doc = AdditionalDocument.builder()
-            .description("Valid description")
-            .build();
+        AdditionalDocuments doc = AdditionalDocuments.builder()
+                .description("Valid description")
+                .build();
 
         PCSCase caseData = PCSCase.builder()
-            .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
-            .build();
+                .additionalDocs(List.of(ListValue.<AdditionalDocuments>builder().value(doc).build()))
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -49,13 +49,13 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     void shouldReturnValidationErrorsWhenDescriptionTooLong() {
         // Given
         String longDescription = "a".repeat(61);
-        AdditionalDocument doc = AdditionalDocument.builder()
-            .description(longDescription)
-            .build();
+        AdditionalDocuments doc = AdditionalDocuments.builder()
+                .description(longDescription)
+                .build();
 
         PCSCase caseData = PCSCase.builder()
-            .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
-            .build();
+                .additionalDocs(List.of(ListValue.<AdditionalDocuments>builder().value(doc).build()))
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);

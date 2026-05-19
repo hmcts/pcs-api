@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -59,7 +59,7 @@ public class DocumentService {
     private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
         List<DocumentHolder> allDocuments = new ArrayList<>();
 
-        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
+        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocs()));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getRentArrears())
@@ -109,7 +109,7 @@ public class DocumentService {
     }
 
     private List<DocumentHolder> mapAdditionalDocumentsWithType(
-            List<ListValue<AdditionalDocument>> documents) {
+            List<ListValue<AdditionalDocuments>> documents) {
 
         if (CollectionUtils.isEmpty(documents)) {
             return Collections.emptyList();
@@ -118,7 +118,8 @@ public class DocumentService {
         return ListValueUtils.unwrapListItems(documents).stream()
             .map(doc -> DocumentHolder.builder()
                 .document(doc.getDocument())
-                .type(mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType()))
+                .type(mapAdditionalDocumentTypeToDocumentType(
+                        AdditionalDocumentType.getValueFromLabel(doc.getDocumentTypeList().getValueLabel())))
                 .description(doc.getDescription())
                 .build())
             .toList();
@@ -166,6 +167,10 @@ public class DocumentService {
         return switch (additionalType) {
             case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
             case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
+            case OCCUPATION_LICENCE -> DocumentType.OCCUPATION_LICENCE;
+            case ENERGY_PERFORMANCE_CERTIFICATE -> DocumentType.ENERGY_PERFORMANCE_CERTIFICATE;
+            case GAS_SAFETY_CERTIFICATE -> DocumentType.GAS_SAFETY_CERTIFICATE;
+            case EICR_REPORT -> DocumentType.EICR_REPORT;
             case TENANCY_AGREEMENT -> DocumentType.TENANCY_AGREEMENT;
             case CERTIFICATE_OF_SERVICE -> DocumentType.CERTIFICATE_OF_SERVICE;
             case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
@@ -222,6 +227,9 @@ public class DocumentService {
                  TENANCY_AGREEMENT,
                  TENANCY_LICENCE,
                  OCCUPATION_LICENCE,
+                 ENERGY_PERFORMANCE_CERTIFICATE,
+                 GAS_SAFETY_CERTIFICATE,
+                 EICR_REPORT,
                  POSSESSION_NOTICE ->
                 Optional.of(CaseFileCategory.PROPERTY_DOCUMENTS);
             case WITNESS_STATEMENT,

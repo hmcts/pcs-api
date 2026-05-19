@@ -12,9 +12,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -32,7 +34,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,34 +69,44 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
-        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
-            .document(Document.builder()
-                          .url("url-WITNESS_STATEMENT")
-                          .filename("file-WITNESS_STATEMENT")
-                          .binaryUrl("bin-WITNESS_STATEMENT")
-                          .categoryId("cat-WITNESS_STATEMENT")
-                          .build())
-            .documentType(AdditionalDocumentType.WITNESS_STATEMENT)
-            .build();
+        DynamicList documentTypeList1 = new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), "Witness statement"),
+                new ArrayList<>()
+        );
 
-        AdditionalDocument additionalDocument2 = AdditionalDocument.builder()
-            .document(Document.builder()
-                           .url("url-RENT_STATEMENT")
-                           .filename("file-RENT_STATEMENT")
-                           .binaryUrl("bin-RENT_STATEMENT")
-                           .categoryId("cat-RENT_STATEMENT")
-                           .build())
-            .documentType(AdditionalDocumentType.RENT_STATEMENT)
-            .build();
+        AdditionalDocuments additionalDocument1 = AdditionalDocuments.builder()
+                .document(Document.builder()
+                        .url("url-WITNESS_STATEMENT")
+                        .filename("file-WITNESS_STATEMENT")
+                        .binaryUrl("bin-WITNESS_STATEMENT")
+                        .categoryId("cat-WITNESS_STATEMENT")
+                        .build())
+                .documentTypeList(documentTypeList1)
+                .build();
 
-        ListValue<AdditionalDocument> lv1 = ListValue.<AdditionalDocument>builder()
-            .id("1").value(additionalDocument1).build();
-        ListValue<AdditionalDocument> lv2 = ListValue.<AdditionalDocument>builder()
-            .id("2").value(additionalDocument2).build();
+        DynamicList documentTypeList2 = new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), "Rent statement"),
+                new ArrayList<>()
+        );
 
-        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(lv1, lv2);
+        AdditionalDocuments additionalDocument2 = AdditionalDocuments.builder()
+                .document(Document.builder()
+                        .url("url-RENT_STATEMENT")
+                        .filename("file-RENT_STATEMENT")
+                        .binaryUrl("bin-RENT_STATEMENT")
+                        .categoryId("cat-RENT_STATEMENT")
+                        .build())
+                .documentTypeList(documentTypeList2)
+                .build();
 
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
+        ListValue<AdditionalDocuments> lv1 = ListValue.<AdditionalDocuments>builder()
+                .id("1").value(additionalDocument1).build();
+        ListValue<AdditionalDocuments> lv2 = ListValue.<AdditionalDocuments>builder()
+                .id("2").value(additionalDocument2).build();
+
+        List<ListValue<AdditionalDocuments>> additionalDocuments = List.of(lv1, lv2);
+
+        when(pcsCase.getAdditionalDocs()).thenReturn(additionalDocuments);
 
         // When
         underTest.createAllDocuments(pcsCase);
@@ -121,16 +132,19 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
-        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
-            .document(Document.builder().build())
-            .documentType(additionalDocumentType)
-            .build();
-
-        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
-            ListValue.<AdditionalDocument>builder().value(additionalDocument1).build()
+        DynamicList documentTypeList = new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
+                new ArrayList<>()
         );
 
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
+        AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
+                .document(Document.builder().categoryId("uploaded-category").build())
+                .documentTypeList(documentTypeList)
+                .build();
+
+        when(pcsCase.getAdditionalDocs()).thenReturn(List.of(
+                ListValue.<AdditionalDocuments>builder().value(additionalDocument).build()
+        ));
 
         // When
         underTest.createAllDocuments(pcsCase);
@@ -153,13 +167,18 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
-        AdditionalDocument additionalDocument = AdditionalDocument.builder()
-            .document(Document.builder().categoryId("uploaded-category").build())
-            .documentType(additionalDocumentType)
-            .build();
+        DynamicList documentTypeList = new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
+                new ArrayList<>()
+        );
 
-        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
-            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
+                .document(Document.builder().categoryId("uploaded-category").build())
+                .documentTypeList(documentTypeList)
+                .build();
+
+        when(pcsCase.getAdditionalDocs()).thenReturn(List.of(
+                ListValue.<AdditionalDocuments>builder().value(additionalDocument).build()
         ));
 
         // When
@@ -399,20 +418,25 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
-        AdditionalDocumentType additionalDocumentType =  AdditionalDocumentType.WITNESS_STATEMENT;
+        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.WITNESS_STATEMENT;
         String description = "A short description";
 
-        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
+        DynamicList documentTypeList = new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
+                new ArrayList<>()
+        );
+
+        AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
                 .document(Document.builder().build())
-                .documentType(additionalDocumentType)
+                .documentTypeList(documentTypeList)
                 .description(description)
                 .build();
 
-        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
-                ListValue.<AdditionalDocument>builder().value(additionalDocument1).build()
+        List<ListValue<AdditionalDocuments>> additionalDocuments = List.of(
+                ListValue.<AdditionalDocuments>builder().value(additionalDocument).build()
         );
 
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
+        when(pcsCase.getAdditionalDocs()).thenReturn(additionalDocuments);
 
         // When
         underTest.createAllDocuments(pcsCase);
@@ -437,22 +461,27 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
-        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+        DynamicList documentTypeList = new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), "Witness statement"),
+                new ArrayList<>()
+        );
+
+        AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
                 .document(Document.builder()
                         .url("url1")
                         .filename("file1")
                         .binaryUrl("bin1")
                         .categoryId("cat1")
                         .build())
-                .documentType(AdditionalDocumentType.WITNESS_STATEMENT)
+                .documentTypeList(documentTypeList)
                 .description("")
                 .build();
 
-        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
-                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        List<ListValue<AdditionalDocuments>> additionalDocuments = List.of(
+                ListValue.<AdditionalDocuments>builder().value(additionalDocument).build()
         );
 
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
+        when(pcsCase.getAdditionalDocs()).thenReturn(additionalDocuments);
 
         // When
         underTest.createAllDocuments(pcsCase);

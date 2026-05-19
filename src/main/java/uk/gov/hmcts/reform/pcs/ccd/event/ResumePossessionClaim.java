@@ -157,6 +157,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final RentDetailsPage rentDetailsPage;
     private final RentArrears rentArrears;
     private final PreActionProtocol preActionProtocol;
+    private final WantToUploadDocuments wantToUploadDocuments;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -223,7 +224,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new UnderlesseeOrMortgageeEntitledToClaimRelief())
             .add(underlesseeOrMortgageeDetailsPage)
             //TO DO will be routed later on  correctly using tech debt ticket
-            .add(new WantToUploadDocuments())
+            .add(wantToUploadDocuments)
             .add(uploadAdditionalDocumentsDetails)
             .add(new GeneralApplication())
             .add(new LanguageUsed())

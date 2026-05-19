@@ -58,6 +58,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDeta
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
@@ -202,6 +203,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private RentArrears rentArrears;
     @Mock
     private PreActionProtocol preActionProtocol;
+    @Mock
+    private WantToUploadDocuments wantToUploadDocuments;
 
     @BeforeEach
     void setUp() {
@@ -226,8 +229,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
             addressFormatter, rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage, rentArrears, preActionProtocol
-        );
+            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage, rentArrears, preActionProtocol,
+            wantToUploadDocuments);
 
         setEventUnderTest(underTest);
     }
