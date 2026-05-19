@@ -21,6 +21,13 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 
@@ -30,7 +37,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
     private final PcsCaseService pcsCaseService;
-
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -54,32 +60,68 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        
+
+        List<DynamicStringListElement> validCategoryItems =
+            Arrays.stream(DocumentUploadCategory.values())
+                .map(category -> {
+                    if (category == DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM) {
+                        return buildCategoryItem(category, null);
+                    }
+
+                    LocalDateTime genAppDate =
+                        findLatestGenAppDateForCategory(pcsCaseEntity, category);
+
+                    return genAppDate == null
+                        ? null
+                        : buildCategoryItem(category, genAppDate);
+                })
+                .filter(Objects::nonNull)
+                .toList();
 
         caseData.getLegalRepDocumentUploadDetails().setValidCategories(
             DynamicStringList.builder()
-                .listItems(Arrays.stream(DocumentUploadCategory.values())
-                               .filter(DocumentUploadCategory::isExistingApplicationCategory)
-                               .map(category -> {
-                                   String date = dateFor(category);
-                                   return DynamicStringListElement.builder()
-                                       .code(category.name())
-                                       .label(category.getLabel(date))
-                                       .build();
-                               })
-                               .toList())
+                .listItems(validCategoryItems)
                 .build()
         );
         return caseData;
     }
 
-    private String dateFor(DocumentUploadCategory category) {
+    private DynamicStringListElement buildCategoryItem(
+        DocumentUploadCategory category,
+        LocalDateTime genAppDate
+    ) {
+        return DynamicStringListElement.builder()
+            .code(category.name())
+            .label(category.getLabel(genAppDate))
+            .build();
+    }
+
+    private LocalDateTime findLatestGenAppDateForCategory(PcsCaseEntity pcsCaseEntity,
+                                                          DocumentUploadCategory category) {
+        if (pcsCaseEntity == null || pcsCaseEntity.getGenApps() == null) {
+            return null;
+        }
+
+        GenAppType mapped = mapCategoryToGenAppType(category);
+        if (mapped == null) {
+            return null;
+        }
+
+        return pcsCaseEntity.getGenApps().stream()
+            .filter(genApp -> genApp.getType() == mapped)
+            .map(GenAppEntity::getApplicationSubmittedDate)
+            .filter(Objects::nonNull)
+            .max(Comparator.naturalOrder())
+            .orElse(null);
+    }
+
+    private GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {
         return switch (category) {
-            case ADJOURN_HEARING_APPLICATION -> "Monday 1 Feb 2026";
-            case SUSPEND_EVICTION_APPLICATION,
-                 SET_ASIDE_ORDER_APPLICATION,
-                 GENERAL_APPLICATION -> "Tuesday 25 April 2026";
-            default -> "";
+            case ADJOURN_HEARING_APPLICATION -> GenAppType.ADJOURN;
+            case SUSPEND_EVICTION_APPLICATION -> GenAppType.SUSPEND;
+            case SET_ASIDE_ORDER_APPLICATION -> GenAppType.SET_ASIDE;
+            case GENERAL_APPLICATION -> GenAppType.SOMETHING_ELSE;
+            default -> null;
         };
     }
 
