@@ -69,7 +69,6 @@ export class ActionRegistry {
     ['selectClaimantCircumstances', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()],
     ['selectMoneyJudgment', new CreateCaseAction()],
-    ['selectClaimingCosts', new CreateCaseAction()],
     ['selectLanguageUsed', new CreateCaseAction()],
     ['selectDefendantCircumstances', new CreateCaseAction()],
     ['selectApplications', new CreateCaseAction()],

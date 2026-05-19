@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+//import static org.assertj.core.api.Assertions.assertE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -62,14 +62,14 @@ class CaseFlagServiceTest {
         List<CaseFlagEntity> savedFlags = underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
 
         // Then
-        assertEquals("CF0002", savedFlags.getFirst().getFlagRefData().getFlagCode());
-        assertEquals("Complicated case", savedFlags.getFirst().getFlagComment());
-        assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
-        assertEquals(1, savedFlags.size());
+        assertThat(savedFlags.getFirst().getFlagRefData().getFlagCode()).isEqualTo("CF0002");
+        assertThat(savedFlags.getFirst().getFlagComment()).isEqualTo("Complicated case");
+        assertThat(savedFlags.getFirst().getDefaultStatus()).isEqualTo("Active");
+        assertThat(savedFlags).hasSize(1);
 
         String savedPaths = Arrays.stream(savedFlags.getFirst().getPaths().split(":")).toList().getLast();
         assertNotNull(savedPaths);
-        assertEquals("Case", savedPaths);
+        assertThat(savedPaths).isEqualTo("Case");
     }
 
     @Test
@@ -88,8 +88,8 @@ class CaseFlagServiceTest {
 
         // Then
         String savedPaths = savedFlags.getFirst().getPaths();
-        assertEquals("Active", savedFlags.getFirst().getDefaultStatus());
-        assertEquals(1, savedFlags.size());
+        assertThat(savedFlags.getFirst().getDefaultStatus()).isEqualTo("Active");
+        assertThat(savedFlags).hasSize(1);
         assertThat(savedPaths).contains("Case");
     }
 
@@ -112,7 +112,7 @@ class CaseFlagServiceTest {
         // Then
         assertNotNull(pcsCaseEntity.getCaseFlags());
         List<CaseFlagEntity> savedFlags = pcsCaseEntity.getCaseFlags();
-        assertEquals(1, savedFlags.size());
+        assertThat(savedFlags).hasSize(1);
         assertThat(savedFlags.getLast().getFlagComment()).isEqualTo("Police arrest inactive");
         assertThat(savedFlags.getLast().getFlagRefData().getFlagCode()).isEqualTo("CF0008");
     }
@@ -134,11 +134,11 @@ class CaseFlagServiceTest {
 
         underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
 
-        assertEquals(1, pcsCaseEntity.getParties().size());
+        assertThat(pcsCaseEntity.getParties()).hasSize(1);
         PartyEntity savedParty = pcsCaseEntity.getParties().iterator().next();
 
         assertNotNull(savedParty.getDefendantFlags());
-        assertEquals(1, savedParty.getDefendantFlags().size());
+        assertThat(savedParty.getDefendantFlags()).hasSize(1);
 
         BaseCaseFlag savedFlags = savedParty.getDefendantFlags().getFirst();
         assertThat(savedFlags.getFlagComment()).isEqualTo("Complicated case");
@@ -221,11 +221,11 @@ class CaseFlagServiceTest {
 
         underTest.mergePartyFlags(new ArrayList<>(), pcsCaseEntity.getParties());
 
-        assertEquals(1, pcsCaseEntity.getParties().size());
+        assertThat(pcsCaseEntity.getParties()).hasSize(1);
         PartyEntity retainedParty = pcsCaseEntity.getParties().iterator().next();
 
-        assertEquals("John", retainedParty.getFirstName());
-        assertEquals("Doe", retainedParty.getLastName());
+        assertThat(retainedParty.getFirstName()).isEqualTo("John");
+        assertThat(retainedParty.getLastName()).isEqualTo("Doe");
         assertTrue(retainedParty.getDefendantFlags().isEmpty());
     }
 
@@ -256,15 +256,6 @@ class CaseFlagServiceTest {
         flagDetails.add(flagDetailListValue);
 
         return flagDetails;
-    }
-
-    private List<CasePartyFlagEntity> castToCasePartyFlag(List<BaseCaseFlag> caseFlagEntity) {
-        List<CasePartyFlagEntity> casePartyFlagEntities = new ArrayList<>();
-
-        for (BaseCaseFlag baseCaseFlag : caseFlagEntity) {
-            casePartyFlagEntities.add((CasePartyFlagEntity) baseCaseFlag);
-        }
-        return casePartyFlagEntities;
     }
 
     private List<ListValue<String>> createPathListValue() {

@@ -29,7 +29,12 @@ public enum UserRole implements HasRole {
     CTSC_ADMIN("ctsc", Permission.CRU, RAS),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", Permission.CRU, RAS),
     HEARING_CENTER_ADMIN("hearing-center-admin", Permission.CRU, RAS),
-    WLU_ADMIN("wlu-admin", Permission.CRU, RAS);
+    WLU_ADMIN("wlu-admin", Permission.CRU, RAS),
+    FEE_PAID_JUDGE("fee-paid-judge", Set.of(R), RAS),
+    LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS),
+    CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS),
+    JUDGE("[JUDGE]", Set.of(R), RAS);
+
 
     @JsonValue
     private final String role;

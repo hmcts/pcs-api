@@ -18,7 +18,6 @@ export default {
   'resumePossessionClaimclaimantCircumstances': 'claimantCircumstances',
   'resumePossessionClaimdefendantCircumstances': 'defendantCircumstances',
   'resumePossessionClaimalternativesToPossession': 'alternativesToPossession',
-  'resumePossessionClaimclaimingCosts': 'claimingCosts',
   'resumePossessionClaimrentDetails': 'rentDetails',
   'resumePossessionClaimdailyRentAmount': 'dailyRentAmount',
   'resumePossessionClaimmoneyJudgment': 'moneyJudgment',
