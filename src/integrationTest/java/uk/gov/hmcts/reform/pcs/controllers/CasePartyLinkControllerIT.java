@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -424,7 +423,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         caseEntity.setCaseReference(caseReference);
 
         ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
             .build();
 
         caseEntity.addClaim(claimEntity);
@@ -445,9 +443,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
-            .build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
 
         caseEntity.addClaim(claimEntity);
 

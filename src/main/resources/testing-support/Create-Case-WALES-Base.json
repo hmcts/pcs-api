@@ -73,7 +73,6 @@
   "claimantCircumstancesSelect":"NO",
   "hasDefendantCircumstancesInfo":"NO",
   "prohibitedConductWalesClaim":"NO",
-  "claimingCostsWanted":"NO",
   "additionalReasonsForPossession":{
     "hasReasons":"NO"
   },
