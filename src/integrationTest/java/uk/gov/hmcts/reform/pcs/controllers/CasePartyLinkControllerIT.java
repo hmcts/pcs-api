@@ -100,7 +100,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void setUp() {
         idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_TOKEN);
 
-        // Stub IDAM /o/userinfo for incoming bearer token validation
         UserInfo userInfo = UserInfo.builder().uid(USER_ID.toString()).build();
         when(idamUserInfoApi.getUserInfo(anyString())).thenReturn(userInfo);
 
@@ -168,7 +167,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk());
 
-        // Then - getBearerToken keeps the "Bearer " prefix if already present
         verify(idamUserInfoApi).getUserInfo(eq(AUTH_HEADER));
     }
 

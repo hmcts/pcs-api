@@ -27,11 +27,8 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         HmcHearingApi.class,
         LocationReferenceApi.class,
         IdamUserInfoApi.class,
-        // Required for ccd-sdk's CcdSdkIdamService → IdamClient → IdamApi chain.
-        // pcs-api code uses IdamUserInfoApi (our own Feign) for inbound bearer validation
-        // and Spring OAuth2 for system-user token fetch. Cannot drop IdamApi.class until
-        // ccd-sdk stops using idam-java-client.
-        IdamApi.class,
+        IdamApi.class, // not used by pcs-api code; required so ccd-sdk's IdamClient can wire.
+
         RdProfessionalApi.class,
         FeesApi.class,
         CaseDocumentClientApi.class

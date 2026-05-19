@@ -95,7 +95,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IdamException.class)
     public ResponseEntity<Error> handleIdamException(IdamException ex) {
         log.error("IDAM call failed", ex);
-        if (isUpstreamThrottled(ex)) {
+        if (isUpstreamUnavailable(ex)) {
             return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .header(HttpHeaders.RETRY_AFTER, RETRY_AFTER_SECONDS)
@@ -120,33 +120,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(new Error("Invalid data"));
     }
 
-    // Decide whether the IdamException came from IDAM being unreachable / throttling us, in
-    // which case the caller should back off rather than treat it as a pcs-api bug.
-    //
-    // IDAM throttles by returning HTTP 429 with no Retry-After of its own. Depending on which
-    // HTTP client we used to make the call, the failure shows up in one of three shapes:
-    //   1. RestClientResponseException(429) — Spring's OAuth2 password client (token fetch).
-    //   2. OAuth2AuthorizationException with errorCode "invalid_token_response" (Spring couldn't
-    //      parse the 429 body as a TokenResponse) or "temporarily_unavailable" (RFC 6749).
-    //   3. FeignException with status 429, any 5xx, or no response (timeout/network) — comes
-    //      from our IdamUserInfoApi Feign call to /o/userinfo.
-    // Any of these means "IDAM is the problem", so surface as 503 + Retry-After.
-    private static final Set<String> THROTTLE_ERROR_CODES = Set.of(
+    private static final Set<String> OAUTH2_THROTTLE_ERROR_CODES = Set.of(
         "invalid_token_response", "temporarily_unavailable");
 
-    private static boolean isUpstreamThrottled(Throwable ex) {
+    private static boolean isUpstreamUnavailable(Throwable ex) {
         Throwable cause = ex;
         int depth = 0;
         while (cause != null && depth++ < 10) {
-            if (cause instanceof RestClientResponseException restEx
-                && restEx.getStatusCode().value() == HttpStatus.TOO_MANY_REQUESTS.value()) {
-                return true;
-            }
-            if (cause instanceof OAuth2AuthorizationException oauthEx
-                && THROTTLE_ERROR_CODES.contains(oauthEx.getError().getErrorCode())) {
-                return true;
-            }
-            if (cause instanceof FeignException feignEx && isFeignUpstreamFailure(feignEx)) {
+            if (isRestClient429(cause) || isOAuth2Throttle(cause) || isFeignUpstreamFailure(cause)) {
                 return true;
             }
             cause = cause.getCause();
@@ -154,9 +135,22 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return false;
     }
 
-    private static boolean isFeignUpstreamFailure(FeignException ex) {
-        int status = ex.status();
-        // status < 0 means no response was received (timeout, connection refused, etc.)
+    private static boolean isRestClient429(Throwable cause) {
+        return cause instanceof RestClientResponseException restEx
+            && restEx.getStatusCode().value() == HttpStatus.TOO_MANY_REQUESTS.value();
+    }
+
+    private static boolean isOAuth2Throttle(Throwable cause) {
+        return cause instanceof OAuth2AuthorizationException oauthEx
+            && OAUTH2_THROTTLE_ERROR_CODES.contains(oauthEx.getError().getErrorCode());
+    }
+
+    private static boolean isFeignUpstreamFailure(Throwable cause) {
+        if (!(cause instanceof FeignException feignEx)) {
+            return false;
+        }
+        int status = feignEx.status();
+        // Feign returns status < 0 when no response was received (timeout / connection refused).
         return status < 0 || status == HttpStatus.TOO_MANY_REQUESTS.value() || status >= 500;
     }
 
