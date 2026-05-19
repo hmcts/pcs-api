@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class AdditionalDefendantInformationTabDetailsBuilder extends DefendantInformationBuilder {
@@ -23,7 +24,7 @@ public class AdditionalDefendantInformationTabDetailsBuilder extends DefendantIn
             .skip(1)
             .map(ListValue::getValue)
             .map(defendant -> createAdditionalSummaryDefendantDetails(defendant, pcsCase))
-            .filter(defendantDetails -> defendantDetails != null)
+            .filter(Objects::nonNull)
             .map(defendantDetails -> ListValue.<uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails>builder()
                 .value(defendantDetails)
                 .build())
@@ -40,7 +41,7 @@ public class AdditionalDefendantInformationTabDetailsBuilder extends DefendantIn
             .skip(1)
             .map(ListValue::getValue)
             .map(defendant -> createAdditionalDetailedDefendantDetails(defendant, pcsCase))
-            .filter(defendantDetails -> defendantDetails != null)
+            .filter(Objects::nonNull)
             .map(defendantDetails -> ListValue.<uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails>builder()
                 .value(defendantDetails)
                 .build())
