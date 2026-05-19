@@ -410,7 +410,6 @@ class SubmitEventHandlerTest {
     @Test
     void shouldCallDefendantResponseNotificationServiceWhenFinalSubmit() {
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
