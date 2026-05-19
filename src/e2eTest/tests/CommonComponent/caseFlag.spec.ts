@@ -8,8 +8,38 @@ import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { caseSummary } from '@data/page-data';
+import {caseSummary, user} from '@data/page-data';
 import { specialMeasureForFlag, whereShouldThisFlagBeAdded,selectFlagType, addCommentsForFlag, reviewFlagDetails, viewCaseFlag, manageCaseFlags, updateFlagComments } from '@data/page-data-figma';
+import {dismissCookieBanner} from "@config/cookie-banner";
+
+test.use({ storageState: undefined });
+
+test.beforeEach(async ({ page, context }) => {
+  await context.clearCookies();
+  initializeExecutor(page);
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await page.evaluate(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {
+      // Ignore if storage is not accessible
+    }
+  });
+
+  await dismissCookieBanner(page, 'additional');
+  await performAction('login', user.ctscAdministrator);
+  await dismissCookieBanner(page, 'analytics');
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
+  await expect(async () => {
+    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+  }).toPass({
+    timeout: VERY_LONG_TIMEOUT,
+  });
+});
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);

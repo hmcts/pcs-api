@@ -4,6 +4,10 @@ export const user = {
     password: process.env.IDAM_PCS_USER_PASSWORD,
     uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
   },
+  ctscAdministrator:  {
+    email: 'pcs-ctsc-admin-01@hmcts.net',
+    password: process.env.IDAM_PCS_USER_PASSWORD
+  },
   caseworker:  {
     email: 'pcs-caseworker@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD
