@@ -17,9 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNullElse;
 
@@ -130,9 +127,8 @@ public class CaseFlagsView {
         List<BaseCaseFlag> defendantFlags = new ArrayList<>(partyEntity.getDefendantFlags());
 
         return Flags.builder()
-            .partyName(Stream.of(partyEntity.getFirstName(), partyEntity.getLastName(),
-                                 partyEntity.getOrgName()).filter(
-                Objects::nonNull).collect(Collectors.joining(" ")))
+            .partyName((requireNonNullElse(partyEntity.getFirstName(), "")
+                + " " + requireNonNullElse(partyEntity.getLastName(), "")))
             .roleOnCase(
                 DEFENDANT)
             .details(mapFlagDetails(defendantFlags))
