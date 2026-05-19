@@ -1,7 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.genapp;
 
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+
+import java.util.List;
 
 public interface GenAppRequest {
 
@@ -22,6 +26,10 @@ public interface GenAppRequest {
     String getWithoutNoticeReason();
 
     String getWhatOrderWanted();
+
+    VerticalYesNo getHasSupportingDocuments();
+
+    List<ListValue<UploadedDocument>> getUploadedDocuments();
 
     LanguageUsed getLanguageUsed();
 
