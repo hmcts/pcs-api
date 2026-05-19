@@ -23,8 +23,6 @@ import {
   contactPreferences,
   preactionProtocol,
   claimantCircumstances,
-  claimingCosts,
-  dailyRentAmount,
   defendantCircumstances,
   mediationAndSettlement,
   moneyJudgment,
@@ -39,7 +37,7 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
   statementOfTruth,
-  claimantDetailsWales,
+  exemptLandlord,
   occupationLicenceDetailsWales,
   prohibitedConductWales,
   underlesseeMortgageeDetails
@@ -80,11 +78,10 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', claimantDetailsWales.mainHeader);
+    await performValidation('mainHeader', exemptLandlord.mainHeader);
     await performAction('selectClaimantDetails',
-        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
-         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
-         question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
+        {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.yesRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
@@ -148,8 +145,6 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -186,16 +181,16 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', claimantDetailsWales.mainHeader);
+    await performValidation('mainHeader', exemptLandlord.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
-        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
+      {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.yesRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -261,9 +256,6 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       label2: prohibitedConductWales.giveDetailsOfTermsHiddenTextLabel,
       input2: prohibitedConductWales.giveDetailsOfTermsTextInput
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
-    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -303,16 +295,16 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', claimantDetailsWales.mainHeader);
+    await performValidation('mainHeader', exemptLandlord.mainHeader);
     await performAction('selectClaimantDetails',
-        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.noRadioOption,
-         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.noRadioOption,
-         question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.noRadioOption});
+        {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.noRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -372,8 +364,6 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       question2: prohibitedConductWales.haveYouAndContractHolderAgreedHiddenQuestion,
       option2: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -410,16 +400,16 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', claimantDetailsWales.mainHeader);
+    await performValidation('mainHeader', exemptLandlord.mainHeader);
     await performAction('selectClaimantDetails',
-        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.notApplicableRadioOption,
-         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.notApplicableRadioOption,
-         question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.notApplicableRadioOption});
+        {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.noRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -473,8 +463,6 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -511,16 +499,16 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', claimantDetailsWales.mainHeader);
+    await performValidation('mainHeader', exemptLandlord.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
-        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
+      {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.yesRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -580,8 +568,6 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -640,16 +626,16 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', claimantDetailsWales.mainHeader);
+    await performValidation('mainHeader', exemptLandlord.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
-        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
+      {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.yesRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -690,8 +676,6 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -737,16 +721,16 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', claimantDetailsWales.mainHeader);
+    await performValidation('mainHeader', exemptLandlord.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
-        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
+      {question1: exemptLandlord.wereYouRegisteredUnderPart1Question, option1: exemptLandlord.yesRadioOption});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -797,8 +781,6 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.noRadioOption,
     });
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
