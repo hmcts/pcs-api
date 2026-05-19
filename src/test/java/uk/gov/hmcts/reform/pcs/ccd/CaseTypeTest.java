@@ -11,8 +11,9 @@ import uk.gov.hmcts.ccd.sdk.api.PropertyUtils;
 import uk.gov.hmcts.ccd.sdk.api.Search;
 import uk.gov.hmcts.ccd.sdk.api.SearchCases;
 import uk.gov.hmcts.ccd.sdk.api.Tab;
+import uk.gov.hmcts.ccd.sdk.api.Tab.TabBuilder;
 import uk.gov.hmcts.ccd.sdk.api.TabField;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
@@ -26,7 +27,7 @@ class CaseTypeTest {
     private CaseType caseType;
 
     @Mock
-    private ConfigBuilderImpl<PCSCase, State, UserRole> builder;
+    private ConfigBuilderImpl<PCSCase, State, AccessProfile> builder;
 
     @Mock
     private PropertyUtils utils;
@@ -61,17 +62,17 @@ class CaseTypeTest {
     @Test
     void shouldConfigureCaseTypeTabs() {
         // Given
-        final Tab.TabBuilder<PCSCase, UserRole> nextStepsTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final Tab.TabBuilder<PCSCase, UserRole> summaryTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final Tab.TabBuilder<PCSCase, UserRole> caseHistoryTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final Tab.TabBuilder<PCSCase, UserRole> hiddenTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final Tab.TabBuilder<PCSCase, UserRole> serviceRequestTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final Tab.TabBuilder<PCSCase, UserRole> caseNotesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final Tab.TabBuilder<PCSCase, UserRole> caseLinksTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final Tab.TabBuilder<PCSCase, UserRole> caseFileViewTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final Tab.TabBuilder<PCSCase, UserRole> casePartiesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final Tab.TabBuilder<PCSCase, UserRole> caseFlagsTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final Search.SearchBuilder<PCSCase, UserRole> searchBuilder =
+        final TabBuilder<PCSCase, AccessProfile> nextStepsTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> summaryTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> caseHistoryTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> hiddenTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> serviceRequestTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> caseNotesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> caseLinksTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> caseFileViewTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> caseFlagsTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> casePartiesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final Search.SearchBuilder<PCSCase, AccessProfile> searchBuilder =
             Search.SearchBuilder.builder(PCSCase.class, utils);
         final SearchCases.SearchCasesBuilder<PCSCase> searchCasesBuilder =
             SearchCases.SearchCasesBuilder.builder(PCSCase.class, utils);
@@ -90,19 +91,19 @@ class CaseTypeTest {
         when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
-        when(builder.categories(UserRole.PCS_SOLICITOR))
-            .thenReturn(CaseCategory.CaseCategoryBuilder.builder(UserRole.PCS_SOLICITOR));
+        when(builder.categories(AccessProfile.PCS_SOLICITOR))
+            .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.PCS_SOLICITOR));
 
         // When
         caseType.configure(builder);
-        final Tab<PCSCase, UserRole> nextStepsTab = nextStepsTabBuilder.build();
-        final Tab<PCSCase, UserRole> summaryTab = summaryTabBuilder.build();
-        final Tab<PCSCase, UserRole> caseHistoryTab = caseHistoryTabBuilder.build();
-        final Tab<PCSCase, UserRole> hiddenTab = hiddenTabBuilder.build();
-        final Tab<PCSCase, UserRole> serviceRequestTab = serviceRequestTabBuilder.build();
-        final Tab<PCSCase, UserRole> caseLinksTab = caseLinksTabBuilder.build();
-        final Tab<PCSCase, UserRole> casePartiesTab = casePartiesTabBuilder.build();
-        final Tab<PCSCase, UserRole> caseFileViewTab = caseFileViewTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> nextStepsTab = nextStepsTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> summaryTab = summaryTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> caseHistoryTab = caseHistoryTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> hiddenTab = hiddenTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> serviceRequestTab = serviceRequestTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> caseLinksTab = caseLinksTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> casePartiesTab = casePartiesTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> caseFileViewTab = caseFileViewTabBuilder.build();
 
         // Then
         assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
