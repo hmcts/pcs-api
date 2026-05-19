@@ -86,7 +86,7 @@ public class CaseDetailsTabView {
         ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
         ClaimantInformationTabDetails claimantInformationTabDetails = buildClaimantInformationTabDetails(pcsCase);
         DefendantInformationTabDetails defendantInformationTabDetails =
-            defendantInformationTabDetailsBuilder.buildDefendantOneDetails(pcsCase);
+            defendantInformationTabDetailsBuilder.createDetailedDefendantDetails(pcsCase);
         List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> underlesseeMortgageTabDetailsList =
             buildUnderlesseeMortgageTabDetailsList(pcsCase);
         DemotionOfTenancyTabDetails demotionOfTenancyTabDetails = buildDemotionOfTenancyTabDetails(pcsCase);
@@ -118,7 +118,7 @@ public class CaseDetailsTabView {
 
         if (defendantInformationTabDetails != null) {
             List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendantInformationTabDetails =
-                additionalDefendantInformationTabDetailsBuilder.buildAdditionalDefendantsDetails(pcsCase);
+                additionalDefendantInformationTabDetailsBuilder.buildDetailedAdditionalDefendantsDetails(pcsCase);
             caseDetailsTab.setAdditionalDefendants(additionalDefendantInformationTabDetails);
             caseDetailsTab.setDefendantCircumstanceDetails(buildDefendantCircumstanceTabDetails(pcsCase));
         }

@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 
 public class DefendantInformationBuilder {
-    protected AddressUK getSummaryDefendantAddressForService(Party defendant, PCSCase pcsCase) {
+    protected AddressUK getDefendantAddressForService(Party defendant, PCSCase pcsCase) {
         if (defendant.getAddressKnown() != VerticalYesNo.YES) {
             return pcsCase.getPropertyAddress();
         }

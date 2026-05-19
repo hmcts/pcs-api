@@ -14,6 +14,11 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 public class AdditionalDefendantInformationTabDetails {
 
     @CCD(
+        label = "Additional defendant's name known?"
+    )
+    private String nameKnown;
+
+    @CCD(
         label = "First name"
     )
     private String firstName;
@@ -22,6 +27,11 @@ public class AdditionalDefendantInformationTabDetails {
         label = "Last name"
     )
     private String lastName;
+
+    @CCD(
+        label = "Additional defendant's correspondence address known"
+    )
+    private String addressKnown;
 
     @CCD(
         label = "Additional defendant address for service"

@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDet
 @Component
 public class DefendantInformationTabDetailsBuilder extends DefendantInformationBuilder {
 
-    public DefendantInformationTabDetails buildDefendantOneDetails(PCSCase pcsCase) {
+    public DefendantInformationTabDetails buildSummaryDefendantOneDetails(PCSCase pcsCase) {
         if (CollectionUtils.isEmpty(pcsCase.getAllDefendants())) {
             return null;
         }
@@ -19,8 +19,16 @@ public class DefendantInformationTabDetailsBuilder extends DefendantInformationB
         return createSummaryDefendantDetails(pcsCase.getAllDefendants().getFirst().getValue(), pcsCase);
     }
 
+    public DefendantInformationTabDetails createDetailedDefendantDetails(PCSCase pcsCase) {
+        if (CollectionUtils.isEmpty(pcsCase.getAllDefendants())) {
+            return null;
+        }
+
+        return createDetailedDefendantDetails(pcsCase.getAllDefendants().getFirst().getValue(), pcsCase);
+    }
+
     private DefendantInformationTabDetails createSummaryDefendantDetails(Party defendant, PCSCase pcsCase) {
-        AddressUK addressForService = getSummaryDefendantAddressForService(defendant, pcsCase);
+        AddressUK addressForService = getDefendantAddressForService(defendant, pcsCase);
 
         if (defendant.getNameKnown() != VerticalYesNo.YES && addressForService == null) {
             return null;
@@ -31,5 +39,27 @@ public class DefendantInformationTabDetailsBuilder extends DefendantInformationB
             .lastName(getDefendantLastName(defendant))
             .addressForService(addressForService)
             .build();
+    }
+
+    private DefendantInformationTabDetails createDetailedDefendantDetails(Party defendant, PCSCase pcsCase) {
+        VerticalYesNo nameKnown = defendant.getNameKnown();
+        VerticalYesNo addressKnown = defendant.getAddressKnown();
+
+        DefendantInformationTabDetails defendantInformationTabDetails = DefendantInformationTabDetails.builder()
+            .nameKnown(nameKnown.getLabel())
+            .addressKnown(addressKnown.getLabel())
+            .build();
+
+        if (nameKnown == VerticalYesNo.YES) {
+            defendantInformationTabDetails.setFirstName(getDefendantFirstName(defendant));
+            defendantInformationTabDetails.setLastName(getDefendantLastName(defendant));
+        }
+
+        if (addressKnown == VerticalYesNo.YES) {
+            AddressUK addressForService = getDefendantAddressForService(defendant, pcsCase);
+            defendantInformationTabDetails.setAddressForService(addressForService);
+        }
+
+        return defendantInformationTabDetails;
     }
 }
