@@ -1,8 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
+import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HMCTS_CTSC;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
+import java.util.Set;
 import uk.gov.hmcts.ccd.sdk.api.HasAccessControl;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
@@ -21,6 +24,7 @@ public class GlobalSearchAccess implements HasAccessControl {
          */
 
         grants.putAll(PCS_SOLICITOR, Permission.CRUD);
+        grants.putAll(HMCTS_CTSC, Set.of(R));
 
         return grants;
     }
