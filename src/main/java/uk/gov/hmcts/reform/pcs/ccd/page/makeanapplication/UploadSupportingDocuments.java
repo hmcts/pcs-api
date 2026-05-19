@@ -21,7 +21,7 @@ public class UploadSupportingDocuments implements CcdPageConfiguration {
         </p>
         <p class="govuk-body">
          Before you upload the document, give it a name that tells the court what it is,
-         for example ’Job offer letter’.
+         for example ‘Job offer letter’.
         </p>
         <p class="govuk-body">
          Each document must be less than 100MB. You can upload the following file types: DOC/DOCX (Word),
@@ -33,7 +33,7 @@ public class UploadSupportingDocuments implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("uploadSupportingDocuments")
-            .pageLabel("Upload documents to support the defendant’s application (Optional)")
+            .pageLabel("Confirm if you want to upload documents to support the defendant’s application")
             .showCondition(fieldEquals("xui_genapp_HasSupportingDocuments", VerticalYesNo.YES))
             .label("uploadSupportingDocuments-lineSeparator", "---")
             .label("uploadSupportingDocuments-info", INFO_MARKDOWN)

@@ -20,7 +20,7 @@ public class DocumentUploadWanted implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("documentUploadWanted")
-            .pageLabel("Do you want to upload documents to support the defendant’s application? (Optional)")
+            .pageLabel("Do you want to upload documents to support the defendant’s application?")
             .label("documentUploadWanted-lineSeparator", "---")
             .label("documentUploadWanted-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
