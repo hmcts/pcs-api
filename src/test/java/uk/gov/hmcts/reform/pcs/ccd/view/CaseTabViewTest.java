@@ -272,31 +272,15 @@ class CaseTabViewTest {
     }
 
     @Test
-    void shouldSetDraftSummaryTabFieldsUsingSubmittedFallbacks() {
+    void shouldSetDraftSummaryTabFieldsUsingDraftDataOnly() {
         // Given
         AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
-        List<ListValue<Party>> submittedClaimants = List.of(
-            listValue(Party.builder().orgName("Submitted claimant").build())
-        );
-        List<ListValue<Party>> submittedDefendants = List.of(
-            listValue(Party.builder()
-                          .nameKnown(VerticalYesNo.YES)
-                          .firstName("Submitted")
-                          .lastName("Defendant")
-                          .addressKnown(VerticalYesNo.YES)
-                          .address(propertyAddress)
-                          .build())
-        );
-        List<ListValue<ClaimGroundSummary>> submittedGrounds = List.of(
-            listValue(ClaimGroundSummary.builder().label("Submitted ground").build())
-        );
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(propertyAddress)
-            .allClaimants(submittedClaimants)
-            .allDefendants(submittedDefendants)
-            .claimGroundSummaries(submittedGrounds)
             .build();
-        PCSCase draftCaseData = PCSCase.builder().build();
+        PCSCase draftCaseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
 
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
 
@@ -306,11 +290,9 @@ class CaseTabViewTest {
         // Then
         SummaryTab summaryTab = pcsCase.getSummaryTab();
         assertThat(summaryTab.getRepossessedPropertyAddress()).isEqualTo(propertyAddress);
-        assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Submitted claimant");
-        assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Submitted");
-        assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("Defendant");
-        assertThat(summaryTab.getDefendantDetails().getAddressForService()).isEqualTo(propertyAddress);
-        assertThat(summaryTab.getGroundsForPossession().getGrounds()).isEqualTo("Submitted ground");
+        assertThat(summaryTab.getClaimantDetails()).isNull();
+        assertThat(summaryTab.getDefendantDetails()).isNull();
+        assertThat(summaryTab.getGroundsForPossession().getGrounds()).isNull();
     }
 
     @Test
@@ -371,6 +353,104 @@ class CaseTabViewTest {
             .isEqualTo(additionalDefendantAddress);
         assertThat(summaryTab.getGroundsForPossession().getGrounds()).isEqualTo("Draft ground");
         assertThat(draftCaseData.getAllDefendants()).hasSize(2);
+    }
+
+    @Test
+    void shouldSetDraftDefendantWhenNoAdditionalDefendantHasBeenSelected() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
+        AddressUK defendantAddress = AddressUK.builder().postCode("M1 1AA").build();
+        PCSCase pcsCase = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
+        PCSCase draftCaseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .defendant1(DefendantDetails.builder()
+                            .nameKnown(VerticalYesNo.YES)
+                            .firstName("Single")
+                            .lastName("Defendant")
+                            .addressKnown(VerticalYesNo.YES)
+                            .correspondenceAddress(defendantAddress)
+                            .build())
+            .addAnotherDefendant(VerticalYesNo.NO)
+            .build();
+
+        when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
+
+        // When
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+
+        // Then
+        assertThat(draftCaseData.getAllDefendants()).hasSize(1);
+        Party defendant = draftCaseData.getAllDefendants().getFirst().getValue();
+        assertThat(defendant.getNameKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(defendant.getFirstName()).isEqualTo("Single");
+        assertThat(defendant.getLastName()).isEqualTo("Defendant");
+        assertThat(defendant.getAddressKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(defendant.getAddress()).isEqualTo(defendantAddress);
+        assertThat(pcsCase.getSummaryTab().getAdditionalDefendants()).isNull();
+    }
+
+    @Test
+    void shouldNotSetAdditionalDraftDefendantsWhenAdditionalDefendantListIsEmpty() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
+        PCSCase pcsCase = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
+        PCSCase draftCaseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .defendant1(DefendantDetails.builder()
+                            .nameKnown(VerticalYesNo.YES)
+                            .firstName("Only")
+                            .lastName("Defendant")
+                            .addressKnown(VerticalYesNo.NO)
+                            .build())
+            .addAnotherDefendant(VerticalYesNo.YES)
+            .additionalDefendants(List.of())
+            .build();
+
+        when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
+
+        // When
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+
+        // Then
+        assertThat(draftCaseData.getAllDefendants()).hasSize(1);
+        assertThat(pcsCase.getSummaryTab().getDefendantDetails().getFirstName()).isEqualTo("Only");
+        assertThat(pcsCase.getSummaryTab().getDefendantDetails().getLastName()).isEqualTo("Defendant");
+        assertThat(pcsCase.getSummaryTab().getDefendantDetails().getAddressForService()).isEqualTo(propertyAddress);
+        assertThat(pcsCase.getSummaryTab().getAdditionalDefendants()).isNull();
+    }
+
+    @Test
+    void shouldNotOverwriteExistingDraftDefendantsWhenDefendantOneIsMissing() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
+        List<ListValue<Party>> existingDefendants = List.of(
+            listValue(Party.builder()
+                          .nameKnown(VerticalYesNo.YES)
+                          .firstName("Existing")
+                          .lastName("Defendant")
+                          .build())
+        );
+        PCSCase pcsCase = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
+        PCSCase draftCaseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .allDefendants(existingDefendants)
+            .build();
+
+        when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
+
+        // When
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+
+        // Then
+        assertThat(draftCaseData.getAllDefendants()).isSameAs(existingDefendants);
+        assertThat(pcsCase.getSummaryTab().getDefendantDetails().getFirstName()).isEqualTo("Existing");
+        assertThat(pcsCase.getSummaryTab().getDefendantDetails().getLastName()).isEqualTo("Defendant");
     }
 
     private static <T> ListValue<T> listValue(T value) {

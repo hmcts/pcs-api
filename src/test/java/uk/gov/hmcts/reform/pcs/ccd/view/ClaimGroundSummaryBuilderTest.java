@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
@@ -40,7 +43,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWa
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -325,6 +330,37 @@ class ClaimGroundSummaryBuilderTest {
     }
 
     @Test
+    void shouldBuildOtherOccupationLicenceWalesClaimGroundSummariesFromDraft() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
+                                               .occupationLicenceTypeWales(OccupationLicenceTypeWales.OTHER)
+                                               .build())
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                                           .mandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
+                                           .discretionaryGrounds(Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157))
+                                           .estateManagementGrounds(Set.of(
+                                               EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
+                                           ))
+                                           .build())
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries)
+            .map(ListValue::getValue)
+            .map(ClaimGroundSummary::getLabel)
+            .containsExactlyInAnyOrder(
+                MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
+                DiscretionaryGroundWales.RENT_ARREARS_S157.getLabel(),
+                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel()
+            );
+    }
+
+    @Test
     void shouldBuildAssuredNoRentArrearsClaimGroundSummariesFromDraft() {
         // Given
         PCSCase draftCaseData = PCSCase.builder()
@@ -389,7 +425,6 @@ class ClaimGroundSummaryBuilderTest {
                                                    ))
                                                    .build())
             .secureOrFlexibleGroundsReasons(SecureOrFlexibleGroundsReasons.builder()
-                                                .antiSocialGround("Antisocial reason")
                                                 .riotOffenceGround("Riot reason")
                                                 .premiumMutualExchangeGround("Premium reason")
                                                 .antiSocialCondition1OfS84AGround("Condition 1 reason")
@@ -415,7 +450,7 @@ class ClaimGroundSummaryBuilderTest {
                 SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES
                     .getLabel()
             );
-        assertReason(summaries, SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.getLabel(), "Antisocial reason");
+        assertNoReason(summaries, SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.getLabel());
         assertReason(summaries, SecureOrFlexibleDiscretionaryGrounds.RIOT_OFFENCE.getLabel(), "Riot reason");
         assertReason(summaries, SecureOrFlexibleDiscretionaryGrounds.PREMIUM_PAID_MUTUAL_EXCHANGE.getLabel(),
                      "Premium reason");
@@ -484,7 +519,6 @@ class ClaimGroundSummaryBuilderTest {
                                                    ))
                                                    .build())
             .secureOrFlexibleGroundsReasons(SecureOrFlexibleGroundsReasons.builder()
-                                                .antiSocialGround("ASB reason")
                                                 .breachOfTenancyGround("Breach reason")
                                                 .nuisanceOrImmoralUseGround("Nuisance reason")
                                                 .domesticViolenceGround("Domestic reason")
@@ -517,7 +551,7 @@ class ClaimGroundSummaryBuilderTest {
             claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
 
         // Then
-        assertReason(summaries, SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.getLabel(), "ASB reason");
+        assertNoReason(summaries, SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.getLabel());
         assertReason(summaries, SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.getLabel(),
                      "Breach reason");
         assertReason(summaries, SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE.getLabel(),
@@ -573,25 +607,23 @@ class ClaimGroundSummaryBuilderTest {
                      "Under occupation reason");
     }
 
-    @Test
-    void shouldBuildIntroductoryDemotedOrOtherClaimGroundSummariesFromDraft() {
+    @ParameterizedTest
+    @MethodSource("introductoryDemotedOrOtherTenancyDrafts")
+    void shouldBuildIntroductoryDemotedOrOtherClaimGroundSummariesFromDraft(
+        TenancyLicenceType tenancyType,
+        IntroductoryDemotedOtherGroundsForPossession groundsForPossession,
+        IntroductoryDemotedOtherGroundReason groundsReason,
+        List<String> expectedLabels,
+        Map<String, String> expectedReasons,
+        Set<String> expectedLabelsWithNoReason
+    ) {
         // Given
         PCSCase draftCaseData = PCSCase.builder()
             .tenancyLicenceDetails(TenancyLicenceDetails.builder()
-                                       .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                                       .typeOfTenancyLicence(tenancyType)
                                        .build())
-            .introductoryDemotedOrOtherGroundsForPossession(
-                IntroductoryDemotedOtherGroundsForPossession.builder()
-                    .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-                    .introductoryDemotedOrOtherGrounds(Set.of(
-                        IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
-                        IntroductoryDemotedOrOtherGrounds.RENT_ARREARS
-                    ))
-                    .build()
-            )
-            .introductoryDemotedOtherGroundReason(IntroductoryDemotedOtherGroundReason.builder()
-                                                       .antiSocialBehaviourGround("Intro antisocial reason")
-                                                       .build())
+            .introductoryDemotedOrOtherGroundsForPossession(groundsForPossession)
+            .introductoryDemotedOtherGroundReason(groundsReason)
             .build();
 
         // When
@@ -602,78 +634,9 @@ class ClaimGroundSummaryBuilderTest {
         assertThat(summaries)
             .map(ListValue::getValue)
             .map(ClaimGroundSummary::getLabel)
-            .containsExactlyInAnyOrder(
-                IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL.getLabel(),
-                IntroductoryDemotedOrOtherGrounds.RENT_ARREARS.getLabel()
-            );
-        assertReason(summaries, IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL.getLabel(),
-                     "Intro antisocial reason");
-        assertNoReason(summaries, IntroductoryDemotedOrOtherGrounds.RENT_ARREARS.getLabel());
-    }
-
-    @Test
-    void shouldBuildNoGroundsSummaryForIntroductoryDemotedOrOtherDraft() {
-        // Given
-        PCSCase draftCaseData = PCSCase.builder()
-            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
-                                       .typeOfTenancyLicence(TenancyLicenceType.DEMOTED_TENANCY)
-                                       .build())
-            .introductoryDemotedOrOtherGroundsForPossession(
-                IntroductoryDemotedOtherGroundsForPossession.builder()
-                    .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
-                    .build()
-            )
-            .introductoryDemotedOtherGroundReason(IntroductoryDemotedOtherGroundReason.builder()
-                                                       .noGrounds("No grounds reason")
-                                                       .build())
-            .build();
-
-        // When
-        List<ListValue<ClaimGroundSummary>> summaries =
-            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
-
-        // Then
-        assertThat(summaries)
-            .map(ListValue::getValue)
-            .map(ClaimGroundSummary::getLabel)
-            .containsExactly(IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS.getLabel());
-        assertReason(summaries, IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS.getLabel(), "No grounds reason");
-    }
-
-    @Test
-    void shouldBuildOtherTenancyClaimGroundSummariesFromDraftWithReasons() {
-        // Given
-        PCSCase draftCaseData = PCSCase.builder()
-            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
-                                       .typeOfTenancyLicence(TenancyLicenceType.OTHER)
-                                       .build())
-            .introductoryDemotedOrOtherGroundsForPossession(
-                IntroductoryDemotedOtherGroundsForPossession.builder()
-                    .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-                    .introductoryDemotedOrOtherGrounds(Set.of(
-                        IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY,
-                        IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS,
-                        IntroductoryDemotedOrOtherGrounds.OTHER
-                    ))
-                    .build()
-            )
-            .introductoryDemotedOtherGroundReason(IntroductoryDemotedOtherGroundReason.builder()
-                                                       .breachOfTheTenancyGround("Breach reason")
-                                                       .absoluteGrounds("Absolute reason")
-                                                       .otherGround("Other reason")
-                                                       .build())
-            .build();
-
-        // When
-        List<ListValue<ClaimGroundSummary>> summaries =
-            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
-
-        // Then
-        assertReason(summaries, IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY.getLabel(),
-                     "Breach reason");
-        assertReason(summaries, IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS.getLabel(),
-                     "Absolute reason");
-        assertReason(summaries, IntroductoryDemotedOrOtherGrounds.OTHER.getLabel(), "Other reason");
+            .containsExactlyInAnyOrderElementsOf(expectedLabels);
+        expectedReasons.forEach((label, reason) -> assertReason(summaries, label, reason));
+        expectedLabelsWithNoReason.forEach(label -> assertNoReason(summaries, label));
     }
 
     @Test
@@ -691,6 +654,75 @@ class ClaimGroundSummaryBuilderTest {
 
         // Then
         assertThat(summaries).isEmpty();
+    }
+
+    private static Stream<Arguments> introductoryDemotedOrOtherTenancyDrafts() {
+        return Stream.of(
+            Arguments.of(
+                TenancyLicenceType.INTRODUCTORY_TENANCY,
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                    .introductoryDemotedOrOtherGrounds(Set.of(
+                        IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
+                        IntroductoryDemotedOrOtherGrounds.RENT_ARREARS
+                    ))
+                    .build(),
+                IntroductoryDemotedOtherGroundReason.builder()
+                    .antiSocialBehaviourGround("Intro antisocial reason")
+                    .build(),
+                List.of(
+                    IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL.getLabel(),
+                    IntroductoryDemotedOrOtherGrounds.RENT_ARREARS.getLabel()
+                ),
+                Map.of(
+                    IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL.getLabel(),
+                    "Intro antisocial reason"
+                ),
+                Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS.getLabel())
+            ),
+            Arguments.of(
+                TenancyLicenceType.DEMOTED_TENANCY,
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+                    .build(),
+                IntroductoryDemotedOtherGroundReason.builder()
+                    .noGrounds("No grounds reason")
+                    .build(),
+                List.of(IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS.getLabel()),
+                Map.of(IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS.getLabel(), "No grounds reason"),
+                Set.of()
+            ),
+            Arguments.of(
+                TenancyLicenceType.OTHER,
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                    .introductoryDemotedOrOtherGrounds(Set.of(
+                        IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY,
+                        IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS,
+                        IntroductoryDemotedOrOtherGrounds.OTHER
+                    ))
+                    .build(),
+                IntroductoryDemotedOtherGroundReason.builder()
+                    .breachOfTheTenancyGround("Breach reason")
+                    .absoluteGrounds("Absolute reason")
+                    .otherGround("Other reason")
+                    .build(),
+                List.of(
+                    IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY.getLabel(),
+                    IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS.getLabel(),
+                    IntroductoryDemotedOrOtherGrounds.OTHER.getLabel()
+                ),
+                Map.of(
+                    IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY.getLabel(),
+                    "Breach reason",
+                    IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS.getLabel(),
+                    "Absolute reason",
+                    IntroductoryDemotedOrOtherGrounds.OTHER.getLabel(),
+                    "Other reason"
+                ),
+                Set.of()
+            )
+        );
     }
 
     private static void assertReason(List<ListValue<ClaimGroundSummary>> summaries,

@@ -173,6 +173,7 @@ public class PCSCase {
         hint = "You do not need to provide the exact amount at this stage, but a judge will request a schedule "
             + "of costs at the hearing"
     )
+    @Deprecated
     private VerticalYesNo claimingCostsWanted;
 
     @CCD(
@@ -610,7 +611,7 @@ public class PCSCase {
     private CasePartiesTab casePartiesTab;
 
     @JsonUnwrapped(prefix = "summaryTab_")
-    @CCD
+    @CCD(searchable = false)
     private SummaryTab summaryTab;
 
     @JsonUnwrapped(prefix = "detailsTab_")

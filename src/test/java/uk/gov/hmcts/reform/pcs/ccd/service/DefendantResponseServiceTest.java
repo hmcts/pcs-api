@@ -102,13 +102,12 @@ class DefendantResponseServiceTest {
     @Captor
     private ArgumentCaptor<CounterClaimEntity> counterClaimCaptor;
 
-    private static final Clock FIXED_UTC_CLOCK = Clock.fixed(
-        Instant.parse("2026-04-22T21:00:00Z"), ZoneOffset.UTC);
-
     private DefendantResponseService underTest;
 
     @BeforeEach
     void setUp() {
+        Clock fixedUtcClock = Clock.fixed(Instant.parse("2026-04-22T21:00:00Z"), ZoneOffset.UTC);
+
         underTest = new DefendantResponseService(
             partyService,
             partyRepository,
@@ -119,7 +118,7 @@ class DefendantResponseServiceTest {
             householdCircumstancesService,
             paymentAgreementService,
             documentService,
-            FIXED_UTC_CLOCK
+            fixedUtcClock
         );
     }
 

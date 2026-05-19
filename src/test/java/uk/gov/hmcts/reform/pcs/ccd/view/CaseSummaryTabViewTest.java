@@ -164,6 +164,20 @@ public class CaseSummaryTabViewTest {
     }
 
     @Test
+    void shouldDisplaySubmittedDateInGmtWhenBritishSummerTimeApplies() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .dateSubmitted(LocalDateTime.of(2026, 7, 11, 17, 2, 31))
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 5:02:31PM");
+    }
+
+    @Test
     void shouldSetSummaryClaimantNameFromOverriddenName() {
         // Given
         PCSCase pcsCase = PCSCase.builder()

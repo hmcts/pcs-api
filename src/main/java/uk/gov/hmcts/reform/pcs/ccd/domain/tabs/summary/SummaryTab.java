@@ -25,54 +25,34 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class SummaryTab {
 
-    @CCD(
-        label = "Address of property to be repossessed"
-    )
+    @CCD(label = "Address of property to be repossessed")
     private AddressUK repossessedPropertyAddress;
 
-    @CCD(
-        label = "Grounds for possession"
-    )
+    @CCD(label = "Grounds for possession")
     private GroundsForPossessionTabDetails groundsForPossession;
 
-    @CCD(
-        label = "Reasons for possession"
-    )
+    @CCD(label = "Reasons for possession")
     private ReasonsForPossessionTabDetails reasonsForPossession;
 
-    @CCD(
-        label = "Date claim Submitted"
-    )
+    @CCD(label = "Date claim Submitted")
     private String dateClaimSubmitted;
 
-    @CCD(
-        label = "Claimant"
-    )
+    @CCD(label = "Claimant")
     private ClaimantInformationTabDetails claimantDetails;
 
-    @CCD(
-        label = "Defendant 1"
-    )
+    @CCD(label = "Defendant 1")
     private DefendantInformationTabDetails defendantDetails;
 
-    @CCD(
-        label = "Additional defendant"
-    )
+    @CCD(label = "Additional defendant")
     private List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendants;
 
-    @CCD(
-        label = "Details of rent arrears"
-    )
+    @CCD(label = "Details of rent arrears")
     private RentArrearsTabDetails rentArrearsDetails;
 
-    @CCD(
-        label = "Tenancy, occupation contract or licence details"
-    )
+    @CCD(label = "Tenancy, occupation contract or licence details")
     private TenancyTabDetails tenancyDetails;
 
-    @CCD(
-        label = "Notice details"
-    )
+    @CCD(label = "Notice details")
     private NoticeTabDetails noticeDetails;
 
 }

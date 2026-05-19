@@ -28,7 +28,6 @@ public class ClaimService {
     private final StatementOfTruthService statementOfTruthService;
 
     public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
-
         ClaimEntity claimEntity = buildClaimEntity(pcsCase);
 
         List<ClaimGroundEntity> claimGrounds = claimGroundService.createClaimGroundEntities(pcsCase);
@@ -63,7 +62,6 @@ public class ClaimService {
                               ? ClaimantType.fromName(pcsCase.getClaimantType().getValueCode()) : null)
             .againstTrespassers(pcsCase.getClaimAgainstTrespassers())
             .dueToRentArrears(pcsCase.getClaimDueToRentArrears())
-            .claimCosts(pcsCase.getClaimingCostsWanted())
             .preActionProtocolFollowed(pcsCase.getPreActionProtocolCompleted())
             .preActionProtocolIncompleteExplanation(pcsCase.getPreActionProtocolIncompleteExplanation())
             .mediationAttempted(pcsCase.getMediationAttempted())

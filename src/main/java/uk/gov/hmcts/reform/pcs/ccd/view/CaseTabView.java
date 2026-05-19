@@ -49,17 +49,8 @@ public class CaseTabView {
     }
 
     public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draftCaseData) {
-        draftCaseData.setPropertyAddress(java.util.Optional.ofNullable(draftCaseData.getPropertyAddress())
-                                             .orElse(pcsCase.getPropertyAddress()));
-
-        if (CollectionUtils.isEmpty(draftCaseData.getAllClaimants())) {
-            draftCaseData.setAllClaimants(pcsCase.getAllClaimants());
-        }
-
         if (draftCaseData.getDefendant1() != null) {
             draftCaseData.setAllDefendants(buildDefendants(draftCaseData));
-        } else if (CollectionUtils.isEmpty(draftCaseData.getAllDefendants())) {
-            draftCaseData.setAllDefendants(pcsCase.getAllDefendants());
         }
 
         if (CollectionUtils.isEmpty(draftCaseData.getAllUnderlesseeOrMortgagees())) {
@@ -83,9 +74,7 @@ public class CaseTabView {
 
         List<ListValue<ClaimGroundSummary>> draftGrounds =
             claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
-        draftCaseData.setClaimGroundSummaries(CollectionUtils.isEmpty(draftGrounds)
-                                                 ? pcsCase.getClaimGroundSummaries()
-                                                 : draftGrounds);
+        draftCaseData.setClaimGroundSummaries(draftGrounds);
 
         setCaseTabFields(draftCaseData);
         pcsCase.setSummaryTab(draftCaseData.getSummaryTab());
