@@ -41,19 +41,6 @@ test.beforeEach(async ({ page, context }) => {
   });
 });
 
-test.beforeEach(async ({ page }) => {
-  initializeExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
-  await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
-  }).toPass({
-    timeout: VERY_LONG_TIMEOUT,
-  });
-});
-
 test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CREATOR]');
