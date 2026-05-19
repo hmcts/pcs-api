@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.document.model.Document;
 import uk.gov.hmcts.reform.pcs.document.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.document.model.genapp.GenAppFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
@@ -82,8 +84,12 @@ public class GenAppDocumentGenerator {
         UUID applicantUserId = securityContextService.getCurrentUserId();
         String outputFilename = getDocumentFilename(mainClaim, genAppEntity, applicantUserId);
 
-        GenAppFormPayload genAppFormPayload
-            = createGenAppFormPayload(caseReference, pcsCaseEntity, mainClaim, citizenGenAppRequest, applicantUserId);
+        GenAppFormPayload genAppFormPayload = createGenAppFormPayload(caseReference,
+                                                                      pcsCaseEntity,
+                                                                      mainClaim,
+                                                                      citizenGenAppRequest,
+                                                                      genAppEntity,
+                                                                      applicantUserId);
 
         return docAssemblyService
             .generateDocument(genAppFormPayload, TEMPLATE_ID, OutputType.PDF, outputFilename);
@@ -93,6 +99,7 @@ public class GenAppDocumentGenerator {
                                                       PcsCaseEntity pcsCaseEntity,
                                                       ClaimEntity mainClaim,
                                                       CitizenGenAppRequest citizenGenAppRequest,
+                                                      GenAppEntity genAppEntity,
                                                       UUID applicantUserId) {
 
         LocalDate currentUkDate = LocalDate.now(ukClock);
@@ -122,12 +129,22 @@ public class GenAppDocumentGenerator {
             .otherPartiesAgreed(citizenGenAppRequest.getOtherPartiesAgreed())
             .withoutNotice(citizenGenAppRequest.getWithoutNotice())
             .withoutNoticeReason(citizenGenAppRequest.getWithoutNoticeReason())
+            .documentUploadWanted(citizenGenAppRequest.getHasSupportingDocuments())
+            .uploadedDocuments(getDocumentList(genAppEntity))
             .statementOfTruth(StatementOfTruth.builder()
                                   .fullName(citizenGenAppRequest.getSotFullName())
                                   .submittedOn(currentUkDate)
                                   .build()
             )
             .build();
+    }
+
+    private List<Document> getDocumentList(GenAppEntity genAppEntity) {
+        List<DocumentEntity> uploadedDocuments = genAppEntity.getDocuments();
+
+        return uploadedDocuments.stream()
+            .map(documentEntity -> Document.builder().filename(documentEntity.getFileName()).build())
+            .toList();
     }
 
     private String buildCaseName(ClaimEntity mainClaim) {
