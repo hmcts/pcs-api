@@ -361,7 +361,7 @@ public class NotificationService {
         return DefendantBasePersonalisation.builder()
             .firstName(defendant.getFirstName())
             .lastName(defendant.getLastName())
-            .caseNumber(defendantResponse.getPcsCase().getCaseReference().toString())
+            .caseNumber(formatCaseReference(defendantResponse.getPcsCase().getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
             .build();
@@ -445,6 +445,14 @@ public class NotificationService {
             .personalisation(personalisation.toMap())
             .claimType(claimType)
             .build();
+    }
+
+    private static String formatCaseReference(String caseReference) {
+        if (caseReference == null) {
+            return null;
+        }
+
+        return caseReference.replaceAll("(.{4})(?!$)", "$1-");
     }
 
     private static String getClaimantEmailAddress(ClaimantContactPreferences claimantContactPreferences) {
