@@ -40,7 +40,7 @@ public class StartSetAside implements CcdPageConfiguration {
         answers so that you can return to them later.</p>
 
         <h2 class="govuk-heading-m">How much it will cost</h2>
-        <p class="govuk-body">It usually costs ${xui_genapp_StandardFee} to apply. The fee will
+        <p class="govuk-body govuk-!-margin-bottom-1">It usually costs ${xui_genapp_StandardFee} to apply. The fee will
         increase to ${xui_genapp_MaxFee} if:</p>
         <ul class="govuk-list govuk-list--bullet">
           <li class="govuk-!-font-size-19">the defendant has already told the other party that they are making
