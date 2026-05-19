@@ -33,8 +33,7 @@ public enum UserRole implements HasRole {
     FEE_PAID_JUDGE("fee-paid-judge", Set.of(R), RAS),
     LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS),
     CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS),
-    JUDGE("[judge]", Set.of(R), RAS)
-    ;
+    JUDGE("[JUDGE]", Set.of(R), RAS);
 
 
     @JsonValue
