@@ -16,7 +16,7 @@ public class StartSomethingElse implements CcdPageConfiguration {
         The defendant can ask the court to make a decision at any point during their case.
         This is called an application.
         </p>
-        <p class="govuk-body">For example, they can use this to:</p>
+        <p class="govuk-body govuk-!-margin-bottom-1">For example, they can use this to:</p>
 
         <ul class="govuk-list govuk-list--bullet">
         <li class="govuk-!-font-size-19">add someone as an extra party to their claim</li>
