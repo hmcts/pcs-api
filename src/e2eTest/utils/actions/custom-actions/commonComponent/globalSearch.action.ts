@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { performAction } from '../../controller';
+import { performAction } from '../../../controller';
 import { actionRecord, IAction } from '@utils/interfaces';
 import { globalSearch } from '@data/page-data-figma';
 import { home } from '@data/page-data';

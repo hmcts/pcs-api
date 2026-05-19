@@ -10,6 +10,6 @@ export const user = {
   },
   hearingCenterAdmin: {
   email: 'hearing_center_admin_reg2@justice.gov.uk',
-  password: process.env.HEARING_CENTER_ADMIN_PASSWORD
+  password: process.env.HEARING_CENTER_ADMIN_PASSWORD ?? 'Password12!'
 },
 };
