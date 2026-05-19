@@ -121,7 +121,7 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectNoticeDetails', {
       question: checkingNoticeWales.haveYouServedNoticeToQuestion,
       howDidYouServeNotice: checkingNoticeWales.noRadioOption,
-      walesNoticeStatement: checkingNoticeWales.sampleStatementTextInput,
+      walesNoticeStatement: 'Sample statement for notice - Wales',
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -224,9 +224,10 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNoticeWales.mainHeader);
-    await performAction('selectNoticeOfYourIntention', {
-      question: checkingNotice.haveYouServedNoticeToQuestion,
-      option: checkingNotice.noRadioOption
+    await performAction('selectNoticeDetails', {
+      question: checkingNoticeWales.haveYouServedNoticeToQuestion,
+      howDidYouServeNotice: checkingNoticeWales.noRadioOption,
+      walesNoticeStatement: checkingNoticeWales.walesNoticeStatementHiddenInputText,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});

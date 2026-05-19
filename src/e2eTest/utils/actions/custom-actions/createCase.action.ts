@@ -499,10 +499,13 @@ export class CreateCaseAction implements IAction {
       await performValidation('text', { "text": checkingNoticeWales.ifThisIsAPossessionParagraph, "elementType": "paragraph" });
       await performValidation('text', { "text": checkingNoticeWales.eachGroundRequiresParagraph, "elementType": "paragraph" });
       await performValidation('text', { "text": checkingNoticeWales.haveYouServedNoticeToQuestion, "elementType": "paragraph" });
-      await performValidation('text', { "text": checkingNoticeWales.youMustMakeAStatementParagraph, "elementType": "paragraph" });
-      await performValidation('text', { "text": checkingNoticeWales.characterLimitHintText, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.youMustMakeAStatementHiddenParagraph, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.characterLimitHiddenHintText, "elementType": "paragraph" });
+      //await performAction('inputText', checkingNoticeWales.walesNoticeStatementHiddenTextInput, {"elementType": "textarea",text: noticeData.walesNoticeStatement});
+
       if (noticeData.walesNoticeStatement) {
-        await performAction('inputText', checkingNoticeWales.enterStatementHintText, noticeData.walesNoticeStatement);
+        await performAction('inputText', checkingNoticeWales.enterStatementHiddenHintText, noticeData.walesNoticeStatement);
+         //await performAction('inputText', prohibitedConduct.label1, prohibitedConduct.input1);
       }
     }
 
@@ -622,16 +625,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', moneyJudgment.continueButton);
   }
 
-<<<<<<< HEAD
-  private async selectClaimingCosts(option: actionData) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
-    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
-    await performAction('clickRadioButton', { question: claimingCosts.doYouWantToAskForYourCostBackQuestion, option: option });
-    await performAction('clickButton', claimingCosts.continueButton);
-  }
-
-=======
->>>>>>> origin/master
   private async selectAlternativesToPossession(alternatives: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
