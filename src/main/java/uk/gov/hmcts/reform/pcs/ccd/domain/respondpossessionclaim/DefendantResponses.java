@@ -85,6 +85,9 @@ public class DefendantResponses {
     private VerticalYesNo disputeClaim;
 
     @CCD
+    private VerticalYesNo hasSolicitor;
+
+    @CCD
     private String disputeClaimDetails;
 
     @CCD
