@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
@@ -41,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -653,6 +655,101 @@ class ClaimGroundSummaryBuilderTest {
 
         // Then
         assertThat(summaries).isEmpty();
+    }
+
+    @Test
+    void shouldAddDescriptionForIntroductoryDemotedOrOtherGrounds() {
+        // Given
+        String description = "Other description";
+        Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds = new HashSet<>();
+        introductoryDemotedOrOtherGrounds.add(IntroductoryDemotedOrOtherGrounds.OTHER);
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(introductoryDemotedOrOtherGrounds)
+                .otherGroundDescription(description)
+                .build();
+
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                   .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                   .build())
+            .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries.size()).isEqualTo(1);
+        ClaimGroundSummary claimGroundSummary = summaries.getFirst().getValue();
+        assertThat(claimGroundSummary.getDescription()).isEqualTo(description);
+    }
+
+    @Test
+    void shouldAddDescriptionForAssuredAdditionalOtherGroundWithRentArrears() {
+        // Given
+        String description = "Other description";
+        Set<AssuredAdditionalOtherGround> additionalOtherGround = new HashSet<>();
+        additionalOtherGround.add(AssuredAdditionalOtherGround.OTHER);
+
+        AssuredRentArrearsPossessionGrounds assuredRentArrearsPossessionGrounds =
+            AssuredRentArrearsPossessionGrounds.builder()
+                .additionalOtherGround(additionalOtherGround)
+                .additionalOtherGroundDescription(description)
+                .build();
+
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build())
+            .assuredRentArrearsPossessionGrounds(assuredRentArrearsPossessionGrounds)
+            .claimDueToRentArrears(YesOrNo.YES)
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries.size()).isEqualTo(1);
+        ClaimGroundSummary claimGroundSummary = summaries.getFirst().getValue();
+        assertThat(claimGroundSummary.getDescription()).isEqualTo(description);
+    }
+
+    @Test
+    void shouldAddDescriptionForAssuredAdditionalOtherGroundWithNoRentArrears() {
+        // Given
+        String description = "Other description";
+        Set<AssuredAdditionalOtherGround> additionalOtherGround = new HashSet<>();
+        additionalOtherGround.add(AssuredAdditionalOtherGround.OTHER);
+
+        AssuredNoArrearsPossessionGrounds assuredNoRentArrearsPossessionGrounds =
+            AssuredNoArrearsPossessionGrounds.builder()
+                .otherGround(additionalOtherGround)
+                .otherGroundDescription(description)
+                .build();
+
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build())
+            .noRentArrearsGroundsOptions(assuredNoRentArrearsPossessionGrounds)
+            .claimDueToRentArrears(YesOrNo.NO)
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries.size()).isEqualTo(1);
+        ClaimGroundSummary claimGroundSummary = summaries.getFirst().getValue();
+        assertThat(claimGroundSummary.getDescription()).isEqualTo(description);
     }
 
     private static Stream<Arguments> introductoryDemotedOrOtherTenancyDrafts() {
