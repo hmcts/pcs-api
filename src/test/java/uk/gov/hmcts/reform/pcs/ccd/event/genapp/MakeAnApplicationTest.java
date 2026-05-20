@@ -198,7 +198,7 @@ class MakeAnApplicationTest extends BaseEventTest {
         }
 
         @Test
-        void shouldShowHwfScreensFlagToYes() {
+        void shouldSetShowHwfScreensFlagToYes() {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .xuiGenAppRequest(XuiGenAppRequest.builder().build())

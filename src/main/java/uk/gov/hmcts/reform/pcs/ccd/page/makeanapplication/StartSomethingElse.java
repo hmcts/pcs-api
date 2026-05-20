@@ -38,7 +38,7 @@ public class StartSomethingElse implements CcdPageConfiguration {
         <ul class="govuk-list govuk-list--bullet">
             <li class="govuk-!-font-size-19">
                 <a href="https://www.gov.uk/repossession/delay-eviction" target="_blank" rel="noopener noreferrer"
-                class="govuk-link">read the guidance explaining how to suspend the eviction
+                class="govuk-link">read the guidance explaining how to suspend an eviction
                  (GOV.UK, opens in a new tab)</a>
             </li>
             <li class="govuk-!-font-size-19">
@@ -52,14 +52,14 @@ public class StartSomethingElse implements CcdPageConfiguration {
         You’ll need to know:
         </p>
         <ul class="govuk-list govuk-list--bullet">
-          <li class="govuk-!-font-size-19">if the defendant can pay the court fee, or if they need help with
-           fees (help to pay court fees)</li>
+          <li class="govuk-!-font-size-19">if the defendant can pay the court fee, or if they need Help with
+           Fees (help to pay court fees)</li>
           <li class="govuk-!-font-size-19">what they want the court to do</li>
           <li class="govuk-!-font-size-19">why they are asking the court to do it, for example any evidence
           they have to support their application</li>
         </ul>
 
-        <p class="govuk-body">You may need to provide some evidence for the court.</p>
+        <p class="govuk-body">They may need to provide some evidence for the court.</p>
 
         <h2 class="govuk-heading-m">Before you start</h2>
         <p class="govuk-body">Make sure that you have all of the evidence you need to apply.</p>
@@ -85,8 +85,7 @@ public class StartSomethingElse implements CcdPageConfiguration {
         We will ask you if they want to do this when you apply.
 
         <h2 class="govuk-heading-m">Apply by post</h2>
-        <p class="govuk-body">You cannot apply to suspend (stop or delay) the eviction online.</p>
-        <p class="govuk-body govuk-!-margin-bottom-1">You must apply by post:</p>
+        <p class="govuk-body govuk-!-margin-bottom-1">If you’d prefer to respond by post:</p>
 
         <ul class="govuk-list govuk-list--bullet">
             <li class="govuk-!-font-size-19">
