@@ -56,6 +56,12 @@ public class PartyService {
         );
     }
 
+    public PartyEntity getPartyEntityByEntityId(UUID entityId, long caseReference) {
+        return partyRepository.queryPartyById(entityId, caseReference)
+            .orElseThrow(() -> new PartyNotFoundException(
+                "No party found for entity ID: " + entityId + " and case reference: " + caseReference));
+    }
+
     public PartyEntity getPartyEntityByIdamId(UUID idamId, long caseReference) {
         return partyRepository.queryPartyByIdamId(idamId, caseReference)
             .orElseThrow(() -> new PartyNotFoundException(
