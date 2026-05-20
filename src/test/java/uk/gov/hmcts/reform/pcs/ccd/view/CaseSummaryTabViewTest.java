@@ -663,6 +663,26 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
     }
 
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("unavailableTenancyDetailsScenarios")
+    void shouldNotSetTenancyDetailsWhenNeitherEnglandNorWalesTenancyTypeIsAvailable(
+        String scenario,
+        TenancyLicenceDetails tenancyLicenceDetails,
+        OccupationLicenceDetailsWales occupationLicenceDetailsWales
+    ) {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .tenancyLicenceDetails(tenancyLicenceDetails)
+            .occupationLicenceDetailsWales(occupationLicenceDetailsWales)
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getTenancyDetails()).isNull();
+    }
+
     @ParameterizedTest
     @MethodSource("walesOccupationLicenceTypeLabelScenarios")
     void shouldSetTenancyDetailsFromWalesOccupationLicenceTypeLabelWhenEnglandTenancyDetailsAreUnavailable(
@@ -703,6 +723,31 @@ public class CaseSummaryTabViewTest {
         // Then
         assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other Welsh licence");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
+    }
+
+    private static Stream<Arguments> unavailableTenancyDetailsScenarios() {
+        return Stream.of(
+            Arguments.of(
+                "no England tenancy details and no Wales occupation licence details",
+                null,
+                null
+            ),
+            Arguments.of(
+                "England tenancy details do not have a type and no Wales occupation licence details",
+                TenancyLicenceDetails.builder().build(),
+                null
+            ),
+            Arguments.of(
+                "no England tenancy details and Wales occupation licence details do not have a type",
+                null,
+                OccupationLicenceDetailsWales.builder().build()
+            ),
+            Arguments.of(
+                "England tenancy details and Wales occupation licence details do not have a type",
+                TenancyLicenceDetails.builder().build(),
+                OccupationLicenceDetailsWales.builder().build()
+            )
+        );
     }
 
     private static Stream<Arguments> walesOccupationLicenceTypeLabelScenarios() {
