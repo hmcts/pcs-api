@@ -46,7 +46,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .decentralisedEvent(legalRepDocumentUpload.name(), this::submit, this::start)
                 .forAllStates()
                 .name("Upload additional documents")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
                 .showSummary();
         legalRepDocumentUploadConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
