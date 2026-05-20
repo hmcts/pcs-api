@@ -101,10 +101,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
-        builder.tab("TestingTab", "TestingTab")
-            .forRoles(UserRole.HMCTS_ADMIN)
-                .field(PCSCase::getPropertyAddress);
-
         buildCasePartiesTab(builder);
 
         configureCaseFileCategories(builder);
