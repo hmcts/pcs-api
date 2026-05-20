@@ -62,9 +62,9 @@ public class CaseTabView {
             draftCaseData.getSuspensionOfRightToBuyDemotionOfTenancy();
 
         if (
-            suspensionOfRightToBuyDemotionOfTenancy != null &&
-            !CollectionUtils.isEmpty(alternativesToPossessionSet) &&
-            alternativesToPossessionSet.containsAll(Set.of(SUSPENSION_OF_RIGHT_TO_BUY, DEMOTION_OF_TENANCY))
+            suspensionOfRightToBuyDemotionOfTenancy != null
+                && !CollectionUtils.isEmpty(alternativesToPossessionSet)
+                && alternativesToPossessionSet.containsAll(Set.of(SUSPENSION_OF_RIGHT_TO_BUY, DEMOTION_OF_TENANCY))
         ) {
             DemotionOfTenancy demotionOfTenancy = draftCaseData.getDemotionOfTenancy();
             setDemotionOfTenancy(suspensionOfRightToBuyDemotionOfTenancy, demotionOfTenancy);

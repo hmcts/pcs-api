@@ -187,7 +187,7 @@ public class ClaimGroundSummaryBuilder {
                     .map(ground -> AssuredDiscretionaryGround.valueOf(ground.name()))
                     .toList(), draftCaseData);
             }
-            if(!CollectionUtils.isEmpty(selected.getAdditionalOtherGround())) {
+            if (!CollectionUtils.isEmpty(selected.getAdditionalOtherGround())) {
                 addGrounds(summaries, selected.getAdditionalOtherGround().stream()
                     .map(ground -> AssuredAdditionalOtherGround.valueOf(ground.name()))
                     .toList(), draftCaseData);

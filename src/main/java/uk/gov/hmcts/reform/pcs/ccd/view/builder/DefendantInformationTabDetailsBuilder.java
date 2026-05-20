@@ -46,8 +46,8 @@ public class DefendantInformationTabDetailsBuilder extends DefendantInformationB
         VerticalYesNo addressKnown = defendant.getAddressKnown();
 
         DefendantInformationTabDetails defendantInformationTabDetails = DefendantInformationTabDetails.builder()
-            .nameKnown(nameKnown.getLabel())
-            .addressKnown(addressKnown.getLabel())
+            .nameKnown(nameKnown != null ? nameKnown.getLabel() : null)
+            .addressKnown(addressKnown != null ? addressKnown.getLabel() : null)
             .build();
 
         if (nameKnown == VerticalYesNo.YES) {

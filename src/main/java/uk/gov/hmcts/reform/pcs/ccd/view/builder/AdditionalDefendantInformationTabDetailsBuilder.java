@@ -25,9 +25,10 @@ public class AdditionalDefendantInformationTabDetailsBuilder extends DefendantIn
             .map(ListValue::getValue)
             .map(defendant -> createAdditionalSummaryDefendantDetails(defendant, pcsCase))
             .filter(Objects::nonNull)
-            .map(defendantDetails -> ListValue.<uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails>builder()
-                .value(defendantDetails)
-                .build())
+            .map(defendantDetails ->
+                     ListValue.<AdditionalDefendantInformationTabDetails>builder()
+                        .value(defendantDetails)
+                        .build())
             .toList();
     }
 
@@ -42,9 +43,10 @@ public class AdditionalDefendantInformationTabDetailsBuilder extends DefendantIn
             .map(ListValue::getValue)
             .map(defendant -> createAdditionalDetailedDefendantDetails(defendant, pcsCase))
             .filter(Objects::nonNull)
-            .map(defendantDetails -> ListValue.<uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails>builder()
-                .value(defendantDetails)
-                .build())
+            .map(defendantDetails ->
+                     ListValue.<AdditionalDefendantInformationTabDetails>builder()
+                        .value(defendantDetails)
+                        .build())
             .toList();
     }
 
@@ -70,8 +72,8 @@ public class AdditionalDefendantInformationTabDetailsBuilder extends DefendantIn
 
         AdditionalDefendantInformationTabDetails additionalDefendantInformationTabDetails =
             AdditionalDefendantInformationTabDetails.builder()
-                .nameKnown(nameKnown.getLabel())
-                .addressKnown(addressKnown.getLabel())
+                .nameKnown(nameKnown != null ? nameKnown.getLabel() : null)
+                .addressKnown(addressKnown != null ? addressKnown.getLabel() : null)
                 .build();
 
         if (nameKnown == VerticalYesNo.YES) {

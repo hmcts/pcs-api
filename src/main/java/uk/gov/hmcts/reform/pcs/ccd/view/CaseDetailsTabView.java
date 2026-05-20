@@ -145,8 +145,8 @@ public class CaseDetailsTabView {
         }
 
         TenancyLicenceDetails tenancyLicenceDetails = pcsCase.getTenancyLicenceDetails();
-        TenancyLicenceType tenancyType = tenancyLicenceDetails != null ?
-            tenancyLicenceDetails.getTypeOfTenancyLicence() : null;
+        TenancyLicenceType tenancyType = tenancyLicenceDetails != null
+            ? tenancyLicenceDetails.getTypeOfTenancyLicence() : null;
         String otherGroundsDescription = "";
 
         if (tenancyType == INTRODUCTORY_TENANCY || tenancyType == DEMOTED_TENANCY || tenancyType == OTHER) {
@@ -242,7 +242,7 @@ public class CaseDetailsTabView {
                     case EMAIL -> {
                         LocalDateTime dateTime = noticeServedDetails.getNoticeEmailSentDateTime();
                         String emailAddress = noticeServedDetails.getNoticeEmailAddress();
-                        noticeTabDetails.setNoticeDate( dateTime != null ? dateTime.format(PATTERN) : NO_ANSWER);
+                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(PATTERN) : NO_ANSWER);
                         noticeTabDetails.setNoticeEmailAddress(emailAddress != null ? emailAddress : NO_ANSWER);
                     }
                     case OTHER_ELECTRONIC -> {
@@ -268,7 +268,7 @@ public class CaseDetailsTabView {
         VerticalYesNo settlementAttempted = pcsCase.getSettlementAttempted();
 
         return ActionsTakenTabDetails.builder()
-            .preactionProtocolFollowed(preactionProtocol != null ? preactionProtocol.getLabel() :NO_ANSWER)
+            .preactionProtocolFollowed(preactionProtocol != null ? preactionProtocol.getLabel() : NO_ANSWER)
             .mediationAttempted(mediationAttempted != null ? mediationAttempted.getLabel() : NO_ANSWER)
             .settlementAttempted(settlementAttempted != null ? settlementAttempted.getLabel() : NO_ANSWER)
             .build();
@@ -298,8 +298,8 @@ public class CaseDetailsTabView {
 
     private ApplicationsTabDetails buildApplicationsTabDetails(PCSCase pcsCase) {
         VerticalYesNo applicationWithClaim = pcsCase.getApplicationWithClaim();
-        String planToMakeGeneralApplication = applicationWithClaim != null ?
-            applicationWithClaim.getLabel() : NO_ANSWER;
+        String planToMakeGeneralApplication = applicationWithClaim != null
+            ? applicationWithClaim.getLabel() : NO_ANSWER;
 
         return ApplicationsTabDetails.builder()
             .planToMakeGeneralApplication(planToMakeGeneralApplication)
@@ -318,7 +318,7 @@ public class CaseDetailsTabView {
         if (!CollectionUtils.isEmpty(claimants)) {
             Party claimant = claimants.getFirst().getValue();
             address = claimant.getAddress();
-        } else if (claimantContactPreferences != null ) {
+        } else if (claimantContactPreferences != null) {
             YesOrNo orgAddressFound = claimantContactPreferences.getOrgAddressFound();
             VerticalYesNo correctClaimantAddress = claimantContactPreferences.getIsCorrectClaimantContactAddress();
             if (orgAddressFound == YesOrNo.YES && correctClaimantAddress == VerticalYesNo.YES) {
@@ -352,8 +352,8 @@ public class CaseDetailsTabView {
             phoneNumber = claimant.getPhoneNumber();
         } else if (claimantContactPreferences != null) {
             VerticalYesNo isCorrectClaimantContactEmail = claimantContactPreferences.getIsCorrectClaimantContactEmail();
-            emailAddress = isCorrectClaimantContactEmail == VerticalYesNo.YES ?
-                claimantContactPreferences.getClaimantContactEmail() :
+            emailAddress = isCorrectClaimantContactEmail == VerticalYesNo.YES
+                ? claimantContactPreferences.getClaimantContactEmail() :
                 claimantContactPreferences.getOverriddenClaimantContactEmail();
             if (claimantContactPreferences.getClaimantProvidePhoneNumber() == VerticalYesNo.YES) {
                 phoneNumber = claimantContactPreferences.getClaimantContactPhoneNumber();
@@ -420,8 +420,8 @@ public class CaseDetailsTabView {
         Set<AlternativesToPossession> alternativesToPossessionSet = pcsCase.getAlternativesToPossession();
 
         if (
-            CollectionUtils.isEmpty(alternativesToPossessionSet) ||
-            !alternativesToPossessionSet.contains(DEMOTION_OF_TENANCY)
+            CollectionUtils.isEmpty(alternativesToPossessionSet)
+            || !alternativesToPossessionSet.contains(DEMOTION_OF_TENANCY)
         ) {
             return null;
         }
@@ -457,8 +457,8 @@ public class CaseDetailsTabView {
     private SuspensionOfRightToBuyTabDetails buildSuspensionOfRightToBuyTabDetails(PCSCase pcsCase) {
         Set<AlternativesToPossession> alternativesToPossessionSet = pcsCase.getAlternativesToPossession();
         if (
-            CollectionUtils.isEmpty(alternativesToPossessionSet) ||
-            !alternativesToPossessionSet.contains(SUSPENSION_OF_RIGHT_TO_BUY)
+            CollectionUtils.isEmpty(alternativesToPossessionSet)
+            || !alternativesToPossessionSet.contains(SUSPENSION_OF_RIGHT_TO_BUY)
         ) {
             return null;
         }
