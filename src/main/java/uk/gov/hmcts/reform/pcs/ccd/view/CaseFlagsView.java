@@ -117,8 +117,8 @@ public class CaseFlagsView {
     private Flags mapDefendantFlags(PartyEntity partyEntity) {
         if (CollectionUtils.isEmpty(partyEntity.getDefendantFlags())) {
             return Flags.builder()
-                .partyName((requireNonNullElse(partyEntity.getFirstName(), "")
-                    + " " + requireNonNullElse(partyEntity.getLastName(), "")))
+                .partyName((requireNonNullElse(partyEntity.getFirstName(), "Person")
+                    + " " + requireNonNullElse(partyEntity.getLastName(), "Unknown")))
                 .roleOnCase(DEFENDANT)
                 .details(new ArrayList<>())
                 .build();
@@ -127,8 +127,8 @@ public class CaseFlagsView {
         List<BaseCaseFlag> defendantFlags = new ArrayList<>(partyEntity.getDefendantFlags());
 
         return Flags.builder()
-            .partyName((requireNonNullElse(partyEntity.getFirstName(), "")
-                + " " + requireNonNullElse(partyEntity.getLastName(), "")))
+            .partyName((requireNonNullElse(partyEntity.getFirstName(), "Person")
+                + " " + requireNonNullElse(partyEntity.getLastName(), "Unknown")))
             .roleOnCase(
                 DEFENDANT)
             .details(mapFlagDetails(defendantFlags))
