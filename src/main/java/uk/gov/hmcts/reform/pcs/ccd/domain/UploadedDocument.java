@@ -8,7 +8,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 @Data
 @Builder
@@ -30,8 +29,7 @@ public class UploadedDocument {
     @CCD(
         label = "Document",
         // Note this regex attribute is not actually interpreted as a regex for the Document type
-        regex = ACCEPT_TYPES,
-        access = {CitizenAccess.class}
+        regex = ACCEPT_TYPES
     )
     private Document document;
 
