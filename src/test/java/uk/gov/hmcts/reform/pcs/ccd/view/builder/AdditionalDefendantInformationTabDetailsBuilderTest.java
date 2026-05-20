@@ -52,10 +52,12 @@ public class AdditionalDefendantInformationTabDetailsBuilderTest {
 
         // Then
         assertThat(additionalDefendants).hasSize(1);
+        assertThat(additionalDefendants.getFirst().getValue().getNameKnown()).isNull();
         assertThat(additionalDefendants.getFirst().getValue().getFirstName())
             .isEqualTo(firstName);
         assertThat(additionalDefendants.getFirst().getValue().getLastName())
             .isEqualTo(lastName);
+        assertThat(additionalDefendants.getFirst().getValue().getAddressKnown()).isNull();
         assertThat(additionalDefendants.getFirst().getValue().getAddressForService())
             .isEqualTo(address);
     }
@@ -107,10 +109,12 @@ public class AdditionalDefendantInformationTabDetailsBuilderTest {
 
         // Then
         assertThat(additionalDefendants).hasSize(1);
+        assertThat(additionalDefendants.getFirst().getValue().getNameKnown()).isNull();
         assertThat(additionalDefendants.getFirst().getValue().getFirstName())
             .isEqualTo(CaseTabView.NAME_UNKNOWN);
         assertThat(additionalDefendants.getFirst().getValue().getLastName())
             .isEqualTo(CaseTabView.NAME_UNKNOWN);
+        assertThat(additionalDefendants.getFirst().getValue().getAddressKnown()).isNull();
         assertThat(additionalDefendants.getFirst().getValue().getAddressForService())
             .isEqualTo(address);
     }
@@ -140,10 +144,12 @@ public class AdditionalDefendantInformationTabDetailsBuilderTest {
 
         // Then
         assertThat(additionalDefendants).hasSize(1);
+        assertThat(additionalDefendants.getFirst().getValue().getNameKnown()).isNull();
         assertThat(additionalDefendants.getFirst().getValue().getFirstName())
             .isEqualTo(CaseTabView.NAME_UNKNOWN);
         assertThat(additionalDefendants.getFirst().getValue().getLastName())
             .isEqualTo(CaseTabView.NAME_UNKNOWN);
+        assertThat(additionalDefendants.getFirst().getValue().getAddressKnown()).isNull();
         assertThat(additionalDefendants.getFirst().getValue().getAddressForService())
             .isEqualTo(propertyAddress);
     }
@@ -236,8 +242,12 @@ public class AdditionalDefendantInformationTabDetailsBuilderTest {
 
         // Then
         assertThat(additionalDefendants).hasSize(1);
+        assertThat(additionalDefendants.getFirst().getValue().getNameKnown())
+            .isEqualTo("No");
         assertThat(additionalDefendants.getFirst().getValue().getFirstName()).isNull();
         assertThat(additionalDefendants.getFirst().getValue().getLastName()).isNull();
+        assertThat(additionalDefendants.getFirst().getValue().getAddressKnown())
+            .isEqualTo("Yes");
         assertThat(additionalDefendants.getFirst().getValue().getAddressForService()).isEqualTo(address);
     }
 
@@ -266,8 +276,12 @@ public class AdditionalDefendantInformationTabDetailsBuilderTest {
 
         // Then
         assertThat(additionalDefendants).hasSize(1);
+        assertThat(additionalDefendants.getFirst().getValue().getNameKnown())
+            .isEqualTo("No");
         assertThat(additionalDefendants.getFirst().getValue().getFirstName()).isNull();
         assertThat(additionalDefendants.getFirst().getValue().getLastName()).isNull();
+        assertThat(additionalDefendants.getFirst().getValue().getAddressKnown())
+            .isEqualTo("No");
         assertThat(additionalDefendants.getFirst().getValue().getAddressForService()).isNull();
     }
 

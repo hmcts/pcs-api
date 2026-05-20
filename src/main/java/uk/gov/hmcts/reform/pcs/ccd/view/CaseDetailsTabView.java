@@ -87,7 +87,7 @@ public class CaseDetailsTabView {
         ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
         ClaimantInformationTabDetails claimantInformationTabDetails = buildClaimantInformationTabDetails(pcsCase);
         DefendantInformationTabDetails defendantInformationTabDetails =
-            defendantInformationTabDetailsBuilder.createDetailedDefendantDetails(pcsCase);
+            defendantInformationTabDetailsBuilder.buildDetailedDefendantDetails(pcsCase);
         List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> underlesseeMortgageTabDetailsList =
             buildUnderlesseeMortgageTabDetailsList(pcsCase);
         DemotionOfTenancyTabDetails demotionOfTenancyTabDetails = buildDemotionOfTenancyTabDetails(pcsCase);

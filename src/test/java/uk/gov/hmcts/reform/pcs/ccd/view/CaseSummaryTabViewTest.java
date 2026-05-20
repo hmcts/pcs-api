@@ -265,48 +265,6 @@ public class CaseSummaryTabViewTest {
     }
 
     @Test
-    void shouldSetUnknownDefendantNameWhenNameNotKnownButAddressKnown() {
-        // Given
-        AddressUK address = AddressUK.builder().postCode("SW1A 1AA").build();
-        PCSCase pcsCase = PCSCase.builder()
-            .allDefendants(List.of(listValue(Party.builder()
-                                                .nameKnown(VerticalYesNo.NO)
-                                                .addressKnown(VerticalYesNo.YES)
-                                                .address(address)
-                                                .build())))
-            .build();
-
-        // When
-        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
-
-        // Then
-        assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo(CaseTabView.NAME_UNKNOWN);
-        assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo(CaseTabView.NAME_UNKNOWN);
-        assertThat(summaryTab.getDefendantDetails().getAddressForService()).isEqualTo(address);
-    }
-
-    @Test
-    void shouldDefaultDefendantAddressForServiceToPropertyAddressWhenAddressNotKnown() {
-        // Given
-        AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
-        PCSCase pcsCase = PCSCase.builder()
-            .propertyAddress(propertyAddress)
-            .allDefendants(List.of(listValue(Party.builder()
-                                                .nameKnown(VerticalYesNo.NO)
-                                                .addressKnown(VerticalYesNo.NO)
-                                                .build())))
-            .build();
-
-        // When
-        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
-
-        // Then
-        assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo(CaseTabView.NAME_UNKNOWN);
-        assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo(CaseTabView.NAME_UNKNOWN);
-        assertThat(summaryTab.getDefendantDetails().getAddressForService()).isEqualTo(propertyAddress);
-    }
-
-    @Test
     void shouldSetEachGroundReasonInSummaryTab() {
         // Given
         PCSCase pcsCase = PCSCase.builder()

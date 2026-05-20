@@ -19,7 +19,7 @@ public class DefendantInformationTabDetailsBuilder extends DefendantInformationB
         return createSummaryDefendantDetails(pcsCase.getAllDefendants().getFirst().getValue(), pcsCase);
     }
 
-    public DefendantInformationTabDetails createDetailedDefendantDetails(PCSCase pcsCase) {
+    public DefendantInformationTabDetails buildDetailedDefendantDetails(PCSCase pcsCase) {
         if (CollectionUtils.isEmpty(pcsCase.getAllDefendants())) {
             return null;
         }
