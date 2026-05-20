@@ -53,7 +53,7 @@ public class MustApplyForHelpWithFees implements CcdPageConfiguration {
                 fieldEquals("xui_genapp_AppliedForHwf", VerticalYesNo.NO)
             ))
             .label("mustApplyForHelpWithFees-lineSeparator", "---")
-            .label("mustApplyForHelpWithFees-placeholder", INFO_MARKDOWN);
+            .label("mustApplyForHelpWithFees-info", INFO_MARKDOWN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
