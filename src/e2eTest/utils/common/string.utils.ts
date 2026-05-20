@@ -12,12 +12,13 @@ export function exactTextWithOptionalWhitespaceRegex(text: string): RegExp {
   return new RegExp('^\\s*' + escapeForRegex(text) + '\\s*$');
 }
 
-
-export function getCurrentGMTTime(): string {
+/**
+ * Returns a formatted British standard time
+ */
+export function getCurrentBSTTime(): string {
   const now = new Date();
-
   const formatted = now.toLocaleString("en-GB", {
-    timeZone: "UTC",
+    timeZone: "Europe/London",
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -29,12 +30,3 @@ export function getCurrentGMTTime(): string {
 
   return formatted.replace(/am|pm/, (match) => match.toUpperCase());
 }
-
-
-export function normalizeTimeWithoutSeconds(dateStr: string): string {
-  const date = new Date(dateStr);
-  date.setSeconds(0, 0);
-  return date.toISOString();
-}
-
-

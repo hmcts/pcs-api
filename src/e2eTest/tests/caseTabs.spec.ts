@@ -8,12 +8,13 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { caseSummary, home } from '@data/page-data';
 import { addCaseNote } from '@data/page-data-figma';
 import { checkYourAnswersCaseNote } from '@data/page-data/checkYourAnswersCaseNote.page.data';
-import { getCurrentGMTTime } from '@utils/common/string.utils';
+import { getCurrentBSTTime } from '@utils/common/string.utils';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
+  await performAction('fetchCurrentUserAPI');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
@@ -53,21 +54,20 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       label: addCaseNote.addNoteTextLabel,
       input: addCaseNote.addNoteTextInput
     })
+    const currentTime = getCurrentBSTTime();
     await performValidation('text', {
       "text": checkYourAnswersCaseNote.header,
       "elementType": "subHeading"
     });
-    const currentTime = getCurrentGMTTime();
-
-    console.log('Captured GMT time:', currentTime);
+  
     await performAction('clickButton', checkYourAnswersCaseNote.submitNote);
-
-    const currentTime1 = getCurrentGMTTime();
-
-    console.log('After click Captured GMT time:', currentTime1);
-
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a case note');
     await performAction('clickTab', home.caseNotes);
+    await performAction('validateCaseNotesDetails', {
+      createdOn: currentTime.replace(/:\d{2} /, " "),
+      userInput: addCaseNote.addNoteTextInput,
+      table: 'Note'
+    });
   });
 
 });
