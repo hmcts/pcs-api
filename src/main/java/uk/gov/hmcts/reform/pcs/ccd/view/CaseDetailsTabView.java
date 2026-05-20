@@ -115,7 +115,7 @@ public class CaseDetailsTabView {
             .mortgageDetails(underlesseeMortgageTabDetailsList)
             .demotionOfTenancyDetails(demotionOfTenancyTabDetails)
             .suspensionOfRightToBuyDetails(suspensionOfRightToBuyTabDetails)
-            .dateClaimSubmitted(dateSubmitted)
+            .dateClaimSubmitted(dateSubmitted != null ? dateSubmitted : NO_ANSWER)
             .build();
 
         if (claimantInformationTabDetails != null) {
