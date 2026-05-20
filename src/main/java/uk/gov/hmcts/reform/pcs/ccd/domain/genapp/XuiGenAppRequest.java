@@ -68,11 +68,11 @@ public class XuiGenAppRequest implements GenAppRequest {
     )
     private String whatOrderWanted;
 
-    @CCD(label = "Which language did you use to complete this service?")
     private VerticalYesNo hasSupportingDocuments;
 
     private List<ListValue<UploadedDocument>> uploadedDocuments;
 
+    @CCD(label = "Which language did you use to complete this service?")
     private LanguageUsed languageUsed;
 
     private VerticalYesNo sotAccepted;
