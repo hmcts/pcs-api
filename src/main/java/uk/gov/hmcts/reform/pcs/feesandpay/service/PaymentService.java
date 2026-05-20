@@ -41,7 +41,7 @@ public class PaymentService {
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
 
-    @Value("${payments.params.hmctsOrgId}")
+    @Value("${possessions.serviceId}")
     private String hmctsOrgId;
 
     /**

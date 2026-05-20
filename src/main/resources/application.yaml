@@ -22,9 +22,6 @@ management:
 globalsearch:
   caseManagementCategory: Property Possession Claims
 
-hmcts:
-  hmctsOrgId: AAA3
-
 possessions:
   serviceId: ${POSSESSIONS_SERVICE_ID:AAA3}
 
@@ -117,7 +114,6 @@ azure:
 hmc:
   deployment-id: ${HMC_DEPLOYMENT_ID:}
   api-url: ${HMC_API_URL:http://localhost:8084}
-  serviceId: ${HMC_SERVICE_ID:AAA3}
 
 location-reference:
   api-url: ${LOCATION_REF_URL:http://localhost:8089}
@@ -206,7 +202,6 @@ payments:
     callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:3206/payment-update}
   params:
     organisationUrn: Mortgage and Landlord Possession Claims
-    hmctsOrgId: ${hmcts.hmctsOrgId}
 
 core_case_data:
   api:

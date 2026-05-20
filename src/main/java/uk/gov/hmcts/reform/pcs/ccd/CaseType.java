@@ -27,7 +27,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
 
-    @Value("${hmcts.hmctsOrgId}")
+    @Value("${possessions.serviceId}")
     private String hmctsServiceId;
 
     public static String getCaseType() {
