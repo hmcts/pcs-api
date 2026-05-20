@@ -277,16 +277,12 @@ class ClaimResponseServiceTest {
     }
 
     @Test
-    void shouldUpdateFirstNameAndLastName() {
+    void shouldUpdateNameWhenClaimantDidNotProvideIt() {
         // Given
-        final PossessionClaimResponse response = buildResponse(
-            Party.builder()
-                .firstName("John")
-                .lastName("Doe")
-                .build(),
-            DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
-                .build()
+        final PossessionClaimResponse response = buildResponseWithClaimantDetails(
+            Party.builder().firstName("John").lastName("Doe").build(),
+            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build(),
+            null
         );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
@@ -301,20 +297,16 @@ class ClaimResponseServiceTest {
     }
 
     @Test
-    void shouldNotUpdateFirstNameAndLastNameWhenBlank() {
+    void shouldNotUpdateNameWhenClaimantProvided() {
         // Given
-        final PossessionClaimResponse response = buildResponse(
-            Party.builder()
-                .firstName("")
-                .lastName("   ")
-                .build(),
-            DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
-                .build()
-        );
+        testParty.setFirstName("ClaimantFirst");
+        testParty.setLastName("ClaimantLast");
 
-        testParty.setFirstName("ExistingFirst");
-        testParty.setLastName("ExistingLast");
+        final PossessionClaimResponse response = buildResponseWithClaimantDetails(
+            Party.builder().firstName("DefendantFirst").lastName("DefendantLast").build(),
+            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build(),
+            Party.builder().firstName("ClaimantFirst").lastName("ClaimantLast").build()
+        );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
@@ -323,14 +315,67 @@ class ClaimResponseServiceTest {
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
-        assertThat(testParty.getFirstName()).isEqualTo("ExistingFirst");
-        assertThat(testParty.getLastName()).isEqualTo("ExistingLast");
+        assertThat(testParty.getFirstName()).isEqualTo("ClaimantFirst");
+        assertThat(testParty.getLastName()).isEqualTo("ClaimantLast");
+    }
+
+    @Test
+    void shouldUpdateAddressWhenClaimantDidNotProvideIt() {
+        // Given
+        final PossessionClaimResponse response = buildResponseWithClaimantDetails(
+            Party.builder().address(TEST_ADDRESS).build(),
+            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build(),
+            null
+        );
+
+        final AddressEntity addressEntity = new AddressEntity();
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+    }
+
+    @Test
+    void shouldNotUpdateAddressWhenClaimantProvided() {
+        // Given
+        AddressEntity existingAddress = AddressEntity.builder().addressLine1("Claimant Street").build();
+        testParty.setAddress(existingAddress);
+
+        final PossessionClaimResponse response = buildResponseWithClaimantDetails(
+            Party.builder().address(AddressUK.builder().addressLine1("Defendant Street").build()).build(),
+            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build(),
+            Party.builder().address(AddressUK.builder().addressLine1("Claimant Street").build()).build()
+        );
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getAddress().getAddressLine1()).isEqualTo("Claimant Street");
     }
 
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {
         return PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder().party(party).build())
             .defendantResponses(defendantResponses)
+            .build();
+    }
+
+    private PossessionClaimResponse buildResponseWithClaimantDetails(Party defendantParty,
+                                                                     DefendantResponses defendantResponses,
+                                                                     Party claimantDetails) {
+        return PossessionClaimResponse.builder()
+            .defendantContactDetails(DefendantContactDetails.builder().party(defendantParty).build())
+            .defendantResponses(defendantResponses)
+            .claimantEnteredDefendantDetails(claimantDetails)
             .build();
     }
 }
