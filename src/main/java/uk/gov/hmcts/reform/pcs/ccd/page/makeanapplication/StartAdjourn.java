@@ -26,12 +26,12 @@ public class StartAdjourn implements CcdPageConfiguration {
         You’ll need to know:
         </p>
         <ul class="govuk-list govuk-list--bullet">
-          <li class="govuk-!-font-size-19">if the defendant can pay the court fee, or if they need help with
-           fees (help to pay court fees)</li>
+          <li class="govuk-!-font-size-19">if the defendant can pay the court fee, or if they need Help with
+           Fees (help to pay court fees)</li>
           <li class="govuk-!-font-size-19">why the defendant is asking the court to delay the hearing</li>
           <li class="govuk-!-font-size-19">when they are proposing the hearing be moved to (if applicable)</li>
         </ul>
-        <p class="govuk-body">You may need to provide some evidence for the court.</p>
+        <p class="govuk-body">They may need to provide some evidence for the court.</p>
 
         <h2 class="govuk-heading-m">Before you start</h2>
         <p class="govuk-body">Make sure that you have all of the evidence you need to apply.</p>
@@ -44,7 +44,7 @@ public class StartAdjourn implements CcdPageConfiguration {
         by a judge before the hearing date.</p>
 
         <h2 class="govuk-heading-m">How much it will cost</h2>
-        <p class="govuk-body">It's free to apply if the defendant’s court hearing is at least 14 days away.</p>
+        <p class="govuk-body">It’s free to apply if the defendant’s court hearing is at least 14 days away.</p>
         <p class="govuk-body">If your court hearing is sooner, they will need to
         pay ${xui_genapp_StandardFee}.</p>
         <p class="govuk-body govuk-!-margin-bottom-1">The fee will increase to ${xui_genapp_MaxFee} if:</p>
