@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.builder;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
@@ -10,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Component
 public class RentArrearsTabDetailsBuilder {
@@ -92,9 +96,18 @@ public class RentArrearsTabDetailsBuilder {
             .build();
 
         if (rentArrearsSection != null) {
-            rentArrearsTabDetails.setStepsToRecoverArrears(rentArrearsSection.getRecoveryAttempted().getLabel());
-            rentArrearsTabDetails.setStepsToRecoverArrearsDetails(rentArrearsSection.getRecoveryAttemptDetails());
-            rentArrearsTabDetails.setRentStatement(rentArrearsSection.getStatementDocuments());
+            VerticalYesNo recoveryAttempted = rentArrearsSection.getRecoveryAttempted();
+            rentArrearsTabDetails
+                .setStepsToRecoverArrears(recoveryAttempted != null ? recoveryAttempted.getLabel() : NO_ANSWER);
+            String details = rentArrearsSection.getRecoveryAttemptDetails();
+            rentArrearsTabDetails.setStepsToRecoverArrearsDetails(details != null ? details : NO_ANSWER);
+            List<ListValue<Document>> documents = rentArrearsSection.getStatementDocuments();
+
+            if (CollectionUtils.isEmpty(documents)) {
+                rentArrearsTabDetails.setRentStatementPlaceholder(NO_ANSWER);
+            } else {
+                rentArrearsTabDetails.setRentStatement(documents);
+            }
         } else {
             rentArrearsTabDetails.setStepsToRecoverArrears(NO_ANSWER);
             rentArrearsTabDetails.setRentStatementPlaceholder(NO_ANSWER);
