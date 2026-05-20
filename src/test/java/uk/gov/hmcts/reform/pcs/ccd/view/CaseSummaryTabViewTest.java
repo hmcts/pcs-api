@@ -51,7 +51,7 @@ public class CaseSummaryTabViewTest {
         AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(propertyAddress)
-            .dateSubmitted(LocalDateTime.of(2026, 5, 11, 17, 2, 31))
+            .dateSubmitted(LocalDateTime.of(2026, 1, 11, 17, 2, 31))
             .claimGroundSummaries(List.of(
                 listValue(ClaimGroundSummary.builder()
                               .label("Rent arrears (ground 10)")
@@ -125,7 +125,7 @@ public class CaseSummaryTabViewTest {
             .isEqualTo("Condition 1 reason");
         assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsForPossession())
             .isEqualTo("Additional reasons");
-        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 May 2026, 5:02:31PM");
+        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
         assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Fallback claimant");
         assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("One");
@@ -152,17 +152,23 @@ public class CaseSummaryTabViewTest {
     }
 
     @Test
-    void shouldDisplaySubmittedDateInGmtWhenBritishSummerTimeApplies() {
+    void shouldDisplaySubmittedDateInUkTimeWhenServerTimezoneIsUk() {
         // Given
+        TimeZone originalTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/London"));
         PCSCase pcsCase = PCSCase.builder()
             .dateSubmitted(LocalDateTime.of(2026, 7, 11, 17, 2, 31))
             .build();
 
-        // When
-        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+        try {
+            // When
+            SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
-        // Then
-        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 5:02:31PM");
+            // Then
+            assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 5:02:31PM");
+        } finally {
+            TimeZone.setDefault(originalTimeZone);
+        }
     }
 
     @Test
