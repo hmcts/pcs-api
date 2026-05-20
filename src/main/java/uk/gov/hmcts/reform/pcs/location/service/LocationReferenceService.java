@@ -21,6 +21,10 @@ public class LocationReferenceService {
     @Getter
     private Integer countyCourtTypeId = 10;
 
+    @Value("${possessions.serviceId}")
+    @Getter
+    private String possessionsServiceId;
+
     private final LocationReferenceApi locationReferenceApi;
     private final AuthTokenGenerator authTokenGenerator;
 
@@ -32,7 +36,7 @@ public class LocationReferenceService {
         String formattedEpimIds = formatEpimIds(epimIds);
         log.debug("Getting County courts from /refdata/location/court-venues for EpimIds {}", formattedEpimIds);
         return locationReferenceApi.getCountyCourts(authorisation, authTokenGenerator.generate(),
-                formattedEpimIds, countyCourtTypeId);
+                formattedEpimIds, countyCourtTypeId, possessionsServiceId);
     }
 
     private String formatEpimIds(List<Integer> epimIds) {

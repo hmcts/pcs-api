@@ -25,6 +25,9 @@ globalsearch:
 hmcts:
   hmctsOrgId: AAA3
 
+possessions:
+  serviceId: ${POSSESSIONS_SERVICE_ID:AAA3}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

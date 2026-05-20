@@ -2,10 +2,12 @@ package uk.gov.hmcts.reform.pcs.location.service;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,6 +31,7 @@ public class LocationReferenceServiceTest {
     private static final Integer BRENTFORD_COURT_EPIM_ID = 36791;
     private static final Integer LONDON_COURT_EPIM_ID = 20262;
     private static final int COUNTY_COURT_TYPE_ID = 10;
+    private static final String SERVICE_CODE = "AAA3";
     public static final List<@NotNull Integer> EPIM_IDS = List.of(BRENTFORD_COURT_EPIM_ID, LONDON_COURT_EPIM_ID);
     private final String multipleEpimIdsJoined = String.join(",", BRENTFORD_COURT_EPIM_ID.toString(),
             LONDON_COURT_EPIM_ID.toString());
@@ -42,6 +45,11 @@ public class LocationReferenceServiceTest {
     @InjectMocks
     private LocationReferenceService locationReferenceService;
 
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(locationReferenceService, "possessionsServiceId", SERVICE_CODE);
+    }
+
     @Test
     void shouldReturnCountyCourts_whenCalledWithValidSingleEpimId() {
         List<CourtVenue> expectedCourtVenues = List.of(
@@ -52,7 +60,8 @@ public class LocationReferenceServiceTest {
                 AUTHORIZATION,
                 SERVICE_AUTH_TOKEN,
                 BRENTFORD_COURT_EPIM_ID.toString(),
-                COUNTY_COURT_TYPE_ID))
+                COUNTY_COURT_TYPE_ID,
+                SERVICE_CODE))
                 .thenReturn(expectedCourtVenues);
 
         List<CourtVenue> actualCourtVenues = locationReferenceService.getCountyCourts(AUTHORIZATION,
@@ -64,7 +73,8 @@ public class LocationReferenceServiceTest {
                 AUTHORIZATION,
                 SERVICE_AUTH_TOKEN,
                 BRENTFORD_COURT_EPIM_ID.toString(),
-                COUNTY_COURT_TYPE_ID
+                COUNTY_COURT_TYPE_ID,
+                SERVICE_CODE
         );
     }
 
@@ -79,7 +89,8 @@ public class LocationReferenceServiceTest {
             AUTHORIZATION,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
-            COUNTY_COURT_TYPE_ID))
+            COUNTY_COURT_TYPE_ID,
+            SERVICE_CODE))
                 .thenReturn(expectedCourtVenues);
 
         List<CourtVenue> actualCourtVenues = locationReferenceService.getCountyCourts(AUTHORIZATION, EPIM_IDS);
@@ -90,7 +101,8 @@ public class LocationReferenceServiceTest {
             AUTHORIZATION,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
-            COUNTY_COURT_TYPE_ID
+            COUNTY_COURT_TYPE_ID,
+            SERVICE_CODE
         );
     }
 
@@ -102,7 +114,8 @@ public class LocationReferenceServiceTest {
             AUTHORIZATION,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
-            COUNTY_COURT_TYPE_ID
+            COUNTY_COURT_TYPE_ID,
+            SERVICE_CODE
         )).thenReturn(Collections.emptyList());
 
         List<CourtVenue> actualCourtVenues = locationReferenceService.getCountyCourts(AUTHORIZATION, EPIM_IDS);
@@ -114,7 +127,8 @@ public class LocationReferenceServiceTest {
             AUTHORIZATION,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
-            COUNTY_COURT_TYPE_ID
+            COUNTY_COURT_TYPE_ID,
+            SERVICE_CODE
         );
     }
 
@@ -136,7 +150,8 @@ public class LocationReferenceServiceTest {
                 AUTHORIZATION,
                 SERVICE_AUTH_TOKEN,
                 "425094",
-                COUNTY_COURT_TYPE_ID
+                COUNTY_COURT_TYPE_ID,
+                SERVICE_CODE
         )).thenThrow(new RuntimeException("No matching courts found for LE2 0QB", null));
 
         assertThatThrownBy(() ->
@@ -150,8 +165,8 @@ public class LocationReferenceServiceTest {
                 AUTHORIZATION,
                 SERVICE_AUTH_TOKEN,
                 "425094",
-                COUNTY_COURT_TYPE_ID
+                COUNTY_COURT_TYPE_ID,
+                SERVICE_CODE
         );
     }
 }
-

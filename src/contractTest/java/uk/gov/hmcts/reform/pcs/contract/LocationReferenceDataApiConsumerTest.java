@@ -60,6 +60,7 @@ public class LocationReferenceDataApiConsumerTest {
                      "Authorization", AUTHORIZATION_TOKEN)
             .matchQuery("court_type_id", String.valueOf(PactDslJsonRootValue.integerType(17)))
             .matchQuery("epimms_id", "123456789")
+            .matchQuery("service_code", "AAA3")
             .willRespondWith()
             .status(200)
             .headers(Map.of(HttpHeaders.CONTENT_TYPE, "application/json"))
@@ -71,7 +72,7 @@ public class LocationReferenceDataApiConsumerTest {
     @PactTestFor(pactMethod = "getCourtVenueByEpimmsIdAndType")
     void verifyCourtVenueByEpimmsIdAndType() {
         List<CourtVenue> response = locationReferenceApi.getCountyCourts(
-            AUTHORIZATION_TOKEN, SERVICE_AUTH_TOKEN, "123456789", 17
+            AUTHORIZATION_TOKEN, SERVICE_AUTH_TOKEN, "123456789", 17, "AAA3"
         );
 
         assertThat(response).isNotNull();
