@@ -31,7 +31,7 @@ public class StartSetAside implements CcdPageConfiguration {
            Fees (help to pay court fees)</li>
           <li class="govuk-!-font-size-19">why the defendant is asking the court to set aside the original decision</li>
         </ul>
-        <p class="govuk-body">You may need to provide some evidence for the court.</p>
+        <p class="govuk-body">They may need to provide some evidence for the court.</p>
 
         <h2 class="govuk-heading-m">Before you start</h2>
         <p class="govuk-body">Make sure that you have all of the evidence you need to apply.</p>
