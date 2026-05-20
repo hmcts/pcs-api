@@ -19,7 +19,7 @@ public class ChooseAnApplication implements CcdPageConfiguration {
         <ul class="govuk-list govuk-list--bullet">
             <li class="govuk-!-font-size-19">
                 <a href="https://www.gov.uk/repossession/delay-eviction" target="_blank" rel="noopener noreferrer"
-                class="govuk-link">read the guidance explaining how to suspend the eviction
+                class="govuk-link">read the guidance explaining how to suspend an eviction
                  (GOV.UK, opens in a new tab)</a>
             </li>
             <li class="govuk-!-font-size-19">
