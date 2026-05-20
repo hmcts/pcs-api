@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -22,6 +23,7 @@ public class RentDetailsView {
                 .build();
 
             pcsCase.setRentDetails(rentDetails);
+            pcsCase.setShowRentSectionPage(YesOrNo.YES);
         }
     }
 
