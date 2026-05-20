@@ -1,8 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -18,6 +20,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
@@ -36,7 +41,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class CaseSummaryTabViewTest {
 
     @Mock
@@ -57,19 +64,8 @@ public class CaseSummaryTabViewTest {
     @Mock
     private AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
 
+    @InjectMocks
     private CaseSummaryTabView underTest;
-
-    @BeforeEach
-    void setUp() {
-        underTest = new CaseSummaryTabView(
-            groundsBuilder,
-            rentArrearsTabDetailsBuilder,
-            reasonsForPossessionTabDetailsBuilder,
-            claimantInformationTabDetailsBuilder,
-            defendantInformationTabDetailsBuilder,
-            additionalDefendantInformationTabDetailsBuilder
-        );
-    }
 
     @Test
     void shouldSetSummaryTabFields() {
@@ -137,6 +133,63 @@ public class CaseSummaryTabViewTest {
                                      .build())
             .build();
 
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(
+            "Rent arrears (ground 10)\n"
+            + "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985"
+        );
+
+        when(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase)).thenReturn(
+            RentArrearsTabDetails.builder()
+                .rentAmount("£100")
+                .calculationFrequency("Every 4 weeks")
+                .dailyRate("£12.30")
+                .arrearsTotal("£450.75")
+                .judgmentRequested("Yes")
+                .build()
+        );
+
+        when(reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase)).thenReturn(
+            ReasonsForPossessionTabDetails.builder()
+                .ground10("Ground 10 reason")
+                .condition1OfSection84A("Condition 1 reason")
+                .additionalReasonsForPossession("Additional reasons")
+                .build()
+        );
+
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(
+            ClaimantInformationTabDetails.builder()
+                .claimantName("Fallback claimant")
+                .build()
+        );
+
+        when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(
+            DefendantInformationTabDetails.builder()
+                .firstName("Defendant")
+                .lastName("One")
+                .addressForService(propertyAddress)
+                .build()
+        );
+
+        when(additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(
+                List.of(
+                    listValue(
+                        AdditionalDefendantInformationTabDetails.builder()
+                            .firstName("Defendant")
+                            .lastName("Two")
+                            .addressForService(defendantAddress)
+                            .build()
+                    ),
+                    listValue(
+                        AdditionalDefendantInformationTabDetails.builder()
+                            .firstName(CaseTabView.NAME_UNKNOWN)
+                            .lastName(CaseTabView.NAME_UNKNOWN)
+                            .addressForService(propertyAddress)
+                            .build()
+                    )
+                )
+            );
+
         // When
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
@@ -185,6 +238,14 @@ public class CaseSummaryTabViewTest {
             .dateSubmitted(LocalDateTime.of(2026, 7, 11, 17, 2, 31))
             .build();
 
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
+        when(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase)).thenReturn(null);
+        when(reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase)).thenReturn(null);
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(null);
+        when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(null);
+        when(additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(null);
+
         // When
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
@@ -201,6 +262,14 @@ public class CaseSummaryTabViewTest {
                                                 .addressKnown(VerticalYesNo.NO)
                                                 .build())))
             .build();
+
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
+        when(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase)).thenReturn(null);
+        when(reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase)).thenReturn(null);
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(null);
+        when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(null);
+        when(additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(null);
 
         // When
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
@@ -226,6 +295,14 @@ public class CaseSummaryTabViewTest {
                                        .build())
             .build();
 
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
+        when(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase)).thenReturn(null);
+        when(reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase)).thenReturn(null);
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(null);
+        when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(null);
+        when(additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(null);
+
         // When
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
@@ -244,6 +321,14 @@ public class CaseSummaryTabViewTest {
                                                .build())
             .build();
 
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
+        when(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase)).thenReturn(null);
+        when(reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase)).thenReturn(null);
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(null);
+        when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(null);
+        when(additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(null);
+
         // When
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
@@ -261,6 +346,14 @@ public class CaseSummaryTabViewTest {
                                                .otherLicenceTypeDetails("Other Welsh licence")
                                                .build())
             .build();
+
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
+        when(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase)).thenReturn(null);
+        when(reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase)).thenReturn(null);
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(null);
+        when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(null);
+        when(additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(null);
 
         // When
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
