@@ -91,15 +91,15 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .filteredOn(item -> DocumentUploadCategory.ADJOURN_HEARING_APPLICATION.name()
                 .equals(item.getCode()))
             .extracting(DynamicStringListElement::getLabel)
-            .containsExactly("Yes, the documents I'm uploading relate to the application to adjourn the " +
-                                 "hearing - submitted on Saturday 25 Apr 2026");
+            .containsExactly("Yes, the documents I'm uploading relate to the application to adjourn the "
+                                 + "hearing - submitted on Saturday 25 Apr 2026");
 
         assertThat(categories.getListItems())
             .filteredOn(item -> DocumentUploadCategory.GENERAL_APPLICATION.name()
                 .equals(item.getCode()))
             .extracting(DynamicStringListElement::getLabel)
-            .containsExactly("Yes, the documents I'm uploading relate to an application submitted on " +
-                                 "Saturday 25 Apr 2026");
+            .containsExactly("Yes, the documents I'm uploading relate to an application submitted on "
+                                 + "Saturday 25 Apr 2026");
     }
 
     @Test
