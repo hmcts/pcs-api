@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUpload;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 
 public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
@@ -27,8 +27,8 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
             .pageLabel("Confirm if these documents relate to an existing application")
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", EVICTION_DETAILS_CONTENT)
-            .complex(PCSCase::getLegalRepDocumentUpload)
-            .mandatory(LegalRepDocumentUpload::getUploadCategories);
+            .complex(PCSCase::getLegalRepDocumentUploadDetails)
+            .mandatory(LegalRepDocumentUploadDetails::getValidCategories);
     }
 
     @Override

@@ -7,22 +7,22 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-
-import java.util.List;
 
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class LegalRepDocumentUpload {
+public class LegalRepDocumentUploadDetails {
 
     @CCD(
-        label = "Do these documents relate to an existing application?"
+        label = "Do these documents relate to an existing application?",
+        typeOverride = DynamicRadioList
+
     )
     @JsonProperty("DocumentUploadCategories")
-    private DocumentUploadCategory uploadCategories;
+    private DynamicStringList validCategories;
+   
 
     @CCD(
         label = "Add document",
