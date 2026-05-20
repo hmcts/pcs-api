@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
@@ -58,9 +59,8 @@ public class GenAppService {
             .appliedForHwf(genAppRequest.getAppliedForHwf())
             .build();
 
-
         // Adding the Gen App to the PcsCaseEntity allocates it a rank,
-        // which we use later on to rename the supporting documents
+        // which we rely on later on in this method to rename the supporting documents
         pcsCaseEntity.addGenApp(genAppEntity);
 
         if (genAppRequest.getAppliedForHwf() == VerticalYesNo.YES
@@ -130,7 +130,7 @@ public class GenAppService {
                     .url(uploadedDocument.getDocument().getUrl())
                     .fileName(updatedFilename)
                     .binaryUrl(uploadedDocument.getDocument().getBinaryUrl())
-                    .categoryId(null)
+                    .categoryId(CaseFileCategory.APPLICATIONS.getId())
                     .contentType(uploadedDocument.getContentType())
                     .size(uploadedDocument.getSizeInBytes())
                     .build();

@@ -69,8 +69,7 @@ public class XuiGenAppRequest implements GenAppRequest {
     private String whatOrderWanted;
 
     @CCD(
-        label = "Do you want to upload documents to support the defendant’s application?",
-        hint = "If you’ve selected multiple applications, you should upload documents that relate to all of them"
+        label = "Do you want to upload documents to support the defendant’s application?"
     )
     private VerticalYesNo hasSupportingDocuments;
 
