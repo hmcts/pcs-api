@@ -31,6 +31,9 @@ public class RentArrearsTabDetails {
     @CCD(label = "Previous steps taken to recover rent arrears?")
     private String stepsToRecoverArrears;
 
+    @CCD(label = "Details of previous steps taken?")
+    private String stepsToRecoverArrearsDetails;
+
     @CCD(label = "Rent statement")
     private List<ListValue<Document>> rentStatement;
 

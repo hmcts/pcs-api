@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.builder;
 
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
@@ -12,6 +13,8 @@ import java.math.BigDecimal;
 
 @Component
 public class RentArrearsTabDetailsBuilder {
+
+    private static final String NO_ANSWER = " ";
 
     public RentArrearsTabDetails buildRentArrearsTabDetails(PCSCase pcsCase) {
         RentDetails rentDetails = pcsCase.getRentDetails();
@@ -39,6 +42,65 @@ public class RentArrearsTabDetailsBuilder {
             .arrearsTotal(arrearsTotal)
             .judgmentRequested(judgmentRequested)
             .build();
+    }
+
+    public RentArrearsTabDetails buildDetailedRentArrearsTabDetails(PCSCase pcsCase) {
+        if (pcsCase.getShowRentSectionPage() != YesOrNo.YES) {
+            return null;
+        }
+
+        RentDetails rentDetails = pcsCase.getRentDetails();
+        RentArrearsSection rentArrears = pcsCase.getRentArrears();
+
+        String rentAmount = rentDetails == null ? null : formatMoney(rentDetails.getCurrentRent());
+        String calculationFrequency = getRentCalculationFrequencyDetailed(rentDetails);
+        String dailyRate = getDailyRate(rentDetails);
+        String arrearsTotal = rentArrears == null ? null : formatMoney(rentArrears.getTotal());
+        String judgmentRequested = pcsCase.getArrearsJudgmentWanted() == null
+            ? null : pcsCase.getArrearsJudgmentWanted().getLabel();
+
+        if (rentAmount == null
+            && calculationFrequency == null
+            && dailyRate == null
+            && arrearsTotal == null
+            && judgmentRequested == null) {
+            return RentArrearsTabDetails.builder()
+                .rentAmount(NO_ANSWER)
+                .calculationFrequency(NO_ANSWER)
+                .dailyRate(NO_ANSWER)
+                .stepsToRecoverArrears(NO_ANSWER)
+                .arrearsTotal(NO_ANSWER)
+                .judgmentRequested(NO_ANSWER)
+                .rentStatementPlaceholder(NO_ANSWER)
+                .build();
+        }
+
+        String frequency = null;
+        if (rentDetails != null && rentDetails.getFrequency() == RentPaymentFrequency.OTHER) {
+            frequency = rentDetails.getOtherFrequency();
+        }
+
+        RentArrearsSection rentArrearsSection = pcsCase.getRentArrears();
+
+        RentArrearsTabDetails rentArrearsTabDetails = RentArrearsTabDetails.builder()
+            .rentAmount(rentAmount)
+            .calculationFrequency(calculationFrequency)
+            .dailyRate(dailyRate)
+            .arrearsTotal(arrearsTotal)
+            .judgmentRequested(judgmentRequested)
+            .frequency(frequency)
+            .build();
+
+        if (rentArrearsSection != null) {
+            rentArrearsTabDetails.setStepsToRecoverArrears(rentArrearsSection.getRecoveryAttempted().getLabel());
+            rentArrearsTabDetails.setStepsToRecoverArrearsDetails(rentArrearsSection.getRecoveryAttemptDetails());
+            rentArrearsTabDetails.setRentStatement(rentArrearsSection.getStatementDocuments());
+        } else {
+            rentArrearsTabDetails.setStepsToRecoverArrears(NO_ANSWER);
+            rentArrearsTabDetails.setRentStatementPlaceholder(NO_ANSWER);
+        }
+
+        return rentArrearsTabDetails;
     }
 
     private String getDailyRate(RentDetails rentDetails) {
@@ -80,6 +142,14 @@ public class RentArrearsTabDetailsBuilder {
 
         if (rentDetails.getFrequency() == RentPaymentFrequency.OTHER && rentDetails.getOtherFrequency() != null) {
             return rentDetails.getOtherFrequency();
+        }
+
+        return rentDetails.getFrequency().getLabel();
+    }
+
+    private String getRentCalculationFrequencyDetailed(RentDetails rentDetails) {
+        if (rentDetails == null || rentDetails.getFrequency() == null) {
+            return null;
         }
 
         return rentDetails.getFrequency().getLabel();

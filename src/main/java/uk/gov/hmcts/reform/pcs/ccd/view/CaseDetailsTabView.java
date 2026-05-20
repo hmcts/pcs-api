@@ -86,7 +86,8 @@ public class CaseDetailsTabView {
         TenancyLicenceTabDetails tenancyLicenceTabDetails = buildTenancyLicenceTabDetails(pcsCase);
         NoticeTabDetails noticeTabDetails = buildNoticeTabDetails(pcsCase);
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
-        RentArrearsTabDetails rentArrearsTabDetails = buildRentArrearsTabDetails(pcsCase);
+        RentArrearsTabDetails rentArrearsTabDetails =
+            rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase);
         ReasonsForPossessionTabDetails reasonsForPossessionTabDetails =
             reasonsForPossessionTabDetailsBuilder.buildDetailsReasonsForPossession(pcsCase);
         ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
@@ -279,39 +280,6 @@ public class CaseDetailsTabView {
             .mediationAttempted(mediationAttempted != null ? mediationAttempted.getLabel() : NO_ANSWER)
             .settlementAttempted(settlementAttempted != null ? settlementAttempted.getLabel() : NO_ANSWER)
             .build();
-    }
-
-    private RentArrearsTabDetails buildRentArrearsTabDetails(PCSCase pcsCase) {
-        if (pcsCase.getShowRentSectionPage() != YesOrNo.YES) {
-            return null;
-        }
-
-        RentArrearsTabDetails rentArrearsTabDetails = rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase);
-
-        if (rentArrearsTabDetails == null) {
-            return RentArrearsTabDetails.builder()
-                .rentAmount(NO_ANSWER)
-                .calculationFrequency(NO_ANSWER)
-                .frequency(NO_ANSWER)
-                .dailyRate(NO_ANSWER)
-                .stepsToRecoverArrears(NO_ANSWER)
-                .arrearsTotal(NO_ANSWER)
-                .judgmentRequested(NO_ANSWER)
-                .rentStatementPlaceholder(NO_ANSWER)
-                .build();
-        }
-
-        RentArrearsSection rentArrearsSection = pcsCase.getRentArrears();
-        if (rentArrearsSection != null) {
-            rentArrearsTabDetails.setStepsToRecoverArrears(rentArrearsSection.getRecoveryAttemptDetails());
-            rentArrearsTabDetails.setRentStatement(rentArrearsSection.getStatementDocuments());
-        } else {
-            rentArrearsTabDetails.setStepsToRecoverArrears(NO_ANSWER);
-            rentArrearsTabDetails.setRentStatementPlaceholder(NO_ANSWER);
-        }
-
-
-        return rentArrearsTabDetails;
     }
 
     private ApplicationsTabDetails buildApplicationsTabDetails(PCSCase pcsCase) {
