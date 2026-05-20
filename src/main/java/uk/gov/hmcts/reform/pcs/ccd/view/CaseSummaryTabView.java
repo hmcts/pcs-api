@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @Component
 public class CaseSummaryTabView {
@@ -132,7 +134,12 @@ public class CaseSummaryTabView {
             return null;
         }
 
-        return dateSubmitted.format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM");
+        LocalDateTime ukDateSubmitted = dateSubmitted
+            .atZone(ZoneId.systemDefault())
+            .withZoneSameInstant(UK_ZONE_ID)
+            .toLocalDateTime();
+
+        return ukDateSubmitted.format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM");
     }
 
     private ClaimantInformationTabDetails createSummaryClaimantTabDetails(PCSCase pcsCase) {

@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -162,6 +163,46 @@ public class CaseSummaryTabViewTest {
 
         // Then
         assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 5:02:31PM");
+    }
+
+    @Test
+    void shouldDisplaySubmittedDateInUkTimeWhenServerTimezoneIsUtc() {
+        // Given
+        TimeZone originalTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        PCSCase pcsCase = PCSCase.builder()
+            .dateSubmitted(LocalDateTime.of(2026, 7, 11, 17, 2, 31))
+            .build();
+
+        try {
+            // When
+            SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+            // Then
+            assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 6:02:31PM");
+        } finally {
+            TimeZone.setDefault(originalTimeZone);
+        }
+    }
+
+    @Test
+    void shouldDisplaySubmittedDateInGmtOutsideBritishSummerTimeWhenServerTimezoneIsUtc() {
+        // Given
+        TimeZone originalTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        PCSCase pcsCase = PCSCase.builder()
+            .dateSubmitted(LocalDateTime.of(2026, 1, 11, 17, 2, 31))
+            .build();
+
+        try {
+            // When
+            SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+            // Then
+            assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
+        } finally {
+            TimeZone.setDefault(originalTimeZone);
+        }
     }
 
     @Test
