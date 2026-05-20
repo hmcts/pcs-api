@@ -2,12 +2,18 @@ package uk.gov.hmcts.reform.pcs.ccd.view.builder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -68,5 +74,173 @@ public class RentArrearsTabDetailsBuilderTest {
 
         // Then
         assertThat(rentArrearsDetails.getDailyRate()).isEqualTo("£3.40");
+    }
+
+    @Test
+    void shouldBuildDetailedRentArrearsForCaseDetailsTab() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .showRentSectionPage(YesOrNo.YES)
+            .rentDetails(
+                RentDetails.builder()
+                    .currentRent(new BigDecimal("4.00"))
+                    .frequency(RentPaymentFrequency.WEEKLY)
+                    .calculatedDailyCharge(new BigDecimal("3.40"))
+                    .build())
+            .arrearsJudgmentWanted(VerticalYesNo.YES)
+            .rentArrears(
+                RentArrearsSection.builder()
+                    .recoveryAttempted(VerticalYesNo.YES)
+                    .recoveryAttemptDetails("recovery details")
+                    .total(new BigDecimal("100.00"))
+                    .statementDocuments(
+                        List.of(
+                            ListValue.<Document>builder()
+                                .value(Document.builder().build())
+                                .build())
+                    )
+                    .build()
+            )
+            .build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildDetailedRentArrearsTabDetails(pcsCase);
+
+        // Then
+        assertThat(rentArrearsDetails.getRentAmount()).isEqualTo("£4");
+        assertThat(rentArrearsDetails.getCalculationFrequency()).isEqualTo("Weekly");
+        assertThat(rentArrearsDetails.getFrequency()).isNull();
+        assertThat(rentArrearsDetails.getDailyRate()).isEqualTo("£3.40");
+        assertThat(rentArrearsDetails.getArrearsTotal()).isEqualTo("£100.00");
+        assertThat(rentArrearsDetails.getStepsToRecoverArrears()).isEqualTo("Yes");
+        assertThat(rentArrearsDetails.getStepsToRecoverArrearsDetails()).isEqualTo("recovery details");
+        assertThat(rentArrearsDetails.getRentStatement()).hasSize(1);
+        assertThat(rentArrearsDetails.getRentStatementPlaceholder()).isNull();
+        assertThat(rentArrearsDetails.getJudgmentRequested()).isEqualTo("Yes");
+    }
+
+    @Test
+    void shouldUsePlaceholderInDetailedRentArrearsWhenNoDocumentsUploaded() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .showRentSectionPage(YesOrNo.YES)
+            .rentDetails(
+                RentDetails.builder()
+                    .currentRent(new BigDecimal("4.00"))
+                    .frequency(RentPaymentFrequency.WEEKLY)
+                    .calculatedDailyCharge(new BigDecimal("3.40"))
+                    .build())
+            .arrearsJudgmentWanted(VerticalYesNo.YES)
+            .rentArrears(
+                RentArrearsSection.builder()
+                    .recoveryAttempted(VerticalYesNo.YES)
+                    .recoveryAttemptDetails("recovery details")
+                    .total(new BigDecimal("100.00"))
+                    .build()
+            )
+            .build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildDetailedRentArrearsTabDetails(pcsCase);
+
+        // Then
+        assertThat(rentArrearsDetails.getRentStatement()).isNull();
+        assertThat(rentArrearsDetails.getRentStatementPlaceholder()).isEqualTo(" ");
+    }
+
+    @Test
+    void shouldSetFrequencyInDetailedRentArrearsWhenCalculationFrequencyIsOther() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .showRentSectionPage(YesOrNo.YES)
+            .rentDetails(
+                RentDetails.builder()
+                    .currentRent(new BigDecimal("4.00"))
+                    .frequency(RentPaymentFrequency.OTHER)
+                    .otherFrequency("Other frequency")
+                    .calculatedDailyCharge(new BigDecimal("3.40"))
+                    .build())
+            .arrearsJudgmentWanted(VerticalYesNo.YES)
+            .rentArrears(
+                RentArrearsSection.builder()
+                    .recoveryAttempted(VerticalYesNo.YES)
+                    .recoveryAttemptDetails("recovery details")
+                    .total(new BigDecimal("100.00"))
+                    .statementDocuments(
+                        List.of(
+                            ListValue.<Document>builder()
+                                .value(Document.builder().build())
+                                .build())
+                    )
+                    .build()
+            )
+            .build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildDetailedRentArrearsTabDetails(pcsCase);
+
+        // Then
+        assertThat(rentArrearsDetails.getCalculationFrequency()).isEqualTo("Other");
+        assertThat(rentArrearsDetails.getFrequency()).isEqualTo("Other frequency");
+    }
+
+    @Test
+    void shouldUsePlaceholderInDetailedRentArrearsWhenRentDetailsIsNull() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().showRentSectionPage(YesOrNo.YES).build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildDetailedRentArrearsTabDetails(pcsCase);
+
+        // Then
+        assertThat(rentArrearsDetails.getRentAmount()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getCalculationFrequency()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getFrequency()).isNull();
+        assertThat(rentArrearsDetails.getDailyRate()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getArrearsTotal()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getStepsToRecoverArrears()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getStepsToRecoverArrearsDetails()).isNull();
+        assertThat(rentArrearsDetails.getRentStatement()).isNull();
+        assertThat(rentArrearsDetails.getRentStatementPlaceholder()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getJudgmentRequested()).isEqualTo(" ");
+    }
+
+    @Test
+    void shouldNotBuildDetailedRentArrearsWhenRentSectionPageIsNo() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .showRentSectionPage(YesOrNo.NO)
+            .rentDetails(
+                RentDetails.builder()
+                    .currentRent(new BigDecimal("4.00"))
+                    .frequency(RentPaymentFrequency.WEEKLY)
+                    .calculatedDailyCharge(new BigDecimal("3.40"))
+                    .build())
+            .arrearsJudgmentWanted(VerticalYesNo.YES)
+            .rentArrears(
+                RentArrearsSection.builder()
+                    .recoveryAttempted(VerticalYesNo.YES)
+                    .recoveryAttemptDetails("recovery details")
+                    .total(new BigDecimal("100.00"))
+                    .statementDocuments(
+                        List.of(
+                            ListValue.<Document>builder()
+                                .value(Document.builder().build())
+                                .build())
+                    )
+                    .build()
+            )
+            .build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildDetailedRentArrearsTabDetails(pcsCase);
+
+        // Then
+        assertThat(rentArrearsDetails).isNull();
     }
 }

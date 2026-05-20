@@ -53,56 +53,52 @@ public class RentArrearsTabDetailsBuilder {
             return null;
         }
 
+        String judgmentRequested = pcsCase.getArrearsJudgmentWanted() == null
+            ? NO_ANSWER : pcsCase.getArrearsJudgmentWanted().getLabel();
+
+        RentArrearsTabDetails rentArrearsTabDetails;
         RentDetails rentDetails = pcsCase.getRentDetails();
         RentArrearsSection rentArrears = pcsCase.getRentArrears();
 
-        String rentAmount = rentDetails == null ? null : formatMoney(rentDetails.getCurrentRent());
-        String calculationFrequency = getRentCalculationFrequencyDetailed(rentDetails);
-        String dailyRate = getDailyRate(rentDetails);
-        String arrearsTotal = rentArrears == null ? null : formatMoney(rentArrears.getTotal());
-        String judgmentRequested = pcsCase.getArrearsJudgmentWanted() == null
-            ? null : pcsCase.getArrearsJudgmentWanted().getLabel();
+        if (rentDetails != null) {
+            String rentAmount = formatMoney(rentDetails.getCurrentRent());
+            String calculationFrequency = getRentCalculationFrequencyDetailed(rentDetails);
+            String dailyRate = getDailyRate(rentDetails);
 
-        if (rentAmount == null
-            && calculationFrequency == null
-            && dailyRate == null
-            && arrearsTotal == null
-            && judgmentRequested == null) {
-            return RentArrearsTabDetails.builder()
+            String frequency = null;
+            if (rentDetails.getFrequency() == RentPaymentFrequency.OTHER) {
+                frequency = rentDetails.getOtherFrequency();
+            }
+
+            rentArrearsTabDetails = RentArrearsTabDetails.builder()
+                .rentAmount(rentAmount != null ? rentAmount : NO_ANSWER)
+                .calculationFrequency(calculationFrequency != null ? calculationFrequency : NO_ANSWER)
+                .dailyRate(dailyRate != null ? dailyRate : NO_ANSWER)
+                .judgmentRequested(judgmentRequested)
+                .frequency(frequency)
+                .build();
+        } else {
+            rentArrearsTabDetails = RentArrearsTabDetails.builder()
                 .rentAmount(NO_ANSWER)
                 .calculationFrequency(NO_ANSWER)
                 .dailyRate(NO_ANSWER)
-                .stepsToRecoverArrears(NO_ANSWER)
-                .arrearsTotal(NO_ANSWER)
-                .judgmentRequested(NO_ANSWER)
-                .rentStatementPlaceholder(NO_ANSWER)
+                .judgmentRequested(judgmentRequested)
                 .build();
         }
 
-        String frequency = null;
-        if (rentDetails != null && rentDetails.getFrequency() == RentPaymentFrequency.OTHER) {
-            frequency = rentDetails.getOtherFrequency();
-        }
-
-        RentArrearsSection rentArrearsSection = pcsCase.getRentArrears();
-
-        RentArrearsTabDetails rentArrearsTabDetails = RentArrearsTabDetails.builder()
-            .rentAmount(rentAmount)
-            .calculationFrequency(calculationFrequency)
-            .dailyRate(dailyRate)
-            .arrearsTotal(arrearsTotal)
-            .judgmentRequested(judgmentRequested)
-            .frequency(frequency)
-            .build();
-
-        if (rentArrearsSection != null) {
-            VerticalYesNo recoveryAttempted = rentArrearsSection.getRecoveryAttempted();
+        if (rentArrears != null) {
+            VerticalYesNo recoveryAttempted = rentArrears.getRecoveryAttempted();
             rentArrearsTabDetails
                 .setStepsToRecoverArrears(recoveryAttempted != null ? recoveryAttempted.getLabel() : NO_ANSWER);
-            String details = rentArrearsSection.getRecoveryAttemptDetails();
-            rentArrearsTabDetails.setStepsToRecoverArrearsDetails(details != null ? details : NO_ANSWER);
-            List<ListValue<Document>> documents = rentArrearsSection.getStatementDocuments();
 
+            String details = recoveryAttempted == VerticalYesNo.YES
+                ? rentArrears.getRecoveryAttemptDetails() : null;
+            rentArrearsTabDetails.setStepsToRecoverArrearsDetails(details != null ? details : NO_ANSWER);
+
+            String arrearsTotal = formatMoney(rentArrears.getTotal());
+            rentArrearsTabDetails.setArrearsTotal(arrearsTotal != null ? arrearsTotal : NO_ANSWER);
+
+            List<ListValue<Document>> documents = rentArrears.getStatementDocuments();
             if (CollectionUtils.isEmpty(documents)) {
                 rentArrearsTabDetails.setRentStatementPlaceholder(NO_ANSWER);
             } else {
@@ -111,6 +107,7 @@ public class RentArrearsTabDetailsBuilder {
         } else {
             rentArrearsTabDetails.setStepsToRecoverArrears(NO_ANSWER);
             rentArrearsTabDetails.setRentStatementPlaceholder(NO_ANSWER);
+            rentArrearsTabDetails.setArrearsTotal(NO_ANSWER);
         }
 
         return rentArrearsTabDetails;
