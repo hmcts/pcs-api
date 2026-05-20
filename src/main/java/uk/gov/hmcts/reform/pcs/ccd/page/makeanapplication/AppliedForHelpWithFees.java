@@ -19,7 +19,7 @@ public class AppliedForHelpWithFees implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("appliedForHelpWithFees")
-            .pageLabel("Have they already applied for help with their application fee?")
+            .pageLabel("Confirm if they have they already applied for help with their application fee")
             .showCondition(ShowConditions.and(
                 fieldEquals("xui_genapp_ShowHwfScreens", VerticalYesNo.YES),
                 fieldEquals("xui_genapp_NeedHwf", VerticalYesNo.YES)

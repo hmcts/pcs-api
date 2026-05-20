@@ -15,7 +15,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 public class HelpWithFeesNeeded implements CcdPageConfiguration {
 
     private static final String INFO_MARKDOWN = """
-        <p class="govuk-body">It usually costs ${xui_genapp_StandardFee} to apply. The fee will
+        <p class="govuk-body govuk-!-margin-bottom-1">It usually costs ${xui_genapp_StandardFee} to apply. The fee will
         increase to ${xui_genapp_MaxFee} if:</p>
         <ul class="govuk-list govuk-list--bullet">
           <li class="govuk-!-font-size-19">the defendant has already told the other party that they are making
@@ -25,7 +25,7 @@ public class HelpWithFeesNeeded implements CcdPageConfiguration {
         </ul>
         <p class="govuk-body">You’ll see the final application fee before you pay.</p>
 
-        <p class="govuk-body">The defendant may be able to get help paying the fee
+        <p class="govuk-body govuk-!-margin-bottom-1">The defendant may be able to get help paying the fee
         if they (one or more of the following):</p>
         <ul class="govuk-list govuk-list--bullet">
             <li class="govuk-!-font-size-19">are on certain benefits</li>
