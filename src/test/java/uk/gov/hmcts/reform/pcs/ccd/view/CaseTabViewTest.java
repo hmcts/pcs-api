@@ -8,8 +8,13 @@ import org.mockito.Mock;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
@@ -21,11 +26,14 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.DEMOTION_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY;
 
 @ExtendWith(MockitoExtension.class)
 class CaseTabViewTest {
@@ -698,6 +706,189 @@ class CaseTabViewTest {
 
         List<ListValue<Party>> allUnderlesseeOrMortgagees = draftCaseData.getAllUnderlesseeOrMortgagees();
         assertThat(allUnderlesseeOrMortgagees).isNull();
+    }
+
+    @Test
+    void shouldSetSuspensionOfRightToBuyAndDemotionOfTenancyDraftDataWhenBothSelected() {
+        // Given
+        String suspensionReason = "Suspension reason";
+        String demotionReason = "Demotion reason";
+        SuspensionOfRightToBuyDemotionOfTenancy suspensionOfRightToBuyDemotionOfTenancy =
+            SuspensionOfRightToBuyDemotionOfTenancy.builder()
+                .suspensionOfRightToBuyActs(SuspensionOfRightToBuyHousingAct.SECTION_6A_2)
+                .suspensionOrderReason(suspensionReason)
+                .demotionOfTenancyActs(DemotionOfTenancyHousingAct.SECTION_6A_2)
+                .demotionOrderReason(demotionReason)
+                .build();
+
+        PCSCase draftCaseData = PCSCase.builder()
+            .suspensionOfRightToBuyDemotionOfTenancy(suspensionOfRightToBuyDemotionOfTenancy)
+            .alternativesToPossession(Set.of(SUSPENSION_OF_RIGHT_TO_BUY, DEMOTION_OF_TENANCY))
+            .build();
+
+        when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
+            SummaryTab.builder().build()
+        );
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+            CaseDetailsTab.builder().build()
+        );
+        when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+
+        // Then
+        SummaryTab summaryTab = pcsCase.getSummaryTab();
+        CaseDetailsTab caseDetailsTab = pcsCase.getCaseDetailsTab();
+        assertThat(summaryTab).isNotNull();
+        assertThat(caseDetailsTab).isNotNull();
+        verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+
+        SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
+        assertThat(suspensionOfRightToBuy.getHousingAct()).isEqualTo(SuspensionOfRightToBuyHousingAct.SECTION_6A_2);
+        assertThat(suspensionOfRightToBuy.getReason()).isEqualTo(suspensionReason);
+
+        DemotionOfTenancy demotionOfTenancy = draftCaseData.getDemotionOfTenancy();
+        assertThat(demotionOfTenancy.getHousingAct()).isEqualTo(DemotionOfTenancyHousingAct.SECTION_6A_2);
+        assertThat(demotionOfTenancy.getReason()).isEqualTo(demotionReason);
+    }
+
+    @Test
+    void shouldNotSetSuspensionOfRightToBuyAndDemotionOfTenancyDraftDataWhenOnlyDemotionSelected() {
+        // Given
+        String suspensionReason = "Suspension reason";
+        String demotionReason = "Demotion reason";
+        SuspensionOfRightToBuyDemotionOfTenancy suspensionOfRightToBuyDemotionOfTenancy =
+            SuspensionOfRightToBuyDemotionOfTenancy.builder()
+                .suspensionOfRightToBuyActs(SuspensionOfRightToBuyHousingAct.SECTION_6A_2)
+                .suspensionOrderReason(suspensionReason)
+                .demotionOfTenancyActs(DemotionOfTenancyHousingAct.SECTION_6A_2)
+                .demotionOrderReason(demotionReason)
+                .build();
+
+        PCSCase draftCaseData = PCSCase.builder()
+            .suspensionOfRightToBuyDemotionOfTenancy(suspensionOfRightToBuyDemotionOfTenancy)
+            .alternativesToPossession(Set.of(DEMOTION_OF_TENANCY))
+            .build();
+
+        when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
+            SummaryTab.builder().build()
+        );
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+            CaseDetailsTab.builder().build()
+        );
+        when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+
+        // Then
+        SummaryTab summaryTab = pcsCase.getSummaryTab();
+        CaseDetailsTab caseDetailsTab = pcsCase.getCaseDetailsTab();
+        assertThat(summaryTab).isNotNull();
+        assertThat(caseDetailsTab).isNotNull();
+        verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+
+        SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
+        assertThat(suspensionOfRightToBuy).isNull();
+
+        DemotionOfTenancy demotionOfTenancy = draftCaseData.getDemotionOfTenancy();
+        assertThat(demotionOfTenancy).isNull();
+    }
+
+    @Test
+    void shouldNotSetSuspensionOfRightToBuyAndDemotionOfTenancyDraftDataWhenOnlySuspensionSelected() {
+        // Given
+        String suspensionReason = "Suspension reason";
+        String demotionReason = "Demotion reason";
+        SuspensionOfRightToBuyDemotionOfTenancy suspensionOfRightToBuyDemotionOfTenancy =
+            SuspensionOfRightToBuyDemotionOfTenancy.builder()
+                .suspensionOfRightToBuyActs(SuspensionOfRightToBuyHousingAct.SECTION_6A_2)
+                .suspensionOrderReason(suspensionReason)
+                .demotionOfTenancyActs(DemotionOfTenancyHousingAct.SECTION_6A_2)
+                .demotionOrderReason(demotionReason)
+                .build();
+
+        PCSCase draftCaseData = PCSCase.builder()
+            .suspensionOfRightToBuyDemotionOfTenancy(suspensionOfRightToBuyDemotionOfTenancy)
+            .alternativesToPossession(Set.of(SUSPENSION_OF_RIGHT_TO_BUY))
+            .build();
+
+        when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
+            SummaryTab.builder().build()
+        );
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+            CaseDetailsTab.builder().build()
+        );
+        when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+
+        // Then
+        SummaryTab summaryTab = pcsCase.getSummaryTab();
+        CaseDetailsTab caseDetailsTab = pcsCase.getCaseDetailsTab();
+        assertThat(summaryTab).isNotNull();
+        assertThat(caseDetailsTab).isNotNull();
+        verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+
+        SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
+        assertThat(suspensionOfRightToBuy).isNull();
+
+        DemotionOfTenancy demotionOfTenancy = draftCaseData.getDemotionOfTenancy();
+        assertThat(demotionOfTenancy).isNull();
+    }
+
+    @Test
+    void shouldNotSetSuspensionOfRightToBuyAndDemotionOfTenancyDraftDataWithNoData() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .alternativesToPossession(Set.of(SUSPENSION_OF_RIGHT_TO_BUY, DEMOTION_OF_TENANCY))
+            .build();
+
+        when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
+            SummaryTab.builder().build()
+        );
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+            CaseDetailsTab.builder().build()
+        );
+        when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+
+        // Then
+        SummaryTab summaryTab = pcsCase.getSummaryTab();
+        CaseDetailsTab caseDetailsTab = pcsCase.getCaseDetailsTab();
+        assertThat(summaryTab).isNotNull();
+        assertThat(caseDetailsTab).isNotNull();
+        verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+
+        SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
+        assertThat(suspensionOfRightToBuy).isNull();
+
+        DemotionOfTenancy demotionOfTenancy = draftCaseData.getDemotionOfTenancy();
+        assertThat(demotionOfTenancy).isNull();
     }
 
     private static <T> ListValue<T> listValue(T value) {
