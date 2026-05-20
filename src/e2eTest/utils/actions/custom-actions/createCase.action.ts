@@ -81,6 +81,7 @@ export class CreateCaseAction implements IAction {
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName as actionRecord)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName as actionRecord)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName as actionRecord)],
+      ['selectNoticeDetailsWales', () => this.selectNoticeDetailsWales(fieldName as actionRecord)],
       ['selectBorderPostcode', () => this.selectBorderPostcode(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName as actionRecord)],
       ['selectOtherGrounds', () => this.selectYourPossessionGrounds(fieldName as actionRecord)],
@@ -495,20 +496,6 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
     await performAction('clickRadioButton', { question: noticeDetails.howDidYouServeTheQuestion, option: noticeData.howDidYouServeNotice });
-    if (noticeData.howDidYouServeNotice === checkingNoticeWales.noRadioOption) {
-      await performValidation('text', { "text": checkingNoticeWales.ifThisIsAPossessionParagraph, "elementType": "paragraph" });
-      await performValidation('text', { "text": checkingNoticeWales.eachGroundRequiresParagraph, "elementType": "paragraph" });
-      await performValidation('text', { "text": checkingNoticeWales.haveYouServedNoticeToQuestion, "elementType": "paragraph" });
-      await performValidation('text', { "text": checkingNoticeWales.youMustMakeAStatementHiddenParagraph, "elementType": "paragraph" });
-      await performValidation('text', { "text": checkingNoticeWales.characterLimitHiddenHintText, "elementType": "paragraph" });
-      //await performAction('inputText', checkingNoticeWales.walesNoticeStatementHiddenTextInput, {"elementType": "textarea",text: noticeData.walesNoticeStatement});
-
-      if (noticeData.walesNoticeStatement) {
-        await performAction('inputText', checkingNoticeWales.enterStatementHiddenHintText, noticeData.walesNoticeStatement);
-         //await performAction('inputText', prohibitedConduct.label1, prohibitedConduct.input1);
-      }
-    }
-
     if (noticeData.explanationLabel && noticeData.explanation) {
       await performAction('inputText', noticeData.explanationLabel, noticeData.explanation);
     }
@@ -530,7 +517,23 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', noticeDetails.continueButton);
   }
 
-
+  private async selectNoticeDetailsWales(noticeData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performAction('clickRadioButton', { question: noticeData.question, option: noticeData.haveYouServedNoticeToQuestion });
+    if (noticeData.haveYouServedNoticeToQuestion === checkingNoticeWales.noRadioOption) {
+      await performValidation('text', { "text": checkingNoticeWales.ifThisIsAPossessionParagraph, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.eachGroundRequiresParagraph, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.haveYouServedNoticeToQuestion, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.youMustMakeAStatementHiddenParagraph, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.characterLimitHiddenHintText, "elementType": "paragraph" });
+      if (noticeData.walesNoticeStatement) {
+        await performAction('inputText', checkingNoticeWales.enterStatementHiddenTextLabel, noticeData.walesNoticeStatement);
+           }
+    }
+    await performAction('clickButtonAndVerifyPageNavigation', checkingNoticeWales.continueButton, rentDetails.mainHeader);
+  }
+  
   private async provideRentDetails(rentFrequency: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });

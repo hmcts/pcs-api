@@ -117,11 +117,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', checkingNoticeWales.mainHeader);
-    await performAction('selectNoticeDetails', {
+   await performValidation('mainHeader', checkingNoticeWales.mainHeader);
+    await performAction('selectNoticeDetailsWales', {
       question: checkingNoticeWales.haveYouServedNoticeToQuestion,
-      howDidYouServeNotice: checkingNoticeWales.noRadioOption,
-      walesNoticeStatement: 'Sample statement for notice - Wales',
+      haveYouServedNoticeToQuestion: checkingNoticeWales.noRadioOption,
+      walesNoticeStatement: checkingNoticeWales.walesNoticeStatementHiddenInputText,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -224,9 +224,9 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNoticeWales.mainHeader);
-    await performAction('selectNoticeDetails', {
+    await performAction('selectNoticeDetailsWales', {
       question: checkingNoticeWales.haveYouServedNoticeToQuestion,
-      howDidYouServeNotice: checkingNoticeWales.noRadioOption,
+      haveYouServedNoticeToQuestion: checkingNoticeWales.noRadioOption,
       walesNoticeStatement: checkingNoticeWales.walesNoticeStatementHiddenInputText,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -335,10 +335,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', checkingNoticeWales.mainHeader);
-    await performAction('selectNoticeOfYourIntention', {
-      question: checkingNotice.haveYouServedNoticeToQuestion,
-      option: checkingNotice.noRadioOption,
+   await performValidation('mainHeader', checkingNoticeWales.mainHeader);
+    await performAction('selectNoticeDetailsWales', {
+      question: checkingNoticeWales.haveYouServedNoticeToQuestion,
+      haveYouServedNoticeToQuestion: checkingNoticeWales.noRadioOption,
+      walesNoticeStatement: checkingNoticeWales.walesNoticeStatementHiddenInputText,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -544,9 +545,10 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNoticeWales.mainHeader);
-    await performAction('selectNoticeOfYourIntention', {
-      question: checkingNotice.haveYouServedNoticeToQuestion,
-      option: checkingNotice.noRadioOption
+    await performAction('selectNoticeDetailsWales', {
+      question: checkingNoticeWales.haveYouServedNoticeToQuestion,
+      haveYouServedNoticeToQuestion: checkingNoticeWales.noRadioOption,
+      walesNoticeStatement: checkingNoticeWales.walesNoticeStatementHiddenInputText,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -662,9 +664,10 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNoticeWales.mainHeader);
-    await performAction('selectNoticeOfYourIntention', {
-      question: checkingNotice.haveYouServedNoticeToQuestion,
-      option: checkingNotice.noRadioOption
+    await performAction('selectNoticeDetailsWales', {
+      question: checkingNoticeWales.haveYouServedNoticeToQuestion,
+      haveYouServedNoticeToQuestion: checkingNoticeWales.noRadioOption,
+      walesNoticeStatement: checkingNoticeWales.walesNoticeStatementHiddenInputText,
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
@@ -756,10 +759,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', checkingNoticeWales.mainHeader);
-    await performAction('selectNoticeOfYourIntention', {
-      question: checkingNotice.haveYouServedNoticeToQuestion,
-      option: checkingNotice.noRadioOption
+   await performValidation('mainHeader', checkingNoticeWales.mainHeader);
+    await performAction('selectNoticeDetailsWales', {
+      question: checkingNoticeWales.haveYouServedNoticeToQuestion,
+      haveYouServedNoticeToQuestion: checkingNoticeWales.noRadioOption,
+      walesNoticeStatement: checkingNoticeWales.walesNoticeStatementHiddenInputText,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
