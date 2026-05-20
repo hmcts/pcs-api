@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdPage {
 
@@ -44,6 +45,7 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
             .label(pageKey + "-content", DOCUMENT_DETAILS_CONTENT)
             .complex(PCSCase::getLegalRepDocumentUpload)
             .mandatory(LegalRepDocumentUpload::getLegalRepDocuments)
+            .label("uploadAdditionalDocuments-saveAndReturn", CommonPageContent.SAVE_AND_RETURN)
             .done()
             .build();
     }
@@ -52,4 +54,5 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
     public String getPageKey() {
         return CcdPage.derivePageKey(this.getClass());
     }
+
 }
