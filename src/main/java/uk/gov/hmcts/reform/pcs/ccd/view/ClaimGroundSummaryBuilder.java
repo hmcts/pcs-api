@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsGround;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGround
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherNoGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
@@ -38,8 +40,50 @@ import java.util.function.Function;
 public class ClaimGroundSummaryBuilder {
 
     private static final Map<PossessionGroundEnum, BiFunction<ClaimGroundSummaryBuilder, PCSCase, String>>
+        ASSURED_DRAFT_REASON_LOOKUP = Map.ofEntries(
+            Map.entry(AssuredAdditionalOtherGround.OTHER,
+                ClaimGroundSummaryBuilder::getAssuredOtherGroundReason),
+            assuredReasonEntry(AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1,
+                RentArrearsGroundsReasons::getOwnerOccupierReason),
+            assuredReasonEntry(AssuredMandatoryGround.REPOSSESSION_GROUND2,
+                RentArrearsGroundsReasons::getRepossessionByLenderReason),
+            assuredReasonEntry(AssuredMandatoryGround.HOLIDAY_LET_GROUND3,
+                RentArrearsGroundsReasons::getHolidayLetReason),
+            assuredReasonEntry(AssuredMandatoryGround.STUDENT_LET_GROUND4,
+                RentArrearsGroundsReasons::getStudentLetReason),
+            assuredReasonEntry(AssuredMandatoryGround.MINISTER_RELIGION_GROUND5,
+                RentArrearsGroundsReasons::getMinisterOfReligionReason),
+            assuredReasonEntry(AssuredMandatoryGround.REDEVELOPMENT_GROUND6,
+                RentArrearsGroundsReasons::getRedevelopmentReason),
+            assuredReasonEntry(AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7,
+                RentArrearsGroundsReasons::getDeathOfTenantReason),
+            assuredReasonEntry(AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A,
+                RentArrearsGroundsReasons::getAntisocialBehaviourReason),
+            assuredReasonEntry(AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B,
+                RentArrearsGroundsReasons::getNoRightToRentReason),
+            assuredReasonEntry(AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9,
+                RentArrearsGroundsReasons::getSuitableAltAccommodationReason),
+            assuredReasonEntry(AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12,
+                RentArrearsGroundsReasons::getBreachOfTenancyConditionsReason),
+            assuredReasonEntry(AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13,
+                RentArrearsGroundsReasons::getPropertyDeteriorationReason),
+            assuredReasonEntry(AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14,
+                RentArrearsGroundsReasons::getNuisanceAnnoyanceReason),
+            assuredReasonEntry(AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A,
+                RentArrearsGroundsReasons::getDomesticViolenceReason),
+            assuredReasonEntry(AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA,
+                RentArrearsGroundsReasons::getOffenceDuringRiotReason),
+            assuredReasonEntry(AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15,
+                RentArrearsGroundsReasons::getFurnitureDeteriorationReason),
+            assuredReasonEntry(AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16,
+                RentArrearsGroundsReasons::getEmployeeOfLandlordReason),
+            assuredReasonEntry(AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17,
+                RentArrearsGroundsReasons::getTenancyByFalseStatementReason)
+        );
+
+    private static final Map<PossessionGroundEnum, BiFunction<ClaimGroundSummaryBuilder, PCSCase, String>>
         SECURE_OR_FLEXIBLE_DRAFT_REASON_LOOKUP = Map.ofEntries(
-            draftReasonEntry(SecureAntisocialAdditionalGrounds.S84A_CONDITION_1,
+            Map.entry(SecureAntisocialAdditionalGrounds.S84A_CONDITION_1,
                 ClaimGroundSummaryBuilder::getSection84ACondition1Reason),
             secureOrFlexibleReasonEntry(SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY,
                 SecureOrFlexibleGroundsReasons::getBreachOfTenancyGround),
@@ -134,6 +178,7 @@ public class ClaimGroundSummaryBuilder {
                 Optional.ofNullable(draftCaseData.getNoRentArrearsGroundsOptions()).ifPresent(selected -> {
                     addGrounds(summaries, selected.getMandatoryGrounds(), draftCaseData);
                     addGrounds(summaries, selected.getDiscretionaryGrounds(), draftCaseData);
+                    addGrounds(summaries, selected.getOtherGround(), draftCaseData);
                 });
             }
         } else if (isSecureOrFlexibleTenancy(tenancyType)) {
@@ -183,6 +228,7 @@ public class ClaimGroundSummaryBuilder {
                     .map(ground -> AssuredDiscretionaryGround.valueOf(ground.name()))
                     .toList(), draftCaseData);
             }
+            addGrounds(summaries, selected.getAdditionalOtherGround(), draftCaseData);
         });
     }
 
@@ -258,51 +304,20 @@ public class ClaimGroundSummaryBuilder {
     }
 
     private String getAssuredDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {
-        RentArrearsGroundsReasons reasons = getRentArrearsGroundsReasons(draftCaseData);
+        return Optional.ofNullable(ASSURED_DRAFT_REASON_LOOKUP.get(ground))
+            .map(reasonAccessor -> reasonAccessor.apply(this, draftCaseData))
+            .orElse(null);
+    }
 
-        if (reasons == null) {
-            return null;
+    private String getAssuredOtherGroundReason(PCSCase draftCaseData) {
+        RentArrearsGroundsReasons rentArrearsGroundsReasons = getRentArrearsGroundsReasons(draftCaseData);
+        if (rentArrearsGroundsReasons != null && rentArrearsGroundsReasons.getOtherGroundReason() != null) {
+            return rentArrearsGroundsReasons.getOtherGroundReason();
         }
 
-        if (ground == AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1) {
-            return reasons.getOwnerOccupierReason();
-        } else if (ground == AssuredMandatoryGround.REPOSSESSION_GROUND2) {
-            return reasons.getRepossessionByLenderReason();
-        } else if (ground == AssuredMandatoryGround.HOLIDAY_LET_GROUND3) {
-            return reasons.getHolidayLetReason();
-        } else if (ground == AssuredMandatoryGround.STUDENT_LET_GROUND4) {
-            return reasons.getStudentLetReason();
-        } else if (ground == AssuredMandatoryGround.MINISTER_RELIGION_GROUND5) {
-            return reasons.getMinisterOfReligionReason();
-        } else if (ground == AssuredMandatoryGround.REDEVELOPMENT_GROUND6) {
-            return reasons.getRedevelopmentReason();
-        } else if (ground == AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7) {
-            return reasons.getDeathOfTenantReason();
-        } else if (ground == AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A) {
-            return reasons.getAntisocialBehaviourReason();
-        } else if (ground == AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B) {
-            return reasons.getNoRightToRentReason();
-        } else if (ground == AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9) {
-            return reasons.getSuitableAltAccommodationReason();
-        } else if (ground == AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12) {
-            return reasons.getBreachOfTenancyConditionsReason();
-        } else if (ground == AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13) {
-            return reasons.getPropertyDeteriorationReason();
-        } else if (ground == AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14) {
-            return reasons.getNuisanceAnnoyanceReason();
-        } else if (ground == AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A) {
-            return reasons.getDomesticViolenceReason();
-        } else if (ground == AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA) {
-            return reasons.getOffenceDuringRiotReason();
-        } else if (ground == AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15) {
-            return reasons.getFurnitureDeteriorationReason();
-        } else if (ground == AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16) {
-            return reasons.getEmployeeOfLandlordReason();
-        } else if (ground == AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17) {
-            return reasons.getTenancyByFalseStatementReason();
-        }
-
-        return null;
+        NoRentArrearsGroundsReasons noRentArrearsGroundsReasons =
+            draftCaseData.getNoRentArrearsGroundsReasons();
+        return noRentArrearsGroundsReasons == null ? null : noRentArrearsGroundsReasons.getOtherGround();
     }
 
     private String getIntroductoryDemotedOrOtherDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {
@@ -336,9 +351,12 @@ public class ClaimGroundSummaryBuilder {
     }
 
     private static Map.Entry<PossessionGroundEnum, BiFunction<ClaimGroundSummaryBuilder, PCSCase, String>>
-        draftReasonEntry(PossessionGroundEnum ground,
-                         BiFunction<ClaimGroundSummaryBuilder, PCSCase, String> reasonAccessor) {
-        return Map.entry(ground, reasonAccessor);
+        assuredReasonEntry(PossessionGroundEnum ground,
+                           Function<RentArrearsGroundsReasons, String> reasonAccessor) {
+        return Map.entry(ground, (builder, draftCaseData) -> Optional
+            .ofNullable(builder.getRentArrearsGroundsReasons(draftCaseData))
+            .map(reasonAccessor)
+            .orElse(null));
     }
 
     private static Map.Entry<PossessionGroundEnum, BiFunction<ClaimGroundSummaryBuilder, PCSCase, String>>

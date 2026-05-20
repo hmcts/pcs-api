@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGround
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherNoGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
@@ -194,6 +196,7 @@ class ClaimGroundSummaryBuilderTest {
                                                             .EMPLOYEE_LANDLORD_GROUND16,
                                                         AssuredAdditionalDiscretionaryGrounds.FALSE_STATEMENT_GROUND17
                                                     ))
+                                                    .additionalOtherGround(Set.of(AssuredAdditionalOtherGround.OTHER))
                                                     .build())
             .rentArrearsGroundsReasons(RentArrearsGroundsReasons.builder()
                                            .ownerOccupierReason("Owner reason")
@@ -214,6 +217,7 @@ class ClaimGroundSummaryBuilderTest {
                                            .furnitureDeteriorationReason("Furniture reason")
                                            .employeeOfLandlordReason("Employee reason")
                                            .tenancyByFalseStatementReason("False statement reason")
+                                           .otherGroundReason("Other reason")
                                            .build())
             .build();
 
@@ -246,6 +250,7 @@ class ClaimGroundSummaryBuilderTest {
                      "Employee reason");
         assertReason(summaries, AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17.getLabel(),
                      "False statement reason");
+        assertReason(summaries, AssuredAdditionalOtherGround.OTHER.getLabel(), "Other reason");
         assertNoReason(summaries, AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8.getLabel());
         assertNoReason(summaries, AssuredDiscretionaryGround.RENT_ARREARS_GROUND10.getLabel());
         assertNoReason(summaries, AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11.getLabel());
@@ -372,11 +377,15 @@ class ClaimGroundSummaryBuilderTest {
                                             .discretionaryGrounds(Set.of(
                                                 AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13
                                             ))
+                                            .otherGround(Set.of(AssuredAdditionalOtherGround.OTHER))
                                             .build())
             .rentArrearsGroundsReasons(RentArrearsGroundsReasons.builder()
                                            .holidayLetReason("Holiday reason")
                                            .propertyDeteriorationReason("Deterioration reason")
                                            .build())
+            .noRentArrearsGroundsReasons(NoRentArrearsGroundsReasons.builder()
+                                             .otherGround("Other reason")
+                                             .build())
             .build();
 
         // When
@@ -389,11 +398,13 @@ class ClaimGroundSummaryBuilderTest {
             .map(ClaimGroundSummary::getLabel)
             .containsExactlyInAnyOrder(
                 AssuredMandatoryGround.HOLIDAY_LET_GROUND3.getLabel(),
-                AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13.getLabel()
+                AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13.getLabel(),
+                AssuredAdditionalOtherGround.OTHER.getLabel()
             );
         assertReason(summaries, AssuredMandatoryGround.HOLIDAY_LET_GROUND3.getLabel(), "Holiday reason");
         assertReason(summaries, AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13.getLabel(),
                      "Deterioration reason");
+        assertReason(summaries, AssuredAdditionalOtherGround.OTHER.getLabel(), "Other reason");
     }
 
     @Test

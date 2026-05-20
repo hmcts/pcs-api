@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -27,6 +30,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -659,12 +663,18 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
     }
 
-    @Test
-    void shouldSetTenancyDetailsFromWalesOccupationLicenceTypeLabel() {
+    @ParameterizedTest
+    @MethodSource("walesOccupationLicenceTypeLabelScenarios")
+    void shouldSetTenancyDetailsFromWalesOccupationLicenceTypeLabelWhenEnglandTenancyDetailsAreUnavailable(
+        TenancyLicenceDetails tenancyLicenceDetails,
+        OccupationLicenceTypeWales occupationLicenceType,
+        String expectedAgreementType
+    ) {
         // Given
         PCSCase pcsCase = PCSCase.builder()
+            .tenancyLicenceDetails(tenancyLicenceDetails)
             .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
-                                               .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
+                                               .occupationLicenceTypeWales(occupationLicenceType)
                                                .licenceStartDate(LocalDate.of(2025, 5, 12))
                                                .build())
             .build();
@@ -673,7 +683,7 @@ public class CaseSummaryTabViewTest {
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
         // Then
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Secure contract");
+        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo(expectedAgreementType);
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("12/05/2025");
     }
 
@@ -693,6 +703,21 @@ public class CaseSummaryTabViewTest {
         // Then
         assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other Welsh licence");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
+    }
+
+    private static Stream<Arguments> walesOccupationLicenceTypeLabelScenarios() {
+        return Stream.of(
+            Arguments.of(
+                null,
+                OccupationLicenceTypeWales.SECURE_CONTRACT,
+                "Secure contract"
+            ),
+            Arguments.of(
+                TenancyLicenceDetails.builder().build(),
+                OccupationLicenceTypeWales.STANDARD_CONTRACT,
+                "Standard contract"
+            )
+        );
     }
 
     private static <T> ListValue<T> listValue(T value) {
