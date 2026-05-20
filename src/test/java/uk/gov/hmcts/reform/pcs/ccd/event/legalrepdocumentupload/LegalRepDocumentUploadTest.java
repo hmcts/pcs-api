@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -100,6 +101,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .extracting(DynamicStringListElement::getLabel)
             .containsExactly("Yes, the documents I'm uploading relate to an application submitted on "
                                  + "Saturday 25 Apr 2026");
+
+        assertThat(result.getLegalRepDocumentUploadDetails().getShowExistingApplicationPage()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
