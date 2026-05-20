@@ -77,7 +77,6 @@ class DraftCaseJsonMergerTest {
                             "rentArrearsGroundsReasons.otherGround",
                             "waysToPay",
                             "caseLinks",
-                            "additionalDocs",
                             "claimGroundSummaries",
                             "enforcementOrder.showChangeNameAddressPage",
                             "enforcementOrder.showPeopleWhoWillBeEvictedPage",
