@@ -51,7 +51,7 @@ public class NotificationPersonalisationFactory {
 
         return ClaimantBasePersonalisation.builder()
             .toLineClaimantName(toLineClaimantName)
-            .caseNumber(Long.toString(caseReference))
+            .caseNumber(formatCaseReference(Long.toString(caseReference)))
             .claimantName(claimantNameUpper)
             .primaryDefendantName(primaryDefendantName)
             .build();
@@ -84,7 +84,7 @@ public class NotificationPersonalisationFactory {
         return BasePersonalisation.builder()
             .firstName(emailRecipient.getFirstName())
             .lastName(emailRecipient.getLastName())
-            .caseNumber(pcsCase.getCaseReference().toString())
+            .caseNumber(formatCaseReference(pcsCase.getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
             .build();
@@ -99,5 +99,13 @@ public class NotificationPersonalisationFactory {
 
     private static String formatNameUpperForNotification(String firstName, String lastName) {
         return String.format("%s %s", firstName, lastName).toUpperCase(Locale.ROOT);
+    }
+
+    private static String formatCaseReference(String caseReference) {
+        if (caseReference == null) {
+            return null;
+        }
+
+        return caseReference.replaceAll("(.{4})(?!$)", "$1-");
     }
 }

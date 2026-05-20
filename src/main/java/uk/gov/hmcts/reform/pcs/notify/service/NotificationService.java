@@ -32,7 +32,6 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonali
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiFunction;
 
 @Service
 @Slf4j
@@ -326,91 +325,6 @@ public class NotificationService {
         }
     }
 
-    protected static TemplatePersonalisation buildBasePersonalisation(long caseReference, PCSCase pcsCase) {
-        String toLineClaimantName = getClaimantName(pcsCase.getClaimantInformation());
-        String claimantNameUpper = toLineClaimantName.toUpperCase(Locale.ROOT);
-
-        DefendantDetails primaryDefendantDetails = pcsCase.getDefendant1();
-        String primaryDefendantName = formatNameUpperForNotification(
-            primaryDefendantDetails.getFirstName(), primaryDefendantDetails.getLastName()
-        );
-
-        return ClaimantBasePersonalisation.builder()
-            .toLineClaimantName(toLineClaimantName)
-            .caseNumber(Long.toString(caseReference))
-            .claimantName(claimantNameUpper)
-            .primaryDefendantName(primaryDefendantName)
-            .build();
-    }
-
-    protected static DefendantBasePersonalisation buildBasePersonalisation(DefendantResponseEntity defendantResponse) {
-        PartyEntity defendant = defendantResponse.getParty();
-
-        PartyEntity claimant = defendantResponse.getClaim().getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole().equals(PartyRole.CLAIMANT))
-            .map(ClaimPartyEntity::getParty)
-            .findFirst()
-            .orElseThrow(
-                () -> new PartyNotFoundException(
-                    String.format(NO_CLAIMANT_PARTY_FOUND_MSG, defendantResponse.getId())
-                )
-            );
-
-        String claimantName = claimant.getOrgName() != null
-            ? claimant.getOrgName().toUpperCase(Locale.ROOT)
-            : formatNameUpperForNotification(claimant.getFirstName(), claimant.getLastName());
-        String primaryDefendantName = formatNameUpperForNotification(defendant.getFirstName(), defendant.getLastName());
-
-        return DefendantBasePersonalisation.builder()
-            .firstName(defendant.getFirstName())
-            .lastName(defendant.getLastName())
-            .caseNumber(formatCaseReference(defendantResponse.getPcsCase().getCaseReference().toString()))
-            .claimantName(claimantName)
-            .primaryDefendantName(primaryDefendantName)
-            .build();
-    }
-
-    protected static TemplatePersonalisation buildCounterclaimPaymentSuccessPersonalisation(
-        DefendantResponseEntity defendantResponse) {
-
-        FeePaymentEntity defendantFeePayment = defendantResponse.getClaim().getFeePayment();
-        if (defendantFeePayment == null || !defendantFeePayment.getPaymentStatus().equals(PaymentStatus.PAID)) {
-            throw new FeePaymentNotFoundException(
-                "Paid fee payment not found for defendant response: " + defendantResponse.getId());
-        }
-
-        return CounterclaimPaymentSuccessPersonalisation.builder()
-            .base(buildBasePersonalisation(defendantResponse))
-            .paymentReferenceNumber(defendantFeePayment.getExternalReference())
-            .build();
-    }
-
-    private EmailNotificationResponse sendClaimantEmail(
-        long caseReference,
-        PCSCase pcsCase,
-        EmailTemplate template,
-        NotificationClaimType claimType,
-        BiFunction<Long, PCSCase, TemplatePersonalisation> personalisationBuilder
-    ) {
-        String claimantEmail = getClaimantEmailAddress(pcsCase.getClaimantContactPreferences());
-        if (claimantEmail == null) {
-            log.info("Skipping email notification to claimant on case: {}", caseReference);
-            return null;
-        }
-
-        return scheduleEmailNotification(
-            buildRequest(
-                templateConfiguration.getTemplateId(template),
-                claimantEmail,
-                claimType,
-                personalisationBuilder.apply(caseReference, pcsCase)
-            ),
-            null,
-            null,
-            null
-        );
-    }
-
     private EmailNotificationResponse sendEmail(
         NotificationRecipient recipient,
         EmailTemplate template,
@@ -447,14 +361,6 @@ public class NotificationService {
             .personalisation(personalisation.toMap())
             .claimType(claimType)
             .build();
-    }
-
-    private static String formatCaseReference(String caseReference) {
-        if (caseReference == null) {
-            return null;
-        }
-
-        return caseReference.replaceAll("(.{4})(?!$)", "$1-");
     }
 
     private static String getClaimantEmailAddress(ClaimantContactPreferences claimantContactPreferences) {

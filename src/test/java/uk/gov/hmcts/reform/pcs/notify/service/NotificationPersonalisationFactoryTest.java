@@ -46,7 +46,7 @@ class NotificationPersonalisationFactoryTest {
             assertThat(map)
                 .containsEntry("firstName", "John")
                 .containsEntry("lastName", "Doe")
-                .containsEntry("caseNumber", "1234567890")
+                .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }
@@ -89,7 +89,7 @@ class NotificationPersonalisationFactoryTest {
             assertThat(map)
                 .containsEntry("firstName", "Jane")
                 .containsEntry("lastName", "Smith")
-                .containsEntry("caseNumber", "1234567890")
+                .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }
@@ -108,7 +108,7 @@ class NotificationPersonalisationFactoryTest {
             Map<String, Object> map = result.toMap();
             assertThat(map)
                 .containsEntry("toLineClaimantName", "Jane Smith")
-                .containsEntry("caseNumber", "1234567890")
+                .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }

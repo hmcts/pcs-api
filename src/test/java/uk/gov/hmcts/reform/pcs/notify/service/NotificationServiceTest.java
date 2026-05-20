@@ -38,7 +38,6 @@ import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
@@ -935,19 +934,6 @@ class NotificationServiceTest {
             assertThat(saved.getPcsCase()).isEqualTo(pcsCase);
             assertThat(saved.getClaimId()).isEqualTo(claim);
             assertThat(saved.getPartyId()).isEqualTo(party);
-        }
-
-        @Test
-        @DisplayName("Should format case reference with dashes every 4 characters")
-        void shouldFormatCaseReferenceWithDashes() {
-            DefendantResponseEntity response = createDefendantResponse();
-            response.getPcsCase().setCaseReference(1234567890123456L);
-
-            DefendantBasePersonalisation result =
-                NotificationService.buildBasePersonalisation(response);
-
-            assertThat(result.toMap())
-                .containsEntry("caseNumber", "1234-5678-9012-3456");
         }
     }
 
