@@ -1,11 +1,11 @@
 import { areThereAnyReasonsThatThisApplicationShouldNotBeShared, checkYourAnswersGenApps, chooseAnApplication, doYouNeedHelpPayingTheFee, doYouWantToUploadDocumentToSupportYourApplication, haveTheOtherPartiesAgreedToThisApplication, haveYouAlreadyAppliedForHelpWithFees, isTheCourtHearingInTheNext14Days, whatOrderDoYouWantTheCourtToMakeAndWhy, whichLanguageDidYouUseToCompleteThisService } from '@data/page-data-figma/page-data-genApps-figma';
 import { Page, expect, test } from '@playwright/test';
 import { compareMaps } from '@utils/common/compareMaps.util';
-import { performAction, performValidation } from '@utils/controller';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { FieldsStore } from './recordAnsweredFields.action';
 import { generateRandomString, stringToCamelCase } from '@utils/common/string.utils';
 import { defaultJourney, journeys } from '@utils/common/journeyMappingGenApps';
+import {performAction, performValidation} from "@utils/controller-genApps";
 
 
 
