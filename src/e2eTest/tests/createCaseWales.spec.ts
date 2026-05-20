@@ -110,8 +110,6 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     });
     await performValidation('text', {"text": preactionProtocol.walesCommunityLandlordsDynamicParagraph, "elementType": "paragraph"})
     await performAction('selectPreActionProtocol', preactionProtocol.noRadioOption);
-
-
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
