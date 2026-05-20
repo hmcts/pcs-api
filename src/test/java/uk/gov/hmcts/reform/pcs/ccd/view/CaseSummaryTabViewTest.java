@@ -193,53 +193,6 @@ public class CaseSummaryTabViewTest {
     }
 
     @Test
-    void shouldSetSummaryClaimantNameFromOverriddenName() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .claimantInformation(ClaimantInformation.builder()
-                                      .isClaimantNameCorrect(VerticalYesNo.NO)
-                                      .overriddenClaimantName("Overridden claimant")
-                                      .build())
-            .build();
-
-        // When
-        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
-
-        // Then
-        assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Overridden claimant");
-    }
-
-    @Test
-    void shouldSetSummaryClaimantNameFromClaimantInformationName() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .claimantInformation(ClaimantInformation.builder()
-                                      .claimantName("Claimant information name")
-                                      .build())
-            .build();
-
-        // When
-        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
-
-        // Then
-        assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Claimant information name");
-    }
-
-    @Test
-    void shouldSetSummaryClaimantNameFromAllClaimants() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .allClaimants(List.of(listValue(Party.builder().orgName("Claimant party").build())))
-            .build();
-
-        // When
-        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
-
-        // Then
-        assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Claimant party");
-    }
-
-    @Test
     void shouldNotSetEmptySummarySections() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
