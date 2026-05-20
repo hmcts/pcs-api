@@ -161,6 +161,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field("detailsTab_ClaimDetails")
             .field("detailsTab_PropertyAddress")
             .field("detailsTab_GroundsForPossessionDetails")
+            .field("detailsTab_DateClaimSubmitted")
             .field("detailsTab_TenancyLicenceDetails")
             .field("detailsTab_NoticeDetails")
             .field("detailsTab_ActionsTakenDetails")

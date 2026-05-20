@@ -528,7 +528,7 @@ class CaseTabViewTest {
         AddressUK address1 = AddressUK.builder().build();
         UnderlesseeMortgageeDetails underlesseeMortgageeDetails1 = UnderlesseeMortgageeDetails.builder()
             .nameKnown(VerticalYesNo.YES)
-            .name("name1")
+            .name(name1)
             .addressKnown(VerticalYesNo.YES)
             .address(address1)
             .build();
@@ -588,7 +588,7 @@ class CaseTabViewTest {
         AddressUK address1 = AddressUK.builder().build();
         UnderlesseeMortgageeDetails underlesseeMortgageeDetails1 = UnderlesseeMortgageeDetails.builder()
             .nameKnown(VerticalYesNo.YES)
-            .name("name1")
+            .name(name1)
             .addressKnown(VerticalYesNo.YES)
             .address(address1)
             .build();

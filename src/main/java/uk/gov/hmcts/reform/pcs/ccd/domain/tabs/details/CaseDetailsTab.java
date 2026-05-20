@@ -40,6 +40,9 @@ public class CaseDetailsTab {
     )
     private GroundsForPossessionTabDetails groundsForPossessionDetails;
 
+    @CCD(label = "Date claim Submitted")
+    private String dateClaimSubmitted;
+
     @CCD(
         label = "Tenancy, occupation contract or licence details"
     )

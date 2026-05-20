@@ -34,6 +34,9 @@ public class RentArrearsTabDetails {
     @CCD(label = "Rent statement")
     private List<ListValue<Document>> rentStatement;
 
+    @CCD(label = "Rent statement")
+    private String rentStatementPlaceholder;
+
     @CCD(label = "Rent arrears total at the time of claim issue")
     private String arrearsTotal;
 

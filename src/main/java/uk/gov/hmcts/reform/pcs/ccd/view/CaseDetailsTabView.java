@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
@@ -52,6 +53,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.DEMOTION_OF_TENANCY;
@@ -66,7 +68,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
 public class CaseDetailsTabView {
 
     private static final String NO_ANSWER = " ";
-    private static final DateTimeFormatter PATTERN = DateTimeFormatter.ofPattern("d MMMM yyyy");
+    private static final DateTimeFormatter DATE_FORMATTER =
+        DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
+    private static final DateTimeFormatter SUBMITTED_DATE_FORMATTER =
+        DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm:ssa", Locale.UK);
 
     private final GroundsBuilder groundsBuilder;
     private final RentArrearsTabDetailsBuilder rentArrearsTabDetailsBuilder;
@@ -93,6 +98,7 @@ public class CaseDetailsTabView {
         DemotionOfTenancyTabDetails demotionOfTenancyTabDetails = buildDemotionOfTenancyTabDetails(pcsCase);
         SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyTabDetails =
             buildSuspensionOfRightToBuyTabDetails(pcsCase);
+        String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
 
         CaseDetailsTab caseDetailsTab = CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
@@ -109,6 +115,7 @@ public class CaseDetailsTabView {
             .mortgageDetails(underlesseeMortgageTabDetailsList)
             .demotionOfTenancyDetails(demotionOfTenancyTabDetails)
             .suspensionOfRightToBuyDetails(suspensionOfRightToBuyTabDetails)
+            .dateClaimSubmitted(dateSubmitted)
             .build();
 
         if (claimantInformationTabDetails != null) {
@@ -194,7 +201,7 @@ public class CaseDetailsTabView {
 
         return TenancyLicenceTabDetails.builder()
             .typeOfTenancyLicence(tenancyType != null ? tenancyType.getLabel() : NO_ANSWER)
-            .tenancyLicenceDate(tenancyDate != null ? tenancyDate.format(PATTERN) : NO_ANSWER)
+            .tenancyLicenceDate(tenancyDate != null ? tenancyDate.format(DATE_FORMATTER) : NO_ANSWER)
             .hasCopyOfTenancyLicence(hasTenancyLicence != null ? hasTenancyLicence.getLabel() : NO_ANSWER)
             .tenancyLicenceDocuments(tenancyLicenceDetails.getTenancyLicenceDocuments())
             .reasonsForNoTenancyLicenceDocuments(tenancyLicenceDetails.getReasonsForNoTenancyLicenceDocuments())
@@ -227,32 +234,32 @@ public class CaseDetailsTabView {
                 switch (method) {
                     case FIRST_CLASS_POST -> {
                         LocalDate date = noticeServedDetails.getNoticePostedDate();
-                        noticeTabDetails.setNoticeDate(date != null ? date.format(PATTERN) : NO_ANSWER);
+                        noticeTabDetails.setNoticeDate(date != null ? date.format(DATE_FORMATTER) : NO_ANSWER);
                     }
                     case DELIVERED_PERMITTED_PLACE -> {
                         LocalDate date = noticeServedDetails.getNoticeDeliveredDate();
-                        noticeTabDetails.setNoticeDate(date != null ? date.format(PATTERN) : NO_ANSWER);
+                        noticeTabDetails.setNoticeDate(date != null ? date.format(DATE_FORMATTER) : NO_ANSWER);
                     }
                     case PERSONALLY_HANDED -> {
                         LocalDateTime dateTime = noticeServedDetails.getNoticeHandedOverDateTime();
                         String name = noticeServedDetails.getNoticePersonName();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(PATTERN) : NO_ANSWER);
+                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
                         noticeTabDetails.setNoticePersonName(name != null ? name : NO_ANSWER);
                     }
                     case EMAIL -> {
                         LocalDateTime dateTime = noticeServedDetails.getNoticeEmailSentDateTime();
                         String emailAddress = noticeServedDetails.getNoticeEmailAddress();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(PATTERN) : NO_ANSWER);
+                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
                         noticeTabDetails.setNoticeEmailAddress(emailAddress != null ? emailAddress : NO_ANSWER);
                     }
                     case OTHER_ELECTRONIC -> {
                         LocalDateTime dateTime = noticeServedDetails.getNoticeOtherElectronicDateTime();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(PATTERN) : NO_ANSWER);
+                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
                     }
                     case OTHER -> {
                         LocalDateTime dateTime = noticeServedDetails.getNoticeOtherDateTime();
                         String explanation = noticeTabDetails.getNoticeOtherExplanation();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(PATTERN) : NO_ANSWER);
+                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
                         noticeTabDetails.setNoticeOtherExplanation(explanation != null ? explanation : NO_ANSWER);
                     }
                 };
@@ -290,8 +297,19 @@ public class CaseDetailsTabView {
                 .stepsToRecoverArrears(NO_ANSWER)
                 .arrearsTotal(NO_ANSWER)
                 .judgmentRequested(NO_ANSWER)
+                .rentStatementPlaceholder(NO_ANSWER)
                 .build();
         }
+
+        RentArrearsSection rentArrearsSection = pcsCase.getRentArrears();
+        if (rentArrearsSection != null) {
+            rentArrearsTabDetails.setStepsToRecoverArrears(rentArrearsSection.getRecoveryAttemptDetails());
+            rentArrearsTabDetails.setRentStatement(rentArrearsSection.getStatementDocuments());
+        } else {
+            rentArrearsTabDetails.setStepsToRecoverArrears(NO_ANSWER);
+            rentArrearsTabDetails.setRentStatementPlaceholder(NO_ANSWER);
+        }
+
 
         return rentArrearsTabDetails;
     }
@@ -478,5 +496,13 @@ public class CaseDetailsTabView {
             .housingAct(housingAct != null ? housingAct.getLabel() : NO_ANSWER)
             .reasons(reason != null ? reason : NO_ANSWER)
             .build();
+    }
+
+    private String formatSubmittedDate(LocalDateTime dateSubmitted) {
+        if (dateSubmitted == null) {
+            return null;
+        }
+
+        return dateSubmitted.format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM");
     }
 }
