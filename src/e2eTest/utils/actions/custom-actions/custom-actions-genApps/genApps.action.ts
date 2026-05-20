@@ -9,6 +9,8 @@ import {performAction, performValidation} from "@utils/controller-genApps";
 
 
 
+export let caseNumber: string;
+export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
 const cyaMap = new Map<string, string>();
 
 export class GenAppsAction implements IAction {
@@ -50,6 +52,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('recordUserEntry', courtHearing);
     await performAction('clickRadioButton', {
       question: courtHearing.question,
