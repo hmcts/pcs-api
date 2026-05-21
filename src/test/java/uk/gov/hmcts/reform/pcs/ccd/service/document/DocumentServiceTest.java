@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -119,7 +120,7 @@ class DocumentServiceTest {
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactlyInAnyOrder("file-WITNESS_STATEMENT", "file-RENT_STATEMENT");
+            .containsExactlyInAnyOrder("file-WITNESS_STATEMENT - Claimant 1", "file-RENT_STATEMENT - Claimant 1");
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getType)
@@ -138,7 +139,12 @@ class DocumentServiceTest {
         );
 
         AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
-                .document(Document.builder().categoryId("uploaded-category").build())
+                .document(Document.builder()
+                        .filename("userEnteredDetails.pdf")
+                        .uploadTimestamp(LocalDateTime.now())
+                        .url("someUrl")
+                        .binaryUrl("someUrl")
+                        .categoryId("uploaded-category").build())
                 .documentTypeList(documentTypeList)
                 .build();
 
@@ -173,7 +179,9 @@ class DocumentServiceTest {
         );
 
         AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
-                .document(Document.builder().categoryId("uploaded-category").build())
+                .document(Document.builder()
+                        .filename("filename.txt")
+                        .categoryId("uploaded-category").build())
                 .documentTypeList(documentTypeList)
                 .build();
 
@@ -219,7 +227,7 @@ class DocumentServiceTest {
         assertThat(entities).hasSize(1);
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.RENT_STATEMENT);
-        assertThat(entity.getFileName()).isEqualTo("file1");
+        assertThat(entity.getFileName()).isEqualTo("file1 - Claimant 1");
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
@@ -249,7 +257,7 @@ class DocumentServiceTest {
         assertThat(entities).hasSize(1);
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.TENANCY_LICENCE);
-        assertThat(entity.getFileName()).isEqualTo("file2");
+        assertThat(entity.getFileName()).isEqualTo("file2 - Claimant 1");
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
@@ -280,7 +288,7 @@ class DocumentServiceTest {
         assertThat(entities).hasSize(1);
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.OCCUPATION_LICENCE);
-        assertThat(entity.getFileName()).isEqualTo("file3");
+        assertThat(entity.getFileName()).isEqualTo("file3 - Claimant 1");
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
@@ -310,9 +318,9 @@ class DocumentServiceTest {
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
         DocumentEntity entity = entities.getFirst();
-        assertThat(entity.getType()).isEqualTo(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION);
-        assertThat(entity.getFileName()).isEqualTo("file4");
-        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
+        assertThat(entity.getType()).isEqualTo(DocumentType.POSSESSION_NOTICE);
+        assertThat(entity.getFileName()).isEqualTo("file4 - Claimant 1");
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
     @Test
@@ -427,7 +435,13 @@ class DocumentServiceTest {
         );
 
         AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
-                .document(Document.builder().build())
+                .document(Document.builder()
+                        .filename("witness1.pdf")
+                        .binaryUrl("someUrl")
+                        .url("someUrl")
+                        .categoryId("cat1")
+                        .uploadTimestamp(LocalDateTime.now())
+                        .build())
                 .documentTypeList(documentTypeList)
                 .description(description)
                 .build();
@@ -524,7 +538,7 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
-        assertThat(entities.getFirst().getFileName()).isEqualTo("file1");
+        assertThat(entities.getFirst().getFileName()).isEqualTo("file1 - Claimant 1");
     }
 
     @Test
@@ -562,12 +576,13 @@ class DocumentServiceTest {
             .containsExactlyInAnyOrder(
                 DocumentType.RENT_STATEMENT,
                 DocumentType.TENANCY_LICENCE,
-                DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION
+                DocumentType.POSSESSION_NOTICE
             );
 
         assertThat(entities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactlyInAnyOrder("file-rent", "file-tenancy", "file-notice");
+            .containsExactlyInAnyOrder("file-rent - Claimant 1", "file-tenancy - Claimant 1",
+                    "file-notice - Claimant 1");
     }
 
     @Test
@@ -576,6 +591,7 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document doc = Document.builder()
+                .filename("filename.txt")
                 .build();
 
         NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()

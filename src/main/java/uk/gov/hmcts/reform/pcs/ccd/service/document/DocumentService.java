@@ -42,6 +42,8 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
 
+    private static final String CLAIMANT_1 = "Claimant 1";
+
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
         List<DocumentHolder> allDocuments = getPcsCaseDocuments(pcsCase);
@@ -69,7 +71,7 @@ public class DocumentService {
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
                     .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
-                    .orElse(null), DocumentType.TENANCY_LICENCE));
+                    .orElse(null), DocumentType.TENANCY_AGREEMENT));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
@@ -79,7 +81,7 @@ public class DocumentService {
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getNoticeServedDetails())
                     .map(NoticeServedDetails::getNoticeDocuments)
-                    .orElse(null), DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION));
+                    .orElse(null), DocumentType.POSSESSION_NOTICE));
 
         return allDocuments;
     }
@@ -151,7 +153,7 @@ public class DocumentService {
         return documents.stream()
                 .map(holder -> DocumentEntity.builder()
                         .url(holder.getDocument().getUrl())
-                        .fileName(holder.getDocument().getFilename())
+                        .fileName(getFilename(holder.getDocument().getFilename()))
                         .displayFileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
                         .categoryId(mapDocumentTypeToCategory(holder.getType())
@@ -161,6 +163,17 @@ public class DocumentService {
                         .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                         .build())
                 .toList();
+    }
+
+    private String getFilename(String uploadedFilename) {
+        String fileExtension = "";
+        String fileName = uploadedFilename;
+        int lastDot = uploadedFilename.lastIndexOf('.');
+        if (lastDot >= 0 && lastDot < uploadedFilename.length() - 1) {
+            fileExtension = uploadedFilename.substring(lastDot + 1);
+            fileName = uploadedFilename.substring(0, lastDot);
+        }
+        return fileName + " - " + CLAIMANT_1 + fileExtension;
     }
 
     private DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
