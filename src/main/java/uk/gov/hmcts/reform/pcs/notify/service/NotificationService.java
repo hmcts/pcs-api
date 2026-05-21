@@ -312,7 +312,7 @@ public class NotificationService {
             }
 
             switch (status) {
-                case SENDING -> notification.setSubmittedAt(now);
+                case SUBMITTED -> notification.setSubmittedAt(now);
                 case SCHEDULED -> notification.setScheduledAt(now);
             }
 

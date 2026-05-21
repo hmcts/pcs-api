@@ -30,7 +30,9 @@ public class DefendantResponseNotificationService {
             return;
         }
 
-        boolean hasHwfReference = counterClaim.getHwfReferenceNumber() != null
+        boolean hasHwfReference = counterClaim.getNeedHelpWithFees() != null
+            && counterClaim.getNeedHelpWithFees().toBoolean()
+            && counterClaim.getHwfReferenceNumber() != null
             && !counterClaim.getHwfReferenceNumber().isBlank();
 
         if (!hasHwfReference) {

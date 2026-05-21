@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -106,6 +107,7 @@ class DefendantResponseNotificationServiceTest {
         when(party.getId()).thenReturn(partyId);
 
         when(counterClaim.getParty()).thenReturn(party);
+        when(counterClaim.getNeedHelpWithFees()).thenReturn(VerticalYesNo.YES);
         when(counterClaim.getHwfReferenceNumber()).thenReturn("HWF123");
 
         when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
@@ -144,6 +146,7 @@ class DefendantResponseNotificationServiceTest {
         when(party.getId()).thenReturn(partyId);
 
         when(counterClaim.getParty()).thenReturn(party);
+        when(counterClaim.getNeedHelpWithFees()).thenReturn(VerticalYesNo.YES);
         when(counterClaim.getHwfReferenceNumber()).thenReturn(null);
 
         when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
@@ -180,6 +183,7 @@ class DefendantResponseNotificationServiceTest {
         when(party.getId()).thenReturn(partyId);
 
         when(counterClaim.getParty()).thenReturn(party);
+        when(counterClaim.getNeedHelpWithFees()).thenReturn(VerticalYesNo.YES);
         when(counterClaim.getHwfReferenceNumber()).thenReturn(" ");
 
         when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
@@ -262,6 +266,7 @@ class DefendantResponseNotificationServiceTest {
         when(otherCounterClaim.getParty()).thenReturn(otherParty);
 
         when(matchingCounterClaim.getParty()).thenReturn(defendantParty);
+        when(matchingCounterClaim.getNeedHelpWithFees()).thenReturn(VerticalYesNo.YES);
         when(matchingCounterClaim.getHwfReferenceNumber()).thenReturn("HWF123");
 
         when(caseEntity.getCounterClaims())
