@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
@@ -73,6 +74,7 @@ class RentDetailsViewTest {
             = ArgumentCaptor.forClass(RentDetails.class);
 
         verify(pcsCase).setRentDetails(rentDetailsCaptor.capture());
+        verify(pcsCase).setShowRentSectionPage(YesOrNo.YES);
 
         RentDetails rentDetails = rentDetailsCaptor.getValue();
         assertThat(rentDetails.getCurrentRent()).isEqualTo(rentAmount);
