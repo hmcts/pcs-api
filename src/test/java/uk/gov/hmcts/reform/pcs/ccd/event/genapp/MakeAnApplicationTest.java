@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -48,7 +49,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -69,7 +72,7 @@ class MakeAnApplicationTest extends BaseEventTest {
     private GenAppRepository genAppRepository;
     @Mock
     private GenAppDocumentGenerator genAppDocumentGenerator;
-    @Mock
+    @Mock(strictness = LENIENT)
     private DocumentImportService documentImportService;
     @Mock
     private LegalRepresentativeService legalRepresentativeService;
@@ -221,6 +224,7 @@ class MakeAnApplicationTest extends BaseEventTest {
 
         @BeforeEach
         void setUp() {
+            stubDocumentImport();
             given(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).willReturn(pcsCaseEntity);
         }
 
@@ -259,6 +263,7 @@ class MakeAnApplicationTest extends BaseEventTest {
 
         @BeforeEach
         void setUp() {
+            stubDocumentImport();
             given(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).willReturn(pcsCaseEntity);
         }
 
@@ -344,6 +349,37 @@ class MakeAnApplicationTest extends BaseEventTest {
             );
         }
 
+        @Test
+        void shouldSetGenAppReferenceOnImportedDocumentEntity() {
+            CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+                .applicationType(GenAppType.ADJOURN)
+                .clientReference("some reference")
+                .build();
+
+            final PCSCase caseData = PCSCase.builder()
+                .citizenGenAppRequest(genAppRequest)
+                .build();
+
+            PartyEntity applicantParty = stubCurrentUserParty();
+
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppService.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty))
+                .thenReturn(genAppEntity);
+
+            String documentUrl = "some document URL";
+            when(genAppDocumentGenerator
+                     .generateSubmissionDocument(TEST_CASE_REFERENCE, genAppRequest, genAppEntity, applicantParty))
+                .thenReturn(documentUrl);
+
+            DocumentEntity importedDocumentEntity = stubDocumentImport();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(importedDocumentEntity).setGeneralApplication(genAppEntity);
+        }
+
         private PartyEntity stubCurrentUserParty() {
             PartyEntity currentUserParty = mock(PartyEntity.class);
             UUID currentUserId = UUID.randomUUID();
@@ -352,5 +388,13 @@ class MakeAnApplicationTest extends BaseEventTest {
             return currentUserParty;
         }
 
+    }
+
+    private DocumentEntity stubDocumentImport() {
+        DocumentEntity importedDocumentEntity = mock(DocumentEntity.class);
+        when(documentImportService
+                 .addDocumentToCase(eq(TEST_CASE_REFERENCE), nullable(String.class), any(CaseFileCategory.class)))
+            .thenReturn(importedDocumentEntity);
+        return importedDocumentEntity;
     }
 }

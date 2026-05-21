@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -197,7 +198,13 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             applicantParty
         );
 
-        documentImportService.addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
+        DocumentEntity importedDocumentEntity = documentImportService.addDocumentToCase(
+            caseReference,
+            documentUrl,
+            CaseFileCategory.APPLICATIONS
+        );
+
+        importedDocumentEntity.setGeneralApplication(genAppEntity);
     }
 
     @SuppressWarnings("SameParameterValue")
