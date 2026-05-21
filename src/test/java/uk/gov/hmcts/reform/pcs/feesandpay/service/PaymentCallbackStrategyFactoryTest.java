@@ -21,7 +21,7 @@ class PaymentCallbackStrategyFactoryTest {
     @Test
     void shouldReturnMakeAClaimStrategyForResumePossessionClaim() {
         // When
-        PaymentCallbackStrategy result = underTest.getStrategy(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM);
+        PaymentCallbackStrategy result = underTest.getStrategy(PaymentCallbackHandlerType.CLAIM);
 
         // Then
         assertThat(result).isSameAs(makeAClaimPaymentCallbackHandler);

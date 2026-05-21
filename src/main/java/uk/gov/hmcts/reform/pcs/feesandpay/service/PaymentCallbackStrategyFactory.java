@@ -1,21 +1,25 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
-@AllArgsConstructor
 public class PaymentCallbackStrategyFactory {
 
-    private final MakeAClaimPaymentCallbackHandler makeAClaimPaymentCallbackHandler;
+    private final Map<PaymentCallbackHandlerType, PaymentCallbackStrategy> strategyMap;
+
+    @Autowired
+    public PaymentCallbackStrategyFactory(MakeAClaimPaymentCallbackHandler makeAClaimPaymentCallbackHandler) {
+        strategyMap = new HashMap<>();
+        strategyMap.put(PaymentCallbackHandlerType.CLAIM, makeAClaimPaymentCallbackHandler);
+    }
 
     public PaymentCallbackStrategy getStrategy(PaymentCallbackHandlerType paymentCallbackHandlerType) {
-        return Map.of(
-            PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM, makeAClaimPaymentCallbackHandler
-        ).get(paymentCallbackHandlerType);
+        return strategyMap.get(paymentCallbackHandlerType);
     }
 
 }

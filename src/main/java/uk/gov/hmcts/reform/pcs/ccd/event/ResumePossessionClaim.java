@@ -49,7 +49,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HM
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
 @Slf4j
@@ -215,7 +215,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(caseReference)
             .responsibleParty(responsibleParty)
-            .paymentCallbackHandlerType(RESUME_POSSESSION_CLAIM)
+            .paymentCallbackHandlerType(CLAIM)
             .build();
 
         schedulerClient.scheduleIfNotExists(

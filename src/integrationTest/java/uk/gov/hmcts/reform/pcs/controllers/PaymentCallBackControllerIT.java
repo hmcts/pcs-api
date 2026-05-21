@@ -82,7 +82,7 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
         serviceCaseReference = UUID.randomUUID().toString();
         feesAndPayTaskData = Instancio.create(FeesAndPayTaskData.class);
         feesAndPayTaskData.setCaseReference(CASE_REFERENCE);
-        feesAndPayTaskData.setPaymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM);
+        feesAndPayTaskData.setPaymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM);
         caseReference = feesAndPayTaskData.getCaseReference();
         feeDto = Instancio.create(FeeDto.class);
         feeDto.setCcdCaseNumber(String.valueOf(caseReference));

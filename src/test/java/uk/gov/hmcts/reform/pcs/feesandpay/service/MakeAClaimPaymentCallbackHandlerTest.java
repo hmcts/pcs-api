@@ -57,7 +57,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         claimEntity.setClaimParties(List.of(claimPartyEntity));
 
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM).build();
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
@@ -74,7 +74,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class)))
             .thenThrow(new JsonProcessingException("Invalid JSON") {});
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(new ClaimEntity()).taskData("aasdfsdf{{")
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM).build();
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
 
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
@@ -96,7 +96,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder().claim(claimEntity).party(partyEntity).build();
         claimEntity.setClaimParties(List.of(claimPartyEntity));
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM).build();
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When / Then
@@ -118,7 +118,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
             .taskData("{}")
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
             .build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
@@ -134,7 +134,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
             .caseReference(1234)
             .ccdCaseNumber(CCD_CASE_NUMBER)
             .responsibleParty(responsibleParty)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
             .feeDetails(FeeDetails.builder().feeAmount(new BigDecimal("232.00")).code("FEE0412").build())
             .build();
     }

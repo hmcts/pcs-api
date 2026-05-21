@@ -49,7 +49,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
@@ -134,7 +134,7 @@ class PaymentServiceTest {
             .payment(payment).build();
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .paymentStatus(PaymentStatus.PAID).requestReference(requestReference).externalReference(paymentReference)
-            .paymentCallbackHandlerType(RESUME_POSSESSION_CLAIM).build();
+            .paymentCallbackHandlerType(CLAIM).build();
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
         when(paymentCallbackStrategyFactory.getStrategy(any(PaymentCallbackHandlerType.class)))
             .thenReturn(mock(MakeAClaimPaymentCallbackHandler.class));
@@ -231,10 +231,10 @@ class PaymentServiceTest {
             .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
             .payment(payment).build();
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().paymentStatus(PaymentStatus.PAID)
-            .requestReference(requestReference).paymentCallbackHandlerType(RESUME_POSSESSION_CLAIM).build();
+            .requestReference(requestReference).paymentCallbackHandlerType(CLAIM).build();
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
         PaymentCallbackStrategy strategy = mock(PaymentCallbackStrategy.class);
-        when(paymentCallbackStrategyFactory.getStrategy(RESUME_POSSESSION_CLAIM)).thenReturn(strategy);
+        when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(strategy);
 
         // When
         underTest.processPaymentResponse(paymentStatusCallback);
@@ -254,9 +254,9 @@ class PaymentServiceTest {
             .payment(payment).build();
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .paymentStatus(PaymentStatus.PAID).requestReference(requestReference)
-            .paymentCallbackHandlerType(RESUME_POSSESSION_CLAIM).build();
+            .paymentCallbackHandlerType(CLAIM).build();
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
-        when(paymentCallbackStrategyFactory.getStrategy(RESUME_POSSESSION_CLAIM)).thenReturn(null);
+        when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(null);
 
         // When
         underTest.processPaymentResponse(paymentStatusCallback);
@@ -282,7 +282,7 @@ class PaymentServiceTest {
         FeePaymentEntity saved = captor.getValue();
 
         assertThat(saved.getTaskData()).isEqualTo(taskDataJson);
-        assertThat(saved.getPaymentCallbackHandlerType()).isEqualTo(RESUME_POSSESSION_CLAIM);
+        assertThat(saved.getPaymentCallbackHandlerType()).isEqualTo(CLAIM);
         assertThat(saved.getParty()).isNull();
     }
 
@@ -377,7 +377,7 @@ class PaymentServiceTest {
             .caseReference(CASE_REFERENCE)
             .volume(VOLUME)
             .responsibleParty(RESPONSIBLE_PARTY)
-            .paymentCallbackHandlerType(RESUME_POSSESSION_CLAIM)
+            .paymentCallbackHandlerType(CLAIM)
             .build();
     }
 
