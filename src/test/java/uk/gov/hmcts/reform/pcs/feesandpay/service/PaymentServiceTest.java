@@ -28,7 +28,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUser;
+import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -67,7 +67,7 @@ class PaymentServiceTest {
     @Mock
     private PaymentRequestMapper paymentRequestMapper;
     @Mock
-    private SystemUpdateUser systemUpdateUser;
+    private SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
     @Mock
     private FeePaymentRepository feePaymentRepository;
     @Mock
@@ -257,7 +257,7 @@ class PaymentServiceTest {
         when(paymentRequestMapper.toFeeDto(feeDetails, VOLUME)).thenReturn(mappedFee);
         when(paymentRequestMapper.toCasePaymentRequest(RESPONSIBLE_PARTY))
             .thenReturn(casePaymentRequestDto);
-        when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_TOKEN);
+        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_TOKEN);
     }
 
     private PcsCaseEntity setupPcsCase(ClaimPartyEntity claimPartyEntity) {

@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingResponse;
 import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUser;
+import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
 
 @RequiredArgsConstructor
 @Service
@@ -19,27 +19,27 @@ public class HmcHearingService {
 
     private final HmcHearingApi hmcHearingApi;
     private final AuthTokenGenerator authTokenGenerator;
-    private final SystemUpdateUser systemUpdateUser;
+    private final SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
     @Value("${hmc.deployment-id}")
     private String hmctsDeploymentId;
 
     public HearingResponse createHearing(@RequestBody HearingRequest hearingPayload) {
-        return hmcHearingApi.createHearing(systemUpdateUser.getAuthToken(), authTokenGenerator.generate(),
+        return hmcHearingApi.createHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),
                                            hmctsDeploymentId, hearingPayload);
     }
 
     public HearingResponse updateHearing(String id, @RequestBody UpdateHearingRequest hearingPayload) {
-        return hmcHearingApi.updateHearing(systemUpdateUser.getAuthToken(), authTokenGenerator.generate(),
+        return hmcHearingApi.updateHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),
                                            hmctsDeploymentId, id, hearingPayload);
     }
 
     public HearingResponse deleteHearing(String id, @RequestBody DeleteHearingRequest hearingDeletePayload) {
-        return hmcHearingApi.deleteHearing(systemUpdateUser.getAuthToken(), authTokenGenerator.generate(),
+        return hmcHearingApi.deleteHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),
                                            hmctsDeploymentId, id, hearingDeletePayload);
     }
 
     public GetHearingsResponse getHearing(String id) {
-        return hmcHearingApi.getHearing(systemUpdateUser.getAuthToken(), authTokenGenerator.generate(),
+        return hmcHearingApi.getHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),
                                         hmctsDeploymentId, id, null);
     }
 }

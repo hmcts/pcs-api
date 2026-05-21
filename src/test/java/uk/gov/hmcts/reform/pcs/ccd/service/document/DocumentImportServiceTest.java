@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUser;
+import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +36,7 @@ class DocumentImportServiceTest {
     @Mock
     private CaseDocumentClientApi caseDocumentClientApi;
     @Mock
-    private SystemUpdateUser systemUpdateUser;
+    private SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
     @Mock
     private AuthTokenGenerator authTokenGenerator;
     @Captor
@@ -46,10 +46,10 @@ class DocumentImportServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_AUTH_TOKEN);
+        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(S2S_AUTH_TOKEN);
 
-        underTest = new DocumentImportService(pcsCaseService, caseDocumentClientApi, systemUpdateUser,
+        underTest = new DocumentImportService(pcsCaseService, caseDocumentClientApi, systemUpdateUserTokenProvider,
                                               authTokenGenerator);
     }
 

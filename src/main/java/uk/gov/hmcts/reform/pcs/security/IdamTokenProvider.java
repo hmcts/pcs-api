@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.exception.IdamException;
  * on cache miss or refresh.
  */
 @Slf4j
-public abstract class IdamServiceAccountTokenProvider {
+public abstract class IdamTokenProvider {
 
     public static final String BEARER_PREFIX = "Bearer ";
 
@@ -24,7 +24,7 @@ public abstract class IdamServiceAccountTokenProvider {
     private final String username;
     private final String password;
 
-    protected IdamServiceAccountTokenProvider(OAuth2AuthorizedClientManager authorizedClientManager,
+    protected IdamTokenProvider(OAuth2AuthorizedClientManager authorizedClientManager,
                                               String clientRegistrationId,
                                               String username,
                                               String password) {

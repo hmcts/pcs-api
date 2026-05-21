@@ -373,7 +373,7 @@ class RestExceptionHandlerTest {
     @Test
     void shouldMapIdamExceptionWrappingOAuth2WithRestClient429ToServiceUnavailable() {
         // Real production shape: Spring's OAuth2 password client wraps a RestClient 429 in
-        // OAuth2AuthorizationException, then SystemUpdateUser wraps that in IdamException.
+        // OAuth2AuthorizationException, then SystemUpdateUserTokenProvider wraps that in IdamException.
         HttpClientErrorException tooMany = HttpClientErrorException.create(
             HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null);
         OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "throttled by IDAM", null);

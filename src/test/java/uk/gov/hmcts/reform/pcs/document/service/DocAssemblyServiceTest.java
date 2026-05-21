@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUser;
+import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,7 +39,7 @@ class DocAssemblyServiceTest {
     private DocAssemblyClient docAssemblyClient;
 
     @Mock
-    private SystemUpdateUser systemUpdateUser;
+    private SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
 
     @Mock
     private AuthTokenGenerator authTokenGenerator;
@@ -54,7 +54,7 @@ class DocAssemblyServiceTest {
 
     @BeforeEach
     void setUp() {
-        docAssemblyService = new DocAssemblyService(docAssemblyClient, systemUpdateUser, authTokenGenerator);
+        docAssemblyService = new DocAssemblyService(docAssemblyClient, systemUpdateUserTokenProvider, authTokenGenerator);
     }
 
     @Nested
@@ -67,7 +67,7 @@ class DocAssemblyServiceTest {
             final FormPayload formPayload = mock(FormPayload.class);
             DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
 
-            when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+            when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
             when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
             when(docAssemblyClient.generateOrder(
                 eq(SYSTEM_USER_TOKEN),
@@ -80,7 +80,7 @@ class DocAssemblyServiceTest {
                 formPayload, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME);
 
             assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
-            verify(systemUpdateUser).getAuthToken();
+            verify(systemUpdateUserTokenProvider).getAuthToken();
             verify(authTokenGenerator).generate();
             verify(docAssemblyClient).generateOrder(
                 eq(SYSTEM_USER_TOKEN),
@@ -101,7 +101,7 @@ class DocAssemblyServiceTest {
                 .hasRootCauseMessage("formPayload cannot be null");
 
             verify(docAssemblyClient, never()).generateOrder(any(), any(), any());
-            verify(systemUpdateUser, never()).getAuthToken();
+            verify(systemUpdateUserTokenProvider, never()).getAuthToken();
             verify(authTokenGenerator, never()).generate();
         }
 
@@ -112,7 +112,7 @@ class DocAssemblyServiceTest {
             DocumentGenerationFailedException docException =
                 new DocumentGenerationFailedException(new RuntimeException("Document generation failed"));
 
-            when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+            when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
             when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
             when(docAssemblyClient.generateOrder(
                 eq(SYSTEM_USER_TOKEN),
@@ -145,7 +145,7 @@ class DocAssemblyServiceTest {
                 DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
                 OutputType outputType = OutputType.valueOf(outputTypeStr);
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
                 when(docAssemblyClient.generateOrder(
                     eq(SYSTEM_USER_TOKEN),
@@ -176,7 +176,7 @@ class DocAssemblyServiceTest {
                 final FormPayload formPayload = mock(FormPayload.class);
                 DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
                 when(docAssemblyClient.generateOrder(
                     eq(SYSTEM_USER_TOKEN),
@@ -206,7 +206,7 @@ class DocAssemblyServiceTest {
                 DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
                 String emptyTemplateId = "";
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
                 when(docAssemblyClient.generateOrder(
                     eq(SYSTEM_USER_TOKEN),
@@ -233,7 +233,7 @@ class DocAssemblyServiceTest {
                 DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
                 String validTemplateId = "valid-template.docx";
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
                 when(docAssemblyClient.generateOrder(
                     eq(SYSTEM_USER_TOKEN),
@@ -264,7 +264,7 @@ class DocAssemblyServiceTest {
                 final FormPayload formPayload = mock(FormPayload.class);
                 DocAssemblyResponse mockResponse = createMockResponse(null);
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
                 when(docAssemblyClient.generateOrder(
                     eq(SYSTEM_USER_TOKEN),
@@ -290,7 +290,7 @@ class DocAssemblyServiceTest {
                 final FormPayload formPayload = mock(FormPayload.class);
                 DocAssemblyResponse mockResponse = createMockResponse("");
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
                 when(docAssemblyClient.generateOrder(
                     eq(SYSTEM_USER_TOKEN),
@@ -316,7 +316,7 @@ class DocAssemblyServiceTest {
                 final FormPayload formPayload = mock(FormPayload.class);
                 RuntimeException unexpectedException = new RuntimeException("Unexpected network error");
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
                 when(docAssemblyClient.generateOrder(
                     eq(SYSTEM_USER_TOKEN),
@@ -343,7 +343,7 @@ class DocAssemblyServiceTest {
                 final FormPayload formPayload = mock(FormPayload.class);
                 DocAssemblyException originalException = new DocAssemblyException("Original error");
 
-                when(systemUpdateUser.getAuthToken()).thenThrow(originalException);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenThrow(originalException);
 
                 assertThatThrownBy(() ->
                                        docAssemblyService.generateDocument(
@@ -363,7 +363,7 @@ class DocAssemblyServiceTest {
                 final FormPayload formPayload = mock(FormPayload.class);
                 RuntimeException unexpectedException = new RuntimeException("Network timeout");
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
                 when(docAssemblyClient.generateOrder(
                     eq(SYSTEM_USER_TOKEN),
@@ -383,12 +383,12 @@ class DocAssemblyServiceTest {
             }
 
             @Test
-            @DisplayName("Should handle SystemUpdateUser exception")
-            void shouldHandleSystemUpdateUserException() {
+            @DisplayName("Should handle SystemUpdateUserTokenProvider exception")
+            void shouldHandleSystemUpdateUserTokenProviderException() {
                 final FormPayload formPayload = mock(FormPayload.class);
                 RuntimeException idamException = new RuntimeException("IDAM service unavailable");
 
-                when(systemUpdateUser.getAuthToken()).thenThrow(idamException);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenThrow(idamException);
 
                 assertThatThrownBy(() ->
                                        docAssemblyService.generateDocument(
@@ -408,7 +408,7 @@ class DocAssemblyServiceTest {
                 final FormPayload formPayload = mock(FormPayload.class);
                 RuntimeException authException = new RuntimeException("Auth token generation failed");
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenThrow(authException);
 
                 assertThatThrownBy(() ->
@@ -435,7 +435,7 @@ class DocAssemblyServiceTest {
                 String expectedUrl = "http://different-dm-store/documents/456";
                 DocAssemblyResponse mockResponse = createMockResponse(expectedUrl);
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
                 when(docAssemblyClient.generateOrder(
                     eq(SYSTEM_USER_TOKEN),
@@ -461,7 +461,7 @@ class DocAssemblyServiceTest {
                 final FormPayload formPayload = mock(FormPayload.class);
                 DocAssemblyResponse mockResponse = createMockResponse(documentUrl);
 
-                when(systemUpdateUser.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
+                when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
                 when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
                 when(docAssemblyClient.generateOrder(
                     eq(SYSTEM_USER_TOKEN),
@@ -485,7 +485,7 @@ class DocAssemblyServiceTest {
             @DisplayName("Should create service with dependencies")
             void shouldCreateServiceWithDependencies() {
                 DocAssemblyService service =
-                    new DocAssemblyService(docAssemblyClient, systemUpdateUser, authTokenGenerator);
+                    new DocAssemblyService(docAssemblyClient, systemUpdateUserTokenProvider, authTokenGenerator);
 
                 assertThat(service).isNotNull();
             }

@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
-import uk.gov.hmcts.reform.pcs.idam.PrdAdminTokenService;
+import uk.gov.hmcts.reform.pcs.idam.PrdAdminTokenProvider;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 
@@ -39,7 +39,7 @@ class OrganisationDetailsServiceTest {
     private AuthTokenGenerator authTokenGenerator;
 
     @Mock
-    private PrdAdminTokenService prdAdminTokenService;
+    private PrdAdminTokenProvider prdAdminTokenProvider;
 
     private OrganisationDetailsService organisationDetailsService;
 
@@ -48,7 +48,7 @@ class OrganisationDetailsServiceTest {
         organisationDetailsService = new OrganisationDetailsService(
             rdProfessionalApi,
             authTokenGenerator,
-            prdAdminTokenService
+            prdAdminTokenProvider
         );
     }
 
@@ -63,7 +63,7 @@ class OrganisationDetailsServiceTest {
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenService.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenReturn(expectedResponse);
 
@@ -77,7 +77,7 @@ class OrganisationDetailsServiceTest {
         assertThat(result.getStatus()).isEqualTo("ACTIVE");
 
         verify(authTokenGenerator).generate();
-        verify(prdAdminTokenService).getAuthToken();
+        verify(prdAdminTokenProvider).getAuthToken();
         verify(rdProfessionalApi).getOrganisationDetails(USER_ID, S2S_TOKEN, PRD_ADMIN_TOKEN);
     }
 
@@ -91,7 +91,7 @@ class OrganisationDetailsServiceTest {
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenService.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenReturn(response);
 
@@ -112,7 +112,7 @@ class OrganisationDetailsServiceTest {
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenService.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenReturn(response);
 
@@ -130,7 +130,7 @@ class OrganisationDetailsServiceTest {
         RuntimeException runtimeException = new RuntimeException("Feign client error");
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenService.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenThrow(runtimeException);
 
@@ -148,7 +148,7 @@ class OrganisationDetailsServiceTest {
         RuntimeException generalException = new RuntimeException("Connection failed");
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenService.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenThrow(generalException);
 
@@ -164,7 +164,7 @@ class OrganisationDetailsServiceTest {
     void shouldReturnNullWhenOrganisationDetailsIsNull() {
         // Given
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenService.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenReturn(null);
 
@@ -185,7 +185,7 @@ class OrganisationDetailsServiceTest {
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenService.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenReturn(response);
 
@@ -220,7 +220,7 @@ class OrganisationDetailsServiceTest {
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenService.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenReturn(response);
 
@@ -242,7 +242,7 @@ class OrganisationDetailsServiceTest {
         when(feignEx.getMessage()).thenReturn("PRD upstream failure");
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenService.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenThrow(feignEx);
 
@@ -277,7 +277,7 @@ class OrganisationDetailsServiceTest {
         when(feignEx.status()).thenReturn(503);
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenService.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenThrow(feignEx);
 

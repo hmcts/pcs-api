@@ -21,7 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class PrdAdminTokenServiceTest {
+class PrdAdminTokenProviderTest {
 
     private static final String PRD_ADMIN_USERNAME = "prd-admin@test.com";
     private static final String PRD_ADMIN_PASSWORD = "top-secret";
@@ -32,11 +32,11 @@ class PrdAdminTokenServiceTest {
     @Captor
     private ArgumentCaptor<OAuth2AuthorizeRequest> authorizeRequestCaptor;
 
-    private PrdAdminTokenService underTest;
+    private PrdAdminTokenProvider underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new PrdAdminTokenService(authorizedClientManager, PRD_ADMIN_USERNAME, PRD_ADMIN_PASSWORD);
+        underTest = new PrdAdminTokenProvider(authorizedClientManager, PRD_ADMIN_USERNAME, PRD_ADMIN_PASSWORD);
     }
 
     @Test
