@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -9,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.io.IOException;
@@ -17,6 +19,7 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService.PARTY_NO
 
 @AllArgsConstructor
 @Component
+@Slf4j
 public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
@@ -28,7 +31,12 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(feePaymentEntity.getClaim(),
                                                                      feesAndPayTaskData.getResponsibleParty());
         feePaymentEntity.setParty(claimPartyEntity.getParty());
-        ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
+        if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
+            ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
+        } else {
+            log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
+                     feePaymentEntity.getClaim().getPcsCase().getCaseReference());
+        }
     }
 
     private FeesAndPayTaskData toFeesAndPayTaskData(String feesAndPayTaskDataAsString) {
