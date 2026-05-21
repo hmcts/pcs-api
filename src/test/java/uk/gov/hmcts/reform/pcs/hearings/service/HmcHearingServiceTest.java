@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingResponse;
 import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -26,7 +26,7 @@ class HmcHearingServiceTest {
     @Mock
     private AuthTokenGenerator authTokenGenerator;
     @Mock
-    private SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
+    private IdamTokenProvider systemUpdateUserTokenProvider;
 
     private HmcHearingService hmcHearingService;
 

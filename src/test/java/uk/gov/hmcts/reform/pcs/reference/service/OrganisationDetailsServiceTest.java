@@ -10,9 +10,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
-import uk.gov.hmcts.reform.pcs.idam.PrdAdminTokenProvider;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ class OrganisationDetailsServiceTest {
     private AuthTokenGenerator authTokenGenerator;
 
     @Mock
-    private PrdAdminTokenProvider prdAdminTokenProvider;
+    private IdamTokenProvider prdAdminTokenProvider;
 
     private OrganisationDetailsService organisationDetailsService;
 

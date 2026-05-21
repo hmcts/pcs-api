@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,7 +39,7 @@ class DocAssemblyServiceTest {
     private DocAssemblyClient docAssemblyClient;
 
     @Mock
-    private SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
+    private IdamTokenProvider systemUpdateUserTokenProvider;
 
     @Mock
     private AuthTokenGenerator authTokenGenerator;
@@ -383,8 +383,8 @@ class DocAssemblyServiceTest {
             }
 
             @Test
-            @DisplayName("Should handle SystemUpdateUserTokenProvider exception")
-            void shouldHandleSystemUpdateUserTokenProviderException() {
+            @DisplayName("Should handle IdamTokenProvider exception")
+            void shouldHandleIdamTokenProviderException() {
                 final FormPayload formPayload = mock(FormPayload.class);
                 RuntimeException idamException = new RuntimeException("IDAM service unavailable");
 

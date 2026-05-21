@@ -21,7 +21,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class SystemUpdateUserTokenProviderTest {
+class IdamTokenProviderTest {
 
     private static final String SYSTEM_USERNAME = "system-user@test.com";
     private static final String SYSTEM_PASSWORD = "top-secret";
@@ -29,11 +29,11 @@ class SystemUpdateUserTokenProviderTest {
     @Mock
     private OAuth2AuthorizedClientManager authorizedClientManager;
 
-    private SystemUpdateUserTokenProvider underTest;
+    private IdamTokenProvider underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new SystemUpdateUserTokenProvider(authorizedClientManager, SYSTEM_USERNAME, SYSTEM_PASSWORD);
+        underTest = new IdamTokenProvider(authorizedClientManager, "system-user", SYSTEM_USERNAME, SYSTEM_PASSWORD);
     }
 
     @Test

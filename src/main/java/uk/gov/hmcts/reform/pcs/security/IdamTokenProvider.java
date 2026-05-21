@@ -9,13 +9,13 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 
 /**
- * Base for IDAM service-account token providers. Concrete subclasses bind to a specific
- * OAuth2 client-registration id (e.g. {@code system-user}, {@code prd-admin}). Tokens
- * are cached by the underlying {@link OAuth2AuthorizedClientManager}; IDAM is only hit
- * on cache miss or refresh.
+ * Fetches an IDAM access token for a specific OAuth2 client-registration id. One instance
+ * is created per service identity (e.g. {@code system-user}, {@code prd-admin}) by
+ * {@link IdamTokenProviderConfig}. Tokens are cached by the underlying
+ * {@link OAuth2AuthorizedClientManager}; IDAM is only hit on cache miss or refresh.
  */
 @Slf4j
-public abstract class IdamTokenProvider {
+public class IdamTokenProvider {
 
     public static final String BEARER_PREFIX = "Bearer ";
 
@@ -24,7 +24,7 @@ public abstract class IdamTokenProvider {
     private final String username;
     private final String password;
 
-    protected IdamTokenProvider(OAuth2AuthorizedClientManager authorizedClientManager,
+    public IdamTokenProvider(OAuth2AuthorizedClientManager authorizedClientManager,
                                               String clientRegistrationId,
                                               String username,
                                               String password) {

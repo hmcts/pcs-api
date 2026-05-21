@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.document.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.docassembly.DocAssemblyClient;
@@ -11,18 +12,18 @@ import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 @Slf4j
 @Service
 public class DocAssemblyService {
     private final DocAssemblyClient docAssemblyClient;
-    private final SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
+    private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final AuthTokenGenerator authTokenGenerator;
 
     public DocAssemblyService(
         DocAssemblyClient docAssemblyClient,
-        SystemUpdateUserTokenProvider systemUpdateUserTokenProvider,
+        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
         AuthTokenGenerator authTokenGenerator
     ) {
         this.docAssemblyClient = docAssemblyClient;

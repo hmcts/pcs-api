@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
@@ -21,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.Optional;
 
@@ -34,7 +35,8 @@ public class PaymentService {
 
     private final PaymentsClient paymentsClient;
     private final PaymentRequestMapper paymentRequestMapper;
-    private final SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
+    @Qualifier("systemUpdateUserTokenProvider")
+    private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final FeePaymentRepository feePaymentRepository;
     private final PcsCaseService pcsCaseService;
 

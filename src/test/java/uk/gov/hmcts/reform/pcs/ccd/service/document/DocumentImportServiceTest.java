@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +36,7 @@ class DocumentImportServiceTest {
     @Mock
     private CaseDocumentClientApi caseDocumentClientApi;
     @Mock
-    private SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
+    private IdamTokenProvider systemUpdateUserTokenProvider;
     @Mock
     private AuthTokenGenerator authTokenGenerator;
     @Captor

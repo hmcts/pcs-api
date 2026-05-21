@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisati
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,7 +36,7 @@ class CaseRoleAssignmentServiceTest {
     private AuthTokenGenerator authTokenGenerator;
 
     @Mock
-    private SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
+    private IdamTokenProvider systemUpdateUserTokenProvider;
 
     @Mock
     private CaseAssignmentApi caseAssignmentApi;

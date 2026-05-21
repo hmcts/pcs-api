@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
@@ -9,7 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisati
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.security.SystemUpdateUserTokenProvider;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.List;
 
@@ -19,7 +20,8 @@ import java.util.List;
 public class CaseRoleAssignmentService {
 
     private final AuthTokenGenerator authTokenGenerator;
-    private final SystemUpdateUserTokenProvider systemUpdateUserTokenProvider;
+    @Qualifier("systemUpdateUserTokenProvider")
+    private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final CaseAssignmentApi caseAssignmentApi;
 
     public CaseAssignmentUserRolesResponse assignRasRole(long caseReference, String userId,
