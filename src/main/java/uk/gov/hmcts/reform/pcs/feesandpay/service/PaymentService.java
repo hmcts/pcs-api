@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -38,7 +37,6 @@ public class PaymentService {
     private final IdamService idamService;
     private final FeePaymentRepository feePaymentRepository;
     private final PcsCaseService pcsCaseService;
-    private final PaymentNotificationService paymentNotificationService;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
