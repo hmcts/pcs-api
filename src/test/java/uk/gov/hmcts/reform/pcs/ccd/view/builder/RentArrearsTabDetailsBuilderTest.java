@@ -112,7 +112,7 @@ public class RentArrearsTabDetailsBuilderTest {
         assertThat(rentArrearsDetails.getCalculationFrequency()).isEqualTo("Weekly");
         assertThat(rentArrearsDetails.getFrequency()).isNull();
         assertThat(rentArrearsDetails.getDailyRate()).isEqualTo("£3.40");
-        assertThat(rentArrearsDetails.getArrearsTotal()).isEqualTo("£100.00");
+        assertThat(rentArrearsDetails.getArrearsTotal()).isEqualTo("£100");
         assertThat(rentArrearsDetails.getStepsToRecoverArrears()).isEqualTo("Yes");
         assertThat(rentArrearsDetails.getStepsToRecoverArrearsDetails()).isEqualTo("recovery details");
         assertThat(rentArrearsDetails.getRentStatement()).hasSize(1);
