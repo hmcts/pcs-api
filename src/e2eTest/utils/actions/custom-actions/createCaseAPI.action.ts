@@ -4,6 +4,7 @@ import { Page } from '@playwright/test';
 import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
+import { fetchCurrentUserTokenApiData } from '@data/api-data/fetchCurrentUser.api.data';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 
@@ -14,6 +15,7 @@ export class CreateCaseAPIAction implements IAction {
       ['submitCaseAPI', () => this.submitCaseAPI(fieldName)],
       ['deleteCaseRole', () => this.deleteCaseRole(fieldName)],
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
+      ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -164,5 +166,34 @@ export class CreateCaseAPIAction implements IAction {
         console.warn(`Case user removal failed with status ${status}. ${errorMessage}`);
       }
     }
+  }
+
+  private async fetchCurrentUserAPI(): Promise<void> {
+    const fetchUserCaseApi = Axios.create(fetchCurrentUserTokenApiData.fetchCurrentUserTokenApiInstance());
+
+    try {
+      const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchCurrentUserApiEndPoint());
+      process.env.Display_NAME = await userResponse.data.displayName;
+      console.log(`\n✅ FETCH CURRENT USER:`);
+      console.log(`Successfully fetched Current User: ${process.env.Display_NAME}`);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Current user not fetched: no response from server.');
+      }
+      throw new Error(`Fetching current user failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+
   }
 }
