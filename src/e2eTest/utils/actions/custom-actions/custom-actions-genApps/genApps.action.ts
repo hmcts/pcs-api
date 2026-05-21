@@ -1,17 +1,24 @@
-import { areThereAnyReasonsThatThisApplicationShouldNotBeShared, checkYourAnswersGenApps, chooseAnApplication, doYouNeedHelpPayingTheFee, doYouWantToUploadDocumentToSupportYourApplication, haveTheOtherPartiesAgreedToThisApplication, haveYouAlreadyAppliedForHelpWithFees, isTheCourtHearingInTheNext14Days, whatOrderDoYouWantTheCourtToMakeAndWhy, whichLanguageDidYouUseToCompleteThisService } from '@data/page-data-figma/page-data-genApps-figma';
+import { areThereAnyReasonsThatThisApplicationShouldNotBeShared, checkYourAnswersGenApps, chooseAnApplication, doYouWantToUploadDocumentToSupportYourApplication, haveTheOtherPartiesAgreedToThisApplication, haveYouAlreadyAppliedForHelpWithFees, helpPayingTheFee, isTheCourtHearingInTheNext14Days, whatOrderDoYouWantTheCourtToMakeAndWhy, whichLanguageDidYouUseToCompleteThisService } from '@data/page-data-figma/page-data-genApps-figma';
 import { Page, expect, test } from '@playwright/test';
 import { compareMaps } from '@utils/common/compareMaps.util';
+import { performAction, performValidation } from '@utils/controller-genApps';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { FieldsStore } from './recordAnsweredFields.action';
 import { generateRandomString, stringToCamelCase } from '@utils/common/string.utils';
 import { defaultJourney, journeys } from '@utils/common/journeyMappingGenApps';
-import {performAction, performValidation} from "@utils/controller-genApps";
+import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selectParty.page.data';
+import { caseInfo } from '../createCaseAPI.action';
+import { createCaseApiData } from '@data/api-data';
 
 
-
-export let caseNumber: string;
-export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
+export const addressInfo = {
+  buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
+  addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
+  townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
+  engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
+};
 const cyaMap = new Map<string, string>();
+export let defendantDetails: string[] = [];
 
 export class GenAppsAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord): Promise<void> {
@@ -33,6 +40,8 @@ export class GenAppsAction implements IAction {
       ['validateCYA', () => this.validateCYA()],
       ['reviewCYA', () => this.reviewCYA(page, fieldName as actionData)],
       ['reviewAndUpdateCYA', () => this.reviewAndUpdateCYA(page, fieldName as actionRecord)],
+      ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
+      ['selectApplicant', () => this.selectApplicant(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -41,19 +50,58 @@ export class GenAppsAction implements IAction {
     await actionToPerform();
   }
 
+  private async getDefendantDetails(defendantsDetails: actionRecord) {
+
+    let originalDefendantDetails: string[] = [];
+    const payLoad = defendantsDetails.payLoad as Record<string, any>;
+    if (defendantsDetails.defendant1NameKnown === 'YES') {
+      originalDefendantDetails.push(
+        `${payLoad.defendant1.firstName} ${payLoad.defendant1.lastName}`
+      );
+    } else {
+      originalDefendantDetails.push(
+        `null null`
+      );
+    }
+
+    if (defendantsDetails.additionalDefendants === 'YES') {
+
+      for (const defendant of payLoad.additionalDefendants) {
+        if (defendant.value.nameKnown === 'YES') {
+          originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
+        } else {
+          originalDefendantDetails.push(
+            `null null`
+          );
+        };
+      };
+    }
+    defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
+    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+    ];
+
+  }
+
+  private async selectApplicant(applicant: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('recordUserEntry', applicant);
+    await performAction('clickRadioButton', { question: applicant.question, option: applicant.option });
+    await performAction('clickButton', selectParty.continueButton);
+  }
+
   private async chooseAnApplication(chooseApp: actionRecord) {
     await performAction('recordUserEntry', chooseApp);
     await performAction('clickRadioButton', {
       question: chooseApp.question,
       option: chooseApp.option,
     });
-    //FieldsStore.rename(chooseApp.question as string, 'Type of application');
     await performAction('clickButton', chooseAnApplication.continueButton);
   }
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', courtHearing);
     await performAction('clickRadioButton', {
       question: courtHearing.question,
@@ -68,7 +116,7 @@ export class GenAppsAction implements IAction {
       question: feeHelp.question,
       option: feeHelp.option,
     });
-    await performAction('clickButton', doYouNeedHelpPayingTheFee.continueButton);
+    await performAction('clickButton', helpPayingTheFee.continueButton);
   }
 
   private async confirmYouHaveAppliedForFeeHelp(confirmFeeHelp: actionRecord) {
@@ -329,15 +377,15 @@ export class GenAppsAction implements IAction {
           option: option1,
         });
         if (option1 === 'Yes') {
-          await performValidation('mainHeader', doYouNeedHelpPayingTheFee.mainHeader);
+          await performValidation('mainHeader', helpPayingTheFee.mainHeader);
           await performAction('doYouNeedHelpPayingFee', {
-            question: doYouNeedHelpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-            option: doYouNeedHelpPayingTheFee.iDoNotNeedHelpPayingTheFeeRadioOption,
+            question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+            option: helpPayingTheFee.iDoNotNeedHelpPayingTheFeeRadioOption,
           });
         } else {
           await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
           FieldsStore.deleteKeys([
-            doYouNeedHelpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+            helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
             haveYouAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
             'What is your Help with Fees reference number?',
           ]);
@@ -347,12 +395,12 @@ export class GenAppsAction implements IAction {
       }
       case 'doYouNeedHelpPayingTheFeeForThisApplication': {
         const feeOption1 =
-          FieldsStore.get(doYouNeedHelpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion as string) ===
+          FieldsStore.get(helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion as string) ===
             'I need help paying the fee'
-            ? doYouNeedHelpPayingTheFee.iDoNotNeedHelpPayingTheFeeRadioOption
-            : doYouNeedHelpPayingTheFee.iNeedHelpPayingTheFeeRadioOption;
+            ? helpPayingTheFee.iDoNotNeedHelpPayingTheFeeRadioOption
+            : helpPayingTheFee.iNeedHelpPayingTheFeeRadioOption;
         await performAction('doYouNeedHelpPayingFee', {
-          question: doYouNeedHelpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+          question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
           option: feeOption1,
         });
         if (feeOption1 !== 'I need help paying the fee') {
