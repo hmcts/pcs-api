@@ -46,7 +46,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     });
   });
 
-  test('Case tabs - Notes tab test @MAC @regression', async () => {
+  test('Case tabs - Summary tab test @MAC @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.addCaseNote);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', addCaseNote.mainHeader);
@@ -69,5 +69,10 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       table: 'Note'
     });
   });
+
+  test('Case tabs - Notes tab test @MAC @regression', async () => {
+   await performAction('clickTab', home.caseSummary);
+  });
+
 
 });
