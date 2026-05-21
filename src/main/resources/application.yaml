@@ -122,6 +122,11 @@ idam:
   prd-admin:
     username: ${PCS_PRD_ADMIN_USERNAME:prd-admin-user@localhost}
     password: ${PCS_PRD_ADMIN_PASSWORD:password}
+  throttle:
+    # How long (seconds) to tell callers to wait when IDAM throttles us, and which OAuth2
+    # error codes count as throttling. Consumed by UpstreamThrottling.
+    retry-after-seconds: ${IDAM_THROTTLE_RETRY_AFTER_SECONDS:30}
+    oauth2-error-codes: ${IDAM_THROTTLE_OAUTH2_ERROR_CODES:invalid_token_response,temporarily_unavailable}
 
 azure:
   application-insights:

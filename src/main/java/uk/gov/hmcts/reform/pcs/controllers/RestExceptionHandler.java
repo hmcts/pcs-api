@@ -24,6 +24,12 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
+    private final UpstreamThrottling upstreamThrottling;
+
+    public RestExceptionHandler(UpstreamThrottling upstreamThrottling) {
+        this.upstreamThrottling = upstreamThrottling;
+    }
+
     @ExceptionHandler(CaseNotFoundException.class)
     public ResponseEntity<Error> handleCaseNotFoundException(CaseNotFoundException caseNotFoundException) {
         log.error("Case not found", caseNotFoundException);
@@ -83,10 +89,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IdamException.class)
     public ResponseEntity<Error> handleIdamException(IdamException ex) {
         log.error("IDAM call failed", ex);
-        if (UpstreamThrottling.isUpstreamUnavailable(ex)) {
+        if (upstreamThrottling.isUpstreamUnavailable(ex)) {
             return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .header(HttpHeaders.RETRY_AFTER, UpstreamThrottling.RETRY_AFTER_SECONDS)
+                .header(HttpHeaders.RETRY_AFTER, upstreamThrottling.retryAfterSeconds())
                 .body(new Error("Authentication service temporarily unavailable, please retry"));
         }
         // Generic message to avoid leaking upstream OAuth2 error descriptions / internal URLs.

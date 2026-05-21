@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -37,7 +38,9 @@ class RestExceptionHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new RestExceptionHandler();
+        UpstreamThrottling upstreamThrottling = new UpstreamThrottling(
+            "30", Set.of("invalid_token_response", "temporarily_unavailable"));
+        underTest = new RestExceptionHandler(upstreamThrottling);
     }
 
     @Test
@@ -403,8 +406,8 @@ class RestExceptionHandlerTest {
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
     }
 
-    // Parameterised over the full OAUTH2_THROTTLE_ERROR_CODES set. When new codes are added to
-    // the production constant in RestExceptionHandler, mirror them here so coverage stays complete.
+    // Parameterised over the default idam.throttle.oauth2-error-codes set. When the default in
+    // application.yaml / UpstreamThrottling changes, mirror it here so coverage stays complete.
     @ParameterizedTest
     @ValueSource(strings = {"invalid_token_response", "temporarily_unavailable"})
     void shouldMapIdamExceptionWithOAuth2ThrottleCodeToServiceUnavailable(String errorCode) {
@@ -493,6 +496,35 @@ class RestExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("Authentication service error");
+    }
+
+    @Test
+    void shouldUseConfiguredRetryAfterValueInThrottleResponse() {
+        // The Retry-After value is read from idam.throttle.retry-after-seconds, not hardcoded.
+        RestExceptionHandler handler = new RestExceptionHandler(
+            new UpstreamThrottling("90", Set.of("invalid_token_response")));
+        OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "throttled", null);
+        IdamException ex = new IdamException(
+            "Unable to get access token response", new OAuth2AuthorizationException(oauthError));
+
+        ResponseEntity<RestExceptionHandler.Error> response = handler.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("90");
+    }
+
+    @Test
+    void shouldHonourConfiguredOAuth2ThrottleErrorCodes() {
+        // A code that is NOT in the configured set must not be treated as throttling.
+        RestExceptionHandler handler = new RestExceptionHandler(
+            new UpstreamThrottling("30", Set.of("temporarily_unavailable")));
+        OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "not a configured throttle code", null);
+        IdamException ex = new IdamException(
+            "Unable to get access token response", new OAuth2AuthorizationException(oauthError));
+
+        ResponseEntity<RestExceptionHandler.Error> response = handler.handleIdamException(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test

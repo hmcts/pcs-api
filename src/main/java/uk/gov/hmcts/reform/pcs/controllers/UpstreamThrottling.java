@@ -1,8 +1,10 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
 import feign.FeignException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.util.Set;
@@ -10,23 +12,35 @@ import java.util.Set;
 /**
  * Detects whether an exception chain indicates the IDAM upstream is throttling us or is
  * otherwise unavailable, so callers can be answered with 503 + Retry-After rather than 500.
+ *
+ * <p>The throttle thresholds are configurable under {@code idam.throttle.*} — see
+ * {@code application.yaml}.
  */
-final class UpstreamThrottling {
+@Component
+class UpstreamThrottling {
 
-    // When IDAM throttles us, this is how long we ask the caller to wait before trying again.
-    // IDAM refills its rate-limit bucket slowly (about 100 tokens every 5 minutes in AAT), so
-    // telling clients to retry after just a few seconds means they all come back at once and get
-    // throttled again — a retry storm. 30 seconds gives the bucket time to refill enough that
-    // most retries should actually succeed.
-    static final String RETRY_AFTER_SECONDS = "30";
+    private final String retryAfterSeconds;
+    private final Set<String> oauth2ThrottleErrorCodes;
 
-    private static final Set<String> OAUTH2_THROTTLE_ERROR_CODES = Set.of(
-        "invalid_token_response", "temporarily_unavailable");
-
-    private UpstreamThrottling() {
+    UpstreamThrottling(
+        @Value("${idam.throttle.retry-after-seconds:30}") String retryAfterSeconds,
+        @Value("${idam.throttle.oauth2-error-codes:invalid_token_response,temporarily_unavailable}")
+        Set<String> oauth2ThrottleErrorCodes) {
+        this.retryAfterSeconds = retryAfterSeconds;
+        this.oauth2ThrottleErrorCodes = oauth2ThrottleErrorCodes;
     }
 
-    static boolean isUpstreamUnavailable(Throwable ex) {
+    /**
+     * How long to ask the caller to wait before retrying when IDAM throttles us. IDAM refills
+     * its rate-limit bucket slowly (about 100 tokens every 5 minutes in AAT), so too short a
+     * value just makes every client come back at once — a retry storm. Configurable via
+     * {@code idam.throttle.retry-after-seconds} (default 30).
+     */
+    String retryAfterSeconds() {
+        return retryAfterSeconds;
+    }
+
+    boolean isUpstreamUnavailable(Throwable ex) {
         Throwable cause = ex;
         int depth = 0;
         while (cause != null && depth++ < 10) {
@@ -43,9 +57,9 @@ final class UpstreamThrottling {
             && restEx.getStatusCode().value() == HttpStatus.TOO_MANY_REQUESTS.value();
     }
 
-    private static boolean isOAuth2Throttle(Throwable cause) {
+    private boolean isOAuth2Throttle(Throwable cause) {
         return cause instanceof OAuth2AuthorizationException oauthEx
-            && OAUTH2_THROTTLE_ERROR_CODES.contains(oauthEx.getError().getErrorCode());
+            && oauth2ThrottleErrorCodes.contains(oauthEx.getError().getErrorCode());
     }
 
     private static boolean isFeignUpstreamFailure(Throwable cause) {
