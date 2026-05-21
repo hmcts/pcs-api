@@ -11,18 +11,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -78,6 +81,9 @@ public class DocumentEntity {
 
     private String description;
 
+    @CreationTimestamp
+    private Instant submittedDate;
+  
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "claim_id")
     private ClaimEntity claim;
@@ -95,4 +101,11 @@ public class DocumentEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "counter_claim_id")
     private CounterClaimEntity counterClaim;
+
+    @PrePersist
+    void prePersist() {
+        if (submittedDate == null) {
+            submittedDate = Instant.now();
+        }
+    }
 }

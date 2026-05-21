@@ -17,7 +17,7 @@ public class OtherPartiesAgreed implements CcdPageConfiguration {
         <p class="govuk-body">Every other party will need to agree to let them make this application, if they
         don’t agree, the defendant may need to pay a higher fee.</p>
         <h2 class="govuk-heading-m">If the other parties do not agree</h2>
-        <p class="govuk-body govuk-!-margin-bottom-1">The fee will increase to ${xui_genapp_MaxFee} if:</p>
+        <p class="govuk-body govuk-!-margin-bottom-1">The application fee will increase to ${xui_genapp_MaxFee} if:</p>
         <ul class="govuk-list govuk-list--bullet">
           <li class="govuk-!-font-size-19">the defendant has already told the other party that they are
            making this application, and</li>
