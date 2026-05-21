@@ -5,6 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -39,6 +42,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.TimeZone;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -74,7 +79,7 @@ public class CaseSummaryTabViewTest {
         AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(propertyAddress)
-            .dateSubmitted(LocalDateTime.of(2026, 5, 11, 17, 2, 31))
+            .dateSubmitted(LocalDateTime.of(2026, 1, 11, 17, 2, 31))
             .claimGroundSummaries(List.of(
                 listValue(ClaimGroundSummary.builder()
                               .label("Rent arrears (ground 10)")
@@ -205,7 +210,7 @@ public class CaseSummaryTabViewTest {
             .isEqualTo("Condition 1 reason");
         assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsForPossession())
             .isEqualTo("Additional reasons");
-        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 May 2026, 5:02:31PM");
+        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
         assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Fallback claimant");
         assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("One");
@@ -232,8 +237,10 @@ public class CaseSummaryTabViewTest {
     }
 
     @Test
-    void shouldDisplaySubmittedDateInGmtWhenBritishSummerTimeApplies() {
+    void shouldDisplaySubmittedDateInUkTimeWhenServerTimezoneIsUk() {
         // Given
+        TimeZone originalTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/London"));
         PCSCase pcsCase = PCSCase.builder()
             .dateSubmitted(LocalDateTime.of(2026, 7, 11, 17, 2, 31))
             .build();
@@ -246,11 +253,55 @@ public class CaseSummaryTabViewTest {
         when(additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase))
             .thenReturn(null);
 
-        // When
-        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+        try {
+            // When
+            SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
-        // Then
-        assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 5:02:31PM");
+            // Then
+            assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 5:02:31PM");
+        } finally {
+            TimeZone.setDefault(originalTimeZone);
+        }
+    }
+
+    @Test
+    void shouldDisplaySubmittedDateInUkTimeWhenServerTimezoneIsUtc() {
+        // Given
+        TimeZone originalTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        PCSCase pcsCase = PCSCase.builder()
+            .dateSubmitted(LocalDateTime.of(2026, 7, 11, 17, 2, 31))
+            .build();
+
+        try {
+            // When
+            SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+            // Then
+            assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 6:02:31PM");
+        } finally {
+            TimeZone.setDefault(originalTimeZone);
+        }
+    }
+
+    @Test
+    void shouldDisplaySubmittedDateInGmtOutsideBritishSummerTimeWhenServerTimezoneIsUtc() {
+        // Given
+        TimeZone originalTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        PCSCase pcsCase = PCSCase.builder()
+            .dateSubmitted(LocalDateTime.of(2026, 1, 11, 17, 2, 31))
+            .build();
+
+        try {
+            // When
+            SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+            // Then
+            assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
+        } finally {
+            TimeZone.setDefault(originalTimeZone);
+        }
     }
 
     @Test
@@ -311,12 +362,38 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
     }
 
-    @Test
-    void shouldSetTenancyDetailsFromWalesOccupationLicenceTypeLabel() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("unavailableTenancyDetailsScenarios")
+    void shouldNotSetTenancyDetailsWhenNeitherEnglandNorWalesTenancyTypeIsAvailable(
+        String scenario,
+        TenancyLicenceDetails tenancyLicenceDetails,
+        OccupationLicenceDetailsWales occupationLicenceDetailsWales
+    ) {
         // Given
         PCSCase pcsCase = PCSCase.builder()
+            .tenancyLicenceDetails(tenancyLicenceDetails)
+            .occupationLicenceDetailsWales(occupationLicenceDetailsWales)
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getTenancyDetails()).isNull();
+    }
+
+    @ParameterizedTest
+    @MethodSource("walesOccupationLicenceTypeLabelScenarios")
+    void shouldSetTenancyDetailsFromWalesOccupationLicenceTypeLabelWhenEnglandTenancyDetailsAreUnavailable(
+        TenancyLicenceDetails tenancyLicenceDetails,
+        OccupationLicenceTypeWales occupationLicenceType,
+        String expectedAgreementType
+    ) {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .tenancyLicenceDetails(tenancyLicenceDetails)
             .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
-                                               .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
+                                               .occupationLicenceTypeWales(occupationLicenceType)
                                                .licenceStartDate(LocalDate.of(2025, 5, 12))
                                                .build())
             .build();
@@ -333,7 +410,7 @@ public class CaseSummaryTabViewTest {
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
         // Then
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Secure contract");
+        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo(expectedAgreementType);
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("12/05/2025");
     }
 
@@ -361,6 +438,46 @@ public class CaseSummaryTabViewTest {
         // Then
         assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other Welsh licence");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
+    }
+
+    private static Stream<Arguments> unavailableTenancyDetailsScenarios() {
+        return Stream.of(
+            Arguments.of(
+                "no England tenancy details and no Wales occupation licence details",
+                null,
+                null
+            ),
+            Arguments.of(
+                "England tenancy details do not have a type and no Wales occupation licence details",
+                TenancyLicenceDetails.builder().build(),
+                null
+            ),
+            Arguments.of(
+                "no England tenancy details and Wales occupation licence details do not have a type",
+                null,
+                OccupationLicenceDetailsWales.builder().build()
+            ),
+            Arguments.of(
+                "England tenancy details and Wales occupation licence details do not have a type",
+                TenancyLicenceDetails.builder().build(),
+                OccupationLicenceDetailsWales.builder().build()
+            )
+        );
+    }
+
+    private static Stream<Arguments> walesOccupationLicenceTypeLabelScenarios() {
+        return Stream.of(
+            Arguments.of(
+                null,
+                OccupationLicenceTypeWales.SECURE_CONTRACT,
+                "Secure contract"
+            ),
+            Arguments.of(
+                TenancyLicenceDetails.builder().build(),
+                OccupationLicenceTypeWales.STANDARD_CONTRACT,
+                "Standard contract"
+            )
+        );
     }
 
     private static <T> ListValue<T> listValue(T value) {
