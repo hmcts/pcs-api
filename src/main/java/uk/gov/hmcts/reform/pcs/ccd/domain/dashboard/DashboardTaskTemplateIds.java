@@ -6,6 +6,7 @@ public final class DashboardTaskTemplateIds {
     }
 
     public static final String VIEW_CLAIM = "ViewClaim";
+    public static final String UPLOAD_DOCUMENTS = "UploadDocuments";
     public static final String VIEW_DOCUMENTS = "ViewDocuments";
     public static final String MAKE_GENERAL_APPLICATION = "MakeGeneralApplication";
     public static final String VIEW_ALL_APPLICATIONS = "ViewAllApplications";
