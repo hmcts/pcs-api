@@ -9,9 +9,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
-import feign.FeignException;
-import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
@@ -23,18 +20,9 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
-import java.util.Set;
-
 @Slf4j
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
-
-    // When IDAM throttles us, this is how long we ask the caller to wait before trying again.
-    // IDAM refills its rate-limit bucket slowly (about 100 tokens every 5 minutes in AAT), so
-    // telling clients to retry after just a few seconds means they all come back at once and get
-    // throttled again — a retry storm. 30 seconds gives the bucket time to refill enough that
-    // most retries should actually succeed.
-    private static final String RETRY_AFTER_SECONDS = "30";
 
     @ExceptionHandler(CaseNotFoundException.class)
     public ResponseEntity<Error> handleCaseNotFoundException(CaseNotFoundException caseNotFoundException) {
@@ -95,10 +83,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IdamException.class)
     public ResponseEntity<Error> handleIdamException(IdamException ex) {
         log.error("IDAM call failed", ex);
-        if (isUpstreamUnavailable(ex)) {
+        if (UpstreamThrottling.isUpstreamUnavailable(ex)) {
             return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .header(HttpHeaders.RETRY_AFTER, RETRY_AFTER_SECONDS)
+                .header(HttpHeaders.RETRY_AFTER, UpstreamThrottling.RETRY_AFTER_SECONDS)
                 .body(new Error("Authentication service temporarily unavailable, please retry"));
         }
         // Generic message to avoid leaking upstream OAuth2 error descriptions / internal URLs.
@@ -118,40 +106,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new Error("Invalid data"));
-    }
-
-    private static final Set<String> OAUTH2_THROTTLE_ERROR_CODES = Set.of(
-        "invalid_token_response", "temporarily_unavailable");
-
-    private static boolean isUpstreamUnavailable(Throwable ex) {
-        Throwable cause = ex;
-        int depth = 0;
-        while (cause != null && depth++ < 10) {
-            if (isRestClient429(cause) || isOAuth2Throttle(cause) || isFeignUpstreamFailure(cause)) {
-                return true;
-            }
-            cause = cause.getCause();
-        }
-        return false;
-    }
-
-    private static boolean isRestClient429(Throwable cause) {
-        return cause instanceof RestClientResponseException restEx
-            && restEx.getStatusCode().value() == HttpStatus.TOO_MANY_REQUESTS.value();
-    }
-
-    private static boolean isOAuth2Throttle(Throwable cause) {
-        return cause instanceof OAuth2AuthorizationException oauthEx
-            && OAUTH2_THROTTLE_ERROR_CODES.contains(oauthEx.getError().getErrorCode());
-    }
-
-    private static boolean isFeignUpstreamFailure(Throwable cause) {
-        if (!(cause instanceof FeignException feignEx)) {
-            return false;
-        }
-        int status = feignEx.status();
-        // Feign returns status < 0 when no response was received (timeout / connection refused).
-        return status < 0 || status == HttpStatus.TOO_MANY_REQUESTS.value() || status >= 500;
     }
 
     public record Error(String message) {}

@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.security.SystemUpdateUser;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,46 +24,40 @@ public class CaseRoleAssignmentService {
 
     public CaseAssignmentUserRolesResponse assignRasRole(long caseReference, String userId,
                                                          UserRole role) {
-        String s2s = authTokenGenerator.generate();
-        String userToken = systemUpdateUser.getAuthToken();
-
-        CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
-            = CaseAssignmentUserRoleWithOrganisation.builder()
-            .caseDataId(String.valueOf(caseReference))
-            .caseRole(role.getRole())
-            .userId(userId)
-            .build();
-
-        List<CaseAssignmentUserRoleWithOrganisation> caseAssignmentList = new ArrayList<>();
-        caseAssignmentList.add(caseAssignmentUserRoleWithOrganisation);
-
-        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
-            CaseAssignmentUserRolesRequest.builder()
-                    .caseAssignmentUserRolesWithOrganisation(caseAssignmentList)
-                        .build();
-
-        return caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
+        return applyRasRole(caseReference, userId, role, caseAssignmentApi::addCaseUserRoles);
     }
 
     public CaseAssignmentUserRolesResponse revokeRasRole(long caseReference, String userId, UserRole role) {
+        return applyRasRole(caseReference, userId, role, caseAssignmentApi::removeCaseUserRoles);
+    }
+
+    private CaseAssignmentUserRolesResponse applyRasRole(long caseReference, String userId, UserRole role,
+                                                         CaseRoleApiCall apiCall) {
         String s2s = authTokenGenerator.generate();
         String userToken = systemUpdateUser.getAuthToken();
 
-        CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
-            = CaseAssignmentUserRoleWithOrganisation.builder()
-            .caseDataId(String.valueOf(caseReference))
-            .caseRole(role.getRole())
-            .userId(userId)
-            .build();
+        CaseAssignmentUserRoleWithOrganisation roleWithOrganisation =
+            CaseAssignmentUserRoleWithOrganisation.builder()
+                .caseDataId(String.valueOf(caseReference))
+                .caseRole(role.getRole())
+                .userId(userId)
+                .build();
 
-        List<CaseAssignmentUserRoleWithOrganisation> caseAssignmentList = new ArrayList<>();
-        caseAssignmentList.add(caseAssignmentUserRoleWithOrganisation);
-
-        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
+        CaseAssignmentUserRolesRequest rolesRequest =
             CaseAssignmentUserRolesRequest.builder()
-                    .caseAssignmentUserRolesWithOrganisation(caseAssignmentList)
-                        .build();
+                .caseAssignmentUserRolesWithOrganisation(List.of(roleWithOrganisation))
+                .build();
 
-        return caseAssignmentApi.removeCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
+        return apiCall.apply(userToken, s2s, rolesRequest);
+    }
+
+    /**
+     * The CCD case-assignment endpoint to invoke — {@code addCaseUserRoles} or
+     * {@code removeCaseUserRoles}; both share the same signature.
+     */
+    @FunctionalInterface
+    private interface CaseRoleApiCall {
+        CaseAssignmentUserRolesResponse apply(String userToken, String s2sToken,
+                                              CaseAssignmentUserRolesRequest request);
     }
 }
