@@ -66,7 +66,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       option: chooseAnApplication.setAsideRadioOption,
     });
     await performValidation('mainHeader', askTheCourtToSetAsideTheOrder.mainHeader);
-    await performAction('clickButton', askTheCourtToSetAsideTheOrder.startNowButton);
+    await performAction('clickButton', askTheCourtToSetAsideTheOrder.continueButton);
   });
 
 });
