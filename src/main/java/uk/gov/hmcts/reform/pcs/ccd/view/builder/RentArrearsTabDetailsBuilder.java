@@ -91,9 +91,10 @@ public class RentArrearsTabDetailsBuilder {
             rentArrearsTabDetails
                 .setStepsToRecoverArrears(recoveryAttempted != null ? recoveryAttempted.getLabel() : NO_ANSWER);
 
-            String details = recoveryAttempted == VerticalYesNo.YES
-                ? rentArrears.getRecoveryAttemptDetails() : null;
-            rentArrearsTabDetails.setStepsToRecoverArrearsDetails(details != null ? details : NO_ANSWER);
+            if (recoveryAttempted == VerticalYesNo.YES) {
+                String details = rentArrears.getRecoveryAttemptDetails();
+                rentArrearsTabDetails.setStepsToRecoverArrearsDetails(details != null ? details : NO_ANSWER);
+            }
 
             String arrearsTotal = formatMoney(rentArrears.getTotal());
             rentArrearsTabDetails.setArrearsTotal(arrearsTotal != null ? arrearsTotal : NO_ANSWER);

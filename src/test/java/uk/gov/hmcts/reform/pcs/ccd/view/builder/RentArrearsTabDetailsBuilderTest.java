@@ -77,6 +77,71 @@ public class RentArrearsTabDetailsBuilderTest {
     }
 
     @Test
+    void shouldSetCalculationFrequencyInRentArrearsWhenFrequencyIsOther() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .showRentSectionPage(YesOrNo.YES)
+            .rentDetails(
+                RentDetails.builder()
+                    .currentRent(new BigDecimal("4.00"))
+                    .frequency(RentPaymentFrequency.OTHER)
+                    .otherFrequency("Other frequency")
+                    .calculatedDailyCharge(new BigDecimal("3.40"))
+                    .build())
+            .arrearsJudgmentWanted(VerticalYesNo.YES)
+            .rentArrears(
+                RentArrearsSection.builder()
+                    .recoveryAttempted(VerticalYesNo.YES)
+                    .recoveryAttemptDetails("recovery details")
+                    .total(new BigDecimal("100.00"))
+                    .statementDocuments(
+                        List.of(
+                            ListValue.<Document>builder()
+                                .value(Document.builder().build())
+                                .build())
+                    )
+                    .build()
+            )
+            .build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildRentArrearsTabDetails(pcsCase);
+
+        // Then
+        assertThat(rentArrearsDetails.getCalculationFrequency()).isEqualTo("Other frequency");
+    }
+
+    @Test
+    void shouldNotBuildRentArrearsWithNoRentArrears() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildRentArrearsTabDetails(pcsCase);
+
+        // Then
+        assertThat(rentArrearsDetails).isNull();
+    }
+
+    @Test
+    void shouldNotBuildRentArrearsWithRentArrearsDataNotSet() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .rentDetails(RentDetails.builder().build())
+            .rentArrears(RentArrearsSection.builder().build())
+            .build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildRentArrearsTabDetails(pcsCase);
+
+        // Then
+        assertThat(rentArrearsDetails).isNull();
+    }
+
+    @Test
     void shouldBuildDetailedRentArrearsForCaseDetailsTab() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
@@ -242,5 +307,31 @@ public class RentArrearsTabDetailsBuilderTest {
 
         // Then
         assertThat(rentArrearsDetails).isNull();
+    }
+
+    @Test
+    void shouldBuildDetailedRentArrearsWithPlaceholdersWhenRentArrearsDataNotSet() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .showRentSectionPage(YesOrNo.YES)
+            .rentDetails(RentDetails.builder().build())
+            .rentArrears(RentArrearsSection.builder().build())
+            .build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildDetailedRentArrearsTabDetails(pcsCase);
+
+        // Then
+        assertThat(rentArrearsDetails.getRentAmount()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getCalculationFrequency()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getFrequency()).isNull();
+        assertThat(rentArrearsDetails.getDailyRate()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getArrearsTotal()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getStepsToRecoverArrears()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getStepsToRecoverArrearsDetails()).isNull();
+        assertThat(rentArrearsDetails.getRentStatement()).isNull();
+        assertThat(rentArrearsDetails.getRentStatementPlaceholder()).isEqualTo(" ");
+        assertThat(rentArrearsDetails.getJudgmentRequested()).isEqualTo(" ");
     }
 }
