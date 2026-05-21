@@ -162,7 +162,8 @@ public class PCSCase {
     )
     private Integer regionId;
 
-    @CCD(label = "Party")
+    @CCD(access = {InternalCaseFlagAccess.class},
+        label = "Party")
     private List<ListValue<Party>> parties;
 
     @JsonUnwrapped
