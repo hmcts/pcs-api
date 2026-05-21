@@ -1,0 +1,33 @@
+package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
+
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
+
+import java.util.UUID;
+
+@Service
+@AllArgsConstructor
+public class GenAppVisibilityService {
+
+    private final LegalRepresentativeService legalRepresentativeService;
+
+    public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity, UUID currentUserId) {
+        if (genAppEntity.getWithoutNotice() != VerticalYesNo.YES) {
+            return true;
+        }
+
+        PartyEntity applicantParty = genAppEntity.getParty();
+        if (currentUserId.equals(applicantParty.getIdamId())) {
+            return true;
+        }
+
+        return legalRepresentativeService.getLegalRepresentativeForParty(applicantParty.getId())
+            .map(legalRepresentativeEntity -> currentUserId.equals(legalRepresentativeEntity.getIdamId()))
+            .orElse(false);
+    }
+
+}

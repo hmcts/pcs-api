@@ -14,6 +14,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class Party {
 
+    private String id;
+
+    private String idamId;
+
     private String firstName;
 
     private String lastName;

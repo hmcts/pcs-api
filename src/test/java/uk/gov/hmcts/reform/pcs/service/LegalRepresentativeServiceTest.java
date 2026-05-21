@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -111,5 +112,21 @@ class LegalRepresentativeServiceTest {
             );
     }
 
+    @Test
+    void shouldGetLegalRepForPartyId() {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        LegalRepresentativeEntity expectedLegalRepEntity = mock(LegalRepresentativeEntity.class);
+
+        when(legalRepresentativeRepository.findLegalRepresentativeForParty(partyId))
+            .thenReturn(Optional.of(expectedLegalRepEntity));
+
+        // When
+        Optional<LegalRepresentativeEntity> actualLegalRepEntity = underTest.getLegalRepresentativeForParty(
+            partyId);
+
+        // Then
+        assertThat(actualLegalRepEntity).contains(expectedLegalRepEntity);
+    }
 
 }
