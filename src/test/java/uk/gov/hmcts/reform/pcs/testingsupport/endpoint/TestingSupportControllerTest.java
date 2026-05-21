@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -409,7 +410,7 @@ class TestingSupportControllerTest {
     void shouldUpdateCounterClaimStatus() {
         // Given
         UUID counterClaimId = UUID.randomUUID();
-        String status = "CASE_ISSUED";
+        CounterClaimStatus status = CounterClaimStatus.CASE_ISSUED;
         String serviceAuth = "Bearer s2sToken";
 
         // When

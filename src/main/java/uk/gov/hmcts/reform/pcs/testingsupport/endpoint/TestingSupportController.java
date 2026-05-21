@@ -29,6 +29,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -393,7 +394,7 @@ public class TestingSupportController {
     public ResponseEntity<Void> updateCounterClaimStatus(
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @PathVariable UUID counterClaimId,
-        @RequestParam String status
+        @RequestParam CounterClaimStatus status
     ) {
         counterClaimTestStatusService.updateStatus(counterClaimId, status);
         return ResponseEntity.ok().build();

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -38,18 +39,14 @@ class CounterClaimEntityListenerTest {
     @InjectMocks
     private CounterClaimEntityListener underTest;
 
-    private static final String DRAFT = "DRAFT";
-    private static final String PENDING_CASE_ISSUED = "PENDING_CASE_ISSUED";
-    private static final String CASE_ISSUED = "CASE_ISSUED";
-
     @Test
     void shouldSetPreviousStatusOnPostLoad() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(DRAFT);
+        entity.setStatus(CounterClaimStatus.DRAFT);
 
         underTest.onPostLoad(entity);
 
-        assertEquals(DRAFT, entity.getPreviousStatus());
+        assertEquals(CounterClaimStatus.DRAFT, entity.getPreviousStatus());
     }
 
     @Test
@@ -68,35 +65,35 @@ class CounterClaimEntityListenerTest {
         when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
 
         CounterClaimEntity entity = CounterClaimEntity.builder()
-            .status(PENDING_CASE_ISSUED)
+            .status(CounterClaimStatus.PENDING_CASE_ISSUED)
             .party(party)
             .pcsCase(pcsCase)
             .build();
 
         underTest.onPostPersist(entity);
 
-        verify(defendantResponseNotificationService).sendEmailNotification(defendantResponseId);
+        verify(defendantResponseNotificationService).sendEmailNotificationForCounterclaim(defendantResponseId);
     }
 
     @Test
     void shouldNotHandleNotificationOnPostPersistWhenStatusIsNotPendingCaseIssued() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(DRAFT);
+        entity.setStatus(CounterClaimStatus.DRAFT);
 
         underTest.onPostPersist(entity);
 
-        verify(defendantResponseNotificationService, never()).sendEmailNotification(null);
+        verify(defendantResponseNotificationService, never()).sendEmailNotificationForCounterclaim(null);
     }
 
     @Test
     void shouldDoNothingOnPostUpdateWhenStatusHasNotChanged() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(DRAFT);
-        entity.setPreviousStatus(DRAFT);
+        entity.setStatus(CounterClaimStatus.DRAFT);
+        entity.setPreviousStatus(CounterClaimStatus.DRAFT);
 
         underTest.onPostUpdate(entity);
 
-        verify(defendantResponseNotificationService, never()).sendEmailNotification(null);
+        verify(defendantResponseNotificationService, never()).sendEmailNotificationForCounterclaim(null);
         verify(paymentNotificationService, never()).sendCounterClaimPaymentSuccessNotification(null);
     }
 
@@ -116,15 +113,15 @@ class CounterClaimEntityListenerTest {
         when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
 
         CounterClaimEntity entity = CounterClaimEntity.builder()
-            .status(PENDING_CASE_ISSUED)
-            .previousStatus(DRAFT)
+            .status(CounterClaimStatus.PENDING_CASE_ISSUED)
+            .previousStatus(CounterClaimStatus.DRAFT)
             .party(party)
             .pcsCase(pcsCase)
             .build();
 
         underTest.onPostUpdate(entity);
 
-        verify(defendantResponseNotificationService).sendEmailNotification(defendantResponseId);
+        verify(defendantResponseNotificationService).sendEmailNotificationForCounterclaim(defendantResponseId);
     }
 
     @Test
@@ -149,8 +146,8 @@ class CounterClaimEntityListenerTest {
 
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CASE_ISSUED)
-            .previousStatus(PENDING_CASE_ISSUED)
+            .status(CounterClaimStatus.CASE_ISSUED)
+            .previousStatus(CounterClaimStatus.PENDING_CASE_ISSUED)
             .party(party)
             .pcsCase(pcsCase)
             .build();
@@ -182,8 +179,8 @@ class CounterClaimEntityListenerTest {
 
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CASE_ISSUED)
-            .previousStatus(PENDING_CASE_ISSUED)
+            .status(CounterClaimStatus.CASE_ISSUED)
+            .previousStatus(CounterClaimStatus.PENDING_CASE_ISSUED)
             .party(party)
             .pcsCase(pcsCase)
             .build();
@@ -206,8 +203,8 @@ class CounterClaimEntityListenerTest {
 
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CASE_ISSUED)
-            .previousStatus(PENDING_CASE_ISSUED)
+            .status(CounterClaimStatus.CASE_ISSUED)
+            .previousStatus(CounterClaimStatus.PENDING_CASE_ISSUED)
             .party(party)
             .pcsCase(pcsCase)
             .build();
