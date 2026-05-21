@@ -44,7 +44,7 @@ async function authenticateAndSaveState(): Promise<string> {
     );
   }
   if (!user.claimantSolicitor.email || !user.claimantSolicitor.password) {
-    throw new Error('Login failed: missing credentials. Set IDAM_PCS_USER_PASSWORD.');
+    throw new Error('Login failed: missing credentials. Set PCS_SOLICITOR_AUTOMATION_EMAIL and IDAM_PCS_USER_PASSWORD.');
   }
 
   const authDir = path.dirname(STORAGE_STATE_PATH);
