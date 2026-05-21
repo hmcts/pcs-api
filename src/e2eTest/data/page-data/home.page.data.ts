@@ -6,5 +6,6 @@ export const home =
     createCaseTab: 'Create case',
     findCaseTab: 'Find case',
     caseParties: 'Case Parties',
+    caseNotes: 'Notes',
     signOutButton: 'Sign out'
   }
