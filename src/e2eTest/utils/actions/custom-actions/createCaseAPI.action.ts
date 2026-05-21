@@ -17,6 +17,7 @@ export class CreateCaseAPIAction implements IAction {
       ['deleteCaseRole', () => this.deleteCaseRole(fieldName)],
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
       ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI()],
+      ['getCaseAPI', () => this.getCaseAPI()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
