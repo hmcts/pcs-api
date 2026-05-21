@@ -66,7 +66,7 @@ public class DashboardJourneyService {
         PartyEntity defendant
     ) {
 
-        boolean hasDraftResponse = draftCaseDataService.hasUnsubmittedCaseData(
+        boolean hasDraftResponse = draftCaseDataService.hasMeaningfulRespondDraft(
             caseReference, EventId.respondPossessionClaim);
         boolean hasSubmittedResponse = defendantResponseService.hasSubmittedResponse(caseReference);
 

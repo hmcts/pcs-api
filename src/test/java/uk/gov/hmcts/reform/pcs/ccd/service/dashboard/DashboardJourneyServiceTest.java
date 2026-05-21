@@ -93,9 +93,9 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()))
             .extracting(g -> g.getGroupId(), g -> g.getTasks().size())
             .containsExactly(
-                tuple(TaskGroupId.CLAIM, 2),
+                tuple(TaskGroupId.CLAIM, 1),
                 tuple(TaskGroupId.DOCUMENTS, 2),
-                tuple(TaskGroupId.RESPONSE, 3),
+                tuple(TaskGroupId.RESPONSE, 2),
                 tuple(TaskGroupId.HEARING, 1),
                 tuple(TaskGroupId.NOTICE, 1),
                 tuple(TaskGroupId.APPLICATIONS, 2)
@@ -165,7 +165,7 @@ class DashboardJourneyServiceTest {
 
     @Test
     void shouldUseResponseInProgressNotificationWhenDraftExists() {
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, EventId.respondPossessionClaim))
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(true);
         when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(false);
 
@@ -181,29 +181,30 @@ class DashboardJourneyServiceTest {
 
     @Test
     void shouldMarkRespondToClaimInProgressWhenDraftExists() {
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, EventId.respondPossessionClaim))
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(true);
         when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(false);
 
         DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, PCSCase.builder().build());
 
-        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .contains(tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.IN_PROGRESS));
     }
 
     @Test
     void shouldMarkRespondCompletedAndViewResponseAvailableWhenSubmittedExists() {
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, EventId.respondPossessionClaim))
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false);
         when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(true);
 
         DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, PCSCase.builder().build());
 
-        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(1).getTasks())
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
-            .contains(
-                tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.COMPLETED)
+            .containsExactly(
+                tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.COMPLETED),
+                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.AVAILABLE)
             );
     }
 }

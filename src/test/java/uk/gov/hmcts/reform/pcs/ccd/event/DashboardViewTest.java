@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
-import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;s
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -91,7 +91,7 @@ class DashboardViewTest extends BaseEventTest {
         when(accessValidator.validateAndGetDefendant(caseEntity, defendantUserId))
             .thenReturn(PartyEntity.builder().idamId(defendantUserId).build());
 
-        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+        when(draftCaseDataService.hasMeaningfulRespondDraft(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false);
         when(defendantResponseService.hasSubmittedResponse(TEST_CASE_REFERENCE))
             .thenReturn(false);
