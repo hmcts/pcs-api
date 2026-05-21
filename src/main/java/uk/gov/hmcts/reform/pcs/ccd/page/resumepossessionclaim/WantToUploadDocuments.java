@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -34,14 +35,17 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        AdditionalDocuments additionalDocuments = new AdditionalDocuments();
-        LegislativeCountry legislativeCountry = caseData.getLegislativeCountry();
 
-        additionalDocuments.setDocumentTypeList(createAdditionalDocumentList(legislativeCountry));
-        caseData.setAdditionalDocs(new ArrayList<>());
-        caseData.getAdditionalDocs().add(ListValue.<AdditionalDocuments>builder()
-                .value(additionalDocuments)
-                .build());
+        if (caseData.getWantToUploadDocuments().equals(VerticalYesNo.YES)) {
+            AdditionalDocuments additionalDocuments = new AdditionalDocuments();
+            LegislativeCountry legislativeCountry = caseData.getLegislativeCountry();
+
+            additionalDocuments.setDocumentTypeList(createAdditionalDocumentList(legislativeCountry));
+            caseData.setAdditionalDocs(new ArrayList<>());
+            caseData.getAdditionalDocs().add(ListValue.<AdditionalDocuments>builder()
+                    .value(additionalDocuments)
+                    .build());
+        }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -12,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -36,6 +38,7 @@ class WantToUploadDocumentsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .legislativeCountry(LegislativeCountry.ENGLAND)
+                .wantToUploadDocuments(VerticalYesNo.YES)
                 .build();
 
         // When
@@ -61,6 +64,7 @@ class WantToUploadDocumentsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .legislativeCountry(LegislativeCountry.WALES)
+                .wantToUploadDocuments(VerticalYesNo.YES)
                 .build();
 
         // When
@@ -78,6 +82,21 @@ class WantToUploadDocumentsTest extends BasePageTest {
         }
 
         assertThat(documentTypeList.getListItems()).hasSize(16);
+    }
+
+    @Test
+    void shouldNotSetAdditionalDocumentsIfUserSelectsNo() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .legislativeCountry(LegislativeCountry.WALES)
+                .wantToUploadDocuments(VerticalYesNo.NO)
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getData().getAdditionalDocs()).isNull();
     }
 
     private static Stream<Arguments> englandDocumentScenarios() {
