@@ -10,10 +10,8 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
-import uk.gov.hmcts.reform.pcs.notify.service.DefendantResponseNotificationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
@@ -29,7 +27,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final DraftCaseDataService draftCaseDataService;
     private final ClaimResponseService claimResponseService;
     private final DefendantResponseService defendantResponseService;
-    private final DefendantResponseNotificationService defendantResponseNotificationService;
 
     @Transactional
     @Override
@@ -58,15 +55,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         //call services to save to relevant tables
         claimResponseService.saveDraftData(responseDraftData, caseReference);
 
-        DefendantResponseEntity defendantResponse =
-            defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
+        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
 
         //delete draft as it's no longer needed
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
-
-        // sends email notification to defendant
-        defendantResponseNotificationService.sendEmailNotification(defendantResponse.getId());
-
         log.info("Successfully saved defendant response for case: {}", caseReference);
         return success();
     }

@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
-import uk.gov.hmcts.reform.pcs.notify.service.DefendantResponseNotificationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -39,7 +38,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -73,9 +71,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
 
-    @Mock
-    private DefendantResponseNotificationService defendantResponseNotificationService;
-
     @BeforeEach
     void setUp() {
 
@@ -91,8 +86,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
             draftCaseDataService,
             claimResponseService,
-            defendantResponseService,
-            defendantResponseNotificationService
+            defendantResponseService
         );
 
         setEventUnderTest(new RespondPossessionClaim(
@@ -280,8 +274,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
         defendantResponse.setParty(new PartyEntity());
         defendantResponse.setPcsCase(new PcsCaseEntity());
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
-            .thenReturn(defendantResponse);
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(null)

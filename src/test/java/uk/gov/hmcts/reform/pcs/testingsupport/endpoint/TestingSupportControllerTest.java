@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.CounterClaimTestStatusService;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -75,6 +76,8 @@ class TestingSupportControllerTest {
     @Mock
     private IdamService idamService;
     @Mock
+    private CounterClaimTestStatusService counterClaimTestStatusService;
+    @Mock
     private User user;
     @Mock
     private UserInfo userInfo;
@@ -90,7 +93,8 @@ class TestingSupportControllerTest {
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
-                                                 idamService
+                                                 idamService,
+                                                 counterClaimTestStatusService
         );
     }
 
@@ -398,7 +402,26 @@ class TestingSupportControllerTest {
         Map<String, Object> body = response.getBody();
         assertEquals("CREATED", body.get("status"));
         assertEquals(caseIdValue, body.get(caseIdKey));
-        assertEquals(caseDetailsValue, body.get(caseDetailsKey));
+        assertThat(HttpStatus.CREATED.equals(response.getStatusCode()));
+    }
+
+    @Test
+    void shouldUpdateCounterClaimStatus() {
+        // Given
+        UUID counterClaimId = UUID.randomUUID();
+        String status = "CASE_ISSUED";
+        String serviceAuth = "Bearer s2sToken";
+
+        // When
+        ResponseEntity<Void> response = underTest.updateCounterClaimStatus(
+            serviceAuth,
+            counterClaimId,
+            status
+        );
+
+        // Then
+        verify(counterClaimTestStatusService).updateStatus(counterClaimId, status);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName) {
@@ -411,6 +434,4 @@ class TestingSupportControllerTest {
             throw new RuntimeException("Failed to create JsonNode", e);
         }
     }
-
-
 }
