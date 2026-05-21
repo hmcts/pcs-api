@@ -60,7 +60,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
       question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
-      option: chooseAnApplication.adjournTheHearingRadioOption,
+      option: chooseAnApplication.setAsideRadioOption,
     });
   });
 
