@@ -62,6 +62,13 @@ public class PartyService {
                 "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
     }
 
+    public boolean canSendEmailNotification(PartyEntity party) {
+        return party.getEmailAddress() != null
+            && party.getContactPreferences() != null
+            && party.getContactPreferences().getContactByEmail() != null
+            && party.getContactPreferences().getContactByEmail().toBoolean();
+    }
+
     private PartyEntity createClaimant(PCSCase pcsCase) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
