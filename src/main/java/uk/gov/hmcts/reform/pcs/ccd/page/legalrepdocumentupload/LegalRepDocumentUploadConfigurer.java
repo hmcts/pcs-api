@@ -9,11 +9,13 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 @AllArgsConstructor
 public class LegalRepDocumentUploadConfigurer implements PageConfigurer {
 
+    private final UploadAdditionalDocumentsPage uploadAdditionalDocumentsPage;
+
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
             .add(new UploadAdditionalDocumentsInformationPage())
             .add(new ExistingApplicationPage())
-            .add(new UploadAdditionalDocumentsPage());
+            .add(uploadAdditionalDocumentsPage);
     }
 }

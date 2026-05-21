@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -28,6 +29,9 @@ class LegalRepDocumentUploadDetailsConfigurerTest extends BasePageTest {
     @InjectMocks
     private LegalRepDocumentUploadConfigurer underTest;
 
+    @Mock
+    private UploadAdditionalDocumentsPage uploadAdditionalDocumentsPage;
+
     @Test
     @SuppressWarnings("squid:S5961")
     void shouldConfigurePagesInCorrectOrder() {
@@ -46,7 +50,7 @@ class LegalRepDocumentUploadDetailsConfigurerTest extends BasePageTest {
 
         verifyAndCount(inOrder, pageBuilder, UploadAdditionalDocumentsInformationPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ExistingApplicationPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, UploadAdditionalDocumentsPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, uploadAdditionalDocumentsPage, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);

@@ -26,7 +26,7 @@ public class LegalRepDocument {
     private Document document;
 
     @CCD(label = "Short description",
-        max = 62
+        max = 60
     )
     private String description;
 }
