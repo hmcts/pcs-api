@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
@@ -74,8 +73,6 @@ class PaymentServiceTest {
     private FeePaymentRepository feePaymentRepository;
     @Mock
     private PcsCaseService pcsCaseService;
-    @Mock
-    private PaymentNotificationService paymentNotificationService;
 
     @InjectMocks
     private PaymentService underTest;
@@ -135,7 +132,6 @@ class PaymentServiceTest {
             .paymentStatus(PaymentStatus.PAID)
             .requestReference(requestReference)
             .externalReference(paymentReference)
-            .claim(new ClaimEntity())
             .build();
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
 
@@ -254,28 +250,6 @@ class PaymentServiceTest {
         assertThat(saved.getRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
         assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
         assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
-    }
-
-    @Test
-    void shouldSendCounterClaimPaymentSuccessNotification() {
-        UUID feePaymentId = UUID.randomUUID();
-        FeePaymentEntity feePayment = FeePaymentEntity.builder()
-            .id(feePaymentId)
-            .requestReference("SR-123")
-            .paymentStatus(PaymentStatus.PAID)
-            .build();
-
-        when(feePaymentRepository.findByRequestReference("SR-123")).thenReturn(Optional.of(feePayment));
-
-        PaymentStatusCallback update = PaymentStatusCallback.builder()
-            .serviceRequestReference("SR-123")
-            .serviceRequestStatus(PaymentStatus.PAID.getValue())
-            .payment(Payment.builder().paymentReference("PAY-1").build())
-            .build();
-
-        underTest.processPaymentResponse(update);
-
-        verify(paymentNotificationService).sendCounterClaimPaymentSuccessNotification(feePaymentId);
     }
 
     private void paymentsClientDependencies(FeeDetails feeDetails) {

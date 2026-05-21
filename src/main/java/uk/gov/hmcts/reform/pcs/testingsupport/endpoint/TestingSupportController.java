@@ -42,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.CounterClaimTestStatusService;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -73,6 +74,7 @@ public class TestingSupportController {
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final IdamService idamService;
+    private final CounterClaimTestStatusService counterClaimTestStatusService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -375,6 +377,25 @@ public class TestingSupportController {
             partyId,
             userDetails
         );
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+        summary = "Update a counterclaim status"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Status updated successfully", content = @Content()),
+        @ApiResponse(responseCode = "400", description = "Bad request - invalid counterclaim", content = @Content()),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/counterclaim/{counterClaimId}/status")
+    public ResponseEntity<Void> updateCounterClaimStatus(
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @PathVariable UUID counterClaimId,
+        @RequestParam String status
+    ) {
+        counterClaimTestStatusService.updateStatus(counterClaimId, status);
         return ResponseEntity.ok().build();
     }
 

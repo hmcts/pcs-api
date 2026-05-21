@@ -127,7 +127,7 @@ class DefendantResponseNotificationServiceTest {
     }
 
     @Test
-    void shouldSendPaymentRequiredEmailWhenHwfReferenceIsNull() {
+    void shouldNotSendEmailWhenHwfRequestedAndHwfReferenceIsNull() {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
@@ -141,7 +141,6 @@ class DefendantResponseNotificationServiceTest {
 
         when(response.getPcsCase()).thenReturn(caseEntity);
         when(response.getParty()).thenReturn(party);
-        when(response.getId()).thenReturn(defendantResponseId);
 
         when(party.getId()).thenReturn(partyId);
 
@@ -153,7 +152,7 @@ class DefendantResponseNotificationServiceTest {
 
         underTest.sendEmailNotification(defendantResponseId);
 
-        verify(notificationService)
+        verify(notificationService, never())
             .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
 
         verify(notificationService, never())
@@ -164,7 +163,7 @@ class DefendantResponseNotificationServiceTest {
     }
 
     @Test
-    void shouldSendPaymentRequiredEmailWhenHwfReferenceIsBlank() {
+    void shouldNotSendEmailWhenHwfRequestedAndHwfReferenceIsBlank() {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
@@ -178,7 +177,6 @@ class DefendantResponseNotificationServiceTest {
 
         when(response.getPcsCase()).thenReturn(caseEntity);
         when(response.getParty()).thenReturn(party);
-        when(response.getId()).thenReturn(defendantResponseId);
 
         when(party.getId()).thenReturn(partyId);
 
@@ -190,7 +188,7 @@ class DefendantResponseNotificationServiceTest {
 
         underTest.sendEmailNotification(defendantResponseId);
 
-        verify(notificationService)
+        verify(notificationService, never())
             .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
 
         verify(notificationService, never())
