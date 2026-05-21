@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -15,14 +14,22 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class CaseRoleAssignmentService {
 
     private final AuthTokenGenerator authTokenGenerator;
-    @Qualifier("systemUpdateUserTokenProvider")
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final CaseAssignmentApi caseAssignmentApi;
+
+    public CaseRoleAssignmentService(
+        AuthTokenGenerator authTokenGenerator,
+        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
+        CaseAssignmentApi caseAssignmentApi
+    ) {
+        this.authTokenGenerator = authTokenGenerator;
+        this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
+        this.caseAssignmentApi = caseAssignmentApi;
+    }
 
     public CaseAssignmentUserRolesResponse assignRasRole(long caseReference, String userId,
                                                          UserRole role) {

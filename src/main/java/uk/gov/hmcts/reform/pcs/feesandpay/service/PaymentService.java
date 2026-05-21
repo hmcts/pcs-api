@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,14 +27,12 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PaymentService {
 
     private static final String PARTY_NOT_FOUND = "Matching PartyEntity not found";
 
     private final PaymentsClient paymentsClient;
     private final PaymentRequestMapper paymentRequestMapper;
-    @Qualifier("systemUpdateUserTokenProvider")
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final FeePaymentRepository feePaymentRepository;
     private final PcsCaseService pcsCaseService;
@@ -45,6 +42,20 @@ public class PaymentService {
 
     @Value("${payments.params.hmctsOrgId}")
     private String hmctsOrgId;
+
+    public PaymentService(
+        PaymentsClient paymentsClient,
+        PaymentRequestMapper paymentRequestMapper,
+        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
+        FeePaymentRepository feePaymentRepository,
+        PcsCaseService pcsCaseService
+    ) {
+        this.paymentsClient = paymentsClient;
+        this.paymentRequestMapper = paymentRequestMapper;
+        this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
+        this.feePaymentRepository = feePaymentRepository;
+        this.pcsCaseService = pcsCaseService;
+    }
 
     /**
      * Creates a service request in the Payments API for the given case and fee details.

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.hearings.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,16 +13,24 @@ import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
-@RequiredArgsConstructor
 @Service
 public class HmcHearingService {
 
     private final HmcHearingApi hmcHearingApi;
     private final AuthTokenGenerator authTokenGenerator;
-    @Qualifier("systemUpdateUserTokenProvider")
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     @Value("${hmc.deployment-id}")
     private String hmctsDeploymentId;
+
+    public HmcHearingService(
+        HmcHearingApi hmcHearingApi,
+        AuthTokenGenerator authTokenGenerator,
+        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider
+    ) {
+        this.hmcHearingApi = hmcHearingApi;
+        this.authTokenGenerator = authTokenGenerator;
+        this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
+    }
 
     public HearingResponse createHearing(@RequestBody HearingRequest hearingPayload) {
         return hmcHearingApi.createHearing(systemUpdateUserTokenProvider.getAuthToken(), authTokenGenerator.generate(),

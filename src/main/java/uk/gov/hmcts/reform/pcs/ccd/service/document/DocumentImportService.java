@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -16,14 +15,24 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
 public class DocumentImportService {
 
     private final PcsCaseService pcsCaseService;
     private final CaseDocumentClientApi caseDocumentClientApi;
-    @Qualifier("systemUpdateUserTokenProvider")
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final AuthTokenGenerator authTokenGenerator;
+
+    public DocumentImportService(
+        PcsCaseService pcsCaseService,
+        CaseDocumentClientApi caseDocumentClientApi,
+        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
+        AuthTokenGenerator authTokenGenerator
+    ) {
+        this.pcsCaseService = pcsCaseService;
+        this.caseDocumentClientApi = caseDocumentClientApi;
+        this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
+        this.authTokenGenerator = authTokenGenerator;
+    }
 
     public void addDocumentToCase(long caseReference,
                                   String documentUrl,
