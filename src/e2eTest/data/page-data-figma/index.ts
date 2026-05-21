@@ -51,3 +51,4 @@ export * from '@data/page-data-figma/page-data-common-component/specialMeasureFo
 export * from '@data/page-data-figma/page-data-common-component/updateFlagComment.page.data';
 export * from '@data/page-data-figma/page-data-common-component/manageCaseFlags.page.data';
 export * from '@data/page-data-figma/page-data-common-component/viewCaseFlag.page.data';
+export * from '@data/page-data-figma/addCaseNote.page.data';

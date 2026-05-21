@@ -48,4 +48,5 @@ export default {
   'resumePossessionClaimunderlesseeMortgageeDetails': 'underlesseeMortgageeDetails',
   'createFlagscaseworkerCaseFlag': 'whereShouldThisFlagBeAdded',
   'submit': 'reviewFlagDetails'
+  'addCaseNoteaddCaseNote': 'addCaseNote',
 };
