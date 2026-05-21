@@ -14,7 +14,7 @@ import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
   askToAdjournTheCourtHearing,
-  chooseAnApplication,
+  chooseAnApplication, helpPayingTheFee,
   isTheCourtHearingInTheNext14Days,
   selectParty
 } from '@data/page-data-figma/page-data-genApps-figma';
@@ -84,6 +84,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
       option: isTheCourtHearingInTheNext14Days.yesRadioOption,
     });
+    await performValidation('mainHeader', helpPayingTheFee.mainHeader);
   });
 
 test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]', async () => {
@@ -102,5 +103,6 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
     question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
     option: isTheCourtHearingInTheNext14Days.noRadioOption,
   });
+  await performValidation('mainHeader', helpPayingTheFee.mainHeader);
 });
 });
