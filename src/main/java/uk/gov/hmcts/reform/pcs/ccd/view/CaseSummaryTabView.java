@@ -20,14 +20,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.OccupationContractOrLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.TenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -54,7 +56,10 @@ public class CaseSummaryTabView {
         Pattern.compile("\\(section ([^)]+)\\)", Pattern.CASE_INSENSITIVE);
     private static final Pattern SECTION_84A_CONDITION_PATTERN =
         Pattern.compile("^Condition ([1-5]) of Section 84A of the Housing Act 1985$");
+    private static final Pattern ESTATE_MANAGEMENT_GROUND_PATTERN =
+        Pattern.compile("\\(ground ([A-I])\\)$");
     private static final String ANTISOCIAL_BEHAVIOUR = "Antisocial behaviour";
+    private static final String ESTATE_MANAGEMENT_GROUNDS = "Estate management grounds (section 160)";
     private static final String SECTION_84A_CONDITION_1_PREFIX = "Condition 1";
     private static final String SECTION_84A_CONDITION_2_PREFIX = "Condition 2";
     private static final String SECTION_84A_CONDITION_3_PREFIX = "Condition 3";
@@ -112,6 +117,7 @@ public class CaseSummaryTabView {
     public SummaryTab buildSummaryTab(PCSCase pcsCase) {
         ReasonsForPossessionTabDetails reasonsForPossession = buildReasonsForPossession(pcsCase);
         String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
+        TenancyTabDetails tenancyDetails = buildTenancyTabDetails(pcsCase);
 
         return SummaryTab.builder()
             .repossessedPropertyAddress(pcsCase.getPropertyAddress())
@@ -124,8 +130,27 @@ public class CaseSummaryTabView {
             .defendantDetails(createSummaryDefendantOneDetails(pcsCase))
             .additionalDefendants(createAdditionalSummaryDefendantsDetails(pcsCase))
             .rentArrearsDetails(buildRentArrearsTabDetails(pcsCase))
-            .tenancyDetails(buildTenancyTabDetails(pcsCase))
+            .tenancyDetails(isWalesClaim(pcsCase) ? null : tenancyDetails)
+            .occupationContractOrLicenceDetails(
+                isWalesClaim(pcsCase) ? buildOccupationContractOrLicenceTabDetails(tenancyDetails) : null
+            )
             .noticeDetails(buildNoticeTabDetails(pcsCase))
+            .build();
+    }
+
+    private boolean isWalesClaim(PCSCase pcsCase) {
+        return pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
+    }
+
+    private OccupationContractOrLicenceTabDetails buildOccupationContractOrLicenceTabDetails(
+        TenancyTabDetails tenancyDetails) {
+        if (tenancyDetails == null) {
+            return null;
+        }
+
+        return OccupationContractOrLicenceTabDetails.builder()
+            .agreementType(tenancyDetails.getAgreementType())
+            .agreementStartDate(tenancyDetails.getAgreementStartDate())
             .build();
     }
 
@@ -529,6 +554,7 @@ public class CaseSummaryTabView {
             .toList());
 
         groupSection84AConditions(grounds);
+        groupEstateManagementGrounds(grounds);
 
         return grounds.stream()
             .reduce((firstGround, secondGround) -> firstGround + "\n" + secondGround)
@@ -551,8 +577,29 @@ public class CaseSummaryTabView {
         grounds.removeAll(section84AConditions);
     }
 
+    private void groupEstateManagementGrounds(List<String> grounds) {
+        List<String> estateManagementGrounds = grounds.stream()
+            .filter(this::isEstateManagementGround)
+            .sorted(this::compareEstateManagementGrounds)
+            .toList();
+
+        if (estateManagementGrounds.isEmpty()) {
+            return;
+        }
+
+        int estateManagementIndex = grounds.indexOf(ESTATE_MANAGEMENT_GROUNDS);
+        int groupIndex = estateManagementIndex >= 0 ? estateManagementIndex : grounds.indexOf(
+            estateManagementGrounds.getFirst());
+        grounds.set(groupIndex, ESTATE_MANAGEMENT_GROUNDS + ": " + String.join(", ", estateManagementGrounds));
+        grounds.removeAll(estateManagementGrounds);
+    }
+
     private boolean isSection84ACondition(String label) {
         return SECTION_84A_CONDITION_PATTERN.matcher(label).matches();
+    }
+
+    private boolean isEstateManagementGround(String label) {
+        return ESTATE_MANAGEMENT_GROUND_PATTERN.matcher(label).find();
     }
 
     private int compareSection84AConditions(String firstCondition, String secondCondition) {
@@ -562,8 +609,20 @@ public class CaseSummaryTabView {
         );
     }
 
+    private int compareEstateManagementGrounds(String firstGround, String secondGround) {
+        return Integer.compare(
+            getEstateManagementGroundNumber(firstGround),
+            getEstateManagementGroundNumber(secondGround)
+        );
+    }
+
     private int getSection84AConditionNumber(String label) {
         Matcher matcher = SECTION_84A_CONDITION_PATTERN.matcher(label);
         return matcher.matches() ? Integer.parseInt(matcher.group(1)) : 0;
+    }
+
+    private int getEstateManagementGroundNumber(String label) {
+        Matcher matcher = ESTATE_MANAGEMENT_GROUND_PATTERN.matcher(label);
+        return matcher.find() ? matcher.group(1).charAt(0) : 0;
     }
 }

@@ -52,6 +52,9 @@ public class SummaryTab {
     @CCD(label = "Tenancy, occupation contract or licence details")
     private TenancyTabDetails tenancyDetails;
 
+    @CCD(label = "Occupation contract or licence details")
+    private OccupationContractOrLicenceTabDetails occupationContractOrLicenceDetails;
+
     @CCD(label = "Notice details")
     private NoticeTabDetails noticeDetails;
 

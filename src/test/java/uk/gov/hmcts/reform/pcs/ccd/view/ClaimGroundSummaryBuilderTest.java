@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
@@ -362,6 +363,197 @@ class ClaimGroundSummaryBuilderTest {
                 DiscretionaryGroundWales.RENT_ARREARS_S157.getLabel(),
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel()
             );
+    }
+
+    @Test
+    void shouldMapAllStandardAndOtherWalesDraftGroundReasons() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
+                                               .occupationLicenceTypeWales(OccupationLicenceTypeWales.STANDARD_CONTRACT)
+                                               .build())
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                                           .mandatoryGrounds(Set.of(
+                                               MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170,
+                                               MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178,
+                                               MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181,
+                                               MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186,
+                                               MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187,
+                                               MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191,
+                                               MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199,
+                                               MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2
+                                           ))
+                                           .discretionaryGrounds(Set.of(
+                                               DiscretionaryGroundWales.RENT_ARREARS_S157,
+                                               DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157,
+                                               DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157,
+                                               DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160
+                                           ))
+                                           .estateManagementGrounds(Set.of(
+                                               EstateManagementGroundsWales.BUILDING_WORKS,
+                                               EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES,
+                                               EstateManagementGroundsWales.CHARITIES,
+                                               EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING,
+                                               EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS,
+                                               EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS,
+                                               EstateManagementGroundsWales.RESERVE_SUCCESSORS,
+                                               EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS,
+                                               EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
+                                           ))
+                                           .build())
+            .groundsReasonsWales(GroundsReasonsWales.builder()
+                                      .failToGiveUpS170Reason("Section 170 reason")
+                                      .landlordNoticePeriodicS178Reason("Section 178 reason")
+                                      .seriousArrearsPeriodicS181Reason("Section 181 reason")
+                                      .landlordNoticeFtEndS186Reason("Section 186 reason")
+                                      .seriousArrearsFixedTermS187Reason("Section 187 reason")
+                                      .failToGiveUpBreakNoticeS191Reason("Section 191 reason")
+                                      .landlordBreakClauseS199Reason("Section 199 reason")
+                                      .convertedFixedTermSch1225B2Reason("Schedule 12 reason")
+                                      .otherBreachSection157Reason("Other breach reason")
+                                      .buildingWorksReason("Ground A reason")
+                                      .redevelopmentSchemesReason("Ground B reason")
+                                      .charitiesReason("Ground C reason")
+                                      .disabledSuitableDwellingReason("Ground D reason")
+                                      .housingAssociationsAndTrustsReason("Ground E reason")
+                                      .specialNeedsDwellingsReason("Ground F reason")
+                                      .reserveSuccessorsReason("Ground G reason")
+                                      .jointContractHoldersReason("Ground H reason")
+                                      .otherEstateManagementReasonsReason("Ground I reason")
+                                      .build())
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertReason(summaries, MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170.getLabel(),
+                     "Section 170 reason");
+        assertReason(summaries, MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178.getLabel(),
+                     "Section 178 reason");
+        assertReason(summaries, MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.getLabel(),
+                     "Section 181 reason");
+        assertReason(summaries, MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186.getLabel(),
+                     "Section 186 reason");
+        assertReason(summaries, MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187.getLabel(),
+                     "Section 187 reason");
+        assertReason(summaries, MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191.getLabel(),
+                     "Section 191 reason");
+        assertReason(summaries, MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
+                     "Section 199 reason");
+        assertReason(summaries, MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2.getLabel(),
+                     "Schedule 12 reason");
+        assertNoReason(summaries, DiscretionaryGroundWales.RENT_ARREARS_S157.getLabel());
+        assertNoReason(summaries, DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157.getLabel());
+        assertReason(summaries, DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
+                     "Other breach reason");
+        assertNoReason(summaries, DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160.getLabel());
+        assertReason(summaries, EstateManagementGroundsWales.BUILDING_WORKS.getLabel(), "Ground A reason");
+        assertReason(summaries, EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel(), "Ground B reason");
+        assertReason(summaries, EstateManagementGroundsWales.CHARITIES.getLabel(), "Ground C reason");
+        assertReason(summaries, EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING.getLabel(),
+                     "Ground D reason");
+        assertReason(summaries, EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS.getLabel(),
+                     "Ground E reason");
+        assertReason(summaries, EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS.getLabel(),
+                     "Ground F reason");
+        assertReason(summaries, EstateManagementGroundsWales.RESERVE_SUCCESSORS.getLabel(), "Ground G reason");
+        assertReason(summaries, EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS.getLabel(), "Ground H reason");
+        assertReason(summaries, EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS.getLabel(),
+                     "Ground I reason");
+    }
+
+    @Test
+    void shouldMapAllSecureWalesDraftGroundReasons() {
+        // Given
+        PCSCase draftCaseData = PCSCase.builder()
+            .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
+                                               .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
+                                               .build())
+            .secureContractGroundsForPossessionWales(SecureContractGroundsForPossessionWales.builder()
+                                                        .mandatoryGrounds(Set.of(
+                                                            SecureContractMandatoryGroundsWales
+                                                                .FAILURE_TO_GIVE_UP_POSSESSION_S170,
+                                                            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186,
+                                                            SecureContractMandatoryGroundsWales
+                                                                .FAILURE_TO_GIVE_UP_POSSESSION_S191,
+                                                            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
+                                                        ))
+                                                        .discretionaryGrounds(Set.of(
+                                                            SecureContractDiscretionaryGroundsWales.RENT_ARREARS_S157,
+                                                            SecureContractDiscretionaryGroundsWales
+                                                                .ANTISOCIAL_BEHAVIOUR_S157,
+                                                            SecureContractDiscretionaryGroundsWales
+                                                                .OTHER_BREACH_OF_CONTRACT_S157,
+                                                            SecureContractDiscretionaryGroundsWales
+                                                                .ESTATE_MANAGEMENT_GROUNDS_S160
+                                                        ))
+                                                        .estateManagementGrounds(Set.of(
+                                                            EstateManagementGroundsWales.BUILDING_WORKS,
+                                                            EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES,
+                                                            EstateManagementGroundsWales.CHARITIES,
+                                                            EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING,
+                                                            EstateManagementGroundsWales
+                                                                .HOUSING_ASSOCIATIONS_AND_TRUSTS,
+                                                            EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS,
+                                                            EstateManagementGroundsWales.RESERVE_SUCCESSORS,
+                                                            EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS,
+                                                            EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
+                                                        ))
+                                                        .build())
+            .groundsReasonsWales(GroundsReasonsWales.builder()
+                                      .secureFailureToGiveUpPossessionSection170Reason("Secure section 170 reason")
+                                      .secureLandlordNoticeSection186Reason("Secure section 186 reason")
+                                      .secureFailureToGiveUpPossessionSection191Reason("Secure section 191 reason")
+                                      .secureLandlordNoticeSection199Reason("Secure section 199 reason")
+                                      .secureOtherBreachOfContractReason("Secure other breach reason")
+                                      .secureBuildingWorksReason("Secure ground A reason")
+                                      .secureRedevelopmentSchemesReason("Secure ground B reason")
+                                      .secureCharitiesReason("Secure ground C reason")
+                                      .secureDisabledSuitableDwellingReason("Secure ground D reason")
+                                      .secureHousingAssociationsAndTrustsReason("Secure ground E reason")
+                                      .secureSpecialNeedsDwellingsReason("Secure ground F reason")
+                                      .secureReserveSuccessorsReason("Secure ground G reason")
+                                      .secureJointContractHoldersReason("Secure ground H reason")
+                                      .secureOtherEstateManagementReasonsReason("Secure ground I reason")
+                                      .build())
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertReason(summaries, SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170.getLabel(),
+                     "Secure section 170 reason");
+        assertReason(summaries, SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186.getLabel(),
+                     "Secure section 186 reason");
+        assertReason(summaries, SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191.getLabel(),
+                     "Secure section 191 reason");
+        assertReason(summaries, SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199.getLabel(),
+                     "Secure section 199 reason");
+        assertNoReason(summaries, SecureContractDiscretionaryGroundsWales.RENT_ARREARS_S157.getLabel());
+        assertNoReason(summaries, SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157.getLabel());
+        assertReason(summaries, SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
+                     "Secure other breach reason");
+        assertNoReason(summaries, SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS_S160.getLabel());
+        assertReason(summaries, EstateManagementGroundsWales.BUILDING_WORKS.getLabel(), "Secure ground A reason");
+        assertReason(summaries, EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel(),
+                     "Secure ground B reason");
+        assertReason(summaries, EstateManagementGroundsWales.CHARITIES.getLabel(), "Secure ground C reason");
+        assertReason(summaries, EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING.getLabel(),
+                     "Secure ground D reason");
+        assertReason(summaries, EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS.getLabel(),
+                     "Secure ground E reason");
+        assertReason(summaries, EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS.getLabel(),
+                     "Secure ground F reason");
+        assertReason(summaries, EstateManagementGroundsWales.RESERVE_SUCCESSORS.getLabel(),
+                     "Secure ground G reason");
+        assertReason(summaries, EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS.getLabel(),
+                     "Secure ground H reason");
+        assertReason(summaries, EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS.getLabel(),
+                     "Secure ground I reason");
     }
 
     @Test

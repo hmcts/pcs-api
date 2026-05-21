@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDet
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -148,6 +149,7 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
         assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Licence details");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("16/04/2024");
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails()).isNull();
         assertThat(summaryTab.getNoticeDetails().getNoticeServedDate()).isEqualTo("11/05/2026");
     }
 
@@ -492,6 +494,57 @@ public class CaseSummaryTabViewTest {
     }
 
     @Test
+    void shouldGroupEstateManagementGroundsUnderSection160InGrounds() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .claimGroundSummaries(List.of(
+                groundSummary("Estate management grounds (section 160)", null),
+                groundSummary("Notice given under a landlord’s break clause (section 199)", "Section 199 reason"),
+                groundSummary("Other estate management reasons (ground I)", "Ground I reason"),
+                groundSummary("Redevelopment schemes (ground B)", "Ground B reason"),
+                groundSummary("Building works (ground A)", "Ground A reason"),
+                groundSummary("Reserve successors (ground G)", "Ground G reason")
+            ))
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getGroundsForPossession().getGrounds()).isEqualTo(String.join("\n",
+            "Estate management grounds (section 160): " + String.join(", ",
+                "Building works (ground A)",
+                "Redevelopment schemes (ground B)",
+                "Reserve successors (ground G)",
+                "Other estate management reasons (ground I)"
+            ),
+            "Notice given under a landlord’s break clause (section 199)"
+        ));
+    }
+
+    @Test
+    void shouldGroupEstateManagementGroundsUnderSection160WhenParentGroundIsMissing() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .claimGroundSummaries(List.of(
+                groundSummary("Redevelopment schemes (ground B)", "Ground B reason"),
+                groundSummary("Building works (ground A)", "Ground A reason")
+            ))
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getGroundsForPossession().getGrounds()).isEqualTo(
+            "Estate management grounds (section 160): " + String.join(", ",
+                "Building works (ground A)",
+                "Redevelopment schemes (ground B)"
+            )
+        );
+    }
+
+    @Test
     void shouldSetEachGroundNumberReasonInSummaryTab() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
@@ -708,6 +761,7 @@ public class CaseSummaryTabViewTest {
         // Then
         assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Assured tenancy");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails()).isNull();
     }
 
     @ParameterizedTest(name = "{0}")
@@ -728,6 +782,7 @@ public class CaseSummaryTabViewTest {
 
         // Then
         assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails()).isNull();
     }
 
     @ParameterizedTest
@@ -739,6 +794,7 @@ public class CaseSummaryTabViewTest {
     ) {
         // Given
         PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
             .tenancyLicenceDetails(tenancyLicenceDetails)
             .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
                                                .occupationLicenceTypeWales(occupationLicenceType)
@@ -750,14 +806,17 @@ public class CaseSummaryTabViewTest {
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
         // Then
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo(expectedAgreementType);
-        assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("12/05/2025");
+        assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementType())
+            .isEqualTo(expectedAgreementType);
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementStartDate()).isEqualTo("12/05/2025");
     }
 
     @Test
     void shouldSetTenancyDetailsFromWalesOtherOccupationLicenceType() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
             .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
                                                .occupationLicenceTypeWales(OccupationLicenceTypeWales.OTHER)
                                                .otherLicenceTypeDetails("Other Welsh licence")
@@ -768,8 +827,10 @@ public class CaseSummaryTabViewTest {
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
         // Then
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other Welsh licence");
-        assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
+        assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementType())
+            .isEqualTo("Other Welsh licence");
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementStartDate()).isNull();
     }
 
     private static Stream<Arguments> unavailableTenancyDetailsScenarios() {
