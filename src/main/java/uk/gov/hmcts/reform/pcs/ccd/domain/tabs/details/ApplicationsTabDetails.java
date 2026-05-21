@@ -12,8 +12,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class ApplicationsTabDetails {
 
-    @CCD(
-        label = "Are you planning to make an application at the same time as your claim?"
-    )
+    @CCD(label = "Are you planning to make an application at the same time as your claim?")
     private String planToMakeGeneralApplication;
 }

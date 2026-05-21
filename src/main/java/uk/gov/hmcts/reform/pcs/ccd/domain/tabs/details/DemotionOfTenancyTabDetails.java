@@ -23,13 +23,9 @@ public class DemotionOfTenancyTabDetails {
     )
     private String statementOfExpressTermsServed;
 
-    @CCD(
-        label = "Details of terms"
-    )
+    @CCD(label = "Details of terms")
     private String terms;
 
-    @CCD(
-        label = "Reasons for requesting a demotion of tenancy order"
-    )
+    @CCD(label = "Reasons for requesting a demotion of tenancy order")
     private String reasons;
 }

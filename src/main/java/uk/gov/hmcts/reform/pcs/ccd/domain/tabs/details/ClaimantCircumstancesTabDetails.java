@@ -12,13 +12,9 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class ClaimantCircumstancesTabDetails {
 
-    @CCD(
-        label = "Is there any information you’d like to provide about ${claimantNamePossessiveForm} circumstances?"
-    )
+    @CCD(label = "Is there any information you’d like to provide about ${claimantNamePossessiveForm} circumstances?")
     private String claimantCircumstancesGiven;
 
-    @CCD(
-        label = "Claimant circumstances"
-    )
+    @CCD(label = "Claimant circumstances")
     private String claimantCircumstancesDetails;
 }

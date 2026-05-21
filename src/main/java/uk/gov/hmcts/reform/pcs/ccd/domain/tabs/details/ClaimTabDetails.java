@@ -11,13 +11,9 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClaimTabDetails {
-    @CCD(
-        label = "Claimant type"
-    )
+    @CCD(label = "Claimant type")
     private String claimantType;
 
-    @CCD(
-        label = "Claim against trespassers?"
-    )
+    @CCD(label = "Claim against trespassers?")
     private String trespassClaim;
 }

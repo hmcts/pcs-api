@@ -12,23 +12,15 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class ActionsTakenTabDetails {
 
-    @CCD(
-        label = "Pre-action protocol followed?"
-    )
+    @CCD(label = "Pre-action protocol followed?")
     private String preactionProtocolFollowed;
 
-    @CCD(
-        label = "Explain why you have not followed the pre-action protocol"
-    )
+    @CCD(label = "Explain why you have not followed the pre-action protocol")
     private String preActionProtocolIncompleteExplanation;
 
-    @CCD(
-        label = "Mediation attempted?"
-    )
+    @CCD(label = "Mediation attempted?")
     private String mediationAttempted;
 
-    @CCD(
-        label = "Settlement attempted?"
-    )
+    @CCD(label = "Settlement attempted?")
     private String settlementAttempted;
 }

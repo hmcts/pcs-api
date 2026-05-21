@@ -59,6 +59,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL
 @ExtendWith(MockitoExtension.class)
 public class CaseDetailsTabViewTest {
 
+    private final String noAnswer = " ";
+
     @Mock
     private GroundsBuilder groundsBuilder;
 
@@ -79,8 +81,6 @@ public class CaseDetailsTabViewTest {
 
     @InjectMocks
     private CaseDetailsTabView caseDetailsTabView;
-
-    final private String NO_ANSWER = " ";
 
     @Test
     void shouldSetCaseDetailsTabFields() {
@@ -288,7 +288,8 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getDefendantInformationDetails().getLastName()).isEqualTo("One");
         assertThat(caseDetailsTab.getDefendantInformationDetails().getAddressForService()).isEqualTo(propertyAddress);
         assertThat(caseDetailsTab.getAdditionalDefendants()).hasSize(2);
-        assertThat(caseDetailsTab.getAdditionalDefendants().getFirst().getValue().getFirstName()).isEqualTo("Defendant");
+        assertThat(caseDetailsTab.getAdditionalDefendants().getFirst().getValue().getFirstName())
+            .isEqualTo("Defendant");
         assertThat(caseDetailsTab.getAdditionalDefendants().getFirst().getValue().getLastName()).isEqualTo("Two");
         assertThat(caseDetailsTab.getAdditionalDefendants().getFirst().getValue().getAddressForService())
             .isEqualTo(defendantAddress);
@@ -357,31 +358,31 @@ public class CaseDetailsTabViewTest {
         CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
 
         assertThat(caseDetailsTab.getPropertyAddress()).isNull();
-        assertThat(caseDetailsTab.getGroundsForPossessionDetails().getGrounds()).isEqualTo(NO_ANSWER);
+        assertThat(caseDetailsTab.getGroundsForPossessionDetails().getGrounds()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getReasonsForPossessionDetails()).isNull();
-        assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo(NO_ANSWER);
+        assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getClaimantInformation()).isNull();
         assertThat(caseDetailsTab.getDefendantInformationDetails()).isNull();
         assertThat(caseDetailsTab.getAdditionalDefendants()).isNull();
         assertThat(caseDetailsTab.getRentArrearsDetails()).isNull();
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTypeOfTenancyLicence())
-            .isEqualTo(NO_ANSWER);
+            .isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDate())
-            .isEqualTo(NO_ANSWER);
+            .isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate())
-            .isEqualTo(NO_ANSWER);
+            .isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getHasCopyOfTenancyLicence())
-            .isEqualTo(NO_ANSWER);
+            .isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getReasonsForNoTenancyLicenceDocuments())
             .isNull();
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo(NO_ANSWER);
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo(NO_ANSWER);
-        assertThat(caseDetailsTab.getApplicationsDetails().getPlanToMakeGeneralApplication()).isEqualTo(NO_ANSWER);
-        assertThat(caseDetailsTab.getActionsTakenDetails().getPreactionProtocolFollowed()).isEqualTo(NO_ANSWER);
+        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getApplicationsDetails().getPlanToMakeGeneralApplication()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getActionsTakenDetails().getPreactionProtocolFollowed()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getActionsTakenDetails().getPreActionProtocolIncompleteExplanation())
             .isNull();
-        assertThat(caseDetailsTab.getActionsTakenDetails().getMediationAttempted()).isEqualTo(NO_ANSWER);
-        assertThat(caseDetailsTab.getActionsTakenDetails().getSettlementAttempted()).isEqualTo(NO_ANSWER);
+        assertThat(caseDetailsTab.getActionsTakenDetails().getMediationAttempted()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getActionsTakenDetails().getSettlementAttempted()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getMortgageDetails()).isNull();
         assertThat(caseDetailsTab.getSuspensionOfRightToBuyDetails()).isNull();
         assertThat(caseDetailsTab.getDemotionOfTenancyDetails()).isNull();
@@ -403,13 +404,13 @@ public class CaseDetailsTabViewTest {
 
         // Then
         assertThat(caseDetailsTab.getSuspensionOfRightToBuyDetails().getHousingAct())
-            .isEqualTo(NO_ANSWER);
+            .isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getSuspensionOfRightToBuyDetails().getReasons())
-            .isEqualTo(NO_ANSWER);
+            .isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getDemotionOfTenancyDetails().getHousingAct())
-            .isEqualTo(NO_ANSWER);
+            .isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getDemotionOfTenancyDetails().getReasons())
-            .isEqualTo(NO_ANSWER);
+            .isEqualTo(noAnswer);
     }
 
     @Test
@@ -528,7 +529,7 @@ public class CaseDetailsTabViewTest {
         // Then
         assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
         assertThat(caseDetailsTab.getClaimantContactDetails().getEmailAddress()).isEqualTo("claimant@email.com");
-        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumber()).isEqualTo(NO_ANSWER);
+        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumber()).isEqualTo(noAnswer);
     }
 
     @Test
@@ -545,13 +546,13 @@ public class CaseDetailsTabViewTest {
         CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
 
         // Then
-        assertThat(caseDetailsTab.getClaimantAddress().getAddressLine1()).isEqualTo(NO_ANSWER);
-        assertThat(caseDetailsTab.getClaimantAddress().getPostTown()).isEqualTo(NO_ANSWER);
-        assertThat(caseDetailsTab.getClaimantAddress().getCountry()).isEqualTo(NO_ANSWER);
-        assertThat(caseDetailsTab.getClaimantAddress().getPostCode()).isEqualTo(NO_ANSWER);
-        assertThat(caseDetailsTab.getClaimantContactDetails().getEmailAddress()).isEqualTo(NO_ANSWER);
-        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumber()).isEqualTo(NO_ANSWER);
-        assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesGiven()).isEqualTo(NO_ANSWER);
+        assertThat(caseDetailsTab.getClaimantAddress().getAddressLine1()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getClaimantAddress().getPostTown()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getClaimantAddress().getCountry()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getClaimantAddress().getPostCode()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getClaimantContactDetails().getEmailAddress()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumber()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesGiven()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesDetails()).isNull();
     }
 

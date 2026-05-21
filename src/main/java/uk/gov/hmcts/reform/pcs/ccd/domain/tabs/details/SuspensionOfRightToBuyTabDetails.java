@@ -12,13 +12,9 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class SuspensionOfRightToBuyTabDetails {
 
-    @CCD(
-        label = "Section of the Housing Act suspension of right to buy claim made under"
-    )
+    @CCD(label = "Section of the Housing Act suspension of right to buy claim made under")
     private String housingAct;
 
-    @CCD(
-        label = "Reasons for requesting suspension of right to buy order"
-    )
+    @CCD(label = "Reasons for requesting suspension of right to buy order")
     private String reasons;
 }

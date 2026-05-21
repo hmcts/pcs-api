@@ -183,7 +183,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                 "### Defendant Details"
             )
             .field("detailsTab_DefendantInformationDetails")
-            .field("detailsTab_DefendantOneAddress")
             .field("detailsTab_AdditionalDefendants")
             .field("detailsTab_DefendantCircumstanceDetails")
             .label(

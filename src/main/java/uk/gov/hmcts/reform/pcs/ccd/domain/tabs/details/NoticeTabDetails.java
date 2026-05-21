@@ -16,48 +16,30 @@ import java.util.List;
 @AllArgsConstructor
 public class NoticeTabDetails {
 
-    @CCD(
-        label = "Has notice been served?"
-    )
+    @CCD(label = "Has notice been served?")
     private String noticeServed;
 
-    @CCD(
-        label = "Date and time notice served (if applicable)"
-    )
+    @CCD(label = "Date and time notice served (if applicable)")
     private String noticeDate;
 
-    @CCD(
-        label = "Method of service"
-    )
+    @CCD(label = "Method of service")
     private String noticeMethod;
 
-    @CCD(
-        label = "Name of person document was left with"
-    )
+    @CCD(label = "Name of person document was left with")
     private String noticePersonName;
 
-    @CCD(
-        label = "Email address the document sent to"
-    )
+    @CCD(label = "Email address the document sent to")
     private String noticeEmailAddress;
 
-    @CCD(
-        label = "Explain what the other means were"
-    )
+    @CCD(label = "Explain what the other means were")
     private String noticeOtherExplanation;
 
-    @CCD(
-        label = "Are you able to upload a copy of the notice you served?"
-    )
+    @CCD(label = "Are you able to upload a copy of the notice you served?")
     private String noticeUploaded;
 
-    @CCD(
-        label = "Notice or certificate of service"
-    )
+    @CCD(label = "Notice or certificate of service")
     private List<ListValue<Document>> noticeDocuments;
 
-    @CCD(
-        label = "Details of why you cannot upload a copy"
-    )
+    @CCD(label = "Details of why you cannot upload a copy")
     private String reasonsForNoNoticeDocument;
 }

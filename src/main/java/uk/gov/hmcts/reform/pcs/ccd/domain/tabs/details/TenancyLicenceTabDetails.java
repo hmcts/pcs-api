@@ -16,28 +16,18 @@ import java.util.List;
 @AllArgsConstructor
 public class TenancyLicenceTabDetails {
 
-    @CCD(
-        label = "Tenancy, occupation contract or licence agreement type"
-    )
+    @CCD(label = "Tenancy, occupation contract or licence agreement type")
     private String typeOfTenancyLicence;
 
-    @CCD(
-        label = "Tenancy, occupation contract or licence start date"
-    )
+    @CCD(label = "Tenancy, occupation contract or licence start date")
     private String tenancyLicenceDate;
 
-    @CCD(
-        label = "Do you have a copy of the tenancy or licence agreement?"
-    )
+    @CCD(label = "Do you have a copy of the tenancy or licence agreement?")
     private String hasCopyOfTenancyLicence;
 
-    @CCD(
-        label = "Details of why you do not have a copy"
-    )
+    @CCD(label = "Details of why you do not have a copy")
     private String reasonsForNoTenancyLicenceDocuments;
 
-    @CCD(
-        label = "Tenancy, occupation contract or licence agreement"
-    )
+    @CCD(label = "Tenancy, occupation contract or licence agreement")
     private List<ListValue<Document>> tenancyLicenceDocuments;
 }
