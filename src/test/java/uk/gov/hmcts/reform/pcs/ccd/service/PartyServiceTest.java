@@ -965,4 +965,76 @@ class PartyServiceTest {
             );
         }
     }
+
+    @Nested
+    class CanSendEmailNotificationTests {
+
+        @Test
+        void shouldReturnTrueWhenAllConditionsMet() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress("test@example.com")
+                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                    .contactByEmail(VerticalYesNo.YES)
+                    .build())
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party);
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        void shouldReturnFalseWhenEmailIsNull() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress(null)
+                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                    .contactByEmail(VerticalYesNo.YES)
+                    .build())
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        void shouldReturnFalseWhenContactPreferencesIsNull() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress("test@example.com")
+                .contactPreferences(null)
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        void shouldReturnFalseWhenContactByEmailIsNull() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress("test@example.com")
+                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                    .contactByEmail(null)
+                    .build())
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        void shouldReturnFalseWhenContactByEmailIsNo() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress("test@example.com")
+                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                    .contactByEmail(VerticalYesNo.NO)
+                    .build())
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party);
+
+            assertThat(result).isFalse();
+        }
+    }
 }
