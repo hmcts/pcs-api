@@ -28,6 +28,4 @@ export const askTheCourtToSetAsideTheOrder = {
   sendTheCompletedFormList: `send the completed form to the court`,
   cymraegLink: `Cymraeg`,
   backLink: `Back`,
-  feedbackLink: `feedback (opens in new tab)`,
-  pageSlug: `ask-the-court-to-set-aside-the-order`,
 };

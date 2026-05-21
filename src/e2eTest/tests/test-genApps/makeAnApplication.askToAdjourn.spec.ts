@@ -4,7 +4,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { initializeExecutor } from '@utils/controller';
 import test, { expect } from '@playwright/test';
 import { FieldsStore } from '@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action';
-import { initializeGenAppsExecutor, performAction } from '@utils/controller-genApps';
+import { initializeGenAppsExecutor, performAction, performValidation } from '@utils/controller-genApps';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
@@ -12,7 +12,7 @@ import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import {chooseAnApplication} from "@data/page-data-figma/page-data-genApps-figma";
+import {askToAdjournTheCourtHearing, chooseAnApplication} from "@data/page-data-figma/page-data-genApps-figma";
 
 test.use({ storageState: undefined });
 
@@ -62,6 +62,8 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
       option: chooseAnApplication.adjournTheHearingRadioOption,
     });
+    await performValidation('mainHeader', askToAdjournTheCourtHearing.mainHeader);
+    await performAction('clickButton', askToAdjournTheCourtHearing.continueButton);
   });
 
 });
