@@ -119,6 +119,7 @@ public class CaseDetailsTabViewTest {
                         .orgName("Claimant")
                         .address(claimantAddress)
                         .emailAddress("claimant@email.com")
+                        .phoneNumberProvided(VerticalYesNo.YES)
                         .phoneNumber("phone number")
                         .build()
                 ))
@@ -340,6 +341,7 @@ public class CaseDetailsTabViewTest {
             .isEqualTo("demotion reason");
         assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
         assertThat(caseDetailsTab.getClaimantContactDetails().getEmailAddress()).isEqualTo("claimant@email.com");
+        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumberProvided()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumber()).isEqualTo("phone number");
         assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesGiven()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesDetails())
@@ -530,7 +532,7 @@ public class CaseDetailsTabViewTest {
         // Then
         assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
         assertThat(caseDetailsTab.getClaimantContactDetails().getEmailAddress()).isEqualTo("claimant@email.com");
-        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumber()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumberProvided()).isEqualTo("No");
     }
 
     @Test
@@ -552,7 +554,8 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getClaimantAddress().getCountry()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getClaimantAddress().getPostCode()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getClaimantContactDetails().getEmailAddress()).isEqualTo(noAnswer);
-        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumber()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumberProvided()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumber()).isNull();
         assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesGiven()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesDetails()).isNull();
     }

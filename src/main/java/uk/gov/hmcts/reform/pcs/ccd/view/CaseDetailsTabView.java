@@ -341,17 +341,23 @@ public class CaseDetailsTabView {
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         String emailAddress = null;
         String phoneNumber = null;
+        VerticalYesNo phoneNumberProvided = null;
 
         if (!CollectionUtils.isEmpty(claimants)) {
             Party claimant = claimants.getFirst().getValue();
             emailAddress = claimant.getEmailAddress();
-            phoneNumber = claimant.getPhoneNumber();
+            phoneNumberProvided = claimant.getPhoneNumberProvided();
+
+            if (phoneNumberProvided == VerticalYesNo.YES) {
+                phoneNumber = claimant.getPhoneNumber();
+            }
         } else if (claimantContactPreferences != null) {
             VerticalYesNo isCorrectClaimantContactEmail = claimantContactPreferences.getIsCorrectClaimantContactEmail();
             emailAddress = isCorrectClaimantContactEmail == VerticalYesNo.YES
                 ? claimantContactPreferences.getClaimantContactEmail() :
                 claimantContactPreferences.getOverriddenClaimantContactEmail();
-            if (claimantContactPreferences.getClaimantProvidePhoneNumber() == VerticalYesNo.YES) {
+            phoneNumberProvided = claimantContactPreferences.getClaimantProvidePhoneNumber();
+            if (phoneNumberProvided == VerticalYesNo.YES) {
                 phoneNumber = claimantContactPreferences.getClaimantContactPhoneNumber();
             }
         }
@@ -359,7 +365,8 @@ public class CaseDetailsTabView {
 
         return ClaimantContactTabDetails.builder()
             .emailAddress(emailAddress != null ? emailAddress : NO_ANSWER)
-            .phoneNumber(phoneNumber != null ? phoneNumber : NO_ANSWER)
+            .phoneNumberProvided(phoneNumberProvided != null ? phoneNumberProvided.getLabel() : NO_ANSWER)
+            .phoneNumber(phoneNumber)
             .build();
     }
 

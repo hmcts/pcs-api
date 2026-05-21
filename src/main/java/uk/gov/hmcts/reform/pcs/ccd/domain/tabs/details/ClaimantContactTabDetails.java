@@ -13,9 +13,12 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class ClaimantContactTabDetails {
 
-    @CCD (label = "Email address for notifications")
+    @CCD(label = "Email address for notifications")
     private String emailAddress;
 
-    @CCD (label = "Contact phone number")
+    @CCD(label = "Do you want to provide a phone number for urgent updates about your case?")
+    private String phoneNumberProvided;
+
+    @CCD(label = "Contact phone number")
     private String phoneNumber;
 }

@@ -74,6 +74,14 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
             .field("nextStepsMarkdown", NEVER_SHOW);
 
+        buildCasePartiesTab(builder);
+
+        buildCaseDetailsTab(builder);
+
+        builder.tab("caseFileView", "Case File View")
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
+
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
@@ -89,18 +97,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
-        builder.tab("caseFileView", "Case File View")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
-            .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
-
-        buildCaseDetailsTab(builder);
-
         builder.tab("caseLinks", "Linked Cases")
             .forRoles(UserRole.PCS_SOLICITOR)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
-
-        buildCasePartiesTab(builder);
 
         configureCaseFileCategories(builder);
     }
