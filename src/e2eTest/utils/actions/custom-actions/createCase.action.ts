@@ -531,7 +531,7 @@ export class CreateCaseAction implements IAction {
         await performAction('inputText', checkingNoticeWales.enterStatementHiddenTextLabel, noticeData.walesNoticeStatement);
       }
     }
-    await performAction('clickButtonAndVerifyPageNavigation', checkingNoticeWales.continueButton, claimantCircumstances.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', checkingNoticeWales.continueButton, rentDetails.mainHeader);
   }
 
   private async provideRentDetails(rentFrequency: actionRecord) {
