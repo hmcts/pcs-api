@@ -17,10 +17,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
-import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;s
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -61,6 +62,7 @@ class DashboardViewTest extends BaseEventTest {
             defendantResponseService,
             List.of(
                 new ClaimTaskGroupEvaluator(),
+                new DocumentsTaskGroupEvaluator(),
                 new HearingsTaskGroupEvaluator(),
                 new ApplicationsTaskGroupEvaluator(),
                 new ResponseTaskGroupEvaluator(),

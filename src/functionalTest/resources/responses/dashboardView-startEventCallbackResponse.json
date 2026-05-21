@@ -26,6 +26,19 @@
                   "templateId": "ViewClaim",
                   "status": "AVAILABLE"
                 }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "DOCUMENTS",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "UploadDocuments",
+                  "status": "AVAILABLE"
+                }
               },
               {
                 "value": {
