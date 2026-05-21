@@ -763,7 +763,6 @@ class DocumentServiceTest {
     void shouldSkipAdditionalDocumentsAlreadyPersistedByUrl() {
         // Given
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        PartyEntity party = mock(PartyEntity.class);
 
         DocumentEntity existing = DocumentEntity.builder().url("url-existing").build();
         List<DocumentEntity> existingDocs = new ArrayList<>();
@@ -785,6 +784,8 @@ class DocumentServiceTest {
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        PartyEntity party = mock(PartyEntity.class);
 
         // When
         underTest.createAdditionalDocumentsForParty(uploadedDocs, pcsCase, party);
