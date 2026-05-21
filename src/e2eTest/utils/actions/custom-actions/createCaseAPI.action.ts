@@ -4,6 +4,7 @@ import { Page } from '@playwright/test';
 import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
+import { performAction } from '@utils/controller';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 
@@ -173,7 +174,16 @@ export class CreateCaseAPIAction implements IAction {
     process.env.CREATE_EVENT_TOKEN = (await getCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
     try {
       const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
-      process.env.Defendant_ID = await createResponse.data.data.allDefendants[0].id;
+      await this.generateSolicitorAccessToken();
+      const allDefendants = createResponse.data.data.allDefendants;
+      const defendantIds = allDefendants.map((d: any) => d.id);
+
+      for (const defendantId of defendantIds) {
+        process.env.Defendant_ID = defendantId;
+
+        await performAction('linkSolicitorAPI');
+      }
+
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -193,5 +203,17 @@ export class CreateCaseAPIAction implements IAction {
       throw new Error(`Retrieving defendant id  failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
 
+  }
+
+  private async generateSolicitorAccessToken(): Promise<void> {
+    const { IdamUtils } = await import('@hmcts/playwright-common');
+    process.env.SOLICITOR_ACCESS_TOKEN = await new IdamUtils().generateIdamToken({
+      username: user.defendantSolicitor.email,
+      password: user.defendantSolicitor.password,
+      grantType: 'password',
+      clientId: 'pcs-api',
+      clientSecret: process.env.PCS_API_IDAM_SECRET as string,
+      scope: 'profile openid roles',
+    });
   }
 }
