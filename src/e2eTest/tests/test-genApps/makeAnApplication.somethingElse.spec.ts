@@ -77,5 +77,4 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     });
     await performValidation('mainHeader', helpPayingTheFee.mainHeader);
   });
-
 });
