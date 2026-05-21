@@ -3,4 +3,5 @@ export default {
   'makeAnApplicationstartAdjourn': 'askToAdjournTheCourtHearing',
   'makeAnApplicationstartSetAside': 'askTheCourtToSetAsideTheOrder',
   'makeAnApplicationstartSomethingElse': 'askTheCourtToMakeAnOrder',
+  'makeAnApplicationselectParty': 'selectParty',
 };
