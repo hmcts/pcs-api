@@ -54,7 +54,8 @@ class DocAssemblyServiceTest {
 
     @BeforeEach
     void setUp() {
-        docAssemblyService = new DocAssemblyService(docAssemblyClient, systemUpdateUserTokenProvider, authTokenGenerator);
+        docAssemblyService = new DocAssemblyService(
+            docAssemblyClient, systemUpdateUserTokenProvider, authTokenGenerator);
     }
 
     @Nested

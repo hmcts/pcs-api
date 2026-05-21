@@ -52,7 +52,8 @@ class IdamAuthenticatorTest {
         verifyNoInteractions(idamUserInfoApi);
     }
 
-    @DisplayName("Should throw InvalidAuthTokenException when token length is below minimum (prefix only, no token content)")
+    @DisplayName("Should throw InvalidAuthTokenException when token length is below minimum "
+        + "(prefix only, no token content)")
     @ParameterizedTest
     @ValueSource(strings = {
         "Bearer ",  // length 7 — passes prefix check, fails length check (length <= 7)
