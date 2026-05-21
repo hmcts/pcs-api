@@ -19,7 +19,7 @@ dependencies:
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: ccd.enabled
   - name: xui-webapp
-    version: 1.0.39
+    version: 1.0.44
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: xui-webapp.enabled
   - name: postgresql
