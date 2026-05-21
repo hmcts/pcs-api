@@ -192,6 +192,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
         );
+        verify(defendantResponseRepository).existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            TEST_CASE_REFERENCE, defendantUserId);
     }
 
     @Test

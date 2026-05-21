@@ -76,23 +76,50 @@ class StartEventHandlerTest {
     
     @Test
     void shouldReturnSubmittedStatusWhenResponseAlreadySubmitted() {
+        // Given
         UUID defendantUserId = UUID.randomUUID();
         PartyEntity defendantEntity = PartyEntity.builder().idamId(defendantUserId).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, defendantUserId))
-            .thenReturn(true);
+                CASE_REFERENCE, defendantUserId))
+                .thenReturn(true);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
 
-        PCSCase result = underTest.start(createEventPayload());
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
+        // When
+        PCSCase result = underTest.start(eventPayload);
+
+        // Then
         assertThat(result.getPossessionClaimResponse().getDefendantResponses().getStatus())
-            .isEqualTo(DefendantResponseStatus.SUBMITTED);
+                .isEqualTo(DefendantResponseStatus.SUBMITTED);
     }
-    
+
+    @Test
+    void shouldNotTreatResponseAsSubmittedWhenCurrentUserIdIsNull() {
+        // Given
+        PartyEntity defendantEntity = PartyEntity.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        
+        when(securityContextService.getCurrentUserId()).thenReturn(null);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, null)).thenReturn(defendantEntity);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity)))
+                .thenReturn(PossessionClaimResponse.builder().build());
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
+
+        // When
+        PCSCase result = underTest.start(eventPayload);
+
+        // Then
+        assertThat(result.getPossessionClaimResponse().getDefendantResponses()).isNull();
+    }
+
     @Test
     void shouldBuildInitialResponseAndInitializeDraftWhenNoDraftExists() {
         // Given
