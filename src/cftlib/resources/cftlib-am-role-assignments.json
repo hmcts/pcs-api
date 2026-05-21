@@ -15,5 +15,37 @@
         "authorisations": []
       }
     ]
+  },
+  {
+    "email": "pcs-solicitor1@test.com",
+    "id": "f6484bbb-c10e-319b-ab8d-14361a7d2a23",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "hmcts-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {},
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "pcs-solicitor1@test.com",
+    "id": "f6484bbb-c10e-319b-ab8d-14361a7d2a23",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "[HMCTS-ADMIN]",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {},
+        "authorisations": []
+      }
+    ]
   }
 ]
