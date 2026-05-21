@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -178,6 +180,51 @@ public class DocumentService {
             case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
             case OTHER -> DocumentType.OTHER;
         };
+    }
+
+    public List<DocumentEntity> createAdditionalDocumentsForParty(
+        List<ListValue<UploadedDocument>> uploadedDocuments,
+        PcsCaseEntity pcsCase,
+        PartyEntity party
+    ) {
+        if (CollectionUtils.isEmpty(uploadedDocuments)) {
+            log.info("No additional documents to save for case {}", pcsCase.getCaseReference());
+            return Collections.emptyList();
+        }
+
+        Set<String> existingUrls = pcsCase.getDocuments().stream()
+            .map(DocumentEntity::getUrl)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+        List<DocumentEntity> documentEntities = uploadedDocuments.stream()
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .filter(uploaded -> uploaded.getDocument() != null)
+            .filter(uploaded -> !existingUrls.contains(uploaded.getDocument().getUrl()))
+            .map(uploaded -> DocumentEntity.builder()
+                .pcsCase(pcsCase)
+                .party(party)
+                .url(uploaded.getDocument().getUrl())
+                .fileName(uploaded.getDocument().getFilename())
+                .displayFileName(uploaded.getDocument().getFilename())
+                .binaryUrl(uploaded.getDocument().getBinaryUrl())
+                .contentType(uploaded.getContentType())
+                .size(uploaded.getSizeInBytes())
+                .type(DocumentType.OTHER)
+                .build())
+            .toList();
+
+        if (documentEntities.isEmpty()) {
+            log.info("All additional documents for case {} already persisted; nothing to save",
+                pcsCase.getCaseReference());
+            return Collections.emptyList();
+        }
+
+        List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
+        log.info("Saved {} additional documents for case {} and party {}",
+            saved.size(), pcsCase.getCaseReference(), party.getId());
+        return saved;
     }
 
     public List<DocumentEntity> createDefendantUploadedDocuments(

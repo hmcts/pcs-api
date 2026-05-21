@@ -719,6 +719,123 @@ class DocumentServiceTest {
         assertThat(entities.getFirst().getSize()).isNull();
     }
 
+    @Test
+    void shouldSaveAdditionalDocumentsForPartyAsOtherType() {
+        // Given
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
+
+        UploadedDocument uploaded = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-new").filename("file-new.pdf").binaryUrl("bin-new").build())
+            .contentType("application/pdf")
+            .sizeInBytes(123L)
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
+        );
+
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        underTest.createAdditionalDocumentsForParty(uploadedDocs, pcsCase, party);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(DocumentType.OTHER);
+        assertThat(entity.getCategoryId()).isNull();
+        assertThat(entity.getUrl()).isEqualTo("url-new");
+        assertThat(entity.getFileName()).isEqualTo("file-new.pdf");
+        assertThat(entity.getDisplayFileName()).isEqualTo("file-new.pdf");
+        assertThat(entity.getBinaryUrl()).isEqualTo("bin-new");
+        assertThat(entity.getContentType()).isEqualTo("application/pdf");
+        assertThat(entity.getSize()).isEqualTo(123L);
+        assertThat(entity.getPcsCase()).isSameAs(pcsCase);
+        assertThat(entity.getParty()).isSameAs(party);
+    }
+
+    @Test
+    void shouldSkipAdditionalDocumentsAlreadyPersistedByUrl() {
+        // Given
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        DocumentEntity existing = DocumentEntity.builder().url("url-existing").build();
+        List<DocumentEntity> existingDocs = new ArrayList<>();
+        existingDocs.add(existing);
+        when(pcsCase.getDocuments()).thenReturn(existingDocs);
+
+        UploadedDocument duplicate = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-existing").filename("dup.pdf").binaryUrl("bin-dup").build())
+            .build();
+        UploadedDocument fresh = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-new").filename("new.pdf").binaryUrl("bin-new").build())
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(duplicate).build(),
+            ListValue.<UploadedDocument>builder().id("2").value(fresh).build()
+        );
+
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        underTest.createAdditionalDocumentsForParty(uploadedDocs, pcsCase, party);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        assertThat(entities.getFirst().getUrl()).isEqualTo("url-new");
+    }
+
+    @Test
+    void shouldNotCallRepositoryWhenAllAdditionalDocumentsAreDuplicates() {
+        // Given
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        List<DocumentEntity> existingDocs = new ArrayList<>();
+        existingDocs.add(DocumentEntity.builder().url("url-existing").build());
+        when(pcsCase.getDocuments()).thenReturn(existingDocs);
+
+        UploadedDocument duplicate = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-existing").filename("dup.pdf").binaryUrl("bin-dup").build())
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(duplicate).build()
+        );
+
+        // When
+        underTest.createAdditionalDocumentsForParty(uploadedDocs, pcsCase, party);
+
+        // Then
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenAdditionalDocumentsInputIsNullOrEmpty() {
+        // Given
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        // When
+        underTest.createAdditionalDocumentsForParty(null, pcsCase, party);
+        underTest.createAdditionalDocumentsForParty(Collections.emptyList(), pcsCase, party);
+
+        // Then
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
     private static Stream<Arguments> additionalDocumentCategoryScenarios() {
         return Stream.of(
             Arguments.of(
