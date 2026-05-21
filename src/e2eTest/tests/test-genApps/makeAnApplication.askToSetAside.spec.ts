@@ -12,7 +12,7 @@ import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { askTheCourtToSetAsideTheOrder, askToAdjournTheCourtHearing, chooseAnApplication, helpPayingTheFee, selectParty } from "@data/page-data-figma/page-data-genApps-figma";
+import { askTheCourtToSetAsideTheOrder, chooseAnApplication, helpPayingTheFee, selectParty } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
 
 test.use({ storageState: undefined });

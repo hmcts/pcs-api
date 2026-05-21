@@ -11,7 +11,6 @@ import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 
 
-export let caseNumber: string;
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
   addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
@@ -85,7 +84,7 @@ export class GenAppsAction implements IAction {
 
   private async selectApplicant(applicant: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-        await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', applicant);
     await performAction('clickRadioButton', { question: applicant.question, option: applicant.option });
     await performAction('clickButton', selectParty.continueButton);
@@ -101,6 +100,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', courtHearing);
     await performAction('clickRadioButton', {
       question: courtHearing.question,

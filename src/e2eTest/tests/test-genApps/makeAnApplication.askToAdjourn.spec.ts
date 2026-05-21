@@ -1,7 +1,7 @@
-import { createCaseApiData, submitCaseApiData } from '../../data/api-data';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 
 
-import { initializeExecutor } from '../../utils/controller';
+import { initializeExecutor } from '@utils/controller';
 import test, { expect } from '@playwright/test';
 import { FieldsStore } from '@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action';
 import { initializeGenAppsExecutor, performAction, performValidation } from '@utils/controller-genApps';
