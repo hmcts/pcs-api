@@ -6,7 +6,7 @@ import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { FieldsStore } from './recordAnsweredFields.action';
 import { generateRandomString, stringToCamelCase } from '@utils/common/string.utils';
 import { defaultJourney, journeys } from '@utils/common/journeyMappingGenApps';
-import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/makeAnApplicationselectParty.page.data';
+import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selectParty.page.data';
 import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 
