@@ -228,16 +228,15 @@ export class PageContentValidation implements IValidation {
   }
 
   private async loadPageDataFile(fileName: string, page: Page): Promise<any> {
-   let filePath;
-      if(page.url().includes("enforceTheOrder")){
-        filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
-      }
-     else if(page.url().includes("makeAnApplication")){
+    let filePath;
+    if (page.url().includes("enforceTheOrder")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
+    } else if (page.url().includes("makeAnApplication")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.page.data.ts`);
     }
-      else{
-         filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
-      }
+    else {
+      filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
+    }
     if (!fs.existsSync(filePath)) return null;
     try {
       delete require.cache[require.resolve(filePath)];
