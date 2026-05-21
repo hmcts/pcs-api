@@ -529,11 +529,11 @@ export class CreateCaseAction implements IAction {
       await performValidation('text', { "text": checkingNoticeWales.characterLimitHiddenHintText, "elementType": "paragraph" });
       if (noticeData.walesNoticeStatement) {
         await performAction('inputText', checkingNoticeWales.enterStatementHiddenTextLabel, noticeData.walesNoticeStatement);
-           }
+      }
     }
-    await performAction('clickButtonAndVerifyPageNavigation', checkingNoticeWales.continueButton, rentDetails.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', checkingNoticeWales.continueButton, claimantCircumstances.mainHeader);
   }
-  
+
   private async provideRentDetails(rentFrequency: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
