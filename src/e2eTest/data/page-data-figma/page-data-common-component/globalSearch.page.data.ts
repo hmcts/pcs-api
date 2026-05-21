@@ -32,5 +32,9 @@ export const globalSearch =
     searchDateOfBirthYearInputText: '1990',
     dateOfBirthDayLabel: 'Day',
     dateOfBirthMonthLabel: 'Month',
-    dateOfBirthYearLabel: 'Year'
+    dateOfBirthYearLabel: 'Year',
+    noResultsFoundText: 'No results found',
+    invalidCaseReferenceInputText: '0000000000000000',
+    invalidPostcodeInputText: 'ZZ99 9ZZ',
+    invalidNameInputText: 'XYZ_NonExistent_Name_ABC'
   }
