@@ -1,14 +1,16 @@
 import { areThereAnyReasonsThatThisApplicationShouldNotBeShared, checkYourAnswersGenApps, chooseAnApplication, doYouNeedHelpPayingTheFee, doYouWantToUploadDocumentToSupportYourApplication, haveTheOtherPartiesAgreedToThisApplication, haveYouAlreadyAppliedForHelpWithFees, isTheCourtHearingInTheNext14Days, whatOrderDoYouWantTheCourtToMakeAndWhy, whichLanguageDidYouUseToCompleteThisService } from '@data/page-data-figma/page-data-genApps-figma';
 import { Page, expect, test } from '@playwright/test';
 import { compareMaps } from '@utils/common/compareMaps.util';
-import { performAction, performValidation } from '@utils/controller';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { FieldsStore } from './recordAnsweredFields.action';
 import { generateRandomString, stringToCamelCase } from '@utils/common/string.utils';
 import { defaultJourney, journeys } from '@utils/common/journeyMappingGenApps';
+import {performAction, performValidation} from "@utils/controller-genApps";
 
 
 
+export let caseNumber: string;
+export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
 const cyaMap = new Map<string, string>();
 
 export class GenAppsAction implements IAction {
@@ -50,6 +52,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('recordUserEntry', courtHearing);
     await performAction('clickRadioButton', {
       question: courtHearing.question,
