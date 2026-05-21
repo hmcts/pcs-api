@@ -49,6 +49,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -95,7 +96,7 @@ public class CaseDetailsTabViewTest {
                     .build())
             .claimAgainstTrespassers(VerticalYesNo.YES)
             .propertyAddress(propertyAddress)
-            .dateSubmitted(LocalDateTime.of(2026, 5, 11, 17, 2, 31))
+            .dateSubmitted(LocalDateTime.of(2026, 1, 11, 17, 2, 31))
             .claimGroundSummaries(List.of(
                 listValue(ClaimGroundSummary.builder()
                               .label("Rent arrears (ground 10)")
@@ -282,7 +283,7 @@ public class CaseDetailsTabViewTest {
             .isEqualTo("Condition 1 reason");
         assertThat(caseDetailsTab.getReasonsForPossessionDetails().getAdditionalReasonsForPossession())
             .isEqualTo("Additional reasons");
-        assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 May 2026, 5:02:31PM");
+        assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
         assertThat(caseDetailsTab.getClaimantInformation().getClaimantName()).isEqualTo("Claimant");
         assertThat(caseDetailsTab.getDefendantInformationDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(caseDetailsTab.getDefendantInformationDetails().getLastName()).isEqualTo("One");
@@ -661,6 +662,46 @@ public class CaseDetailsTabViewTest {
             .isEqualTo(NoticeServiceMethod.OTHER.getLabel());
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
+    }
+
+    @Test
+    void shouldDisplaySubmittedDateInUkTimeWhenServerTimezoneIsUtc() {
+        // Given
+        TimeZone originalTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        PCSCase pcsCase = PCSCase.builder()
+            .dateSubmitted(LocalDateTime.of(2026, 7, 11, 17, 2, 31))
+            .build();
+
+        try {
+            // When
+            CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+            // Then
+            assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 6:02:31PM");
+        } finally {
+            TimeZone.setDefault(originalTimeZone);
+        }
+    }
+
+    @Test
+    void shouldDisplaySubmittedDateInGmtOutsideBritishSummerTimeWhenServerTimezoneIsUtc() {
+        // Given
+        TimeZone originalTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        PCSCase pcsCase = PCSCase.builder()
+            .dateSubmitted(LocalDateTime.of(2026, 1, 11, 17, 2, 31))
+            .build();
+
+        try {
+            // When
+            CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+            // Then
+            assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
+        } finally {
+            TimeZone.setDefault(originalTimeZone);
+        }
     }
 
     private static <T> ListValue<T> listValue(T value) {
