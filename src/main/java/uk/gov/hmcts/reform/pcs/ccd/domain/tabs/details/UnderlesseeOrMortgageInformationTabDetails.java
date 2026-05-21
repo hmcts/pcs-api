@@ -13,7 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @AllArgsConstructor
 public class UnderlesseeOrMortgageInformationTabDetails {
 
-    @CCD(label = "Underlessee or mortgagee’s address for name known?")
+    @CCD(label = "Underlessee or mortgagee’s name known?")
     private String nameKnown;
 
     @CCD(label = "Name")
