@@ -52,6 +52,20 @@ class IdamAuthenticatorTest {
         verifyNoInteractions(idamUserInfoApi);
     }
 
+    @DisplayName("Should throw InvalidAuthTokenException when token length is below minimum (prefix only, no token content)")
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "Bearer ",  // length 7 — passes prefix check, fails length check (length <= 7)
+        "Bearer"    // length 6 — fails prefix check (no trailing space); covers the boundary on the other branch
+    })
+    void shouldThrowInvalidAuthTokenExceptionWhenTokenLengthBelowMinimum(String token) {
+        assertThatThrownBy(() -> underTest.validateAuthToken(token))
+            .isInstanceOf(InvalidAuthTokenException.class)
+            .hasMessageContaining("Malformed Authorization token");
+
+        verifyNoInteractions(idamUserInfoApi);
+    }
+
     @DisplayName("Should return user if token is valid")
     @Test
     void shouldReturnUserWhenTokenIsValid() {

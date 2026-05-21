@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.controllers;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -401,11 +403,12 @@ class RestExceptionHandlerTest {
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
     }
 
-    @Test
-    void shouldMapIdamExceptionWithOAuth2InvalidTokenResponseToServiceUnavailable() {
-        // Spring's OAuth2 client may raise OAuth2AuthorizationException with errorCode
-        // "invalid_token_response" when it can't parse a 429 body — no RestClient in the chain.
-        OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "throttled by IDAM", null);
+    // Parameterised over the full OAUTH2_THROTTLE_ERROR_CODES set. When new codes are added to
+    // the production constant in RestExceptionHandler, mirror them here so coverage stays complete.
+    @ParameterizedTest
+    @ValueSource(strings = {"invalid_token_response", "temporarily_unavailable"})
+    void shouldMapIdamExceptionWithOAuth2ThrottleCodeToServiceUnavailable(String errorCode) {
+        OAuth2Error oauthError = new OAuth2Error(errorCode, "throttled by IDAM", null);
         OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError);
         IdamException ex = new IdamException("Unable to get access token response", oauthEx);
 
@@ -413,18 +416,25 @@ class RestExceptionHandlerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message())
+            .isEqualTo("Authentication service temporarily unavailable, please retry");
     }
 
-    @Test
-    void shouldMapIdamExceptionWithOAuth2TemporarilyUnavailableToServiceUnavailable() {
-        OAuth2Error oauthError = new OAuth2Error("temporarily_unavailable", "IDAM rate limited", null);
+    // Non-throttle OAuth2 error codes must NOT return 503 — these are not transient.
+    @ParameterizedTest
+    @ValueSource(strings = {"server_error", "access_denied", "invalid_grant", "invalid_client", "unauthorized_client"})
+    void shouldMapIdamExceptionWithNonThrottleOAuth2CodeToInternalServerError(String errorCode) {
+        OAuth2Error oauthError = new OAuth2Error(errorCode, "non-throttle OAuth2 error", null);
         OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError);
         IdamException ex = new IdamException("Unable to get access token response", oauthEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isNull();
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message()).isEqualTo("Authentication service error");
     }
 
     @Test
@@ -443,12 +453,13 @@ class RestExceptionHandlerTest {
         assertThat(response.getBody().message()).isEqualTo("Authentication service error");
     }
 
-    @Test
-    void shouldMapIdamExceptionWithFeign5xxCauseToServiceUnavailable() {
-        // IdamAuthenticator wraps non-401 FeignExceptions from /o/userinfo in IdamException.
-        // A 5xx from IDAM means upstream is unhealthy — surface as 503 + Retry-After.
+    // Feign statuses that count as "upstream unavailable" — connect/read failure (status < 0),
+    // throttle (429), or any 5xx. All should surface as 503 + Retry-After.
+    @ParameterizedTest
+    @ValueSource(ints = {-1, -2, 429, 500, 502, 503, 504, 599})
+    void shouldMapIdamExceptionWithFeignUpstreamFailureToServiceUnavailable(int status) {
         FeignException feignEx = mock(FeignException.class);
-        when(feignEx.status()).thenReturn(500);
+        when(feignEx.status()).thenReturn(status);
         IdamException ex = new IdamException("Unable to validate authorization token", feignEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
@@ -457,37 +468,14 @@ class RestExceptionHandlerTest {
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
     }
 
-    @Test
-    void shouldMapIdamExceptionWithFeignTimeoutCauseToServiceUnavailable() {
-        // FeignException with no response (status < 0) — connect timeout, read timeout, network.
+    // Feign 4xx (non-throttle) is a real client error, not an availability problem — must NOT
+    // map to 503. Covers the boundaries on either side of 500: 499 should be 500-mapped, 500
+    // is in the upstream-unavailable test above.
+    @ParameterizedTest
+    @ValueSource(ints = {400, 401, 403, 404, 422, 499})
+    void shouldMapIdamExceptionWithFeignClientErrorToInternalServerError(int status) {
         FeignException feignEx = mock(FeignException.class);
-        when(feignEx.status()).thenReturn(-1);
-        IdamException ex = new IdamException("Unable to validate authorization token", feignEx);
-
-        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
-    }
-
-    @Test
-    void shouldMapIdamExceptionWithFeign429CauseToServiceUnavailable() {
-        FeignException feignEx = mock(FeignException.class);
-        when(feignEx.status()).thenReturn(429);
-        IdamException ex = new IdamException("Unable to validate authorization token", feignEx);
-
-        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
-    }
-
-    @Test
-    void shouldMapIdamExceptionWithFeign4xxCauseToInternalServerError() {
-        // A non-throttle 4xx (e.g. 400 Bad Request) is a real problem with our request, not an
-        // IDAM availability issue — should NOT be surfaced as a transient 503.
-        FeignException feignEx = mock(FeignException.class);
-        when(feignEx.status()).thenReturn(400);
+        when(feignEx.status()).thenReturn(status);
         IdamException ex = new IdamException("Unable to validate authorization token", feignEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);

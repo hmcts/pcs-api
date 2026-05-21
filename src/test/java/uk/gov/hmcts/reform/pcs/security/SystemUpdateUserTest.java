@@ -64,6 +64,19 @@ class SystemUpdateUserTest {
     }
 
     @Test
+    @DisplayName("Should throw IdamException when the authorized client has a null access token")
+    void shouldThrowIdamExceptionWhenAccessTokenIsNull() {
+        OAuth2AuthorizedClient authorizedClient = mock(OAuth2AuthorizedClient.class);
+        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willReturn(authorizedClient);
+
+        Throwable throwable = catchThrowable(() -> underTest.getAuthToken());
+
+        assertThat(throwable)
+            .isInstanceOf(IdamException.class)
+            .hasMessage("Unable to get access token response");
+    }
+
+    @Test
     @DisplayName("Should wrap OAuth2AuthorizationException thrown when fetching system update user token")
     void shouldWrapOAuth2AuthorizationExceptionGettingAuthToken() {
         OAuth2Error error = new OAuth2Error("invalid_token_response", "throttled", null);
