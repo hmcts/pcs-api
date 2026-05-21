@@ -43,7 +43,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Case Linking]', async () => {
+test.describe('[Common Component Case Linking] @CC', async () => {
   test('Case Linking @nightly @caseLinking', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
     await performAction('clickButton', caseSummary.go);
