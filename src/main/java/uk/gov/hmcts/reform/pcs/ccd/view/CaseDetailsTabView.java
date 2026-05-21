@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
@@ -28,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ActionsTakenTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ApplicationsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantCircumstancesTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantContactTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DefendantCircumstanceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DemotionOfTenancyTabDetails;
@@ -121,6 +123,7 @@ public class CaseDetailsTabView {
         if (claimantInformationTabDetails != null) {
             caseDetailsTab.setClaimantAddress(getClaimantAddress(pcsCase));
             caseDetailsTab.setClaimantContactDetails(buildClaimantContactTabDetails(pcsCase));
+            caseDetailsTab.setClaimantCircumstances(buildClaimantCircumstancesTabDetails(pcsCase));
         }
 
         if (defendantInformationTabDetails != null) {
@@ -258,7 +261,7 @@ public class CaseDetailsTabView {
                     }
                     case OTHER -> {
                         LocalDateTime dateTime = noticeServedDetails.getNoticeOtherDateTime();
-                        String explanation = noticeTabDetails.getNoticeOtherExplanation();
+                        String explanation = noticeServedDetails.getNoticeOtherExplanation();
                         noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
                         noticeTabDetails.setNoticeOtherExplanation(explanation != null ? explanation : NO_ANSWER);
                     }
@@ -273,9 +276,15 @@ public class CaseDetailsTabView {
         VerticalYesNo preactionProtocol = pcsCase.getPreActionProtocolCompleted();
         VerticalYesNo mediationAttempted = pcsCase.getMediationAttempted();
         VerticalYesNo settlementAttempted = pcsCase.getSettlementAttempted();
+        String noPreactionExplanation = null;
+
+        if (preactionProtocol == VerticalYesNo.NO) {
+            noPreactionExplanation = pcsCase.getPreActionProtocolIncompleteExplanation();
+        }
 
         return ActionsTakenTabDetails.builder()
             .preactionProtocolFollowed(preactionProtocol != null ? preactionProtocol.getLabel() : NO_ANSWER)
+            .preActionProtocolIncompleteExplanation(noPreactionExplanation)
             .mediationAttempted(mediationAttempted != null ? mediationAttempted.getLabel() : NO_ANSWER)
             .settlementAttempted(settlementAttempted != null ? settlementAttempted.getLabel() : NO_ANSWER)
             .build();
@@ -349,6 +358,29 @@ public class CaseDetailsTabView {
         return ClaimantContactTabDetails.builder()
             .emailAddress(emailAddress != null ? emailAddress : NO_ANSWER)
             .phoneNumber(phoneNumber != null ? phoneNumber : NO_ANSWER)
+            .build();
+    }
+
+    private ClaimantCircumstancesTabDetails buildClaimantCircumstancesTabDetails(PCSCase pcsCase) {
+        ClaimantCircumstances claimantCircumstances = pcsCase.getClaimantCircumstances();
+
+        if (claimantCircumstances == null) {
+            return ClaimantCircumstancesTabDetails.builder()
+                .claimantCircumstancesGiven(NO_ANSWER)
+                .build();
+        }
+        VerticalYesNo claimantCircumstancesGiven = claimantCircumstances.getClaimantCircumstancesSelect();
+        String claimantCircumstancesDetails = null;
+
+        if (claimantCircumstancesGiven == VerticalYesNo.YES) {
+            claimantCircumstancesDetails = claimantCircumstances.getClaimantCircumstancesDetails();
+        }
+
+        return ClaimantCircumstancesTabDetails.builder()
+            .claimantCircumstancesGiven(
+                claimantCircumstancesGiven != null ? claimantCircumstancesGiven.getLabel() : NO_ANSWER
+            )
+            .claimantCircumstancesDetails(claimantCircumstancesDetails)
             .build();
     }
 

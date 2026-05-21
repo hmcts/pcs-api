@@ -99,11 +99,6 @@ public class CaseDetailsTab {
     private DefendantInformationTabDetails defendantInformationDetails;
 
     @CCD(
-        label = "Defendant 1 address for service"
-    )
-    private AddressUK defendantOneAddress;
-
-    @CCD(
         label = "Additional defendant"
     )
     private List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendants;
