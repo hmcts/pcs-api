@@ -26,20 +26,17 @@ public class CcdPaymentStateUpdateService {
     private final CoreCaseDataApi coreCaseDataApi;
     private final ObjectMapper objectMapper;
 
-    public CaseResource submitPaymentSuccess(String caseId) {
+    public CaseResource submitPaymentSuccess(long caseId) {
         String serviceAuthorization = authTokenGenerator.generate();
         String idamToken = idamService.getSystemUserAuthorisation();
-
         log.debug("Submitting payment event for case: {}", caseId);
         StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, serviceAuthorization,
-                                                                           caseId, payment.name());
-        log.debug("StartEventResponse: {}", startEventResponse);
+                                                                           String.valueOf(caseId), payment.name());
         CaseDataContent submitContent = CaseDataContent.builder().event(Event.builder().id(payment.name()).build())
             .eventToken(startEventResponse.getToken()).data(toJsonNode(PCSCase.builder().build())).build();
-        log.debug("submitContent: {}", submitContent);
         CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
-                                                                caseId, submitContent);
-        log.debug("CaseResouce response : {}", caseResource);
+                                                                String.valueOf(caseId), submitContent);
+        log.debug("CaseResource response : {}", caseResource);
         return caseResource;
     }
 

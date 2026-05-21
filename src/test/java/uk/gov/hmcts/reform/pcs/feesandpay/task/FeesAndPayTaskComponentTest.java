@@ -77,7 +77,7 @@ class FeesAndPayTaskComponentTest {
         return FeesAndPayTaskData.builder()
             .feeType(feeType)
             .feeDetails(feeDetails)
-            .caseReference("BUS-123")
+            .caseReference(123)
             .ccdCaseNumber("1111-2222-3333-4444")
             .volume(2)
             .responsibleParty("Applicant")

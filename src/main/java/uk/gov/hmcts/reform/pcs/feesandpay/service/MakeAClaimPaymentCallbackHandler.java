@@ -17,7 +17,7 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService.PARTY_NO
 
 @AllArgsConstructor
 @Component
-public class MakeAClaimPaymentCallbackStrategy implements PaymentCallbackStrategy {
+public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final ObjectMapper objectMapper;

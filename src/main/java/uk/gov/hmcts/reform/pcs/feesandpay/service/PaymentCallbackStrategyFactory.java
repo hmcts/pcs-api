@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 
 import java.util.Map;
 
@@ -10,12 +10,12 @@ import java.util.Map;
 @AllArgsConstructor
 public class PaymentCallbackStrategyFactory {
 
-    private final MakeAClaimPaymentCallbackStrategy makeAClaimPaymentCallbackStrategy;
+    private final MakeAClaimPaymentCallbackHandler makeAClaimPaymentCallbackHandler;
 
-    public PaymentCallbackStrategy getStrategy(JourneyId journeyId) {
+    public PaymentCallbackStrategy getStrategy(PaymentCallbackHandlerType paymentCallbackHandlerType) {
         return Map.of(
-            JourneyId.RESUME_POSSESSION_CLAIM, makeAClaimPaymentCallbackStrategy
-        ).get(journeyId);
+            PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM, makeAClaimPaymentCallbackHandler
+        ).get(paymentCallbackHandlerType);
     }
 
 }

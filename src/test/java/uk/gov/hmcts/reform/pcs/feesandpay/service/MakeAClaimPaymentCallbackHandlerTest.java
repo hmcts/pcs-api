@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.math.BigDecimal;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class MakeAClaimPaymentCallbackStrategyTest {
+class MakeAClaimPaymentCallbackHandlerTest {
 
     private static final String CCD_CASE_NUMBER = "1111-2222-3333-4444";
     private static final String RESPONSIBLE_PARTY = "Claimant Org Ltd";
@@ -43,7 +43,7 @@ class MakeAClaimPaymentCallbackStrategyTest {
     private ObjectMapper objectMapper;
 
     @InjectMocks
-    private MakeAClaimPaymentCallbackStrategy underTest;
+    private MakeAClaimPaymentCallbackHandler underTest;
 
     @Test
     void shouldSetPartyOnEntityAndSubmitPaymentSuccess() throws Exception {
@@ -57,7 +57,7 @@ class MakeAClaimPaymentCallbackStrategyTest {
         claimEntity.setClaimParties(List.of(claimPartyEntity));
 
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
-            .journeyId(JourneyId.RESUME_POSSESSION_CLAIM).build();
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM).build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
@@ -74,7 +74,7 @@ class MakeAClaimPaymentCallbackStrategyTest {
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class)))
             .thenThrow(new JsonProcessingException("Invalid JSON") {});
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(new ClaimEntity()).taskData("aasdfsdf{{")
-            .journeyId(JourneyId.RESUME_POSSESSION_CLAIM).build();
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM).build();
 
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
@@ -96,7 +96,7 @@ class MakeAClaimPaymentCallbackStrategyTest {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder().claim(claimEntity).party(partyEntity).build();
         claimEntity.setClaimParties(List.of(claimPartyEntity));
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
-            .journeyId(JourneyId.RESUME_POSSESSION_CLAIM).build();
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM).build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When / Then
@@ -118,7 +118,7 @@ class MakeAClaimPaymentCallbackStrategyTest {
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
             .taskData("{}")
-            .journeyId(JourneyId.RESUME_POSSESSION_CLAIM)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM)
             .build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
@@ -131,10 +131,10 @@ class MakeAClaimPaymentCallbackStrategyTest {
 
     private FeesAndPayTaskData buildTaskData(String responsibleParty) {
         return FeesAndPayTaskData.builder()
-            .caseReference("1234")
+            .caseReference(1234)
             .ccdCaseNumber(CCD_CASE_NUMBER)
             .responsibleParty(responsibleParty)
-            .journeyId(JourneyId.RESUME_POSSESSION_CLAIM)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM)
             .feeDetails(FeeDetails.builder().feeAmount(new BigDecimal("232.00")).code("FEE0412").build())
             .build();
     }

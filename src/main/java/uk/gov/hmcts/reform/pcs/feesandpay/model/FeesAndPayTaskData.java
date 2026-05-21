@@ -21,7 +21,7 @@ public class FeesAndPayTaskData implements Serializable {
 
     private FeeDetails feeDetails;
 
-    private String caseReference;
+    private long caseReference;
 
     private String ccdCaseNumber;
 
@@ -30,5 +30,5 @@ public class FeesAndPayTaskData implements Serializable {
 
     private String responsibleParty;
 
-    private JourneyId journeyId;
+    private PaymentCallbackHandlerType paymentCallbackHandlerType;
 }

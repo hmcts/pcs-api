@@ -66,11 +66,11 @@ public class PaymentService {
         CasePaymentRequestDto casePaymentRequest = paymentRequestMapper.toCasePaymentRequest(
             feesAndPayTaskData.getResponsibleParty());
         log.info("casePaymentRequest: {}", casePaymentRequest);
-        String caseReference = feesAndPayTaskData.getCaseReference();
+        long caseReference = feesAndPayTaskData.getCaseReference();
         CreateServiceRequestDTO requestDto = CreateServiceRequestDTO.builder()
             .callBackUrl(callbackUrl)
             .casePaymentRequest(casePaymentRequest)
-            .caseReference(caseReference)
+            .caseReference(String.valueOf(caseReference))
             .ccdCaseNumber(feesAndPayTaskData.getCcdCaseNumber())
             .fees(new FeeDto[]{feeDto})
             .hmctsOrgId(hmctsOrgId)
@@ -80,7 +80,7 @@ public class PaymentService {
                  callbackUrl, hmctsOrgId, caseReference);
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
             idamService.getSystemUserAuthorisation(), requestDto);
-        ClaimEntity claimEntity = retrieveClaimEntity(Long.parseLong(caseReference));
+        ClaimEntity claimEntity = retrieveClaimEntity(caseReference);
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
         saveNewFeePayment(feesAndPayTaskDataAsString, feesAndPayTaskData, claimEntity,
                           paymentServiceResponse.getServiceRequestReference());
@@ -105,7 +105,7 @@ public class PaymentService {
             feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
             feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
             PaymentCallbackStrategy paymentCallbackStrategy = paymentCallbackStrategyFactory
-                .getStrategy(feePaymentEntity.getJourneyId());
+                .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
             if (paymentCallbackStrategy != null) {
                 paymentCallbackStrategy.handle(paymentStatusCallback, feePaymentEntity);
             }
@@ -125,7 +125,7 @@ public class PaymentService {
             .claim(claimEntity)
             .requestReference(serviceRequestReference)
             .amount(feesAndPayTaskData.getFeeDetails().getFeeAmount())
-            .journeyId(feesAndPayTaskData.getJourneyId())
+            .paymentCallbackHandlerType(feesAndPayTaskData.getPaymentCallbackHandlerType())
             .taskData(feesAndPayTaskDataAsString)
             .build();
         feePaymentRepository.save(feePaymentEntity);

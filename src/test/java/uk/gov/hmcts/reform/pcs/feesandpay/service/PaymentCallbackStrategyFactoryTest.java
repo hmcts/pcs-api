@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PaymentCallbackStrategyFactoryTest {
 
     @Mock
-    private MakeAClaimPaymentCallbackStrategy makeAClaimPaymentCallbackStrategy;
+    private MakeAClaimPaymentCallbackHandler makeAClaimPaymentCallbackHandler;
 
     @InjectMocks
     private PaymentCallbackStrategyFactory underTest;
@@ -21,18 +21,18 @@ class PaymentCallbackStrategyFactoryTest {
     @Test
     void shouldReturnMakeAClaimStrategyForResumePossessionClaim() {
         // When
-        PaymentCallbackStrategy result = underTest.getStrategy(JourneyId.RESUME_POSSESSION_CLAIM);
+        PaymentCallbackStrategy result = underTest.getStrategy(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM);
 
         // Then
-        assertThat(result).isSameAs(makeAClaimPaymentCallbackStrategy);
+        assertThat(result).isSameAs(makeAClaimPaymentCallbackHandler);
     }
 
     @Test
     void shouldHaveARegisteredStrategyForEveryJourneyId() {
-        for (JourneyId journeyId : JourneyId.values()) {
-            PaymentCallbackStrategy result = underTest.getStrategy(journeyId);
+        for (PaymentCallbackHandlerType paymentCallbackHandlerType : PaymentCallbackHandlerType.values()) {
+            PaymentCallbackStrategy result = underTest.getStrategy(paymentCallbackHandlerType);
             assertThat(result)
-                .as("Missing strategy mapping for JourneyId: %s", journeyId)
+                .as("Missing strategy mapping for PaymentCallbackHandlerType: %s", paymentCallbackHandlerType)
                 .isNotNull();
         }
     }

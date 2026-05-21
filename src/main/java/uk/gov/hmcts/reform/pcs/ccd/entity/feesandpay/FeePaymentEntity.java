@@ -22,9 +22,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId;
-import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -77,7 +75,7 @@ public class FeePaymentEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private JourneyId journeyId;
+    private PaymentCallbackHandlerType paymentCallbackHandlerType;
 
     @JdbcTypeCode(SqlTypes.JSON)
     private String taskData;

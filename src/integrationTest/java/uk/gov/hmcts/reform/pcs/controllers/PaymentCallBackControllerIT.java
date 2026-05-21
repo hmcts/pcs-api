@@ -26,7 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.JourneyId;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentCallbackStrategy;
@@ -52,6 +52,7 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer test-token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
+    private static final long CASE_REFERENCE = 1234L;
 
     @MockitoBean
     private IdamClient idamClient;
@@ -70,7 +71,7 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     @Mock
     private PaymentCallbackStrategy pretendStrategy;
 
-    private String caseReference;
+    private long caseReference;
     private String serviceCaseReference;
     private FeeDto feeDto;
     private FeesAndPayTaskData feesAndPayTaskData;
@@ -80,8 +81,8 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     void setUp() throws JsonProcessingException {
         serviceCaseReference = UUID.randomUUID().toString();
         feesAndPayTaskData = Instancio.create(FeesAndPayTaskData.class);
-        feesAndPayTaskData.setCaseReference("1234");
-        feesAndPayTaskData.setJourneyId(JourneyId.RESUME_POSSESSION_CLAIM);
+        feesAndPayTaskData.setCaseReference(CASE_REFERENCE);
+        feesAndPayTaskData.setPaymentCallbackHandlerType(PaymentCallbackHandlerType.RESUME_POSSESSION_CLAIM);
         caseReference = feesAndPayTaskData.getCaseReference();
         feeDto = Instancio.create(FeeDto.class);
         feeDto.setCcdCaseNumber(String.valueOf(caseReference));
@@ -121,7 +122,7 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
 
     PcsCaseEntity establishTestCase() {
         return caseCreationHelper
-            .createTestCaseWithParty(Long.parseLong(caseReference), null, PartyRole.CLAIMANT);
+            .createTestCaseWithParty(caseReference, null, PartyRole.CLAIMANT);
     }
 
     void establishFeePayment(String serviceCaseReference) throws JsonProcessingException {
