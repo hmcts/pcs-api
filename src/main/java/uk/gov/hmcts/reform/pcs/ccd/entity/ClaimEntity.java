@@ -152,6 +152,11 @@ public class ClaimEntity {
     @JsonManagedReference
     private Set<EnforcementOrderEntity> enforcementOrders = new HashSet<>();
 
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private List<CaseNoteEntity> caseNotes = new ArrayList<>();
+
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
     @JsonManagedReference
     private AsbProhibitedConductEntity asbProhibitedConductEntity;
@@ -278,4 +283,9 @@ public class ClaimEntity {
             .count();
     }
 
+
+    public void addCaseNote(CaseNoteEntity caseNote) {
+        caseNotes.add(caseNote);
+        caseNote.setClaim(this);
+    }
 }
