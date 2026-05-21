@@ -42,11 +42,11 @@ class CounterClaimEntityListenerTest {
     @Test
     void shouldSetPreviousStatusOnPostLoad() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(CounterClaimStatus.DRAFT);
+        entity.setStatus(CounterClaimStatus.PENDING_CASE_ISSUED);
 
         underTest.onPostLoad(entity);
 
-        assertEquals(CounterClaimStatus.DRAFT, entity.getPreviousStatus());
+        assertEquals(CounterClaimStatus.PENDING_CASE_ISSUED, entity.getPreviousStatus());
     }
 
     @Test
@@ -78,7 +78,7 @@ class CounterClaimEntityListenerTest {
     @Test
     void shouldNotHandleNotificationOnPostPersistWhenStatusIsNotPendingCaseIssued() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(CounterClaimStatus.DRAFT);
+        entity.setStatus(CounterClaimStatus.CASE_ISSUED);
 
         underTest.onPostPersist(entity);
 
@@ -88,8 +88,8 @@ class CounterClaimEntityListenerTest {
     @Test
     void shouldDoNothingOnPostUpdateWhenStatusHasNotChanged() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(CounterClaimStatus.DRAFT);
-        entity.setPreviousStatus(CounterClaimStatus.DRAFT);
+        entity.setStatus(CounterClaimStatus.PENDING_CASE_ISSUED);
+        entity.setPreviousStatus(CounterClaimStatus.PENDING_CASE_ISSUED);
 
         underTest.onPostUpdate(entity);
 
@@ -114,7 +114,7 @@ class CounterClaimEntityListenerTest {
 
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .status(CounterClaimStatus.PENDING_CASE_ISSUED)
-            .previousStatus(CounterClaimStatus.DRAFT)
+            .previousStatus(CounterClaimStatus.CASE_ISSUED)
             .party(party)
             .pcsCase(pcsCase)
             .build();
