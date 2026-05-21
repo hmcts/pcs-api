@@ -42,6 +42,8 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -227,10 +229,12 @@ class PCSCaseViewTest {
     @Test
     void shouldMapDocuments() {
         // Given
+        Instant submittedDate = Instant.parse("2026-05-14T09:30:00Z");
         DocumentEntity entity1 = DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName("doc1.pdf")
             .url("url1")
+            .submittedDate(submittedDate)
             .build();
 
         DocumentEntity entity2 = DocumentEntity.builder()
@@ -248,6 +252,8 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getAllDocuments()).hasSize(2);
         assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getFilename())
             .containsExactly("doc1.pdf", "doc2.pdf");
+        assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getUploadTimestamp())
+            .containsExactly(LocalDateTime.of(2026, 5, 14, 9, 30), null);
     }
 
     private static ListValue<Party> asListValue(UUID id, Party party) {
