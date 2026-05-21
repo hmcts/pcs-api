@@ -4,7 +4,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { initializeExecutor } from '@utils/controller';
 import test, { expect } from '@playwright/test';
 import { FieldsStore } from '@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action';
-import { initializeGenAppsExecutor, performAction, performValidation } from '@utils/controller-genApps';
+import { initializeGenAppsExecutor, performAction } from '@utils/controller-genApps';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
