@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -18,7 +18,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HM
  * Setup some common possessions case type configuration.
  */
 @Component
-public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
+public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private static final String CASE_TYPE_ID = "PCS";
     private static final String CASE_TYPE_NAME = "Possession";
@@ -49,7 +49,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     @Override
-    public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
+    public void configure(final ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
@@ -97,7 +97,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
         builder.tab("caseLinks", "Linked Cases")
-            .forRoles(UserRole.PCS_SOLICITOR)
+            .forRoles(AccessProfile.PCS_SOLICITOR)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
@@ -106,9 +106,9 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         configureCaseFileCategories(builder);
     }
 
-    private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, UserRole> builder) {
+    private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         for (CaseFileCategory category : CaseFileCategory.values()) {
-            builder.categories(UserRole.PCS_SOLICITOR)
+            builder.categories(AccessProfile.PCS_SOLICITOR)
                 .categoryID(category.getId())
                 .categoryLabel(category.getLabel())
                 .displayOrder(category.getDisplayOrder())
@@ -116,7 +116,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         }
     }
 
-    private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+    private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseParties", "Case Parties")
             .label("Case Parties", null, "#### Case Parties")
             .field("casePartiesTab_ClaimantDetails")
