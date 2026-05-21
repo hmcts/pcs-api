@@ -55,7 +55,7 @@ class DefendantResponseNotificationServiceTest {
     }
 
     @Test
-    void shouldSendNoCounterclaimEmail() {
+    void shouldSendNoCounterClaimEmail() {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
