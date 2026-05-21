@@ -20,18 +20,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
-import uk.gov.hmcts.reform.pcs.notify.service.DefendantResponseNotificationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,8 +51,6 @@ class SubmitEventHandlerTest {
     private ClaimResponseService claimResponseService;
     @Mock
     private DefendantResponseService defendantResponseService;
-    @Mock
-    private DefendantResponseNotificationService defendantResponseNotificationService;
 
     private SubmitEventHandler underTest;
 
@@ -66,8 +59,7 @@ class SubmitEventHandlerTest {
         underTest = new SubmitEventHandler(
             draftCaseDataService,
             claimResponseService,
-            defendantResponseService,
-            defendantResponseNotificationService
+            defendantResponseService
         );
     }
 
@@ -138,10 +130,6 @@ class SubmitEventHandlerTest {
         PCSCase caseData = createDraftSaveCaseData(null, responses);
 
         stubDraft(caseData);
-
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
-            .thenReturn(createSaveResponse());
-
         SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
 
         assertThat(result.getErrors()).isNullOrEmpty();
@@ -185,8 +173,6 @@ class SubmitEventHandlerTest {
             .build();
 
         stubDraft(caseData);
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
-            .thenReturn(createSaveResponse());
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
@@ -232,8 +218,6 @@ class SubmitEventHandlerTest {
             .possessionClaimResponse(response)
             .build();
         stubDraft(caseData);
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
-            .thenReturn(createSaveResponse());
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
@@ -321,8 +305,6 @@ class SubmitEventHandlerTest {
             .build();
 
         stubDraft(caseData);
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
-            .thenReturn(createSaveResponse());
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
@@ -392,9 +374,6 @@ class SubmitEventHandlerTest {
 
         stubDraft(caseData);
 
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
-            .thenReturn(createSaveResponse());
-
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         // When
@@ -406,26 +385,6 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).isNullOrEmpty();
         assertThat(result.getState()).isNull(); // Default response has null state
     }
-
-    @Test
-    void shouldCallDefendantResponseNotificationServiceWhenFinalSubmit() {
-        DefendantResponses responses = DefendantResponses.builder()
-            .rentArrearsAmountConfirmation(YesNoNotSure.NO)
-            .build();
-
-        PCSCase caseData = createDraftSaveCaseData(null, responses);
-
-        stubDraft(caseData);
-
-        DefendantResponseEntity defendantResponse = createSaveResponse();
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any()))
-            .thenReturn(defendantResponse);
-
-        underTest.submit(createEventPayload(caseData));
-
-        verify(defendantResponseNotificationService).sendEmailNotification(defendantResponse.getId());
-    }
-
 
     private void stubDraft(PCSCase draft) {
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
@@ -446,16 +405,5 @@ class SubmitEventHandlerTest {
         return PCSCase.builder()
             .possessionClaimResponse(response)
             .build();
-    }
-
-    private DefendantResponseEntity createSaveResponse() {
-        PartyEntity party = new PartyEntity();
-        party.setId(UUID.randomUUID());
-
-        DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
-        defendantResponse.setParty(party);
-        defendantResponse.setPcsCase(new PcsCaseEntity());
-
-        return defendantResponse;
     }
 }

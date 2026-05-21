@@ -105,10 +105,6 @@ public class PaymentService {
             feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
             feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
             feePaymentRepository.save(feePaymentEntity);
-
-            if (feePaymentEntity.getPaymentStatus() == PaymentStatus.PAID) {
-                paymentNotificationService.sendCounterClaimPaymentSuccessNotification(feePaymentEntity.getId());
-            }
         } else {
             log.error("Unable to find a payment with the service request reference : {}",
                       paymentStatusCallback.getServiceRequestReference());

@@ -11,11 +11,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.util.UUID;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class PaymentNotificationService {
 
@@ -25,6 +26,11 @@ public class PaymentNotificationService {
     public void sendCounterClaimPaymentSuccessNotification(UUID feePaymentId) {
         FeePaymentEntity feePayment = feePaymentRepository.findById(feePaymentId)
             .orElseThrow(() -> new IllegalArgumentException("Fee payment not found: " + feePaymentId));
+
+        if (feePayment.getPaymentStatus() != PaymentStatus.PAID) {
+            log.info("Fee payment {} not marked as paid, no email notification sent", feePayment.getId());
+            return;
+        }
 
         ClaimEntity claim = feePayment.getClaim();
         PartyEntity defendant = claim.getClaimParties()

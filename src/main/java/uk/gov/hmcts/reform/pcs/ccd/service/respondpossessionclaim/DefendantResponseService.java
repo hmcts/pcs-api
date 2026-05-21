@@ -98,7 +98,7 @@ public class DefendantResponseService {
      * @throws IllegalStateException if user ID is null, response already exists,
      *         party not found, or claim not found
      */
-    public DefendantResponseEntity saveDefendantResponse(
+    public void saveDefendantResponse(
         long caseReference,
         PossessionClaimResponse possessionClaimResponse
     ) {
@@ -149,7 +149,6 @@ public class DefendantResponseService {
         }
 
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
-        return savedResponse;
     }
 
     private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
