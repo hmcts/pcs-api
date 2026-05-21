@@ -137,12 +137,12 @@ class CreatePossessionClaimTest extends CftlibTest {
             idamToken,
             s2sToken,
             CaseType.getCaseType(),
-            eventId.name()
+            eventId.externalId()
         );
 
         CaseDataContent content = CaseDataContent.builder()
             .data(caseData)
-            .event(Event.builder().id(eventId.name()).build())
+            .event(Event.builder().id(eventId.externalId()).build())
             .eventToken(startEventResponse.getToken())
             .build();
 
@@ -155,12 +155,12 @@ class CreatePossessionClaimTest extends CftlibTest {
             idamToken,
             s2sToken,
             Long.toString(caseReference),
-            eventId.name()
+            eventId.externalId()
         );
 
         CaseDataContent content = CaseDataContent.builder()
             .data(caseData)
-            .event(Event.builder().id(eventId.name()).build())
+            .event(Event.builder().id(eventId.externalId()).build())
             .eventToken(startEventResponse.getToken())
             .build();
 

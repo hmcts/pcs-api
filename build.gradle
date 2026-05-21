@@ -540,9 +540,31 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
+  environment 'FEATURE_WORKALLOCATION_ENABLED', 'true'
+  environment 'IDAM_URL', 'http://localhost:5062'
+  environment 'OPEN_ID_IDAM_URL', 'http://localhost:5062'
+  environment 'WA_IDAM_CLIENT_ID', 'pcs-api'
+  environment 'WA_IDAM_CLIENT_SECRET', '123456'
+  environment 'WA_SYSTEM_USERNAME', 'pcs-system-user@localhost'
+  environment 'WA_SYSTEM_PASSWORD', 'password'
+  environment 'RSE_LIB_XUI_ENV_DECENTRALISED_CASE_TYPE_CONFIG',
+    '{"PCS":{"webUrl":"http://localhost:3206","nocBaseUrl":"http://host.docker.internal:3206"}}'
+  environment 'RSE_LIB_XUI_ENV_SESSION_SECRET', 'local-session-secret-for-cftlib'
+  environment 'RSE_LIB_XUI_ENV_S2S_SECRET', 'AAAAAAAAAAAAAAAA'
+  environment 'RSE_LIB_XUI_ENV_IDAM_SECRET', 'local-idam-secret'
+  environment 'RSE_LIB_XUI_ENV_SYSTEM_USER_NAME', 'system@test.com'
+  environment 'RSE_LIB_XUI_ENV_SYSTEM_USER_PASSWORD', 'password'
+  environment 'RSE_LIB_XUI_ENV_WA_SUPPORTED_JURISDICTIONS', 'IA,CIVIL,PRIVATELAW,PUBLICLAW,EMPLOYMENT,ST_CIC,PCS'
+  environment 'XUI_MANAGE_CASES_USE_LOCAL', ''
+  environment 'XUI_MANAGE_CASES_TAG', 'decentralised-events-local'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
-  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
+  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES',
+    'ccd_data,ccd_gw,pcs_frontend,pcs_api,wa_task_management_api,aac_manage_case_assignment'
+  environment 'S2S_AUTHORISED_SERVICES',
+    'ccd_data,ccd_gw,pcs_frontend,pcs_api,xui_webapp,aac_manage_case_assignment'
+  environment 'DATA_STORE_CROSS_JURISDICTIONAL_ROLES', 'caseworker-caa,caseworker-approver'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
+  environment 'S2S_NAMES_WHITELIST', 'pcs_api,pcs_frontend,ccd_data,payment_app,xui_webapp,aac_manage_case_assignment'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {

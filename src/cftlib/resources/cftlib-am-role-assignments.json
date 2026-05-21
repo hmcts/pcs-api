@@ -15,5 +15,26 @@
         "authorisations": []
       }
     ]
+  },
+  {
+    "email": "master.caa@gmail.com",
+    "id": "5866d8f8-672d-3adf-9f40-68e40bf8e343",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "caseworker-caa",
+        "grantType": "STANDARD",
+        "roleCategory": "LEGAL_OPERATIONS",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "jurisdiction": "PCS",
+          "caseType": "PCS"
+        },
+        "authorisations": [
+          "PCS"
+        ]
+      }
+    ]
   }
 ]

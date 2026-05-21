@@ -21,6 +21,9 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.io.InputStream;
 import java.util.Map;
 
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,8 +31,8 @@ import java.util.Map;
 public class CcdTestCaseOrchestrator {
 
     private static final String CASE_TYPE = CaseType.getCaseType();
-    private static final String CREATE_EVENT = "createPossessionClaim";
-    private static final String RESUME_EVENT = "resumePossessionClaim";
+    private static final String CREATE_EVENT = createPossessionClaim.externalId();
+    private static final String RESUME_EVENT = resumePossessionClaim.externalId();
 
     private final AuthTokenGenerator s2sAuthTokenGenerator;
     private final CoreCaseDataApi coreCaseDataApi;

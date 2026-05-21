@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.exception;
 
 import feign.FeignException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import uk.gov.hmcts.reform.pcs.controllers.RestExceptionHandler;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 
+@Slf4j
 @ControllerAdvice(basePackages = "uk.gov.hmcts.reform.pcs.testingsupport")
 public class TestingSupportExceptionHandler {
 
@@ -41,6 +43,7 @@ public class TestingSupportExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<RestExceptionHandler.Error> handleGenericCreateCaseException(Exception ex) {
+        log.error("Testing support request failed", ex);
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(new RestExceptionHandler.Error("Failed to create CCD case"));

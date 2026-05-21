@@ -13,4 +13,15 @@ public enum EventId {
     maintainCaseLink,
     dashboardView,
     confirmEviction
+
+    ;
+
+    public String externalId() {
+        return switch (this) {
+            case createPossessionClaim -> "ext:create";
+            case resumePossessionClaim -> "ext:resume";
+            case enforceTheOrder -> "ext:enforce";
+            default -> "ext:" + name();
+        };
+    }
 }

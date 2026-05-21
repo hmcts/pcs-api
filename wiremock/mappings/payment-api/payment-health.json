@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/payments/health"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "UP"
+    }
+  }
+}

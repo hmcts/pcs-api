@@ -71,7 +71,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
+                .decentralisedEvent(resumePossessionClaim.externalId(), this::submit, this::start)
                 .forState(AWAITING_SUBMISSION_TO_HMCTS)
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)

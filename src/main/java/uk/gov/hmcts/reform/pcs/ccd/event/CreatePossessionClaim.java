@@ -50,7 +50,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(createPossessionClaim.name(), this::submit, this::start)
+                .decentralisedEvent(createPossessionClaim.externalId(), this::submit, this::start)
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")

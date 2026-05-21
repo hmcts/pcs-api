@@ -86,6 +86,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getCaseTitleMarkdown)
+            .field(PCSCase::getNocClaimantName)
+            .field(PCSCase::getClaimantOrganisationPolicy)
             .field(PCSCase::getDashboardData);
 
         builder.tab("serviceRequest", "Service Request")

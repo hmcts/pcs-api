@@ -42,6 +42,7 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
+    - "/cases/**"
 
 spring:
   config:
@@ -94,7 +95,7 @@ idam:
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
     microservice: ${S2S_SERVICE_NAME:pcs_api}
   s2s-authorised:
-    services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data,payment_app}
+    services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data,payment_app,xui_webapp}
   system-user:
     username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
     password: ${PCS_IDAM_SYSTEM_PASSWORD:password}

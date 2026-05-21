@@ -8,8 +8,11 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.Organisation;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -139,6 +142,19 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
 
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
+        pcsCaseEntity.getParties().stream()
+            .map(PartyEntity::getOrgName)
+            .filter(orgName -> orgName != null && !orgName.isBlank())
+            .findFirst()
+            .ifPresent(orgName -> {
+                pcsCase.setNocClaimantName(orgName);
+                pcsCase.setClaimantOrganisationPolicy(OrganisationPolicy.<UserRole>builder()
+                    .organisation(Organisation.builder()
+                        .organisationName(orgName)
+                        .build())
+                    .orgPolicyCaseAssignedRole(UserRole.CLAIMANT_SOLICITOR)
+                    .build());
+            });
     }
 
     private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
@@ -158,7 +174,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <p class="govuk-body govuk-!-font-size-19">
                                              <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
                                              </p>
-                                             """.formatted(resumePossessionClaim));
+                                             """.formatted(resumePossessionClaim.externalId()));
         } else {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Provide more details about your claim</h2>
@@ -174,7 +190,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <p class="govuk-body govuk-!-font-size-19">
                                              <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
                                              </p>
-                                             """.formatted(resumePossessionClaim));
+                                             """.formatted(resumePossessionClaim.externalId()));
         }
     }
 

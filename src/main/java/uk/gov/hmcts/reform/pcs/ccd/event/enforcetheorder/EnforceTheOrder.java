@@ -60,7 +60,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
+                .decentralisedEvent(enforceTheOrder.externalId(), this::submit, this::start)
                 .forAllStates()
                 .name("Enforce the order")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
