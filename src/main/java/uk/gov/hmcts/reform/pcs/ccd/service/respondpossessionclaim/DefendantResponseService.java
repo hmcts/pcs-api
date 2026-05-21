@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -240,7 +240,7 @@ public class DefendantResponseService {
             .needHelpWithFees(cc.getNeedHelpWithFees())
             .appliedForHwf(cc.getAppliedForHwf())
             .hwfReferenceNumber(cc.getHwfReferenceNumber())
-            .status(State.PENDING_CASE_ISSUED.name())
+            .status(CounterClaimState.PENDING_CASE_ISSUED)
             .claimSubmittedDate(submittedAt)
             .party(partyRef)
             .build();

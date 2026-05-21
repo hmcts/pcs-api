@@ -53,4 +53,7 @@ public class CounterClaim {
     @CCD(access = {CitizenAccess.class})
     private String hwfReferenceNumber;
 
+    @CCD(access = {CitizenAccess.class})
+    private CounterClaimState state;
+
 }
