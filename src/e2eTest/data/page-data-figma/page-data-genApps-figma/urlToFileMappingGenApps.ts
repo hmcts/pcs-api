@@ -4,4 +4,5 @@ export default {
   'makeAnApplicationstartSetAside': 'askTheCourtToSetAsideTheOrder',
   'makeAnApplicationstartSomethingElse': 'askTheCourtToMakeAnOrder',
   'makeAnApplicationselectParty': 'selectParty',
+  'makeAnApplicationhearingInNext14Days': 'isTheCourtHearingInTheNext14Days',
 };
