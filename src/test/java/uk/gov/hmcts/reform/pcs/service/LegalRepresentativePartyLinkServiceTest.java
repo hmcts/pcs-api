@@ -345,7 +345,7 @@ class LegalRepresentativePartyLinkServiceTest {
                 .claimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentativeEntity))
             .build();
 
-        when(legalRepresentativeRepository.isPartyLinkedToLegalRepresentativeAndActive(partyId))
+        when(legalRepresentativeRepository.findLegalRepresentativeForParty(partyId))
             .thenReturn(Optional.of(existingLinkedLegalRep));
 
         when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
