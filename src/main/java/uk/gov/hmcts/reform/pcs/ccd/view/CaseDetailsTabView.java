@@ -52,6 +52,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -63,6 +64,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENA
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.DEMOTED_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.INTRODUCTORY_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @AllArgsConstructor
 @Component
@@ -502,6 +504,11 @@ public class CaseDetailsTabView {
             return null;
         }
 
-        return dateSubmitted.format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM");
+        LocalDateTime ukDateSubmitted = dateSubmitted
+            .atZone(ZoneId.systemDefault())
+            .withZoneSameInstant(UK_ZONE_ID)
+            .toLocalDateTime();
+
+        return ukDateSubmitted.format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM");
     }
 }
