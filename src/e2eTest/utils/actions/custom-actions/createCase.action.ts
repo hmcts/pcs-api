@@ -967,7 +967,6 @@ export class CreateCaseAction implements IAction {
       claimant.set(`Postcode/Zipcode`, payLoad.organisationAddress.PostCode);
       claimant.set('Country', payLoad.organisationAddress.Country)
     }
-
     await this.caseTabTableData(page, defendantsDetails.table as string);
 
     const misMatchMap = compareMaps(claimant, caseTabMap, {
