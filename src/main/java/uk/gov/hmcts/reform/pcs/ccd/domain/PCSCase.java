@@ -547,7 +547,6 @@ public class PCSCase {
     private ComponentLauncher caseFileView;
 
     @CCD(searchable = false)
-
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
 
