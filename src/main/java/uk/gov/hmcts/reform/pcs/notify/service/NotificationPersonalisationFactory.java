@@ -45,9 +45,15 @@ public class NotificationPersonalisationFactory {
         String claimantNameUpper = toLineClaimantName.toUpperCase(Locale.ROOT);
 
         DefendantDetails primaryDefendantDetails = pcsCase.getDefendant1();
-        String primaryDefendantName = formatNameUpperForNotification(
-            primaryDefendantDetails.getFirstName(), primaryDefendantDetails.getLastName()
-        );
+
+        boolean isNameKnown = primaryDefendantDetails.getNameKnown() != null
+            && primaryDefendantDetails.getNameKnown().toBoolean();
+        String firstName = primaryDefendantDetails.getFirstName();
+        String lastName = primaryDefendantDetails.getLastName();
+
+        String primaryDefendantName = isNameKnown && firstName != null && lastName != null
+            ? formatNameUpperForNotification(firstName, lastName)
+            : "PERSONS UNKNOWN";
 
         return ClaimantBasePersonalisation.builder()
             .toLineClaimantName(toLineClaimantName)

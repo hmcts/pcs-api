@@ -138,6 +138,58 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("toLineClaimantName", "Jane Smith")
                 .containsEntry("claimantName", "JANE SMITH");
         }
+
+        @Test
+        @DisplayName("Should use PERSONS UNKNOWN when defendant name is not known")
+        void shouldUsePersonsUnknownWhenDefendantNameNotKnown() {
+            PCSCase pcsCase = createPcsCase(VerticalYesNo.YES, "Jane Smith", "Override Name");
+            pcsCase.getDefendant1().setNameKnown(VerticalYesNo.NO);
+
+            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should use PERSONS UNKNOWN when defendant name known is null")
+        void shouldUsePersonsUnknownWhenDefendantNameKnownIsNull() {
+            PCSCase pcsCase = createPcsCase(VerticalYesNo.YES, "Jane Smith", "Override Name");
+            pcsCase.getDefendant1().setNameKnown(null);
+
+            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should use PERSONS UNKNOWN when defendant first name is null")
+        void shouldUsePersonsUnknownWhenDefendantFirstNameIsNull() {
+            PCSCase pcsCase = createPcsCase(VerticalYesNo.YES, "Jane Smith", "Override Name");
+            pcsCase.getDefendant1().setFirstName(null);
+
+            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should use PERSONS UNKNOWN when defendant last name is null")
+        void shouldUsePersonsUnknownWhenDefendantLastNameIsNull() {
+            PCSCase pcsCase = createPcsCase(VerticalYesNo.YES, "Jane Smith", "Override Name");
+            pcsCase.getDefendant1().setLastName(null);
+
+            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
     }
 
     @Nested
@@ -232,6 +284,7 @@ class NotificationPersonalisationFactoryTest {
         claimantInformation.setOverriddenClaimantName(overriddenName);
 
         DefendantDetails defendant = new DefendantDetails();
+        defendant.setNameKnown(VerticalYesNo.YES);
         defendant.setFirstName("John");
         defendant.setLastName("Doe");
 
