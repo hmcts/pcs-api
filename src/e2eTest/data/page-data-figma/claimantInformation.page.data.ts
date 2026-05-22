@@ -1,7 +1,7 @@
 export const claimantInformation = {
   mainHeader: `Claimant name`,
   makeAClaimCaption: `Make a claim`,
-  possessionClaimSolicitorOrgParagraph: `Possession Claims Solicitor Org`,
+  possessionClaimSolicitorOrgParagraph: `Possession Claim Service Org1`,
   yourClaimantNameRegisteredParagraph: `Your claimant name registered with My HMCTS is:`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,

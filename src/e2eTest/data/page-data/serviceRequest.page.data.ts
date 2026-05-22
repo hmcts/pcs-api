@@ -7,7 +7,7 @@ export const serviceRequest = {
   payByCardRadioOption: `Pay by credit or debit card`,
   selectPBALabel: `Select a PBA`,
   pbaIndex1: 1,
-  pbaValue: `PBA0093901`,
+  pbaValue: `PBA0092853`,
   pbaReferenceLable: `Enter a reference for your PBA account statements`,
   pbaReferenceInputText: `UniqueCaseIdentifier-Automation`,
   continueButton: `Continue`,
