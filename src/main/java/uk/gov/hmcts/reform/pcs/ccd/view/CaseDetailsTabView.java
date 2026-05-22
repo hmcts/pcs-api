@@ -259,7 +259,9 @@ public class CaseDetailsTabView {
                     }
                     case OTHER_ELECTRONIC -> {
                         LocalDateTime dateTime = noticeServedDetails.getNoticeOtherElectronicDateTime();
+                        String details = noticeServedDetails.getNoticeOtherElectronicMethodExplanation();
                         noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
+                        noticeTabDetails.setNoticeOtherElectronicDetails(details != null ? details : NO_ANSWER);
                     }
                     case OTHER -> {
                         LocalDateTime dateTime = noticeServedDetails.getNoticeOtherDateTime();

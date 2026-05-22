@@ -633,6 +633,7 @@ public class CaseDetailsTabViewTest {
             .noticeServedDetails(NoticeServedDetails.builder()
                                      .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
                                      .noticeOtherElectronicDateTime(LocalDateTime.of(2026, 5, 11, 9, 0, 0))
+                                     .noticeOtherElectronicMethodExplanation("explanation")
                                      .build())
             .build();
 
@@ -644,6 +645,8 @@ public class CaseDetailsTabViewTest {
             .isEqualTo(NoticeServiceMethod.OTHER_ELECTRONIC.getLabel());
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
+        assertThat(caseDetailsTab.getNoticeDetails().getNoticeOtherElectronicDetails())
+            .isEqualTo("explanation");
     }
 
     @Test

@@ -31,6 +31,9 @@ public class NoticeTabDetails {
     @CCD(label = "Email address the document sent to")
     private String noticeEmailAddress;
 
+    @CCD(label = "Details of how notice was served")
+    private String noticeOtherElectronicDetails;
+
     @CCD(label = "Explain what the other means were")
     private String noticeOtherExplanation;
 
