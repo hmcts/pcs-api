@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
@@ -49,6 +50,7 @@ class DashboardViewTest extends BaseEventTest {
     void setUp() {
         dashboardJourneyService = new DashboardJourneyService(java.util.List.of(
             new ClaimTaskGroupEvaluator(),
+            new DocumentsTaskGroupEvaluator(),
             new ResponseTaskGroupEvaluator(),
             new ApplicationsTaskGroupEvaluator(),
             new HearingsTaskGroupEvaluator(),

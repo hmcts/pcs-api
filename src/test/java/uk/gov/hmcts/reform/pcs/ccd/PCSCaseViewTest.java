@@ -18,15 +18,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -42,6 +40,8 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -102,6 +102,8 @@ class PCSCaseViewTest {
     @Mock
     private CaseLinkView caseLinkView;
     @Mock
+    private CaseNoteView caseNoteView;
+    @Mock
     private CaseTabView caseTabView;
     @Mock
     private PartiesView partiesView;
@@ -118,7 +120,7 @@ class PCSCaseViewTest {
                                     alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseTabView, partiesView
+                                    caseNoteView, caseTabView, partiesView
         );
     }
 
@@ -227,10 +229,12 @@ class PCSCaseViewTest {
     @Test
     void shouldMapDocuments() {
         // Given
+        Instant submittedDate = Instant.parse("2026-05-14T09:30:00Z");
         DocumentEntity entity1 = DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName("doc1.pdf")
             .url("url1")
+            .submittedDate(submittedDate)
             .build();
 
         DocumentEntity entity2 = DocumentEntity.builder()
@@ -248,25 +252,8 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getAllDocuments()).hasSize(2);
         assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getFilename())
             .containsExactly("doc1.pdf", "doc2.pdf");
-    }
-
-    private static ListValue<Party> asListValue(UUID id, Party party) {
-        return ListValue.<Party>builder().id(id.toString()).value(party).build();
-    }
-
-    private ClaimPartyEntity createClaimPartyEntity(Party party, UUID partyId, PartyRole partyRole) {
-        PartyEntity partyEntity = mock(PartyEntity.class);
-
-        when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
-
-        ClaimPartyId claimPartyId = new ClaimPartyId();
-        claimPartyId.setPartyId(partyId);
-
-        return ClaimPartyEntity.builder()
-            .id(claimPartyId)
-            .role(partyRole)
-            .party(partyEntity)
-            .build();
+        assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getUploadTimestamp())
+            .containsExactly(LocalDateTime.of(2026, 5, 14, 9, 30), null);
     }
 
     @Test
