@@ -2,16 +2,19 @@ package uk.gov.hmcts.reform.pcs.notify.listener;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.notify.service.DefendantResponseNotificationService;
+import uk.gov.hmcts.reform.pcs.notify.event.DefendantResponseStatusUpdatedEvent;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -21,7 +24,7 @@ import static org.mockito.Mockito.when;
 class DefendantResponseEntityListenerTest {
 
     @Mock
-    private DefendantResponseNotificationService defendantResponseNotificationService;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private DefendantResponseEntityListener underTest;
@@ -37,7 +40,7 @@ class DefendantResponseEntityListenerTest {
     }
 
     @Test
-    void shouldHandleNotificationOnPostPersistWhenStatusIsSubmitted() {
+    void shouldPublishEventOnPostPersistWhenStatusIsSubmitted() {
         UUID defendantResponseId = UUID.randomUUID();
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.SUBMITTED);
@@ -45,17 +48,23 @@ class DefendantResponseEntityListenerTest {
 
         underTest.onPostPersist(entity);
 
-        verify(defendantResponseNotificationService).sendEmailNotificationForNoCounterClaim(defendantResponseId);
+        ArgumentCaptor<DefendantResponseStatusUpdatedEvent> eventCaptor =
+            ArgumentCaptor.forClass(DefendantResponseStatusUpdatedEvent.class);
+        verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
+
+        DefendantResponseStatusUpdatedEvent event = eventCaptor.getValue();
+        assertEquals(defendantResponseId, event.getEntityId());
+        assertEquals(DefendantResponseStatus.SUBMITTED, event.getNewStatus());
     }
 
     @Test
-    void shouldNotHandleNotificationOnPostPersistWhenStatusIsNotSubmitted() {
+    void shouldNotPublishEventOnPostPersistWhenStatusIsNotSubmitted() {
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.CREATED);
 
         underTest.onPostPersist(entity);
 
-        verify(defendantResponseNotificationService, never()).sendEmailNotificationForNoCounterClaim(null);
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -66,11 +75,11 @@ class DefendantResponseEntityListenerTest {
 
         underTest.onPostUpdate(entity);
 
-        verify(defendantResponseNotificationService, never()).sendEmailNotificationForNoCounterClaim(null);
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 
     @Test
-    void shouldHandleNotificationOnPostUpdateWhenStatusChangesToSubmitted() {
+    void shouldPublishEventOnPostUpdateWhenStatusChangesToSubmitted() {
         UUID defendantResponseId = UUID.randomUUID();
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.SUBMITTED);
@@ -79,17 +88,24 @@ class DefendantResponseEntityListenerTest {
 
         underTest.onPostUpdate(entity);
 
-        verify(defendantResponseNotificationService).sendEmailNotificationForNoCounterClaim(defendantResponseId);
+        ArgumentCaptor<DefendantResponseStatusUpdatedEvent> eventCaptor =
+            ArgumentCaptor.forClass(DefendantResponseStatusUpdatedEvent.class);
+        verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
+
+        DefendantResponseStatusUpdatedEvent event = eventCaptor.getValue();
+        assertEquals(defendantResponseId, event.getEntityId());
+        assertEquals(DefendantResponseStatus.CREATED, event.getPreviousStatus());
+        assertEquals(DefendantResponseStatus.SUBMITTED, event.getNewStatus());
     }
 
     @Test
-    void shouldNotHandleNotificationOnPostUpdateWhenStatusChangesToSomethingElse() {
+    void shouldNotPublishEventOnPostUpdateWhenStatusChangesToSomethingElse() {
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.CREATED);
         when(entity.getPreviousStatus()).thenReturn(null);
 
         underTest.onPostUpdate(entity);
 
-        verify(defendantResponseNotificationService, never()).sendEmailNotificationForNoCounterClaim(null);
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 }
