@@ -446,6 +446,7 @@ public class PCSCase {
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
 
+    @CCD(label = "Uploaded additional documents")
     private List<ListValue<UploadedDocument>> uploadedAdditionalDocuments;
 
     @CCD(
