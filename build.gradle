@@ -383,6 +383,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
 
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
@@ -396,6 +397,7 @@ dependencies {
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
+  // Compile-time only: needed for IdamApi.class reference in @EnableFeignClients (ccd-sdk's IdamClient depends on it).
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
   implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'
   implementation group: 'com.github.hmcts', name: 'ccd-case-document-am-client', version: '1.59.2'
@@ -466,6 +468,9 @@ dependencies {
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
+
+  // cftlib does not pull oauth2-client transitively from `implementation`; needed by OAuth2ClientConfig
+  cftlibImplementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
   mockitoAgentConfig group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   mockitoAgent 'org.mockito:mockito-core'
