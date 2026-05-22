@@ -328,9 +328,12 @@ public class NotificationService {
         String claimantNameUpper = toLineClaimantName.toUpperCase(Locale.ROOT);
 
         DefendantDetails primaryDefendantDetails = pcsCase.getDefendant1();
-        String primaryDefendantName = formatNameUpperForNotification(
-            primaryDefendantDetails.getFirstName(), primaryDefendantDetails.getLastName()
-        );
+
+        String primaryDefendantName =
+            primaryDefendantDetails.getFirstName() != null && primaryDefendantDetails.getLastName() != null
+                ? formatNameUpperForNotification(
+                    primaryDefendantDetails.getFirstName(), primaryDefendantDetails.getLastName())
+                : "PERSONS UNKNOWN";
 
         return ClaimantBasePersonalisation.builder()
             .toLineClaimantName(toLineClaimantName)

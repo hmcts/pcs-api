@@ -898,6 +898,70 @@ class NotificationServiceTest {
             assertThat(result.toMap())
                 .containsEntry("caseNumber", "1234-5678-9012-3456");
         }
+
+        @Test
+        @DisplayName("Should return PERSONS UNKNOWN when both defendant names are missing")
+        void shouldReturnPersonsUnknownWhenBothDefendantNamesAreMissing() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            pcsCase.setDefendant1(new DefendantDetails());
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should return PERSONS UNKNOWN when defendant first name is missing")
+        void shouldReturnPersonsUnknownWhenDefendantFirstNameIsMissing() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            DefendantDetails defendant = new DefendantDetails();
+            defendant.setLastName("Doe");
+            pcsCase.setDefendant1(defendant);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should return PERSONS UNKNOWN when defendant last name is missing")
+        void shouldReturnPersonsUnknownWhenDefendantLastNameIsMissing() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            DefendantDetails defendant = new DefendantDetails();
+            defendant.setFirstName("John");
+            pcsCase.setDefendant1(defendant);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
     }
 
     private EmailNotificationRequest createValidEmailRequest() {
