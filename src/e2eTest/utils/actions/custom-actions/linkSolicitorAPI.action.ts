@@ -25,7 +25,7 @@ export class LinkSolicitorAPIAction implements IAction {
   }
 
   private async linkSolicitorAPI(): Promise<void> {
-    await this.generateSolicitorAccessToken();
+    //await this.generateSolicitorAccessToken();
     const linkSolicitorApi = Axios.create(linkSolicitorTokenApiData.linkSolicitorTokenApiInstance());
     try {
       await linkSolicitorApi.post(linkSolicitorTokenApiData.linkSolicitorApiEndPoint());
@@ -53,20 +53,6 @@ export class LinkSolicitorAPIAction implements IAction {
     }
 
   }
-
-  private async generateSolicitorAccessToken(): Promise<void> {
-    const { IdamUtils } = await import('@hmcts/playwright-common');
-    process.env.SOLICITOR_ACCESS_TOKEN = await new IdamUtils().generateIdamToken({
-      username: user.defendantSolicitor.email,
-      password: user.defendantSolicitor.password,
-      grantType: 'password',
-      clientId: 'pcs-api',
-      clientSecret: process.env.PCS_API_IDAM_SECRET as string,
-      scope: 'profile openid roles',
-    });
-  }
-
-
 }
 
 
