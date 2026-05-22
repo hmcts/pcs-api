@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -27,7 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -76,7 +76,7 @@ class TestingSupportControllerTest {
     @Mock
     private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     @Mock
-    private IdamService idamService;
+    private IdamAuthenticator idamAuthenticator;
     @Mock
     private EntityTestStatusService entityTestStatusService;
     @Mock
@@ -95,7 +95,7 @@ class TestingSupportControllerTest {
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
-                                                 idamService,
+                                                 idamAuthenticator
                                                  entityTestStatusService
         );
     }
@@ -353,7 +353,7 @@ class TestingSupportControllerTest {
         String partyId = "abc";
         String authToken = "testAuth";
         String userUid = "userUid";
-        when(idamService.validateAuthToken(authToken)).thenReturn(user);
+        when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
         when(userInfo.getUid()).thenReturn(userUid);
 

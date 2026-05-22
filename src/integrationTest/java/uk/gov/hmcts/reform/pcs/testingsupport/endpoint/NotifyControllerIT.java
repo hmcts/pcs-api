@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -62,7 +64,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
     @MockitoBean
-    private IdamClient idamClient;
+    private OAuth2AuthorizedClientManager authorizedClientManager;
     @MockitoBean
     private NotificationService notificationService;
     @MockitoBean
@@ -75,7 +77,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
 
     @BeforeEach
     void setUp() {
-        idamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
+        idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_TOKEN);
 
         EmailNotificationResponse mockResponse = new EmailNotificationResponse();
         mockResponse.setTaskId("task-123");
