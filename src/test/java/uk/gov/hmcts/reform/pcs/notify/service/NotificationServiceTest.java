@@ -900,6 +900,78 @@ class NotificationServiceTest {
         }
 
         @Test
+        @DisplayName("Should return formatted name when name is known and first/last names are present")
+        void shouldReturnFormattedNameWhenNameIsKnownAndNamesArePresent() {
+            DefendantDetails defendant = new DefendantDetails();
+            defendant.setNameKnown(VerticalYesNo.YES);
+            defendant.setFirstName("John");
+            defendant.setLastName("Doe");
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            pcsCase.setDefendant1(defendant);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "JOHN DOE");
+        }
+
+        @Test
+        @DisplayName("Should return PERSONS UNKNOWN when name is not known even if first/last names are present")
+        void shouldReturnPersonsUnknownWhenNameIsNotKnownEvenIfNamesArePresent() {
+            DefendantDetails defendant = new DefendantDetails();
+            defendant.setNameKnown(VerticalYesNo.NO);
+            defendant.setFirstName("John");
+            defendant.setLastName("Doe");
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            pcsCase.setDefendant1(defendant);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should return PERSONS UNKNOWN when nameKnown is null")
+        void shouldReturnPersonsUnknownWhenNameKnownIsNull() {
+            DefendantDetails defendant = new DefendantDetails();
+            defendant.setNameKnown(null);
+            defendant.setFirstName("John");
+            defendant.setLastName("Doe");
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            pcsCase.setDefendant1(defendant);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
         @DisplayName("Should return PERSONS UNKNOWN when both defendant names are missing")
         void shouldReturnPersonsUnknownWhenBothDefendantNamesAreMissing() {
             PCSCase pcsCase = createPcsCase(
