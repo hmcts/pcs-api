@@ -27,4 +27,24 @@ export function stringToCamelCase(input: string): string {
     .split(/\s+/)
     .map((word, index) => (index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)))
     .join('');
+
 }
+/**
+ * Returns a formatted British standard time
+ */
+export function getCurrentBSTTime(): string {
+  const now = new Date();
+  const formatted = now.toLocaleString("en-GB", {
+    timeZone: "Europe/London",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
+  return formatted.replace(/am|pm/, (match) => match.toUpperCase());
+}
+
