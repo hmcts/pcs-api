@@ -7,7 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -46,7 +46,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                    <p class="govuk-body govuk-!-font-size-19">Give your document a name that explains what it is.</p>
                    """
             )
-            .mandatory(PCSCase::getAdditionalDocs)
+            .mandatory(PCSCase::getAdditionalDocuments)
             .label("uploadAdditionalDocuments-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -54,7 +54,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        List<String> errors = validateDocumentDescription(caseData.getAdditionalDocs(), DESCRIPTION_LABEL);
+        List<String> errors = validateDocumentDescription(caseData.getAdditionalDocuments(), DESCRIPTION_LABEL);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
@@ -63,13 +63,13 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
     }
 
     public List<String> validateDocumentDescription(
-        List<ListValue<AdditionalDocuments>> additionalDocs,
+        List<ListValue<AdditionalDocument>> additionalDocuments,
         String sectionLabel) {
 
         List<String> validationErrors = new ArrayList<>();
 
-        for (int i = 0; i < additionalDocs.size(); i++) {
-            String docDescription = additionalDocs.get(i).getValue().getDescription();
+        for (int i = 0; i < additionalDocuments.size(); i++) {
+            String docDescription = additionalDocuments.get(i).getValue().getDescription();
             String sectionHint = "Additional document %d".formatted(i + 1) + "'s " + sectionLabel;
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 docDescription, sectionHint, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)

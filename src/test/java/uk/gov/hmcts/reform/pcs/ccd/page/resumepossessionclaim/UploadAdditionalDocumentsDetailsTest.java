@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -29,12 +29,12 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     @Test
     void shouldNotReturnErrorsWhenDescriptionIsCorrectLength() {
         // Given
-        AdditionalDocuments doc = AdditionalDocuments.builder()
+        AdditionalDocument doc = AdditionalDocument.builder()
                 .description("Valid description")
                 .build();
 
         PCSCase caseData = PCSCase.builder()
-                .additionalDocs(List.of(ListValue.<AdditionalDocuments>builder().value(doc).build()))
+                .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
                 .build();
 
         // When
@@ -49,12 +49,12 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     void shouldReturnValidationErrorsWhenDescriptionTooLong() {
         // Given
         String longDescription = "a".repeat(61);
-        AdditionalDocuments doc = AdditionalDocuments.builder()
+        AdditionalDocument doc = AdditionalDocument.builder()
                 .description(longDescription)
                 .build();
 
         PCSCase caseData = PCSCase.builder()
-                .additionalDocs(List.of(ListValue.<AdditionalDocuments>builder().value(doc).build()))
+                .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
                 .build();
 
         // When

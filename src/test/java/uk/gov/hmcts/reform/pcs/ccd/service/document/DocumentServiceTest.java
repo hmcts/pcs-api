@@ -15,8 +15,8 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -75,14 +75,14 @@ class DocumentServiceTest {
                 new ArrayList<>()
         );
 
-        AdditionalDocuments additionalDocument1 = AdditionalDocuments.builder()
+        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
                 .document(Document.builder()
                         .url("url-WITNESS_STATEMENT")
                         .filename("file-WITNESS_STATEMENT")
                         .binaryUrl("bin-WITNESS_STATEMENT")
                         .categoryId("cat-WITNESS_STATEMENT")
                         .build())
-                .documentTypeList(documentTypeList1)
+                .documentType(documentTypeList1)
                 .build();
 
         DynamicList documentTypeList2 = new DynamicList(
@@ -90,24 +90,24 @@ class DocumentServiceTest {
                 new ArrayList<>()
         );
 
-        AdditionalDocuments additionalDocument2 = AdditionalDocuments.builder()
+        AdditionalDocument additionalDocument2 = AdditionalDocument.builder()
                 .document(Document.builder()
                         .url("url-RENT_STATEMENT")
                         .filename("file-RENT_STATEMENT")
                         .binaryUrl("bin-RENT_STATEMENT")
                         .categoryId("cat-RENT_STATEMENT")
                         .build())
-                .documentTypeList(documentTypeList2)
+                .documentType(documentTypeList2)
                 .build();
 
-        ListValue<AdditionalDocuments> lv1 = ListValue.<AdditionalDocuments>builder()
+        ListValue<AdditionalDocument> lv1 = ListValue.<AdditionalDocument>builder()
                 .id("1").value(additionalDocument1).build();
-        ListValue<AdditionalDocuments> lv2 = ListValue.<AdditionalDocuments>builder()
+        ListValue<AdditionalDocument> lv2 = ListValue.<AdditionalDocument>builder()
                 .id("2").value(additionalDocument2).build();
 
-        List<ListValue<AdditionalDocuments>> additionalDocuments = List.of(lv1, lv2);
+        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(lv1, lv2);
 
-        when(pcsCase.getAdditionalDocs()).thenReturn(additionalDocuments);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
 
         // When
         underTest.createAllDocuments(pcsCase);
@@ -138,18 +138,18 @@ class DocumentServiceTest {
                 new ArrayList<>()
         );
 
-        AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
                 .document(Document.builder()
                         .filename("userEnteredDetails.pdf")
                         .uploadTimestamp(LocalDateTime.now())
                         .url("someUrl")
                         .binaryUrl("someUrl")
                         .categoryId("uploaded-category").build())
-                .documentTypeList(documentTypeList)
+                .documentType(documentTypeList)
                 .build();
 
-        when(pcsCase.getAdditionalDocs()).thenReturn(List.of(
-                ListValue.<AdditionalDocuments>builder().value(additionalDocument).build()
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         ));
 
         // When
@@ -178,15 +178,15 @@ class DocumentServiceTest {
                 new ArrayList<>()
         );
 
-        AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
                 .document(Document.builder()
                         .filename("filename.txt")
                         .categoryId("uploaded-category").build())
-                .documentTypeList(documentTypeList)
+                .documentType(documentTypeList)
                 .build();
 
-        when(pcsCase.getAdditionalDocs()).thenReturn(List.of(
-                ListValue.<AdditionalDocuments>builder().value(additionalDocument).build()
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         ));
 
         // When
@@ -434,7 +434,7 @@ class DocumentServiceTest {
                 new ArrayList<>()
         );
 
-        AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
                 .document(Document.builder()
                         .filename("witness1.pdf")
                         .binaryUrl("someUrl")
@@ -442,15 +442,15 @@ class DocumentServiceTest {
                         .categoryId("cat1")
                         .uploadTimestamp(LocalDateTime.now())
                         .build())
-                .documentTypeList(documentTypeList)
+                .documentType(documentTypeList)
                 .description(description)
                 .build();
 
-        List<ListValue<AdditionalDocuments>> additionalDocuments = List.of(
-                ListValue.<AdditionalDocuments>builder().value(additionalDocument).build()
+        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         );
 
-        when(pcsCase.getAdditionalDocs()).thenReturn(additionalDocuments);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
 
         // When
         underTest.createAllDocuments(pcsCase);
@@ -480,22 +480,22 @@ class DocumentServiceTest {
                 new ArrayList<>()
         );
 
-        AdditionalDocuments additionalDocument = AdditionalDocuments.builder()
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
                 .document(Document.builder()
                         .url("url1")
                         .filename("file1")
                         .binaryUrl("bin1")
                         .categoryId("cat1")
                         .build())
-                .documentTypeList(documentTypeList)
+                .documentType(documentTypeList)
                 .description("")
                 .build();
 
-        List<ListValue<AdditionalDocuments>> additionalDocuments = List.of(
-                ListValue.<AdditionalDocuments>builder().value(additionalDocument).build()
+        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         );
 
-        when(pcsCase.getAdditionalDocs()).thenReturn(additionalDocuments);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
 
         // When
         underTest.createAllDocuments(pcsCase);

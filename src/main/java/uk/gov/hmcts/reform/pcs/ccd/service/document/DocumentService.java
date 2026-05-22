@@ -4,13 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -61,7 +62,7 @@ public class DocumentService {
     private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
         List<DocumentHolder> allDocuments = new ArrayList<>();
 
-        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocs()));
+        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getRentArrears())
@@ -111,7 +112,7 @@ public class DocumentService {
     }
 
     private List<DocumentHolder> mapAdditionalDocumentsWithType(
-            List<ListValue<AdditionalDocuments>> documents) {
+            List<ListValue<AdditionalDocument>> documents) {
 
         if (CollectionUtils.isEmpty(documents)) {
             return Collections.emptyList();
@@ -121,7 +122,7 @@ public class DocumentService {
             .map(doc -> DocumentHolder.builder()
                 .document(doc.getDocument())
                 .type(mapAdditionalDocumentTypeToDocumentType(
-                        AdditionalDocumentType.getValueFromLabel(doc.getDocumentTypeList().getValueLabel())))
+                        AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValueLabel())))
                 .description(doc.getDescription())
                 .build())
             .toList();
@@ -166,14 +167,8 @@ public class DocumentService {
     }
 
     private String getFilename(String uploadedFilename) {
-        String fileExtension = "";
-        String fileName = uploadedFilename;
-        int lastDot = uploadedFilename.lastIndexOf('.');
-        if (lastDot >= 0 && lastDot < uploadedFilename.length() - 1) {
-            fileExtension = uploadedFilename.substring(lastDot + 1);
-            fileName = uploadedFilename.substring(0, lastDot);
-        }
-        return fileName + " - " + CLAIMANT_1 + fileExtension;
+        return FilenameUtils.getBaseName(uploadedFilename) + " - " + CLAIMANT_1
+                + FilenameUtils.getExtension(uploadedFilename);
     }
 
     private DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {

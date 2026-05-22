@@ -427,18 +427,11 @@ public class PCSCase {
     )
     private VerticalYesNo wantToUploadDocuments;
 
-    @Deprecated(since = "05-19-2026", forRemoval = true)
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system"
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
-
-    @CCD(
-        label = "Add document",
-        hint = "Upload a document to the system"
-    )
-    private List<ListValue<AdditionalDocuments>> additionalDocs;
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",

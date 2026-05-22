@@ -46,7 +46,7 @@ class WantToUploadDocumentsTest extends BasePageTest {
 
         // Then
         DynamicList documentTypeList =
-                response.getData().getAdditionalDocs().getFirst().getValue().getDocumentTypeList();
+                response.getData().getAdditionalDocuments().getFirst().getValue().getDocumentType();
         List<String> labels = extractLabels(documentTypeList);
 
         if (shouldInclude) {
@@ -72,7 +72,7 @@ class WantToUploadDocumentsTest extends BasePageTest {
 
         // Then
         DynamicList documentTypeList =
-                response.getData().getAdditionalDocs().getFirst().getValue().getDocumentTypeList();
+                response.getData().getAdditionalDocuments().getFirst().getValue().getDocumentType();
         List<String> labels = extractLabels(documentTypeList);
 
         if (shouldInclude) {
@@ -96,7 +96,7 @@ class WantToUploadDocumentsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getAdditionalDocs()).isNull();
+        assertThat(response.getData().getAdditionalDocuments()).isNull();
     }
 
     private static Stream<Arguments> englandDocumentScenarios() {

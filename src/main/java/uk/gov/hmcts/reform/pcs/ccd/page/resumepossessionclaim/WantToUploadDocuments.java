@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -37,12 +37,12 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         if (caseData.getWantToUploadDocuments().equals(VerticalYesNo.YES)) {
-            AdditionalDocuments additionalDocuments = new AdditionalDocuments();
+            AdditionalDocument additionalDocuments = new AdditionalDocument();
             LegislativeCountry legislativeCountry = caseData.getLegislativeCountry();
 
-            additionalDocuments.setDocumentTypeList(createAdditionalDocumentList(legislativeCountry));
-            caseData.setAdditionalDocs(new ArrayList<>());
-            caseData.getAdditionalDocs().add(ListValue.<AdditionalDocuments>builder()
+            additionalDocuments.setDocumentType(createAdditionalDocumentList(legislativeCountry));
+            caseData.setAdditionalDocuments(new ArrayList<>());
+            caseData.getAdditionalDocuments().add(ListValue.<AdditionalDocument>builder()
                     .value(additionalDocuments)
                     .build());
         }
