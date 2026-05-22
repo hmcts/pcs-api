@@ -67,10 +67,6 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
     }
 
     private boolean canAddDocumentType(AdditionalDocumentType dt, LegislativeCountry country) {
-        if (country.equals(LegislativeCountry.ENGLAND)) {
-            return AdditionalDocumentType.isEnglandSpecific(dt) || !AdditionalDocumentType.isWalesSpecific(dt);
-        } else {
-            return AdditionalDocumentType.isWalesSpecific(dt) || !AdditionalDocumentType.isEnglandSpecific(dt);
-        }
+        return dt.isApplicableFor(country);
     }
 }
