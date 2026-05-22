@@ -1,7 +1,7 @@
-import {actionData, actionRecord, IAction } from '@utils/interfaces';
-import {expect, Page } from '@playwright/test';
-import {getCaseTypeId } from '@utils/common/caseType.utils';
-import {performAction, performActions, performValidation } from '@utils/controller';
+import {actionData, actionRecord, IAction} from '@utils/interfaces';
+import {expect, Page} from '@playwright/test';
+import {getCaseTypeId} from '@utils/common/caseType.utils';
+import {performAction, performActions, performValidation} from '@utils/controller';
 import {
   createCase,
   addressDetails,
