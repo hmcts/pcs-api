@@ -1,5 +1,5 @@
 export const askTheCourtToMakeAnOrder = {
-  mainHeader: `Ask the court to make an order`,
+  mainHeader: `Ask the court to make an order on behalf of a defendant`,
   youCanAskTheCourtToAdjournParagraph: `You can ask the court to make a decision at any point during your case. This is called an application.`,
   forExampleParagraph: `For example, you can use this to:`,
   addSomeoneList: `add someone as an extra party to your claim`,
@@ -48,4 +48,7 @@ export const askTheCourtToMakeAnOrder = {
   backLink: `Back`,
   feedbackLink: `feedback (opens in new tab)`,
   pageSlug: `ask-the-court-to-make-an-order`,
+  continueButton: `Continue`,
+  previousButton: `Previous`,
+  cancelLink: `Cancel`,
 };
