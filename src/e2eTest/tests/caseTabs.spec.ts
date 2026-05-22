@@ -70,4 +70,20 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     });
   });
 
+  test('Case tabs - Summary tab test @MAC @regression', async () => {
+    await performAction('clickTab', home.caseSummary);
+    await performAction('validateDefendantDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseTab.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseTab.addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadCaseTab,
+      table: 'Defendant 1'
+    });
+
+    await performAction('validateClaimantDetails', {
+      payLoad: submitCaseApiData.submitCasePayloadCaseTab,
+      table: 'Claimant'
+    });
+    
+  });
+
 });
