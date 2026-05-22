@@ -40,7 +40,7 @@ export class PageContentValidation implements IValidation {
                 th[scope="col"]:text-is("${value}"),
                 th:text-is("${value}"),
                 [role="rowheader"]:text-is("${value}"),
-                [role="columnheader"]:text-is("${value}")`),                
+                [role="columnheader"]:text-is("${value}")`),
     Header: (page: Page, value: string) => page.getByRole('heading', {name: new RegExp(`^${escapeForRegex(value)}(\\s*\\([^)]*\\))?$`)})
       .or(page.locator(`h1:text-is("${value}"),
                     h2:text-is("${value}"),
@@ -175,6 +175,9 @@ export class PageContentValidation implements IValidation {
       if(page.url().includes("enforceTheOrder")){
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
       }
+      else if(page.url().includes("makeAnApplication")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
+      }
       else{
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
       }
@@ -225,13 +228,15 @@ export class PageContentValidation implements IValidation {
   }
 
   private async loadPageDataFile(fileName: string, page: Page): Promise<any> {
-   let filePath;
-      if(page.url().includes("enforceTheOrder")){
-        filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
-      }
-      else{
-         filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
-      } 
+    let filePath;
+    if (page.url().includes("enforceTheOrder")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
+    } else if (page.url().includes("makeAnApplication")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.page.data.ts`);
+    }
+    else {
+      filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
+    }
     if (!fs.existsSync(filePath)) return null;
     try {
       delete require.cache[require.resolve(filePath)];
