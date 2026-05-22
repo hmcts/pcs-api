@@ -2,13 +2,14 @@ package uk.gov.hmcts.reform.pcs.reference.service;
 
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
-import uk.gov.hmcts.reform.pcs.idam.PrdAdminTokenService;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 @Service
 @Slf4j
@@ -16,15 +17,15 @@ public class OrganisationDetailsService {
 
     private final RdProfessionalApi rdProfessionalApi;
     private final AuthTokenGenerator authTokenGenerator;
-    private final PrdAdminTokenService prdAdminTokenService;
+    private final IdamTokenProvider prdAdminTokenProvider;
 
     public OrganisationDetailsService(
             RdProfessionalApi rdProfessionalApi,
             AuthTokenGenerator authTokenGenerator,
-            PrdAdminTokenService prdAdminTokenService) {
+            @Qualifier("prdAdminTokenProvider") IdamTokenProvider prdAdminTokenProvider) {
         this.rdProfessionalApi = rdProfessionalApi;
         this.authTokenGenerator = authTokenGenerator;
-        this.prdAdminTokenService = prdAdminTokenService;
+        this.prdAdminTokenProvider = prdAdminTokenProvider;
     }
 
     /**
@@ -35,7 +36,7 @@ public class OrganisationDetailsService {
     public OrganisationDetailsResponse getOrganisationDetails(String userId) {
         try {
             String s2sToken = authTokenGenerator.generate();
-            String prdAdminToken = prdAdminTokenService.getPrdAdminToken();
+            String prdAdminToken = prdAdminTokenProvider.getAuthToken();
 
             OrganisationDetailsResponse details = rdProfessionalApi.getOrganisationDetails(
                 userId, s2sToken, prdAdminToken
