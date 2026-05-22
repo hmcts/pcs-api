@@ -51,8 +51,8 @@ import {
   underlesseeMortgageeDetails,
   checkingNoticeWales
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
-import {compareMaps } from '@utils/common/compareMaps.util';
+import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {compareMaps} from '@utils/common/compareMaps.util';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -73,7 +73,7 @@ export class CreateCaseAction implements IAction {
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent(page)],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
-      ['selectClaimantName', () => this.selectClaimantName(page, fieldName)],
+      ['selectClaimantName', () => this.selectClaimantName(page,fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName as actionRecord)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName as actionRecord)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName as actionRecord)],
@@ -180,7 +180,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectClaimantType(caseData: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber });
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:claimantType.whoIsTheClaimantQuestion, option: caseData});
     if(caseData === claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption || caseData === claimantType.walesCommunityLandlordDynamicRadioOption){
@@ -195,7 +195,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
-    if(caseData === claimType.yesRadioOption){
+    if(caseData === claimType.yesRadioOption){    
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
     } else {
       await performAction('clickButton', claimType.continueButton);
@@ -422,13 +422,13 @@ export class CreateCaseAction implements IAction {
     for (const key of Object.keys(possessionGrounds)) {
       switch (key) {
         case 'discretionary':
-            await performAction('check', {question: whatAreYourGroundsForPossession.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionary});
-          if (
+          await performAction('check', {question: whatAreYourGroundsForPossession.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionary});
+            if (
             (possessionGrounds.discretionary as Array<string>).includes(
               whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
             )
           ) {
-            await performAction('check', {question: whatAreYourGroundsForPossessionWales.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionaryEstateGrounds});
+              await performAction('check', {question: whatAreYourGroundsForPossessionWales.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionaryEstateGrounds});
           }
           break;
         case 'mandatory':
@@ -639,7 +639,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     if(Array.isArray(housingAct)) {
       for (const act of housingAct) {
-       await performAction('clickRadioButton', {question: act.question, option: act.option});
+        await performAction('clickRadioButton', {question: act.question, option: act.option});
       }
     }
     await performAction('clickButton', alternativesToPossession.continueButton);
@@ -928,20 +928,20 @@ export class CreateCaseAction implements IAction {
       name2: 'CaseParties',
     })
 
-    if (misMatchMap.size > 0) {
-      console.log(`\n❌ Differences found: ${misMatchMap.size}`);
-      for (const [key, val] of misMatchMap) {
-        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
-        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
-        console.log('============================================================');
-        console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
-      }
-
-      console.log(`\n**********  END OF FAILURE LIST. ***************`);
-      throw new Error(`Case Parties (Defendant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
-    } else {
-      console.log('\n✅ Case Parties (Defendant) VALIDATION PASSED!\n');
+      if (misMatchMap.size > 0) {
+        console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+        for (const [key, val] of misMatchMap) {
+          const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+          const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+          console.log('============================================================');
+          console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+        }
+        console.log(`\n**********  END OF FAILURE LIST. ***************`);
+        throw new Error(`Case Parties (Defendant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+      } else {
+        console.log('\n✅ Case Parties (Defendant) VALIDATION PASSED!\n');
     }
+
     caseTabMap.clear();
 
   }
@@ -971,19 +971,18 @@ export class CreateCaseAction implements IAction {
       name2: 'CaseParties',
     })
 
-    if (misMatchMap.size > 0) {
-      console.log(`\n❌ Differences found: ${misMatchMap.size}`);
-      for (const [key, val] of misMatchMap) {
-        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
-        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
-        console.log('============================================================');
-        console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
-      }
-
-      console.log(`\n**********  END OF FAILURE LIST. ***************`);
-      throw new Error(`Case Parties (Claimant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
-    } else {
-      console.log('\n✅ Case Parties (Claimant) VALIDATION PASSED!\n');
+     if (misMatchMap.size > 0) {
+        console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+        for (const [key, val] of misMatchMap) {
+          const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+          const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+          console.log('============================================================');
+          console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+        }
+        console.log(`\n**********  END OF FAILURE LIST. ***************`);
+        throw new Error(`Case Parties (Claimant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+      } else {
+        console.log('\n✅ Case Parties (Claimant) VALIDATION PASSED!\n');
     }
 
     caseTabMap.clear();
