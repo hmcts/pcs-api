@@ -45,7 +45,7 @@ public class CaseNotification {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", nullable = false)
+    @JoinColumn(name = "case_id")
     private PcsCaseEntity pcsCase;
 
     @Column(name = "provider_notification_id", nullable = true)
@@ -72,11 +72,11 @@ public class CaseNotification {
     private String recipient;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "party_id", nullable = false)
+    @JoinColumn(name = "party_id")
     private PartyEntity partyId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "claim_id", nullable = false)
+    @JoinColumn(name = "claim_id")
     private ClaimEntity claimId;
 
     @Enumerated(EnumType.STRING)
