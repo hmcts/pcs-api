@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -345,7 +345,7 @@ class LegalRepresentativePartyLinkServiceTest {
                 .claimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentativeEntity))
             .build();
 
-        when(legalRepresentativeRepository.isPartyLinkedToLegalRepresentativeAndActive(partyId))
+        when(legalRepresentativeRepository.findLegalRepresentativeForParty(partyId))
             .thenReturn(Optional.of(existingLinkedLegalRep));
 
         when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
