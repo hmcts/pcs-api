@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -49,11 +48,9 @@ public class ClaimResponseService {
 
         PartyEntity defendant = partyService.getPartyEntityByIdamId(currentUserIdamId, caseReference);
 
-        //save to relevant tables
-        Party claimantDetails = dataFromDraftTable.getClaimantEnteredDefendantDetails();
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
         updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(),
-                                  dataFromDraftTable.getDefendantResponses(), claimantDetails);
+                                  dataFromDraftTable.getDefendantResponses());
 
         // Copy dateOfBirth from defendantResponses to party entity if present
         if (dataFromDraftTable.getDefendantResponses() != null
@@ -67,20 +64,20 @@ public class ClaimResponseService {
 
     /**
      * Updates party's contact details (phone number, email address, first name, and last name).
-     * Name and address are only updated if the claimant did not provide them.
+     * Name and address are only updated if the claimant did not provide them, indicated by the
+     * confirmation fields being null (the confirmation question is only shown when the claimant provided the value).
      * Only updates if the values are provided (non-blank).
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantContactDetails,
-                                           DefendantResponses defendantResponses, Party claimantDetails) {
-        boolean firstNameProvided = claimantDetails != null && StringUtils.isNotBlank(claimantDetails.getFirstName());
-        boolean lastNameProvided = claimantDetails != null && StringUtils.isNotBlank(claimantDetails.getLastName());
+                                           DefendantResponses defendantResponses) {
+        boolean nameNotConfirmed = defendantResponses.getDefendantNameConfirmation() == null;
 
-        if (!firstNameProvided && StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())) {
+        if (nameNotConfirmed && StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())) {
             party.setFirstName(defendantContactDetails.getParty().getFirstName());
             log.debug("Updated first name for party ID: {}", party.getId());
         }
 
-        if (!lastNameProvided && StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName())) {
+        if (nameNotConfirmed && StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName())) {
             party.setLastName(defendantContactDetails.getParty().getLastName());
             log.debug("Updated last name for party ID: {}", party.getId());
         }
@@ -102,11 +99,9 @@ public class ClaimResponseService {
         }
 
         AddressUK newAddress = defendantContactDetails.getParty().getAddress();
-        boolean claimantAddressProvided = claimantDetails != null
-            && claimantDetails.getAddress() != null
-            && StringUtils.isNotBlank(claimantDetails.getAddress().getAddressLine1());
+        boolean addressNotConfirmed = defendantResponses.getCorrespondenceAddressConfirmation() == null;
 
-        if (!claimantAddressProvided && newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
+        if (addressNotConfirmed && newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
             AddressEntity existingAddress = party.getAddress();
 
             if (existingAddress != null) {

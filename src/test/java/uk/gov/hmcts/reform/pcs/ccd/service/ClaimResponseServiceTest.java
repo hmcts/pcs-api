@@ -279,10 +279,9 @@ class ClaimResponseServiceTest {
     @Test
     void shouldUpdateNameWhenClaimantDidNotProvideIt() {
         // Given
-        final PossessionClaimResponse response = buildResponseWithClaimantDetails(
+        final PossessionClaimResponse response = buildResponse(
             Party.builder().firstName("John").lastName("Doe").build(),
-            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build(),
-            null
+            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build()
         );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
@@ -302,10 +301,12 @@ class ClaimResponseServiceTest {
         testParty.setFirstName("ClaimantFirst");
         testParty.setLastName("ClaimantLast");
 
-        final PossessionClaimResponse response = buildResponseWithClaimantDetails(
+        final PossessionClaimResponse response = buildResponse(
             Party.builder().firstName("DefendantFirst").lastName("DefendantLast").build(),
-            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build(),
-            Party.builder().firstName("ClaimantFirst").lastName("ClaimantLast").build()
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .defendantNameConfirmation(VerticalYesNo.YES)
+                .build()
         );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
@@ -322,10 +323,9 @@ class ClaimResponseServiceTest {
     @Test
     void shouldUpdateAddressWhenClaimantDidNotProvideIt() {
         // Given
-        final PossessionClaimResponse response = buildResponseWithClaimantDetails(
+        final PossessionClaimResponse response = buildResponse(
             Party.builder().address(TEST_ADDRESS).build(),
-            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build(),
-            null
+            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build()
         );
 
         final AddressEntity addressEntity = new AddressEntity();
@@ -346,10 +346,12 @@ class ClaimResponseServiceTest {
         AddressEntity existingAddress = AddressEntity.builder().addressLine1("Claimant Street").build();
         testParty.setAddress(existingAddress);
 
-        final PossessionClaimResponse response = buildResponseWithClaimantDetails(
+        final PossessionClaimResponse response = buildResponse(
             Party.builder().address(AddressUK.builder().addressLine1("Defendant Street").build()).build(),
-            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build(),
-            Party.builder().address(AddressUK.builder().addressLine1("Claimant Street").build()).build()
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .correspondenceAddressConfirmation(VerticalYesNo.YES)
+                .build()
         );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
@@ -366,16 +368,6 @@ class ClaimResponseServiceTest {
         return PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder().party(party).build())
             .defendantResponses(defendantResponses)
-            .build();
-    }
-
-    private PossessionClaimResponse buildResponseWithClaimantDetails(Party defendantParty,
-                                                                     DefendantResponses defendantResponses,
-                                                                     Party claimantDetails) {
-        return PossessionClaimResponse.builder()
-            .defendantContactDetails(DefendantContactDetails.builder().party(defendantParty).build())
-            .defendantResponses(defendantResponses)
-            .claimantEnteredDefendantDetails(claimantDetails)
             .build();
     }
 }
