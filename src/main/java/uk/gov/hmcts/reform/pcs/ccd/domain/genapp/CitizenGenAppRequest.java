@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CitizenGenAppRequest {
+public class CitizenGenAppRequest implements GenAppRequest {
 
     private GenAppType applicationType;
 

@@ -397,13 +397,13 @@ class LegalRepresentativePartyLinkServiceTest {
 
         ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentativeEntity =
             ClaimPartyLegalRepresentativeEntity.builder()
-            .active(YesOrNo.NO)
-            .party(partyEntity)
+                .active(YesOrNo.NO)
+                .party(partyEntity)
                 .endDate(Instant.now())
-            .build();
+                .build();
 
         LegalRepresentativeEntity existingLinkedLegalRep = LegalRepresentativeEntity.builder()
-                .claimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentativeEntity))
+            .claimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentativeEntity))
             .build();
 
         when(legalRepresentativeRepository.findByPartyLinkedToLegalRepresentativeAndActive(partyId))

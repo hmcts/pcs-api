@@ -52,6 +52,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 @ExtendWith(MockitoExtension.class)
 class PartyServiceTest {
 
+    private static final long CASE_REFERENCE = 1234L;
     private static final String ORG_ID = "org124";
 
     @Mock
@@ -81,17 +82,47 @@ class PartyServiceTest {
     class GetPartyTests {
 
         @Test
-        void shouldGetPartyEntityByIdamId() {
+        void shouldGetPartyEntityByEntityId() {
             // Given
-            UUID idamId = UUID.randomUUID();
-            long caseReference = 1234L;
+            UUID entityId = UUID.randomUUID();
 
             PartyEntity expectedPartyEntity = mock(PartyEntity.class);
-            when(partyRepository.queryPartyByIdamId(idamId, caseReference))
+            when(partyRepository.queryPartyById(entityId, CASE_REFERENCE))
                 .thenReturn(Optional.of(expectedPartyEntity));
 
             // When
-            PartyEntity actualPartyEntity = underTest.getPartyEntityByIdamId(idamId, caseReference);
+            PartyEntity actualPartyEntity = underTest.getPartyEntityByEntityId(entityId, CASE_REFERENCE);
+
+            // Then
+            assertThat(actualPartyEntity).isEqualTo(expectedPartyEntity);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenNoPartyEntityByEntityId() {
+            // Given
+            UUID entityId = UUID.randomUUID();
+
+            when(partyRepository.queryPartyById(entityId, CASE_REFERENCE)).thenReturn(Optional.empty());
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.getPartyEntityByEntityId(entityId, CASE_REFERENCE));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(PartyNotFoundException.class);
+        }
+
+        @Test
+        void shouldGetPartyEntityByIdamId() {
+            // Given
+            UUID idamId = UUID.randomUUID();
+
+            PartyEntity expectedPartyEntity = mock(PartyEntity.class);
+            when(partyRepository.queryPartyByIdamId(idamId, CASE_REFERENCE))
+                .thenReturn(Optional.of(expectedPartyEntity));
+
+            // When
+            PartyEntity actualPartyEntity = underTest.getPartyEntityByIdamId(idamId, CASE_REFERENCE);
 
             // Then
             assertThat(actualPartyEntity).isEqualTo(expectedPartyEntity);
@@ -101,17 +132,16 @@ class PartyServiceTest {
         void shouldThrowExceptionWhenNoPartyEntityByIdamId() {
             // Given
             UUID idamId = UUID.randomUUID();
-            long caseReference = 1234L;
 
-            when(partyRepository.queryPartyByIdamId(idamId, caseReference)).thenReturn(Optional.empty());
+            when(partyRepository.queryPartyByIdamId(idamId, CASE_REFERENCE)).thenReturn(Optional.empty());
 
             // When
-            Throwable throwable = catchThrowable(() -> underTest.getPartyEntityByIdamId(idamId, caseReference));
+            Throwable throwable = catchThrowable(() -> underTest.getPartyEntityByIdamId(idamId, CASE_REFERENCE));
 
             // Then
             assertThat(throwable)
                 .isInstanceOf(PartyNotFoundException.class)
-                .hasMessage("No party found for IDAM ID: " + idamId + " and case reference: " + caseReference);
+                .hasMessage("No party found for IDAM ID: " + idamId + " and case reference: " + CASE_REFERENCE);
 
         }
 
@@ -974,6 +1004,78 @@ class PartyServiceTest {
                         .build()
                 )
             );
+        }
+    }
+
+    @Nested
+    class CanSendEmailNotificationTests {
+
+        @Test
+        void shouldReturnTrueWhenAllConditionsMet() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress("test@example.com")
+                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                    .contactByEmail(VerticalYesNo.YES)
+                    .build())
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party);
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        void shouldReturnFalseWhenEmailIsNull() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress(null)
+                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                    .contactByEmail(VerticalYesNo.YES)
+                    .build())
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        void shouldReturnFalseWhenContactPreferencesIsNull() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress("test@example.com")
+                .contactPreferences(null)
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        void shouldReturnFalseWhenContactByEmailIsNull() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress("test@example.com")
+                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                    .contactByEmail(null)
+                    .build())
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        void shouldReturnFalseWhenContactByEmailIsNo() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress("test@example.com")
+                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                    .contactByEmail(VerticalYesNo.NO)
+                    .build())
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party);
+
+            assertThat(result).isFalse();
         }
     }
 }
