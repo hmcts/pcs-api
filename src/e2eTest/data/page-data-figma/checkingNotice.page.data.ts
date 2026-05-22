@@ -19,5 +19,5 @@ export const checkingNotice = {
   thisWillSaveYourProgressHiddenParagraph: `This will save your progress and take you to the case overview.`,
   continueButton: `Continue`,
   previousButton: `Previous`,
-  cancelLink: `Cancel`,
+  cancelLink: `Cancel`
 };
