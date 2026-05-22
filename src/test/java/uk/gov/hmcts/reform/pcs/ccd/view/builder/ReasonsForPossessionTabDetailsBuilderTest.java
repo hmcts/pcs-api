@@ -274,6 +274,53 @@ public class ReasonsForPossessionTabDetailsBuilderTest {
         assertThat(reasons.getAdditionalReasonsDetails()).isEqualTo("Additional reason");
     }
 
+    @Test
+    void shouldReturnNullWhenThereIsNoClaimSummariesInSummaryTab() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        ReasonsForPossessionTabDetails reasons = reasonsForPossessionTabDetailsBuilder
+            .buildSummaryReasonsForPossession(pcsCase);
+
+        // Then
+        assertThat(reasons).isNull();
+    }
+
+    @Test
+    void shouldReturnNullWhenThereIsNoClaimSummariesInDetailsTab() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        ReasonsForPossessionTabDetails reasons = reasonsForPossessionTabDetailsBuilder
+            .buildDetailsReasonsForPossession(pcsCase);
+
+        // Then
+        assertThat(reasons).isNull();
+    }
+
+    @Test
+    void shouldReturnReasonForPossessionDetailsWhenThereIsOnlyAdditionalReasonsInSummaryTab() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .additionalReasonsForPossession(
+                AdditionalReasons.builder()
+                    .hasReasons(VerticalYesNo.YES)
+                    .reasons("Additional reason")
+                    .build()
+            )
+            .build();
+
+        // When
+        ReasonsForPossessionTabDetails reasons = reasonsForPossessionTabDetailsBuilder
+            .buildSummaryReasonsForPossession(pcsCase);
+
+        // Then
+        assertThat(reasons.getAdditionalReasonsForPossession()).isEqualTo("Additional reason");
+        assertThat(reasons.getAdditionalReasonsDetails()).isNull();
+    }
+
     private static <T> ListValue<T> listValue(T value) {
         return ListValue.<T>builder()
             .value(value)
