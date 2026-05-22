@@ -423,7 +423,7 @@ export class CreateCaseAction implements IAction {
       switch (key) {
         case 'discretionary':
           await performAction('check', {question: whatAreYourGroundsForPossession.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionary});
-            if (
+          if (
             (possessionGrounds.discretionary as Array<string>).includes(
               whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
             )
@@ -927,7 +927,7 @@ export class CreateCaseAction implements IAction {
       name1: 'Defendant',
       name2: 'CaseParties',
     })
-
+    
       if (misMatchMap.size > 0) {
         console.log(`\n❌ Differences found: ${misMatchMap.size}`);
         for (const [key, val] of misMatchMap) {
@@ -940,8 +940,8 @@ export class CreateCaseAction implements IAction {
         throw new Error(`Case Parties (Defendant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
       } else {
         console.log('\n✅ Case Parties (Defendant) VALIDATION PASSED!\n');
-    }
-
+      }
+    
     caseTabMap.clear();
 
   }
@@ -970,8 +970,8 @@ export class CreateCaseAction implements IAction {
       name1: 'Claimant',
       name2: 'CaseParties',
     })
-
-     if (misMatchMap.size > 0) {
+    
+      if (misMatchMap.size > 0) {
         console.log(`\n❌ Differences found: ${misMatchMap.size}`);
         for (const [key, val] of misMatchMap) {
           const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
@@ -983,8 +983,8 @@ export class CreateCaseAction implements IAction {
         throw new Error(`Case Parties (Claimant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
       } else {
         console.log('\n✅ Case Parties (Claimant) VALIDATION PASSED!\n');
-    }
-
+      }
+    
     caseTabMap.clear();
 
   }
