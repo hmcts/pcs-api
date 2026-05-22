@@ -446,7 +446,10 @@ public class PCSCase {
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
 
-    @CCD(label = "Uploaded additional documents")
+    @CCD(
+        access = DefendantAccess.class,
+        searchable = false
+    )
     private List<ListValue<UploadedDocument>> uploadedAdditionalDocuments;
 
     @CCD(
