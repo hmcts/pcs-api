@@ -256,7 +256,7 @@ class LegalRepPartySelectionServiceTest {
     }
 
     @Test
-    void shouldReduceDefendantsToMatchedDefendantWhenSingleLinkedDefendant() {
+    void shouldSetLinkedDefendantsToMatchedDefendant() {
 
         long caseReference = 12345L;
         UUID matchedPartyId = UUID.randomUUID();
@@ -296,15 +296,14 @@ class LegalRepPartySelectionServiceTest {
         )).thenReturn(Optional.of(savedDraft));
 
         when(responseMapper.buildPartyFromEntity(matchedPartyEntity, pcsCase)).thenReturn(matchedParty);
+        PartyEntity defendant1 = PartyEntity.builder().id(matchedPartyId).build();
 
-        PCSCase result = underTest.getDraftCaseData(caseReference, pcsCase, matchedPartyEntity, true);
+        List<PartyEntity> defendants = List.of(defendant1);
+
+        PCSCase result = underTest.getDraftCaseData(caseReference, pcsCase, matchedPartyEntity, defendants);
 
         assertThat(result.getAllLinkedDefendants()).hasSize(1);
-
         assertThat(result.getAllLinkedDefendants().getFirst().getId()).isEqualTo(matchedPartyId.toString());
-
-        assertThat(result.getAllLinkedDefendants().getFirst().getValue().getFirstName()).isEqualTo("Matched");
-
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
     }
 }

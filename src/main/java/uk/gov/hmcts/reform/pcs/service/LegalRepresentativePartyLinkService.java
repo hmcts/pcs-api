@@ -47,37 +47,61 @@ public class LegalRepresentativePartyLinkService {
                 "Legal Representative or organisation already linked to Party [" + partyId + "]");
         }
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
         unlinkExistingRepresentation(UUID.fromString(partyId));
 
-        Optional<LegalRepresentativeEntity> legalRepresentativeEntity = findExistingRepresentative(
-            UUID.fromString(user.getUid()),
-            organisationId
+        UUID idamId = UUID.fromString(user.getUid());
+
+        Optional<LegalRepresentativeEntity> legalRepresentativeEntity = findExistingRepresentative(idamId,
+                                                                                                   organisationId,
+                                                                                                   caseReference
         );
 
         LegalRepresentativeEntity legalRepresentative;
 
         if (legalRepresentativeEntity.isPresent()) {
+
             legalRepresentative = legalRepresentativeEntity.get();
-            backfillOrganisationMetadata(legalRepresentative, organisationDetails);
-            legalRepresentative.addParty(defendantPartyEntity);
+            boolean legalRepresentativeLinkedToCase = isLegalRepresentativeLinkedToTheCase(caseReference,
+                                                                                         legalRepresentative);
+
+            if (legalRepresentativeLinkedToCase) {
+                backfillOrganisationMetadata(legalRepresentative, organisationDetails);
+                legalRepresentative.addParty(defendantPartyEntity);
+            } else {
+                legalRepresentative = createNewLegalRepresentative(organisationId, organisationDetails.getName(),
+                                                                   idamId, organisationDetails);
+            }
         } else {
-            legalRepresentative = LegalRepresentativeEntity.builder()
-                .organisationId(organisationId)
-                .organisationName(organisationDetails.getName())
-                .idamId(UUID.fromString(user.getUid()))
-                .firstName(user.getName())
-                .lastName(user.getFamilyName())
-                .email(user.getSub())
-                .address(addressMapper.toAddressEntityAndNormalise(
-                    organisationDetailsService.getOrganisationAddress(organisationDetails)))
-                .build();
+            legalRepresentative = createNewLegalRepresentative(organisationId, organisationDetails.getName(),
+                                                               idamId, organisationDetails);
         }
 
         legalRepresentative.addParty(defendantPartyEntity);
 
         legalRepresentativeRepository.save(legalRepresentative);
+    }
+
+    private boolean isLegalRepresentativeLinkedToTheCase(long caseReference,
+                                                         LegalRepresentativeEntity legalRepresentative) {
+
+        return legalRepresentative.getClaimPartyLegalRepresentativeList().stream()
+            .anyMatch(claimPartyLegalRepresentative ->
+                          claimPartyLegalRepresentative.getParty()
+                              .getPcsCase().getCaseReference().equals(caseReference));
+    }
+
+    private LegalRepresentativeEntity createNewLegalRepresentative(String id, String name, UUID idamId,
+                                                                   OrganisationDetailsResponse organisationDetails) {
+        return LegalRepresentativeEntity.builder()
+            .organisationId(id)
+            .organisationName(name)
+            .idamId(idamId)
+            .address(addressMapper.toAddressEntityAndNormalise(
+                organisationDetailsService.getOrganisationAddress(organisationDetails)))
+            .build();
     }
 
     private boolean isAlreadyLinkedToParty(UserInfo user, String partyId, String organisationId) {
@@ -94,11 +118,12 @@ public class LegalRepresentativePartyLinkService {
         return legalRepresentativeRepository.isLegalRepresentativeLinkedToPartyAndActive(userId, targetPartyId);
     }
 
-    private Optional<LegalRepresentativeEntity> findExistingRepresentative(UUID userId, String organisationId) {
+    private Optional<LegalRepresentativeEntity> findExistingRepresentative(UUID userId, String organisationId,
+                                                                           long caseReference) {
         return Optional.ofNullable(organisationId)
             .filter(StringUtils::isNotBlank)
-            .flatMap(legalRepresentativeRepository::findByOrganisationId)
-            .or(() -> legalRepresentativeRepository.findByIdamId(userId));
+            .flatMap(id -> legalRepresentativeRepository.findByOrganisationId(id, caseReference))
+            .or(() -> legalRepresentativeRepository.findByIdamId(userId, caseReference));
     }
 
     private void backfillOrganisationMetadata(LegalRepresentativeEntity legalRepresentative,

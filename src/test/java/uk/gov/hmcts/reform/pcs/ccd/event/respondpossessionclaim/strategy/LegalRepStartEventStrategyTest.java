@@ -78,17 +78,16 @@ class LegalRepStartEventStrategyTest {
         PartyEntity defendant = mock(PartyEntity.class);
 
         UUID userId = UUID.randomUUID();
-
+        List<PartyEntity> defendants = List.of(defendant);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
-
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, userId))
-            .thenReturn(List.of(defendant));
+            .thenReturn(defendants);
 
         when(defendant.getId()).thenReturn(UUID.randomUUID());
 
         when(legalRepPartySelectionService.getDraftCaseData(CASE_REFERENCE, pcsCase,
-                                                            defendant, true))
+                                                            defendant, defendants))
             .thenReturn(pcsCase);
 
         // when
@@ -99,7 +98,7 @@ class LegalRepStartEventStrategyTest {
 
         verify(legalRepPartySelectionService).validateResponseNotAlreadySubmitted(CASE_REFERENCE, defendant.getId());
 
-        verify(legalRepPartySelectionService).getDraftCaseData(CASE_REFERENCE, pcsCase, defendant, true);
+        verify(legalRepPartySelectionService).getDraftCaseData(CASE_REFERENCE, pcsCase, defendant, defendants);
     }
 
     @Test
@@ -112,14 +111,13 @@ class LegalRepStartEventStrategyTest {
         PartyEntity defendant2 = mock(PartyEntity.class);
 
         UUID userId = UUID.randomUUID();
-
+        List<PartyEntity> defendants = List.of(defendant1, defendant2);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
-
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, userId))
-            .thenReturn(List.of(defendant1, defendant2));
+            .thenReturn(defendants);
 
-        when(legalRepPartySelectionService.getDraft(pcsCase, List.of(defendant1, defendant2), CASE_REFERENCE))
+        when(legalRepPartySelectionService.getDraft(pcsCase, defendants, CASE_REFERENCE))
             .thenReturn(pcsCase);
 
         // when
@@ -130,7 +128,7 @@ class LegalRepStartEventStrategyTest {
 
         verify(legalRepPartySelectionService, never()).validateResponseNotAlreadySubmitted(anyLong(), any());
 
-        verify(legalRepPartySelectionService).getDraft(pcsCase, List.of(defendant1, defendant2), CASE_REFERENCE);
+        verify(legalRepPartySelectionService).getDraft(pcsCase, defendants, CASE_REFERENCE);
     }
 
 

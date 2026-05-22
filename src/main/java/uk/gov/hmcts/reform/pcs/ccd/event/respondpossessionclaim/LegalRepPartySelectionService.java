@@ -44,7 +44,7 @@ public class LegalRepPartySelectionService {
         PartyEntity matchedDefendant = findMatchedDefendant(defendantPartiesLinkedAndActive, selectedPartyId.get());
         validateResponseNotAlreadySubmitted(caseReference, matchedDefendant.getId());
 
-        return getDraftCaseData(caseReference, pcsCase, matchedDefendant, false);
+        return getDraftCaseData(caseReference, pcsCase, matchedDefendant, defendantPartiesLinkedAndActive);
     }
 
     public void validateResponseNotAlreadySubmitted(long caseReference, UUID partyId) {
@@ -54,7 +54,7 @@ public class LegalRepPartySelectionService {
     }
 
     public PCSCase getDraftCaseData(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,
-                                     boolean singleLinkedDefendant) {
+                                    List<PartyEntity> linkedDefendants) {
 
         boolean hasDraft = draftCaseDataService.hasUnsubmittedCaseData(
             caseReference,
@@ -63,7 +63,7 @@ public class LegalRepPartySelectionService {
         );
 
         if (hasDraft) {
-            return restoreDraft(caseReference, pcsCase, matchedDefendant, singleLinkedDefendant);
+            return restoreDraft(caseReference, pcsCase, matchedDefendant, linkedDefendants);
         }
 
         return initialiseDraft(caseReference, pcsCase, matchedDefendant);
@@ -77,7 +77,7 @@ public class LegalRepPartySelectionService {
     }
 
     private PCSCase restoreDraft(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,
-                                 boolean singleLinkedDefendant) {
+                                 List<PartyEntity> linkedDefendants) {
 
         PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(
             caseReference,
@@ -91,21 +91,14 @@ public class LegalRepPartySelectionService {
             .claimantEnteredDefendantDetails(responseMapper.buildPartyFromEntity(matchedDefendant, pcsCase))
             .build();
 
-        if (singleLinkedDefendant) {
-            reduceCaseDefendantsToMatchedDefendant(pcsCase, matchedDefendant.getId().toString());
-        } else {
-            pcsCase.setAllLinkedDefendants(pcsCase.getAllDefendants());
-        }
 
-        return buildCaseWithDraft(pcsCase, mergedResponse);
-    }
-
-    private void reduceCaseDefendantsToMatchedDefendant(PCSCase pcsCase, String partyId) {
-        List<ListValue<Party>> matchedDefendant = pcsCase.getAllDefendants().stream()
-            .filter(party -> party.getId().equals(partyId))
+        List<ListValue<Party>> representedPartyList = linkedDefendants.stream()
+            .map(this::toRepresentedPartyListValue)
             .toList();
 
-        pcsCase.setAllLinkedDefendants(matchedDefendant);
+        pcsCase.setAllLinkedDefendants(representedPartyList);
+
+        return buildCaseWithDraft(pcsCase, mergedResponse);
     }
 
     private PCSCase buildCaseWithDraft(PCSCase pcsCase, PossessionClaimResponse response) {
