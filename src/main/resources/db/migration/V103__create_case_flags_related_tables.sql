@@ -23,7 +23,7 @@ CREATE TABLE case_party_flag (
                                date_time_created TIMESTAMP,
                                date_time_modified TIMESTAMP,
                                status VARCHAR(50) NOT NULL,
-                               paths VARCHAR(300) NOT NULL
+                               paths VARCHAR(450) NOT NULL
 );
 
 CREATE TABLE case_flag (

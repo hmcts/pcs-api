@@ -109,7 +109,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("caseFlags", "Case flags")
             .forRoles(UserRole.JUDGE, UserRole.FEE_PAID_JUDGE, UserRole.CIRCUIT_JUDGE, UserRole.LEADERSHIP_JUDGE,
                       UserRole.CTSC_ADMIN,
-                      UserRole.HEARING_CENTER_ADMIN,
+                      UserRole.HEARING_CENTRE_ADMIN,
                       UserRole.WLU_ADMIN)
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
