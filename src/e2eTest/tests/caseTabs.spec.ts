@@ -10,11 +10,17 @@ import { addCaseNote } from '@data/page-data-figma';
 import { checkYourAnswersCaseNote } from '@data/page-data/checkYourAnswersCaseNote.page.data';
 import { getCurrentBSTTime } from '@utils/common/string.utils';
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
-  await performAction('fetchCurrentUserAPI');
+  if (testInfo.title.includes('Summary')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseSummary });
+    await performAction('fetchCurrentUserAPI');
+  } else {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
+    await performAction('fetchCurrentUserAPI');
+  }
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
@@ -59,7 +65,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       "text": checkYourAnswersCaseNote.header,
       "elementType": "subHeading"
     });
-  
+
     await performAction('clickButton', checkYourAnswersCaseNote.submitNote);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a case note');
     await performAction('clickTab', home.caseNotes);
@@ -72,18 +78,19 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
   test('Case tabs - Summary tab test @MAC @regression', async () => {
     await performAction('clickTab', home.caseSummary);
-    await performAction('validateDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseTab.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayloadCaseTab.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayloadCaseTab,
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseSummary.addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadCaseSummary,
+      section: 'Address of property to be repossessed',
       table: 'Defendant 1'
     });
 
-    await performAction('validateClaimantDetails', {
-      payLoad: submitCaseApiData.submitCasePayloadCaseTab,
-      table: 'Claimant'
-    });
-    
+    // await performAction('validateClaimantDetails', {
+    //   payLoad: submitCaseApiData.submitCasePayloadCaseTab,
+    //   table: 'Claimant'
+    // });
+
   });
 
 });

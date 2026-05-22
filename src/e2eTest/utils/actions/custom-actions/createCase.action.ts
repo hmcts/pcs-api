@@ -123,6 +123,7 @@ export class CreateCaseAction implements IAction {
       ['validateClaimantDetails', () => this.validateClaimantDetails(page, fieldName as actionRecord)],
       ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
+      ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1001,6 +1002,59 @@ export class CreateCaseAction implements IAction {
     const misMatchMap = compareMaps(caseNote, caseTabMap, {
       name1: 'CaseNote',
       name2: 'CaseNotesTab',
+    })
+
+    if (misMatchMap.size > 0) {
+      console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+        console.log('============================================================');
+        console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+      }
+      console.log(`\n**********  END OF FAILURE LIST. ***************`);
+      throw new Error(`Case Notes validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+    } else {
+      console.log('\n✅ Case Notes VALIDATION PASSED!\n');
+    }
+
+    caseTabMap.clear();
+
+  }
+
+  private async validateCaseSummaryDetails(page: Page, caseSummarySection: actionRecord) {
+
+    let caseSummary = new Map<string, string>();
+    const payLoad = caseSummarySection.payLoad as Record<string, any>;
+    switch (caseSummarySection.section) {
+      case 'Address of the Property':
+        if (payLoad.defendant1.addressKnown === 'YES' && payLoad.defendant1.addressSameAsPossession === 'YES') {
+          const address = payLoad.formattedClaimantContactAddress.split('<br>');
+          caseSummary.set(`Building and Street`, address[0]);
+          caseSummary.set(`Address Line 2`, address[1]);
+          caseSummary.set(`Town or City`, address[2]);
+          caseSummary.set(`Postcode/Zipcode`, address[3]);
+          caseSummary.set('Country', 'United Kingdom')
+
+        } else if (payLoad.defendant1.addressKnown === 'YES' && payLoad.defendant1.addressSameAsPossession === 'NO') {
+          caseSummary.set(`Building and Street`, payLoad.defendant1.correspondenceAddress.AddressLine1);
+          caseSummary.set(`Address Line 2`, payLoad.defendant1.correspondenceAddress.AddressLine2);
+          caseSummary.set(`Town or City`, payLoad.defendant1.correspondenceAddress.PostTown);
+          caseSummary.set(`Postcode/Zipcode`, payLoad.defendant1.correspondenceAddress.PostCode);
+          caseSummary.set('Country', 'United Kingdom')
+        }
+        break;
+
+      default:
+        break;
+    }
+    
+
+    await this.caseTabTableData(page, caseSummarySection.table as string);
+
+    const misMatchMap = compareMaps(caseSummary, caseTabMap, {
+      name1: 'CaseSummary',
+      name2: 'CaseSummaryTab',
     })
 
     if (misMatchMap.size > 0) {
