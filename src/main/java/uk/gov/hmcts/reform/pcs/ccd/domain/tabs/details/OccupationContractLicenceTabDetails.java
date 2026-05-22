@@ -25,4 +25,7 @@ public class OccupationContractLicenceTabDetails {
     @CCD(label = "Occupation contract or licence agreement")
     private List<ListValue<Document>> documents;
 
+    @CCD(label = "Occupation contract or licence agreement")
+    private String documentsPlaceholder;
+
 }

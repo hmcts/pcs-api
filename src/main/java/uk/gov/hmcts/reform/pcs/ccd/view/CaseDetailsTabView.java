@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
@@ -26,14 +27,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ActionsTakenTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.AntisocialAndConductTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ApplicationsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantCircumstancesTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantContactTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantRegistrationAndLicensingTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DefendantCircumstanceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DemotionOfTenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.OccupationContractLicenceTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ProhibitedConductStandardContractTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.SuspensionOfRightToBuyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.UnderlesseeOrMortgageInformationTabDetails;
@@ -43,12 +48,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDet
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -103,6 +113,11 @@ public class CaseDetailsTabView {
         SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyTabDetails =
             buildSuspensionOfRightToBuyTabDetails(pcsCase);
         String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
+        OccupationContractLicenceTabDetails occupationContractLicenceTabDetails =
+            buildOccupationContractLicenceTabDetails(pcsCase);
+        AntisocialAndConductTabDetails antisocialAndConductTabDetails = buildAntisocialAndConductTabDetails(pcsCase);
+        ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractTabDetails =
+            buildProhibitedConductStandardContractTabDetails(pcsCase);
 
         CaseDetailsTab caseDetailsTab = CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
@@ -120,12 +135,17 @@ public class CaseDetailsTabView {
             .demotionOfTenancyDetails(demotionOfTenancyTabDetails)
             .suspensionOfRightToBuyDetails(suspensionOfRightToBuyTabDetails)
             .dateClaimSubmitted(dateSubmitted != null ? dateSubmitted : NO_ANSWER)
+            .occupationContractLicenceDetails(occupationContractLicenceTabDetails)
+            .antisocialAndConductDetails(antisocialAndConductTabDetails)
+            .prohibitedConductStandardContractDetails(prohibitedConductStandardContractTabDetails)
             .build();
 
         if (claimantInformationTabDetails != null) {
             caseDetailsTab.setClaimantAddress(getClaimantAddress(pcsCase));
             caseDetailsTab.setClaimantContactDetails(buildClaimantContactTabDetails(pcsCase));
             caseDetailsTab.setClaimantCircumstances(buildClaimantCircumstancesTabDetails(pcsCase));
+            caseDetailsTab
+                .setClaimantRegistrationAndLicensingDetails(buildClaimantRegistrationAndLicensingTabDetails(pcsCase));
         }
 
         if (defendantInformationTabDetails != null) {
@@ -519,5 +539,122 @@ public class CaseDetailsTabView {
             .toLocalDateTime();
 
         return ukDateSubmitted.format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM");
+    }
+
+    private OccupationContractLicenceTabDetails buildOccupationContractLicenceTabDetails(PCSCase pcsCase) {
+        if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES) {
+            return null;
+        }
+
+        OccupationLicenceDetailsWales occupationLicenceDetailsWales = pcsCase.getOccupationLicenceDetailsWales();
+        if (occupationLicenceDetailsWales == null) {
+            return OccupationContractLicenceTabDetails.builder()
+                .agreementType(NO_ANSWER)
+                .startDate(NO_ANSWER)
+                .documentsPlaceholder(NO_ANSWER)
+                .build();
+        }
+
+        OccupationLicenceTypeWales agreementType = occupationLicenceDetailsWales.getOccupationLicenceTypeWales();
+        LocalDate startDate = occupationLicenceDetailsWales.getLicenceStartDate();
+        List<ListValue<Document>> documents = occupationLicenceDetailsWales.getLicenceDocuments();
+
+        return OccupationContractLicenceTabDetails.builder()
+            .agreementType(agreementType != null ? agreementType.getLabel() : NO_ANSWER)
+            .startDate(startDate != null ? startDate.format(DATE_FORMATTER) : NO_ANSWER)
+            .documents(documents)
+            .documentsPlaceholder(documents == null ? NO_ANSWER : null)
+            .build();
+    }
+
+    private ClaimantRegistrationAndLicensingTabDetails buildClaimantRegistrationAndLicensingTabDetails(
+        PCSCase pcsCase
+    ) {
+        if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES) {
+            return null;
+        }
+
+        VerticalYesNo isExemptLandlord = pcsCase.getIsExemptLandlord();
+
+        return ClaimantRegistrationAndLicensingTabDetails.builder()
+            .isExemptLandlord(isExemptLandlord != null ? isExemptLandlord.getLabel() : NO_ANSWER)
+            .build();
+    }
+
+    private AntisocialAndConductTabDetails buildAntisocialAndConductTabDetails(PCSCase pcsCase) {
+        if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES) {
+            return null;
+        }
+
+        ASBQuestionsDetailsWales asbQuestionsDetailsWales = pcsCase.getAsbQuestionsWales();
+        if (asbQuestionsDetailsWales == null) {
+            return AntisocialAndConductTabDetails.builder()
+                .antiSocialBehaviour(NO_ANSWER)
+                .propertyUsedIllegally(NO_ANSWER)
+                .otherProhibitedConduct(NO_ANSWER)
+                .build();
+        }
+
+        VerticalYesNo antiSocialBehaviour = asbQuestionsDetailsWales.getAntisocialBehaviour();
+        VerticalYesNo propertyUsedIllegally = asbQuestionsDetailsWales.getIllegalPurposesUse();
+        VerticalYesNo otherProhibitedConduct = asbQuestionsDetailsWales.getOtherProhibitedConduct();
+        String antiSocialBehaviourDetails = null;
+        String propertyUsedIllegallyDetails = null;
+        String otherProhibitedConductDetails = null;
+
+        if (antiSocialBehaviour == VerticalYesNo.YES) {
+            antiSocialBehaviourDetails = asbQuestionsDetailsWales.getAntisocialBehaviourDetails();
+        }
+
+        if (propertyUsedIllegally == VerticalYesNo.YES) {
+            propertyUsedIllegallyDetails = asbQuestionsDetailsWales.getIllegalPurposesUseDetails();
+        }
+
+        if (otherProhibitedConduct == VerticalYesNo.YES) {
+            otherProhibitedConductDetails = asbQuestionsDetailsWales.getOtherProhibitedConductDetails();
+        }
+
+        return AntisocialAndConductTabDetails.builder()
+            .antiSocialBehaviourDetails(antiSocialBehaviour != null ? antiSocialBehaviour.getLabel() : NO_ANSWER)
+            .propertyUsedIllegally(propertyUsedIllegally != null ? propertyUsedIllegally.getLabel() : NO_ANSWER)
+            .otherProhibitedConduct(otherProhibitedConduct != null ? otherProhibitedConduct.getLabel() : NO_ANSWER)
+            .antiSocialBehaviourDetails(antiSocialBehaviourDetails)
+            .propertyUsedIllegallyDetails(propertyUsedIllegallyDetails)
+            .otherProhibitedConductDetails(otherProhibitedConductDetails)
+            .build();
+    }
+
+    private ProhibitedConductStandardContractTabDetails buildProhibitedConductStandardContractTabDetails(
+        PCSCase pcsCase
+    ) {
+        VerticalYesNo prohibitedConduct = pcsCase.getProhibitedConductWalesClaim();
+        if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES || prohibitedConduct == null) {
+            return null;
+        }
+
+        String prohibitedConductWalesClaimDetails = pcsCase.getProhibitedConductWalesClaimDetails();
+
+        ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractTabDetails =
+            ProhibitedConductStandardContractTabDetails.builder()
+                .seekingProhibitedConductStandardContract(prohibitedConduct.getLabel())
+                .whyMakingClaim(prohibitedConduct == VerticalYesNo.YES ? prohibitedConductWalesClaimDetails : null)
+                .build();
+
+        PeriodicContractTermsWales periodicContractTermsWales = pcsCase.getPeriodicContractTermsWales();
+
+        if (periodicContractTermsWales != null) {
+            VerticalYesNo agreedTerms = periodicContractTermsWales.getAgreedTermsOfPeriodicContract();
+            prohibitedConductStandardContractTabDetails
+                .setAgreedTerms(agreedTerms != null ? agreedTerms.getLabel() : NO_ANSWER);
+
+            if (agreedTerms == VerticalYesNo.YES) {
+                prohibitedConductStandardContractTabDetails
+                    .setTermDetails(periodicContractTermsWales.getDetailsOfTerms());
+            }
+        } else {
+            prohibitedConductStandardContractTabDetails.setAgreedTerms(NO_ANSWER);
+        }
+
+        return prohibitedConductStandardContractTabDetails;
     }
 }

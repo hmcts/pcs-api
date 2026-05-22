@@ -84,4 +84,16 @@ public class CaseDetailsTab {
 
     @CCD(label = "Suspension of right to buy")
     private SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyDetails;
+
+    @CCD(label = "Occupation contract or licence details")
+    private OccupationContractLicenceTabDetails occupationContractLicenceDetails;
+
+    @CCD(label = "Antisocial behaviour and illegal or prohibited conduct")
+    private AntisocialAndConductTabDetails antisocialAndConductDetails;
+
+    @CCD(label = "Claimant registration and licensing")
+    private ClaimantRegistrationAndLicensingTabDetails claimantRegistrationAndLicensingDetails;
+
+    @CCD(label = "Prohibited conduct standard contract claim")
+    private ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractDetails;
 }
