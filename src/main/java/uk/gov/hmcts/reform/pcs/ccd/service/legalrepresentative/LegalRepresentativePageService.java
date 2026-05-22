@@ -18,7 +18,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 @AllArgsConstructor
-public class LegalRepresentativeService {
+public class LegalRepresentativePageService {
 
     private final LegalRepresentativeRepository legalRepresentativeRepository;
     private final AddressMapper addressMapper;

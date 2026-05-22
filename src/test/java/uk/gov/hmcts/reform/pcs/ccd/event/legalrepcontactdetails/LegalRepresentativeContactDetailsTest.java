@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepresentativedetails.LegalRepresentativeContactDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeService;
+import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativePageService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -38,7 +38,7 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
     private OrganisationService organisationService;
 
     @Mock
-    private LegalRepresentativeService legalRepresentativeService;
+    private LegalRepresentativePageService legalRepresentativePageService;
 
     @Mock
     private AddressFormatter addressFormatter;
@@ -52,7 +52,7 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
             legalRepresentativeContactDetailsPage,
             securityContextService,
             organisationService,
-            legalRepresentativeService,
+            legalRepresentativePageService,
             addressFormatter
         );
         setEventUnderTest(legalRepresentativeContactDetails);
@@ -151,7 +151,7 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
         SubmitResponse<State> submitResponse = callSubmitHandler(caseData);
 
         // then
-        verify(legalRepresentativeService).save(userId, legalRepresentativeDetails);
+        verify(legalRepresentativePageService).save(userId, legalRepresentativeDetails);
         assertThat(submitResponse.getConfirmationBody())
             .contains("legal representative's information");
     }

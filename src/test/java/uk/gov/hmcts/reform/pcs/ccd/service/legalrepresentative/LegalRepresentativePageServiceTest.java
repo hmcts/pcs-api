@@ -25,10 +25,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class LegalRepresentativeServiceTest {
+class LegalRepresentativePageServiceTest {
 
     @InjectMocks
-    private LegalRepresentativeService legalRepresentativeService;
+    private LegalRepresentativePageService legalRepresentativePageService;
 
     @Mock
     private LegalRepresentativeRepository legalRepresentativeRepository;
@@ -58,7 +58,7 @@ class LegalRepresentativeServiceTest {
             .thenReturn(mappedAddress);
 
         // when
-        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         assertEquals(mappedAddress, legalRepresentativeEntity.getAddress());
@@ -82,7 +82,7 @@ class LegalRepresentativeServiceTest {
             .thenReturn(Optional.of(legalRepresentativeEntity));
 
         // when
-        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         assertThat(legalRepresentativeEntity.getAddress()).isNull();
@@ -106,7 +106,7 @@ class LegalRepresentativeServiceTest {
             .thenReturn(Optional.of(legalRepresentativeEntity));
 
         // when
-        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
@@ -131,7 +131,7 @@ class LegalRepresentativeServiceTest {
             .thenReturn(Optional.of(legalRepresentativeEntity));
 
         // when
-        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         assertEquals(contactNumber, legalRepresentativeEntity.getPhone());
@@ -154,7 +154,7 @@ class LegalRepresentativeServiceTest {
             .thenReturn(Optional.of(legalRepresentativeEntity));
 
         // when
-        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         assertNull(legalRepresentativeEntity.getPhone());
@@ -176,7 +176,7 @@ class LegalRepresentativeServiceTest {
             .thenReturn(Optional.of(legalRepresentativeEntity));
 
         // when
-        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         assertNull(legalRepresentativeEntity.getPhone());
@@ -199,7 +199,7 @@ class LegalRepresentativeServiceTest {
             .thenReturn(Optional.of(legalRepresentativeEntity));
 
         // when
-        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         assertEquals(reference, legalRepresentativeEntity.getReference());
@@ -221,7 +221,7 @@ class LegalRepresentativeServiceTest {
             .thenReturn(Optional.of(legalRepresentativeEntity));
 
         // when
-        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         assertNull(legalRepresentativeEntity.getReference());
@@ -244,7 +244,7 @@ class LegalRepresentativeServiceTest {
             .thenReturn(Optional.of(legalRepresentativeEntity));
 
         // when
-        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         assertEquals(email, legalRepresentativeEntity.getEmail());
@@ -265,7 +265,7 @@ class LegalRepresentativeServiceTest {
             .thenReturn(Optional.of(legalRepresentativeEntity));
 
         // when
-        legalRepresentativeService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         assertThat(legalRepresentativeEntity.getEmail()).isNull();

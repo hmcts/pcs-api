@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepresentativedetails.LegalRepresentativeContactDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeService;
+import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativePageService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -34,7 +34,7 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
     private final LegalRepresentativeContactDetailsPage legalRepresentativeContactDetailsPage;
     private final SecurityContextService securityContextService;
     private final OrganisationService organisationService;
-    private final LegalRepresentativeService legalRepresentativeService;
+    private final LegalRepresentativePageService legalRepresentativePageService;
     private final AddressFormatter addressFormatter;
 
     @Override
@@ -84,7 +84,7 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         UUID currentUserId = securityContextService.getCurrentUserId();
         PCSCase pcsCase = eventPayload.caseData();
-        legalRepresentativeService.save(currentUserId, pcsCase.getLegalRepresentativeDetails());
+        legalRepresentativePageService.save(currentUserId, pcsCase.getLegalRepresentativeDetails());
         return SubmitResponse.<State>builder()
             .confirmationBody(getUpdatedInformationConfirmationMarkdown())
             .build();
