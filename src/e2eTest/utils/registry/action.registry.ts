@@ -17,6 +17,7 @@ import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.a
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
+import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -46,6 +47,8 @@ export class ActionRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
+    ['getCaseAPI', new CreateCaseAPIAction()],
+    ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['fetchCurrentUserAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],

@@ -1,9 +1,10 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData } from '@data/api-data';
+import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
+import { performAction } from '@utils/controller';
 import { fetchCurrentUserTokenApiData } from '@data/api-data/fetchCurrentUser.api.data';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
@@ -16,6 +17,7 @@ export class CreateCaseAPIAction implements IAction {
       ['deleteCaseRole', () => this.deleteCaseRole(fieldName)],
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
       ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI()],
+      ['getCaseAPI', () => this.getCaseAPI()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -166,6 +168,55 @@ export class CreateCaseAPIAction implements IAction {
         console.warn(`Case user removal failed with status ${status}. ${errorMessage}`);
       }
     }
+  }
+
+  private async getCaseAPI(): Promise<void> {
+    const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+
+    process.env.CREATE_EVENT_TOKEN = (await getCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
+    try {
+      const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+      await this.generateSolicitorAccessToken();
+      const allDefendants = createResponse.data.data.allDefendants;
+      const defendantIds = allDefendants.map((d: any) => d.id);
+
+      for (const defendantId of defendantIds) {
+        process.env.Defendant_ID = defendantId;
+
+        await performAction('linkSolicitorAPI');
+      }
+
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Defendant id not retrieved: no response from server.');
+      }
+      throw new Error(`Retrieving defendant id  failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+
+  }
+
+  private async generateSolicitorAccessToken(): Promise<void> {
+    const { IdamUtils } = await import('@hmcts/playwright-common');
+    process.env.SOLICITOR_ACCESS_TOKEN = await new IdamUtils().generateIdamToken({
+      username: user.defendantSolicitor.email,
+      password: user.defendantSolicitor.password,
+      grantType: 'password',
+      clientId: 'pcs-api',
+      clientSecret: process.env.PCS_API_IDAM_SECRET as string,
+      scope: 'profile openid roles',
+    });
   }
 
   private async fetchCurrentUserAPI(): Promise<void> {
