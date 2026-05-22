@@ -25,7 +25,7 @@ export class FeeAndPayAction implements IAction {
       await expect(page.getByText(expectedAmount, { exact: true })).toBeVisible();
     }
     await performAction('clickRadioButton', { option: paymentOptions.payByOption });
-    await performAction('select', paymentOptions.pbaLabel, paymentOptions.pbaIndex);
+    await performAction('select', paymentOptions.pbaLabel, paymentOptions.pbaValue);
     const locator = page.locator('button', { hasText: 'Confirm payment' });
     await expect(locator).toBeDisabled();
     await performAction('inputText', paymentOptions.referenceLabel, paymentOptions.referenceText);
