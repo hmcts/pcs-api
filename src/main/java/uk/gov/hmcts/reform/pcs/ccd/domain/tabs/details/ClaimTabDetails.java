@@ -14,6 +14,6 @@ public class ClaimTabDetails {
     @CCD(label = "Claimant type")
     private String claimantType;
 
-    @CCD(label = "Claim against trespassers?")
+    @CCD(label = "Is your claim a trespass claim?")
     private String trespassClaim;
 }
