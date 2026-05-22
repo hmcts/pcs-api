@@ -81,6 +81,33 @@ public class GroundsBuilderTest {
         ));
     }
 
+    @Test
+    void shouldNotReturnSection84AConditionsIfNotPresent() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .claimGroundSummaries(List.of(
+                groundSummary("Landlord’s works (ground 10)", "Works reason")
+            ))
+            .build();
+
+        // When
+        String grounds = groundsBuilder.getGrounds(pcsCase);
+
+        // Then
+        assertThat(grounds).isEqualTo("Landlord’s works (ground 10)");
+    }
+
+    @Test
+    void shouldReturnNullWhenThereAreNoGroundSummaries() {
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        String grounds = groundsBuilder.getGrounds(pcsCase);
+
+        // Then
+        assertThat(grounds).isNull();
+    }
+
     private static <T> ListValue<T> listValue(T value) {
         return ListValue.<T>builder()
             .value(value)
