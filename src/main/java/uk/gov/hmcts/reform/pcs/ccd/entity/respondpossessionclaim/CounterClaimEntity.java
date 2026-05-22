@@ -26,6 +26,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -103,7 +104,8 @@ public class CounterClaimEntity {
 
     private String hwfReferenceNumber;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private CounterClaimStatus status;
 
     private LocalDateTime claimSubmittedDate;
 
@@ -120,5 +122,5 @@ public class CounterClaimEntity {
     private List<CounterClaimPartyEntity> counterClaimParties = new ArrayList<>();
 
     @Transient
-    private String previousStatus;
+    private CounterClaimStatus previousStatus;
 }
