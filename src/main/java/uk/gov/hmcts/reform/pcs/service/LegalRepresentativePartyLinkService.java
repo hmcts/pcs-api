@@ -91,19 +91,16 @@ public class LegalRepresentativePartyLinkService {
     }
 
     private void unlinkExistingRepresentation(UUID partyId) {
-        Optional<LegalRepresentativeEntity> partyLinkedToLegalRepresentativeAndActive =
-            legalRepresentativeRepository.isPartyLinkedToLegalRepresentativeAndActive(partyId);
 
-        if (partyLinkedToLegalRepresentativeAndActive.isPresent()) {
-            LegalRepresentativeEntity existingLegalRepresentative = partyLinkedToLegalRepresentativeAndActive.get();
+        legalRepresentativeRepository.findLegalRepresentativeForParty(partyId)
+            .ifPresent((existingLegalRepresentative) -> {
+                existingLegalRepresentative.getClaimPartyLegalRepresentativeList().stream()
+                    .filter(claimPartyLegalRepresentative ->
+                                claimPartyLegalRepresentative.getParty().getId().equals(partyId))
+                    .forEach(this::invalidateLegalRepresentativeClaimParty);
 
-            existingLegalRepresentative.getClaimPartyLegalRepresentativeList().stream()
-                .filter(claimPartyLegalRepresentative ->
-                            claimPartyLegalRepresentative.getParty().getId().equals(partyId))
-                .forEach(this::invalidateLegalRepresentativeClaimParty);
-
-            legalRepresentativeRepository.saveAndFlush(existingLegalRepresentative);
-        }
+                legalRepresentativeRepository.saveAndFlush(existingLegalRepresentative);
+            });
     }
 
     private void invalidateLegalRepresentativeClaimParty(ClaimPartyLegalRepresentativeEntity claimParty) {

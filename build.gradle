@@ -332,7 +332,8 @@ sonarqube {
       "**/entities/**," +
       "**/model/**," +
       "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java"
-    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java"
+    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/domain/genapp/*.java,"
   }
 }
 
@@ -559,6 +560,7 @@ tasks.register('e2eTest') {
 check.dependsOn cftlibTest
 
 // Add wiremock docker compose dependency
+dockerCompose.isRequiredBy bootWithCCD
 dockerCompose.isRequiredBy cftlibTest
 
 def cleanUpContainers = System.getenv("CI") != null
