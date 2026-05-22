@@ -70,6 +70,10 @@ public class AdditionalDefendantInformationTabDetailsBuilder extends DefendantIn
         VerticalYesNo nameKnown = defendant.getNameKnown();
         VerticalYesNo addressKnown = defendant.getAddressKnown();
 
+        if (nameKnown == null && addressKnown == null) {
+            return null;
+        }
+
         AdditionalDefendantInformationTabDetails additionalDefendantInformationTabDetails =
             AdditionalDefendantInformationTabDetails.builder()
                 .nameKnown(nameKnown != null ? nameKnown.getLabel() : null)

@@ -65,7 +65,6 @@ public class AdditionalDefendantInformationTabDetailsBuilderTest {
     @Test
     void shouldNotSetAdditionalDefendantsInSummaryTabWhenThereIsOnlyOneDefendant() {
         // Given
-        AddressUK address = AddressUK.builder().postCode("SW1A 1AA").build();
         PCSCase pcsCase = PCSCase.builder()
             .allDefendants(List.of(
                 listValue(Party.builder()
@@ -198,7 +197,6 @@ public class AdditionalDefendantInformationTabDetailsBuilderTest {
     @Test
     void shouldNotSetAdditionalDefendantsInDetailsTabWhenThereIsOnlyOneDefendant() {
         // Given
-        AddressUK address = AddressUK.builder().postCode("SW1A 1AA").build();
         PCSCase pcsCase = PCSCase.builder()
             .allDefendants(List.of(
                 listValue(Party.builder()
@@ -283,6 +281,50 @@ public class AdditionalDefendantInformationTabDetailsBuilderTest {
         assertThat(additionalDefendants.getFirst().getValue().getAddressKnown())
             .isEqualTo("No");
         assertThat(additionalDefendants.getFirst().getValue().getAddressForService()).isNull();
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenAdditionalDefendantsHaveNullDataInSummaryTab() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(List.of(
+                listValue(Party.builder()
+                              .nameKnown(VerticalYesNo.YES)
+                              .firstName("Defendant")
+                              .lastName("One")
+                              .build()),
+                listValue(Party.builder().build())
+            ))
+            .build();
+
+        // When
+        List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendants =
+            additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase);
+
+        // Then
+        assertThat(additionalDefendants).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenAdditionalDefendantsHaveNullDataInDetailsTab() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(List.of(
+                listValue(Party.builder()
+                              .nameKnown(VerticalYesNo.YES)
+                              .firstName("Defendant")
+                              .lastName("One")
+                              .build()),
+                listValue(Party.builder().build())
+            ))
+            .build();
+
+        // When
+        List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendants =
+            additionalDefendantInformationTabDetailsBuilder.buildDetailedAdditionalDefendantsDetails(pcsCase);
+
+        // Then
+        assertThat(additionalDefendants).isEmpty();
     }
 
     private static <T> ListValue<T> listValue(T value) {
