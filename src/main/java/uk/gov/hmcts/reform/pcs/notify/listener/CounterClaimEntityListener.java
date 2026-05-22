@@ -6,6 +6,7 @@ import jakarta.persistence.PostUpdate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -18,9 +19,6 @@ import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
 @Slf4j
 @Component
 public class CounterClaimEntityListener {
-
-    private static final String PENDING_CASE_ISSUED = "PENDING_CASE_ISSUED";
-    private static final String CASE_ISSUED = "CASE_ISSUED";
 
     private final DefendantResponseNotificationService defendantResponseNotificationService;
     private final PaymentNotificationService paymentNotificationService;
@@ -38,37 +36,36 @@ public class CounterClaimEntityListener {
 
     @PostPersist
     public void onPostPersist(CounterClaimEntity entity) {
-        if (PENDING_CASE_ISSUED.equals(entity.getStatus())) {
+        if (entity.getStatus() == CounterClaimStatus.PENDING_CASE_ISSUED) {
             handleNotificationForDefendantResponse(entity);
         }
     }
 
     @PostUpdate
     public void onPostUpdate(CounterClaimEntity entity) {
-        if (entity.getStatus().equals(entity.getPreviousStatus())) {
+        if (entity.getStatus() == entity.getPreviousStatus()) {
             return;
         }
 
-        if (PENDING_CASE_ISSUED.equals(entity.getStatus())) {
-            handleNotificationForDefendantResponse(entity);
-            return;
-        }
+        switch (entity.getStatus()) {
+            case PENDING_CASE_ISSUED -> handleNotificationForDefendantResponse(entity);
+            case CASE_ISSUED -> {
+                PartyEntity defendant = entity.getParty();
+                FeePaymentEntity feePayment = entity.getPcsCase().getClaims().stream()
+                    .filter(claim -> claim.getFeePayment() != null
+                        && claim.getFeePayment().getParty().getId().equals(defendant.getId()))
+                    .map(ClaimEntity::getFeePayment)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                        "No fee payment found for counterclaim: " + entity.getId()));
 
-        if (CASE_ISSUED.equals(entity.getStatus())) {
-            PartyEntity defendant = entity.getParty();
-            FeePaymentEntity feePayment = entity.getPcsCase().getClaims().stream()
-                .filter(claim -> claim.getFeePayment() != null
-                    && claim.getFeePayment().getParty().getId().equals(defendant.getId()))
-                .map(ClaimEntity::getFeePayment)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                    "No fee payment found for counterclaim: " + entity.getId()));
-
-            if (feePayment.getPaymentStatus() != PaymentStatus.PAID) {
-                log.info("Fee payment {} not paid, skipping email notification", feePayment.getId());
-                return;
+                if (feePayment.getPaymentStatus() != PaymentStatus.PAID) {
+                    log.info("Fee payment {} not paid, skipping email notification", feePayment.getId());
+                    return;
+                }
+                paymentNotificationService.sendCounterClaimPaymentSuccessNotification(feePayment.getId());
             }
-            paymentNotificationService.sendCounterClaimPaymentSuccessNotification(feePayment.getId());
+
         }
     }
 
@@ -77,6 +74,6 @@ public class CounterClaimEntityListener {
             .filter(dr -> dr.getParty().getId().equals(entity.getParty().getId()))
             .findFirst()
             .map(DefendantResponseEntity::getId)
-            .ifPresent(defendantResponseNotificationService::sendEmailNotification);
+            .ifPresent(defendantResponseNotificationService::sendEmailNotificationForCounterclaim);
     }
 }
