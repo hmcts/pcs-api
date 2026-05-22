@@ -47,8 +47,8 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Case Flags]', async () => {
-  test('Case Flags - Create case level Flag @CC @PR @regression @caseFlags @nightly', async () => {
+test.describe('[Common Component Case Flags] @CC @PR @regression @caseFlags @nightly', async () => {
+  test('Case Flags - Create case level Flag', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
@@ -103,7 +103,7 @@ test.describe('[Common Component Case Flags]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
 
-  test('Case Flags - Create Party Level Case Flag @CC @PR @regression @caseFlags @nightly', async () => {
+  test('Case Flags - Create Party Level Case Flag', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
@@ -163,7 +163,7 @@ test.describe('[Common Component Case Flags]', async () => {
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
-  test('Case Flags - Verify the create and manage case flag menu @CC @PR @regression @caseFlags @nightly @smoke', async () => {
+  test('Case Flags - Verify the create and manage case flag menu @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
