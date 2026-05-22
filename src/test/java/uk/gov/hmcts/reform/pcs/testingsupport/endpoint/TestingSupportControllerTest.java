@@ -95,7 +95,7 @@ class TestingSupportControllerTest {
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
-                                                 idamAuthenticator
+                                                 idamAuthenticator,
                                                  entityTestStatusService
         );
     }
