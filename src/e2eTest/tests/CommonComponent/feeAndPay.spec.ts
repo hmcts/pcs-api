@@ -36,7 +36,7 @@ test.describe('[Common Component Fee And Pay]', async () => {
       expectedAmount: serviceRequest.amount404,
       payByOption: serviceRequest.payByAccountRadioOption,
       pbaLabel: serviceRequest.selectPBALabel,
-      pbaValue: serviceRequest.pbaValue,
+      pbaValue: serviceRequest.pbaIndex1,
       referenceLabel: serviceRequest.pbaReferenceLable,
       referenceText: serviceRequest.pbaReferenceInputText,
       confirmButton: serviceRequest.confirmPaymentButton,
