@@ -62,7 +62,7 @@ class DocumentNamingServiceTest {
     private static Stream<Arguments> genAppNamingScenarios() {
         return Stream.of(
             // Party role, original filename, expected updated filename
-            argumentSet("null filanem",
+            argumentSet("null filename",
                         PartyRole.DEFENDANT, null, null),
             argumentSet("no extension, defendant",
                         PartyRole.DEFENDANT, "sample", "sample GA5 - Defendant 2"),

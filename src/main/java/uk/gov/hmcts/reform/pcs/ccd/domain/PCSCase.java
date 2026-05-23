@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
@@ -73,6 +74,7 @@ public class PCSCase {
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
     public static final String PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL =
         "Explain why you have not followed the pre-action protocol";
+    public static final String NOTE_LABEL = "Note";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
@@ -137,7 +139,7 @@ public class PCSCase {
     private String crossBorderCountry2;
 
     @CCD(access = {CaseLinkingAccess.class},
-        typeOverride = FieldType.Collection,
+        typeOverride = Collection,
         label = "Linked cases",
         typeParameterOverride = "CaseLink")
     @Builder.Default
@@ -627,4 +629,17 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "casePartiesTab_")
     @CCD
     private CasePartiesTab casePartiesTab;
+
+    @CCD(
+        label = NOTE_LABEL,
+        hint = "Add note detail, including relevant dates and people involved",
+        typeOverride = TextArea
+    )
+    private String note;
+
+    @CCD (
+        label = "Note",
+        typeOverride = Collection,
+        typeParameterOverride = "CaseNote")
+    List<ListValue<CaseNote>> caseNotes;
 }

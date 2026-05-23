@@ -29,10 +29,7 @@ export class ActionGenAppsRegistry {
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
     ['getCaseAPI', new CreateCaseAPIAction()],
-    ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
-    // ['fetchPINsAPI', new FetchPINsAndValidateAccessCodeAPIAction()],
-    // ['validateAccessCodeAPI', new FetchPINsAndValidateAccessCodeAPIAction()],
-    
+    ['linkSolicitorAPI', new LinkSolicitorAPIAction()], 
     ['chooseAnApplication', new GenAppsAction()],
     ['confirmIfCourtHearingInNext14Days', new GenAppsAction()],
     ['doYouNeedHelpPayingFee', new GenAppsAction()],
@@ -45,11 +42,11 @@ export class ActionGenAppsRegistry {
     ['validateCYA', new GenAppsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['confirmOrderDoYouWant', new GenAppsAction()],
-    
-    ['confirmOrderDoYouWant', new GenAppsAction()],
     ['reviewCYA', new GenAppsAction()],
     ['selectStatementOfTruth', new GenAppsAction()],
     ['reviewAndUpdateCYA', new GenAppsAction()],
+    ['getDefendantDetails', new GenAppsAction()],
+    ['selectApplicant', new GenAppsAction()],
    
   ]);
 
