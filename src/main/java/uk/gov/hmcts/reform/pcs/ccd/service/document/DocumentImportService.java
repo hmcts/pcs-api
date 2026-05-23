@@ -21,25 +21,27 @@ public class DocumentImportService {
     private final CaseDocumentClientApi caseDocumentClientApi;
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final AuthTokenGenerator authTokenGenerator;
+    private final DocumentIdExtractor documentIdExtractor;
 
     public DocumentImportService(
         PcsCaseService pcsCaseService,
         CaseDocumentClientApi caseDocumentClientApi,
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
-        AuthTokenGenerator authTokenGenerator
+        AuthTokenGenerator authTokenGenerator,
+        DocumentIdExtractor documentIdExtractor
     ) {
         this.pcsCaseService = pcsCaseService;
         this.caseDocumentClientApi = caseDocumentClientApi;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
         this.authTokenGenerator = authTokenGenerator;
+        this.documentIdExtractor = documentIdExtractor;
     }
 
     public DocumentEntity addDocumentToCase(long caseReference,
                                             String documentUrl,
                                             CaseFileCategory caseFileCategory) {
 
-        String[] urlParts = documentUrl.split("/");
-        UUID documentId = UUID.fromString(urlParts[urlParts.length - 1]);
+        UUID documentId = documentIdExtractor.extractDocumentId(documentUrl);
 
         String authorization = systemUpdateUserTokenProvider.getAuthToken();
         String serviceAuthorization = authTokenGenerator.generate();
@@ -52,6 +54,7 @@ public class DocumentImportService {
 
         DocumentEntity documentEntity = DocumentEntity.builder()
             .fileName(documentMetadata.originalDocumentName)
+            .documentId(documentId)
             .url(documentMetadata.links.self.href)
             .binaryUrl(documentMetadata.links.binary.href)
             .categoryId(caseFileCategory.getId())

@@ -39,6 +39,8 @@ class DocumentImportServiceTest {
     private IdamTokenProvider systemUpdateUserTokenProvider;
     @Mock
     private AuthTokenGenerator authTokenGenerator;
+    @Mock
+    private DocumentIdExtractor documentIdExtractor;
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
@@ -50,7 +52,7 @@ class DocumentImportServiceTest {
         when(authTokenGenerator.generate()).thenReturn(S2S_AUTH_TOKEN);
 
         underTest = new DocumentImportService(pcsCaseService, caseDocumentClientApi, systemUpdateUserTokenProvider,
-                                              authTokenGenerator);
+                                              authTokenGenerator, documentIdExtractor);
     }
 
     @Test
@@ -66,7 +68,8 @@ class DocumentImportServiceTest {
         when(caseDocumentClientApi.getMetadataForDocument(SYSTEM_AUTH_TOKEN, S2S_AUTH_TOKEN, documentId))
             .thenReturn(documentMetadata);
 
-        String documentUrl = "https://some.host/some/path/%s".formatted(documentId.toString());
+        String documentUrl = "some document URL";
+        when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(documentId);
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
@@ -83,12 +86,13 @@ class DocumentImportServiceTest {
         assertThat(documentEntityListCaptor.getValue()).hasSize(1);
 
         DocumentEntity addedDocumentEntity = documentEntityListCaptor.getValue().getFirst();
+        assertThat(addedDocumentEntity).isSameAs(returnedDocumentEntity);
+
         assertThat(addedDocumentEntity.getFileName()).isEqualTo("original filename");
+        assertThat(addedDocumentEntity.getDocumentId()).isEqualTo(documentId);
         assertThat(addedDocumentEntity.getUrl()).isEqualTo("test url");
         assertThat(addedDocumentEntity.getBinaryUrl()).isEqualTo("test binary url");
         assertThat(addedDocumentEntity.getCategoryId()).isEqualTo(CaseFileCategory.HEARING_DOCUMENTS.getId());
-
-        assertThat(returnedDocumentEntity).isSameAs(addedDocumentEntity);
     }
 
     @SuppressWarnings("SameParameterValue")

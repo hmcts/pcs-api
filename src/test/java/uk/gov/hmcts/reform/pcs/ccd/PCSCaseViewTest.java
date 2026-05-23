@@ -120,9 +120,9 @@ class PCSCaseViewTest {
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
-                                    rentArrearsView, noticeOfPossessionView, statementOfTruthView, caseFieldsView,
-                                    caseLinkView, enforcementOrderMediator, caseNoteView, caseTabView,
-                                    partiesView, genAppsView
+                                    rentArrearsView, noticeOfPossessionView,
+                                    statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
+                                    caseNoteView, caseTabView, partiesView, genAppsView
         );
     }
 
