@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -74,7 +75,6 @@ public class TestingSupportController {
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
-    private final FeePaymentRepository feePaymentRepository;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
@@ -424,6 +424,39 @@ public class TestingSupportController {
         entityTestStatusService.updateDefendantResponseStatus(defendantResponseId, status);
         return ResponseEntity.ok().build();
     }
+    @GetMapping("/fee-payment-info/{caseReference}")
+    public ResponseEntity<List<FeePaymentEntity>> getFeePaymentInfo(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "Case reference to find fee payment details for", required = true)
+        @PathVariable long caseReference
+    ) {
+        try {
+            // 1. Fetch the core case entity just like the pin method does
+            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            if (maybeCase.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            PcsCaseEntity pcsCaseEntity = maybeCase.get();
+
+            List<FeePaymentEntity> feePayments = pcsCaseEntity.getClaims().stream()
+                .map(ClaimEntity::getFeePayment)
+                .filter(Objects::nonNull)
+                .toList();
+
+            return ResponseEntity.ok(feePayments);
+
+        } catch (Exception e) {
+            log.error("Failed to get Fee Payment details for case reference {}", caseReference, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @GetMapping("/fee-payment-info/{caseReference}")
     public ResponseEntity<List<FeePaymentEntity>> getFeePaymentInfo(
         @Parameter(
