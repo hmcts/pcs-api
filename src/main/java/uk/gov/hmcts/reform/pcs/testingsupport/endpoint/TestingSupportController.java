@@ -29,11 +29,14 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -44,12 +47,7 @@ import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -68,6 +66,7 @@ public class TestingSupportController {
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
+    private final FeePaymentRepository feePaymentRepository;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
@@ -376,6 +375,39 @@ public class TestingSupportController {
             userDetails
         );
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/fee-payment-info/{caseReference}")
+    public ResponseEntity<List<FeePaymentEntity>> getFeePaymentInfo(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "Case reference to find fee payment details for", required = true)
+        @PathVariable long caseReference
+    ) {
+        try {
+            // 1. Fetch the core case entity just like the pin method does
+            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            if (maybeCase.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            PcsCaseEntity pcsCaseEntity = maybeCase.get();
+
+            List<FeePaymentEntity> feePayments = pcsCaseEntity.getClaims().stream()
+                .map(ClaimEntity::getFeePayment)
+                .filter(Objects::nonNull)
+                .toList();
+
+            return ResponseEntity.ok(feePayments);
+
+        } catch (Exception e) {
+            log.error("Failed to get Fee Payment details for case reference {}", caseReference, e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 }
