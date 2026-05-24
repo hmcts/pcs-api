@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
@@ -55,6 +56,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final DocumentImportService documentImportService;
     private final LegalRepresentativeService legalRepresentativeService;
+    private final NotificationService notificationService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -119,12 +121,14 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
 
         createSubmissionDocument(caseReference, createGenAppRequest, genAppEntity, applicantParty);
 
+        sendNotificationEmail(genAppEntity, caseData);
+
         return SubmitResponse.<State>builder()
             .build();
     }
 
     private PartyEntity getApplicantParty(long caseReference, PCSCase caseData) {
-        if (caseData.getCurrentRepresentedPartyId() != null) {
+        if (isSubmittedByLegalRep(caseData)) {
             UUID partyId = UUID.fromString(caseData.getCurrentRepresentedPartyId());
             return partyService.getPartyEntityByEntityId(partyId, caseReference);
         } else {
@@ -160,6 +164,16 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
         );
 
         documentImportService.addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
+    }
+
+    private void sendNotificationEmail(GenAppEntity genAppEntity, PCSCase caseData) {
+        if (!isSubmittedByLegalRep(caseData)) {
+            notificationService.sendGenAppReceivedEmail(genAppEntity);
+        }
+    }
+
+    private static boolean isSubmittedByLegalRep(PCSCase caseData) {
+        return caseData.getCurrentRepresentedPartyId() != null;
     }
 
     @SuppressWarnings("SameParameterValue")

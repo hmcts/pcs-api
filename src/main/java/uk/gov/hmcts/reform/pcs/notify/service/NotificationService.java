@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -109,6 +110,17 @@ public class NotificationService {
             EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM,
             NotificationClaimType.COUNTER_CLAIM,
             notificationPersonalisationFactory.forClaimant(claim, claim.getClaimantParty())
+        );
+    }
+
+    public void sendGenAppReceivedEmail(GenAppEntity genAppEntity) {
+        PartyEntity applicantPartyEntity = genAppEntity.getParty();
+
+        sendEmail(
+            partyRecipient(applicantPartyEntity),
+            EmailTemplate.GENERAL_APPLICATION_RECEIVED,
+            NotificationClaimType.GENERAL_APPLICATION,
+            notificationPersonalisationFactory.forParty(applicantPartyEntity, genAppEntity.getPcsCase())
         );
     }
 
@@ -368,6 +380,15 @@ public class NotificationService {
         return isCorrectClaimantContactEmail == null || isCorrectClaimantContactEmail.toBoolean()
             ? claimantContactPreferences.getClaimantContactEmail()
             : claimantContactPreferences.getOverriddenClaimantContactEmail();
+    }
+
+    private NotificationRecipient partyRecipient(PartyEntity party) {
+        return new NotificationRecipient(
+            party.getEmailAddress(),
+            party,
+            party.getPcsCase(),
+            null
+        );
     }
 
     private NotificationRecipient claimantRecipient(PCSCase pcsCase) {

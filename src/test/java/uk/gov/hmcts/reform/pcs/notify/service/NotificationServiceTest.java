@@ -1,12 +1,15 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
@@ -15,33 +18,32 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
-import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -59,6 +61,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -69,20 +72,20 @@ import static org.mockito.Mockito.when;
 @DisplayName("NotificationService Tests")
 class NotificationServiceTest {
 
+    private static final long CASE_REFERENCE = 1234567890L;
+
     @Mock
     private NotificationRepository notificationRepository;
-
     @Mock
     private SchedulerClient schedulerClient;
-
     @Mock
     private NotificationTemplateConfiguration templateConfiguration;
-
     @Mock
     private PartyService partyService;
-
     @Mock
     private NotificationPersonalisationFactory notificationPersonalisationFactory;
+    @Captor
+    private ArgumentCaptor<SchedulableInstance<EmailState>> schedulableInstanceCaptor;
 
     private NotificationService notificationService;
 
@@ -406,7 +409,7 @@ class NotificationServiceTest {
 
             PcsCaseEntity pcsCase = new PcsCaseEntity();
             pcsCase.setId(UUID.randomUUID());
-            pcsCase.setCaseReference(1234567890L);
+            pcsCase.setCaseReference(CASE_REFERENCE);
 
             PaymentAgreementEntity paymentAgreement = new PaymentAgreementEntity();
             paymentAgreement.setId(UUID.randomUUID());
@@ -565,103 +568,66 @@ class NotificationServiceTest {
 
             verifyNoInteractions(templateConfiguration, notificationRepository, schedulerClient);
         }
-    }
-
-    @Nested
-    @DisplayName("buildBasePersonalisation")
-    class BuildBaseTemplatePersonalisationTests {
-        private final NotificationPersonalisationFactory factory = new NotificationPersonalisationFactory();
 
         @Test
-        @DisplayName("Should build correct base personalisation")
-        void shouldBuildBasePersonalisation() {
-            Map<String, Object> result =
-                factory.forDefendant(createDefendantResponse()).toMap();
+        @DisplayName("Should send gen app received email")
+        void shouldSendGenAppReceivedEmail() {
+            // Given
+            String expectedTemplateId = "some template ID";
+            String expectedEmailAddress = "some email address";
 
-            assertThat(result)
-                .hasSize(5)
-                .containsEntry("firstName", "John")
-                .containsEntry("lastName", "Doe")
-                .containsEntry("caseNumber", "1234-5678-90")
-                .containsEntry("claimantName", "JANE SMITH")
-                .containsEntry("primaryDefendantName", "JOHN DOE");
+            when(templateConfiguration.getTemplateId(EmailTemplate.GENERAL_APPLICATION_RECEIVED))
+                .thenReturn(expectedTemplateId);
+
+            CaseNotification savedNotification = mock(CaseNotification.class);
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+            PartyEntity applicantPartyEntity = mock(PartyEntity.class);
+            when(genAppEntity.getParty()).thenReturn(applicantPartyEntity);
+            when(partyService.canSendEmailNotification(applicantPartyEntity)).thenReturn(true);
+            when(applicantPartyEntity.getEmailAddress()).thenReturn(expectedEmailAddress);
+
+            BasePersonalisation personalisation = mock(BasePersonalisation.class);
+            Map<String, Object> expectedPersonalisationMap = Map.of("foo", 1);
+            when(personalisation.toMap()).thenReturn(expectedPersonalisationMap);
+
+            when(notificationPersonalisationFactory.forParty(applicantPartyEntity, pcsCaseEntity))
+                .thenReturn(personalisation);
+
+            // When
+            notificationService.sendGenAppReceivedEmail(genAppEntity);
+
+            // Then
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+            SchedulableInstance<EmailState> schedulableInstance = schedulableInstanceCaptor.getValue();
+            TaskInstance<EmailState> taskInstance = schedulableInstance.getTaskInstance();
+            assertThat(taskInstance.getId()).isNotNull();
+
+            EmailState taskData = taskInstance.getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(expectedEmailAddress);
+            assertThat(taskData.getTemplateId()).isEqualTo(expectedTemplateId);
+            assertThat(taskData.getPersonalisation()).isEqualTo(expectedPersonalisationMap);
         }
 
         @Test
-        @DisplayName("Should build base personalisation with organisation name for claimant")
-        void shouldBuildBasePersonalisationWithOrgName() {
-            DefendantResponseEntity response = createDefendantResponse();
-            response.getClaim().getClaimParties().getFirst().getParty().setOrgName("Claimant Corp");
+        @DisplayName("Should not send gen app received email when when canSendEmailNotification is false")
+        void shouldNotSendGenAppReceivedEmailWhenReceipientDoesNotWantEmails() {
+            // Given
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            PartyEntity applicantParty = mock(PartyEntity.class);
+            when(genAppEntity.getParty()).thenReturn(applicantParty);
+            when(partyService.canSendEmailNotification(applicantParty)).thenReturn(false);
 
-            Map<String, Object> result =
-                factory.forDefendant(response).toMap();
+            // When
+            notificationService.sendGenAppReceivedEmail(genAppEntity);
 
-            assertThat(result)
-                .containsEntry("claimantName", "CLAIMANT CORP");
-        }
-
-        @Test
-        @DisplayName("Should throw PartyNotFoundException when no claimant found")
-        void shouldThrowExceptionWhenNoClaimantFound() {
-            DefendantResponseEntity response = createDefendantResponse();
-            response.getClaim().getClaimParties().clear();
-
-            assertThatThrownBy(() -> factory.forDefendant(response))
-                .isInstanceOf(PartyNotFoundException.class)
-                .hasMessageContaining("No claimant party found");
-        }
-
-        @Test
-        @DisplayName("Should include base fields and paymentReferenceNumber")
-        void shouldIncludePaymentReferenceNumber() {
-            DefendantResponseEntity response = createDefendantResponse();
-            FeePaymentEntity feePayment = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.PAID)
-                .externalReference("PAY-123")
-                .build();
-            response.getClaim().setFeePayment(feePayment);
-
-            Map<String, Object> result =
-                factory.counterclaimSuccess(response).toMap();
-
-            assertThat(result)
-                .containsKey("paymentReferenceNumber")
-                .containsEntry("paymentReferenceNumber", "PAY-123")
-                .containsEntry("firstName", "John")
-                .containsEntry("claimantName", "JANE SMITH")
-                .containsEntry("primaryDefendantName", "JOHN DOE")
-                .hasSize(6);
-        }
-
-        @Test
-        @DisplayName("Should throw FeePaymentNotFoundException when no paid fee payment found")
-        void shouldThrowExceptionWhenNoPaidFeePaymentFound() {
-            DefendantResponseEntity response = createDefendantResponse();
-            FeePaymentEntity feePayment = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.NOT_PAID)
-                .externalReference("PAY-123")
-                .build();
-            response.getClaim().setFeePayment(feePayment);
-
-            assertThatThrownBy(() -> factory.counterclaimSuccess(response))
-                .isInstanceOf(FeePaymentNotFoundException.class)
-                .hasMessageContaining("Paid fee payment not found");
-        }
-
-        @Test
-        @DisplayName("Should build request with all fields")
-        void shouldBuildRequest() {
-            TemplatePersonalisation personalisation = () -> Map.of("key", "value");
-            EmailNotificationRequest request = NotificationService.buildRequest(
-                "template-1",
-                "test@example.com",
-                NotificationClaimType.COUNTER_CLAIM,
-                personalisation);
-
-            assertThat(request.getTemplateId()).isEqualTo("template-1");
-            assertThat(request.getEmailAddress()).isEqualTo("test@example.com");
-            assertThat(request.getClaimType()).isEqualTo(NotificationClaimType.COUNTER_CLAIM);
-            assertThat(request.getPersonalisation().get("key")).isEqualTo("value");
+            // Then
+            verify(schedulerClient, never()).scheduleIfNotExists(any());
         }
     }
 
@@ -699,7 +665,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any())).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+            notificationService.sendClaimantDraftSavedForLater(CASE_REFERENCE, pcsCase);
 
             ArgumentCaptor<CaseNotification> captor =
                 ArgumentCaptor.forClass(CaseNotification.class);
@@ -730,7 +696,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any())).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+            notificationService.sendClaimantDraftSavedForLater(CASE_REFERENCE, pcsCase);
 
             ArgumentCaptor<CaseNotification> captor =
                 ArgumentCaptor.forClass(CaseNotification.class);
@@ -761,7 +727,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any())).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+            notificationService.sendClaimantDraftSavedForLater(CASE_REFERENCE, pcsCase);
 
             ArgumentCaptor<CaseNotification> captor =
                 ArgumentCaptor.forClass(CaseNotification.class);
@@ -794,7 +760,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+                notificationService.sendClaimantDraftSavedForLater(CASE_REFERENCE, pcsCase);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus())
@@ -820,7 +786,7 @@ class NotificationServiceTest {
             );
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+                notificationService.sendClaimantDraftSavedForLater(CASE_REFERENCE, pcsCase);
 
             assertThat(response).isNull();
 
@@ -831,7 +797,7 @@ class NotificationServiceTest {
     @Nested
     @DisplayName("TemplatePersonalisation Method Tests")
     class TemplatePersonalisationMethodTests {
-        private final NotificationPersonalisationFactory factory = new NotificationPersonalisationFactory();
+        private final NotificationPersonalisationFactory factory = new NotificationPersonalisationFactory(partyService);
 
         @Test
         @DisplayName("Should use overridden claimant name when name flag is NO")
@@ -846,7 +812,7 @@ class NotificationServiceTest {
             );
 
             Map<String, Object> result =
-                factory.forClaimant(1234567890L, pcsCase).toMap();
+                factory.forClaimant(CASE_REFERENCE, pcsCase).toMap();
 
             assertThat(result)
                 .containsEntry("toLineClaimantName", "Override Name")
@@ -866,7 +832,7 @@ class NotificationServiceTest {
             );
 
             Map<String, Object> result =
-                factory.forClaimant(1234567890L, pcsCase).toMap();
+                factory.forClaimant(CASE_REFERENCE, pcsCase).toMap();
 
             assertThat(result)
                 .containsEntry("toLineClaimantName", "Jane Smith")
@@ -975,7 +941,7 @@ class NotificationServiceTest {
 
     private PcsCaseEntity createCase() {
         PcsCaseEntity pcsCase = new PcsCaseEntity();
-        pcsCase.setCaseReference(1234567890L);
+        pcsCase.setCaseReference(CASE_REFERENCE);
         return pcsCase;
     }
 

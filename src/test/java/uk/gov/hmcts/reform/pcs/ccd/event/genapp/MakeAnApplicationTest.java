@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
@@ -66,13 +67,16 @@ class MakeAnApplicationTest extends BaseEventTest {
     private DocumentImportService documentImportService;
     @Mock
     private LegalRepresentativeService legalRepresentativeService;
+    @Mock
+    private NotificationService notificationService;
 
     @BeforeEach
     void setUp() {
         MakeAnApplication underTest = new MakeAnApplication(pcsCaseService, partyService,
                                                             securityContextService, genAppService,
                                                             genAppRepository, genAppDocumentGenerator,
-                                                            documentImportService, legalRepresentativeService);
+                                                            documentImportService, legalRepresentativeService,
+                                                            notificationService);
 
         setEventUnderTest(underTest);
     }
@@ -194,6 +198,31 @@ class MakeAnApplicationTest extends BaseEventTest {
             // Then
             verify(genAppService).createGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
         }
+
+        @Test
+        void shouldNotSendEmailForRepresentedParty() {
+            // Given
+            UUID representedPartyUuid = UUID.randomUUID();
+            PartyEntity representedParty = mock(PartyEntity.class);
+
+            CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .currentRepresentedPartyId(representedPartyUuid.toString())
+                .citizenGenAppRequest(genAppRequest)
+                .build();
+
+            given(partyService.getPartyEntityByEntityId(representedPartyUuid, TEST_CASE_REFERENCE))
+                .willReturn(representedParty);
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(notificationService, never()).sendGenAppReceivedEmail(any());
+        }
     }
 
     @Nested
@@ -288,6 +317,35 @@ class MakeAnApplicationTest extends BaseEventTest {
             verify(documentImportService).addDocumentToCase(TEST_CASE_REFERENCE, documentUrl,
                                                             CaseFileCategory.APPLICATIONS
             );
+        }
+
+        @Test
+        void shouldSendEmailToApplicantParty() {
+            // Given
+            final PartyEntity applicantParty = mock(PartyEntity.class);
+
+            CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .clientReference("some reference")
+                .build();
+
+            UUID currentUserId = UUID.randomUUID();
+            given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
+            given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
+
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppService.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty))
+                .thenReturn(genAppEntity);
+
+            PCSCase caseData = PCSCase.builder()
+                .citizenGenAppRequest(genAppRequest)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
         }
 
         private PartyEntity stubCurrentUserParty() {
