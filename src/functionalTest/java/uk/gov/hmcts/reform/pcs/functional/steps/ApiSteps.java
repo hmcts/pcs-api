@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -263,4 +264,40 @@ public class ApiSteps {
             );
         }
     }
+
+
+    @Step("fee payment info details fetched")
+    public List<Object> getFeePaymentDetailsForCaseReference(Long caseReference) {
+        Callable<List<Object>> getPaymentInfo = () -> {
+            List<Object> paymentDetails = SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .pathParam("caseReference", caseReference)
+                .when()
+                .get(Endpoints.GetPaymentInfoDetails.getResource())
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<List<Object>>() {});
+
+            if (paymentDetails != null && !paymentDetails.isEmpty()) {
+                return Collections.singletonList(paymentDetails.listIterator());
+            }
+            return null;
+        };
+
+        try {
+            return await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(getPaymentInfo, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Access code not available for case: " + caseReference, e
+            );
+        }
+    }
+
 }
