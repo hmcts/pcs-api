@@ -33,13 +33,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -51,7 +51,12 @@ import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.EntityTestStatusService;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
