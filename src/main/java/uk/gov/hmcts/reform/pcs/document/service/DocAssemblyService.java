@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.document.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.docassembly.DocAssemblyClient;
@@ -11,22 +12,22 @@ import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 @Slf4j
 @Service
 public class DocAssemblyService {
     private final DocAssemblyClient docAssemblyClient;
-    private final IdamService idamService;
+    private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final AuthTokenGenerator authTokenGenerator;
 
     public DocAssemblyService(
         DocAssemblyClient docAssemblyClient,
-        IdamService idamService,
+        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
         AuthTokenGenerator authTokenGenerator
     ) {
         this.docAssemblyClient = docAssemblyClient;
-        this.idamService = idamService;
+        this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
         this.authTokenGenerator = authTokenGenerator;
     }
 
@@ -41,7 +42,7 @@ public class DocAssemblyService {
                 throw new IllegalArgumentException("formPayload cannot be null");
             }
 
-            String authorization = idamService.getSystemUserAuthorisation();
+            String authorization = systemUpdateUserTokenProvider.getAuthToken();
             String serviceAuthorization = authTokenGenerator.generate();
 
             DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
