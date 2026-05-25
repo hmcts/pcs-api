@@ -6,8 +6,6 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 @AllArgsConstructor
@@ -35,16 +33,6 @@ public enum DocumentUploadCategory implements HasLabel {
 
     private static final DateTimeFormatter LABEL_DATE_FORMAT =
         DateTimeFormatter.ofPattern("EEEE d MMM uuuu", Locale.UK);
-
-    public static List<DocumentUploadCategory> existingApplicationCategories() {
-        return Arrays.stream(values())
-            .filter(DocumentUploadCategory::isExistingApplicationCategory)
-            .toList();
-    }
-
-    public boolean isExistingApplicationCategory() {
-        return this != MAIN_CLAIM_OR_COUNTERCLAIM;
-    }
 
     public String getLabel(LocalDateTime date) {
         if (!requiresDate) {

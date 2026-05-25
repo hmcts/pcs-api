@@ -85,14 +85,13 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .build()
         );
 
-        // By default Main claim is always added
+        // By default, Main claim is always added
         caseData.getLegalRepDocumentUploadDetails().setShowExistingApplicationPage(validCategoryItems.size() >= 2
                                                                                        ? YesOrNo.YES : YesOrNo.NO);
-
         return caseData;
     }
 
-    private DynamicStringListElement buildCategoryItem(
+    DynamicStringListElement buildCategoryItem(
         DocumentUploadCategory category,
         LocalDateTime genAppDate
     ) {
@@ -102,9 +101,9 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .build();
     }
 
-    private LocalDateTime findLatestGenAppDateForCategory(PcsCaseEntity pcsCaseEntity,
+    LocalDateTime findLatestGenAppDateForCategory(PcsCaseEntity pcsCaseEntity,
                                                           DocumentUploadCategory category) {
-        if (pcsCaseEntity == null || pcsCaseEntity.getGenApps() == null) {
+        if (pcsCaseEntity.getGenApps() == null) {
             return null;
         }
 
@@ -121,7 +120,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .orElse(null);
     }
 
-    private GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {
+    GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {
         return switch (category) {
             case ADJOURN_HEARING_APPLICATION -> GenAppType.ADJOURN;
             case SUSPEND_EVICTION_APPLICATION -> GenAppType.SUSPEND;
