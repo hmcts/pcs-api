@@ -8,12 +8,14 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -126,6 +128,25 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        Long caseReference = eventPayload.caseReference();
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        PCSCase pcsCase = eventPayload.caseData();
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = pcsCase.getLegalRepDocumentUploadDetails();
+        if (legalRepDocumentUploadDetails != null) {
+            List<Document> legalRepDocuments = legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
+                .map(c -> c.getValue().getDocument()).toList();
+
+            List<DocumentEntity> documentEntities = legalRepDocuments.stream()
+                .map(legalRepDoc -> DocumentEntity.builder()
+                    .pcsCase(pcsCaseEntity)
+                    .url(legalRepDoc.getUrl())
+                    .fileName(legalRepDoc.getFilename())
+                    .binaryUrl(legalRepDoc.getBinaryUrl())
+                    .build())
+                .toList();
+
+            pcsCaseEntity.addDocuments(documentEntities);
+        }
         return SubmitResponse.defaultResponse();
     }
 }
