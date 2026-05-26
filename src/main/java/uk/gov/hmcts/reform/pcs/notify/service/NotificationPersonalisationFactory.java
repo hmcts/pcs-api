@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
@@ -11,8 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
@@ -22,22 +23,19 @@ import java.util.Locale;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class NotificationPersonalisationFactory {
-    private static final String NO_CLAIMANT_PARTY_FOUND_MSG = "No claimant party found for defendant response: %s";
+
+    private final PartyService partyService;
 
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
-        PartyEntity claimant = defendantResponse.getClaim().getClaimantParty();
 
-        if (claimant == null) {
-            throw new PartyNotFoundException(String.format(NO_CLAIMANT_PARTY_FOUND_MSG, defendantResponse.getId()));
-        }
-
-        return buildPersonalisation(defendant, claimant, defendant, defendantResponse.getPcsCase());
+        return buildPersonalisation(defendant, defendantResponse.getPcsCase());
     }
 
     public BasePersonalisation forClaimant(ClaimEntity claim, PartyEntity claimant) {
-        return buildPersonalisation(claimant, claimant, claim.getDefendantParty(), claim.getPcsCase());
+        return buildPersonalisation(claimant, claim.getPcsCase());
     }
 
     public ClaimantBasePersonalisation forClaimant(long caseReference, PCSCase pcsCase) {
@@ -76,21 +74,23 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
-    private static BasePersonalisation buildPersonalisation(
+    private BasePersonalisation buildPersonalisation(
         PartyEntity emailRecipient,
-        PartyEntity claimant,
-        PartyEntity defendant,
-        PcsCaseEntity pcsCase
+        PcsCaseEntity pcsCaseEntity
     ) {
-        String claimantName = claimant.getOrgName() != null
-            ? claimant.getOrgName().toUpperCase(Locale.ROOT)
-            : formatNameUpperForNotification(claimant.getFirstName(), claimant.getLastName());
-        String primaryDefendantName = formatNameUpperForNotification(defendant.getFirstName(), defendant.getLastName());
+        PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+        PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
+
+        String claimantName = primaryClaimant.getOrgName() != null
+            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
+            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
+        String primaryDefendantName
+            = formatNameUpperForNotification(primaryDefendant.getFirstName(), primaryDefendant.getLastName());
 
         return BasePersonalisation.builder()
             .firstName(emailRecipient.getFirstName())
             .lastName(emailRecipient.getLastName())
-            .caseNumber(formatCaseReference(pcsCase.getCaseReference().toString()))
+            .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
             .build();

@@ -1,8 +1,12 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -13,24 +17,40 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.when;
 
 @DisplayName("NotificationPersonalisationFactory Tests")
+@ExtendWith(MockitoExtension.class)
 class NotificationPersonalisationFactoryTest {
 
-    private final NotificationPersonalisationFactory factory = new NotificationPersonalisationFactory();
+    private static final long CASE_REFERENCE = 1234567890L;
+
+    @Mock(strictness = LENIENT)
+    private PartyService partyService;
+    @Mock(strictness = LENIENT)
+    private PcsCaseEntity pcsCaseEntity;
+
+    private NotificationPersonalisationFactory factory;
+
+    @BeforeEach
+    void setUp() {
+        when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
+
+        factory = new NotificationPersonalisationFactory(partyService);
+    }
 
     @Nested
     @DisplayName("forDefendant")
@@ -38,7 +58,9 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should build correct base personalisation for defendant")
         void shouldBuildCorrectBasePersonalisation() {
-            DefendantResponseEntity response = createDefendantResponse();
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
             BasePersonalisation result = factory.forDefendant(response);
 
@@ -54,23 +76,15 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should use organisation name for claimant if present")
         void shouldBuildBasePersonalisationWithOrgName() {
-            DefendantResponseEntity response = createDefendantResponse();
-            response.getClaim().getClaimantParty().setOrgName("Claimant Corp");
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            claimantParty.setOrgName("Claimant Corp");
 
             BasePersonalisation result = factory.forDefendant(response);
 
             assertThat(result.toMap()).containsEntry("claimantName", "CLAIMANT CORP");
-        }
-
-        @Test
-        @DisplayName("Should throw PartyNotFoundException when no claimant found")
-        void shouldThrowExceptionWhenNoClaimantFound() {
-            DefendantResponseEntity response = createDefendantResponse();
-            response.getClaim().setClaimParties(new ArrayList<>());
-
-            assertThatThrownBy(() -> factory.forDefendant(response))
-                .isInstanceOf(PartyNotFoundException.class)
-                .hasMessageContaining("No claimant party found");
         }
     }
 
@@ -80,10 +94,10 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should build correct personalisation for claimant")
         void shouldBuildCorrectPersonalisation() {
-            ClaimEntity claim = createClaim();
-            PartyEntity claimant = claim.getClaimantParty();
+            PartyEntity claimantParty = stubClaimantParty();
+            ClaimEntity claim = createClaim(claimantParty);
 
-            BasePersonalisation result = factory.forClaimant(claim, claimant);
+            BasePersonalisation result = factory.forClaimant(claim, claimantParty);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -103,7 +117,7 @@ class NotificationPersonalisationFactoryTest {
         void shouldBuildCorrectClaimantBasePersonalisation() {
             PCSCase pcsCase = createPcsCase(VerticalYesNo.YES, "Jane Smith", "Override Name");
 
-            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+            ClaimantBasePersonalisation result = factory.forClaimant(CASE_REFERENCE, pcsCase);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -118,7 +132,7 @@ class NotificationPersonalisationFactoryTest {
         void shouldUseOverriddenClaimantNameWhenFlagIsNo() {
             PCSCase pcsCase = createPcsCase(VerticalYesNo.NO, "Jane Smith", "Override Name");
 
-            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+            ClaimantBasePersonalisation result = factory.forClaimant(CASE_REFERENCE, pcsCase);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -131,7 +145,7 @@ class NotificationPersonalisationFactoryTest {
         void shouldDefaultToClaimantNameWhenFlagIsNull() {
             PCSCase pcsCase = createPcsCase(null, "Jane Smith", "Override Name");
 
-            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+            ClaimantBasePersonalisation result = factory.forClaimant(CASE_REFERENCE, pcsCase);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -145,7 +159,7 @@ class NotificationPersonalisationFactoryTest {
             PCSCase pcsCase = createPcsCase(VerticalYesNo.YES, "Jane Smith", "Override Name");
             pcsCase.getDefendant1().setNameKnown(VerticalYesNo.NO);
 
-            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+            ClaimantBasePersonalisation result = factory.forClaimant(CASE_REFERENCE, pcsCase);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -158,7 +172,7 @@ class NotificationPersonalisationFactoryTest {
             PCSCase pcsCase = createPcsCase(VerticalYesNo.YES, "Jane Smith", "Override Name");
             pcsCase.getDefendant1().setNameKnown(null);
 
-            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+            ClaimantBasePersonalisation result = factory.forClaimant(CASE_REFERENCE, pcsCase);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -171,7 +185,7 @@ class NotificationPersonalisationFactoryTest {
             PCSCase pcsCase = createPcsCase(VerticalYesNo.YES, "Jane Smith", "Override Name");
             pcsCase.getDefendant1().setFirstName(null);
 
-            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+            ClaimantBasePersonalisation result = factory.forClaimant(CASE_REFERENCE, pcsCase);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -184,7 +198,7 @@ class NotificationPersonalisationFactoryTest {
             PCSCase pcsCase = createPcsCase(VerticalYesNo.YES, "Jane Smith", "Override Name");
             pcsCase.getDefendant1().setLastName(null);
 
-            ClaimantBasePersonalisation result = factory.forClaimant(1234567890L, pcsCase);
+            ClaimantBasePersonalisation result = factory.forClaimant(CASE_REFERENCE, pcsCase);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -198,7 +212,10 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should include base fields and paymentReferenceNumber")
         void shouldIncludePaymentReferenceNumber() {
-            DefendantResponseEntity response = createDefendantResponse();
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
             FeePaymentEntity feePayment = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.PAID)
                 .externalReference("PAY-123")
@@ -218,7 +235,10 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should throw FeePaymentNotFoundException when no paid fee payment found")
         void shouldThrowExceptionWhenNoPaidFeePaymentFound() {
-            DefendantResponseEntity response = createDefendantResponse();
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
             FeePaymentEntity feePayment = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.NOT_PAID)
                 .externalReference("PAY-123")
@@ -233,7 +253,10 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should throw FeePaymentNotFoundException when fee payment is null")
         void shouldThrowExceptionWhenFeePaymentIsNull() {
-            DefendantResponseEntity response = createDefendantResponse();
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
             response.getClaim().setFeePayment(null);
 
             assertThatThrownBy(() -> factory.counterclaimSuccess(response))
@@ -242,6 +265,19 @@ class NotificationPersonalisationFactoryTest {
         }
     }
 
+    private PartyEntity stubClaimantParty() {
+        PartyEntity claimantPartyEntity = createParty("Jane", "Smith");
+        when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantPartyEntity);
+        return claimantPartyEntity;
+    }
+
+    private PartyEntity stubDefendantParty() {
+        PartyEntity defendantParty = createParty("John", "Doe");
+        when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(defendantParty);
+        return defendantParty;
+    }
+
+
     private PartyEntity createParty(String firstName, String lastName) {
         PartyEntity party = new PartyEntity();
         party.setFirstName(firstName);
@@ -249,31 +285,24 @@ class NotificationPersonalisationFactoryTest {
         return party;
     }
 
-    private PcsCaseEntity createCaseEntity() {
-        PcsCaseEntity pcsCase = new PcsCaseEntity();
-        pcsCase.setCaseReference(1234567890L);
-        return pcsCase;
-    }
-
-    private ClaimEntity createClaim() {
+    private ClaimEntity createClaim(PartyEntity claimantParty) {
         ClaimEntity claim = new ClaimEntity();
-        claim.setPcsCase(createCaseEntity());
+        claim.setPcsCase(pcsCaseEntity);
 
-        PartyEntity claimantParty = createParty("Jane", "Smith");
         claim.addParty(claimantParty, PartyRole.CLAIMANT);
 
-        PartyEntity defendantParty = createParty("John", "Doe");
+        PartyEntity defendantParty = stubDefendantParty();
         claim.addParty(defendantParty, PartyRole.DEFENDANT);
 
         return claim;
     }
 
-    private DefendantResponseEntity createDefendantResponse() {
+    private DefendantResponseEntity createDefendantResponse(PartyEntity claimantParty, PartyEntity defendantParty) {
         DefendantResponseEntity response = new DefendantResponseEntity();
         response.setId(UUID.randomUUID());
-        response.setPcsCase(createCaseEntity());
-        response.setParty(createParty("John", "Doe"));
-        response.setClaim(createClaim());
+        response.setPcsCase(pcsCaseEntity);
+        response.setParty(defendantParty);
+        response.setClaim(createClaim(claimantParty));
         return response;
     }
 

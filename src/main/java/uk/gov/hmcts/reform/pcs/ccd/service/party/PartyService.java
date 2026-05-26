@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
@@ -66,6 +67,24 @@ public class PartyService {
         return partyRepository.queryPartyByIdamId(idamId, caseReference)
             .orElseThrow(() -> new PartyNotFoundException(
                 "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
+    }
+
+    public PartyEntity getPrimaryClaimantPartyEntity(PcsCaseEntity pcsCase) {
+        return getPrimaryPartyEntityOfRole(pcsCase, PartyRole.CLAIMANT);
+    }
+
+    public PartyEntity getPrimaryDefendantPartyEntity(PcsCaseEntity pcsCase) {
+        return getPrimaryPartyEntityOfRole(pcsCase, PartyRole.DEFENDANT);
+    }
+
+    private static PartyEntity getPrimaryPartyEntityOfRole(PcsCaseEntity pcsCase, PartyRole role) {
+        ClaimEntity mainClaim = pcsCase.getClaims().getFirst();
+
+        return mainClaim.getClaimParties().stream()
+            .filter(claimPartyEntity -> claimPartyEntity.getRole() == role)
+            .findFirst()
+            .map(ClaimPartyEntity::getParty)
+            .orElseThrow(() -> new PartyNotFoundException("No party of type %s found on case".formatted(role)));
     }
 
     public boolean canSendEmailNotification(PartyEntity party) {
