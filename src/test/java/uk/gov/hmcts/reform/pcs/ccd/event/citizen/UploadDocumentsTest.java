@@ -70,7 +70,7 @@ class UploadDocumentsTest extends BaseEventTest {
         }
 
         @Test
-        void shouldPersistUploadedDocumentsForCurrentParty() {
+        void shouldPersistUploadedDocumentsForCurrentPartyWithNoGenAppWhenNoneSelected() {
             UploadedDocument uploaded = UploadedDocument.builder()
                 .document(Document.builder()
                     .url("url-1").filename("file-1.pdf").binaryUrl("bin-1").build())
@@ -88,7 +88,60 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).createAdditionalDocumentsForParty(uploadedDocs, pcsCaseEntity, currentParty);
+            verify(documentService).createAdditionalDocumentsForParty(uploadedDocs, pcsCaseEntity, currentParty, null);
+        }
+
+        @Test
+        void shouldResolveSelectedGenAppAndPassToDocumentService() {
+            UUID selectedId = UUID.randomUUID();
+            GenAppEntity selectedGenApp = mock(GenAppEntity.class);
+            when(selectedGenApp.getId()).thenReturn(selectedId);
+            when(selectedGenApp.getState()).thenReturn(GenAppState.SUBMITTED);
+            when(selectedGenApp.getApplicationSubmittedDate()).thenReturn(LocalDateTime.now());
+            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(selectedGenApp));
+
+            UploadedDocument uploaded = UploadedDocument.builder()
+                .document(Document.builder().url("url-1").filename("f.pdf").binaryUrl("bin").build())
+                .build();
+            List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+                ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
+            );
+
+            PCSCase caseData = PCSCase.builder()
+                .uploadedAdditionalDocuments(uploadedDocs)
+                .documentUploadDetails(DocumentUploadDetails.builder()
+                    .selectedRelatedApplicationId(selectedId)
+                    .build())
+                .build();
+
+            PartyEntity currentParty = stubCurrentUserParty();
+
+            callSubmitHandler(caseData);
+
+            verify(documentService).createAdditionalDocumentsForParty(
+                uploadedDocs, pcsCaseEntity, currentParty, selectedGenApp);
+        }
+
+        @Test
+        void shouldPassNullGenAppWhenSelectedIdDoesNotMatchAnyVisibleApp() {
+            UUID strayId = UUID.randomUUID();
+            GenAppEntity otherGenApp = mock(GenAppEntity.class);
+            when(otherGenApp.getId()).thenReturn(UUID.randomUUID());
+            when(otherGenApp.getState()).thenReturn(GenAppState.SUBMITTED);
+            when(otherGenApp.getApplicationSubmittedDate()).thenReturn(LocalDateTime.now());
+            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(otherGenApp));
+
+            PCSCase caseData = PCSCase.builder()
+                .documentUploadDetails(DocumentUploadDetails.builder()
+                    .selectedRelatedApplicationId(strayId)
+                    .build())
+                .build();
+
+            PartyEntity currentParty = stubCurrentUserParty();
+
+            callSubmitHandler(caseData);
+
+            verify(documentService).createAdditionalDocumentsForParty(null, pcsCaseEntity, currentParty, null);
         }
 
         @Test
@@ -98,7 +151,15 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).createAdditionalDocumentsForParty(null, pcsCaseEntity, currentParty);
+            verify(documentService).createAdditionalDocumentsForParty(null, pcsCaseEntity, currentParty, null);
+        }
+
+        private Set<GenAppEntity> setOf(GenAppEntity... entities) {
+            Set<GenAppEntity> set = new HashSet<>();
+            for (GenAppEntity entity : entities) {
+                set.add(entity);
+            }
+            return set;
         }
 
         private PartyEntity stubCurrentUserParty() {
@@ -202,7 +263,7 @@ class UploadDocumentsTest extends BaseEventTest {
         }
 
         @Test
-        void shouldUseLatestSubmittedDatePerCategoryWhenMultipleGenAppsShareAType() {
+        void shouldEmitOneOptionPerVisibleGenAppEvenWithinTheSameCategory() {
             LocalDateTime older = LocalDateTime.now().minusDays(5);
             LocalDateTime newer = LocalDateTime.now();
             GenAppEntity olderAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, older);
@@ -213,12 +274,28 @@ class UploadDocumentsTest extends BaseEventTest {
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
+                .hasSize(2)
+                .extracting(option -> option.getValue().getSubmittedDate())
+                .containsExactly(newer, older);
+        }
+
+        @Test
+        void shouldStampOptionWithGenAppIdAndUseItAsListValueId() {
+            LocalDateTime submittedDate = LocalDateTime.now();
+            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, submittedDate);
+            UUID genAppId = UUID.randomUUID();
+            when(adjourn.getId()).thenReturn(genAppId);
+
+            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(adjourn));
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
                 .hasSize(1)
                 .first()
                 .satisfies(option -> {
-                    assertThat(option.getValue().getCategory())
-                        .isEqualTo(DocumentUploadCategory.ADJOURN_HEARING_APPLICATION);
-                    assertThat(option.getValue().getSubmittedDate()).isEqualTo(newer);
+                    assertThat(option.getId()).isEqualTo(genAppId.toString());
+                    assertThat(option.getValue().getGenAppId()).isEqualTo(genAppId);
                 });
         }
 
@@ -239,6 +316,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
         private GenAppEntity stubGenApp(GenAppType type, GenAppState state, LocalDateTime submittedDate) {
             GenAppEntity entity = mock(GenAppEntity.class);
+            lenient().when(entity.getId()).thenReturn(UUID.randomUUID());
             lenient().when(entity.getType()).thenReturn(type);
             lenient().when(entity.getState()).thenReturn(state);
             lenient().when(entity.getApplicationSubmittedDate()).thenReturn(submittedDate);

@@ -27,15 +27,14 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocuments;
 
@@ -72,8 +71,8 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        List<ListValue<RelatedApplicationOption>> options = Arrays.stream(DocumentUploadCategory.values())
-            .map(category -> buildOption(category, pcsCaseEntity))
+        List<ListValue<RelatedApplicationOption>> options = visibleGenApps(pcsCaseEntity)
+            .map(this::toOption)
             .filter(Objects::nonNull)
             .sorted(Comparator.comparing(
                 (ListValue<RelatedApplicationOption> listValue) -> listValue.getValue().getSubmittedDate())
@@ -88,52 +87,40 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         return caseData;
     }
 
-    private ListValue<RelatedApplicationOption> buildOption(DocumentUploadCategory category,
-                                                            PcsCaseEntity pcsCaseEntity) {
-        LocalDateTime submittedDate = findLatestGenAppDateForCategory(pcsCaseEntity, category);
-        if (submittedDate == null) {
-            return null;
+    private Stream<GenAppEntity> visibleGenApps(PcsCaseEntity pcsCaseEntity) {
+        if (pcsCaseEntity == null || pcsCaseEntity.getGenApps() == null) {
+            return Stream.empty();
         }
-        return wrap(RelatedApplicationOption.builder()
-            .category(category)
-            .submittedDate(submittedDate)
-            .build());
+        return pcsCaseEntity.getGenApps().stream()
+            .filter(Objects::nonNull)
+            .filter(genApp -> VISIBLE_GEN_APP_STATES.contains(genApp.getState()))
+            .filter(genApp -> genApp.getApplicationSubmittedDate() != null);
     }
 
-    private ListValue<RelatedApplicationOption> wrap(RelatedApplicationOption option) {
+    private ListValue<RelatedApplicationOption> toOption(GenAppEntity genApp) {
+        DocumentUploadCategory category = mapGenAppTypeToCategory(genApp.getType());
+        if (category == null) {
+            return null;
+        }
+        RelatedApplicationOption option = RelatedApplicationOption.builder()
+            .genAppId(genApp.getId())
+            .category(category)
+            .submittedDate(genApp.getApplicationSubmittedDate())
+            .build();
         return ListValue.<RelatedApplicationOption>builder()
-            .id(option.getCategory().name())
+            .id(genApp.getId().toString())
             .value(option)
             .build();
     }
 
-    private LocalDateTime findLatestGenAppDateForCategory(PcsCaseEntity pcsCaseEntity,
-                                                          DocumentUploadCategory category) {
-        if (pcsCaseEntity == null || pcsCaseEntity.getGenApps() == null) {
+    private DocumentUploadCategory mapGenAppTypeToCategory(GenAppType type) {
+        if (type == null) {
             return null;
         }
-
-        GenAppType mapped = mapCategoryToGenAppType(category);
-        if (mapped == null) {
-            return null;
-        }
-
-        return pcsCaseEntity.getGenApps().stream()
-            .filter(genApp -> genApp.getType() == mapped)
-            .filter(genApp -> VISIBLE_GEN_APP_STATES.contains(genApp.getState()))
-            .map(GenAppEntity::getApplicationSubmittedDate)
-            .filter(Objects::nonNull)
-            .max(Comparator.naturalOrder())
-            .orElse(null);
-    }
-
-    private GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {
-        return switch (category) {
-            case ADJOURN_HEARING_APPLICATION -> GenAppType.ADJOURN;
-            // SUSPEND was removed from GenAppType 
-            case SUSPEND_EVICTION_APPLICATION -> null;
-            case SET_ASIDE_ORDER_APPLICATION -> GenAppType.SET_ASIDE;
-            case GENERAL_APPLICATION -> GenAppType.SOMETHING_ELSE;
+        return switch (type) {
+            case ADJOURN -> DocumentUploadCategory.ADJOURN_HEARING_APPLICATION;
+            case SET_ASIDE -> DocumentUploadCategory.SET_ASIDE_ORDER_APPLICATION;
+            case SOMETHING_ELSE -> DocumentUploadCategory.GENERAL_APPLICATION;
         };
     }
 
@@ -143,14 +130,28 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PartyEntity uploadingParty = getCurrentPartyEntity(caseReference);
+        GenAppEntity selectedGenApp = resolveSelectedGenApp(caseData, pcsCaseEntity);
 
         documentService.createAdditionalDocumentsForParty(
             caseData.getUploadedAdditionalDocuments(),
             pcsCaseEntity,
-            uploadingParty
+            uploadingParty,
+            selectedGenApp
         );
 
         return SubmitResponse.<State>builder().build();
+    }
+
+    private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity) {
+        DocumentUploadDetails details = caseData.getDocumentUploadDetails();
+        if (details == null || details.getSelectedRelatedApplicationId() == null) {
+            return null;
+        }
+        UUID selectedId = details.getSelectedRelatedApplicationId();
+        return visibleGenApps(pcsCaseEntity)
+            .filter(genApp -> selectedId.equals(genApp.getId()))
+            .findFirst()
+            .orElse(null);
     }
 
     private PartyEntity getCurrentPartyEntity(long caseReference) {

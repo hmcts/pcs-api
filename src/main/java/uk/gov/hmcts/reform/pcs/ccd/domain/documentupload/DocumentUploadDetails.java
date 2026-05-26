@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 
 import java.util.List;
+import java.util.UUID;
 
 @Builder
 @Data
@@ -31,4 +32,10 @@ public class DocumentUploadDetails {
         searchable = false
     )
     private List<ListValue<RelatedApplicationOption>> relatedApplicationOptions;
+
+    @CCD(
+        access = {DefendantAccess.class},
+        searchable = false
+    )
+    private UUID selectedRelatedApplicationId;
 }

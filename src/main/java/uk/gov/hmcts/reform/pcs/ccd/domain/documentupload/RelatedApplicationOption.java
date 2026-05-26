@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Builder
 @Data
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @JsonInclude(Include.NON_NULL)
 public class RelatedApplicationOption {
 
+    private UUID genAppId;
     private DocumentUploadCategory category;
     private LocalDateTime submittedDate;
 }

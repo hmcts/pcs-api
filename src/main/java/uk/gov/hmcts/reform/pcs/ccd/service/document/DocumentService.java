@@ -22,12 +22,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +47,7 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
     private final DocumentIdExtractor documentIdExtractor;
+    private final DocumentNameService documentNameService;
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
@@ -186,7 +190,8 @@ public class DocumentService {
     public List<DocumentEntity> createAdditionalDocumentsForParty(
         List<ListValue<UploadedDocument>> uploadedDocuments,
         PcsCaseEntity pcsCase,
-        PartyEntity party
+        PartyEntity party,
+        GenAppEntity selectedGenApp
     ) {
         if (CollectionUtils.isEmpty(uploadedDocuments)) {
             log.info("No additional documents to save for case {}", pcsCase.getCaseReference());
@@ -198,22 +203,32 @@ public class DocumentService {
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
 
+        ClaimEntity mainClaim = getMainClaim(pcsCase);
+        String applicationsCategoryId = CaseFileCategory.APPLICATIONS.getId();
+
         List<DocumentEntity> documentEntities = uploadedDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
             .filter(uploaded -> uploaded.getDocument() != null)
             .filter(uploaded -> !existingUrls.contains(uploaded.getDocument().getUrl()))
-            .map(uploaded -> DocumentEntity.builder()
-                .pcsCase(pcsCase)
-                .party(party)
-                .url(uploaded.getDocument().getUrl())
-                .fileName(uploaded.getDocument().getFilename())
-                .displayFileName(uploaded.getDocument().getFilename())
-                .binaryUrl(uploaded.getDocument().getBinaryUrl())
-                .contentType(uploaded.getContentType())
-                .size(uploaded.getSizeInBytes())
-                .type(DocumentType.OTHER)
-                .build())
+            .map(uploaded -> {
+                String originalFilename = uploaded.getDocument().getFilename();
+                String renamed = (selectedGenApp != null)
+                    ? documentNameService.appendGenAppPostfix(originalFilename, selectedGenApp, mainClaim, party.getId())
+                    : documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
+                return DocumentEntity.builder()
+                    .pcsCase(pcsCase)
+                    .party(party)
+                    .generalApplication(selectedGenApp)
+                    .url(uploaded.getDocument().getUrl())
+                    .fileName(renamed)
+                    .binaryUrl(uploaded.getDocument().getBinaryUrl())
+                    .contentType(uploaded.getContentType())
+                    .size(uploaded.getSizeInBytes())
+                    .type(DocumentType.OTHER)
+                    .categoryId(selectedGenApp != null ? applicationsCategoryId : null)
+                    .build();
+            })
             .toList();
 
         if (documentEntities.isEmpty()) {
@@ -226,6 +241,12 @@ public class DocumentService {
         log.info("Saved {} additional documents for case {} and party {}",
             saved.size(), pcsCase.getCaseReference(), party.getId());
         return saved;
+    }
+
+    private static ClaimEntity getMainClaim(PcsCaseEntity pcsCase) {
+        return pcsCase.getClaims().stream()
+            .findFirst()
+            .orElseThrow(() -> new ClaimNotFoundException(pcsCase.getCaseReference()));
     }
 
     public List<DocumentEntity> createDefendantUploadedDocuments(
