@@ -676,7 +676,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectApplications(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: ' +addressInfo.buildingStreet+ ', '+addressInfo.townCity+ ', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: generalApplication.areYouPlanningToMakeQuestion, option: option});
     await performAction('clickButton', generalApplication.continueButton);
   }
