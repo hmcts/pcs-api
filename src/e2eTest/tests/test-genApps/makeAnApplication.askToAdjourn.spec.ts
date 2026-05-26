@@ -122,6 +122,6 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
     question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
     option: helpPayingTheFee.noRadioOption,
   });
-  await performAction('mainHeader',haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+  await performValidation('mainHeader',haveTheOtherPartiesAgreedToThisApplication.mainHeader);
 });
 });
