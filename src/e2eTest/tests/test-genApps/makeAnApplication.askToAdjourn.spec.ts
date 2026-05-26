@@ -14,7 +14,8 @@ import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
   askToAdjournTheCourtHearing,
-  chooseAnApplication, helpPayingTheFee,
+  chooseAnApplication,
+  haveTheOtherPartiesAgreedToThisApplication, haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee,
   isTheCourtHearingInTheNext14Days,
   selectParty
 } from '@data/page-data-figma/page-data-genApps-figma';
@@ -85,6 +86,17 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       option: isTheCourtHearingInTheNext14Days.yesRadioOption,
     });
     await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+    await performAction('doYouNeedHelpPayingFee', {
+      question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+      option: helpPayingTheFee.yesRadioOption,
+    });
+    await performAction('confirmYouHaveAppliedForFeeHelp', {
+      question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
+      option: haveTheyAlreadyAppliedForHelpWithFees.yesRadioOption,
+      label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
+      input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
+    });
+    await performValidation('mainHeader',haveTheOtherPartiesAgreedToThisApplication.mainHeader);
   });
 
 test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]', async () => {
@@ -104,5 +116,10 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
     option: isTheCourtHearingInTheNext14Days.noRadioOption,
   });
   await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+  await performAction('doYouNeedHelpPayingFee', {
+    question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+    option: helpPayingTheFee.noRadioOption,
+  });
+  await performAction('mainHeader',haveTheOtherPartiesAgreedToThisApplication.mainHeader);
 });
 });
