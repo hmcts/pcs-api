@@ -1000,8 +1000,9 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getAntisocialAndConductDetails().getOtherProhibitedConduct()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getAntisocialAndConductDetails().getOtherProhibitedConductDetails())
             .isEqualTo("otherProhibitedConduct");
-        assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails().getSeekingProhibitedConductStandardContract())
-            .isEqualTo("Yes");
+        assertThat(
+            caseDetailsTab.getProhibitedConductStandardContractDetails().getSeekingProhibitedConductStandardContract()
+        ).isEqualTo("Yes");
         assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails().getWhyMakingClaim())
             .isEqualTo("prohibitedConductWalesClaim");
         assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails().getAgreedTerms())
