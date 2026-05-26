@@ -244,12 +244,12 @@ public class DefendantResponseService {
     }
 
     private void buildStatementOfTruth(DefendantResponses responses, DefendantResponseEntity responseEntity) {
-        if (responses.getStatementOfTruthAccepted() == null) {
+        if (responses.getStatementOfTruth() == null || responses.getStatementOfTruth().getAccepted() == null) {
             return;
         }
         StatementOfTruthEntity sot = StatementOfTruthEntity.builder()
-            .accepted(toYesOrNo(responses.getStatementOfTruthAccepted()))
-            .fullName(responses.getStatementOfTruthFullName())
+            .accepted(toYesOrNo(responses.getStatementOfTruth().getAccepted()))
+            .fullName(responses.getStatementOfTruth().getFullName())
             .completedDate(LocalDateTime.now(utcClock))
             .build();
         responseEntity.setStatementOfTruth(sot);

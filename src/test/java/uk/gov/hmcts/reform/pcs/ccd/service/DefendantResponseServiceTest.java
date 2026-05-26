@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RTCStatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -1345,8 +1346,10 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .statementOfTruthAccepted(VerticalYesNo.YES)
-            .statementOfTruthFullName("John Doe")
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(VerticalYesNo.YES)
+                .fullName("John Doe")
+                .build())
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -1376,7 +1379,9 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .statementOfTruthAccepted(null)
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(null)
+                .build())
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()

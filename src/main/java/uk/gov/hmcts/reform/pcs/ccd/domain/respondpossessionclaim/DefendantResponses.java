@@ -128,8 +128,5 @@ public class DefendantResponses {
     private List<RespondToClaimSection> completedSections;
 
     @CCD
-    private VerticalYesNo statementOfTruthAccepted;
-
-    @CCD(max = 100)
-    private String statementOfTruthFullName;
+    private RTCStatementOfTruth statementOfTruth;
 }
