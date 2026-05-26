@@ -27,13 +27,14 @@ public class UploadSupportingDocuments implements CcdPageConfiguration {
          Each document must be less than 100MB. You can upload the following file types: DOC/DOCX (Word),
          XLS/XLSM (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP, TIF/TIFF.
         </p>
+        <h2 class="govuk-heading-m">Upload a file</h2>
         """;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("uploadSupportingDocuments")
-            .pageLabel("Confirm if you want to upload documents to support the defendant’s application")
+            .pageLabel("Upload documents to support the defendant’s application")
             .showCondition(fieldEquals("xui_genapp_HasSupportingDocuments", VerticalYesNo.YES))
             .label("uploadSupportingDocuments-lineSeparator", "---")
             .label("uploadSupportingDocuments-info", INFO_MARKDOWN)
