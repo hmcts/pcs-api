@@ -100,6 +100,8 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
   });
 
 test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No] @PR', async () => {
+  await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
+  await performAction('clickButton', caseSummary.go);
   await performAction('chooseAnApplication', {
     question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
     option: chooseAnApplication.adjournTheHearingRadioOption,
