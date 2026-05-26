@@ -214,7 +214,8 @@ public class DocumentService {
             .map(uploaded -> {
                 String originalFilename = uploaded.getDocument().getFilename();
                 String renamed = (selectedGenApp != null)
-                    ? documentNameService.appendGenAppPostfix(originalFilename, selectedGenApp, mainClaim, party.getId())
+                    ? documentNameService.appendGenAppPostfix(
+                        originalFilename, selectedGenApp, mainClaim, party.getId())
                     : documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
                 return DocumentEntity.builder()
                     .pcsCase(pcsCase)

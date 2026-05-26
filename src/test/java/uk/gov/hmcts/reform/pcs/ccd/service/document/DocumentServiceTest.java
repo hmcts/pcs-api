@@ -855,7 +855,6 @@ class DocumentServiceTest {
     void shouldSkipAdditionalDocumentsAlreadyPersistedByUrl() {
         // Given
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
 
         DocumentEntity existing = DocumentEntity.builder().url("url-existing").build();
@@ -873,17 +872,17 @@ class DocumentServiceTest {
                 .url("url-new").filename("new.pdf").binaryUrl("bin-new").build())
             .build();
 
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        PartyEntity party = mock(PartyEntity.class);
+        when(party.getId()).thenReturn(UUID.randomUUID());
+        when(documentNameService.appendPartyPostfix("new.pdf", mainClaim, party.getId()))
+            .thenReturn("new - Defendant 1.pdf");
+
         List<ListValue<UploadedDocument>> uploadedDocs = List.of(
             ListValue.<UploadedDocument>builder().id("1").value(duplicate).build(),
             ListValue.<UploadedDocument>builder().id("2").value(fresh).build()
         );
-
-        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
-
-        PartyEntity party = mock(PartyEntity.class);
-        when(party.getId()).thenReturn(partyId);
-        when(documentNameService.appendPartyPostfix("new.pdf", mainClaim, partyId))
-            .thenReturn("new - Defendant 1.pdf");
 
         // When
         underTest.createAdditionalDocumentsForParty(uploadedDocs, pcsCase, party, null);
@@ -899,7 +898,6 @@ class DocumentServiceTest {
     void shouldNotCallRepositoryWhenAllAdditionalDocumentsAreDuplicates() {
         // Given
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        PartyEntity party = mock(PartyEntity.class);
 
         List<DocumentEntity> existingDocs = new ArrayList<>();
         existingDocs.add(DocumentEntity.builder().url("url-existing").build());
@@ -911,6 +909,7 @@ class DocumentServiceTest {
                 .url("url-existing").filename("dup.pdf").binaryUrl("bin-dup").build())
             .build();
 
+        PartyEntity party = mock(PartyEntity.class);
         List<ListValue<UploadedDocument>> uploadedDocs = List.of(
             ListValue.<UploadedDocument>builder().id("1").value(duplicate).build()
         );

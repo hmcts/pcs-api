@@ -72,7 +72,8 @@ class DocumentNameServiceTest {
 
     @Test
     void appendGenAppPostfixReturnsNullWhenFilenameIsNull() {
-        assertThat(underTest.appendGenAppPostfix(null, mock(GenAppEntity.class), mock(ClaimEntity.class), UUID.randomUUID()))
+        assertThat(underTest.appendGenAppPostfix(
+            null, mock(GenAppEntity.class), mock(ClaimEntity.class), UUID.randomUUID()))
             .isNull();
     }
 
