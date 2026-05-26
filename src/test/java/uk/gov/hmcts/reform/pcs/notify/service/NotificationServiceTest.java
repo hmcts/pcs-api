@@ -444,6 +444,45 @@ class NotificationServiceTest {
                         .build())
                     .paymentReferenceNumber("PAY-123")
                     .build());
+            lenient().when(notificationPersonalisationFactory
+                               .forClaimant(any(), any(PartyEntity.class)))
+                .thenReturn(BasePersonalisation.builder()
+                    .firstName("Jane")
+                    .lastName("Smith")
+                    .caseNumber("1234567890")
+                    .claimantName("JANE SMITH")
+                    .primaryDefendantName("JOHN DOE")
+                    .build());
+            lenient().when(notificationPersonalisationFactory
+                               .forClaimant(anyLong(), any(PCSCase.class)))
+                .thenReturn(ClaimantBasePersonalisation.builder()
+                    .toLineClaimantName("Jane Smith")
+                    .caseNumber("1234567890")
+                    .claimantName("JANE SMITH")
+                    .primaryDefendantName("JOHN DOE")
+                    .build());
+        }
+
+        @Test
+        @DisplayName("Should send claimant defendant has made counterclaim email")
+        void shouldSendClaimantDefendantHasMadeCounterclaimEmail() {
+            when(partyService.canSendEmailNotification(any())).thenReturn(true);
+            when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration).getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM);
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
         }
 
         @Test
