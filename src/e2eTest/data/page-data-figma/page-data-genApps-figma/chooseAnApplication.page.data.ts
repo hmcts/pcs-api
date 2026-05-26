@@ -2,7 +2,7 @@ export const chooseAnApplication = {
   mainHeader: `Choose an application`,
   youCannotApplyToSuspendParagraph: `You cannot apply to suspend (stop or delay) an eviction online.`,
   youMustApplyByPostParagraph: `You must apply by post:`,
-  readTheGuidanceLink: `read the guidance explaining how to suspend the eviction (GOV.UK, opens in a new tab)`,
+  readTheGuidanceLink: `read the guidance explaining how to suspend an eviction (GOV.UK, opens in a new tab)`,
   fillN244FormLink: `fill in the N244 form`,
   findYourDefendantCourtLink: `find the defendant’s local court`,
   sendTheCompletedFormList: `send the completed form to the court, or deliver it by hand`,
