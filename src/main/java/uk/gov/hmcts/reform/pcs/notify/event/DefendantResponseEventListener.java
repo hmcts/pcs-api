@@ -20,14 +20,12 @@ public class DefendantResponseEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handle(DefendantResponseStatusUpdatedEvent event) {
-        System.out.println("event triggered");
-        if (event.getNewStatus() == DefendantResponseStatus.SUBMITTED) {
-            defendantResponseNotificationService.sendEmailNotificationForNoCounterClaim(event.getEntityId());
         if (event.newStatus() == DefendantResponseStatus.SUBMITTED) {
             log.info(
                 "Processing defendant response status updated SUBMITTED for defendant response: {}",
                 event.entityId());
             defendantResponseNotificationService.sendEmailNotificationForNoCounterClaim(event.entityId());
+            defendantResponseNotificationService.sendDefendantResponseReceived(event.entityId());
         }
     }
 }

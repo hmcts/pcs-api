@@ -53,8 +53,8 @@ class DefendantResponseEntityListenerTest {
         verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
 
         DefendantResponseStatusUpdatedEvent event = eventCaptor.getValue();
-        assertEquals(defendantResponseId, event.getEntityId());
-        assertEquals(DefendantResponseStatus.SUBMITTED, event.getNewStatus());
+        assertEquals(defendantResponseId, event.entityId());
+        assertEquals(DefendantResponseStatus.SUBMITTED, event.newStatus());
     }
 
     @Test
@@ -93,9 +93,9 @@ class DefendantResponseEntityListenerTest {
         verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
 
         DefendantResponseStatusUpdatedEvent event = eventCaptor.getValue();
-        assertEquals(defendantResponseId, event.getEntityId());
-        assertEquals(DefendantResponseStatus.CREATED, event.getPreviousStatus());
-        assertEquals(DefendantResponseStatus.SUBMITTED, event.getNewStatus());
+        assertEquals(defendantResponseId, event.entityId());
+        assertEquals(DefendantResponseStatus.CREATED, event.previousStatus());
+        assertEquals(DefendantResponseStatus.SUBMITTED, event.newStatus());
     }
 
     @Test
