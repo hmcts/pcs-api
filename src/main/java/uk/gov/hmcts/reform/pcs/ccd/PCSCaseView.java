@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
+import uk.gov.hmcts.ccd.sdk.type.SearchParty;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -38,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -90,10 +92,41 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         caseFieldsView.setCaseFields(pcsCase);
 
-        //allows indexing for Global Search
-        pcsCase.setSearchCriteria(new SearchCriteria());
+        pcsCase.setSearchCriteria(buildSearchCriteriaForIndexing(pcsCase));
 
         return pcsCase;
+    }
+
+    private SearchCriteria buildSearchCriteriaForIndexing(PCSCase pcsCase) {
+        List<SearchParty> searchParties = Optional.ofNullable(pcsCase.getParties())
+            .orElse(List.of())
+            .stream()
+            .map(ListValue::getValue)
+            .map(this::toSearchParty)
+            .toList();
+
+        return SearchCriteria.builder()
+            .parties(ListValueUtils.wrapListItems(searchParties))
+            .build();
+    }
+
+    private SearchParty toSearchParty(Party party) {
+        AddressUK address = party.getAddress();
+        return SearchParty.builder()
+            .collectionFieldName("parties")
+            .name(joinNonBlank(party.getFirstName(), party.getLastName()))
+            .emailAddress(party.getEmailAddress())
+            .addressLine1(address == null ? null : address.getAddressLine1())
+            .postcode(address == null ? null : address.getPostCode())
+            .dateOfBirth(party.getDateOfBirth())
+            .build();
+    }
+
+    private static String joinNonBlank(String... parts) {
+        String joined = Arrays.stream(parts)
+            .filter(p -> p != null && !p.isBlank())
+            .collect(Collectors.joining(" "));
+        return joined.isEmpty() ? null : joined;
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
