@@ -650,5 +650,5 @@ public class PCSCase {
         label = "Note",
         typeOverride = Collection,
         typeParameterOverride = "CaseNote")
-    private List<ListValue<CaseNote>> caseNotes;
+    List<ListValue<CaseNote>> caseNotes;
 }
