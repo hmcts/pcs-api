@@ -3,18 +3,8 @@ export const isTheCourtHearingInTheNext14Days = {
   isTheCourtHearingInTheNext14DaysQuestion: `Is the defendant’s court hearing in the next 14 days?`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
-  thisWillAffectTheFeeHintText: `This will affect the fee you will pay. You do not need to pay a fee if your court hearing is (at least) 14 days away.`,
+  thisWillAffectTheFeeHintText: `This will affect the fee you will invoice to the defendant. They will not need to pay a fee if their court hearing is (at least) 14 days away.`,
   continueButton: `Continue`,
+  previousButton: `Previous`,
   cancelLink: `Cancel`,
-  backLink: `Back`,
-  cymraegLink: `Cymraeg`,
-  thereIsAProblemErrorMessageHeader: `There is a problem`,
-  errorValidationType: { one: `radioOptions`, two: `textField`, three: `checkBox` },
-  errorValidationField: {
-    errorRadioOption: {
-      type: `none`,
-      input: ``,
-      errMessage: `Confirm whether the court hearing is in the next 14 days`,
-    },
-  },
 };
