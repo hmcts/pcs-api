@@ -41,6 +41,7 @@ import java.util.Optional;
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
+    private final DocumentIdExtractor documentIdExtractor;
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
@@ -150,8 +151,8 @@ public class DocumentService {
         return documents.stream()
                 .map(holder -> DocumentEntity.builder()
                         .url(holder.getDocument().getUrl())
+                        .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
                         .fileName(holder.getDocument().getFilename())
-                        .displayFileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
                         .categoryId(mapDocumentTypeToCategory(holder.getType())
                                         .map(CaseFileCategory::getId)
