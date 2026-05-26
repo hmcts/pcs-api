@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
@@ -211,6 +212,10 @@ public class CaseDetailsTabView {
     }
 
     private TenancyLicenceTabDetails buildTenancyLicenceTabDetails(PCSCase pcsCase) {
+        if (pcsCase.getLegislativeCountry() != LegislativeCountry.ENGLAND) {
+            return null;
+        }
+
         TenancyLicenceDetails tenancyLicenceDetails = pcsCase.getTenancyLicenceDetails();
         if (tenancyLicenceDetails == null) {
             return TenancyLicenceTabDetails.builder()
@@ -234,6 +239,14 @@ public class CaseDetailsTabView {
     }
 
     private NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase) {
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            return buildNoticeTabDetailsWales(pcsCase);
+        }
+
+        return buildNoticeTabDetailsEngland(pcsCase);
+    }
+
+    private NoticeTabDetails buildNoticeTabDetailsEngland(PCSCase pcsCase) {
         if (pcsCase.getNoticeServed() == null) {
             return NoticeTabDetails.builder()
                 .noticeServed(NO_ANSWER)
@@ -249,51 +262,85 @@ public class CaseDetailsTabView {
             .noticeDate(NO_ANSWER)
             .build();
 
-        NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
-        if (noticeServed == YesOrNo.YES && noticeTabDetails != null) {
-            NoticeServiceMethod method = noticeServedDetails.getNoticeServiceMethod();
-            noticeTabDetails.setNoticeDocuments(noticeServedDetails.getNoticeDocuments());
 
-            if (method != null) {
-                noticeTabDetails.setNoticeMethod(method.getLabel());
-                switch (method) {
-                    case FIRST_CLASS_POST -> {
-                        LocalDate date = noticeServedDetails.getNoticePostedDate();
-                        noticeTabDetails.setNoticeDate(date != null ? date.format(DATE_FORMATTER) : NO_ANSWER);
-                    }
-                    case DELIVERED_PERMITTED_PLACE -> {
-                        LocalDate date = noticeServedDetails.getNoticeDeliveredDate();
-                        noticeTabDetails.setNoticeDate(date != null ? date.format(DATE_FORMATTER) : NO_ANSWER);
-                    }
-                    case PERSONALLY_HANDED -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeHandedOverDateTime();
-                        String name = noticeServedDetails.getNoticePersonName();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
-                        noticeTabDetails.setNoticePersonName(name != null ? name : NO_ANSWER);
-                    }
-                    case EMAIL -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeEmailSentDateTime();
-                        String emailAddress = noticeServedDetails.getNoticeEmailAddress();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
-                        noticeTabDetails.setNoticeEmailAddress(emailAddress != null ? emailAddress : NO_ANSWER);
-                    }
-                    case OTHER_ELECTRONIC -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeOtherElectronicDateTime();
-                        String details = noticeServedDetails.getNoticeOtherElectronicMethodExplanation();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
-                        noticeTabDetails.setNoticeOtherElectronicDetails(details != null ? details : NO_ANSWER);
-                    }
-                    case OTHER -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeOtherDateTime();
-                        String explanation = noticeServedDetails.getNoticeOtherExplanation();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
-                        noticeTabDetails.setNoticeOtherExplanation(explanation != null ? explanation : NO_ANSWER);
-                    }
-                };
-            }
-        }
+        setNoticeServedDetails(noticeServed, noticeTabDetails, pcsCase);
 
         return noticeTabDetails;
+    }
+
+    private NoticeTabDetails buildNoticeTabDetailsWales(PCSCase pcsCase) {
+        WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
+
+        if (walesNoticeDetails == null) {
+            return NoticeTabDetails.builder()
+                .noticeServed(NO_ANSWER)
+                .noticeMethod(NO_ANSWER)
+                .noticeDate(NO_ANSWER)
+                .build();
+        }
+
+        YesOrNo noticeServed = walesNoticeDetails.getNoticeServed();
+
+        NoticeTabDetails noticeTabDetails = NoticeTabDetails.builder()
+            .noticeServed(noticeServed != null ? noticeServed.getValue() : NO_ANSWER)
+            .build();
+
+        setNoticeServedDetails(noticeServed, noticeTabDetails, pcsCase);
+
+        return noticeTabDetails;
+    }
+
+    private void setNoticeServedDetails(
+        YesOrNo noticeServed,
+        NoticeTabDetails noticeTabDetails,
+        PCSCase pcsCase
+    ) {
+        NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
+
+        if (noticeServed != YesOrNo.YES || noticeServedDetails == null) {
+            return;
+        }
+
+        NoticeServiceMethod method = noticeServedDetails.getNoticeServiceMethod();
+        noticeTabDetails.setNoticeDocuments(noticeServedDetails.getNoticeDocuments());
+
+        if (method != null) {
+            noticeTabDetails.setNoticeMethod(method.getLabel());
+            switch (method) {
+                case FIRST_CLASS_POST -> {
+                    LocalDate date = noticeServedDetails.getNoticePostedDate();
+                    noticeTabDetails.setNoticeDate(date != null ? date.format(DATE_FORMATTER) : NO_ANSWER);
+                }
+                case DELIVERED_PERMITTED_PLACE -> {
+                    LocalDate date = noticeServedDetails.getNoticeDeliveredDate();
+                    noticeTabDetails.setNoticeDate(date != null ? date.format(DATE_FORMATTER) : NO_ANSWER);
+                }
+                case PERSONALLY_HANDED -> {
+                    LocalDateTime dateTime = noticeServedDetails.getNoticeHandedOverDateTime();
+                    String name = noticeServedDetails.getNoticePersonName();
+                    noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
+                    noticeTabDetails.setNoticePersonName(name != null ? name : NO_ANSWER);
+                }
+                case EMAIL -> {
+                    LocalDateTime dateTime = noticeServedDetails.getNoticeEmailSentDateTime();
+                    String emailAddress = noticeServedDetails.getNoticeEmailAddress();
+                    noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
+                    noticeTabDetails.setNoticeEmailAddress(emailAddress != null ? emailAddress : NO_ANSWER);
+                }
+                case OTHER_ELECTRONIC -> {
+                    LocalDateTime dateTime = noticeServedDetails.getNoticeOtherElectronicDateTime();
+                    String details = noticeServedDetails.getNoticeOtherElectronicMethodExplanation();
+                    noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
+                    noticeTabDetails.setNoticeOtherElectronicDetails(details != null ? details : NO_ANSWER);
+                }
+                case OTHER -> {
+                    LocalDateTime dateTime = noticeServedDetails.getNoticeOtherDateTime();
+                    String explanation = noticeServedDetails.getNoticeOtherExplanation();
+                    noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
+                    noticeTabDetails.setNoticeOtherExplanation(explanation != null ? explanation : NO_ANSWER);
+                }
+            };
+        }
     }
 
     private ActionsTakenTabDetails buildActionsTakenTabDetails(PCSCase pcsCase) {
@@ -563,7 +610,7 @@ public class CaseDetailsTabView {
             .agreementType(agreementType != null ? agreementType.getLabel() : NO_ANSWER)
             .startDate(startDate != null ? startDate.format(DATE_FORMATTER) : NO_ANSWER)
             .documents(documents)
-            .documentsPlaceholder(documents == null ? NO_ANSWER : null)
+            .documentsPlaceholder(CollectionUtils.isEmpty(documents) ? NO_ANSWER : null)
             .build();
     }
 
@@ -582,7 +629,10 @@ public class CaseDetailsTabView {
     }
 
     private AntisocialAndConductTabDetails buildAntisocialAndConductTabDetails(PCSCase pcsCase) {
-        if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES) {
+        if (
+            pcsCase.getLegislativeCountry() != LegislativeCountry.WALES
+                || pcsCase.getShowASBQuestionsPageWales() == YesOrNo.NO
+        ) {
             return null;
         }
 
@@ -632,17 +682,17 @@ public class CaseDetailsTabView {
             return null;
         }
 
-        String prohibitedConductWalesClaimDetails = pcsCase.getProhibitedConductWalesClaimDetails();
-
         ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractTabDetails =
             ProhibitedConductStandardContractTabDetails.builder()
                 .seekingProhibitedConductStandardContract(prohibitedConduct.getLabel())
-                .whyMakingClaim(prohibitedConduct == VerticalYesNo.YES ? prohibitedConductWalesClaimDetails : null)
                 .build();
 
         PeriodicContractTermsWales periodicContractTermsWales = pcsCase.getPeriodicContractTermsWales();
 
-        if (periodicContractTermsWales != null) {
+        if (periodicContractTermsWales != null && prohibitedConduct == VerticalYesNo.YES) {
+            String prohibitedConductWalesClaimDetails = pcsCase.getProhibitedConductWalesClaimDetails();
+            prohibitedConductStandardContractTabDetails.setWhyMakingClaim(prohibitedConductWalesClaimDetails);
+
             VerticalYesNo agreedTerms = periodicContractTermsWales.getAgreedTermsOfPeriodicContract();
             prohibitedConductStandardContractTabDetails
                 .setAgreedTerms(agreedTerms != null ? agreedTerms.getLabel() : NO_ANSWER);
@@ -651,8 +701,6 @@ public class CaseDetailsTabView {
                 prohibitedConductStandardContractTabDetails
                     .setTermDetails(periodicContractTermsWales.getDetailsOfTerms());
             }
-        } else {
-            prohibitedConductStandardContractTabDetails.setAgreedTerms(NO_ANSWER);
         }
 
         return prohibitedConductStandardContractTabDetails;

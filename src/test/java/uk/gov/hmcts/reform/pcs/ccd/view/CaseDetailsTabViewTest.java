@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBu
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -84,12 +85,13 @@ public class CaseDetailsTabViewTest {
     private CaseDetailsTabView caseDetailsTabView;
 
     @Test
-    void shouldSetCaseDetailsTabFields() {
+    void shouldSetCaseDetailsTabFieldsForEngland() {
         AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
         AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
         AddressUK underlesseeAddress = AddressUK.builder().postCode("CV1 1DF").build();
         AddressUK claimantAddress = AddressUK.builder().postCode("L2 3RT").build();
         PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .claimantType(
                 DynamicStringList.builder().value(
                     DynamicStringListElement.builder().code(PROVIDER_OF_SOCIAL_HOUSING.name()).build())
@@ -355,6 +357,7 @@ public class CaseDetailsTabViewTest {
     @Test
     void shouldSetCaseDetailsTabFieldsWithNoData() {
         PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
 
         // When
@@ -399,6 +402,7 @@ public class CaseDetailsTabViewTest {
     void shouldSetPlaceholderValuesIfOnlyAlternativesToPossessionIsSet() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .alternativesToPossession(Set.of(DEMOTION_OF_TENANCY, SUSPENSION_OF_RIGHT_TO_BUY))
             .build();
 
