@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 public class UploadedDocument {
 
     @CCD(ignore = true)
-    private static final String ACCEPT_TYPES = ".doc,.docx,.xls,.xlsm,.ppt,.pptx,.pdf,.rtf,.txt,.csv,"
+    private static final String ACCEPT_TYPES = ".doc,.docx,.xls,.ppt,.pptx,.pdf,.rtf,.txt,.csv,"
         + ".jpg,.jpeg,.png,.bmp,.tif,.tiff";
 
     @CCD(
