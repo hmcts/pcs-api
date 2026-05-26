@@ -205,6 +205,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
         );
 
         importedDocumentEntity.setGeneralApplication(genAppEntity);
+        genAppEntity.setSubmissionDocument(importedDocumentEntity);
     }
 
     @SuppressWarnings("SameParameterValue")
