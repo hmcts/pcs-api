@@ -48,3 +48,28 @@ export function getCurrentBSTTime(): string {
   return formatted.replace(/am|pm/, (match) => match.toUpperCase());
 }
 
+/* convert YYY-MM-DD to DD/MM/YYYY format */
+export function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-GB"); 
+}
+
+/* convert string for ex RENT_ARREARS to Rent arrears */
+export function formatText(input: string): string {
+  return input
+    .toLowerCase() 
+    .replace(/_/g, " ")
+    .replace(/^\w/, c => c.toUpperCase());
+}
+
+/* covert string 100000 to £1000 */
+export function formatCurrency(value: string): string {
+  const numberValue = Number(value) / 100;
+  return `£${numberValue}`;
+}
+
+/* convert EXAMPLE to Example */
+export function formatWord(input: string): string {
+  return input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
+}
+

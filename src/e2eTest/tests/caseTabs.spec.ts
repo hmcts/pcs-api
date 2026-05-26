@@ -81,15 +81,55 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     await performAction('validateCaseSummaryDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseSummary.defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayloadCaseSummary.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayloadCaseSummary,
-      section: 'Address of property to be repossessed',
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseSummary,
+      section: 'Address of property',
+      table: 'Address of property to be repossessed'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseSummary,
+      section: 'Claimant details',
+      table: 'Claimant'
+    });
+
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseSummary,
+      section: 'Defendant details',
       table: 'Defendant 1'
     });
 
-    // await performAction('validateClaimantDetails', {
-    //   payLoad: submitCaseApiData.submitCasePayloadCaseTab,
-    //   table: 'Claimant'
-    // });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseSummary,
+      section: 'Grounds of possession',
+      table: 'Grounds for possession'
+    });
+
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseSummary,
+      section: 'Rent arrears',
+      table: 'Details of rent arrears'
+    });
+
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseSummary,
+      section: 'Tenancy and Occupation',
+      table: 'Tenancy, occupation contract or licence details'
+    });
 
   });
 

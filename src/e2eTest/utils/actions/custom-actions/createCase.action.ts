@@ -54,7 +54,8 @@ import {
 import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo} from './createCaseAPI.action';
-import { createCaseApiData } from '@data/api-data';
+import {createCaseApiData} from '@data/api-data';
+import {formatCurrency, formatDate, formatText, formatWord} from '@utils/common/string.utils';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -82,7 +83,7 @@ export class CreateCaseAction implements IAction {
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent(page)],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
-      ['selectClaimantName', () => this.selectClaimantName(page,fieldName)],
+      ['selectClaimantName', () => this.selectClaimantName(page, fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName as actionRecord)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName as actionRecord)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName as actionRecord)],
@@ -674,9 +675,9 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectApplications(option: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question: generalApplication.areYouPlanningToMakeQuestion, option: option});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performAction('clickRadioButton', { question: generalApplication.areYouPlanningToMakeQuestion, option: option });
     await performAction('clickButton', generalApplication.continueButton);
   }
 
@@ -1025,30 +1026,70 @@ export class CreateCaseAction implements IAction {
   private async validateCaseSummaryDetails(page: Page, caseSummarySection: actionRecord) {
 
     let caseSummary = new Map<string, string>();
-    const payLoad = caseSummarySection.payLoad as Record<string, any>;
+    let submitPayLoad = caseSummarySection.submitPayload as Record<string, any>;
+    let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
+    
     switch (caseSummarySection.section) {
-      case 'Address of the Property':
-        if (payLoad.defendant1.addressKnown === 'YES' && payLoad.defendant1.addressSameAsPossession === 'YES') {
-          const address = payLoad.formattedClaimantContactAddress.split('<br>');
+      case 'Defendant details':
+        if (submitPayLoad.defendant1.nameKnown === 'YES') {
+          caseSummary.set(`First name`, submitPayLoad.defendant1.firstName);
+          caseSummary.set(`Last name`, submitPayLoad.defendant1.lastName);
+        }
+        if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'YES') {
+          const address = submitPayLoad.formattedClaimantContactAddress.split('<br>');
           caseSummary.set(`Building and Street`, address[0]);
           caseSummary.set(`Address Line 2`, address[1]);
           caseSummary.set(`Town or City`, address[2]);
           caseSummary.set(`Postcode/Zipcode`, address[3]);
           caseSummary.set('Country', 'United Kingdom')
 
-        } else if (payLoad.defendant1.addressKnown === 'YES' && payLoad.defendant1.addressSameAsPossession === 'NO') {
-          caseSummary.set(`Building and Street`, payLoad.defendant1.correspondenceAddress.AddressLine1);
-          caseSummary.set(`Address Line 2`, payLoad.defendant1.correspondenceAddress.AddressLine2);
-          caseSummary.set(`Town or City`, payLoad.defendant1.correspondenceAddress.PostTown);
-          caseSummary.set(`Postcode/Zipcode`, payLoad.defendant1.correspondenceAddress.PostCode);
+        } else if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'NO') {
+          caseSummary.set(`Building and Street`, submitPayLoad.defendant1.correspondenceAddress.AddressLine1);
+          caseSummary.set(`Address Line 2`, submitPayLoad.defendant1.correspondenceAddress.AddressLine2);
+          caseSummary.set(`Town or City`, submitPayLoad.defendant1.correspondenceAddress.PostTown);
+          caseSummary.set(`Postcode/Zipcode`, submitPayLoad.defendant1.correspondenceAddress.PostCode);
           caseSummary.set('Country', 'United Kingdom')
         }
         break;
 
+      case 'Address of property':
+        caseSummary.set(`Building and Street`, createPayLoad.propertyAddress.AddressLine1);
+        caseSummary.set(`Address Line 2`, createPayLoad.propertyAddress.AddressLine2);
+        caseSummary.set(`Town or City`, createPayLoad.propertyAddress.PostTown);
+        caseSummary.set(`Postcode/Zipcode`, createPayLoad.propertyAddress.PostCode);
+        caseSummary.set('Country', createPayLoad.propertyAddress.Country);
+        break;
+
+      case 'Claimant details':
+        caseSummary.set(`Claimant name`, submitPayLoad.claimantName);
+        break;
+
+      case 'Tenancy and Occupation':
+        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
+          .toLowerCase()
+          .replace(/_/g, " ")
+          .replace(/^\w/, (c: string) => c.toUpperCase())
+        );
+        caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate));
+        break;
+
+      case 'Grounds of possession':
+        if (submitPayLoad.introGrounds_HasIntroductoryDemotedOtherGroundsForPossession === 'YES') {
+          caseSummary.set(`Grounds`, formatText(submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds[0]));
+        };
+        break;
+
+      case 'Rent arrears':
+        caseSummary.set(`Rent amount`, formatCurrency(submitPayLoad.rentDetails_CurrentRent));
+        caseSummary.set(`How rent is calculated`, formatWord(submitPayLoad.rentDetails_Frequency));
+        caseSummary.set(`Daily rate`, formatCurrency(submitPayLoad.rentDetails_CalculatedDailyCharge));
+        caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
+        caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
+        break;
+
       default:
         break;
-    }
-    
+    };
 
     await this.caseTabTableData(page, caseSummarySection.table as string);
 
@@ -1066,9 +1107,9 @@ export class CreateCaseAction implements IAction {
         console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
       }
       console.log(`\n**********  END OF FAILURE LIST. ***************`);
-      throw new Error(`Case Notes validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+      throw new Error(`Case Summary validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
     } else {
-      console.log('\n✅ Case Notes VALIDATION PASSED!\n');
+      console.log(`\n✅ Case Summary VALIDATION for section ${caseSummarySection.section} PASSED!\n`);
     }
 
     caseTabMap.clear();
