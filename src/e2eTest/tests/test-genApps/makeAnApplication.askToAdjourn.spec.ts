@@ -14,9 +14,8 @@ import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
   askToAdjournTheCourtHearing,
-  chooseAnApplication,
   haveTheOtherPartiesAgreedToThisApplication, haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee,
-  chooseAnApplication, helpPayingTheFee,
+  chooseAnApplication,
   isTheCourtHearingInTheNext14Days,
   selectParty
 } from '@data/page-data-figma/page-data-genApps-figma';
@@ -68,7 +67,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @smoke', async () => {
+  test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @PR @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
@@ -100,7 +99,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performValidation('mainHeader',haveTheOtherPartiesAgreedToThisApplication.mainHeader);
   });
 
-test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]', async () => {
+test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No] @PR', async () => {
   await performAction('chooseAnApplication', {
     question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
     option: chooseAnApplication.adjournTheHearingRadioOption,
