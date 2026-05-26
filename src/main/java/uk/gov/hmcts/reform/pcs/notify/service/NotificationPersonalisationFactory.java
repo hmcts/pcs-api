@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
@@ -23,13 +23,14 @@ import java.util.Locale;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class NotificationPersonalisationFactory {
 
     private final PartyService partyService;
 
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
+
         return buildPersonalisation(defendant, defendantResponse.getPcsCase());
     }
 
