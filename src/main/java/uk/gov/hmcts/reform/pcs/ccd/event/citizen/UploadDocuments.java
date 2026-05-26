@@ -103,7 +103,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
             return null;
         }
         RelatedApplicationOption option = RelatedApplicationOption.builder()
-            .genAppId(genApp.getId())
+            .genAppId(genApp.getId().toString())
             .category(category)
             .submittedDate(genApp.getApplicationSubmittedDate())
             .build();
@@ -147,7 +147,12 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         if (details == null || details.getSelectedRelatedApplicationId() == null) {
             return null;
         }
-        UUID selectedId = details.getSelectedRelatedApplicationId();
+        UUID selectedId;
+        try {
+            selectedId = UUID.fromString(details.getSelectedRelatedApplicationId());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
         return visibleGenApps(pcsCaseEntity)
             .filter(genApp -> selectedId.equals(genApp.getId()))
             .findFirst()

@@ -110,7 +110,7 @@ class UploadDocumentsTest extends BaseEventTest {
             PCSCase caseData = PCSCase.builder()
                 .uploadedAdditionalDocuments(uploadedDocs)
                 .documentUploadDetails(DocumentUploadDetails.builder()
-                    .selectedRelatedApplicationId(selectedId)
+                    .selectedRelatedApplicationId(selectedId.toString())
                     .build())
                 .build();
 
@@ -133,7 +133,22 @@ class UploadDocumentsTest extends BaseEventTest {
 
             PCSCase caseData = PCSCase.builder()
                 .documentUploadDetails(DocumentUploadDetails.builder()
-                    .selectedRelatedApplicationId(strayId)
+                    .selectedRelatedApplicationId(strayId.toString())
+                    .build())
+                .build();
+
+            PartyEntity currentParty = stubCurrentUserParty();
+
+            callSubmitHandler(caseData);
+
+            verify(documentService).createAdditionalDocumentsForParty(null, pcsCaseEntity, currentParty, null);
+        }
+
+        @Test
+        void shouldPassNullGenAppWhenSelectedIdIsNotAValidUuid() {
+            PCSCase caseData = PCSCase.builder()
+                .documentUploadDetails(DocumentUploadDetails.builder()
+                    .selectedRelatedApplicationId("not-a-uuid")
                     .build())
                 .build();
 
@@ -295,7 +310,7 @@ class UploadDocumentsTest extends BaseEventTest {
                 .first()
                 .satisfies(option -> {
                     assertThat(option.getId()).isEqualTo(genAppId.toString());
-                    assertThat(option.getValue().getGenAppId()).isEqualTo(genAppId);
+                    assertThat(option.getValue().getGenAppId()).isEqualTo(genAppId.toString());
                 });
         }
 
