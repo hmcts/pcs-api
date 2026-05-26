@@ -32,7 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,7 +52,8 @@ class DocumentServiceTest {
 
     @Mock
     private DocumentRepository documentRepository;
-
+    @Mock
+    private DocumentIdExtractor documentIdExtractor;
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
@@ -60,7 +61,40 @@ class DocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentService(documentRepository);
+        underTest = new DocumentService(documentRepository, documentIdExtractor);
+    }
+
+    @Test
+    void shouldSetDocumentIdFromUrl() {
+        // Given
+        UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
+        String documentUrl = "document URL";
+        when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(expectedDocumentId);
+
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
+            .document(Document.builder()
+                          .url(documentUrl)
+                          .filename("file-WITNESS_STATEMENT")
+                          .binaryUrl("bin-WITNESS_STATEMENT")
+                          .categoryId("cat-WITNESS_STATEMENT")
+                          .build())
+            .documentType(AdditionalDocumentType.WITNESS_STATEMENT)
+            .build();
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(ListValueUtils.wrapListItems(List.of(additionalDocument1)));
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+
+        assertThat(capturedEntities.getFirst().getDocumentId()).isEqualTo(expectedDocumentId);
     }
 
     @Test
@@ -70,7 +104,7 @@ class DocumentServiceTest {
 
         AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
             .document(Document.builder()
-                          .url("url-WITNESS_STATEMENT")
+                          .url("url-WITNESS_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
                           .filename("file-WITNESS_STATEMENT")
                           .binaryUrl("bin-WITNESS_STATEMENT")
                           .categoryId("cat-WITNESS_STATEMENT")
@@ -80,7 +114,7 @@ class DocumentServiceTest {
 
         AdditionalDocument additionalDocument2 = AdditionalDocument.builder()
             .document(Document.builder()
-                           .url("url-RENT_STATEMENT")
+                           .url("url-RENT_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
                            .filename("file-RENT_STATEMENT")
                            .binaryUrl("bin-RENT_STATEMENT")
                            .categoryId("cat-RENT_STATEMENT")
@@ -122,7 +156,7 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
-            .document(Document.builder().build())
+            .document(Document.builder().url("https://host/" + UUID.randomUUID()).build())
             .documentType(additionalDocumentType)
             .build();
 
@@ -154,7 +188,10 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
-            .document(Document.builder().categoryId("uploaded-category").build())
+            .document(Document.builder()
+                          .url("https://host/" + UUID.randomUUID())
+                          .categoryId("uploaded-category")
+                          .build())
             .documentType(additionalDocumentType)
             .build();
 
@@ -179,7 +216,7 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         Document doc = Document.builder()
-            .url("url1")
+            .url("url1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
             .filename("file1")
             .binaryUrl("bin1")
             .categoryId("cat1")
@@ -209,7 +246,7 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         Document doc = Document.builder()
-            .url("url2")
+            .url("url2/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
             .filename("file2")
             .binaryUrl("bin2")
             .categoryId("cat2")
@@ -240,7 +277,7 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document doc = Document.builder()
-            .url("url3")
+            .url("url3/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
             .filename("file3")
             .binaryUrl("bin3")
             .categoryId("cat3")
@@ -271,7 +308,7 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document doc = Document.builder()
-            .url("url4")
+            .url("url4/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
             .filename("file4")
             .binaryUrl("bin4")
             .categoryId("cat4")
@@ -316,7 +353,7 @@ class DocumentServiceTest {
         // Given
         EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
                 .document(Document.builder()
-                        .url("url-WITNESS_STATEMENT")
+                        .url("url-WITNESS_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
                         .filename("file-WITNESS_STATEMENT")
                         .binaryUrl("bin-WITNESS_STATEMENT")
                         .categoryId("cat-WITNESS_STATEMENT")
@@ -403,7 +440,7 @@ class DocumentServiceTest {
         String description = "A short description";
 
         AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
-                .document(Document.builder().build())
+                .document(Document.builder().url("https://host/" + UUID.randomUUID()).build())
                 .documentType(additionalDocumentType)
                 .description(description)
                 .build();
@@ -439,7 +476,7 @@ class DocumentServiceTest {
 
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
                 .document(Document.builder()
-                        .url("url1")
+                        .url("url1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
                         .filename("file1")
                         .binaryUrl("bin1")
                         .categoryId("cat1")
@@ -471,7 +508,7 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document validDoc = Document.builder()
-                .url("url1")
+                .url("url1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
                 .filename("file1")
                 .binaryUrl("bin1")
                 .categoryId("cat1")
@@ -504,11 +541,14 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document rentDoc = Document.builder()
-                .url("url-rent").filename("file-rent").binaryUrl("bin-rent").categoryId("cat-rent").build();
+            .url("url-rent/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-rent")
+            .binaryUrl("bin-rent").categoryId("cat-rent").build();
         Document tenancyDoc = Document.builder()
-                .url("url-tenancy").filename("file-tenancy").binaryUrl("bin-tenancy").categoryId("cat-tenancy").build();
+            .url("url-tenancy/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-tenancy")
+            .binaryUrl("bin-tenancy").categoryId("cat-tenancy").build();
         Document noticeDoc = Document.builder()
-                .url("url-notice").filename("file-notice").binaryUrl("bin-notice").categoryId("cat-notice").build();
+            .url("url-notice/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-notice")
+            .binaryUrl("bin-notice").categoryId("cat-notice").build();
 
         when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
                 .statementDocuments(List.of(ListValue.<Document>builder().id("1").value(rentDoc).build()))
@@ -547,7 +587,8 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document doc = Document.builder()
-                .build();
+            .url("https://host/" + UUID.randomUUID())
+            .build();
 
         NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
                 .noticeDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
