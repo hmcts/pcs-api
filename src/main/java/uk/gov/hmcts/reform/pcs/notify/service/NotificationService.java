@@ -112,6 +112,15 @@ public class NotificationService {
         );
     }
 
+    public EmailNotificationResponse sendClaimantDefendantResponseReceived(ClaimEntity claim) {
+        return sendEmail(
+            claimantRecipient(claim),
+            EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED,
+            NotificationClaimType.NO_COUNTER_CLAIM,
+            notificationPersonalisationFactory.forClaimant(claim, claim.getClaimantParty())
+        );
+    }
+
     /**
      * Schedules an email notification to be sent based on the provided request data.
      * The method generates a unique task ID and notification ID, creates the necessary
