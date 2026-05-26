@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_CLAIM;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_DOCUMENTS;
 
 @Component
 public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
@@ -29,19 +28,8 @@ public class ClaimTaskGroupEvaluator implements TaskGroupEvaluator {
                 Task.builder()
                     .templateId(VIEW_CLAIM)
                     .status(TaskStatus.AVAILABLE)
-                    .build(),
-                Task.builder()
-                    .templateId(VIEW_DOCUMENTS)
-                    .status(hasDocuments(ctx) ? TaskStatus.AVAILABLE : TaskStatus.NOT_AVAILABLE)
                     .build()
             )))
             .build();
-    }
-
-    private boolean hasDocuments(DashboardContext ctx) {
-        return ctx != null
-            && ctx.caseEntity() != null
-            && ctx.caseEntity().getDocuments() != null
-            && !ctx.caseEntity().getDocuments().isEmpty();
     }
 }

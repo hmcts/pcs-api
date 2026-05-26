@@ -49,13 +49,23 @@ import {
   suspensionOfRightToBuyOrderReason,
   suspensionToBuyDemotionOfTenancyOrderReasons,
   underlesseeMortgageeDetails,
-  checkingNoticeWales
+  checkingNoticeWales,
+  addCaseNote,
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
+import {caseInfo} from './createCaseAPI.action';
+import { createCaseApiData } from '@data/api-data';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
+
+export const addressInfoCaseTab = {
+  buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
+  addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
+  townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
+  engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
+};
 export const caseTabMap = new Map<string, string>();
 
 export class CreateCaseAction implements IAction {
@@ -113,6 +123,8 @@ export class CreateCaseAction implements IAction {
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
       ['validateClaimantDetails', () => this.validateClaimantDetails(page, fieldName as actionRecord)],
+      ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
+      ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -894,6 +906,13 @@ export class CreateCaseAction implements IAction {
     //await performAction('searchCaseFromFindCase', caseNumber);
   }
 
+  private async addCaseNotes(caseNote: actionRecord){
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {elementType: 'paragraph', text: `Property address: ${addressInfoCaseTab.buildingStreet}, ${addressInfoCaseTab.townCity}, ${addressInfoCaseTab.engOrWalPostcode}`});
+    await performAction('inputText', caseNote.label, caseNote.input);
+    await performAction('clickButton', addCaseNote.continueButton);
+  }
+
   private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {
 
     const defendant = new Map<string, string>();
@@ -989,6 +1008,38 @@ export class CreateCaseAction implements IAction {
 
   }
 
+  private async validateCaseNotesDetails(page: Page, caseNotes: actionRecord) {
+
+    const caseNote = new Map<string, string>();
+    caseNote.set(`Created by`, process.env.Display_NAME as string);
+    caseNote.set(`Created on`, caseNotes.createdOn as string);
+    caseNote.set(`Note`, caseNotes.userInput as string);
+
+    await this.caseTabTableData(page, caseNotes.table as string);
+
+    const misMatchMap = compareMaps(caseNote, caseTabMap, {
+      name1: 'CaseNote',
+      name2: 'CaseNotesTab',
+    })
+
+    if (misMatchMap.size > 0) {
+      console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+        console.log('============================================================');
+        console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+      }
+      console.log(`\n**********  END OF FAILURE LIST. ***************`);
+      throw new Error(`Case Notes validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+    } else {
+      console.log('\n✅ Case Notes VALIDATION PASSED!\n');
+    }
+
+    caseTabMap.clear();
+
+  }
+
   private async caseTabTableData(page: Page, table: string) {
 
     const tables = page.locator(`//span[text()="${table}"]/ancestor::div[1]/child::table[@aria-describedby="complex field table"]`);
@@ -1013,7 +1064,12 @@ export class CreateCaseAction implements IAction {
         if ((await keyQns.count()) === 0 || (await valAns.count()) === 0) continue;
 
         const keyText = (await keyQns.first().innerText()).trim();
-        const valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
+        let valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
+
+        if (keyText === "Created on") {
+          valText = valText.replace(/:\d{2} /, " ");
+        }
+
         if (keyText && keyText.length > 0) {
           caseTabMap.set(keyText ?? '', valText ?? '');
         }
