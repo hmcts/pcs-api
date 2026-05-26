@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -51,6 +52,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -567,6 +569,9 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private LocalDateTime dateSubmitted;
+
     @CCD(
         searchable = false
     )
@@ -629,6 +634,10 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "casePartiesTab_")
     @CCD
     private CasePartiesTab casePartiesTab;
+
+    @JsonUnwrapped(prefix = "summaryTab_")
+    @CCD(searchable = false)
+    private SummaryTab summaryTab;
 
     @CCD(
         label = NOTE_LABEL,
