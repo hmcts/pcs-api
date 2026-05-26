@@ -631,7 +631,7 @@ public class CaseDetailsTabView {
     private AntisocialAndConductTabDetails buildAntisocialAndConductTabDetails(PCSCase pcsCase) {
         if (
             pcsCase.getLegislativeCountry() != LegislativeCountry.WALES
-                || pcsCase.getShowASBQuestionsPageWales() == YesOrNo.NO
+                || pcsCase.getShowASBQuestionsPageWales() != YesOrNo.YES
         ) {
             return null;
         }
