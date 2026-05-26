@@ -23,11 +23,12 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
+import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -73,6 +74,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseNoteView caseNoteView;
     private final CaseTabView caseTabView;
     private final PartiesView partiesView;
+    private final GenAppsView genAppsView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -127,6 +129,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
+        genAppsView.setCaseFields(pcsCase, pcsCaseEntity);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         caseTabView.setCaseTabFields(pcsCase);
