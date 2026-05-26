@@ -11,7 +11,6 @@ export * from '@data/page-data-figma/preActionProtocol.page.data';
 export * from '@data/page-data-figma/alternativesToPossession.page.data';
 export * from '@data/page-data-figma/checkingNotice.page.data';
 export * from '@data/page-data-figma/claimantCircumstances.page.data';
-export * from '@data/page-data-figma/claimingCosts.page.data';
 export * from '@data/page-data-figma/dailyRentAmount.page.data';
 export * from '@data/page-data-figma/defendantCircumstances.page.data';
 export * from '@data/page-data-figma/enterPropertyAddress.page.data';
@@ -44,3 +43,4 @@ export * from '@data/page-data-figma/rentArrearsOrBreachOfTenancyGround.page.dat
 export * from '@data/page-data-figma/demotionOfTenancyHousingActOptions.page.data';
 export * from '@data/page-data-figma/suspensionOfRightToBuyHousingActOptions.page.data';
 export * from '@data/page-data-figma/suspensionToBuyDemotionOfTenancyActs.page.data';
+export * from '@data/page-data-figma/addCaseNote.page.data';
