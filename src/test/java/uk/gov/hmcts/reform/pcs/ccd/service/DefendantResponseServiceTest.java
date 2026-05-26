@@ -1334,4 +1334,60 @@ class DefendantResponseServiceTest {
             Arguments.of((VerticalYesNo) null)
         );
     }
+
+    @Test
+    void shouldSaveStatementOfTruthWhenAccepted() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruthAccepted(VerticalYesNo.YES)
+            .statementOfTruthFullName("John Doe")
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+
+        assertThat(saved.getStatementOfTruth()).isNotNull();
+        assertThat(saved.getStatementOfTruth().getAccepted()).isEqualTo(YesOrNo.YES);
+        assertThat(saved.getStatementOfTruth().getFullName()).isEqualTo("John Doe");
+        assertThat(saved.getStatementOfTruth().getCompletedDate()).isEqualTo("2026-04-22T21:00");
+    }
+
+    @Test
+    void shouldNotSaveStatementOfTruthWhenAcceptedIsNull() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruthAccepted(null)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getStatementOfTruth()).isNull();
+    }
 }
