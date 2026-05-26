@@ -60,6 +60,7 @@ export class ActionRegistry {
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectNoticeDetails', new CreateCaseAction()],
+    ['selectNoticeDetailsWales', new CreateCaseAction()],
     ['selectBorderPostcode', new CreateCaseAction()],
     ['selectYourPossessionGrounds', new CreateCaseAction()],
     ['selectOtherGrounds', new CreateCaseAction()],
