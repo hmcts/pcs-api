@@ -24,7 +24,10 @@ public class XuiGenAppRequest implements GenAppRequest {
     @CCD(label = "What do you want to apply for?")
     private GenAppType applicationType;
 
-    @CCD(label = "Is the defendant’s court hearing in the next 14 days?")
+    @CCD(
+        label = "Is the defendant’s court hearing in the next 14 days?",
+        hint = "This will affect the fee you will invoice to the defendant. "
+             + "They will not need to pay a fee if their court hearing is (at least) 14 days away.")
     private VerticalYesNo within14Days;
 
     @CCD(label = "Does the defendant need help paying the fee for this application?")
@@ -55,5 +58,11 @@ public class XuiGenAppRequest implements GenAppRequest {
 
     @CCD(max = 100)
     private String sotFullName;
+
+    @CCD(searchable = false)
+    private String standardFee;
+
+    @CCD(searchable = false)
+    private String maxFee;
 
 }
