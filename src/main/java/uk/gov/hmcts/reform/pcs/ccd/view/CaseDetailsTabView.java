@@ -283,6 +283,8 @@ public class CaseDetailsTabView {
 
         NoticeTabDetails noticeTabDetails = NoticeTabDetails.builder()
             .noticeServed(noticeServed != null ? noticeServed.getValue() : NO_ANSWER)
+            .noticeMethod(NO_ANSWER)
+            .noticeDate(NO_ANSWER)
             .build();
 
         setNoticeServedDetails(noticeServed, noticeTabDetails, pcsCase);
@@ -665,7 +667,7 @@ public class CaseDetailsTabView {
         }
 
         return AntisocialAndConductTabDetails.builder()
-            .antiSocialBehaviourDetails(antiSocialBehaviour != null ? antiSocialBehaviour.getLabel() : NO_ANSWER)
+            .antiSocialBehaviour(antiSocialBehaviour != null ? antiSocialBehaviour.getLabel() : NO_ANSWER)
             .propertyUsedIllegally(propertyUsedIllegally != null ? propertyUsedIllegally.getLabel() : NO_ANSWER)
             .otherProhibitedConduct(otherProhibitedConduct != null ? otherProhibitedConduct.getLabel() : NO_ANSWER)
             .antiSocialBehaviourDetails(antiSocialBehaviourDetails)
