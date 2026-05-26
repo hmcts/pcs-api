@@ -28,7 +28,7 @@ public enum UserRole implements HasRole {
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM),
     CTSC_ADMIN("ctsc", Permission.CRU, RAS),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", Permission.CRU, RAS),
-    HEARING_CENTER_ADMIN("hearing-center-admin", Permission.CRU, RAS),
+    HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU, RAS),
     WLU_ADMIN("wlu-admin", Permission.CRU, RAS),
     FEE_PAID_JUDGE("fee-paid-judge", Set.of(R), RAS),
     LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS),
