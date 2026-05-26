@@ -17,7 +17,7 @@ public class ProhibitedConductStandardContractTabDetails {
 
     @CCD(
         label = "Have you and the contract holder agreed terms of the periodic standard contract"
-            +" in addition to those incorporated by statute?"
+            + " in addition to those incorporated by statute?"
     )
     private String agreedTerms;
 
