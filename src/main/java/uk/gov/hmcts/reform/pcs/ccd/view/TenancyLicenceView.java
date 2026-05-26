@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -67,7 +68,7 @@ public class TenancyLicenceView {
 
     private static List<ListValue<Document>> getTenancyLicenceDocument(PcsCaseEntity pcsCaseEntity) {
         if (pcsCaseEntity.getDocuments().isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
 
         return pcsCaseEntity.getDocuments().stream()
@@ -82,7 +83,7 @@ public class TenancyLicenceView {
 
     private static List<ListValue<Document>> getOccupationLicenceDocument(PcsCaseEntity pcsCaseEntity) {
         if (pcsCaseEntity.getDocuments().isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
 
         return pcsCaseEntity.getDocuments().stream()
