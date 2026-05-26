@@ -1087,6 +1087,18 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
         break;
 
+      case 'Notice':
+        const dateServed =
+          submitPayLoad.notice_NoticeServiceMethod === 'FIRST_CLASS_POST'
+            ? submitPayLoad.notice_NoticePostedDate
+            : submitPayLoad.notice_NoticeServiceMethod === 'EMAIL'
+              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              : null;
+        if (dateServed) {
+          caseSummary.set(`Date notice was served`, formatDate(dateServed));
+        }
+        break;
+
       default:
         break;
     };

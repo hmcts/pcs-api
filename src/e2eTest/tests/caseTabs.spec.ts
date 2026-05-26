@@ -131,6 +131,15 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       table: 'Tenancy, occupation contract or licence details'
     });
 
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseSummary,
+      section: 'Notice',
+      table: 'Notice details'
+    });
+
   });
 
 });
