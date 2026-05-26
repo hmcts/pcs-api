@@ -121,6 +121,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async doYouNeedHelpPayingFee(feeHelp: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', feeHelp);
     await performAction('clickRadioButton', {
       question: feeHelp.question,
@@ -130,6 +132,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async confirmYouHaveAppliedForFeeHelp(confirmFeeHelp: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', confirmFeeHelp);
     await performAction('clickRadioButton', {
       question: confirmFeeHelp.question,
@@ -150,6 +154,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async confirmOtherPartiesAgreed(confirmOtherParty: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', confirmOtherParty);
     await performAction('clickRadioButton', {
       question: confirmOtherParty.question,
@@ -159,6 +165,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async reasonsApplicationShouldNotBeShared(reason: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', reason);
     await performAction('clickRadioButton', {
       question: reason.question,

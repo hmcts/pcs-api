@@ -1,5 +1,5 @@
 export const areThereAnyReasonsThatThisApplicationShouldNotBeShared = {
-  mainHeader: `Are there any reasons that this application should not be shared with the other parties?`,
+   mainHeader: `Are there any reasons that this application should not be shared with other parties?`,
   weUsuallySendParagraph: `We usually send a copy of the application to the other parties (the defendant’s landlord, housing association or mortgage lender). This gives the other party the opportunity to respond to it.`,
   inSomeExceptionalParagraph: `In some exceptional circumstances, the judge will consider the application without telling the other party first.`,
   forExampleParagraph: `For example, if:`,
@@ -8,12 +8,11 @@ export const areThereAnyReasonsThatThisApplicationShouldNotBeShared = {
   defendantBelieveList: `the defendant believes that they are at risk from the other party`,
   warningText: `We will ask you to provide the reason. The court will consider the reason, and the defendant may not be successful.`,
   areThereAnyReasonQuestion: `Are there any reasons that this application should not be shared with the other parties?`,
-  backLink: `Back`,
   continueButton: `Continue`,
-  previousLink: `Previous`,
+  previousButton: `Previous`,
   cancelLink: `Cancel`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
-  provideReasonHiddenTextLabel: `Provide a reason this application should not be shared with the other party`,
+  provideReasonHiddenTextLabel: `Provide the reason this application should not be shared with the other party`,
   provideReasonTextInput: 6000,
 };
