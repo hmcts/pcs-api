@@ -103,6 +103,10 @@ public class PcsCaseEntity {
     @Builder.Default
     private List<CaseLinkEntity> caseLinks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CaseFlagEntity> caseFlags = new ArrayList<>();
+
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
             this.tenancyLicence.setPcsCase(null);
