@@ -67,6 +67,9 @@ withPipeline(type, product, component) {
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_makeAClaim_test").size() > 0) {
       env.E2E_SUITE = "makeAClaim"
     }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CC_test").size() > 0) {
+      env.E2E_SUITE = "commonComponent"
+    }
   }
 
   onMaster() {
