@@ -103,6 +103,54 @@ class DefendantsDetailsTest extends BasePageTest {
                                                                  errorMessage1, errorMessage2, errorMessage3);
     }
 
+    @Test
+    void shouldSetDefendantNameToNullIfNameKnownFalse() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.NO)
+                .firstName("John")
+                .lastName("Smith")
+                .addressKnown(VerticalYesNo.NO)
+                .build();
+        PCSCase caseData = PCSCase.builder()
+            .defendant1(defendant1)
+            .addAnotherDefendant(VerticalYesNo.NO)
+            .additionalDefendants(List.of())
+            .defendantCircumstances(new DefendantCircumstances())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getData().getDefendant1().getFirstName()).isNull();
+        assertThat(response.getData().getDefendant1().getLastName()).isNull();
+    }
+
+    @Test
+    void shouldLeaveDefendantNamesIfNameKnownTrue() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .firstName("John")
+                .lastName("Smith")
+                .addressKnown(VerticalYesNo.NO)
+                .build();
+        PCSCase caseData = PCSCase.builder()
+                .defendant1(defendant1)
+                .addAnotherDefendant(VerticalYesNo.NO)
+                .additionalDefendants(List.of())
+                .defendantCircumstances(new DefendantCircumstances())
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getData().getDefendant1().getFirstName()).isEqualTo("John");
+        assertThat(response.getData().getDefendant1().getLastName()).isEqualTo("Smith");
+    }
+
     @ParameterizedTest
     @MethodSource("defendantTermScenarios")
     void shouldSetDefendantTermPossessive(VerticalYesNo additionalDefendants, String expectedTermPossessive) {

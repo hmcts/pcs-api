@@ -205,4 +205,35 @@ class DraftCaseJsonMergerTest {
         assertThat(address.get("PostCode").asText()).isEqualTo("ABC123");
     }
 
+    @Test
+    void shouldClearDefendantNameIfPatchDoesNotContainName() throws Exception {
+        //Given
+        String baseJson = """
+        {
+          "defendant1": {
+            "nameKnown": "YES",
+            "firstName": "Jane",
+            "lastName": "Doe"
+          }
+        }
+            """;
+
+        String patchJson = """
+            {
+              "defendant1": {
+                "nameKnown": "NO"
+                }
+              }
+            }
+            """;
+
+        // When
+        String mergedJson = underTest.mergeJson(baseJson, patchJson);
+        JsonNode merged = objectMapper.readTree(mergedJson);
+        JsonNode defendant = merged.at("/defendant1");
+
+        // Then: name fields cleared
+        assertThat(defendant.get("firstName")).isNull();
+        assertThat(defendant.get("lastName")).isNull();
+    }
 }

@@ -78,6 +78,11 @@ public class DefendantsDetails implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
 
+        if (caseData.getDefendant1().getNameKnown() == VerticalYesNo.NO) {
+            caseData.getDefendant1().setFirstName(null);
+            caseData.getDefendant1().setLastName(null);
+        }
+
         boolean additionalDefendantsProvided = caseData.getAddAnotherDefendant() == VerticalYesNo.YES;
 
         DefendantDetails defendantDetails = caseData.getDefendant1();

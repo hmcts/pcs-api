@@ -14,8 +14,7 @@ import java.util.Set;
 @Component
 public class DraftCaseJsonMerger {
 
-    private static final Set<String> REPLACE_FIELDS = Set.of("address");
-
+    private static final Set<String> REPLACE_FIELDS = Set.of("address, defendant1");
 
     private final ObjectMapper objectMapper;
 
@@ -61,7 +60,7 @@ public class DraftCaseJsonMerger {
             if (base.has(fieldName)) {
                 JsonNode baseChild = base.get(fieldName);
 
-                if (REPLACE_FIELDS.contains(fieldName.toLowerCase())
+                if (REPLACE_FIELDS.stream().anyMatch(s -> s.contains(fieldName.toLowerCase()))
                     && patchChild.isObject()
                     && base instanceof ObjectNode) {
 
