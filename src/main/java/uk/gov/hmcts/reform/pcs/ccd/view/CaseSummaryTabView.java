@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.OccupationContractOrLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.TenancyTabDetails;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBu
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -46,6 +48,7 @@ public class CaseSummaryTabView {
         ReasonsForPossessionTabDetails reasonsForPossession =
             reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase);
         String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
+        TenancyTabDetails tenancyDetails = buildTenancyTabDetails(pcsCase);
 
         return SummaryTab.builder()
             .repossessedPropertyAddress(pcsCase.getPropertyAddress())
@@ -60,8 +63,27 @@ public class CaseSummaryTabView {
                 additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase)
             )
             .rentArrearsDetails(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase))
-            .tenancyDetails(buildTenancyTabDetails(pcsCase))
+            .tenancyDetails(isWalesClaim(pcsCase) ? null : tenancyDetails)
+            .occupationContractOrLicenceDetails(
+                isWalesClaim(pcsCase) ? buildOccupationContractOrLicenceTabDetails(tenancyDetails) : null
+            )
             .noticeDetails(buildNoticeTabDetails(pcsCase))
+            .build();
+    }
+
+    private boolean isWalesClaim(PCSCase pcsCase) {
+        return pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
+    }
+
+    private OccupationContractOrLicenceTabDetails buildOccupationContractOrLicenceTabDetails(
+        TenancyTabDetails tenancyDetails) {
+        if (tenancyDetails == null) {
+            return null;
+        }
+
+        return OccupationContractOrLicenceTabDetails.builder()
+            .agreementType(tenancyDetails.getAgreementType())
+            .agreementStartDate(tenancyDetails.getAgreementStartDate())
             .build();
     }
 

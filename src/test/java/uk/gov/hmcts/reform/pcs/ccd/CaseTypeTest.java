@@ -114,5 +114,7 @@ class CaseTypeTest {
         assertThat(caseFileViewTab.getFields().size()).isEqualTo(1);
         assertThat(casePartiesTab.getFields()).extracting(TabField::getId).contains("casePartiesTab_ClaimantDetails");
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
+        assertThat(summaryTab.getFields()).extracting(TabField::getId)
+            .contains("summaryTab_OccupationContractOrLicenceDetails");
     }
 }

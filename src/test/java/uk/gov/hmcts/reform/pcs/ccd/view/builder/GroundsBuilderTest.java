@@ -98,6 +98,55 @@ public class GroundsBuilderTest {
     }
 
     @Test
+    void shouldGroupEstateManagementGroundsUnderEstateManagementGrounds() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .claimGroundSummaries(List.of(
+                groundSummary("Estate management grounds (section 160)", "Estate reason"),
+                groundSummary("Reserve successors (ground G)", "Ground G reason"),
+                groundSummary("Building works (ground A)", "Ground A reason"),
+                groundSummary("Other breach of contract (section 157)", "Other breach reason"),
+                groundSummary("Charities (ground C)", "Ground C reason")
+            ))
+            .build();
+
+        // When
+        String grounds = groundsBuilder.getGrounds(pcsCase);
+
+        // Then
+        assertThat(grounds).isEqualTo(String.join(
+            "\n",
+            "Estate management grounds (section 160): " + String.join(
+                ", ",
+                "Building works (ground A)",
+                "Charities (ground C)",
+                "Reserve successors (ground G)"
+            ),
+            "Other breach of contract (section 157)"
+        ));
+    }
+
+    @Test
+    void shouldGroupEstateManagementGroundsWhenParentGroundIsMissing() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .claimGroundSummaries(List.of(
+                groundSummary("Other estate management reasons (ground I)", "Ground I reason"),
+                groundSummary("Redevelopment schemes (ground B)", "Ground B reason")
+            ))
+            .build();
+
+        // When
+        String grounds = groundsBuilder.getGrounds(pcsCase);
+
+        // Then
+        assertThat(grounds).isEqualTo(
+            "Estate management grounds (section 160): "
+                + "Redevelopment schemes (ground B), Other estate management reasons (ground I)"
+        );
+    }
+
+    @Test
     void shouldReturnNullWhenThereAreNoGroundSummaries() {
         PCSCase pcsCase = PCSCase.builder().build();
 

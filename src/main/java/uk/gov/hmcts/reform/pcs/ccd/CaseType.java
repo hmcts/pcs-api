@@ -149,6 +149,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                    "summaryTab_TenancyDetails!=\"\"",
                    "## Tenancy, occupation contract or licence")
             .field("summaryTab_TenancyDetails")
+            .label("Occupation contract or licence",
+                   "summaryTab_OccupationContractOrLicenceDetails!=\"\"",
+                   "## Occupation contract or licence")
+            .field("summaryTab_OccupationContractOrLicenceDetails")
             .label("Notice",
                    "summaryTab_NoticeDetails!=\"\"",
                    "## Notice")
