@@ -197,6 +197,41 @@ class DashboardJourneyServiceTest {
     }
 
     @Test
+    void shouldOrderRelatedApplicationsBySubmittedDateNewestFirst() {
+        PCSCase submitted = PCSCase.builder().build();
+
+        GenAppEntity olderGenApp = GenAppEntity.builder()
+            .id(UUID.randomUUID())
+            .type(GenAppType.SET_ASIDE)
+            .applicationSubmittedDate(LocalDateTime.of(2026, 3, 1, 9, 0))
+            .build();
+
+        GenAppEntity newerGenApp = GenAppEntity.builder()
+            .id(UUID.randomUUID())
+            .type(GenAppType.ADJOURN)
+            .applicationSubmittedDate(LocalDateTime.of(2026, 5, 15, 14, 30))
+            .build();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .genApps(Set.of(olderGenApp, newerGenApp))
+            .build();
+
+        PartyEntity defendant = PartyEntity.builder().idamId(UUID.randomUUID()).build();
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            submitted,
+            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
+            .extracting(RelatedApplication::getType, RelatedApplication::getApplicationSubmittedDate)
+            .containsExactly(
+                tuple(GenAppType.ADJOURN, LocalDateTime.of(2026, 5, 15, 14, 30)),
+                tuple(GenAppType.SET_ASIDE, LocalDateTime.of(2026, 3, 1, 9, 0))
+            );
+    }
+
+    @Test
     void shouldOmitWithoutNoticeApplicationsRaisedByAnotherUser() {
         PCSCase submitted = PCSCase.builder().build();
         UUID applicantId = UUID.randomUUID();

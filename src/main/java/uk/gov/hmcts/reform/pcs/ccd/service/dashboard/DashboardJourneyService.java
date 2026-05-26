@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.RelatedApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
@@ -109,6 +110,7 @@ public class DashboardJourneyService {
 
         var visibleApps = dashboardContext.caseEntity().getGenApps().stream()
             .filter(genApp -> dashboardContext.isVisibleToUser(genApp, viewerIdamId))
+            .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
             .toList();
 
         if (visibleApps.isEmpty()) {
