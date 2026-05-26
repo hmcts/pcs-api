@@ -9,8 +9,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
@@ -19,12 +25,18 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UploadDocumentsTest extends BaseEventTest {
@@ -59,7 +71,6 @@ class UploadDocumentsTest extends BaseEventTest {
 
         @Test
         void shouldPersistUploadedDocumentsForCurrentParty() {
-            // Given
             UploadedDocument uploaded = UploadedDocument.builder()
                 .document(Document.builder()
                     .url("url-1").filename("file-1.pdf").binaryUrl("bin-1").build())
@@ -75,23 +86,18 @@ class UploadDocumentsTest extends BaseEventTest {
 
             PartyEntity currentParty = stubCurrentUserParty();
 
-            // When
             callSubmitHandler(caseData);
 
-            // Then
             verify(documentService).createAdditionalDocumentsForParty(uploadedDocs, pcsCaseEntity, currentParty);
         }
 
         @Test
         void shouldDelegateEvenWhenNoDocumentsSent() {
-            // Given
             PCSCase caseData = PCSCase.builder().build();
             PartyEntity currentParty = stubCurrentUserParty();
 
-            // When
             callSubmitHandler(caseData);
 
-            // Then — service handles null/empty; event passes through
             verify(documentService).createAdditionalDocumentsForParty(null, pcsCaseEntity, currentParty);
         }
 
@@ -102,6 +108,175 @@ class UploadDocumentsTest extends BaseEventTest {
             given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE))
                 .willReturn(currentUserParty);
             return currentUserParty;
+        }
+    }
+
+    @Nested
+    @DisplayName("Start event tests")
+    class StartTests {
+
+        @Mock
+        private PcsCaseEntity pcsCaseEntity;
+
+        @BeforeEach
+        void setUp() {
+            given(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).willReturn(pcsCaseEntity);
+        }
+
+        @Test
+        void shouldReturnEmptyOptionsWhenNoGenAppsExist() {
+            when(pcsCaseEntity.getGenApps()).thenReturn(new HashSet<>());
+            PCSCase caseData = PCSCase.builder().build();
+
+            PCSCase result = callStartHandler(caseData);
+
+            DocumentUploadDetails details = result.getDocumentUploadDetails();
+            assertThat(details).isNotNull();
+            assertThat(details.getRelatedApplicationOptions()).isEmpty();
+            assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
+        void shouldIncludeAdjournCategoryWhenAdjournGenAppExists() {
+            LocalDateTime submittedDate = LocalDateTime.now();
+            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, submittedDate);
+
+            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(adjourn));
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            DocumentUploadDetails details = result.getDocumentUploadDetails();
+            assertThat(details.getRelatedApplicationOptions())
+                .extracting(option -> option.getValue().getCategory())
+                .containsExactly(DocumentUploadCategory.ADJOURN_HEARING_APPLICATION);
+            assertThat(details.getRelatedApplicationOptions().get(0).getValue().getSubmittedDate())
+                .isEqualTo(submittedDate);
+            assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.YES);
+        }
+
+        @Test
+        void shouldIncludeGenAppsInPendingSubmissionState() {
+            LocalDateTime submittedDate = LocalDateTime.now();
+            GenAppEntity pending = stubGenApp(GenAppType.SET_ASIDE, GenAppState.PENDING_SUBMISSION, submittedDate);
+
+            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(pending));
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
+                .extracting(option -> option.getValue().getCategory())
+                .containsExactly(DocumentUploadCategory.SET_ASIDE_ORDER_APPLICATION);
+        }
+
+        @Test
+        void shouldExcludeGenAppsWithNoState() {
+            // Defensive: a genApp with a null state must not surface a radio option.
+            GenAppEntity stateless = stubGenApp(GenAppType.ADJOURN, null, LocalDateTime.now());
+
+            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(stateless));
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions()).isEmpty();
+            assertThat(result.getDocumentUploadDetails().getShowRelatedApplicationsPage())
+                .isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
+        void shouldSortOptionsByLatestSubmittedDateDescending() {
+            LocalDateTime now = LocalDateTime.now();
+            GenAppEntity oldestAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, now.minusDays(10));
+            GenAppEntity midSetAside = stubGenApp(GenAppType.SET_ASIDE, GenAppState.SUBMITTED, now.minusDays(3));
+            GenAppEntity newestGeneral = stubGenApp(GenAppType.SOMETHING_ELSE, GenAppState.SUBMITTED, now);
+
+            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(oldestAdjourn, midSetAside, newestGeneral));
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
+                .extracting(option -> option.getValue().getCategory())
+                .containsExactly(
+                    DocumentUploadCategory.GENERAL_APPLICATION,
+                    DocumentUploadCategory.SET_ASIDE_ORDER_APPLICATION,
+                    DocumentUploadCategory.ADJOURN_HEARING_APPLICATION);
+        }
+
+        @Test
+        void shouldUseLatestSubmittedDatePerCategoryWhenMultipleGenAppsShareAType() {
+            LocalDateTime older = LocalDateTime.now().minusDays(5);
+            LocalDateTime newer = LocalDateTime.now();
+            GenAppEntity olderAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, older);
+            GenAppEntity newerAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, newer);
+
+            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(olderAdjourn, newerAdjourn));
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
+                .hasSize(1)
+                .first()
+                .satisfies(option -> {
+                    assertThat(option.getValue().getCategory())
+                        .isEqualTo(DocumentUploadCategory.ADJOURN_HEARING_APPLICATION);
+                    assertThat(option.getValue().getSubmittedDate()).isEqualTo(newer);
+                });
+        }
+
+        @Test
+        void shouldNotSurfaceSuspendCategoryWhileGenAppTypeSuspendIsAbsent() {
+            // SUSPEND was removed from GenAppType by PR #1804. Until it is restored, the
+            // SUSPEND_EVICTION_APPLICATION category must be filtered out so we don't render
+            // a radio backed by no data.
+            when(pcsCaseEntity.getGenApps()).thenReturn(new HashSet<>());
+            PCSCase caseData = PCSCase.builder().build();
+
+            PCSCase result = callStartHandler(caseData);
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
+                .extracting(option -> option.getValue().getCategory())
+                .doesNotContain(DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION);
+        }
+
+        private GenAppEntity stubGenApp(GenAppType type, GenAppState state, LocalDateTime submittedDate) {
+            GenAppEntity entity = mock(GenAppEntity.class);
+            lenient().when(entity.getType()).thenReturn(type);
+            lenient().when(entity.getState()).thenReturn(state);
+            lenient().when(entity.getApplicationSubmittedDate()).thenReturn(submittedDate);
+            return entity;
+        }
+
+        private Set<GenAppEntity> setOf(GenAppEntity... entities) {
+            Set<GenAppEntity> set = new HashSet<>();
+            for (GenAppEntity entity : entities) {
+                set.add(entity);
+            }
+            return set;
+        }
+
+        @Test
+        void shouldHandleNullGenAppsCollection() {
+            when(pcsCaseEntity.getGenApps()).thenReturn(null);
+            PCSCase caseData = PCSCase.builder().build();
+
+            PCSCase result = callStartHandler(caseData);
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions()).isEmpty();
+            assertThat(result.getDocumentUploadDetails().getShowRelatedApplicationsPage())
+                .isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
+        void shouldReuseExistingDetailsObjectIfAlreadySet() {
+            when(pcsCaseEntity.getGenApps()).thenReturn(new HashSet<>());
+
+            DocumentUploadDetails existing = new DocumentUploadDetails();
+            PCSCase caseData = PCSCase.builder()
+                .documentUploadDetails(existing)
+                .build();
+
+            PCSCase result = callStartHandler(caseData);
+
+            assertThat(result.getDocumentUploadDetails()).isSameAs(existing);
         }
     }
 }

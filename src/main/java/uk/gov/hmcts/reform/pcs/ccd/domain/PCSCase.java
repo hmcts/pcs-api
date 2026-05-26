@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
@@ -452,6 +453,9 @@ public class PCSCase {
         searchable = false
     )
     private List<ListValue<UploadedDocument>> uploadedAdditionalDocuments;
+
+    @JsonUnwrapped
+    private DocumentUploadDetails documentUploadDetails;
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
