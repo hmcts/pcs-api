@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
@@ -22,6 +23,12 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 @Slf4j
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private final UpstreamThrottling upstreamThrottling;
+
+    public RestExceptionHandler(UpstreamThrottling upstreamThrottling) {
+        this.upstreamThrottling = upstreamThrottling;
+    }
 
     @ExceptionHandler(CaseNotFoundException.class)
     public ResponseEntity<Error> handleCaseNotFoundException(CaseNotFoundException caseNotFoundException) {
@@ -77,6 +84,21 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(new Error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(IdamException.class)
+    public ResponseEntity<Error> handleIdamException(IdamException ex) {
+        log.error("IDAM call failed", ex);
+        if (upstreamThrottling.isUpstreamUnavailable(ex)) {
+            return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, upstreamThrottling.retryAfterSeconds())
+                .body(new Error("Authentication service temporarily unavailable, please retry"));
+        }
+        // Generic message to avoid leaking upstream OAuth2 error descriptions / internal URLs.
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new Error("Authentication service error"));
     }
 
     @Override
