@@ -94,8 +94,9 @@ class DocumentNameServiceTest {
         List<ClaimPartyEntity> parties = List.of(claimPartyOf(UUID.randomUUID(), PartyRole.DEFENDANT, 1));
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         when(mainClaim.getClaimParties()).thenReturn(parties);
+        UUID strayPartyId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> underTest.appendPartyPostfix("statement.pdf", mainClaim, UUID.randomUUID()))
+        assertThatThrownBy(() -> underTest.appendPartyPostfix("statement.pdf", mainClaim, strayPartyId))
             .isInstanceOf(PartyNotFoundException.class);
     }
 
