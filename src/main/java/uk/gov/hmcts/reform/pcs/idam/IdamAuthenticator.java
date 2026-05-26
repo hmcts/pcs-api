@@ -1,31 +1,20 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
 import feign.FeignException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
-public class IdamService {
-    private static final String BEARER_PREFIX = "Bearer ";
+public class IdamAuthenticator {
+    private static final String BEARER_PREFIX = IdamTokenProvider.BEARER_PREFIX;
 
-    private final IdamClient idamClient;
-    private final String idamSystemUsername;
-    private final String idamSystemPassword;
-
-    public IdamService(IdamClient idamClient,
-                       @Value("${idam.system-user.username}") String idamSystemUsername,
-                       @Value("${idam.system-user.password}") String idamSystemPassword) {
-
-        this.idamClient = idamClient;
-        this.idamSystemUsername = idamSystemUsername;
-        this.idamSystemPassword = idamSystemPassword;
-    }
+    private final IdamUserInfoApi idamUserInfoApi;
 
     public User validateAuthToken(String authorisation) {
         if (authorisation == null || authorisation.isBlank()) {
@@ -43,30 +32,19 @@ public class IdamService {
         } catch (FeignException.Unauthorized ex) {
             log.error("The Authorization token provided is expired or invalid", ex);
             throw new InvalidAuthTokenException("The Authorization token provided is expired or invalid", ex);
-        } catch (Exception ex) {
-            log.error("Unexpected error while validating Authorization token", ex);
-            throw new InvalidAuthTokenException("Unexpected error while validating token", ex);
+        } catch (FeignException ex) {
+            // Any other Feign error (timeout, 5xx, network) — surface as IdamException so the
+            // controller advice returns 503 + Retry-After instead of a raw 500. The token might
+            // still be valid; this is an upstream-IDAM problem, not a client problem.
+            log.error("IDAM /o/userinfo call failed while validating Authorization token", ex);
+            throw new IdamException("Unable to validate authorization token", ex);
         }
     }
 
     public User retrieveUser(String authorisation) {
         final String bearerToken = getBearerToken(authorisation);
-        final var userDetails = idamClient.getUserInfo(bearerToken);
-
+        final UserInfo userDetails = idamUserInfoApi.getUserInfo(bearerToken);
         return new User(bearerToken, userDetails);
-    }
-
-    public String getSystemUserAuthorisation() {
-        TokenResponse accessTokenResponse = getAccessTokenResponse();
-        return BEARER_PREFIX + accessTokenResponse.accessToken;
-    }
-
-    private TokenResponse getAccessTokenResponse() {
-        try {
-            return idamClient.getAccessTokenResponse(idamSystemUsername, idamSystemPassword);
-        } catch (FeignException fe) {
-            throw new IdamException("Unable to get access token response", fe);
-        }
     }
 
     private String getBearerToken(String token) {

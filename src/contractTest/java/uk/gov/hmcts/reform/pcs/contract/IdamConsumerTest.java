@@ -29,6 +29,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// Test-only use of the deprecated idam-java-client to preserve the pre-existing pact contract
+// (already verified by IDAM provider). Production code uses our own IdamUserInfoApi instead.
 @ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class})
 @EnableFeignClients(clients = IdamApi.class)
@@ -36,7 +38,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "idamApi_oidc", port = "5000")
-
 public class IdamConsumerTest {
 
     @Autowired
@@ -99,7 +100,7 @@ public class IdamConsumerTest {
             .stringType("sub", "caseofficer@fake.hmcts.net")
             .stringValue("givenName", "Case")
             .stringValue("familyName", "Officer")
-            .minArrayLike("roles", 1, PactDslJsonRootValue.stringType("caseworker"),1)
+            .minArrayLike("roles", 1, PactDslJsonRootValue.stringType("caseworker"), 1)
             .stringType("IDAM_ADMIN_USER", "idamAdminUser");
     }
 
