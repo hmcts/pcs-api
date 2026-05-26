@@ -21,6 +21,9 @@ export class TextValidation implements IValidation {
       case 'subHeader':
         data.elementType = 'h3';
         break;
+      case 'subHeading':
+        data.elementType = 'h2';
+        break;
       case 'paragraph':
         data.elementType = 'p';
         break;

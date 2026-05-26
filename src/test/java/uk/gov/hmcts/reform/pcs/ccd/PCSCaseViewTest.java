@@ -24,10 +24,12 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
+import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -39,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -90,6 +93,8 @@ class PCSCaseViewTest {
     private NoticeOfPossessionView noticeOfPossessionView;
     @Mock
     private StatementOfTruthView statementOfTruthView;
+    @Mock
+    private GenAppsView genAppsView;
 
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
@@ -101,6 +106,8 @@ class PCSCaseViewTest {
     private EnforcementOrderMediator enforcementOrderMediator;
     @Mock
     private CaseLinkView caseLinkView;
+    @Mock
+    private CaseNoteView caseNoteView;
     @Mock
     private CaseTabView caseTabView;
     @Mock
@@ -118,7 +125,7 @@ class PCSCaseViewTest {
                                     alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseTabView, partiesView
+                                    caseNoteView, caseTabView, partiesView, genAppsView
         );
     }
 
@@ -240,10 +247,12 @@ class PCSCaseViewTest {
     @Test
     void shouldMapDocuments() {
         // Given
+        Instant submittedDate = Instant.parse("2026-05-14T09:30:00Z");
         DocumentEntity entity1 = DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName("doc1.pdf")
             .url("url1")
+            .submittedDate(submittedDate)
             .build();
 
         DocumentEntity entity2 = DocumentEntity.builder()
@@ -261,6 +270,8 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getAllDocuments()).hasSize(2);
         assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getFilename())
             .containsExactly("doc1.pdf", "doc2.pdf");
+        assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getUploadTimestamp())
+            .containsExactly(LocalDateTime.of(2026, 5, 14, 9, 30), null);
     }
 
     @Test
