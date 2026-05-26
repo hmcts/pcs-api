@@ -49,7 +49,7 @@ public class ReasonsNotToShare implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("reasonsNotToShare")
-            .pageLabel("Are there any  reasons that this application should not be shared with other parties?")
+            .pageLabel("Are there any reasons that this application should not be shared with other parties?")
             .showCondition(fieldEquals("xui_genapp_OtherPartiesAgreed", VerticalYesNo.NO))
             .label("reasonsNotToShare-lineSeparator", "---")
             .label("reasonsNotToShare-info", INFO_MARKDOWN)
