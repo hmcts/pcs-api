@@ -47,7 +47,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Case Flags] @CC @PR @regression @caseFlags @nightly', async () => {
+test.describe('[Common Component Case Flags] @CC @caseFlags @nightly', async () => {
   test('Case Flags - Create case level Flag', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
