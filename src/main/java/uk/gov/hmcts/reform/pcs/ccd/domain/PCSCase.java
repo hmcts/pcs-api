@@ -18,6 +18,7 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
@@ -620,6 +622,9 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
+
+    @CCD(access = {CitizenAccess.class})
+    private List<ListValue<GeneralApplication>> genApps;
 
     @JsonUnwrapped(prefix = "casePartiesTab_")
     @CCD

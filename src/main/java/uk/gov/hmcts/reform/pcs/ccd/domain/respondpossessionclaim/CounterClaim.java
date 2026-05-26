@@ -6,11 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Builder
 @Data
@@ -52,5 +55,12 @@ public class CounterClaim {
 
     @CCD(access = {DefendantAccess.class})
     private String hwfReferenceNumber;
+
+    @CCD(
+        access = {DefendantAccess.class},
+        typeOverride = FieldType.Collection,
+        typeParameterOverride = "Party"
+    )
+    private List<ListValue<Party>> counterClaimAgainst;
 
 }
