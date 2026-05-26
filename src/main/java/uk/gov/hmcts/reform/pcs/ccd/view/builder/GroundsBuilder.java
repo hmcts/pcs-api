@@ -5,9 +5,14 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,8 +23,9 @@ public class GroundsBuilder {
     private static final String ESTATE_MANAGEMENT_GROUNDS = "Estate management grounds (section 160)";
     private static final Pattern SECTION_84A_CONDITION_PATTERN =
         Pattern.compile("^Condition ([1-5]) of Section 84A of the Housing Act 1985$");
-    private static final Pattern ESTATE_MANAGEMENT_GROUND_PATTERN =
-        Pattern.compile("\\(ground ([A-I])\\)$");
+    private static final Map<String, EstateManagementGroundsWales> ESTATE_MANAGEMENT_GROUND_BY_LABEL =
+        Arrays.stream(EstateManagementGroundsWales.values())
+            .collect(Collectors.toMap(EstateManagementGroundsWales::getLabel, Function.identity()));
 
     public String getGrounds(PCSCase pcsCase) {
         if (CollectionUtils.isEmpty(pcsCase.getClaimGroundSummaries())) {
@@ -77,7 +83,7 @@ public class GroundsBuilder {
     }
 
     private boolean isEstateManagementGround(String label) {
-        return ESTATE_MANAGEMENT_GROUND_PATTERN.matcher(label).find();
+        return ESTATE_MANAGEMENT_GROUND_BY_LABEL.containsKey(label);
     }
 
     private int compareSection84AConditions(String firstCondition, String secondCondition) {
@@ -100,7 +106,7 @@ public class GroundsBuilder {
     }
 
     private int getEstateManagementGroundNumber(String label) {
-        Matcher matcher = ESTATE_MANAGEMENT_GROUND_PATTERN.matcher(label);
-        return matcher.find() ? matcher.group(1).charAt(0) : 0;
+        EstateManagementGroundsWales ground = ESTATE_MANAGEMENT_GROUND_BY_LABEL.get(label);
+        return ground == null ? 0 : ground.getRank();
     }
 }

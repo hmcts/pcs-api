@@ -49,6 +49,7 @@ public class CaseSummaryTabView {
             reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase);
         String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
         TenancyTabDetails tenancyDetails = buildTenancyTabDetails(pcsCase);
+        boolean walesClaim = isWalesClaim(pcsCase);
 
         return SummaryTab.builder()
             .repossessedPropertyAddress(pcsCase.getPropertyAddress())
@@ -63,9 +64,9 @@ public class CaseSummaryTabView {
                 additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase)
             )
             .rentArrearsDetails(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase))
-            .tenancyDetails(isWalesClaim(pcsCase) ? null : tenancyDetails)
+            .tenancyDetails(walesClaim ? null : tenancyDetails)
             .occupationContractOrLicenceDetails(
-                isWalesClaim(pcsCase) ? buildOccupationContractOrLicenceTabDetails(tenancyDetails) : null
+                walesClaim ? buildOccupationContractOrLicenceTabDetails(tenancyDetails) : null
             )
             .noticeDetails(buildNoticeTabDetails(pcsCase))
             .build();

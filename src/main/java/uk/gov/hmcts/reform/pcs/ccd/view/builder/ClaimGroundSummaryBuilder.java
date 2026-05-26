@@ -504,19 +504,24 @@ public class ClaimGroundSummaryBuilder {
     }
 
     private String getWalesDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {
+        return getWalesDraftReason(draftCaseData, ground, WALES_DRAFT_REASON_LOOKUP);
+    }
+
+    private String getWalesDraftReason(
+        PCSCase draftCaseData,
+        PossessionGroundEnum ground,
+        Map<PossessionGroundEnum, Function<GroundsReasonsWales, String>> reasonLookup
+    ) {
         GroundsReasonsWales reasons = draftCaseData.getGroundsReasonsWales();
-        return Optional.ofNullable(reasons)
-            .map(walesReasons -> WALES_DRAFT_REASON_LOOKUP.get(ground))
-            .map(reasonAccessor -> reasonAccessor.apply(reasons))
+        return Optional.ofNullable(reasonLookup.get(ground))
+            .map(reasonAccessor -> Optional.ofNullable(reasons)
+                .map(reasonAccessor)
+                .orElse(null))
             .orElse(null);
     }
 
     private String getSecureWalesEstateManagementDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {
-        GroundsReasonsWales reasons = draftCaseData.getGroundsReasonsWales();
-        return Optional.ofNullable(reasons)
-            .map(walesReasons -> WALES_SECURE_ESTATE_MANAGEMENT_DRAFT_REASON_LOOKUP.get(ground))
-            .map(reasonAccessor -> reasonAccessor.apply(reasons))
-            .orElse(null);
+        return getWalesDraftReason(draftCaseData, ground, WALES_SECURE_ESTATE_MANAGEMENT_DRAFT_REASON_LOOKUP);
     }
 
     private String getSection84ACondition1Reason(PCSCase draftCaseData) {
