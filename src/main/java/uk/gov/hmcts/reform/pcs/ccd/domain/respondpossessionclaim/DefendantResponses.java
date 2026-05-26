@@ -130,6 +130,6 @@ public class DefendantResponses {
     @CCD
     private VerticalYesNo statementOfTruthAccepted;
 
-    @CCD(max = 120)
+    @CCD(max = 100)
     private String statementOfTruthFullName;
 }
