@@ -45,18 +45,17 @@ public class PaymentService {
     @Value("${payments.params.hmctsOrgId}")
     private String hmctsOrgId;
 
-    public PaymentService(
-        PaymentsClient paymentsClient,
-        PaymentRequestMapper paymentRequestMapper,
+    public PaymentService(PaymentsClient paymentsClient, PaymentRequestMapper paymentRequestMapper,
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
-        FeePaymentRepository feePaymentRepository,
-        PcsCaseService pcsCaseService
-    ) {
+        FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
+        PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
         this.feePaymentRepository = feePaymentRepository;
         this.pcsCaseService = pcsCaseService;
+        this.paymentCallbackStrategyFactory = paymentCallbackStrategyFactory;
+        this.objectMapper = objectMapper;
     }
 
     /**

@@ -31,7 +31,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
@@ -309,7 +308,7 @@ class PaymentServiceTest {
         when(paymentRequestMapper.toFeeDto(feeDetails, VOLUME)).thenReturn(mappedFee);
         when(paymentRequestMapper.toCasePaymentRequest(RESPONSIBLE_PARTY))
             .thenReturn(casePaymentRequestDto);
-        lenient().when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_TOKEN);
+        lenient().when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_TOKEN);
     }
 
     private PcsCaseEntity setupPcsCase(ClaimPartyEntity claimPartyEntity) {

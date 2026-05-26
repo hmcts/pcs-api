@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,7 +31,7 @@ class CcdPaymentStateUpdateServiceTest {
     private static final String S2S_TOKEN = "Bearer s2s";
 
     @Mock
-    private IdamService idamService;
+    private IdamTokenProvider systemUpdateUserTokenProvider;
     @Mock
     private AuthTokenGenerator s2sAuthTokenGenerator;
     @Mock
@@ -45,7 +45,7 @@ class CcdPaymentStateUpdateServiceTest {
     @Test
     void shouldStartEventAndSubmitPaymentSuccessfully() {
         // Given
-        when(idamService.getSystemUserAuthorisation()).thenReturn(IDAM_TOKEN);
+        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_TOKEN);
         when(s2sAuthTokenGenerator.generate()).thenReturn(S2S_TOKEN);
 
         StartEventResponse startEventResponse = StartEventResponse.builder().token(IDAM_TOKEN).build();
