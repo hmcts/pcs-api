@@ -52,8 +52,8 @@ class CounterClaimEntityListenerTest {
         verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
 
         CounterClaimStatusUpdatedEvent event = eventCaptor.getValue();
-        assertEquals(counterClaimId, event.getEntityId());
-        assertEquals(CounterClaimStatus.PENDING_CASE_ISSUED, event.getNewStatus());
+        assertEquals(counterClaimId, event.entityId());
+        assertEquals(CounterClaimStatus.PENDING_CASE_ISSUED, event.newStatus());
     }
 
     @Test
@@ -93,8 +93,8 @@ class CounterClaimEntityListenerTest {
         verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
 
         CounterClaimStatusUpdatedEvent event = eventCaptor.getValue();
-        assertEquals(counterClaimId, event.getEntityId());
-        assertEquals(CounterClaimStatus.CASE_ISSUED, event.getPreviousStatus());
-        assertEquals(CounterClaimStatus.PENDING_CASE_ISSUED, event.getNewStatus());
+        assertEquals(counterClaimId, event.entityId());
+        assertEquals(CounterClaimStatus.CASE_ISSUED, event.previousStatus());
+        assertEquals(CounterClaimStatus.PENDING_CASE_ISSUED, event.newStatus());
     }
 }

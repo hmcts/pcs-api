@@ -30,10 +30,16 @@ public class CounterClaimEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handle(CounterClaimStatusUpdatedEvent event) {
-        CounterClaimEntity entity = counterClaimRepository.findById(event.getEntityId())
-            .orElseThrow(() -> new IllegalArgumentException("Counterclaim not found: " + event.getEntityId()));
+        log.info(
+            "Processing counter claim status update {} -> {} for counter claim: {}",
+            event.previousStatus(),
+            event.newStatus(),
+            event.entityId()
+        );
+        CounterClaimEntity entity = counterClaimRepository.findById(event.entityId())
+            .orElseThrow(() -> new IllegalArgumentException("Counterclaim not found: " + event.entityId()));
 
-        switch (event.getNewStatus()) {
+        switch (event.newStatus()) {
             case PENDING_CASE_ISSUED -> handleNotificationForDefendantResponse(entity);
             case CASE_ISSUED -> handleCaseIssued(entity);
         }
