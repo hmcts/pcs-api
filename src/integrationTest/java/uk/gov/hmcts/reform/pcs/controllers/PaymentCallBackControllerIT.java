@@ -16,8 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -54,8 +54,11 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
     private static final long CASE_REFERENCE = 1234L;
 
+    // Mocked to harmonise the Spring context signature with other integration tests, so the
+    // ApplicationContext (and its Hikari pool) is shared rather than spawning a new pool.
     @MockitoBean
-    private IdamClient idamClient;
+    private IdamUserInfoApi idamUserInfoApi;
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired

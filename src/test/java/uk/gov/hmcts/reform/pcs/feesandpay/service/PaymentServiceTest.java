@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -69,7 +70,7 @@ class PaymentServiceTest {
     @Mock
     private PaymentRequestMapper paymentRequestMapper;
     @Mock
-    private IdamService idamService;
+    private IdamTokenProvider systemUpdateUserTokenProvider;
     @Mock
     private FeePaymentRepository feePaymentRepository;
     @Mock
