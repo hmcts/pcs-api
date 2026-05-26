@@ -146,7 +146,7 @@ class GenAppServiceTest {
     void shouldSetApplicantParty() {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
-            .applicationType(GenAppType.SUSPEND)
+            .applicationType(GenAppType.ADJOURN)
             .build();
 
         // When
