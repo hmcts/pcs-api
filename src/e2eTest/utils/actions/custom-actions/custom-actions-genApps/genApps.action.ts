@@ -2,8 +2,7 @@ import {
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
   checkYourAnswersGenApps,
   chooseAnApplication,
-  doYouWantToUploadDocumentToSupportYourApplication,
-  haveTheOtherPartiesAgreedToThisApplication,
+  doYouWantToUploadDocumentToSupportYourApplication, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees,
   helpPayingTheFee,
   isTheCourtHearingInTheNext14Days,
@@ -156,7 +155,7 @@ export class GenAppsAction implements IAction {
       question: confirmOtherParty.question,
       option: confirmOtherParty.option,
     });
-    await performAction('clickButton', haveTheOtherPartiesAgreedToThisApplication.continueButton);
+    await performAction('clickButton', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.continueButton);
   }
 
   private async reasonsApplicationShouldNotBeShared(reason: actionRecord) {
@@ -394,7 +393,7 @@ export class GenAppsAction implements IAction {
             option: helpPayingTheFee.noRadioOption,
           });
         } else {
-          await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+          await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
           FieldsStore.deleteKeys([
             helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
             haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
@@ -428,7 +427,7 @@ export class GenAppsAction implements IAction {
             input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
           });
         }
-        await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+        await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
         break;
       }
       case 'whatOrderDoYouWantTheCourtToMakeAndWhy': {
@@ -448,7 +447,7 @@ export class GenAppsAction implements IAction {
           label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
           input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
         });
-        await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+        await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
         break;
       }
 
