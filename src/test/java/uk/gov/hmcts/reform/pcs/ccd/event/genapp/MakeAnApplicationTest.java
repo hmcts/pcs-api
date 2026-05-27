@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -47,8 +48,10 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -63,7 +66,7 @@ class MakeAnApplicationTest extends BaseEventTest {
     private PartyService partyService;
     @Mock
     private SecurityContextService securityContextService;
-    @Mock
+    @Mock(strictness = LENIENT)
     private GenAppService genAppService;
     @Mock
     private GenAppRepository genAppRepository;
@@ -75,11 +78,17 @@ class MakeAnApplicationTest extends BaseEventTest {
     private LegalRepresentativeService legalRepresentativeService;
     @Mock
     private FeeApplier feeApplier;
+    @Mock
+    private GenAppEntity genAppEntity;
     @Captor
     private ArgumentCaptor<BiConsumer<PCSCase, String>> feeSetterCaptor;
 
     @BeforeEach
     void setUp() {
+        when(genAppService.createGenAppEntity(any(CitizenGenAppRequest.class),
+                                              any(PcsCaseEntity.class),
+                                              any(PartyEntity.class))).thenReturn(genAppEntity);
+
         MakeAnApplication underTest = new MakeAnApplication(pcsCaseService, partyService,
                                                             securityContextService, genAppService,
                                                             genAppRepository, genAppDocumentGenerator,
@@ -326,14 +335,14 @@ class MakeAnApplicationTest extends BaseEventTest {
 
             PartyEntity applicantParty = stubCurrentUserParty();
 
-            GenAppEntity genAppEntity = mock(GenAppEntity.class);
-            when(genAppService.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty))
-                .thenReturn(genAppEntity);
-
             String documentUrl = "some document URL";
             when(genAppDocumentGenerator
                      .generateSubmissionDocument(TEST_CASE_REFERENCE, genAppRequest, genAppEntity, applicantParty))
                 .thenReturn(documentUrl);
+
+            DocumentEntity documentEntity = mock(DocumentEntity.class);
+            when(documentImportService.addDocumentToCase(eq(TEST_CASE_REFERENCE), anyString(), any()))
+                .thenReturn(documentEntity);
 
             // When
             callSubmitHandler(caseData);
@@ -342,6 +351,8 @@ class MakeAnApplicationTest extends BaseEventTest {
             verify(documentImportService).addDocumentToCase(TEST_CASE_REFERENCE, documentUrl,
                                                             CaseFileCategory.APPLICATIONS
             );
+
+            verify(genAppEntity).setSubmissionDocument(documentEntity);
         }
 
         private PartyEntity stubCurrentUserParty() {

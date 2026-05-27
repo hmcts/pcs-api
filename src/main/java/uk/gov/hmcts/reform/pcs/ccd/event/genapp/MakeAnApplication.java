@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HearingInNext14Days;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HelpWithFeesNeeded;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.MustApplyForHelpWithFees;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.OtherPartiesAgreed;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ReasonsNotToShare;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.SelectParty;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartAdjourn;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSetAside;
@@ -86,6 +88,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .add(new AppliedForHelpWithFees())
             .add(new MustApplyForHelpWithFees())
             .add(new OtherPartiesAgreed())
+            .add(new ReasonsNotToShare())
             .add(new WhatOrderWanted())
             .add(new DocumentUploadWanted())
             .add(new WhichLanguage())
@@ -193,7 +196,10 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             applicantParty
         );
 
-        documentImportService.addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
+        DocumentEntity documentEntity = documentImportService
+            .addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
+
+        genAppEntity.setSubmissionDocument(documentEntity);
     }
 
     @SuppressWarnings("SameParameterValue")
