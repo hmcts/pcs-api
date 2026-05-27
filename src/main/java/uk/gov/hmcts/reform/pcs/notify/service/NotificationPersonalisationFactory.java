@@ -34,8 +34,8 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(defendant, defendantResponse.getPcsCase());
     }
 
-    public BasePersonalisation forClaimant(ClaimEntity claim, PartyEntity claimant) {
-        return buildPersonalisation(claimant, claim.getPcsCase());
+    public BasePersonalisation forClaimant(ClaimEntity claim) {
+        return buildPersonalisation(partyService.getPrimaryClaimantPartyEntity(claim.getPcsCase()), claim.getPcsCase());
     }
 
     public ClaimantBasePersonalisation forClaimant(long caseReference, PCSCase pcsCase) {

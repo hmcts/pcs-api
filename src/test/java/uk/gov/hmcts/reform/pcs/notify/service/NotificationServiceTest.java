@@ -451,7 +451,7 @@ class NotificationServiceTest {
                     .paymentReferenceNumber("PAY-123")
                     .build());
             lenient().when(notificationPersonalisationFactory
-                               .forClaimant(any(), any(PartyEntity.class)))
+                               .forClaimant(any()))
                 .thenReturn(BasePersonalisation.builder()
                     .firstName("Jane")
                     .lastName("Smith")
@@ -472,6 +472,10 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should send claimant defendant has made counterclaim email")
         void shouldSendClaimantDefendantHasMadeCounterclaimEmail() {
+            PartyEntity claimantParty = new PartyEntity();
+            claimantParty.setEmailAddress(TEST_EMAIL);
+            when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
+
             when(partyService.canSendEmailNotification(any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM))
                 .thenReturn(TEMPLATE_ID);

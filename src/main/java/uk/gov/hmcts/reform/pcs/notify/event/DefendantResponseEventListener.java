@@ -18,7 +18,6 @@ public class DefendantResponseEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handle(DefendantResponseStatusUpdatedEvent event) {
-        System.out.println("event triggered");
         if (event.getNewStatus() == DefendantResponseStatus.SUBMITTED) {
             defendantResponseNotificationService.sendEmailNotificationForNoCounterClaim(event.getEntityId());
         }
