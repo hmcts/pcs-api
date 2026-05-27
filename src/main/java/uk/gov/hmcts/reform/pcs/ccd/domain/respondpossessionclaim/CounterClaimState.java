@@ -10,15 +10,15 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 public enum CounterClaimState {
 
     @CCD(
-        label = "Pending Case Issued",
+        label = "Pending Counterclaim Issued",
         access = {CitizenAccess.class, DefendantAccess.class}
     )
-    PENDING_CASE_ISSUED,
+    PENDING_COUNTER_CLAIM_ISSUED,
 
     @CCD(
-        label = "Case Issued",
+        label = "Counterclaim Issued",
         access = {CitizenAccess.class, DefendantAccess.class}
     )
-    CASE_ISSUED,
+    COUNTER_CLAIM_ISSUED,
 
 }

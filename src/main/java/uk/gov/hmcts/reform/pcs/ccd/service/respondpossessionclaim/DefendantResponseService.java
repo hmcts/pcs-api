@@ -243,7 +243,7 @@ public class DefendantResponseService {
             .needHelpWithFees(cc.getNeedHelpWithFees())
             .appliedForHwf(cc.getAppliedForHwf())
             .hwfReferenceNumber(cc.getHwfReferenceNumber())
-            .status(CounterClaimState.PENDING_CASE_ISSUED)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .claimSubmittedDate(submittedAt)
             .party(partyRef)
             .build();
