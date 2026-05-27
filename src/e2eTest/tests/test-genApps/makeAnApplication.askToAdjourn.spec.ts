@@ -17,7 +17,8 @@ import {
   chooseAnApplication,
   isTheCourtHearingInTheNext14Days,
   selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
-  areThereAnyReasonsThatThisApplicationShouldNotBeShared
+  areThereAnyReasonsThatThisApplicationShouldNotBeShared,
+  doYouWantToUploadDocumentsToSupportDefendantsApplication
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
 
@@ -102,6 +103,11 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       option: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.yesRadioOption,
     });
     await performValidation('mainHeader', whatOrderDoYouWantTheCourtToMakeAndWhy.mainHeader);
+    await performAction('confirmOrderDoYouWant', {
+      label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
+      input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+    });
+    await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
   });
 
 test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No] @PR', async () => {
@@ -135,5 +141,10 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
     input: areThereAnyReasonsThatThisApplicationShouldNotBeShared.provideReasonTextInput,
   });
   await performValidation('mainHeader', whatOrderDoYouWantTheCourtToMakeAndWhy.mainHeader);
+  await performAction('confirmOrderDoYouWant', {
+    label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
+    input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+  });
+  await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
 });
 });
