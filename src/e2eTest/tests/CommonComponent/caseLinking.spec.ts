@@ -43,6 +43,8 @@ test.afterEach(async () => {
   }
 });
 
+//Case Linking is not working in preview env as explained in https://tools.hmcts.net/jira/browse/HDPI-6095
+//So these tests won't be executed in preview
 test.describe('[Common Component Case Linking]', async () => {
   test('Case Linking @nightly @caseLinking', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
