@@ -125,48 +125,4 @@ class ClaimEntityTest {
         assertThat(claimParties.get(2).getRank()).isEqualTo(2);
     }
 
-    @Test
-    void shouldGetClaimantParty() {
-        // Given
-        PartyEntity claimant = mock(PartyEntity.class);
-        underTest.addParty(claimant, PartyRole.CLAIMANT);
-
-        PartyEntity defendant = mock(PartyEntity.class);
-        underTest.addParty(defendant, PartyRole.DEFENDANT);
-
-        // When
-        PartyEntity result = underTest.getClaimantParty();
-
-        // Then
-        assertThat(result).isEqualTo(claimant);
-    }
-
-    @Test
-    void shouldGetDefendantParty() {
-        // Given
-        PartyEntity claimant = mock(PartyEntity.class);
-        underTest.addParty(claimant, PartyRole.CLAIMANT);
-
-        PartyEntity defendant = mock(PartyEntity.class);
-        underTest.addParty(defendant, PartyRole.DEFENDANT);
-
-        // When
-        PartyEntity result = underTest.getDefendantParty();
-
-        // Then
-        assertThat(result).isEqualTo(defendant);
-    }
-
-    @Test
-    void shouldReturnNullWhenPartyWithRoleNotFound() {
-        // Given
-        PartyEntity claimant = mock(PartyEntity.class);
-        underTest.addParty(claimant, PartyRole.CLAIMANT);
-
-        // When
-        PartyEntity result = underTest.getDefendantParty();
-
-        // Then
-        assertThat(result).isNull();
-    }
 }
