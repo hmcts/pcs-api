@@ -67,9 +67,10 @@ public class GenAppService {
 
             if (genAppRequest.getAppliedForHwf() == VerticalYesNo.YES
                 && genAppRequest.getHwfReference() != null) {
-                    HelpWithFeesEntity helpWithFeesEntity = new HelpWithFeesEntity();
-                    helpWithFeesEntity.setHwfReference(genAppRequest.getHwfReference());
-                    genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
+
+                HelpWithFeesEntity helpWithFeesEntity = new HelpWithFeesEntity();
+                helpWithFeesEntity.setHwfReference(genAppRequest.getHwfReference());
+                genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
             }
         }
 

@@ -11,18 +11,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetai
 public class StatementOfTruth implements CcdPageConfiguration {
 
     private static final String INFO_MARKDOWN = """
-      <p class="govuk-body">
-        I understand that proceedings for contempt of court may be brought against anyone who makes, or causes to be
-        made, a false statement in a document verified by a statement of truth without an honest belief in its truth.
-      </p>
-      <p class="govuk-body">
-        Defendant: ${currentRepresentedPartyName}
-      </p>
-      <p class="govuk-body govuk-!-font-weight-bold">
-        Completed by the defendant’s legal representative (as defined by CPR 2.3 (1))
-      </p>
+        <p class="govuk-body">
+          I understand that proceedings for contempt of court may be brought against anyone who makes, or causes to be
+          made, a false statement in a document verified by a statement of truth without an honest belief in its truth.
+        </p>
+        <p class="govuk-body">
+          Defendant: ${currentRepresentedPartyName}
+        </p>
+        <p class="govuk-body govuk-!-font-weight-bold">
+          Completed by the defendant’s legal representative (as defined by CPR 2.3 (1))
+        </p>
 
-      """;
+        """;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
