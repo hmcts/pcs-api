@@ -89,7 +89,7 @@ class NotificationPersonalisationFactoryTest {
     }
 
     @Nested
-    @DisplayName("forClaimant (ClaimEntity, PartyEntity)")
+    @DisplayName("forClaimant (ClaimEntity)")
     class ForClaimantEntityTests {
         @Test
         @DisplayName("Should build correct personalisation for claimant")
@@ -97,7 +97,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity claimantParty = stubClaimantParty();
             ClaimEntity claim = createClaim(claimantParty);
 
-            BasePersonalisation result = factory.forClaimant(claim, claimantParty);
+            BasePersonalisation result = factory.forClaimant(claim);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)

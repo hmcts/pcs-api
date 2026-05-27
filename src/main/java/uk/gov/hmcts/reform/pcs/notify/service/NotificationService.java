@@ -108,7 +108,7 @@ public class NotificationService {
             claimantRecipient(claim),
             EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forClaimant(claim, claim.getClaimantParty())
+            notificationPersonalisationFactory.forClaimant(claim)
         );
     }
 
@@ -380,7 +380,7 @@ public class NotificationService {
     }
 
     private NotificationRecipient claimantRecipient(ClaimEntity claim) {
-        PartyEntity claimant = claim.getClaimantParty();
+        PartyEntity claimant = partyService.getPrimaryClaimantPartyEntity(claim.getPcsCase());
 
         if (claimant == null) {
             throw new PartyNotFoundException("No claimant party found for claim: " + claim.getId());
