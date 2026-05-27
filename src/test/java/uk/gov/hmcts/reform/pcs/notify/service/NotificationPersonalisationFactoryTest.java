@@ -265,6 +265,24 @@ class NotificationPersonalisationFactoryTest {
         }
     }
 
+    @Nested
+    @DisplayName("formatCaseReference")
+    class FormatCaseReferenceTests {
+
+        @Test
+        @DisplayName("Should return null when case reference is null")
+        void shouldReturnNullWhenCaseReferenceIsNull() {
+            assertThat(NotificationPersonalisationFactory.formatCaseReference(null)).isNull();
+        }
+
+        @Test
+        @DisplayName("Should format case reference correctly")
+        void shouldFormatCaseReferenceCorrectly() {
+            assertThat(NotificationPersonalisationFactory.formatCaseReference("1234567812345678"))
+                .isEqualTo("1234-5678-1234-5678");
+        }
+    }
+
     private PartyEntity stubClaimantParty() {
         PartyEntity claimantPartyEntity = createParty("Jane", "Smith");
         when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantPartyEntity);
@@ -286,8 +304,12 @@ class NotificationPersonalisationFactoryTest {
     }
 
     private ClaimEntity createClaim(PartyEntity claimantParty) {
+        return createClaim(claimantParty, pcsCaseEntity);
+    }
+
+    private ClaimEntity createClaim(PartyEntity claimantParty, PcsCaseEntity pcsCase) {
         ClaimEntity claim = new ClaimEntity();
-        claim.setPcsCase(pcsCaseEntity);
+        claim.setPcsCase(pcsCase);
 
         claim.addParty(claimantParty, PartyRole.CLAIMANT);
 
@@ -298,11 +320,17 @@ class NotificationPersonalisationFactoryTest {
     }
 
     private DefendantResponseEntity createDefendantResponse(PartyEntity claimantParty, PartyEntity defendantParty) {
+        return createDefendantResponse(claimantParty, defendantParty, pcsCaseEntity);
+    }
+
+    private DefendantResponseEntity createDefendantResponse(PartyEntity claimantParty,
+                                                            PartyEntity defendantParty,
+                                                            PcsCaseEntity pcsCase) {
         DefendantResponseEntity response = new DefendantResponseEntity();
         response.setId(UUID.randomUUID());
-        response.setPcsCase(pcsCaseEntity);
+        response.setPcsCase(pcsCase);
         response.setParty(defendantParty);
-        response.setClaim(createClaim(claimantParty));
+        response.setClaim(createClaim(claimantParty, pcsCase));
         return response;
     }
 

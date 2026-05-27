@@ -65,6 +65,7 @@ class PaymentNotificationServiceTest {
 
         DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
         when(defendantResponse.getParty()).thenReturn(defendant);
+        when(defendantResponse.getClaim()).thenReturn(claim);
 
         when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.of(feePayment));
         when(feePayment.getClaim()).thenReturn(claim);
@@ -77,6 +78,8 @@ class PaymentNotificationServiceTest {
 
         verify(notificationService)
             .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+        verify(notificationService)
+            .sendClaimantDefendantHasMadeCounterclaimEmail(claim);
     }
 
     @Test

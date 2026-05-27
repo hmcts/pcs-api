@@ -107,7 +107,7 @@ public class NotificationPersonalisationFactory {
         return String.format("%s %s", firstName, lastName).toUpperCase(Locale.ROOT);
     }
 
-    private static String formatCaseReference(String caseReference) {
+    public static String formatCaseReference(String caseReference) {
         if (caseReference == null) {
             return null;
         }

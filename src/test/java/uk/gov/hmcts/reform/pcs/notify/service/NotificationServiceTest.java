@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
@@ -487,6 +488,43 @@ class NotificationServiceTest {
             verify(templateConfiguration).getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM);
             verify(notificationRepository, times(2)).save(any());
             verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should throw PartyNotFoundException when claimant is null in claimantRecipient")
+        void shouldThrowPartyNotFoundExceptionWhenClaimantIsNullInClaimantRecipient() {
+            when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(null);
+
+            UUID claimId = UUID.randomUUID();
+            ClaimEntity claim = defendantResponse.getClaim();
+            claim.setId(claimId);
+
+            assertThatThrownBy(() -> notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(claim))
+                .isInstanceOf(PartyNotFoundException.class)
+                .hasMessage("No claimant party found for claim: " + claimId);
+
+            verify(partyService).getPrimaryClaimantPartyEntity(any());
+            verifyNoInteractions(templateConfiguration);
+            verifyNoInteractions(notificationRepository);
+            verifyNoInteractions(schedulerClient);
+        }
+
+        @Test
+        @DisplayName("Should throw PartyNotFoundException when defendant is null in defendantRecipient")
+        void shouldThrowPartyNotFoundExceptionWhenDefendantIsNullInDefendantRecipient() {
+            defendantResponse.setParty(null);
+            UUID responseId = UUID.randomUUID();
+            defendantResponse.setId(responseId);
+
+            assertThatThrownBy(
+                () -> notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse))
+                .isInstanceOf(PartyNotFoundException.class)
+                .hasMessage("No defendant party found for response: " + responseId);
+
+            verifyNoInteractions(partyService);
+            verifyNoInteractions(templateConfiguration);
+            verifyNoInteractions(notificationRepository);
+            verifyNoInteractions(schedulerClient);
         }
 
         @Test
