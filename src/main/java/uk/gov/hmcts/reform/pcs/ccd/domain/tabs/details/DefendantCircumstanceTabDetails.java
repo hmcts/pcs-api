@@ -13,7 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 public class DefendantCircumstanceTabDetails {
 
     @CCD(
-        label = "Is there any information you're required to provide, or you want to provide, "
+        label = "Is there any information you’re required to provide, or you want to provide, "
             + "about the defendants’ circumstances?"
     )
     private String defendantCircumstancesGiven;

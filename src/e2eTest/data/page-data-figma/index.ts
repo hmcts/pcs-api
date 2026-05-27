@@ -43,3 +43,12 @@ export * from '@data/page-data-figma/rentArrearsOrBreachOfTenancyGround.page.dat
 export * from '@data/page-data-figma/demotionOfTenancyHousingActOptions.page.data';
 export * from '@data/page-data-figma/suspensionOfRightToBuyHousingActOptions.page.data';
 export * from '@data/page-data-figma/suspensionToBuyDemotionOfTenancyActs.page.data';
+export * from '@data/page-data-figma/page-data-common-component/whereShouldThisFlagBeAdded.page.data';
+export * from '@data/page-data-figma/page-data-common-component/selectFlagType.page.data';
+export * from '@data/page-data-figma/page-data-common-component/addCommentsForFlag.page.data';
+export * from '@data/page-data-figma/page-data-common-component/reviewFlagDetails.page.data';
+export * from '@data/page-data-figma/page-data-common-component/specialMeasureForFlag.page.data';
+export * from '@data/page-data-figma/page-data-common-component/updateFlagComment.page.data';
+export * from '@data/page-data-figma/page-data-common-component/manageCaseFlags.page.data';
+export * from '@data/page-data-figma/page-data-common-component/viewCaseFlag.page.data';
+export * from '@data/page-data-figma/addCaseNote.page.data';

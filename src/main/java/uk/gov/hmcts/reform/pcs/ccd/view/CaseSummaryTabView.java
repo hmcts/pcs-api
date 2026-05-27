@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBu
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -34,6 +36,8 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 public class CaseSummaryTabView {
 
     private static final DateTimeFormatter SUMMARY_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter SUMMARY_DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern("dd/MM/yyyy, h:mm:ssa", Locale.UK);
     private static final DateTimeFormatter SUBMITTED_DATE_FORMATTER =
         DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm:ssa", Locale.UK);
 
@@ -151,13 +155,46 @@ public class CaseSummaryTabView {
 
     private NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase) {
         NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
+        String noticeServedDate = getNoticeServedDate(noticeServedDetails);
 
-        if (noticeServedDetails == null || noticeServedDetails.getNoticeEmailSentDateTime() == null) {
+        if (noticeServedDate == null) {
             return null;
         }
 
         return NoticeTabDetails.builder()
-            .noticeServedDate(noticeServedDetails.getNoticeEmailSentDateTime().format(SUMMARY_DATE_FORMATTER))
+            .noticeServedDate(noticeServedDate)
             .build();
+    }
+
+    private String getNoticeServedDate(NoticeServedDetails noticeServedDetails) {
+        if (noticeServedDetails == null) {
+            return null;
+        }
+
+        NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getNoticeServiceMethod();
+        if (noticeServiceMethod == null) {
+            return null;
+        }
+
+        return switch (noticeServiceMethod) {
+            case FIRST_CLASS_POST -> formatSummaryDate(noticeServedDetails.getNoticePostedDate());
+            case DELIVERED_PERMITTED_PLACE -> formatSummaryDate(noticeServedDetails.getNoticeDeliveredDate());
+            case PERSONALLY_HANDED -> formatSummaryDateTime(noticeServedDetails.getNoticeHandedOverDateTime());
+            case EMAIL -> formatSummaryDateTime(noticeServedDetails.getNoticeEmailSentDateTime());
+            case OTHER_ELECTRONIC -> formatSummaryDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime());
+            case OTHER -> formatSummaryDateTime(noticeServedDetails.getNoticeOtherDateTime());
+        };
+    }
+
+    private String formatSummaryDate(LocalDate date) {
+        return date == null ? null : date.format(SUMMARY_DATE_FORMATTER);
+    }
+
+    private String formatSummaryDateTime(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
+
+        return dateTime.format(SUMMARY_DATE_TIME_FORMATTER).replace("am", "AM").replace("pm", "PM");
     }
 }
