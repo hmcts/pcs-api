@@ -14,7 +14,8 @@ import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
   askToAdjournTheCourtHearing,
-  chooseAnApplication, helpPayingTheFee,
+  haveTheOtherPartiesAgreedToThisApplication, haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee,
+  chooseAnApplication,
   isTheCourtHearingInTheNext14Days,
   selectParty
 } from '@data/page-data-figma/page-data-genApps-figma';
@@ -85,9 +86,22 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       option: isTheCourtHearingInTheNext14Days.yesRadioOption,
     });
     await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+    await performAction('doYouNeedHelpPayingFee', {
+      question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+      option: helpPayingTheFee.yesRadioOption,
+    });
+    await performAction('confirmYouHaveAppliedForFeeHelp', {
+      question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
+      option: haveTheyAlreadyAppliedForHelpWithFees.yesRadioOption,
+      label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
+      input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
+    });
+    await performValidation('mainHeader',haveTheOtherPartiesAgreedToThisApplication.mainHeader);
   });
 
 test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]', async () => {
+  await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
+  await performAction('clickButton', caseSummary.go);
   await performAction('chooseAnApplication', {
     question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
     option: chooseAnApplication.adjournTheHearingRadioOption,
@@ -103,6 +117,6 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
     question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
     option: isTheCourtHearingInTheNext14Days.noRadioOption,
   });
-  await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+  await performValidation('mainHeader',haveTheOtherPartiesAgreedToThisApplication.mainHeader);
 });
 });
