@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.util.Optional;
@@ -20,38 +20,38 @@ import java.util.UUID;
 @AllArgsConstructor
 public class LegalRepresentativePageService {
 
-    private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
     private final AddressMapper addressMapper;
 
     @Transactional
     public void save(UUID userIdamId, LegalRepresentativeDetails legalRepresentativeDetails) {
-        Optional<LegalRepresentativeEntity> legalRepresentative = legalRepresentativeRepository
+        Optional<LegalRepresentativeOrganisationEntity> legalRepresentative = legalRepresentativeOrganisationRepository
             .findByIdamId(userIdamId);
 
-        LegalRepresentativeEntity legalRepresentativeEntity =
-            legalRepresentative.orElseGet(LegalRepresentativeEntity::new);
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
+            legalRepresentative.orElseGet(LegalRepresentativeOrganisationEntity::new);
 
         if (legalRepresentativeDetails.getDifferentPostalAddress() != null
             && legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
-            legalRepresentativeEntity.setAddress(mapAddress(legalRepresentativeDetails
+            legalRepresentativeOrganisationEntity.setAddress(mapAddress(legalRepresentativeDetails
                                                                 .getUpdatedCorrespondenceAddress()));
         }
 
         if (legalRepresentativeDetails.getProvideContactPhoneNumber() != null
             && legalRepresentativeDetails.getProvideContactPhoneNumber().equals(VerticalYesNo.YES)) {
-            legalRepresentativeEntity.setPhone(legalRepresentativeDetails.getContactPhoneNumber());
+            legalRepresentativeOrganisationEntity.setPhone(legalRepresentativeDetails.getContactPhoneNumber());
         }
 
         if (legalRepresentativeDetails.getReference() != null && !legalRepresentativeDetails.getReference().isEmpty()) {
-            legalRepresentativeEntity.setReference(legalRepresentativeDetails.getReference());
+            legalRepresentativeOrganisationEntity.setReference(legalRepresentativeDetails.getReference());
         }
 
         if (legalRepresentativeDetails.getUseEmailAddress() != null
             && legalRepresentativeDetails.getUseEmailAddress().equals(VerticalYesNo.NO)) {
-            legalRepresentativeEntity.setEmail(legalRepresentativeDetails.getEmailAddress());
+            legalRepresentativeOrganisationEntity.setEmail(legalRepresentativeDetails.getEmailAddress());
         }
 
-        legalRepresentativeRepository.save(legalRepresentativeEntity);
+        legalRepresentativeOrganisationRepository.save(legalRepresentativeOrganisationEntity);
     }
 
     private AddressEntity mapAddress(AddressUK address) {

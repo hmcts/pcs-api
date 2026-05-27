@@ -8,8 +8,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -34,9 +34,9 @@ class LegalRepresentativeSummaryServiceTest {
         UUID userId = UUID.randomUUID();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
                                             .claimPartyLegalRepresentativeList(List.of(
-                                                ClaimPartyLegalRepresentativeEntity.builder()
+                                                PartyLegalRepresentativeOrganisationEntity.builder()
                                                     .active(YesOrNo.YES)
-                                                    .legalRepresentative(LegalRepresentativeEntity.builder()
+                                                    .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
                                                                              .idamId(userId)
                                                                              .build())
                                                     .build()))
@@ -63,9 +63,9 @@ class LegalRepresentativeSummaryServiceTest {
         UUID userId = UUID.randomUUID();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
                                               .claimPartyLegalRepresentativeList(List.of(
-                                                  ClaimPartyLegalRepresentativeEntity.builder()
+                                                  PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
-                                                      .legalRepresentative(LegalRepresentativeEntity.builder()
+                                                      .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
                                                                                .idamId(userId)
                                                                                .build())
                                                       .build()))
@@ -92,9 +92,9 @@ class LegalRepresentativeSummaryServiceTest {
         UUID userId = UUID.randomUUID();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
                                               .claimPartyLegalRepresentativeList(List.of(
-                                                  ClaimPartyLegalRepresentativeEntity.builder()
+                                                  PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
-                                                      .legalRepresentative(LegalRepresentativeEntity.builder()
+                                                      .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
                                                                                .idamId(UUID.randomUUID())
                                                                                .build())
                                                       .build()))
@@ -121,9 +121,9 @@ class LegalRepresentativeSummaryServiceTest {
         UUID userId = UUID.randomUUID();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
                                               .claimPartyLegalRepresentativeList(List.of(
-                                                  ClaimPartyLegalRepresentativeEntity.builder()
+                                                  PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
-                                                      .legalRepresentative(LegalRepresentativeEntity.builder()
+                                                      .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
                                                                                .idamId(UUID.randomUUID())
                                                                                .build())
                                                       .build()))

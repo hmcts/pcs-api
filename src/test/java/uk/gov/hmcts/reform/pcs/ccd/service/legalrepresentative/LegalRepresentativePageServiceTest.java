@@ -9,8 +9,8 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.util.Optional;
@@ -31,7 +31,7 @@ class LegalRepresentativePageServiceTest {
     private LegalRepresentativePageService legalRepresentativePageService;
 
     @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
+    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
 
     @Mock
     private AddressMapper addressMapper;
@@ -49,10 +49,10 @@ class LegalRepresentativePageServiceTest {
             .updatedCorrespondenceAddress(address)
             .build();
 
-        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.of(legalRepresentativeEntity));
+        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         when(addressMapper.toAddressEntityAndNormalise(address))
             .thenReturn(mappedAddress);
@@ -61,10 +61,10 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertEquals(mappedAddress, legalRepresentativeEntity.getAddress());
+        assertEquals(mappedAddress, legalRepresentativeOrganisationEntity.getAddress());
 
         verify(addressMapper).toAddressEntityAndNormalise(address);
-        verify(legalRepresentativeRepository).save(legalRepresentativeEntity);
+        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntity);
     }
 
     @Test
@@ -76,19 +76,19 @@ class LegalRepresentativePageServiceTest {
             .differentPostalAddress(VerticalYesNo.YES)
             .build();
 
-        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.of(legalRepresentativeEntity));
+        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
         legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertThat(legalRepresentativeEntity.getAddress()).isNull();
+        assertThat(legalRepresentativeOrganisationEntity.getAddress()).isNull();
 
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(legalRepresentativeRepository).save(legalRepresentativeEntity);
+        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntity);
     }
 
     @Test
@@ -100,17 +100,17 @@ class LegalRepresentativePageServiceTest {
             .differentPostalAddress(VerticalYesNo.NO)
             .build();
 
-        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.of(legalRepresentativeEntity));
+        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
         legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(legalRepresentativeRepository).save(legalRepresentativeEntity);
+        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntity);
     }
 
     @Test
@@ -125,16 +125,16 @@ class LegalRepresentativePageServiceTest {
             .differentPostalAddress(VerticalYesNo.NO)
             .build();
 
-        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.of(legalRepresentativeEntity));
+        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
         legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertEquals(contactNumber, legalRepresentativeEntity.getPhone());
+        assertEquals(contactNumber, legalRepresentativeOrganisationEntity.getPhone());
     }
 
     @Test
@@ -148,16 +148,16 @@ class LegalRepresentativePageServiceTest {
             .differentPostalAddress(VerticalYesNo.NO)
             .build();
 
-        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.of(legalRepresentativeEntity));
+        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
         legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertNull(legalRepresentativeEntity.getPhone());
+        assertNull(legalRepresentativeOrganisationEntity.getPhone());
     }
 
     @Test
@@ -170,16 +170,16 @@ class LegalRepresentativePageServiceTest {
             .differentPostalAddress(VerticalYesNo.NO)
             .build();
 
-        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.of(legalRepresentativeEntity));
+        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
         legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertNull(legalRepresentativeEntity.getPhone());
+        assertNull(legalRepresentativeOrganisationEntity.getPhone());
     }
 
     @Test
@@ -193,16 +193,16 @@ class LegalRepresentativePageServiceTest {
             .differentPostalAddress(VerticalYesNo.NO)
             .build();
 
-        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.of(legalRepresentativeEntity));
+        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
         legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertEquals(reference, legalRepresentativeEntity.getReference());
+        assertEquals(reference, legalRepresentativeOrganisationEntity.getReference());
     }
 
     @Test
@@ -215,16 +215,16 @@ class LegalRepresentativePageServiceTest {
             .differentPostalAddress(VerticalYesNo.NO)
             .build();
 
-        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.of(legalRepresentativeEntity));
+        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
         legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertNull(legalRepresentativeEntity.getReference());
+        assertNull(legalRepresentativeOrganisationEntity.getReference());
     }
 
     @Test
@@ -238,16 +238,16 @@ class LegalRepresentativePageServiceTest {
             .emailAddress(email)
             .build();
 
-        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.of(legalRepresentativeEntity));
+        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
         legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertEquals(email, legalRepresentativeEntity.getEmail());
+        assertEquals(email, legalRepresentativeOrganisationEntity.getEmail());
     }
 
     @Test
@@ -259,16 +259,16 @@ class LegalRepresentativePageServiceTest {
             .useEmailAddress(VerticalYesNo.YES)
             .build();
 
-        LegalRepresentativeEntity legalRepresentativeEntity = new LegalRepresentativeEntity();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeRepository.findByIdamId(userIdamId))
-            .thenReturn(Optional.of(legalRepresentativeEntity));
+        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
         legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
 
         // then
-        assertThat(legalRepresentativeEntity.getEmail()).isNull();
+        assertThat(legalRepresentativeOrganisationEntity.getEmail()).isNull();
     }
 
 }

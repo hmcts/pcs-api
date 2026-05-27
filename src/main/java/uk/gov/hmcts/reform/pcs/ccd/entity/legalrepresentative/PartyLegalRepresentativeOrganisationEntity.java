@@ -24,17 +24,17 @@ import java.time.Instant;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "claim_party_legal_representative")
+@Table(name = "party_legal_rep_org")
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClaimPartyLegalRepresentativeEntity {
+public class PartyLegalRepresentativeOrganisationEntity {
 
     @EmbeddedId
     @Builder.Default
-    private LegalRepresentativePartyId id = new LegalRepresentativePartyId();
+    private LegalRepresentativeOrganisationPartyId id = new LegalRepresentativeOrganisationPartyId();
 
     @ManyToOne(fetch = LAZY)
     @MapsId("partyId")
@@ -42,9 +42,9 @@ public class ClaimPartyLegalRepresentativeEntity {
     private PartyEntity party;
 
     @ManyToOne(fetch = LAZY)
-    @MapsId("legalRepresentativeId")
+    @MapsId("legalRepresentativeOrganisationId")
     @JsonBackReference
-    private LegalRepresentativeEntity legalRepresentative;
+    private LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

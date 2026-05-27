@@ -6,9 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 public class LegalRepresentativeService {
 
-    private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
 
     /**
      * Gets a {@link uk.gov.hmcts.ccd.sdk.type.DynamicList} with the entity IDs
@@ -31,12 +31,12 @@ public class LegalRepresentativeService {
      *     correspond to a known legal rep in the PCS database
      */
     public Optional<DynamicList> getRepresentedPartiesDynamicList(UUID legalRepIdamId, long caseReference) {
-        return legalRepresentativeRepository.findByIdamId(legalRepIdamId)
+        return legalRepresentativeOrganisationRepository.findByIdamId(legalRepIdamId)
             .map(
                 legalRepresentativeEntity -> {
-                    List<PartyEntity> partyEntities = legalRepresentativeEntity.getClaimPartyLegalRepresentativeList()
+                    List<PartyEntity> partyEntities = legalRepresentativeEntity.getPartyLegalRepresentativeOrganisationList()
                         .stream()
-                        .map(ClaimPartyLegalRepresentativeEntity::getParty)
+                        .map(PartyLegalRepresentativeOrganisationEntity::getParty)
                         .filter(partyEntity -> partyEntity.getPcsCase().getCaseReference() == caseReference)
                         .toList();
                     return createPartyNamesDynamicList(partyEntities);

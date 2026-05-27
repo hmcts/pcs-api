@@ -4,13 +4,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface LegalRepresentativeRepository extends JpaRepository<LegalRepresentativeEntity, UUID> {
+public interface LegalRepresentativeOrganisationRepository extends JpaRepository<LegalRepresentativeOrganisationEntity,
+    UUID> {
 
     @Query("""
         SELECT COUNT(lr) > 0
@@ -21,7 +22,8 @@ public interface LegalRepresentativeRepository extends JpaRepository<LegalRepres
         AND p.id = :partyId
         AND cplr.active = 'YES'
         """)
-    boolean isLegalRepresentativeLinkedToPartyAndActive(@Param("idamId") UUID idamId, @Param("partyId") UUID partyId);
+    boolean isLegalRepresentativeOrganisationLinkedToPartyAndActive(@Param("idamId") UUID idamId,
+                                                                    @Param("partyId") UUID partyId);
 
     @Query("""
         SELECT lr
@@ -31,9 +33,10 @@ public interface LegalRepresentativeRepository extends JpaRepository<LegalRepres
         WHERE p.id = :partyId
         AND cplr.active = 'YES'
         """)
-    Optional<LegalRepresentativeEntity> findLegalRepresentativeForParty(@Param("partyId") UUID partyId);
+    Optional<LegalRepresentativeOrganisationEntity> findLegalRepresentativeOrganisationForParty(
+        @Param("partyId") UUID partyId);
 
 
-    Optional<LegalRepresentativeEntity> findByIdamId(UUID idamUserId);
+    Optional<LegalRepresentativeOrganisationEntity> findByIdamId(UUID idamUserId);
 
 }

@@ -9,11 +9,11 @@ import java.util.UUID;
 
 @Embeddable
 @Data
-public class LegalRepresentativePartyId implements Serializable {
+public class LegalRepresentativeOrganisationPartyId implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     private UUID partyId;
-    private UUID legalRepresentativeId;
+    private UUID legalRepresentativeOrganisationId;
 }
