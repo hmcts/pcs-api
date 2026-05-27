@@ -262,4 +262,12 @@ public class DefendantResponseService {
 
         claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
     }
+
+    public boolean hasSubmittedResponse(long caseReference) {
+        UUID userId = securityContextService.getCurrentUserId();
+        if (userId == null) {
+            return false;
+        }
+        return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
+    }
 }
