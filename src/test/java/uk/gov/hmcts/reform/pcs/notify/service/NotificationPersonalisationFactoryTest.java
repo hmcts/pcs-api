@@ -304,12 +304,8 @@ class NotificationPersonalisationFactoryTest {
     }
 
     private ClaimEntity createClaim(PartyEntity claimantParty) {
-        return createClaim(claimantParty, pcsCaseEntity);
-    }
-
-    private ClaimEntity createClaim(PartyEntity claimantParty, PcsCaseEntity pcsCase) {
         ClaimEntity claim = new ClaimEntity();
-        claim.setPcsCase(pcsCase);
+        claim.setPcsCase(pcsCaseEntity);
 
         claim.addParty(claimantParty, PartyRole.CLAIMANT);
 
@@ -320,17 +316,11 @@ class NotificationPersonalisationFactoryTest {
     }
 
     private DefendantResponseEntity createDefendantResponse(PartyEntity claimantParty, PartyEntity defendantParty) {
-        return createDefendantResponse(claimantParty, defendantParty, pcsCaseEntity);
-    }
-
-    private DefendantResponseEntity createDefendantResponse(PartyEntity claimantParty,
-                                                            PartyEntity defendantParty,
-                                                            PcsCaseEntity pcsCase) {
         DefendantResponseEntity response = new DefendantResponseEntity();
         response.setId(UUID.randomUUID());
-        response.setPcsCase(pcsCase);
+        response.setPcsCase(pcsCaseEntity);
         response.setParty(defendantParty);
-        response.setClaim(createClaim(claimantParty, pcsCase));
+        response.setClaim(createClaim(claimantParty));
         return response;
     }
 
