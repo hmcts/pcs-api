@@ -64,7 +64,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Set aside @regression @smoke @PR', async () => {
+  test('Select an Application - Ask to Set aside @regression @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
