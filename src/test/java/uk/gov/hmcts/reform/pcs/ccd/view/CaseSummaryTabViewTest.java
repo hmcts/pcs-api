@@ -318,6 +318,22 @@ public class CaseSummaryTabViewTest {
     }
 
     @Test
+    void shouldNotSetNoticeDetailsWhenNoticeServiceMethodIsMissing() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .noticeServedDetails(NoticeServedDetails.builder()
+                                     .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
+                                     .build())
+            .build();
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getNoticeDetails()).isNull();
+    }
+
+    @Test
     void shouldSetUnknownDefendantNameWhenNameNotKnownButAddressKnown() {
         // Given
         AddressUK address = AddressUK.builder().postCode("SW1A 1AA").build();

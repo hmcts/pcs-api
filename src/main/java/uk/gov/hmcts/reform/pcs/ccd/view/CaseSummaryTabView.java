@@ -486,7 +486,7 @@ public class CaseSummaryTabView {
 
         NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getNoticeServiceMethod();
         if (noticeServiceMethod == null) {
-            return getAnyNoticeServedDate(noticeServedDetails);
+            return null;
         }
 
         return switch (noticeServiceMethod) {
@@ -497,24 +497,6 @@ public class CaseSummaryTabView {
             case OTHER_ELECTRONIC -> formatSummaryDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime());
             case OTHER -> formatSummaryDateTime(noticeServedDetails.getNoticeOtherDateTime());
         };
-    }
-
-    private String getAnyNoticeServedDate(NoticeServedDetails noticeServedDetails) {
-        if (noticeServedDetails.getNoticePostedDate() != null) {
-            return formatSummaryDate(noticeServedDetails.getNoticePostedDate());
-        } else if (noticeServedDetails.getNoticeDeliveredDate() != null) {
-            return formatSummaryDate(noticeServedDetails.getNoticeDeliveredDate());
-        } else if (noticeServedDetails.getNoticeHandedOverDateTime() != null) {
-            return formatSummaryDateTime(noticeServedDetails.getNoticeHandedOverDateTime());
-        } else if (noticeServedDetails.getNoticeEmailSentDateTime() != null) {
-            return formatSummaryDateTime(noticeServedDetails.getNoticeEmailSentDateTime());
-        } else if (noticeServedDetails.getNoticeOtherElectronicDateTime() != null) {
-            return formatSummaryDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime());
-        } else if (noticeServedDetails.getNoticeOtherDateTime() != null) {
-            return formatSummaryDateTime(noticeServedDetails.getNoticeOtherDateTime());
-        }
-
-        return null;
     }
 
     private String formatSummaryDate(LocalDate date) {
