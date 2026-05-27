@@ -411,7 +411,7 @@ class TestingSupportControllerTest {
     void shouldUpdateCounterClaimStatus() {
         // Given
         UUID counterClaimId = UUID.randomUUID();
-        CounterClaimStatus status = CounterClaimStatus.CASE_ISSUED;
+        CounterClaimStatus status = CounterClaimStatus.COUNTER_CLAIM_ISSUED;
         String serviceAuth = "Bearer s2sToken";
 
         // When

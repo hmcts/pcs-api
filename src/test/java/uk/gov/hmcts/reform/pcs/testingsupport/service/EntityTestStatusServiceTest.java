@@ -37,8 +37,8 @@ class EntityTestStatusServiceTest {
         UUID counterClaimId = UUID.randomUUID();
         CounterClaimEntity counterClaim = new CounterClaimEntity();
         counterClaim.setId(counterClaimId);
-        counterClaim.setStatus(CounterClaimStatus.PENDING_CASE_ISSUED);
-        CounterClaimStatus newStatus = CounterClaimStatus.CASE_ISSUED;
+        counterClaim.setStatus(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
+        CounterClaimStatus newStatus = CounterClaimStatus.COUNTER_CLAIM_ISSUED;
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
 
@@ -54,7 +54,7 @@ class EntityTestStatusServiceTest {
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class,
-                     () -> underTest.updateCounterClaimStatus(counterClaimId, CounterClaimStatus.CASE_ISSUED));
+                     () -> underTest.updateCounterClaimStatus(counterClaimId, CounterClaimStatus.COUNTER_CLAIM_ISSUED));
     }
 
     @Test
