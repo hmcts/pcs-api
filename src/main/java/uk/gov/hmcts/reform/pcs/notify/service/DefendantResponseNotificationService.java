@@ -18,22 +18,42 @@ public class DefendantResponseNotificationService {
     private final NotificationService notificationService;
     private final DefendantResponseRepository defendantResponseRepository;
 
-    public void sendEmailNotification(UUID defendantResponseId) {
+    public void sendEmailNotificationForNoCounterClaim(UUID defendantResponseId) {
+        DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
+            .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
+
+        CounterClaimEntity counterClaim = getAssociatedCounterClaim(defendantResponse);
+        if (counterClaim != null) {
+            log.info("Defendant response {} has a counterclaim, skipping no counter claim email",
+                     defendantResponse.getId());
+            return;
+        }
+        notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
+    }
+
+    public void sendEmailNotificationForCounterclaim(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 
         CounterClaimEntity counterClaim = getAssociatedCounterClaim(defendantResponse);
         if (counterClaim == null) {
-            log.info("Sending no counter claim email for defendant response {}",
+            log.info("Defendant response {} has no counterclaim. Not sending email notification",
                      defendantResponse.getId());
-            notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
             return;
         }
 
-        boolean hasHwfReference = counterClaim.getNeedHelpWithFees() != null
-            && counterClaim.getNeedHelpWithFees().toBoolean()
+        boolean isHwfRequested = counterClaim.getNeedHelpWithFees() != null
+            && counterClaim.getNeedHelpWithFees().toBoolean();
+
+        boolean hasHwfReference = isHwfRequested
             && counterClaim.getHwfReferenceNumber() != null
             && !counterClaim.getHwfReferenceNumber().isBlank();
+
+        if (isHwfRequested && !hasHwfReference) {
+            log.info("Not sending email as HWF is requested but reference is blank for defendant response {}",
+                     defendantResponse.getId());
+            return;
+        }
 
         if (!hasHwfReference) {
             log.info("Sending counterclaim payment required email for defendant response {}",

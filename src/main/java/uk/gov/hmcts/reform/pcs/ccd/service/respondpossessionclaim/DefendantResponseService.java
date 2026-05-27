@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
@@ -98,7 +99,7 @@ public class DefendantResponseService {
      * @throws IllegalStateException if user ID is null, response already exists,
      *         party not found, or claim not found
      */
-    public DefendantResponseEntity saveDefendantResponse(
+    public void saveDefendantResponse(
         long caseReference,
         PossessionClaimResponse possessionClaimResponse
     ) {
@@ -149,7 +150,6 @@ public class DefendantResponseService {
         }
 
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
-        return savedResponse;
     }
 
     private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
@@ -230,14 +230,28 @@ public class DefendantResponseService {
                                          ? cc.getEstimatedMaxClaimAmount() : null)
             .counterClaimFor(cc.getCounterClaimFor())
             .counterClaimReasons(cc.getCounterClaimReasons())
-            .otherOrderRequestDetails(cc.getOtherOrderRequestDetails())
-            .otherOrderRequestFacts(cc.getOtherOrderRequestFacts())
+            .otherOrderRequestDetails(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
+                                          ? cc.getOtherOrderRequestDetails() : null)
+            .otherOrderRequestFacts(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
+                                        ? cc.getOtherOrderRequestFacts() : null)
             .needHelpWithFees(cc.getNeedHelpWithFees())
             .appliedForHwf(cc.getAppliedForHwf())
             .hwfReferenceNumber(cc.getHwfReferenceNumber())
             .claimSubmittedDate(LocalDateTime.now(utcClock))
             .party(partyRef)
             .build();
+
+        if (cc.getCounterClaimAgainst() != null) {
+            counterClaimEntity.getCounterClaimParties().addAll(
+                cc.getCounterClaimAgainst().stream()
+                    .filter(lv -> lv.getId() != null)
+                    .map(lv -> CounterClaimPartyEntity.builder()
+                        .counterClaim(counterClaimEntity)
+                        .party(partyRepository.getReferenceById(UUID.fromString(lv.getId())))
+                        .build())
+                    .toList()
+            );
+        }
 
         claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
     }

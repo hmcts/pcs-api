@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
@@ -29,7 +28,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -69,13 +68,11 @@ class PaymentServiceTest {
     @Mock
     private PaymentRequestMapper paymentRequestMapper;
     @Mock
-    private IdamService idamService;
+    private IdamTokenProvider systemUpdateUserTokenProvider;
     @Mock
     private FeePaymentRepository feePaymentRepository;
     @Mock
     private PcsCaseService pcsCaseService;
-    @Mock
-    private PaymentNotificationService paymentNotificationService;
 
     @InjectMocks
     private PaymentService underTest;
@@ -135,7 +132,6 @@ class PaymentServiceTest {
             .paymentStatus(PaymentStatus.PAID)
             .requestReference(requestReference)
             .externalReference(paymentReference)
-            .claim(new ClaimEntity())
             .build();
         when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.of(feePaymentEntity));
 
@@ -256,35 +252,13 @@ class PaymentServiceTest {
         assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
     }
 
-    @Test
-    void shouldSendCounterClaimPaymentSuccessNotification() {
-        UUID feePaymentId = UUID.randomUUID();
-        FeePaymentEntity feePayment = FeePaymentEntity.builder()
-            .id(feePaymentId)
-            .requestReference("SR-123")
-            .paymentStatus(PaymentStatus.PAID)
-            .build();
-
-        when(feePaymentRepository.findByRequestReference("SR-123")).thenReturn(Optional.of(feePayment));
-
-        PaymentStatusCallback update = PaymentStatusCallback.builder()
-            .serviceRequestReference("SR-123")
-            .serviceRequestStatus(PaymentStatus.PAID.getValue())
-            .payment(Payment.builder().paymentReference("PAY-1").build())
-            .build();
-
-        underTest.processPaymentResponse(update);
-
-        verify(paymentNotificationService).sendCounterClaimPaymentSuccessNotification(feePaymentId);
-    }
-
     private void paymentsClientDependencies(FeeDetails feeDetails) {
         FeeDto mappedFee = createFeeDto();
         CasePaymentRequestDto casePaymentRequestDto = createCasePaymentRequestDto();
         when(paymentRequestMapper.toFeeDto(feeDetails, VOLUME)).thenReturn(mappedFee);
         when(paymentRequestMapper.toCasePaymentRequest(RESPONSIBLE_PARTY))
             .thenReturn(casePaymentRequestDto);
-        when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_TOKEN);
+        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_TOKEN);
     }
 
     private PcsCaseEntity setupPcsCase(ClaimPartyEntity claimPartyEntity) {

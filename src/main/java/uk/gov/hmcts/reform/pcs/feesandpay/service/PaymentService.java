@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
@@ -16,35 +16,46 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PaymentService {
 
     private static final String PARTY_NOT_FOUND = "Matching PartyEntity not found";
 
     private final PaymentsClient paymentsClient;
     private final PaymentRequestMapper paymentRequestMapper;
-    private final IdamService idamService;
+    private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final FeePaymentRepository feePaymentRepository;
     private final PcsCaseService pcsCaseService;
-    private final PaymentNotificationService paymentNotificationService;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
 
     @Value("${payments.params.hmctsOrgId}")
     private String hmctsOrgId;
+
+    public PaymentService(
+        PaymentsClient paymentsClient,
+        PaymentRequestMapper paymentRequestMapper,
+        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
+        FeePaymentRepository feePaymentRepository,
+        PcsCaseService pcsCaseService
+    ) {
+        this.paymentsClient = paymentsClient;
+        this.paymentRequestMapper = paymentRequestMapper;
+        this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
+        this.feePaymentRepository = feePaymentRepository;
+        this.pcsCaseService = pcsCaseService;
+    }
 
     /**
      * Creates a service request in the Payments API for the given case and fee details.
@@ -85,7 +96,7 @@ public class PaymentService {
         log.info("Calling ServiceCreateRequest with callback url: {} using hmctsOrgId: {} for caseReference: {}",
                  callbackUrl, hmctsOrgId, caseReference);
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
-            idamService.getSystemUserAuthorisation(), requestDto);
+            systemUpdateUserTokenProvider.getAuthToken(), requestDto);
 
         ClaimEntity claimEntity = retrieveClaimEntity(Long.parseLong(caseReference));
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
@@ -105,10 +116,6 @@ public class PaymentService {
             feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
             feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
             feePaymentRepository.save(feePaymentEntity);
-
-            if (feePaymentEntity.getPaymentStatus() == PaymentStatus.PAID) {
-                paymentNotificationService.sendCounterClaimPaymentSuccessNotification(feePaymentEntity.getId());
-            }
         } else {
             log.error("Unable to find a payment with the service request reference : {}",
                       paymentStatusCallback.getServiceRequestReference());
