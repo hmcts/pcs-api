@@ -1,5 +1,5 @@
 export const haveTheOtherPartiesAgreedToThisApplication = {
-  mainHeader: `Have the other parties agreed to this application?`,
+  mainHeader: `Has the defendant asked the other parties if they agree to this application?`,
   theOtherPartyParagraph: `The ‘other party’ is the other side involved in your case. For example your landlord, housing association, or mortgage lender.`,
   everyOtherPartyParagraph: `Every other party will need to agree to let you make this application, if they don’t agree you may need to pay a higher fee.`,
   ifTheOtherPartiesHeader: `If the other parties do not agree`,
