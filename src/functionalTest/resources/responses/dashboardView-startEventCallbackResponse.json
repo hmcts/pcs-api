@@ -5,34 +5,14 @@
       "notifications": [
         {
           "value": {
-            "templateId": "Defendant.CaseIssued",
-            "templateValues": [
-              {
-                "value": {
-                  "key": "responseEndDate",
-                  "value": "2026-05-15"
-                }
-              },
-              {
-                "value": {
-                  "key": "hearingDateTime",
-                  "value": "2026-06-15T10:30:00Z"
-                }
-              }
-            ]
+            "templateId": "Defendant.NoHearingArranged",
+            "templateValues": []
           }
         },
         {
           "value": {
-            "templateId": "Defendant.ResponseToClaim",
-            "templateValues": [
-              {
-                "value": {
-                  "key": "ctaLabel",
-                  "value": "Start your response."
-                }
-              }
-            ]
+            "templateId": "Defendant.ResponseNotStarted",
+            "templateValues": []
           }
         }
       ],
@@ -81,14 +61,8 @@
               },
               {
                 "value": {
-                  "templateId": "ReviewResponse",
-                  "status": "IN_PROGRESS"
-                }
-              },
-              {
-                "value": {
-                  "templateId": "SubmitResponse",
-                  "status": "COMPLETED"
+                  "templateId": "ViewResponse",
+                  "status": "NOT_AVAILABLE"
                 }
               }
             ]
