@@ -957,7 +957,7 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementType())
             .isEqualTo("Other");
-        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getStartDate())
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementStartDate())
             .isEqualTo("16 April 2024");
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocumentsPlaceholder()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isNull();
@@ -1024,7 +1024,7 @@ public class CaseDetailsTabViewTest {
 
         // Then
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementType()).isEqualTo(noAnswer);
-        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getStartDate()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementStartDate()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocumentsPlaceholder()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isNull();
 

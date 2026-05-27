@@ -38,7 +38,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantRegistrationAndLi
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DefendantCircumstanceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DemotionOfTenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.OccupationContractLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ProhibitedConductStandardContractTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.SuspensionOfRightToBuyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
@@ -47,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInforma
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.OccupationContractOrLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
@@ -114,7 +114,7 @@ public class CaseDetailsTabView {
         SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyTabDetails =
             buildSuspensionOfRightToBuyTabDetails(pcsCase);
         String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
-        OccupationContractLicenceTabDetails occupationContractLicenceTabDetails =
+        OccupationContractOrLicenceTabDetails occupationContractLicenceTabDetails =
             buildOccupationContractLicenceTabDetails(pcsCase);
         AntisocialAndConductTabDetails antisocialAndConductTabDetails = buildAntisocialAndConductTabDetails(pcsCase);
         ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractTabDetails =
@@ -590,16 +590,16 @@ public class CaseDetailsTabView {
         return ukDateSubmitted.format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM");
     }
 
-    private OccupationContractLicenceTabDetails buildOccupationContractLicenceTabDetails(PCSCase pcsCase) {
+    private OccupationContractOrLicenceTabDetails buildOccupationContractLicenceTabDetails(PCSCase pcsCase) {
         if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES) {
             return null;
         }
 
         OccupationLicenceDetailsWales occupationLicenceDetailsWales = pcsCase.getOccupationLicenceDetailsWales();
         if (occupationLicenceDetailsWales == null) {
-            return OccupationContractLicenceTabDetails.builder()
+            return OccupationContractOrLicenceTabDetails.builder()
                 .agreementType(NO_ANSWER)
-                .startDate(NO_ANSWER)
+                .agreementStartDate(NO_ANSWER)
                 .documentsPlaceholder(NO_ANSWER)
                 .build();
         }
@@ -608,9 +608,9 @@ public class CaseDetailsTabView {
         LocalDate startDate = occupationLicenceDetailsWales.getLicenceStartDate();
         List<ListValue<Document>> documents = occupationLicenceDetailsWales.getLicenceDocuments();
 
-        return OccupationContractLicenceTabDetails.builder()
+        return OccupationContractOrLicenceTabDetails.builder()
             .agreementType(agreementType != null ? agreementType.getLabel() : NO_ANSWER)
-            .startDate(startDate != null ? startDate.format(DATE_FORMATTER) : NO_ANSWER)
+            .agreementStartDate(startDate != null ? startDate.format(DATE_FORMATTER) : NO_ANSWER)
             .documents(documents)
             .documentsPlaceholder(CollectionUtils.isEmpty(documents) ? NO_ANSWER : null)
             .build();
