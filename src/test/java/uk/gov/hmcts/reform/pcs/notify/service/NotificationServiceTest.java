@@ -492,6 +492,10 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should send claimant defendant response received email")
         void shouldSendClaimantDefendantResponseReceivedEmail() {
+            PartyEntity claimantParty = new PartyEntity();
+            claimantParty.setEmailAddress(TEST_EMAIL);
+            when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
+
             when(partyService.canSendEmailNotification(any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED))
                 .thenReturn(TEMPLATE_ID);

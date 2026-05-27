@@ -117,7 +117,7 @@ public class NotificationService {
             claimantRecipient(claim),
             EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED,
             NotificationClaimType.NO_COUNTER_CLAIM,
-            notificationPersonalisationFactory.forClaimant(claim, claim.getClaimantParty())
+            notificationPersonalisationFactory.forClaimant(claim)
         );
     }
 
