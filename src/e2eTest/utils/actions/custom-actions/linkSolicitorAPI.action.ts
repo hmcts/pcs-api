@@ -34,7 +34,7 @@ export class LinkSolicitorAPIAction implements IAction {
         );
 
         console.log(`\n✅ LINK SOLICITOR TO DEFENDANT:`);
-        console.log(`Successfully Linked case Solicitor: ${user.defendantSolicitor.email} with Defendant with id ${process.env.Defendant_ID}`);
+        console.log(`Successfully Linked Solicitor: ${user.defendantSolicitor.email} with Defendant with id ${process.env.Defendant_ID}`);
         break;
       } catch (error: any) {
         const status = error?.response?.status;

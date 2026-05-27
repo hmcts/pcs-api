@@ -114,6 +114,7 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .thenReturn(Optional.of(expectedPartyNameList));
 
             PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
                 .build();
 
             // When
@@ -142,6 +143,7 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .thenReturn(Optional.of(expectedPartyNameList));
 
             PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
                 .build();
 
             // When
@@ -169,6 +171,7 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .thenReturn(Optional.empty());
 
             PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
                 .build();
 
             // When
@@ -201,6 +204,20 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .applyFeeAmount(eq(caseData), eq(FeeType.GEN_APP_MAX_FEE), feeSetterCaptor.capture());
             feeSetterCaptor.getValue().accept(caseData, formattedMaxFee);
             assertThat(caseData.getXuiGenAppRequest().getMaxFee()).isEqualTo(formattedMaxFee);
+        }
+
+        @Test
+        void shouldSetShowHwfScreensFlagToYes() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
+                .build();
+
+            // When
+            callStartHandler(caseData);
+
+            // Then
+            assertThat(caseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(VerticalYesNo.YES);
         }
     }
 

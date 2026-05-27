@@ -584,8 +584,8 @@ export const submitCaseApiData = {
     completionNextStep: 'SUBMIT_AND_PAY_NOW',
     statementOfTruth: {
       completedBy: 'CLAIMANT',
-      fullNameClaimant: 'fg',
-      positionClaimant: 'fg',
+      fullNameParty: 'fg',
+      positionParty: 'fg',
       agreementClaimant: ['BELIEVE_TRUE'],
     },
   },
