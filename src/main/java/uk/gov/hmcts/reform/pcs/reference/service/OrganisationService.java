@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
+import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -48,6 +50,28 @@ public class OrganisationService {
             log.error("Error retrieving organisation name from rd-professional API. Error: {}",
                 ex.getMessage(), ex);
             // Return null instead of throwing to allow graceful degradation
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves the organisation identifier for the current user.
+     *
+     * @return The organisation identifier, or null if it cannot be resolved
+     */
+    public String getOrganisationIdForCurrentUser() {
+        try {
+            UUID userId = resolveUserId();
+
+            if (userId == null) {
+                return null;
+            }
+
+            return organisationDetailsService.getOrganisationIdentifier(userId.toString());
+
+        } catch (OrganisationDetailsException | SecurityContextException ex) {
+            log.error("Error retrieving organisation ID from rd-professional API. Error: {}",
+                ex.getMessage(), ex);
             return null;
         }
     }

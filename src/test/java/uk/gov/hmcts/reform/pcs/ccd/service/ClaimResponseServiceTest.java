@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseS
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -325,6 +326,85 @@ class ClaimResponseServiceTest {
         // Then
         assertThat(testParty.getFirstName()).isEqualTo("ExistingFirst");
         assertThat(testParty.getLastName()).isEqualTo("ExistingLast");
+    }
+
+    @Test
+    void saveDraftDataForParty_WithPartyId() {
+        // Given
+        PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("07123456789")
+                .emailAddress("defendant@example.com")
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .contactByPost(VerticalYesNo.NO)
+                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(VerticalYesNo.YES)
+                .build()
+        );
+
+        AddressEntity addressEntity = new AddressEntity();
+        UUID partyId = UUID.randomUUID();
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE))
+            .thenReturn(testParty);
+        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
+
+        // When
+        underTest.saveDraftDataForParty(response, TEST_CASE_REFERENCE, partyId);
+
+        // Then
+        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
+        assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+
+        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void saveDraftDataForParty_WithPartyIdAndDateOfBirth() {
+        // Given
+        LocalDate dob = LocalDate.now();
+        PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("07123456789")
+                .emailAddress("defendant@example.com")
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .contactByPost(VerticalYesNo.NO)
+                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(VerticalYesNo.YES)
+                .dateOfBirth(dob)
+                .build()
+        );
+
+        AddressEntity addressEntity = new AddressEntity();
+        UUID partyId = UUID.randomUUID();
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE))
+            .thenReturn(testParty);
+        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
+
+        // When
+        underTest.saveDraftDataForParty(response, TEST_CASE_REFERENCE, partyId);
+
+        // Then
+        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
+        assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+        assertThat(testParty.getDateOfBirth()).isEqualTo(dob);
+
+        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
     }
 
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {

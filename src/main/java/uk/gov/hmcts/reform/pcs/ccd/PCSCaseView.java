@@ -78,6 +78,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final GenAppsView genAppsView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
 
+
     /**
      * Invoked by CCD to load PCS cases by reference.
      * @param request encapsulates the CCD case reference and state

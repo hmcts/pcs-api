@@ -15,10 +15,10 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
 
     @Query("""
         SELECT COUNT(lr) > 0
-        FROM LegalRepresentativeEntity lr
-        JOIN lr.claimPartyLegalRepresentativeList cplr
+        FROM LegalRepresentativeEntityOrganisation lro
+        JOIN lro.claimPartyLegalRepresentativeList cplr
         JOIN cplr.party p
-        WHERE lr.idamId = :idamId
+        WHERE lro.idamId = :idamId
         AND p.id = :partyId
         AND cplr.active = 'YES'
         """)
@@ -33,10 +33,34 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
         WHERE p.id = :partyId
         AND cplr.active = 'YES'
         """)
+    Optional<LegalRepresentativeOrganisationEntity> findByPartyLinkedToLegalRepresentativeAndActive(@Param("partyId") UUID partyId);
+
+    @Query("""
+        SELECT COUNT(lr) > 0
+        FROM LegalRepresentativeEntity lr
+        JOIN lr.claimPartyLegalRepresentativeList cplr
+        JOIN cplr.party p
+        WHERE lr.organisationId = :organisationId
+        AND p.id = :partyId
+        AND cplr.active = 'YES'
+        """)
+    boolean isRepresentativeOrganisationLinkedToPartyAndActive(@Param("organisationId") String organisationId,
+                                                               @Param("partyId") UUID partyId);
+
+    @Query("""
+        SELECT lr
+        FROM LegalRepresentativeOrganisationEntity lr
+        JOIN lr.claimPartyLegalRepresentativeList cplr
+        JOIN cplr.party p
+        JOIN p.pcsCase pcsCase
+        WHERE pcsCase.caseReference = :caseReference
+        AND cplr.active = 'YES'
+        AND lr.organisationId = :organisationId
+        """)
+    Optional<LegalRepresentativeOrganisationEntity> findByOrganisationId(@Param("organisationId") String organisationId,
+                                                             @Param("caseReference") long caseReference);
+
     Optional<LegalRepresentativeOrganisationEntity> findLegalRepresentativeOrganisationForParty(
         @Param("partyId") UUID partyId);
-
-
-    Optional<LegalRepresentativeOrganisationEntity> findByIdamId(UUID idamUserId);
 
 }

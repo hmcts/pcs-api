@@ -8,8 +8,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 
@@ -38,45 +38,21 @@ class LegalRepresentativeServiceTest {
     @Test
     void shouldReturnOptionalEmptyWhenIdamIdIsNotLegalRep() {
         // Given
-        UUID idamId = UUID.randomUUID();
-        when(legalRepresentativeOrganisationRepository.findByIdamId(idamId)).thenReturn(Optional.empty());
+        String orgId = "org";
+        when(legalRepresentativeOrganisationRepository.findByOrganisationId(orgId, CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
-        Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(idamId, CASE_REFERENCE);
+        Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(orgId, CASE_REFERENCE);
 
         // Then
         assertThat(dynamicListOptional).isEmpty();
     }
 
     @Test
-    void shouldReturnDynamicListWithNoItemsWhenNoPartiesRepesentedOnCase() {
-        // Given
-        UUID idamId = UUID.randomUUID();
-
-        PcsCaseEntity otherCaseEntity = PcsCaseEntity.builder().caseReference(9876L).build();
-        PartyEntity otherCasePartyEntity = PartyEntity.builder().pcsCase(otherCaseEntity).build();
-        PartyLegalRepresentativeOrganisationEntity otherCaseClaimPartyEntity = PartyLegalRepresentativeOrganisationEntity.builder()
-            .party(otherCasePartyEntity)
-            .build();
-        LegalRepresentativeOrganisationEntity legalRepEntity = LegalRepresentativeOrganisationEntity.builder()
-            .partyLegalRepresentativeOrganisationList(List.of(otherCaseClaimPartyEntity))
-            .build();
-
-        when(legalRepresentativeOrganisationRepository.findByIdamId(idamId)).thenReturn(Optional.of(legalRepEntity));
-
-        // When
-        Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(idamId, CASE_REFERENCE);
-
-        // Then
-        assertThat(dynamicListOptional)
-            .hasValueSatisfying(dynamicList -> assertThat(dynamicList.getListItems()).isEmpty());
-    }
-
-    @Test
     void shouldReturnDynamicListWithRepresentedPartyNamesForSpecifiedCase() {
         // Given
         UUID partyEntityId = UUID.randomUUID();
-        UUID idamId = UUID.randomUUID();
+        String orgId = "org";
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
         PartyEntity casePartyEntity = PartyEntity.builder()
@@ -85,14 +61,15 @@ class LegalRepresentativeServiceTest {
             .firstName("Richard")
             .lastName("Represented")
             .build();
-        PartyLegalRepresentativeOrganisationEntity caseClaimPartyEntity = PartyLegalRepresentativeOrganisationEntity.builder()
+        PartyLegalRepresentativeOrganisationEntity casePartyLegalRepOrgEntity = PartyLegalRepresentativeOrganisationEntity.builder()
             .party(casePartyEntity)
             .build();
         LegalRepresentativeOrganisationEntity legalRepEntity = LegalRepresentativeOrganisationEntity.builder()
-            .partyLegalRepresentativeOrganisationList(List.of(caseClaimPartyEntity))
+            .partyLegalRepresentativeOrganisationList(List.of(casePartyLegalRepOrgEntity))
             .build();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(idamId)).thenReturn(Optional.of(legalRepEntity));
+        when(legalRepresentativeOrganisationRepository.findByOrganisationId(orgId, CASE_REFERENCE))
+            .thenReturn(Optional.of(legalRepEntity));
 
         // When
         Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(idamId, CASE_REFERENCE);

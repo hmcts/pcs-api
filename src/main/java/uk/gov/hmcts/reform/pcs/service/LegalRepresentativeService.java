@@ -24,20 +24,19 @@ public class LegalRepresentativeService {
     /**
      * Gets a {@link uk.gov.hmcts.ccd.sdk.type.DynamicList} with the entity IDs
      * and party names for parties represented by a legal representative.
-     * @param legalRepIdamId The IDAM ID of the legal representative
+     * @param legalRepOrgId The organisation ID of the legal representative
      * @param caseReference The current case reference
      * @return An {@link Optional} containing a {@link DynamicList} of zero of more
      *     represented parties, or {@link Optional#empty()} if the IDAM ID does not
      *     correspond to a known legal rep in the PCS database
      */
-    public Optional<DynamicList> getRepresentedPartiesDynamicList(UUID legalRepIdamId, long caseReference) {
-        return legalRepresentativeOrganisationRepository.findByIdamId(legalRepIdamId)
+    public Optional<DynamicList> getRepresentedPartiesDynamicList(String legalRepOrgId, long caseReference) {
+        return legalRepresentativeOrganisationRepository.findByOrganisationId(legalRepOrgId, caseReference)
             .map(
-                legalRepresentativeEntity -> {
-                    List<PartyEntity> partyEntities = legalRepresentativeEntity.getPartyLegalRepresentativeOrganisationList()
+                legalRepresentativeOrganisationEntity -> {
+                    List<PartyEntity> partyEntities = legalRepresentativeOrganisationEntity.getPartyLegalRepresentativeOrganisationList()
                         .stream()
                         .map(PartyLegalRepresentativeOrganisationEntity::getParty)
-                        .filter(partyEntity -> partyEntity.getPcsCase().getCaseReference() == caseReference)
                         .toList();
                     return createPartyNamesDynamicList(partyEntities);
                 }

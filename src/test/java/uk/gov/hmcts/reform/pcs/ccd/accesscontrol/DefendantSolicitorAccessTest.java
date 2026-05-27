@@ -1,18 +1,19 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import com.google.common.collect.SetMultimap;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+@ExtendWith(MockitoExtension.class)
 class DefendantSolicitorAccessTest {
 
     @Test
-    void getGrants_ReturnsGrantMap() {
+    void getGrants_ReturnsMultiMap() {
         // given
         DefendantSolicitorAccess defendantSolicitorAccess = new DefendantSolicitorAccess();
 
@@ -20,8 +21,7 @@ class DefendantSolicitorAccessTest {
         SetMultimap<HasRole, Permission> grants = defendantSolicitorAccess.getGrants();
 
         // then
-        Set<Permission> permissions = grants.get(UserRole.DEFENDANT_SOLICITOR);
-        assertThat(permissions).isEqualTo(Permission.CRUD);
+        assertThat(grants.get(UserRole.DEFENDANT_SOLICITOR)).isEqualTo(Permission.CRUD);
     }
 
 }
