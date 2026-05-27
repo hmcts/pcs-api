@@ -150,7 +150,7 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
         assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Licence details");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("16/04/2024");
-        assertThat(summaryTab.getNoticeDetails().getNoticeServedDate()).isEqualTo("11/05/2026, 5:02PM");
+        assertThat(summaryTab.getNoticeDetails().getNoticeServedDate()).isEqualTo("11/05/2026, 5:02:00PM");
     }
 
     @Test
@@ -867,28 +867,28 @@ public class CaseSummaryTabViewTest {
                     .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
                     .noticeHandedOverDateTime(LocalDateTime.of(2026, 5, 13, 9, 30))
                     .build(),
-                "13/05/2026, 9:30AM"
+                "13/05/2026, 9:30:00AM"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 14, 17, 2))
                     .build(),
-                "14/05/2026, 5:02PM"
+                "14/05/2026, 5:02:00PM"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
                     .noticeOtherElectronicDateTime(LocalDateTime.of(2026, 5, 15, 10, 15))
                     .build(),
-                "15/05/2026, 10:15AM"
+                "15/05/2026, 10:15:00AM"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.OTHER)
                     .noticeOtherDateTime(LocalDateTime.of(2026, 5, 16, 18, 45))
                     .build(),
-                "16/05/2026, 6:45PM"
+                "16/05/2026, 6:45:00PM"
             )
         );
     }
