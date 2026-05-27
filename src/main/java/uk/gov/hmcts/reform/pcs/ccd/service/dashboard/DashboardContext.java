@@ -10,7 +10,9 @@ import java.util.UUID;
 public record DashboardContext(
     long caseReference,
     PcsCaseEntity caseEntity,
-    PartyEntity defendant
+    PartyEntity defendant,
+    boolean hasDraftResponse,
+    boolean hasSubmittedResponse
 ) {
 
     // TODO: Use filtered genApps from PCSCase when available; remove this duplicate visibility rule.

@@ -1,4 +1,15 @@
-import { areThereAnyReasonsThatThisApplicationShouldNotBeShared, checkYourAnswersGenApps, chooseAnApplication, doYouWantToUploadDocumentToSupportYourApplication, haveTheOtherPartiesAgreedToThisApplication, haveYouAlreadyAppliedForHelpWithFees, helpPayingTheFee, isTheCourtHearingInTheNext14Days, whatOrderDoYouWantTheCourtToMakeAndWhy, whichLanguageDidYouUseToCompleteThisService } from '@data/page-data-figma/page-data-genApps-figma';
+import {
+  areThereAnyReasonsThatThisApplicationShouldNotBeShared,
+  checkYourAnswersGenApps,
+  chooseAnApplication,
+  doYouWantToUploadDocumentToSupportYourApplication,
+  haveTheOtherPartiesAgreedToThisApplication,
+  haveTheyAlreadyAppliedForHelpWithFees,
+  helpPayingTheFee,
+  isTheCourtHearingInTheNext14Days,
+  whatOrderDoYouWantTheCourtToMakeAndWhy,
+  whichLanguageDidYouUseToCompleteThisService
+} from '@data/page-data-figma/page-data-genApps-figma';
 import { Page, expect, test } from '@playwright/test';
 import { compareMaps } from '@utils/common/compareMaps.util';
 import { performAction, performValidation } from '@utils/controller-genApps';
@@ -73,8 +84,8 @@ export class GenAppsAction implements IAction {
           originalDefendantDetails.push(
             `null null`
           );
-        };
-      };
+        }
+      }
     }
     defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
     ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
@@ -111,6 +122,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async doYouNeedHelpPayingFee(feeHelp: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', feeHelp);
     await performAction('clickRadioButton', {
       question: feeHelp.question,
@@ -120,6 +133,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async confirmYouHaveAppliedForFeeHelp(confirmFeeHelp: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', confirmFeeHelp);
     await performAction('clickRadioButton', {
       question: confirmFeeHelp.question,
@@ -136,7 +151,7 @@ export class GenAppsAction implements IAction {
     } else {
       FieldsStore.delete('What is your Help with Fees reference number?');
     }
-    await performAction('clickButton', haveYouAlreadyAppliedForHelpWithFees.continueButton);
+    await performAction('clickButton', haveTheyAlreadyAppliedForHelpWithFees.continueButton);
   }
 
   private async confirmOtherPartiesAgreed(confirmOtherParty: actionRecord) {
@@ -380,13 +395,13 @@ export class GenAppsAction implements IAction {
           await performValidation('mainHeader', helpPayingTheFee.mainHeader);
           await performAction('doYouNeedHelpPayingFee', {
             question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-            option: helpPayingTheFee.iDoNotNeedHelpPayingTheFeeRadioOption,
+            option: helpPayingTheFee.noRadioOption,
           });
         } else {
           await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
           FieldsStore.deleteKeys([
             helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-            haveYouAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
+            haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
             'What is your Help with Fees reference number?',
           ]);
         }
@@ -397,24 +412,24 @@ export class GenAppsAction implements IAction {
         const feeOption1 =
           FieldsStore.get(helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion as string) ===
             'I need help paying the fee'
-            ? helpPayingTheFee.iDoNotNeedHelpPayingTheFeeRadioOption
-            : helpPayingTheFee.iNeedHelpPayingTheFeeRadioOption;
+            ? helpPayingTheFee.noRadioOption
+            : helpPayingTheFee.yesRadioOption;
         await performAction('doYouNeedHelpPayingFee', {
           question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
           option: feeOption1,
         });
         if (feeOption1 !== 'I need help paying the fee') {
           FieldsStore.deleteKeys([
-            haveYouAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
+            haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
             'What is your Help with Fees reference number?',
           ]);
         } else {
-          await performValidation('mainHeader', haveYouAlreadyAppliedForHelpWithFees.mainHeader);
+          await performValidation('mainHeader', haveTheyAlreadyAppliedForHelpWithFees.mainHeader);
           await performAction('confirmYouHaveAppliedForFeeHelp', {
-            question: haveYouAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
-            option: haveYouAlreadyAppliedForHelpWithFees.yesRadioOption,
-            label: haveYouAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
-            input: haveYouAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
+            question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
+            option: haveTheyAlreadyAppliedForHelpWithFees.yesRadioOption,
+            label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
+            input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
           });
         }
         await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
@@ -432,10 +447,10 @@ export class GenAppsAction implements IAction {
       case 'haveYouAlreadyAppliedForHelpWithYourApplicationFee': {
         FieldsStore.delete('What is your Help with Fees reference number?');
         await performAction('confirmYouHaveAppliedForFeeHelp', {
-          question: haveYouAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
-          option: haveYouAlreadyAppliedForHelpWithFees.yesRadioOption,
-          label: haveYouAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
-          input: haveYouAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
+          question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
+          option: haveTheyAlreadyAppliedForHelpWithFees.yesRadioOption,
+          label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
+          input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
         });
         await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
         break;
