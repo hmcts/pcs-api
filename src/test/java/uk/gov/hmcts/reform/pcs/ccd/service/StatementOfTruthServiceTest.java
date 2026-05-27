@@ -7,7 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -62,8 +62,8 @@ class StatementOfTruthServiceTest {
         when(statementOfTruthDetails.getCompletedBy()).thenReturn(CLAIMANT);
         when(statementOfTruthDetails.getAgreementClaimant())
             .thenReturn(List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
-        when(statementOfTruthDetails.getFullNameClaimant()).thenReturn("John Smith");
-        when(statementOfTruthDetails.getPositionClaimant()).thenReturn("Director");
+        when(statementOfTruthDetails.getFullNameParty()).thenReturn("John Smith");
+        when(statementOfTruthDetails.getPositionParty()).thenReturn("Director");
 
         // When
         StatementOfTruthEntity result = statementOfTruthService.createStatementOfTruthEntity(pcsCase);
@@ -83,8 +83,8 @@ class StatementOfTruthServiceTest {
         when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
         when(statementOfTruthDetails.getCompletedBy())
             .thenReturn(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
-        when(statementOfTruthDetails.getAgreementLegalRep())
-            .thenReturn(List.of(StatementOfTruthAgreementLegalRep.AGREED));
+        when(statementOfTruthDetails.getAgreementClaimantLegalRep())
+            .thenReturn(List.of(AgreementClaimantLegalRep.AGREED));
         when(statementOfTruthDetails.getFullNameLegalRep()).thenReturn("Jane Doe");
         when(statementOfTruthDetails.getFirmNameLegalRep()).thenReturn("Smith & Co Solicitors");
         when(statementOfTruthDetails.getPositionLegalRep()).thenReturn("Partner");
@@ -120,7 +120,7 @@ class StatementOfTruthServiceTest {
         // Given
         when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
         when(statementOfTruthDetails.getCompletedBy()).thenReturn(LEGAL_REPRESENTATIVE);
-        when(statementOfTruthDetails.getAgreementLegalRep()).thenReturn(List.of());
+        when(statementOfTruthDetails.getAgreementClaimantLegalRep()).thenReturn(List.of());
 
         // When
         StatementOfTruthEntity result = statementOfTruthService.createStatementOfTruthEntity(pcsCase);

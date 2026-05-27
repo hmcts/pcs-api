@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
@@ -76,6 +77,20 @@ public class DraftCaseDataService {
             caseReference, eventId, userId, exists);
 
         return exists;
+    }
+
+    /**
+    * For dashboard display only. A respond draft may exist after START with only
+    * claimant-populated contact details; that is not treated as "in progress".
+    */
+    public boolean hasMeaningfulRespondDraft(long caseReference, EventId eventId) {
+        if (!hasUnsubmittedCaseData(caseReference, eventId)) {
+            return false;
+        }
+        return getUnsubmittedCaseData(caseReference, eventId)
+            .map(PCSCase::getPossessionClaimResponse)
+            .map(PossessionClaimResponse::getDefendantResponses)
+            .isPresent();
     }
 
     @Transactional
