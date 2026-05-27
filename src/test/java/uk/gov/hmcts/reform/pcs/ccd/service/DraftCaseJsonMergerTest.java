@@ -91,6 +91,7 @@ class DraftCaseJsonMergerTest {
                             "allDefendants",
                             "allUnderlesseeOrMortgagees",
                             "possessionClaimResponse",
+                            "xuiGenAppRequest",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
                             "casePartiesTab.claimantDetails.emailAddress",
                             "casePartiesTab.claimantDetails.name",
