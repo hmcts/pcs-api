@@ -85,7 +85,7 @@ public class DashboardJourneyService {
 
         List<ListValue<DashboardNotification>> notifications = computeNotifications(responseStatus);
         List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(ctx);
-        List<ListValue<RelatedApplication>> relatedApplications = computeRelatedApplications(dashboardContext);
+        List<ListValue<RelatedApplication>> relatedApplications = computeRelatedApplications(ctx);
 
         log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for case={}",
                  notifications.size(), taskGroups.size(), caseReference);

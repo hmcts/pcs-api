@@ -161,7 +161,8 @@ class DashboardJourneyServiceTest {
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(5).getTasks())
@@ -190,7 +191,8 @@ class DashboardJourneyServiceTest {
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
@@ -228,7 +230,8 @@ class DashboardJourneyServiceTest {
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
@@ -262,7 +265,8 @@ class DashboardJourneyServiceTest {
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications())).isEmpty();
@@ -296,7 +300,8 @@ class DashboardJourneyServiceTest {
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
@@ -306,9 +311,12 @@ class DashboardJourneyServiceTest {
 
     @Test
     void shouldOnlyExposeDeclaredPlaceholdersForResponseToClaimNotification() {
-        PCSCase submitted = PCSCase.builder().build();
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(true);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(false);
 
-        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, PCSCase.builder().build());
+        PCSCase submitted = PCSCase.builder().build();
+        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted);
 
         assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
             .extracting(n -> n.getTemplateId())
