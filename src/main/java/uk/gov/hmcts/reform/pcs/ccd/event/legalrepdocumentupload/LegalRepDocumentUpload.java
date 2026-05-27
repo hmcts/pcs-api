@@ -11,8 +11,11 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -30,6 +33,7 @@ import java.util.Objects;
 
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.util.DocumentTypeMapper;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 
@@ -39,6 +43,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
     private final PcsCaseService pcsCaseService;
+    private DocumentType documentType;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -133,15 +138,18 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         PCSCase pcsCase = eventPayload.caseData();
         LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = pcsCase.getLegalRepDocumentUploadDetails();
         if (legalRepDocumentUploadDetails != null) {
-            List<Document> legalRepDocuments = legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
-                .map(c -> c.getValue().getDocument()).toList();
+            List<LegalRepDocument> legalRepDocuments = legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
+                .map(c -> c.getValue()).toList();
 
             List<DocumentEntity> documentEntities = legalRepDocuments.stream()
                 .map(legalRepDoc -> DocumentEntity.builder()
                     .pcsCase(pcsCaseEntity)
-                    .url(legalRepDoc.getUrl())
-                    .fileName(legalRepDoc.getFilename())
-                    .binaryUrl(legalRepDoc.getBinaryUrl())
+                    .url(legalRepDoc.getDocument().getUrl())
+                    .fileName(legalRepDoc.getDocument().getFilename())
+                    .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
+                    .categoryId(legalRepDoc.getDocument().getCategoryId())
+                    .description(legalRepDoc.getDescription())
+                    .type(mapEvidenceTypeToDocumentType(legalRepDoc.getDocumentType()))
                     .build())
                 .toList();
 
@@ -149,4 +157,15 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         }
         return SubmitResponse.defaultResponse();
     }
+
+    private DocumentType mapEvidenceTypeToDocumentType(EvidenceDocumentType evidenceDocumentType) {
+        return switch (evidenceDocumentType) {
+            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
+            case POLICE_REPORT -> DocumentType.POLICE_REPORT;
+            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
+            case OTHER -> DocumentType.OTHER;
+            default -> null;
+        };
+    }
 }
+
