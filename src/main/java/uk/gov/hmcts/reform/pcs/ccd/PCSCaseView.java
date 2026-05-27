@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -75,6 +76,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseTabView caseTabView;
     private final PartiesView partiesView;
     private final GenAppsView genAppsView;
+    private final CaseFlagsView flagsView;
+
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -133,6 +136,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         caseTabView.setCaseTabFields(pcsCase);
+        flagsView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
