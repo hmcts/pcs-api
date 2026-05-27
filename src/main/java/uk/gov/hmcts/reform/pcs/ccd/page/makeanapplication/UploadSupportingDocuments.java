@@ -25,7 +25,7 @@ public class UploadSupportingDocuments implements CcdPageConfiguration {
         </p>
         <p class="govuk-body">
          Each document must be less than 100MB. You can upload the following file types: DOC/DOCX (Word),
-         XLS/XLSM (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP, TIF/TIFF.
+         XLS/XLSX (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP, TIF/TIFF.
         </p>
         <h2 class="govuk-heading-m">Upload a file</h2>
         """;
