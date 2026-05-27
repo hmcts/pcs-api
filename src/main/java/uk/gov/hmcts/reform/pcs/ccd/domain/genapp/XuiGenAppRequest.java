@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 
 import java.util.List;
 
@@ -86,6 +87,8 @@ public class XuiGenAppRequest implements GenAppRequest {
 
     @CCD(max = 100)
     private String sotFullName;
+
+    private StatementOfTruthDetails statementOfTruth;
 
     @CCD(searchable = false)
     private String standardFee;

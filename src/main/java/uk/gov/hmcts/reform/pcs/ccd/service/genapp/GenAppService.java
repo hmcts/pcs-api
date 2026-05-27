@@ -56,18 +56,21 @@ public class GenAppService {
             .clientReference(genAppRequest.getClientReference())
             .within14Days(genAppRequest.getWithin14Days())
             .needHwf(genAppRequest.getNeedHwf())
-            .appliedForHwf(genAppRequest.getAppliedForHwf())
             .build();
 
         // Adding the Gen App to the PcsCaseEntity allocates it a rank,
         // which we rely on later on in this method to rename the supporting documents
         pcsCaseEntity.addGenApp(genAppEntity);
 
-        if (genAppRequest.getAppliedForHwf() == VerticalYesNo.YES
+        if (genAppRequest.getNeedHwf() == VerticalYesNo.YES) {
+            genAppEntity.setAppliedForHwf(genAppRequest.getAppliedForHwf());
+
+            if (genAppRequest.getAppliedForHwf() == VerticalYesNo.YES
                 && genAppRequest.getHwfReference() != null) {
-            HelpWithFeesEntity helpWithFeesEntity = new HelpWithFeesEntity();
-            helpWithFeesEntity.setHwfReference(genAppRequest.getHwfReference());
-            genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
+                    HelpWithFeesEntity helpWithFeesEntity = new HelpWithFeesEntity();
+                    helpWithFeesEntity.setHwfReference(genAppRequest.getHwfReference());
+                    genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
+            }
         }
 
         genAppEntity.setOtherPartiesAgreed(genAppRequest.getOtherPartiesAgreed());

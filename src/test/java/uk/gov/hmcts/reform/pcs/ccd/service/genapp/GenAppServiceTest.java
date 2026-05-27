@@ -209,6 +209,27 @@ class GenAppServiceTest {
     }
 
     @Test
+    void shouldNotSetHwfReferenceIfNeedHwfIsNo() {
+        // Given
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .needHwf(VerticalYesNo.NO)
+            .appliedForHwf(VerticalYesNo.YES)
+            .hwfReference("hwf-1234")
+            .build();
+
+        // When
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+
+        // Then
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
+
+        assertThat(genAppEntity.getNeedHwf()).isEqualTo(VerticalYesNo.NO);
+        assertThat(genAppEntity.getAppliedForHwf()).isNull();
+        assertThat(genAppEntity.getHelpWithFeesEntity()).isNull();
+    }
+
+    @Test
     void shouldNotSetHwfReferenceIfAppliedForIsNo() {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
