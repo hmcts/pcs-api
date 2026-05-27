@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -46,6 +48,8 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 public class CaseSummaryTabView {
 
     private static final DateTimeFormatter SUMMARY_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter SUMMARY_DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern("dd/MM/yyyy, h:mm:ssa", Locale.UK);
     private static final DateTimeFormatter SUBMITTED_DATE_FORMATTER =
         DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm:ssa", Locale.UK);
     private static final Pattern GROUND_REFERENCE_PATTERN =
@@ -464,14 +468,65 @@ public class CaseSummaryTabView {
 
     private NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase) {
         NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
+        String noticeServedDate = getNoticeServedDate(noticeServedDetails);
 
-        if (noticeServedDetails == null || noticeServedDetails.getNoticeEmailSentDateTime() == null) {
+        if (noticeServedDate == null) {
             return null;
         }
 
         return NoticeTabDetails.builder()
-            .noticeServedDate(noticeServedDetails.getNoticeEmailSentDateTime().format(SUMMARY_DATE_FORMATTER))
+            .noticeServedDate(noticeServedDate)
             .build();
+    }
+
+    private String getNoticeServedDate(NoticeServedDetails noticeServedDetails) {
+        if (noticeServedDetails == null) {
+            return null;
+        }
+
+        NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getNoticeServiceMethod();
+        if (noticeServiceMethod == null) {
+            return getAnyNoticeServedDate(noticeServedDetails);
+        }
+
+        return switch (noticeServiceMethod) {
+            case FIRST_CLASS_POST -> formatSummaryDate(noticeServedDetails.getNoticePostedDate());
+            case DELIVERED_PERMITTED_PLACE -> formatSummaryDate(noticeServedDetails.getNoticeDeliveredDate());
+            case PERSONALLY_HANDED -> formatSummaryDateTime(noticeServedDetails.getNoticeHandedOverDateTime());
+            case EMAIL -> formatSummaryDateTime(noticeServedDetails.getNoticeEmailSentDateTime());
+            case OTHER_ELECTRONIC -> formatSummaryDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime());
+            case OTHER -> formatSummaryDateTime(noticeServedDetails.getNoticeOtherDateTime());
+        };
+    }
+
+    private String getAnyNoticeServedDate(NoticeServedDetails noticeServedDetails) {
+        if (noticeServedDetails.getNoticePostedDate() != null) {
+            return formatSummaryDate(noticeServedDetails.getNoticePostedDate());
+        } else if (noticeServedDetails.getNoticeDeliveredDate() != null) {
+            return formatSummaryDate(noticeServedDetails.getNoticeDeliveredDate());
+        } else if (noticeServedDetails.getNoticeHandedOverDateTime() != null) {
+            return formatSummaryDateTime(noticeServedDetails.getNoticeHandedOverDateTime());
+        } else if (noticeServedDetails.getNoticeEmailSentDateTime() != null) {
+            return formatSummaryDateTime(noticeServedDetails.getNoticeEmailSentDateTime());
+        } else if (noticeServedDetails.getNoticeOtherElectronicDateTime() != null) {
+            return formatSummaryDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime());
+        } else if (noticeServedDetails.getNoticeOtherDateTime() != null) {
+            return formatSummaryDateTime(noticeServedDetails.getNoticeOtherDateTime());
+        }
+
+        return null;
+    }
+
+    private String formatSummaryDate(LocalDate date) {
+        return date == null ? null : date.format(SUMMARY_DATE_FORMATTER);
+    }
+
+    private String formatSummaryDateTime(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
+
+        return dateTime.format(SUMMARY_DATE_TIME_FORMATTER).replace("am", "AM").replace("pm", "PM");
     }
 
     private String getRentCalculationFrequency(RentDetails rentDetails) {
