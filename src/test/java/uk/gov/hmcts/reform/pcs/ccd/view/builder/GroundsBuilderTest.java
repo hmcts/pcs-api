@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -144,6 +145,19 @@ public class GroundsBuilderTest {
             "Estate management grounds (section 160): "
                 + "Redevelopment schemes (ground B), Other estate management reasons (ground I)"
         );
+    }
+
+    @Test
+    void shouldReturnZeroWhenEstateManagementGroundLabelIsUnknown() throws Exception {
+        // Given
+        Method method = GroundsBuilder.class.getDeclaredMethod("getEstateManagementGroundNumber", String.class);
+        method.setAccessible(true);
+
+        // When
+        int groundNumber = (int) method.invoke(groundsBuilder, "Unknown ground");
+
+        // Then
+        assertThat(groundNumber).isZero();
     }
 
     @Test

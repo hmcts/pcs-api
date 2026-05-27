@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary;
+package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.NoticeTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.OccupationContractOrLicenceTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.OccupationContractOrLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.TenancyTabDetails;
