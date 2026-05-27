@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
@@ -127,12 +128,17 @@ class ClaimGroundSummaryBuilderTest {
                                                         ))
                                                         .discretionaryGrounds(Set.of(
                                                             SecureContractDiscretionaryGroundsWales
-                                                                .ANTISOCIAL_BEHAVIOUR_S157
+                                                                .OTHER_BREACH_OF_CONTRACT_S157
                                                         ))
                                                         .estateManagementGrounds(Set.of(
                                                             EstateManagementGroundsWales.RESERVE_SUCCESSORS
                                                         ))
                                                         .build())
+            .groundsReasonsWales(GroundsReasonsWales.builder()
+                                      .secureLandlordNoticeSection186Reason("secure section 186 reason")
+                                      .secureOtherBreachOfContractReason("secure other breach reason")
+                                      .secureReserveSuccessorsReason("secure reserve successors reason")
+                                      .build())
             .build();
 
         // When
@@ -280,12 +286,17 @@ class ClaimGroundSummaryBuilderTest {
                                                         ))
                                                         .discretionaryGrounds(Set.of(
                                                             SecureContractDiscretionaryGroundsWales
-                                                                .ANTISOCIAL_BEHAVIOUR_S157
+                                                                .OTHER_BREACH_OF_CONTRACT_S157
                                                         ))
                                                         .estateManagementGrounds(Set.of(
                                                             EstateManagementGroundsWales.RESERVE_SUCCESSORS
                                                         ))
                                                         .build())
+            .groundsReasonsWales(GroundsReasonsWales.builder()
+                                      .secureLandlordNoticeSection186Reason("secure section 186 reason")
+                                      .secureOtherBreachOfContractReason("secure other breach reason")
+                                      .secureReserveSuccessorsReason("secure reserve successors reason")
+                                      .build())
             .build();
 
         // When
@@ -298,9 +309,15 @@ class ClaimGroundSummaryBuilderTest {
             .map(ClaimGroundSummary::getLabel)
             .containsExactlyInAnyOrder(
                 SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186.getLabel(),
-                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157.getLabel(),
+                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
                 EstateManagementGroundsWales.RESERVE_SUCCESSORS.getLabel()
             );
+        assertReason(summaries, SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186.getLabel(),
+                     "secure section 186 reason");
+        assertReason(summaries, SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
+                     "secure other breach reason");
+        assertReason(summaries, EstateManagementGroundsWales.RESERVE_SUCCESSORS.getLabel(),
+                     "secure reserve successors reason");
     }
 
     @Test
@@ -312,11 +329,18 @@ class ClaimGroundSummaryBuilderTest {
                                                .build())
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
                                            .mandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
-                                           .discretionaryGrounds(Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157))
+                                           .discretionaryGrounds(Set.of(
+                                               DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
+                                           ))
                                            .estateManagementGrounds(Set.of(
                                                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
                                            ))
                                            .build())
+            .groundsReasonsWales(GroundsReasonsWales.builder()
+                                      .landlordBreakClauseS199Reason("section 199 reason")
+                                      .otherBreachSection157Reason("other breach reason")
+                                      .redevelopmentSchemesReason("redevelopment schemes reason")
+                                      .build())
             .build();
 
         // When
@@ -329,9 +353,14 @@ class ClaimGroundSummaryBuilderTest {
             .map(ClaimGroundSummary::getLabel)
             .containsExactlyInAnyOrder(
                 MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
-                DiscretionaryGroundWales.RENT_ARREARS_S157.getLabel(),
+                DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel()
             );
+        assertReason(summaries, MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(), "section 199 reason");
+        assertReason(summaries, DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
+                     "other breach reason");
+        assertReason(summaries, EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel(),
+                     "redevelopment schemes reason");
     }
 
     @Test
@@ -343,11 +372,18 @@ class ClaimGroundSummaryBuilderTest {
                                                .build())
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
                                            .mandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
-                                           .discretionaryGrounds(Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157))
+                                           .discretionaryGrounds(Set.of(
+                                               DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
+                                           ))
                                            .estateManagementGrounds(Set.of(
                                                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
                                            ))
                                            .build())
+            .groundsReasonsWales(GroundsReasonsWales.builder()
+                                      .landlordBreakClauseS199Reason("other occupation section 199 reason")
+                                      .otherBreachSection157Reason("other occupation breach reason")
+                                      .redevelopmentSchemesReason("other occupation redevelopment reason")
+                                      .build())
             .build();
 
         // When
@@ -360,9 +396,15 @@ class ClaimGroundSummaryBuilderTest {
             .map(ClaimGroundSummary::getLabel)
             .containsExactlyInAnyOrder(
                 MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
-                DiscretionaryGroundWales.RENT_ARREARS_S157.getLabel(),
+                DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel()
             );
+        assertReason(summaries, MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
+                     "other occupation section 199 reason");
+        assertReason(summaries, DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
+                     "other occupation breach reason");
+        assertReason(summaries, EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel(),
+                     "other occupation redevelopment reason");
     }
 
     @Test
