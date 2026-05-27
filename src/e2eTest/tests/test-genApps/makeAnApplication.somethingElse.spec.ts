@@ -12,7 +12,10 @@ import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { askTheCourtToMakeAnOrder, chooseAnApplication, helpPayingTheFee, selectParty } from "@data/page-data-figma/page-data-genApps-figma";
+import {
+  askTheCourtToMakeAnOrder, chooseAnApplication, haveTheOtherPartiesAgreedToThisApplication,
+  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty
+} from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
 
 test.use({ storageState: undefined });
@@ -76,5 +79,16 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       option: defendantDetails[1],
     });
     await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+    await performAction('doYouNeedHelpPayingFee', {
+      question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+      option: helpPayingTheFee.yesRadioOption,
+    });
+    await performAction('confirmYouHaveAppliedForFeeHelp', {
+      question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
+      option: haveTheyAlreadyAppliedForHelpWithFees.yesRadioOption,
+      label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
+      input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
+    });
+    await performValidation('mainHeader',haveTheOtherPartiesAgreedToThisApplication.mainHeader);
   });
 });
