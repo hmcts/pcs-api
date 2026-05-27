@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -37,7 +37,7 @@ public class GenAppService {
         this.utcClock = utcClock;
     }
 
-    public GenAppEntity createGenAppEntity(CitizenGenAppRequest citizenCreateGenApp,
+    public GenAppEntity createGenAppEntity(GenAppRequest citizenCreateGenApp,
                                            PcsCaseEntity pcsCaseEntity,
                                            PartyEntity applicantParty) {
 

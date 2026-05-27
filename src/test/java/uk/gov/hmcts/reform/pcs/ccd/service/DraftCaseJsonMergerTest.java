@@ -77,6 +77,8 @@ class DraftCaseJsonMergerTest {
                             "rentArrearsGroundsReasons.otherGround",
                             "waysToPay",
                             "caseLinks",
+                            "caseFlags",
+                            "genApps",
                             "claimGroundSummaries",
                             "enforcementOrder.showChangeNameAddressPage",
                             "enforcementOrder.showPeopleWhoWillBeEvictedPage",
@@ -93,15 +95,21 @@ class DraftCaseJsonMergerTest {
                             "enforcementOrder.rawWarrantDetails.selectedDefendants",
                             "enforcementOrder.rawWarrantDetails.vulnerablePeoplePresent",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
-                            "summaryTab",
-                            "caseDetailsTab",
+                            "parties",
+                            "allClaimants",
+                            "allDefendants",
+                            "allUnderlesseeOrMortgagees",
+                            "possessionClaimResponse",
+                            "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
                             "casePartiesTab.claimantDetails.emailAddress",
                             "casePartiesTab.claimantDetails.name",
                             "casePartiesTab.claimantDetails.serviceAddress",
                             "casePartiesTab.claimantDetails.telephoneNumber",
                             "casePartiesTab.defendantOneDetails.firstName",
                             "casePartiesTab.defendantOneDetails.lastName",
-                            "casePartiesTab.defendantOneDetails.serviceAddress")
+                            "casePartiesTab.defendantOneDetails.serviceAddress",
+                            "caseDetailsTab",
+                            "summaryTab")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()
