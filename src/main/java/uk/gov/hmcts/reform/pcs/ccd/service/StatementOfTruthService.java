@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -29,8 +29,8 @@ public class StatementOfTruthService {
                 statementOfTruthEntity.setAccepted(YesOrNo.YES);
             }
 
-            statementOfTruthEntity.setFullName(statementOfTruth.getFullNameClaimant());
-            statementOfTruthEntity.setPositionHeld(statementOfTruth.getPositionClaimant());
+            statementOfTruthEntity.setFullName(statementOfTruth.getFullNameParty());
+            statementOfTruthEntity.setPositionHeld(statementOfTruth.getPositionParty());
 
         } else if (completedBy == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
             if (legalRepAgreed(statementOfTruth)) {
@@ -53,9 +53,9 @@ public class StatementOfTruthService {
     }
 
     private static boolean legalRepAgreed(StatementOfTruthDetails statementOfTruth) {
-        return statementOfTruth.getAgreementLegalRep().stream()
+        return statementOfTruth.getAgreementClaimantLegalRep().stream()
             .findFirst()
-            .map(StatementOfTruthAgreementLegalRep.AGREED::equals)
+            .map(AgreementClaimantLegalRep.AGREED::equals)
             .orElse(false);
     }
 }
