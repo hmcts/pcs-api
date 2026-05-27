@@ -63,9 +63,9 @@ public class ConfirmationScreenFactory {
         GenAppType applicationType = genAppRequest.getApplicationType();
 
         String receivedRequestMessage = switch (applicationType) {
-            case ADJOURN -> "We have received your request to adjourn (delay) the court hearing";
-            case SET_ASIDE -> "We have received your request to set aside (cancel) the order";
-            case SOMETHING_ELSE -> "We have received your request to ask the court to make an order";
+            case ADJOURN -> "We have received your request to adjourn (delay) the court hearing.";
+            case SET_ASIDE -> "We have received your request to set aside (cancel) the order.";
+            case SOMETHING_ELSE -> "We have received your request to ask the court to make an order.";
         };
 
         return """
@@ -85,10 +85,9 @@ public class ConfirmationScreenFactory {
             <h3 class="govuk-heading-s">Give feedback about this service</h3>
             <p class="govuk-body">
             <a href="https://www.smartsurvey.co.uk/s/CCDSurvey/"
-                              rel="noreferrer noopener"
-                              target="_blank" class="govuk-link">
-              Complete this short survey to help us improve this service
-            </a>
+                  rel="noreferrer noopener"
+                  target="_blank"
+                  class="govuk-link">Complete this short survey to help us improve this service</a>
             (usually takes 5 minutes).
             </p>
             """.formatted(receivedRequestMessage);
