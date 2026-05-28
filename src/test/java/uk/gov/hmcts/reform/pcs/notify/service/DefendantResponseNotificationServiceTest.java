@@ -227,6 +227,72 @@ class DefendantResponseNotificationServiceTest {
     }
 
     @Test
+    void shouldNotSendEmailWhenHwfNotRequestedButHwfReferenceIsPresent() {
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        UUID defendantResponseId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+
+        when(defendantResponseRepository.findById(defendantResponseId))
+            .thenReturn(Optional.of(response));
+
+        when(response.getPcsCase()).thenReturn(caseEntity);
+        when(response.getParty()).thenReturn(party);
+
+        when(party.getId()).thenReturn(partyId);
+
+        when(counterClaim.getParty()).thenReturn(party);
+        when(counterClaim.getNeedHelpWithFees()).thenReturn(VerticalYesNo.NO);
+        when(counterClaim.getHwfReferenceNumber()).thenReturn("HWF123");
+
+        when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+        underTest.sendEmailNotificationForCounterclaim(defendantResponseId);
+
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
+
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(response);
+    }
+
+    @Test
+    void shouldSendPaymentRequiredEmailWhenHwfNotRequestedAndNoHwfReference() {
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        UUID defendantResponseId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+
+        when(defendantResponseRepository.findById(defendantResponseId))
+            .thenReturn(Optional.of(response));
+
+        when(response.getPcsCase()).thenReturn(caseEntity);
+        when(response.getParty()).thenReturn(party);
+
+        when(party.getId()).thenReturn(partyId);
+
+        when(counterClaim.getParty()).thenReturn(party);
+        when(counterClaim.getNeedHelpWithFees()).thenReturn(VerticalYesNo.NO);
+        when(counterClaim.getHwfReferenceNumber()).thenReturn(null);
+
+        when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+        underTest.sendEmailNotificationForCounterclaim(defendantResponseId);
+
+        verify(notificationService)
+            .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
+
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(response);
+    }
+
+    @Test
     void shouldIgnoreCounterclaimForDifferentParty() {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);

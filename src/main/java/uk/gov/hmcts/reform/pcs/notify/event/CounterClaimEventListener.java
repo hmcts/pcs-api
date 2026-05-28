@@ -34,8 +34,8 @@ public class CounterClaimEventListener {
             .orElseThrow(() -> new IllegalArgumentException("Counterclaim not found: " + event.getEntityId()));
 
         switch (event.getNewStatus()) {
-            case PENDING_CASE_ISSUED -> handleNotificationForDefendantResponse(entity);
-            case CASE_ISSUED -> handleCaseIssued(entity);
+            case PENDING_COUNTER_CLAIM_ISSUED -> handleNotificationForDefendantResponse(entity);
+            case COUNTER_CLAIM_ISSUED -> handleCounterClaimIssued(entity);
         }
     }
 
@@ -47,7 +47,7 @@ public class CounterClaimEventListener {
             .ifPresent(defendantResponseNotificationService::sendDefendantEmailNotificationForCounterclaim);
     }
 
-    private void handleCaseIssued(CounterClaimEntity entity) {
+    private void handleCounterClaimIssued(CounterClaimEntity entity) {
         PartyEntity defendant = entity.getParty();
         PcsCaseEntity pcsCase = entity.getPcsCase();
 

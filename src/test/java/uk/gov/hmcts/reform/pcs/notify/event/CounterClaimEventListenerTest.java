@@ -58,17 +58,18 @@ class CounterClaimEventListenerTest {
 
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CounterClaimStatus.PENDING_CASE_ISSUED)
+            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
             .party(party)
             .pcsCase(pcsCase)
             .build();
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(entity));
 
-        CounterClaimStatusUpdatedEvent event =
-            new CounterClaimStatusUpdatedEvent(counterClaimId,
-                                               null,
-                                               CounterClaimStatus.PENDING_CASE_ISSUED);
+        CounterClaimStatusUpdatedEvent event = new CounterClaimStatusUpdatedEvent(
+                counterClaimId,
+                null,
+                CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED
+        );
         underTest.handle(event);
 
         verify(defendantResponseNotificationService).sendDefendantEmailNotificationForCounterclaim(defendantResponseId);
@@ -98,7 +99,7 @@ class CounterClaimEventListenerTest {
 
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CounterClaimStatus.CASE_ISSUED)
+            .status(CounterClaimStatus.COUNTER_CLAIM_ISSUED)
             .party(party)
             .pcsCase(pcsCase)
             .build();
@@ -107,8 +108,8 @@ class CounterClaimEventListenerTest {
 
         CounterClaimStatusUpdatedEvent event =
             new CounterClaimStatusUpdatedEvent(counterClaimId,
-                                               CounterClaimStatus.PENDING_CASE_ISSUED,
-                                               CounterClaimStatus.CASE_ISSUED);
+                                               CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED,
+                                               CounterClaimStatus.COUNTER_CLAIM_ISSUED);
         underTest.handle(event);
 
         verify(paymentNotificationService).sendCounterClaimPaymentSuccessNotification(feePaymentId);
@@ -137,7 +138,7 @@ class CounterClaimEventListenerTest {
 
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CounterClaimStatus.CASE_ISSUED)
+            .status(CounterClaimStatus.COUNTER_CLAIM_ISSUED)
             .party(party)
             .pcsCase(pcsCase)
             .build();
@@ -146,8 +147,8 @@ class CounterClaimEventListenerTest {
 
         CounterClaimStatusUpdatedEvent event =
             new CounterClaimStatusUpdatedEvent(counterClaimId,
-                                               CounterClaimStatus.PENDING_CASE_ISSUED,
-                                               CounterClaimStatus.CASE_ISSUED);
+                                               CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED,
+                                               CounterClaimStatus.COUNTER_CLAIM_ISSUED);
         underTest.handle(event);
 
         verify(paymentNotificationService, never()).sendCounterClaimPaymentSuccessNotification(feePaymentId);
@@ -162,7 +163,7 @@ class CounterClaimEventListenerTest {
         CounterClaimStatusUpdatedEvent event =
             new CounterClaimStatusUpdatedEvent(counterClaimId,
                                                null,
-                                               CounterClaimStatus.PENDING_CASE_ISSUED);
+                                               CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
 
         assertThrows(IllegalArgumentException.class, () -> underTest.handle(event));
     }
