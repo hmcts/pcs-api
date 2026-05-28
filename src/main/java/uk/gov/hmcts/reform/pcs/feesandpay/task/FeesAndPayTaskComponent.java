@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
@@ -59,20 +58,9 @@ public class FeesAndPayTaskComponent {
             .execute((taskInstance, executionContext) -> {
                 FeesAndPayTaskData taskData = taskInstance.getData();
                 log.debug("Executing fee service request for fee type: {}", taskData.getFeeType());
-
-                FeeDetails feeDetails = taskData.getFeeDetails();
-
                 try {
-                    paymentService.createServiceRequest(
-                        taskData.getCaseReference(),
-                        taskData.getCcdCaseNumber(),
-                        feeDetails,
-                        taskData.getVolume(),
-                        taskData.getResponsibleParty()
-                    );
-
+                    paymentService.createServiceRequest(taskData);
                     return new CompletionHandler.OnCompleteRemove<>();
-
                 } catch (Exception e) {
                     log.error("Failed to create fee service request for type: {}. Attempt {}/{}",
                                 taskData.getFeeType(),

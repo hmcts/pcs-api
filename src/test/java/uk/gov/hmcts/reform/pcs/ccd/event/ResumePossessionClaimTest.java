@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.config.SchedulingConfig;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -91,6 +92,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private FeeService feeService;
     @Mock
     private MoneyFormatter moneyFormatter;
+    @Mock
+    private SchedulingConfig schedulingConfig;
 
     @Mock
     private ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
@@ -107,7 +110,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, securityContextService,
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
-            moneyFormatter, resumePossessionClaimConfigurer
+            moneyFormatter, resumePossessionClaimConfigurer, schedulingConfig
         );
 
         setEventUnderTest(underTest);
@@ -440,7 +443,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
             assertThat(taskData.getFeeType()).isEqualTo(FeeType.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
-            assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
+            assertThat(taskData.getCaseReference()).isEqualTo(TEST_CASE_REFERENCE);
             assertThat(taskData.getCcdCaseNumber()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
