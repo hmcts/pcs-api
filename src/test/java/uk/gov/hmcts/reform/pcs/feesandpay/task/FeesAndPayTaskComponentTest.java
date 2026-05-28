@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.time.Duration;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -80,7 +81,7 @@ class FeesAndPayTaskComponentTest {
             .caseReference(123)
             .ccdCaseNumber("1111-2222-3333-4444")
             .volume(2)
-            .responsibleParty("Applicant")
+            .responsiblePartyId(UUID.randomUUID())
             .build();
     }
 
