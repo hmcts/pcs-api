@@ -431,6 +431,36 @@ class DefendantResponseServiceTest {
     }
 
     @Test
+    void shouldReturnFalseWhenCheckingSubmittedResponseWithoutCurrentUser() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(null);
+
+        // When
+        boolean hasSubmittedResponse = underTest.hasSubmittedResponse(CASE_REFERENCE);
+
+        // Then
+        assertThat(hasSubmittedResponse).isFalse();
+        verify(defendantResponseRepository, never())
+            .existsByClaimPcsCaseCaseReferenceAndPartyIdamId(anyLong(), any());
+    }
+
+    @Test
+    void shouldReturnRepositoryResultWhenCheckingSubmittedResponse() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(true);
+
+        // When
+        boolean hasSubmittedResponse = underTest.hasSubmittedResponse(CASE_REFERENCE);
+
+        // Then
+        assertThat(hasSubmittedResponse).isTrue();
+        verify(defendantResponseRepository)
+            .existsByClaimPcsCaseCaseReferenceAndPartyIdamId(CASE_REFERENCE, USER_ID);
+    }
+
+    @Test
     void shouldThrowExceptionWhenDuplicateResponseExists() {
         // Given
         DefendantResponses responses = DefendantResponses.builder()

@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -81,7 +80,8 @@ class StartDashboardViewHandlerTest {
         when(dashboardJourneyService.computeDashboardData(
             CASE_REFERENCE,
             caseData,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         ))
             .thenReturn(dashboardData);
 
@@ -94,7 +94,8 @@ class StartDashboardViewHandlerTest {
         verify(dashboardJourneyService).computeDashboardData(
             CASE_REFERENCE,
             caseData,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
     }
 
