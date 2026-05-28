@@ -14,53 +14,36 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
     UUID> {
 
     @Query("""
-        SELECT COUNT(lr) > 0
-        FROM LegalRepresentativeEntityOrganisation lro
-        JOIN lro.claimPartyLegalRepresentativeList cplr
-        JOIN cplr.party p
-        WHERE lro.idamId = :idamId
-        AND p.id = :partyId
-        AND cplr.active = 'YES'
-        """)
-    boolean isLegalRepresentativeOrganisationLinkedToPartyAndActive(@Param("idamId") UUID idamId,
-                                                                    @Param("partyId") UUID partyId);
-
-    @Query("""
-        SELECT lr
-        FROM LegalRepresentativeEntity lr
-        JOIN lr.claimPartyLegalRepresentativeList cplr
-        JOIN cplr.party p
+        SELECT lro
+        FROM LegalRepresentativeOrganisationEntity lro
+        JOIN lro.partyLegalRepresentativeOrganisationList plro
+        JOIN plro.party p
         WHERE p.id = :partyId
-        AND cplr.active = 'YES'
+        AND plro.active = 'YES'
         """)
-    Optional<LegalRepresentativeOrganisationEntity> findByPartyLinkedToLegalRepresentativeAndActive(@Param("partyId") UUID partyId);
+    Optional<LegalRepresentativeOrganisationEntity> findByPartyLinkedToLegalRepresentativeOrganisationAndActive(@Param("partyId") UUID partyId);
 
     @Query("""
-        SELECT COUNT(lr) > 0
-        FROM LegalRepresentativeEntity lr
-        JOIN lr.claimPartyLegalRepresentativeList cplr
-        JOIN cplr.party p
-        WHERE lr.organisationId = :organisationId
+        SELECT COUNT(lro) > 0
+        FROM LegalRepresentativeOrganisationEntity lro
+        JOIN lro.partyLegalRepresentativeOrganisationList plro
+        JOIN plro.party p
+        WHERE lro.organisationId = :organisationId
         AND p.id = :partyId
-        AND cplr.active = 'YES'
+        AND plro.active = 'YES'
         """)
     boolean isRepresentativeOrganisationLinkedToPartyAndActive(@Param("organisationId") String organisationId,
                                                                @Param("partyId") UUID partyId);
 
     @Query("""
-        SELECT lr
-        FROM LegalRepresentativeOrganisationEntity lr
-        JOIN lr.claimPartyLegalRepresentativeList cplr
-        JOIN cplr.party p
-        JOIN p.pcsCase pcsCase
+        SELECT lro
+        FROM LegalRepresentativeOrganisationEntity lro
+        JOIN lro.pcsCase pcsCase
         WHERE pcsCase.caseReference = :caseReference
-        AND cplr.active = 'YES'
-        AND lr.organisationId = :organisationId
+        AND lro.organisationId = :organisationId
         """)
-    Optional<LegalRepresentativeOrganisationEntity> findByOrganisationId(@Param("organisationId") String organisationId,
+    Optional<LegalRepresentativeOrganisationEntity> findByOrganisationIdAndCaseReference(@Param("organisationId") String organisationId,
                                                              @Param("caseReference") long caseReference);
 
-    Optional<LegalRepresentativeOrganisationEntity> findLegalRepresentativeOrganisationForParty(
-        @Param("partyId") UUID partyId);
 
 }

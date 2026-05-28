@@ -7,7 +7,7 @@ create TABLE legal_representative_org (
   phone varchar(40),
   contact_reference varchar(80),
   address_id  UUID REFERENCES address (id)
-)
+);
 
 create table party_legal_rep_org (
   party_id UUID REFERENCES party (id),
@@ -16,7 +16,7 @@ create table party_legal_rep_org (
   start_date TIMESTAMP WITHOUT TIME ZONE,
   end_date TIMESTAMP WITHOUT TIME ZONE,
 
-  primary key (party_id, legal_representative_org_id)
+  primary key (party_id, legal_representative_organisation_id)
 );
 
 ALTER TABLE legal_representative

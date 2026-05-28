@@ -31,7 +31,7 @@ public class LegalRepresentativeService {
      *     correspond to a known legal rep in the PCS database
      */
     public Optional<DynamicList> getRepresentedPartiesDynamicList(String legalRepOrgId, long caseReference) {
-        return legalRepresentativeOrganisationRepository.findByOrganisationId(legalRepOrgId, caseReference)
+        return legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(  legalRepOrgId, caseReference)
             .map(
                 legalRepresentativeOrganisationEntity -> {
                     List<PartyEntity> partyEntities = legalRepresentativeOrganisationEntity.getPartyLegalRepresentativeOrganisationList()

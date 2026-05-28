@@ -8,7 +8,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -16,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepresentativedetails.LegalRepresentativeContactDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativePageService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -141,6 +141,7 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
     void submit_SavesLegalRepresentativeDetails() {
         // given
         UUID userId = UUID.randomUUID();
+        String organisationId = "org";
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder().build();
         PCSCase caseData = PCSCase.builder()
             .legalRepresentativeDetails(legalRepresentativeDetails)
@@ -151,7 +152,7 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
         SubmitResponse<State> submitResponse = callSubmitHandler(caseData);
 
         // then
-        verify(legalRepresentativePageService).save(userId, legalRepresentativeDetails);
+        verify(legalRepresentativePageService).save(organisationId, TEST_CASE_REFERENCE, legalRepresentativeDetails);
         assertThat(submitResponse.getConfirmationBody())
             .contains("legal representative's information");
     }

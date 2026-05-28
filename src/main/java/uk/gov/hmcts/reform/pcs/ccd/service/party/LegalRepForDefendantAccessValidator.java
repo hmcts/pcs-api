@@ -12,8 +12,6 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import java.util.List;
 import java.util.UUID;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 @Slf4j
 @Component
 @AllArgsConstructor
@@ -37,14 +35,12 @@ public class LegalRepForDefendantAccessValidator {
     ) {
         List<PartyEntity> linkedDefendants =  defendants
             .stream()
-            .filter(party -> party.getClaimPartyLegalRepresentativeList()
+            .filter(party -> party.getPartyLegalRepresentativeOrganisationList()
                 .stream()
-                .anyMatch(claimPartyLegalRepresentative ->
-                              claimPartyLegalRepresentative.getActive().equals(YesOrNo.YES)
-                                  && isUserOrOrganisationMatch(
-                                  claimPartyLegalRepresentative.getLegalRepresentative().getIdamId(),
-                                  claimPartyLegalRepresentative.getLegalRepresentative().getOrganisationId(),
-                                  authenticatedUserId,
+                .anyMatch(partyLegalRepresentativeOrganisation ->
+                              partyLegalRepresentativeOrganisation.getActive().equals(YesOrNo.YES)
+                                  && isOrganisationMatch(
+                                  partyLegalRepresentativeOrganisation.getLegalRepresentativeOrganisation().getOrganisationId(),
                                   organisationId
                               )
                 ))
@@ -62,12 +58,9 @@ public class LegalRepForDefendantAccessValidator {
         return linkedDefendants;
     }
 
-    private boolean isUserOrOrganisationMatch(UUID linkedUserId,
+    private boolean isOrganisationMatch(
                                               String linkedOrganisationId,
-                                              UUID authenticatedUserId,
                                               String authenticatedOrganisationId) {
-        return authenticatedUserId.equals(linkedUserId)
-            || (isNotBlank(authenticatedOrganisationId)
-            && authenticatedOrganisationId.equals(linkedOrganisationId));
+        return authenticatedOrganisationId.equals(linkedOrganisationId);
     }
 }

@@ -66,7 +66,7 @@ public class LegalRepresentativeOrganisationEntity {
     private List<PartyLegalRepresentativeOrganisationEntity> partyLegalRepresentativeOrganisationList =
         new ArrayList<>();
 
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "legalRepresentative")
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "legalRepresentativeOrganisation")
     @Builder.Default
     @JsonManagedReference
     private List<LegalRepresentativeEntity> legalRepresentativeList = new ArrayList<>();
@@ -85,7 +85,7 @@ public class LegalRepresentativeOrganisationEntity {
             .active(YesOrNo.YES)
             .build();
         partyLegalRepresentativeOrganisationList.add(partyLegalRepresentativeOrganisationEntity);
-        party.getClaimPartyLegalRepresentativeList().add(partyLegalRepresentativeOrganisationEntity);
+        party.getPartyLegalRepresentativeOrganisationList().add(partyLegalRepresentativeOrganisationEntity);
     }
 
     public void addLegalRepresentative(LegalRepresentativeEntity legalRepresentative) {

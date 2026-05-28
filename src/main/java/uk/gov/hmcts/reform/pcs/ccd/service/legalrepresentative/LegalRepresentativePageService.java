@@ -8,9 +8,11 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -22,14 +24,24 @@ public class LegalRepresentativePageService {
 
     private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
     private final AddressMapper addressMapper;
+    private final SecurityContextService securityContextService;
 
     @Transactional
-    public void save(UUID userIdamId, LegalRepresentativeDetails legalRepresentativeDetails) {
-        Optional<LegalRepresentativeOrganisationEntity> legalRepresentative = legalRepresentativeOrganisationRepository
-            .findByIdamId(userIdamId);
+    public void save(String organisationId, long caseReference, LegalRepresentativeDetails legalRepresentativeDetails) {
+        Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisation = legalRepresentativeOrganisationRepository
+            .findByOrganisationIdAndCaseReference(organisationId, caseReference);
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            legalRepresentative.orElseGet(LegalRepresentativeOrganisationEntity::new);
+            legalRepresentativeOrganisation.orElseGet(LegalRepresentativeOrganisationEntity::new);
+
+        if (legalRepresentativeOrganisationEntity.getLegalRepresentativeList().isEmpty()) {
+
+            LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
+                .idamId(securityContextService.getCurrentUserId())
+                .build();
+
+            legalRepresentativeOrganisationEntity.addLegalRepresentative(legalRepresentative);
+        }
 
         if (legalRepresentativeDetails.getDifferentPostalAddress() != null
             && legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
@@ -43,7 +55,7 @@ public class LegalRepresentativePageService {
         }
 
         if (legalRepresentativeDetails.getReference() != null && !legalRepresentativeDetails.getReference().isEmpty()) {
-            legalRepresentativeOrganisationEntity.setReference(legalRepresentativeDetails.getReference());
+            legalRepresentativeOrganisationEntity.setContactReference(legalRepresentativeDetails.getReference());
         }
 
         if (legalRepresentativeDetails.getUseEmailAddress() != null

@@ -82,9 +82,10 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
         PCSCase pcsCase = eventPayload.caseData();
-        legalRepresentativePageService.save(currentUserId, pcsCase.getLegalRepresentativeDetails());
+        Long caseReference = eventPayload.caseReference();
+        legalRepresentativePageService.save(organisationId, caseReference, pcsCase.getLegalRepresentativeDetails());
         return SubmitResponse.<State>builder()
             .confirmationBody(getUpdatedInformationConfirmationMarkdown())
             .build();

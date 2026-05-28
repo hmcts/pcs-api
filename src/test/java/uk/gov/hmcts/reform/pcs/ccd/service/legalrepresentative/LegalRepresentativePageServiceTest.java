@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -36,10 +37,14 @@ class LegalRepresentativePageServiceTest {
     @Mock
     private AddressMapper addressMapper;
 
+    @Mock
+    private SecurityContextService securityContextService;
+
     @Test
     void save_WithDifferentPostalAddress() {
         // given
-        UUID userIdamId = UUID.randomUUID();
+        String orgId = "org";
+        long caseReference = 1L;
 
         AddressUK address = AddressUK.builder().build();
         AddressEntity mappedAddress = new AddressEntity();
@@ -51,14 +56,14 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         when(addressMapper.toAddressEntityAndNormalise(address))
             .thenReturn(mappedAddress);
 
         // when
-        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
         assertEquals(mappedAddress, legalRepresentativeOrganisationEntity.getAddress());
@@ -70,7 +75,8 @@ class LegalRepresentativePageServiceTest {
     @Test
     void save_WithDifferentPostalAddressAndNullCorrespondenceAddress() {
         // given
-        UUID userIdamId = UUID.randomUUID();
+        String orgId = "org";
+        long caseReference = 1L;
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .differentPostalAddress(VerticalYesNo.YES)
@@ -78,11 +84,11 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
-        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
         assertThat(legalRepresentativeOrganisationEntity.getAddress()).isNull();
@@ -94,7 +100,8 @@ class LegalRepresentativePageServiceTest {
     @Test
     void save_WithSamePostalAddress() {
         // given
-        UUID userIdamId = UUID.randomUUID();
+        String orgId = "org";
+        long caseReference = 1L;
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .differentPostalAddress(VerticalYesNo.NO)
@@ -102,11 +109,11 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
-        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
@@ -117,7 +124,8 @@ class LegalRepresentativePageServiceTest {
     void save_WithDifferentPhoneNumber() {
         // given
         String contactNumber = "number";
-        UUID userIdamId = UUID.randomUUID();
+        String orgId = "org";
+        long caseReference = 1L;
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .provideContactPhoneNumber(VerticalYesNo.YES)
@@ -127,11 +135,11 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
-        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
         assertEquals(contactNumber, legalRepresentativeOrganisationEntity.getPhone());
@@ -140,7 +148,8 @@ class LegalRepresentativePageServiceTest {
     @Test
     void save_WithSamePhoneNumber_DoesNotSetPhone() {
         // given
-        UUID userIdamId = UUID.randomUUID();
+        String orgId = "org";
+        long caseReference = 1L;
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .provideContactPhoneNumber(VerticalYesNo.NO)
@@ -150,11 +159,11 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
-        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
         assertNull(legalRepresentativeOrganisationEntity.getPhone());
@@ -163,7 +172,8 @@ class LegalRepresentativePageServiceTest {
     @Test
     void save_WithNullProvideContactPhoneNumber_DoesNotSetPhone() {
         // given
-        UUID userIdamId = UUID.randomUUID();
+        String orgId = "org";
+        long caseReference = 1L;
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .contactPhoneNumber("number")
@@ -172,11 +182,11 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
-        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
         assertNull(legalRepresentativeOrganisationEntity.getPhone());
@@ -186,7 +196,8 @@ class LegalRepresentativePageServiceTest {
     void save_WithReference() {
         // given
         String reference = "reference";
-        UUID userIdamId = UUID.randomUUID();
+        String orgId = "org";
+        long caseReference = 1L;
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .reference(reference)
@@ -195,20 +206,21 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
-        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(reference, legalRepresentativeOrganisationEntity.getReference());
+        assertEquals(reference, legalRepresentativeOrganisationEntity.getContactReference());
     }
 
     @Test
     void save_WithEmptyReference_DoesNotSetReference() {
         // given
-        UUID userIdamId = UUID.randomUUID();
+        String orgId = "org";
+        long caseReference = 1L;
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .reference("")
@@ -217,20 +229,21 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
-        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
-        assertNull(legalRepresentativeOrganisationEntity.getReference());
+        assertNull(legalRepresentativeOrganisationEntity.getContactReference());
     }
 
     @Test
     void save_WithUseEmailNo_SetsEmail() {
         // given
-        UUID userIdamId = UUID.randomUUID();
+        String orgId = "org";
+        long caseReference = 1L;
         String email = "email";
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
@@ -240,11 +253,11 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
-        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
         assertEquals(email, legalRepresentativeOrganisationEntity.getEmail());
@@ -253,7 +266,8 @@ class LegalRepresentativePageServiceTest {
     @Test
     void save_WithUseEmailYes_DoesNotSetEmail() {
         // given
-        UUID userIdamId = UUID.randomUUID();
+        String orgId = "org";
+        long caseReference = 1L;
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .useEmailAddress(VerticalYesNo.YES)
@@ -261,11 +275,11 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new LegalRepresentativeOrganisationEntity();
 
-        when(legalRepresentativeOrganisationRepository.findByIdamId(userIdamId))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
         // when
-        legalRepresentativePageService.save(userIdamId, legalRepresentativeDetails);
+        legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
         assertThat(legalRepresentativeOrganisationEntity.getEmail()).isNull();

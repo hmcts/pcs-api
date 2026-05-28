@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepresentativeContactDetails;
@@ -14,7 +16,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepresentativeConta
 @AllArgsConstructor
 public class LegalRepresentativeSummaryService {
 
-    private final SecurityContextService securityContextService;
+    private final OrganisationService organisationService;
 
     public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         boolean isActivelyLinkedToDefendant = isActivelyLinkedToAnyDefendant(pcsCaseEntity);
@@ -41,12 +43,13 @@ public class LegalRepresentativeSummaryService {
     }
 
     private boolean isActivelyLinkedToAnyDefendant(PcsCaseEntity pcsCaseEntity) {
+
         return pcsCaseEntity.getParties().stream()
-            .anyMatch(partyEntity -> partyEntity.getClaimPartyLegalRepresentativeList()
+            .anyMatch(partyEntity -> partyEntity.getPartyLegalRepresentativeOrganisationList()
                 .stream().anyMatch(claimPartyLegalRepresentative ->
-                                       claimPartyLegalRepresentative.getLegalRepresentative()
-                                           .getIdamId().equals(
-                                               securityContextService.getCurrentUserId())
+                                       claimPartyLegalRepresentative.getLegalRepresentativeOrganisation()
+                                           .getOrganisationId().equals(
+                                               organisationService.getOrganisationIdForCurrentUser())
                                            && claimPartyLegalRepresentative.getActive().equals(YesOrNo.YES)));
     }
 

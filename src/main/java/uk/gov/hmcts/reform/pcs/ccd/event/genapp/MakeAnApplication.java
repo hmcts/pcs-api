@@ -39,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
@@ -62,6 +63,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
     private final DocumentImportService documentImportService;
     private final LegalRepresentativeService legalRepresentativeService;
     private final FeeApplier feeApplier;
+    private final OrganisationService organisationService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -101,8 +103,8 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
 
     // Set represented parties if the current user is a legal rep
     private void setRepresentedParties(long caseReference, PCSCase caseData) {
-        UUID currentUserId = securityContextService.getCurrentUserId();
-        legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, caseReference)
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        legalRepresentativeService.getRepresentedPartiesDynamicList(organisationId, caseReference)
             .ifPresent(representedPartyNames -> {
                 boolean representingMultipleParties = representedPartyNames.getListItems().size() > 1;
                 caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));

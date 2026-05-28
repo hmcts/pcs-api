@@ -50,7 +50,7 @@ class LegalRepForDefendantAccessValidatorTest {
             .organisationId(organisationId)
             .idamId(authenticatedUserId)
             .build();
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
             ClaimPartyLegalRepresentativeEntity.builder()
                 .party(defendant)
                 .legalRepresentative(linkedRepresentative)
@@ -81,7 +81,7 @@ class LegalRepForDefendantAccessValidatorTest {
             .organisationId(organisationId)
             .idamId(authenticatedUserIdamId)
             .build();
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
             ClaimPartyLegalRepresentativeEntity.builder()
                 .party(defendant)
                 .legalRepresentative(linkedRepresentative)
@@ -109,7 +109,7 @@ class LegalRepForDefendantAccessValidatorTest {
         LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
             .organisationId("ORG-123")
             .build();
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
             ClaimPartyLegalRepresentativeEntity.builder()
                 .party(defendant)
                 .legalRepresentative(linkedRepresentative)
@@ -135,7 +135,7 @@ class LegalRepForDefendantAccessValidatorTest {
         LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
             .organisationId("ORG-123")
             .build();
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
             ClaimPartyLegalRepresentativeEntity.builder()
                 .party(defendant)
                 .legalRepresentative(linkedRepresentative)
@@ -166,7 +166,7 @@ class LegalRepForDefendantAccessValidatorTest {
             .idamId(linkedUserId)
             .build();
 
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
             ClaimPartyLegalRepresentativeEntity.builder()
                 .party(defendant)
                 .legalRepresentative(linkedRepresentative)
@@ -204,7 +204,7 @@ class LegalRepForDefendantAccessValidatorTest {
             .idamId(linkedUserId)
             .build();
 
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
             ClaimPartyLegalRepresentativeEntity.builder()
                 .party(defendant)
                 .legalRepresentative(linkedRepresentative)

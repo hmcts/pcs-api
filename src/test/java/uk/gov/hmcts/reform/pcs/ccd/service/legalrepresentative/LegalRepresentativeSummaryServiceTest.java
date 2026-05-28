@@ -33,7 +33,7 @@ class LegalRepresentativeSummaryServiceTest {
         // given
         UUID userId = UUID.randomUUID();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
-                                            .claimPartyLegalRepresentativeList(List.of(
+                                            .partyLegalRepresentativeOrganisationList(List.of(
                                                 PartyLegalRepresentativeOrganisationEntity.builder()
                                                     .active(YesOrNo.YES)
                                                     .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
@@ -62,7 +62,7 @@ class LegalRepresentativeSummaryServiceTest {
         // given
         UUID userId = UUID.randomUUID();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
-                                              .claimPartyLegalRepresentativeList(List.of(
+                                              .partyLegalRepresentativeOrganisationList(List.of(
                                                   PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
                                                       .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
@@ -91,7 +91,7 @@ class LegalRepresentativeSummaryServiceTest {
         // given
         UUID userId = UUID.randomUUID();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
-                                              .claimPartyLegalRepresentativeList(List.of(
+                                              .partyLegalRepresentativeOrganisationList(List.of(
                                                   PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
                                                       .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
@@ -120,7 +120,7 @@ class LegalRepresentativeSummaryServiceTest {
         // given
         UUID userId = UUID.randomUUID();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
-                                              .claimPartyLegalRepresentativeList(List.of(
+                                              .partyLegalRepresentativeOrganisationList(List.of(
                                                   PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
                                                       .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
