@@ -291,7 +291,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
 
-    @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
+    @CCD(label = "Are you seeking an order imposing a prohibited conduct standard contract?")
     private VerticalYesNo prohibitedConductWalesClaim;
 
     @CCD(
