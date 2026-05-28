@@ -1,17 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim;
 
 
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.Size;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
@@ -24,16 +22,16 @@ import java.time.LocalDate;
 public class HouseholdCircumstances {
 
     @CCD
-    private VerticalYesNo dependantChildren;
+    private YesOrNo dependantChildren;
 
     @CCD
-    private VerticalYesNo shareAdditionalCircumstances;
+    private YesOrNo shareAdditionalCircumstances;
 
     @CCD(max = 500)
     private String additionalCircumstancesDetails;
 
     @CCD
-    private VerticalYesNo exceptionalHardship;
+    private YesOrNo exceptionalHardship;
 
     @CCD(max = 500)
     private String exceptionalHardshipDetails;
@@ -42,13 +40,13 @@ public class HouseholdCircumstances {
     private String dependantChildrenDetails;
 
     @CCD
-    private VerticalYesNo otherDependants;
+    private YesOrNo otherDependants;
 
     @CCD(max = 500)
     private String otherDependantDetails;
 
     @CCD
-    private VerticalYesNo otherTenants;
+    private YesOrNo otherTenants;
 
     @CCD(max = 500)
     private String otherTenantsDetails;
@@ -60,7 +58,32 @@ public class HouseholdCircumstances {
     private LocalDate alternativeAccommodationTransferDate;
 
     @CCD
-    private VerticalYesNo shareIncomeExpenseDetails;
+    private YesOrNo shareIncomeExpenseDetails;
+    private IncomeExpenseDetails householdBills;
+
+    @CCD
+    private IncomeExpenseDetails loanPayments;
+
+    @CCD
+    private IncomeExpenseDetails childSpousalMaintenance;
+
+    @CCD
+    private IncomeExpenseDetails mobilePhone;
+
+    @CCD
+    private IncomeExpenseDetails groceryShopping;
+
+    @CCD
+    private IncomeExpenseDetails fuelParkingTransport;
+
+    @CCD
+    private IncomeExpenseDetails schoolCosts;
+
+    @CCD
+    private IncomeExpenseDetails clothing;
+
+    @CCD
+    private IncomeExpenseDetails otherExpenses;
 
     @CCD
     private YesOrNo incomeFromJobs;
@@ -83,7 +106,10 @@ public class HouseholdCircumstances {
     private RecurrenceFrequency pensionFrequency;
 
     @CCD
-    private VerticalYesNo universalCredit;
+    private YesOrNo universalCredit;
+
+    @CCD
+    private YesOrNo hasAppliedForUniversalCredit;
 
     @CCD
     private LocalDate ucApplicationDate;
@@ -111,5 +137,19 @@ public class HouseholdCircumstances {
     @CCD
     @Size(max = 500)
     private String moneyFromElsewhereDetails;
+
+    @CCD
+    private YesOrNo priorityDebts;
+
+    @CCD(typeOverride = FieldType.MoneyGBP)
+    @JacksonMoneyGBP
+    private BigDecimal debtTotal;
+
+    @CCD(typeOverride = FieldType.MoneyGBP)
+    @JacksonMoneyGBP
+    private BigDecimal debtContribution;
+
+    @CCD
+    private RecurrenceFrequency debtContributionFrequency;
 
 }

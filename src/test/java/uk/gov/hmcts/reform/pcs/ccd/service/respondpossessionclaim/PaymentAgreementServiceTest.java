@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -132,6 +133,78 @@ class PaymentAgreementServiceTest {
         );
     }
 
+    @ParameterizedTest
+    @MethodSource("repayArrearsInstalmentsScenarios")
+    void shouldMapRepayArrearsInstalmentsField(VerticalYesNo expected) {
+        // Given
+        PaymentAgreement model = PaymentAgreement.builder()
+                .repayArrearsInstalments(expected)
+                .build();
+
+        // When
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
+
+        // Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getRepayArrearsInstalments()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> repayArrearsInstalmentsScenarios() {
+        return Stream.of(
+                Arguments.of(VerticalYesNo.YES),
+                Arguments.of(VerticalYesNo.NO),
+                Arguments.of((VerticalYesNo) null)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("additionalRentContributionScenarios")
+    void shouldMapAdditionalRentContributionField(BigDecimal expected) {
+        // Given
+        PaymentAgreement model = PaymentAgreement.builder()
+                .additionalRentContribution(expected)
+                .build();
+
+        // When
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
+
+        // Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getAdditionalRentContribution()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> additionalRentContributionScenarios() {
+        return Stream.of(
+                Arguments.of(new BigDecimal("150000")),
+                Arguments.of(BigDecimal.ZERO),
+                Arguments.of((BigDecimal) null)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("additionalContributionFrequencyScenarios")
+    void shouldMapAdditionalContributionFrequencyField(String expected) {
+        // Given
+        PaymentAgreement model = PaymentAgreement.builder()
+                .additionalContributionFrequency(expected)
+                .build();
+
+        // When
+        PaymentAgreementEntity entity = underTest.createPaymentAgreementEntity(model);
+
+        // Then
+        assertThat(entity).isNotNull();
+        assertThat(entity.getAdditionalContributionFrequency()).isEqualTo(expected);
+    }
+
+    private static Stream<Arguments> additionalContributionFrequencyScenarios() {
+        return Stream.of(
+                Arguments.of("weekly"),
+                Arguments.of("monthly"),
+                Arguments.of(""),
+                Arguments.of((String) null)
+        );
+    }
 
 }
 

@@ -24,19 +24,19 @@ test.beforeEach(async ({ page }) => {
 
 test.afterEach(async () => {
   if (caseNumber) {
-    await performAction('deleteCaseRole', '[CREATOR]');
+    await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
 });
 
-test.describe('[Common Component Fee And Pay]', async () => {
-  test('Fee And Pay - Pay by account PBA @nightly', async () => {
+test.describe('[Common Component Fee And Pay] @CC' , async () => {
+  test('Fee And Pay - Pay by account PBA @nightly @feeAndPay', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
       expectedAmount: serviceRequest.amount404,
       payByOption: serviceRequest.payByAccountRadioOption,
       pbaLabel: serviceRequest.selectPBALabel,
-      pbaIndex: serviceRequest.pbaIndex1,
+      pbaValue: serviceRequest.pbaIndex1,
       referenceLabel: serviceRequest.pbaReferenceLable,
       referenceText: serviceRequest.pbaReferenceInputText,
       confirmButton: serviceRequest.confirmPaymentButton,
@@ -44,7 +44,7 @@ test.describe('[Common Component Fee And Pay]', async () => {
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
   });
 
-  test('Fee And Pay - Pay by Card @nightly', async () => {
+  test('Fee And Pay - Pay by Card @nightly @feeAndPay', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -70,7 +70,7 @@ test.describe('[Common Component Fee And Pay]', async () => {
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
   });
 
-  test('Fee And Pay - Cancel Payment from You Card Details Page @nightly', async () => {
+  test('Fee And Pay - Cancel Payment from You Card Details Page @nightly @feeAndPay', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -82,7 +82,7 @@ test.describe('[Common Component Fee And Pay]', async () => {
     await performValidation('mainHeader', cancelPayment.mainHeader);
   });
 
-  test('Fee And Pay - Cancel Payment from Confirm Card Details Page @nightly', async () => {
+  test('Fee And Pay - Cancel Payment from Confirm Card Details Page @nightly @feeAndPay', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,

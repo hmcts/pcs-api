@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -39,10 +42,15 @@ public class FeePaymentEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = LAZY)
+    @OneToOne(fetch = LAZY)
     @JoinColumn(name = "claim_id", nullable = false)
     @JsonBackReference
     private ClaimEntity claim;
+
+    @ManyToOne(fetch = LAZY, optional = false)
+    @JoinColumn(name = "party_id", nullable = false)
+    @JsonBackReference
+    private PartyEntity party;
 
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
@@ -57,5 +65,9 @@ public class FeePaymentEntity {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "hwf_id")
+    private HelpWithFeesEntity helpWithFees;
 
 }

@@ -24,12 +24,16 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
@@ -103,4 +107,16 @@ public class PartyEntity {
     @Column(name = "dob")
     private LocalDate dateOfBirth;
 
+    @OneToMany(fetch = LAZY, mappedBy = "party")
+    @Builder.Default
+    @JsonManagedReference
+    private List<ClaimPartyLegalRepresentativeEntity> claimPartyLegalRepresentativeList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "party",
+        cascade = ALL,
+        orphanRemoval = true)
+    @Builder.Default
+    private List<CasePartyFlagEntity> defendantFlags = new ArrayList<>();
+
 }
+

@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
@@ -40,6 +40,7 @@ class DraftCaseJsonMergerTest {
     void shouldKeepExistingFieldsWhenMerging() throws JsonProcessingException {
         // Given
         PCSCase existingCaseData = Instancio.create(PCSCase.class);
+        existingCaseData.setDashboardData(null);
         existingCaseData.setApplicationWithClaim(VerticalYesNo.NO);
         String baseJson = objectMapper.writeValueAsString(existingCaseData);
 
@@ -54,7 +55,7 @@ class DraftCaseJsonMergerTest {
             .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .applicationWithClaim(VerticalYesNo.YES)
             .claimantType(claimantTypeList)
-            .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+            .noRentArrearsGroundsReasons(NoRentArrearsGroundsReasons.builder()
                                                 .holidayLet("some holiday let details")
                                                 .build())
             .build();
@@ -72,9 +73,12 @@ class DraftCaseJsonMergerTest {
             .ignoringFields("introductoryDemotedOrOtherGroundsForPossession.otherGroundDescription",
                             "applicationWithClaim",
                             "claimantType",
-                            "noRentArrearsReasonForGrounds.holidayLet",
+                            "noRentArrearsGroundsReasons.holidayLet",
+                            "rentArrearsGroundsReasons.otherGround",
                             "waysToPay",
                             "caseLinks",
+                            "caseFlags",
+                            "genApps",
                             "claimGroundSummaries",
                             "enforcementOrder.showChangeNameAddressPage",
                             "enforcementOrder.showPeopleWhoWillBeEvictedPage",
@@ -90,14 +94,29 @@ class DraftCaseJsonMergerTest {
                             "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.positionLegalRep",
                             "enforcementOrder.rawWarrantDetails.selectedDefendants",
                             "enforcementOrder.rawWarrantDetails.vulnerablePeoplePresent",
-                            "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren")
+                            "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
+                            "parties",
+                            "allClaimants",
+                            "allDefendants",
+                            "allUnderlesseeOrMortgagees",
+                            "possessionClaimResponse",
+                            "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
+                            "casePartiesTab.claimantDetails.emailAddress",
+                            "casePartiesTab.claimantDetails.name",
+                            "casePartiesTab.claimantDetails.serviceAddress",
+                            "casePartiesTab.claimantDetails.telephoneNumber",
+                            "casePartiesTab.defendantOneDetails.firstName",
+                            "casePartiesTab.defendantOneDetails.lastName",
+                            "casePartiesTab.defendantOneDetails.serviceAddress",
+                            "caseDetailsTab",
+                            "summaryTab")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()
                         .getOtherGroundDescription()).isEqualTo("some other ground description");
         assertThat(mergedCaseData.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
         assertThat(mergedCaseData.getClaimantType()).isEqualTo(claimantTypeList);
-        assertThat(mergedCaseData.getNoRentArrearsReasonForGrounds().getHolidayLet())
+        assertThat(mergedCaseData.getNoRentArrearsGroundsReasons().getHolidayLet())
             .isEqualTo("some holiday let details");
 
     }

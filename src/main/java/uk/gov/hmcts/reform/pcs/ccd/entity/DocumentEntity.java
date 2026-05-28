@@ -11,15 +11,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -44,6 +50,18 @@ public class DocumentEntity {
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "party_id")
+    private PartyEntity party;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "general_application_id")
+    private GenAppEntity generalApplication;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "defendant_response_id")
+    private DefendantResponseEntity defendantResponse;
+
     private String url;
 
     private String fileName;
@@ -52,10 +70,24 @@ public class DocumentEntity {
 
     private String categoryId;
 
+    // The DM Store document ID
+    private UUID documentId;
+
     @Enumerated(EnumType.STRING)
     private DocumentType type;
 
+    private String contentType;
+
+    private Long size;
+
     private String description;
+
+    @CreationTimestamp
+    private Instant submittedDate;
+  
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "claim_id")
+    private ClaimEntity claim;
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "document")
     @Builder.Default
@@ -66,4 +98,15 @@ public class DocumentEntity {
     @JoinColumn(name = "enf_case_id")
     @JsonBackReference
     private EnforcementOrderEntity enfCase;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "counter_claim_id")
+    private CounterClaimEntity counterClaim;
+
+    @PrePersist
+    void prePersist() {
+        if (submittedDate == null) {
+            submittedDate = Instant.now();
+        }
+    }
 }

@@ -13,16 +13,17 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestUpdate;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.util.Optional;
@@ -44,8 +45,11 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     private static final String AUTH_HEADER = "Bearer test-token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
 
+    // Mocked to harmonise the Spring context signature with other integration tests, so the
+    // ApplicationContext (and its Hikari pool) is shared rather than spawning a new pool.
     @MockitoBean
-    private IdamClient idamClient;
+    private IdamUserInfoApi idamUserInfoApi;
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -57,7 +61,7 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     @Autowired
     private FeePaymentRepository feePaymentRepository;
 
-    private long caseReference = 12345L;
+    private final long caseReference = 12345L;
     private String serviceCaseReference;
     private FeeDto feeDto;
 
@@ -67,41 +71,44 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
         feeDto = Instancio.create(FeeDto.class);
         feeDto.setCcdCaseNumber(String.valueOf(caseReference));
         PcsCaseEntity pcsCaseEntity = establishTestCase(caseReference);
-        establishFeePayment(pcsCaseEntity, serviceCaseReference, feeDto);
+        establishFeePayment(pcsCaseEntity, serviceCaseReference);
     }
 
     @Test
     @Transactional
     void shouldProcessPaymentCallback() throws Exception {
         // Given
-        ServiceRequestUpdate serviceRequestUpdate = Instancio.create(ServiceRequestUpdate.class);
-        serviceRequestUpdate.setCcdCaseNumber(String.valueOf(caseReference));
-        serviceRequestUpdate.setServiceRequestReference(serviceCaseReference);
-        serviceRequestUpdate.setServiceRequestStatus(PaymentStatus.PAID.getValue());
+        PaymentStatusCallback paymentStatusCallback = Instancio.create(PaymentStatusCallback.class);
+        paymentStatusCallback.setCcdCaseNumber(String.valueOf(caseReference));
+        paymentStatusCallback.setServiceRequestReference(serviceCaseReference);
+        paymentStatusCallback.setServiceRequestStatus(PaymentStatus.PAID.getValue());
 
         // When
         mockMvc.perform(put(PAYMENT_UPDATE_PATH)
                             .header(AUTHORIZATION, AUTH_HEADER)
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(serviceRequestUpdate)))
-            .andExpect(status().isOk());
+                            .content(objectMapper.writeValueAsString(paymentStatusCallback)))
+            .andExpect(status().isNoContent());
 
         // Then
         Optional<FeePaymentEntity> byRequestReference = feePaymentRepository
             .findByRequestReference(serviceCaseReference);
         assertThat(byRequestReference.isPresent()).isTrue();
-
+        FeePaymentEntity feePaymentEntity = byRequestReference.get();
+        assertThat(feePaymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
     }
 
     PcsCaseEntity establishTestCase(long caseReference) {
         return caseCreationHelper
-            .createTestCaseWithParty(caseReference, null, PartyRole.DEFENDANT);
+            .createTestCaseWithParty(caseReference, null, PartyRole.CLAIMANT);
     }
 
-    void establishFeePayment(PcsCaseEntity pcsCaseEntity, String serviceCaseReference, FeeDto feeDto) {
+    void establishFeePayment(PcsCaseEntity pcsCaseEntity, String serviceCaseReference) {
         ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
+        ClaimPartyEntity claimPartyEntity = claimEntity.getClaimParties().get(0);
+        String orgName = claimPartyEntity.getParty().getOrgName();
         paymentService.saveNewFeePayment(String.valueOf(caseReference),
-                                         claimEntity, feeDto, serviceCaseReference);
+                                         claimEntity, feeDto, orgName, serviceCaseReference);
     }
 }

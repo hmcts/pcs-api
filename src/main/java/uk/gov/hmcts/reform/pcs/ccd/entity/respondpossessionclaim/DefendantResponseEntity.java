@@ -96,8 +96,8 @@ public class DefendantResponseEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "tenancy_type_correct")
-    private YesNoNotSure tenancyTypeCorrect;
+    @Column(name = "tenancy_type_confirmation")
+    private YesNoNotSure tenancyTypeConfirmation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -123,6 +123,12 @@ public class DefendantResponseEntity {
     private VerticalYesNo disputeClaim;
 
     private String disputeClaimDetails;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo otherConsiderations;
+
+    private String otherConsiderationsDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

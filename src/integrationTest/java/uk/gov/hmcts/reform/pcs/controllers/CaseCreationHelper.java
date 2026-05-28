@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -28,19 +27,19 @@ public class CaseCreationHelper {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
-            .build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
 
         caseEntity.addClaim(claimEntity);
 
-        PartyEntity defendant = new PartyEntity();
-        defendant.setIdamId(idamUserId);
-        defendant.setFirstName("John");
-        defendant.setLastName("Doe");
-
-        caseEntity.addParty(defendant);
-        claimEntity.addParty(defendant, partyRole);
+        PartyEntity party = new PartyEntity();
+        party.setIdamId(idamUserId);
+        party.setFirstName("John");
+        party.setLastName("Doe");
+        if (PartyRole.CLAIMANT == partyRole) {
+            party.setOrgName("Test Claimant");
+        }
+        caseEntity.addParty(party);
+        claimEntity.addParty(party, partyRole);
 
         return pcsCaseRepository.save(caseEntity);
     }
@@ -50,9 +49,7 @@ public class CaseCreationHelper {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
-            .build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
 
         caseEntity.addClaim(claimEntity);
 

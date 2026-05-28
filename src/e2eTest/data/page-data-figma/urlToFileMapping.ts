@@ -18,7 +18,6 @@ export default {
   'resumePossessionClaimclaimantCircumstances': 'claimantCircumstances',
   'resumePossessionClaimdefendantCircumstances': 'defendantCircumstances',
   'resumePossessionClaimalternativesToPossession': 'alternativesToPossession',
-  'resumePossessionClaimclaimingCosts': 'claimingCosts',
   'resumePossessionClaimrentDetails': 'rentDetails',
   'resumePossessionClaimdailyRentAmount': 'dailyRentAmount',
   'resumePossessionClaimmoneyJudgment': 'moneyJudgment',
@@ -40,11 +39,14 @@ export default {
   'resumePossessionClaimdemotionOfTenancyOrderReason': 'demotionOfTenancyOrderReason',
   'resumePossessionClaimsuspensionToBuyDemotionOfTenancyOrderReasons': 'suspensionToBuyDemotionOfTenancyOrderReasons',
   'resumePossessionClaimrentArrearsOrBreachOfTenancyGround': 'rentArrearsOrBreachOfTenancyGround',
-  'resumePossessionClaimclaimantDetailsWales': 'claimantDetailsWales',
+  'resumePossessionClaimexemptLandlord': 'exemptLandlord',
   'resumePossessionClaimOccupationLicenceDetailsWales': 'occupationLicenceDetailsWales',
   'resumePossessionClaimprohibitedConductWales': 'prohibitedConductWales',
   'resumePossessionClaimrentArrearsOrBreachOfTenancy': 'rentArrearsOrBreachOfTenancyGround',
   'resumePossessionClaimreasonsForRequestingASuspensionAndDemotionOrder': 'suspensionToBuyDemotionOfTenancyOrderReasons',
   'resumePossessionClaimstatementOfExpressTerms': 'statementOfExpressTerms',
   'resumePossessionClaimunderlesseeMortgageeDetails': 'underlesseeMortgageeDetails',
+  'createFlagscaseworkerCaseFlag': 'whereShouldThisFlagBeAdded',
+  'submit': 'reviewFlagDetails'
+  'addCaseNoteaddCaseNote': 'addCaseNote',
 };

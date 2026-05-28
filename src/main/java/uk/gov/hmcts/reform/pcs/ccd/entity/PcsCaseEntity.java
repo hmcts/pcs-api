@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,12 +19,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -76,6 +79,7 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    @OrderBy("rank ASC")
     private Set<GenAppEntity> genApps = new HashSet<>();
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
@@ -88,11 +92,20 @@ public class PcsCaseEntity {
     @JsonManagedReference
     private List<DocumentEntity> documents = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private List<CounterClaimEntity> counterClaims = new ArrayList<>();
+
     @OneToMany(mappedBy = "pcsCase",
         cascade = ALL,
         orphanRemoval = true)
     @Builder.Default
     private List<CaseLinkEntity> caseLinks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CaseFlagEntity> caseFlags = new ArrayList<>();
 
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
@@ -112,6 +125,8 @@ public class PcsCaseEntity {
     }
 
     public void addGenApp(GenAppEntity genApp) {
+        int rank = countNumberOfGenAppsForParty(genApp.getParty()) + 1;
+        genApp.setRank(rank);
         genApps.add(genApp);
         genApp.setPcsCase(this);
     }
@@ -132,4 +147,22 @@ public class PcsCaseEntity {
         defendantResponses.add(defendantResponse);
         defendantResponse.setPcsCase(this);
     }
+
+    public void addCounterClaim(CounterClaimEntity counterClaim) {
+        counterClaims.add(counterClaim);
+        counterClaim.setPcsCase(this);
+    }
+
+    private int countNumberOfGenAppsForParty(PartyEntity party) {
+        if (party == null || party.getId() == null) {
+            return 0;
+        }
+
+        return (int) genApps.stream()
+            .map(GenAppEntity::getParty)
+            .filter(Objects::nonNull)
+            .filter(genAppParty -> party.getId().equals(genAppParty.getId()))
+            .count();
+    }
+
 }

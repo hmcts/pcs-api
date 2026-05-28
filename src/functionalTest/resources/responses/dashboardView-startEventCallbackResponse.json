@@ -1,0 +1,145 @@
+{
+  "data": {
+    "dashboardData": {
+      "caseId": "${caseId}",
+      "notifications": [
+        {
+          "value": {
+            "templateId": "Defendant.CaseIssued",
+            "templateValues": [
+              {
+                "value": {
+                  "key": "responseEndDate",
+                  "value": "2026-05-15"
+                }
+              },
+              {
+                "value": {
+                  "key": "hearingDateTime",
+                  "value": "2026-06-15T10:30:00Z"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "templateId": "Defendant.ResponseToClaim",
+            "templateValues": [
+              {
+                "value": {
+                  "key": "ctaLabel",
+                  "value": "Start your response."
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "taskGroups": [
+        {
+          "value": {
+            "groupId": "CLAIM",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "ViewClaim",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "DOCUMENTS",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "UploadDocuments",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ViewDocuments",
+                  "status": "NOT_AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "RESPONSE",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "RespondToClaim",
+                  "status": "NOT_STARTED"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ReviewResponse",
+                  "status": "IN_PROGRESS"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "SubmitResponse",
+                  "status": "COMPLETED"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "HEARING",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "ViewHearingDocuments",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "NOTICE",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "ViewOrdersAndNotices",
+                  "status": "AVAILABLE"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "value": {
+            "groupId": "APPLICATIONS",
+            "tasks": [
+              {
+                "value": {
+                  "templateId": "MakeGeneralApplication",
+                  "status": "AVAILABLE"
+                }
+              },
+              {
+                "value": {
+                  "templateId": "ViewAllApplications",
+                  "status": "NOT_AVAILABLE"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

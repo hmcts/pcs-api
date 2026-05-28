@@ -83,6 +83,27 @@ spring:
       idle-timeout: ${HEARINGS_SERVICEBUS_IDLE_TIMEOUT:600000}
       hearings-topic: ${HEARINGS_SERVICEBUS_TOPIC:hmc-to-cft-aat}
       hearings-subscription: ${HEARINGS_SERVICEBUS_SUBSCRIPTION:hmc-to-pcs-subscription-aat}
+  security:
+    oauth2:
+      client:
+        registration:
+          prd-admin:
+            provider: idam
+            client-id: ${IDAM_CLIENT_ID:pcs-api}
+            client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: password
+            scope: openid,profile,roles
+          system-user:
+            provider: idam
+            client-id: ${IDAM_CLIENT_ID:pcs-api}
+            client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: password
+            scope: openid,profile,roles
+        provider:
+          idam:
+            token-uri: ${IDAM_API_URL:http://localhost:5062}/o/token
 flyway:
   noop:
     strategy: ${FLYWAY_NOOP_STRATEGY:false}
@@ -99,13 +120,13 @@ idam:
     username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
     password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
   prd-admin:
-    username: ${PCS_PRD_ADMIN_USERNAME:}
-    password: ${PCS_PRD_ADMIN_PASSWORD:}
-    scope: ${IDAM_PRD_ADMIN_SCOPE:openid profile roles}
-  client:
-    id: ${IDAM_CLIENT_ID:pcs-api}
-    secret: ${IDAM_CLIENT_SECRET:123456}
-    redirect_uri: ${IDAM_API_REDIRECT_URL:http://localhost:3001/oauth2/callback}
+    username: ${PCS_PRD_ADMIN_USERNAME:prd-admin-user@localhost}
+    password: ${PCS_PRD_ADMIN_PASSWORD:password}
+  throttle:
+    # How long (seconds) to tell callers to wait when IDAM throttles us, and which OAuth2
+    # error codes count as throttling. Consumed by UpstreamThrottling.
+    retry-after-seconds: ${IDAM_THROTTLE_RETRY_AFTER_SECONDS:30}
+    oauth2-error-codes: ${IDAM_THROTTLE_OAUTH2_ERROR_CODES:invalid_token_response,temporarily_unavailable}
 
 azure:
   application-insights:
@@ -129,6 +150,11 @@ notify:
     max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
     task-delay-seconds: ${NOTIFY_CHECK_STATUS_DELAY_SECONDS:60s}
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
+  templates:
+    response-no-counterclaim: 8ecf44d2-860f-44e3-a891-c82745f79645
+    counterclaim-payment-required: 258081b1-786d-4c20-9793-b45c0a1b029b
+    counterclaim-payment-success: 8d726681-78a7-4ed5-9201-4354bb04f8ad
+    counterclaim-no-payment-required: a6a6e7ce-e47f-4a85-9d98-cc9c924bdb5e
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}
@@ -146,12 +172,14 @@ doc_assembly:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
 
 rd-professional:
-  api-url: ${RD_PROFESSIONAL_API_URL:http://localhost:8085}
+  api-url: ${RD_PROFESSIONAL_API_URL:http://localhost:8083}
+
+case_document_am:
+  url: ${CASE_DOCUMENT_AM_URL:http://ccd-case-document-am-api-aat.service.core-compute-aat.internal}
 
 fees:
-  mock: false
   api:
-    url: ${FEES_REGISTER_API_URL:http://localhost:8991}
+    url: ${FEES_REGISTER_API_URL:http://localhost:8083}
   lookup:
     caseIssueFee:
       service: possession claim
@@ -162,6 +190,20 @@ fees:
       applicantType: all
       amountOrVolume: 1
       keyword: PossessionCC
+    genAppStandardFee:
+      service: general
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: general application
+      keyword: GeneralAppWithoutNotice
+    genAppMaxFee:
+      service: general
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: general application
+      keyword: GAOnNotice
     enforcementWarrantFee: # FEE0380 - County Court
       service: civil money claims
       jurisdiction1: civil
@@ -190,6 +232,11 @@ access-code:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
 
+role-assignment:
+  request:
+    max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}
+    backoff-delay-seconds: ${ROLE_ASSIGNMENT_BACKOFF_DELAY_SECONDS:3600s}
+
 payments:
   api:
     url: ${PAYMENT_API_URL:http://localhost:8083/payments}
@@ -201,3 +248,7 @@ payments:
 core_case_data:
   api:
     url: ${CCD_DATA_STORE_URL:localhost:4452}
+
+caseApi:
+  url: ${CASE_API_URL:http://localhost:3206}
+

@@ -8,10 +8,12 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -214,7 +216,7 @@ class NoticeOfPossessionViewTest {
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
         assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(EMAIL);
         assertThat(noticeServedDetails.getNoticeEmailSentDateTime()).isSameAs(emailSentDateTime);
-        assertThat(noticeServedDetails.getNoticeEmailExplanation()).isEqualTo(emailExplanation);
+        assertThat(noticeServedDetails.getNoticeEmailAddress()).isEqualTo(emailExplanation);
     }
 
     @Test
@@ -258,4 +260,29 @@ class NoticeOfPossessionViewTest {
         assertThat(noticeServedDetails.getNoticeOtherExplanation()).isEqualTo(otherExplanation);
     }
 
+    @Test
+    void shouldSetNoticeDocumentIfPresent() {
+        // Given
+        LocalDate postedDate = mock(LocalDate.class);
+        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
+        when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+            List.of(
+                DocumentEntity.builder()
+                    .type(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION)
+                    .build()
+            )
+        );
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
+
+        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
+        assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(FIRST_CLASS_POST);
+        assertThat(noticeServedDetails.getNoticePostedDate()).isSameAs(postedDate);
+        assertThat(noticeServedDetails.getNoticeDocuments()).hasSize(1);
+    }
 }

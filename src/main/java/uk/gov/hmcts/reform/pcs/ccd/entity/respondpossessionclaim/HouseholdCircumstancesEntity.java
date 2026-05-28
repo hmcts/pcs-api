@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -19,11 +20,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -45,6 +50,11 @@ public class HouseholdCircumstancesEntity {
     @JoinColumn(name = "defendant_response_id")
     @JsonBackReference
     private DefendantResponseEntity defendantResponse;
+
+    @OneToMany(mappedBy = "householdCircumstances", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    private List<RegularExpenseEntity> regularExpenses = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -114,11 +124,11 @@ public class HouseholdCircumstancesEntity {
 
     private BigDecimal debtContribution;
 
-    private String debtContributionFrequency;
+    @Enumerated(EnumType.STRING)
+    private RecurrenceFrequency debtContributionFrequency;
 
-    private String regularExpenses;
-
-    private BigDecimal expenseAmount;
-
-    private String expenseFrequency;
+    public void addRegularExpense(RegularExpenseEntity expense) {
+        regularExpenses.add(expense);
+        expense.setHouseholdCircumstances(this);
+    }
 }

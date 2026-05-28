@@ -10,8 +10,6 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -21,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
@@ -120,7 +119,7 @@ class SubmitEventHandlerTest {
     @Test
     void shouldAllowSubmitWithOnlyDefendantResponses() {
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
@@ -156,7 +155,7 @@ class SubmitEventHandlerTest {
 
         DefendantResponses defendantResponses =
             DefendantResponses.builder()
-                .preferenceType(ContactPreferenceType.EMAIL)
+                .contactByEmail(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPhone(VerticalYesNo.YES)
                 .build();
@@ -187,7 +186,7 @@ class SubmitEventHandlerTest {
         verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
 
         PossessionClaimResponse capturedResponse = responseCaptor.getValue();
-        assertThat(capturedResponse.getDefendantResponses().getPreferenceType()).isEqualTo(ContactPreferenceType.EMAIL);
+        assertThat(capturedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantResponses().getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantResponses().getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(capturedResponse.getDefendantContactDetails().getParty().getPhoneNumber())
@@ -204,7 +203,6 @@ class SubmitEventHandlerTest {
 
         DefendantResponses defendantResponses =
             DefendantResponses.builder()
-                .preferenceType(null)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPhone(VerticalYesNo.YES)
                 .build();
@@ -277,12 +275,12 @@ class SubmitEventHandlerTest {
     @Test
     void shouldSubmitRegularIncomeFieldsWhenFinalSubmit() {
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .shareIncomeExpenseDetails(VerticalYesNo.YES)
+            .shareIncomeExpenseDetails(YesOrNo.YES)
             .incomeFromJobs(YesOrNo.YES)
             .incomeFromJobsAmount(new BigDecimal("200000")) // £2000.00 in pence
             .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
             .pension(YesOrNo.NO)
-            .universalCredit(VerticalYesNo.YES)
+            .universalCredit(YesOrNo.YES)
             .ucApplicationDate(LocalDate.of(2024, 2, 10))
             .universalCreditAmount(new BigDecimal("100000")) // £1000.00 in pence
             .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
@@ -293,7 +291,6 @@ class SubmitEventHandlerTest {
 
         DefendantResponses defendantResponses = DefendantResponses.builder()
             .householdCircumstances(householdCircumstances)
-            .preferenceType(ContactPreferenceType.EMAIL)
             .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
@@ -325,7 +322,7 @@ class SubmitEventHandlerTest {
             .getHouseholdCircumstances();
 
         // Assert all regular income fields are submitted correctly
-        assertThat(capturedHousehold.getShareIncomeExpenseDetails()).isEqualTo(VerticalYesNo.YES);
+        assertThat(capturedHousehold.getShareIncomeExpenseDetails()).isEqualTo(YesOrNo.YES);
 
         assertThat(capturedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
         assertThat(capturedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("200000");
@@ -333,7 +330,7 @@ class SubmitEventHandlerTest {
 
         assertThat(capturedHousehold.getPension()).isEqualTo(YesOrNo.NO);
 
-        assertThat(capturedHousehold.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
+        assertThat(capturedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
         assertThat(capturedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 2, 10));
         assertThat(capturedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("100000");
         assertThat(capturedHousehold.getUniversalCreditFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
