@@ -21,7 +21,7 @@ public class FeesAndPayTaskData implements Serializable {
 
     private FeeDetails feeDetails;
 
-    private String caseReference;
+    private long caseReference;
 
     private String ccdCaseNumber;
 
@@ -29,4 +29,6 @@ public class FeesAndPayTaskData implements Serializable {
     private Integer volume = 1;
 
     private String responsibleParty;
+
+    private PaymentCallbackHandlerType paymentCallbackHandlerType;
 }
