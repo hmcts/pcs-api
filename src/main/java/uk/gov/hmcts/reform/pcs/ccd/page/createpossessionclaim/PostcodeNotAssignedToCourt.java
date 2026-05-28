@@ -69,7 +69,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 """
                 <ul class="govuk-list govuk-list--bullet">
                     <li class="govuk-list govuk-!-font-size-19">
-                        for rent or mortgage arrears claims in England use the %s
+                        for rent or mortgage arrears claims in England, use the %s
                     </li>
                     <li class="govuk-list govuk-!-font-size-19">
                         for other claims types in England, fill in form N5 and the correct particulars of claim form
