@@ -98,8 +98,8 @@
   "writCompletedBy": "CLAIMANT",
   "statementOfTruth": {
     "completedBy": "CLAIMANT",
-    "fullNameClaimant": "wert",
-    "positionClaimant": "ewrt",
+    "fullNameParty": "wert",
+    "positionParty": "ewrt",
     "agreementClaimant": [
       "BELIEVE_TRUE"
     ]
@@ -124,8 +124,8 @@
       }
     }
   ],
-  "writFullNameClaimant": "dsftsdfg",
-  "writPositionClaimant": "dsfgsdfgsdf",
+  "writFullNameParty": "dsftsdfg",
+  "writPositionParty": "dsfgsdfgsdf",
   "chooseEnforcementType": {
     "value": {
       "code": "WRIT",
