@@ -71,7 +71,9 @@ class CounterClaimEventListenerTest {
                                                CounterClaimStatus.PENDING_CASE_ISSUED);
         underTest.handle(event);
 
-        verify(defendantResponseNotificationService).sendEmailNotificationForCounterclaim(defendantResponseId);
+        verify(defendantResponseNotificationService).sendDefendantEmailNotificationForCounterclaim(defendantResponseId);
+        verify(defendantResponseNotificationService, never())
+            .sendClaimantEmailNotificationCounterClaimIssued(counterClaimId);
     }
 
     @Test
@@ -110,6 +112,7 @@ class CounterClaimEventListenerTest {
         underTest.handle(event);
 
         verify(paymentNotificationService).sendCounterClaimPaymentSuccessNotification(feePaymentId);
+        verify(defendantResponseNotificationService).sendClaimantEmailNotificationCounterClaimIssued(counterClaimId);
     }
 
     @Test
@@ -148,6 +151,7 @@ class CounterClaimEventListenerTest {
         underTest.handle(event);
 
         verify(paymentNotificationService, never()).sendCounterClaimPaymentSuccessNotification(feePaymentId);
+        verify(defendantResponseNotificationService).sendClaimantEmailNotificationCounterClaimIssued(counterClaimId);
     }
 
     @Test

@@ -287,6 +287,24 @@ class NotificationPersonalisationFactoryTest {
         }
     }
 
+    @Nested
+    @DisplayName("formatCaseReference")
+    class FormatCaseReferenceTests {
+
+        @Test
+        @DisplayName("Should return null when case reference is null")
+        void shouldReturnNullWhenCaseReferenceIsNull() {
+            assertThat(NotificationPersonalisationFactory.formatCaseReference(null)).isNull();
+        }
+
+        @Test
+        @DisplayName("Should format case reference correctly")
+        void shouldFormatCaseReferenceCorrectly() {
+            assertThat(NotificationPersonalisationFactory.formatCaseReference("1234567812345678"))
+                .isEqualTo("1234-5678-1234-5678");
+        }
+    }
+
     private PartyEntity stubClaimantParty() {
         PartyEntity claimantPartyEntity = createParty("Jane", "Smith");
         when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantPartyEntity);
