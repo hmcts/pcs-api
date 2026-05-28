@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
@@ -91,19 +91,16 @@ public class LegalRepresentativePartyLinkService {
     }
 
     private void unlinkExistingRepresentation(UUID partyId) {
-        Optional<LegalRepresentativeEntity> partyLinkedToLegalRepresentativeAndActive =
-            legalRepresentativeRepository.isPartyLinkedToLegalRepresentativeAndActive(partyId);
 
-        if (partyLinkedToLegalRepresentativeAndActive.isPresent()) {
-            LegalRepresentativeEntity existingLegalRepresentative = partyLinkedToLegalRepresentativeAndActive.get();
+        legalRepresentativeRepository.findLegalRepresentativeForParty(partyId)
+            .ifPresent((existingLegalRepresentative) -> {
+                existingLegalRepresentative.getClaimPartyLegalRepresentativeList().stream()
+                    .filter(claimPartyLegalRepresentative ->
+                                claimPartyLegalRepresentative.getParty().getId().equals(partyId))
+                    .forEach(this::invalidateLegalRepresentativeClaimParty);
 
-            existingLegalRepresentative.getClaimPartyLegalRepresentativeList().stream()
-                .filter(claimPartyLegalRepresentative ->
-                            claimPartyLegalRepresentative.getParty().getId().equals(partyId))
-                .forEach(this::invalidateLegalRepresentativeClaimParty);
-
-            legalRepresentativeRepository.saveAndFlush(existingLegalRepresentative);
-        }
+                legalRepresentativeRepository.saveAndFlush(existingLegalRepresentative);
+            });
     }
 
     private void invalidateLegalRepresentativeClaimParty(ClaimPartyLegalRepresentativeEntity claimParty) {

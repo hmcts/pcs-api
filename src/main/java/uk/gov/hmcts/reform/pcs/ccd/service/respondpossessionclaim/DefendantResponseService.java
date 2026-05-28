@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
@@ -231,14 +232,28 @@ public class DefendantResponseService {
                                          ? cc.getEstimatedMaxClaimAmount() : null)
             .counterClaimFor(cc.getCounterClaimFor())
             .counterClaimReasons(cc.getCounterClaimReasons())
-            .otherOrderRequestDetails(cc.getOtherOrderRequestDetails())
-            .otherOrderRequestFacts(cc.getOtherOrderRequestFacts())
+            .otherOrderRequestDetails(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
+                                          ? cc.getOtherOrderRequestDetails() : null)
+            .otherOrderRequestFacts(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
+                                        ? cc.getOtherOrderRequestFacts() : null)
             .needHelpWithFees(cc.getNeedHelpWithFees())
             .appliedForHwf(cc.getAppliedForHwf())
             .hwfReferenceNumber(cc.getHwfReferenceNumber())
             .claimSubmittedDate(LocalDateTime.now(utcClock))
             .party(partyRef)
             .build();
+
+        if (cc.getCounterClaimAgainst() != null) {
+            counterClaimEntity.getCounterClaimParties().addAll(
+                cc.getCounterClaimAgainst().stream()
+                    .filter(lv -> lv.getId() != null)
+                    .map(lv -> CounterClaimPartyEntity.builder()
+                        .counterClaim(counterClaimEntity)
+                        .party(partyRepository.getReferenceById(UUID.fromString(lv.getId())))
+                        .build())
+                    .toList()
+            );
+        }
 
         claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
     }
@@ -253,5 +268,13 @@ public class DefendantResponseService {
             .completedDate(LocalDateTime.now(utcClock))
             .build();
         responseEntity.setStatementOfTruth(sot);
+    }
+
+    public boolean hasSubmittedResponse(long caseReference) {
+        UUID userId = securityContextService.getCurrentUserId();
+        if (userId == null) {
+            return false;
+        }
+        return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
     }
 }
