@@ -73,3 +73,23 @@ export function formatWord(input: string): string {
   return input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
 }
 
+/* convert date and time 2025-12-11T14:20:59 to 11/12/2025, 2:20:59PM */
+export function formatDateTime(dateStr: string): string {
+  const date = new Date(dateStr);
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+
+  hours = hours % 12;
+  hours = hours === 0 ? 12 : hours; // convert 0 → 12
+
+  return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}${ampm}`;
+}
+

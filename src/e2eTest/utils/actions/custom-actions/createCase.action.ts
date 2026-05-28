@@ -56,7 +56,7 @@ import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
-import {formatCurrency, formatDate, formatText, formatWord} from '@utils/common/string.utils';
+import {formatCurrency, formatDate, formatDateTime, formatText, formatWord} from '@utils/common/string.utils';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -1107,15 +1107,25 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Notice':
+
+        const serviceMethod = submitPayLoad.notice_NoticeServiceMethod;
+
         const dateServed =
-          submitPayLoad.notice_NoticeServiceMethod === 'FIRST_CLASS_POST'
+          serviceMethod === 'FIRST_CLASS_POST'
             ? submitPayLoad.notice_NoticePostedDate
-            : submitPayLoad.notice_NoticeServiceMethod === 'EMAIL'
+            : serviceMethod === 'EMAIL'
               ? submitPayLoad.notice_NoticeEmailSentDateTime
               : null;
+
         if (dateServed) {
-          caseSummary.set(`Date notice was served`, formatDate(dateServed));
+          const formattedDate =
+            serviceMethod === 'FIRST_CLASS_POST'
+              ? formatDate(dateServed)
+              : formatDateTime(dateServed);
+
+          caseSummary.set('Date notice was served', formattedDate);
         }
+
         break;
 
       default:
