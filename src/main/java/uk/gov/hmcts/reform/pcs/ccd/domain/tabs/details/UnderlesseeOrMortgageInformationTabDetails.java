@@ -22,6 +22,6 @@ public class UnderlesseeOrMortgageInformationTabDetails {
     @CCD(label = "Underlessee or mortgagee’s address for service known?")
     private String addressKnown;
 
-    @CCD(label = "Underlessee or mortgagee address for service address")
+    @CCD(label = "Underlessee or mortgagee address for service")
     private AddressUK address;
 }
