@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTrut
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 
@@ -58,8 +58,8 @@ public class WarrantDetailsMapper {
         if (warrantDetails.getStatementOfTruth() != null) {
             StatementOfTruthDetailsEnforcement statementOfTruth = warrantDetails.getStatementOfTruth();
             warrantEntity.setCompletedBy(statementOfTruth.getCompletedBy());
-            warrantEntity.setFullNameClaimant(statementOfTruth.getFullNameClaimant());
-            warrantEntity.setPositionClaimant(statementOfTruth.getPositionClaimant());
+            warrantEntity.setFullNameClaimant(statementOfTruth.getFullNameParty());
+            warrantEntity.setPositionClaimant(statementOfTruth.getPositionParty());
             warrantEntity.setFullNameLegalRep(statementOfTruth.getFullNameLegalRep());
             warrantEntity.setFirmNameLegalRep(statementOfTruth.getFirmNameLegalRep());
             warrantEntity.setPositionLegalRep(statementOfTruth.getPositionLegalRep());
@@ -84,7 +84,7 @@ public class WarrantDetailsMapper {
 
     private void agreementLegalRep(WarrantEntity warrantEntity,
                                    StatementOfTruthDetailsEnforcement statementOfTruth) {
-        List<StatementOfTruthAgreementLegalRep> agreementLegalRep = statementOfTruth.getAgreementLegalRep();
+        List<AgreementClaimantLegalRep> agreementLegalRep = statementOfTruth.getAgreementClaimantLegalRep();
         if (agreementLegalRep != null && !agreementLegalRep.isEmpty()) {
             warrantEntity.setAgreementLegalRep(agreementLegalRep.stream()
                     .map(Enum::name)

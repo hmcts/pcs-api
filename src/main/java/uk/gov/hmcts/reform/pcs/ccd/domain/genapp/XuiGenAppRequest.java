@@ -24,15 +24,24 @@ public class XuiGenAppRequest implements GenAppRequest {
     @CCD(label = "What do you want to apply for?")
     private GenAppType applicationType;
 
-    @CCD(label = "Is the defendant’s court hearing in the next 14 days?")
+    @CCD(
+        label = "Is the defendant’s court hearing in the next 14 days?",
+        hint = "This will affect the fee you will invoice to the defendant. "
+             + "They will not need to pay a fee if their court hearing is (at least) 14 days away.")
     private VerticalYesNo within14Days;
 
     @CCD(label = "Does the defendant need help paying the fee for this application?")
     private VerticalYesNo needHwf;
 
+    @CCD(label = "Have they already applied for help with their application fee?")
     private VerticalYesNo appliedForHwf;
 
-    @CCD(max = 100)
+    @CCD(
+        label = "Enter their Help with Fees reference number",
+        hint = "The defendant will have received this number when they applied for Help with Fees. This reference "
+             + "must not have been used for a previous application. For example, HWF-A1B-23C",
+        max = 60
+    )
     private String hwfReference;
 
     private VerticalYesNo otherPartiesAgreed;
@@ -55,5 +64,14 @@ public class XuiGenAppRequest implements GenAppRequest {
 
     @CCD(max = 100)
     private String sotFullName;
+
+    @CCD(searchable = false)
+    private String standardFee;
+
+    @CCD(searchable = false)
+    private String maxFee;
+
+    @CCD(searchable = false)
+    private VerticalYesNo showHwfScreens;
 
 }
