@@ -20,6 +20,7 @@ import {
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
+import {statementOfTruth} from "@data/page-data-figma";
 
 test.use({ storageState: undefined });
 
@@ -107,6 +108,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
       option: whichLanguageDidYouUseToCompleteThisService.englishRadioOption,
     });
+    await performValidation('mainHeader', statementOfTruth.mainHeader);
   });
 
 });

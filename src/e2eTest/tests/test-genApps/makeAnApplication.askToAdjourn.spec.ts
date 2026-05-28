@@ -21,6 +21,7 @@ import {
   doYouWantToUploadDocumentsToSupportDefendantsApplication, whichLanguageDidYouUseToCompleteThisService
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
+import {statementOfTruth} from "@data/page-data-figma";
 
 test.use({ storageState: undefined });
 
@@ -113,7 +114,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
       option: whichLanguageDidYouUseToCompleteThisService.englishRadioOption,
     });
-
+    await performValidation('mainHeader', statementOfTruth.mainHeader);
   });
 
 test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No] @PR', async () => {
@@ -155,7 +156,9 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
   await performAction('clickButton', doYouWantToUploadDocumentsToSupportDefendantsApplication.continueButton);
   await performAction('selectLanguageUsedToComplete', {
     question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
-    option: whichLanguageDidYouUseToCompleteThisService.englishRadioOption,
+    option: whichLanguageDidYouUseToCompleteThisService.welshRadioOption,
   });
+  await performValidation('mainHeader', statementOfTruth.mainHeader);
+
 });
 });

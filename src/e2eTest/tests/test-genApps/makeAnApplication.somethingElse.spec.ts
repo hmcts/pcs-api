@@ -20,6 +20,7 @@ import {
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
+import {statementOfTruth} from "@data/page-data-figma";
 
 test.use({ storageState: undefined });
 
@@ -105,7 +106,8 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('clickButton', doYouWantToUploadDocumentsToSupportDefendantsApplication.continueButton);
     await performAction('selectLanguageUsedToComplete', {
       question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
-      option: whichLanguageDidYouUseToCompleteThisService.englishRadioOption,
+      option: whichLanguageDidYouUseToCompleteThisService.englishAndWelshRadioOption,
     });
+    await performValidation('mainHeader', statementOfTruth.mainHeader);
   });
 });
