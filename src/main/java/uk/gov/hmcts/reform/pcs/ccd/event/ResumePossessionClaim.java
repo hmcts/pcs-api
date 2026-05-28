@@ -19,12 +19,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -58,6 +59,7 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FE
 public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final PartyService partyService;
     private final SecurityContextService securityContextService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final OrganisationService organisationService;
@@ -176,8 +178,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulePartyAccessCodeGeneration(caseReference);
 
-        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference,
-                                                            getResponsiblePartyName(pcsCase.getClaimantInformation()));
+        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, getResponsiblePartyId(caseReference));
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
@@ -186,13 +187,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
     }
 
-    private String getResponsiblePartyName(ClaimantInformation claimantInformation) {
-        if (claimantInformation.getOrgNameFound() == YesOrNo.NO) {
-            return claimantInformation.getFallbackClaimantName();
-        } else if (claimantInformation.getIsClaimantNameCorrect() == VerticalYesNo.NO) {
-            return claimantInformation.getOverriddenClaimantName();
-        }
-        return claimantInformation.getClaimantName();
+    private UUID getResponsiblePartyId(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity).getId();
     }
 
     private SubmitResponse<State> saveForLater() {
@@ -207,14 +204,14 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .orElse(ClaimantInformation.builder().build());
     }
 
-    private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {
+    private FeeDetails scheduleCaseIssueFeePayment(long caseReference, UUID responsiblePartyId) {
         FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
             .feeType(FeeType.CASE_ISSUE_FEE.getCode())
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(caseReference)
-            .responsibleParty(responsibleParty)
+            .responsiblePartyId(responsiblePartyId)
             .paymentCallbackHandlerType(CLAIM)
             .build();
 

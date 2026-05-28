@@ -4,18 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.io.IOException;
-
-import static uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService.PARTY_NOT_FOUND;
 
 @AllArgsConstructor
 @Component
@@ -23,14 +20,16 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService.PARTY_NO
 public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
+    private final PartyService partyService;
     private final ObjectMapper objectMapper;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
         FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity.getTaskData());
-        ClaimPartyEntity claimPartyEntity = retrieveClaimPartyEntity(feePaymentEntity.getClaim(),
-                                                                     feesAndPayTaskData.getResponsibleParty());
-        feePaymentEntity.setParty(claimPartyEntity.getParty());
+
+        PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
+        feePaymentEntity.setParty(claimParty);
+
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
         } else {
@@ -47,12 +46,11 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         }
     }
 
-    private ClaimPartyEntity retrieveClaimPartyEntity(ClaimEntity claimEntity, String responsibleParty) {
-        return claimEntity.getClaimParties()
-            .stream()
-            .filter(party -> responsibleParty.equals(party.getParty().getOrgName()))
-            .findFirst()
-            .orElseThrow(() -> new PartyNotFoundException(PARTY_NOT_FOUND));
+    private PartyEntity getResponsibleParty(FeesAndPayTaskData feesAndPayTaskData) {
+        return partyService.getPartyEntityByEntityId(
+            feesAndPayTaskData.getResponsiblePartyId(),
+            feesAndPayTaskData.getCaseReference()
+        );
     }
 
 }

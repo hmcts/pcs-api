@@ -92,8 +92,8 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
         PcsCaseEntity pcsCaseEntity = establishTestCase();
         claimEntity = pcsCaseEntity.getClaims().getFirst();
         ClaimPartyEntity claimPartyEntity = claimEntity.getClaimParties().getFirst();
-        String orgName = claimPartyEntity.getParty().getOrgName();
-        feesAndPayTaskData.setResponsibleParty(orgName);
+        UUID claimantPartyId = claimPartyEntity.getParty().getId();
+        feesAndPayTaskData.setResponsiblePartyId(claimantPartyId);
         Mockito.when(paymentCallbackStrategyFactory.getStrategy(any())).thenReturn(pretendStrategy);
         establishFeePayment(serviceCaseReference);
     }

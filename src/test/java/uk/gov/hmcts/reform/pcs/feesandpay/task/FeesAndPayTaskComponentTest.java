@@ -20,10 +20,10 @@ import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.time.Duration;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,9 +39,6 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FE
 class FeesAndPayTaskComponentTest {
 
     private FeesAndPayTaskComponent feesAndPayTaskComponent;
-
-    @Mock
-    private FeeService feeService;
 
     @Mock
     private PaymentService paymentService;
@@ -63,7 +60,6 @@ class FeesAndPayTaskComponentTest {
     void setUp() {
         int maxRetriesFeesAndPay = 5;
         feesAndPayTaskComponent = new FeesAndPayTaskComponent(
-            feeService,
             paymentService,
             maxRetriesFeesAndPay,
             feesAndPayBackoffDelay
@@ -80,7 +76,7 @@ class FeesAndPayTaskComponentTest {
             .caseReference(123)
             .ccdCaseNumber("1111-2222-3333-4444")
             .volume(2)
-            .responsibleParty("Applicant")
+            .responsiblePartyId(UUID.randomUUID())
             .build();
     }
 
