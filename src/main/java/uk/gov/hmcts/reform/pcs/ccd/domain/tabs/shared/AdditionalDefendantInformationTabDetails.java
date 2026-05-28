@@ -22,7 +22,7 @@ public class AdditionalDefendantInformationTabDetails {
     @CCD(label = "Last name")
     private String lastName;
 
-    @CCD(label = "Additional defendant’s correspondence address known")
+    @CCD(label = "Additional defendant’s address for service known?")
     private String addressKnown;
 
     @CCD(label = "Additional defendant address for service")

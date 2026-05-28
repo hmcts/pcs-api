@@ -40,7 +40,7 @@ public class DefendantInformationTabDetailsBuilder extends DefendantInformationB
             .nameKnown(nameKnown != null ? nameKnown.getLabel() : null)
             .firstName(getDefendantFirstName(defendant))
             .lastName(getDefendantLastName(defendant))
-            .addressForServiceKnown(addressKnown != null ? addressKnown.getLabel() : null)
+            .addressKnown(addressKnown != null ? addressKnown.getLabel() : null)
             .addressForService(addressForService)
             .build();
     }

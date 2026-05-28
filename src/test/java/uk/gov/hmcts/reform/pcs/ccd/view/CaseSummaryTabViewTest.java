@@ -175,7 +175,7 @@ public class CaseSummaryTabViewTest {
                 .nameKnown("Yes")
                 .firstName("Defendant")
                 .lastName("One")
-                .addressForServiceKnown("Yes")
+                .addressKnown("Yes")
                 .addressForService(propertyAddress)
                 .build()
         );
@@ -220,7 +220,7 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getDefendantDetails().getNameKnown()).isEqualTo("Yes");
         assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("One");
-        assertThat(summaryTab.getDefendantDetails().getAddressForServiceKnown()).isEqualTo("Yes");
+        assertThat(summaryTab.getDefendantDetails().getAddressKnown()).isEqualTo("Yes");
         assertThat(summaryTab.getDefendantDetails().getAddressForService()).isEqualTo(propertyAddress);
         assertThat(summaryTab.getAdditionalDefendants()).hasSize(2);
         assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getFirstName()).isEqualTo("Defendant");
