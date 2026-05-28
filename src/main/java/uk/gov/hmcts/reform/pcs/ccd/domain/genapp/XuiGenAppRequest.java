@@ -33,9 +33,15 @@ public class XuiGenAppRequest implements GenAppRequest {
     @CCD(label = "Does the defendant need help paying the fee for this application?")
     private VerticalYesNo needHwf;
 
+    @CCD(label = "Have they already applied for help with their application fee?")
     private VerticalYesNo appliedForHwf;
 
-    @CCD(max = 100)
+    @CCD(
+        label = "Enter their Help with Fees reference number",
+        hint = "The defendant will have received this number when they applied for Help with Fees. This reference "
+             + "must not have been used for a previous application. For example, HWF-A1B-23C",
+        max = 60
+    )
     private String hwfReference;
 
     private VerticalYesNo otherPartiesAgreed;
@@ -64,5 +70,8 @@ public class XuiGenAppRequest implements GenAppRequest {
 
     @CCD(searchable = false)
     private String maxFee;
+
+    @CCD(searchable = false)
+    private VerticalYesNo showHwfScreens;
 
 }
