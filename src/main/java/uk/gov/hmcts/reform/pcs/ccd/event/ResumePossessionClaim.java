@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.config.SchedulingConfig;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -48,6 +49,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HM
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
 @Slf4j
@@ -64,8 +66,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final AddressFormatter addressFormatter;
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
-
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
+    private final SchedulingConfig schedulingConfig;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -206,24 +208,21 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {
-
         FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
-
-        String taskId = UUID.randomUUID().toString();
-
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
             .feeType(FeeType.CASE_ISSUE_FEE.getCode())
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
-            .caseReference(String.valueOf(caseReference))
+            .caseReference(caseReference)
             .responsibleParty(responsibleParty)
+            .paymentCallbackHandlerType(CLAIM)
             .build();
 
         schedulerClient.scheduleIfNotExists(
             FEE_CASE_ISSUED_TASK_DESCRIPTOR
-                .instance(taskId)
+                .instance(UUID.randomUUID().toString())
                 .data(taskData)
-                .scheduledTo(Instant.now())
+                .scheduledTo(Instant.now().plusSeconds(schedulingConfig.getScheduleFeeCaseIssuedInSeconds()))
         );
 
         return feeDetails;
