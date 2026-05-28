@@ -29,14 +29,18 @@ public class DefendantInformationTabDetailsBuilder extends DefendantInformationB
 
     private DefendantInformationTabDetails createSummaryDefendantDetails(Party defendant, PCSCase pcsCase) {
         AddressUK addressForService = getDefendantAddressForService(defendant, pcsCase);
+        VerticalYesNo nameKnown = defendant.getNameKnown();
+        VerticalYesNo addressKnown = defendant.getAddressKnown();
 
-        if (defendant.getNameKnown() != VerticalYesNo.YES && addressForService == null) {
+        if (nameKnown != VerticalYesNo.YES && addressForService == null) {
             return null;
         }
 
         return DefendantInformationTabDetails.builder()
+            .nameKnown(nameKnown != null ? nameKnown.getLabel() : null)
             .firstName(getDefendantFirstName(defendant))
             .lastName(getDefendantLastName(defendant))
+            .addressForServiceKnown(addressKnown != null ? addressKnown.getLabel() : null)
             .addressForService(addressForService)
             .build();
     }
