@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -53,6 +52,7 @@ public class DefendantResponseService {
     private final HouseholdCircumstancesService householdCircumstancesService;
     private final PaymentAgreementService paymentAgreementService;
     private final DocumentService documentService;
+    private final PartyAttributeAssertationService partyAttributeAssertationService;
     private final Clock utcClock;
 
     public DefendantResponseService(PartyService partyService,
@@ -64,6 +64,7 @@ public class DefendantResponseService {
                                     HouseholdCircumstancesService householdCircumstancesService,
                                     PaymentAgreementService paymentAgreementService,
                                     DocumentService documentService,
+                                    PartyAttributeAssertationService partyAttributeAssertationService,
                                     @Qualifier("utcClock") Clock utcClock) {
         this.partyService = partyService;
         this.partyRepository = partyRepository;
@@ -74,6 +75,7 @@ public class DefendantResponseService {
         this.householdCircumstancesService = householdCircumstancesService;
         this.paymentAgreementService = paymentAgreementService;
         this.documentService = documentService;
+        this.partyAttributeAssertationService = partyAttributeAssertationService;
         this.utcClock = utcClock;
     }
 
@@ -146,6 +148,8 @@ public class DefendantResponseService {
             );
         }
 
+        partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, partyRef);
+
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
     }
 
@@ -153,12 +157,10 @@ public class DefendantResponseService {
                                                                 PartyEntity partyRef,
                                                                 DefendantResponses responses) {
 
-        YesNoNotSure tenancyStartDateConfirmation = responses.getTenancyStartDateConfirmation();
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
             .freeLegalAdvice(responses.getFreeLegalAdvice())
-            .possessionNoticeReceived(responses.getPossessionNoticeReceived())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
@@ -166,15 +168,9 @@ public class DefendantResponseService {
             .disputeClaim(responses.getDisputeClaim())
             .disputeClaimDetails(responses.getDisputeClaimDetails())
             .makeCounterClaim(responses.getMakeCounterClaim())
+            .tenancyStartDateConfirmation(responses.getTenancyStartDateConfirmation())
             .tenancyTypeConfirmation(responses.getTenancyTypeConfirmation())
-            .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
-            .tenancyStartDate(
-                responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
-                    ? responses.getTenancyStartDate()
-                    : null
-            )
             .landlordLicensed(responses.getLandlordLicensed())
-            .noticeReceivedDate(responses.getNoticeReceivedDate())
             .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
             .languageUsed(responses.getLanguageUsed())
             .otherConsiderations(responses.getOtherConsiderations())
