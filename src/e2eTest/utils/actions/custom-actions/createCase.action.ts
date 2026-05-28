@@ -32,7 +32,6 @@ import {
   moneyJudgment,
   defendantCircumstances,
   claimantCircumstances,
-  claimingCosts,
   alternativesToPossession,
   provideMoreDetailsOfClaim,
   checkingNotice,
@@ -49,13 +48,24 @@ import {
   statementOfExpressTerms,
   suspensionOfRightToBuyOrderReason,
   suspensionToBuyDemotionOfTenancyOrderReasons,
-  underlesseeMortgageeDetails
+  underlesseeMortgageeDetails,
+  checkingNoticeWales,
+  addCaseNote,
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
+import {caseInfo} from './createCaseAPI.action';
+import { createCaseApiData } from '@data/api-data';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
+
+export const addressInfoCaseTab = {
+  buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
+  addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
+  townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
+  engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
+};
 export const caseTabMap = new Map<string, string>();
 
 export class CreateCaseAction implements IAction {
@@ -81,6 +91,7 @@ export class CreateCaseAction implements IAction {
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName as actionRecord)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName as actionRecord)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName as actionRecord)],
+      ['selectNoticeDetailsWales', () => this.selectNoticeDetailsWales(fieldName as actionRecord)],
       ['selectBorderPostcode', () => this.selectBorderPostcode(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName as actionRecord)],
       ['selectOtherGrounds', () => this.selectYourPossessionGrounds(fieldName as actionRecord)],
@@ -101,7 +112,6 @@ export class CreateCaseAction implements IAction {
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName as actionRecord)],
       ['selectApplications', () => this.selectApplications(fieldName)],
-      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', () => this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
@@ -113,6 +123,8 @@ export class CreateCaseAction implements IAction {
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
       ['validateClaimantDetails', () => this.validateClaimantDetails(page, fieldName as actionRecord)],
+      ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
+      ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -197,6 +209,8 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
     if(caseData === claimType.yesRadioOption){    
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
+    } else {
+      await performAction('clickButton', claimType.continueButton);
     }
   }
 
@@ -230,6 +244,9 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:preactionProtocol.haveYouFollowedThePreactionQuestion, option: caseData});
+    if(caseData === 'No' && addressInfo.townCity !== addressDetails.walesTownOrCityTextInput){
+      await performAction('inputText', preactionProtocol.explainWhyYouHaveNoFollowedHiddenTextLabel, preactionProtocol.explainWhyYouHaveNoFollowedHiddenTextInput);
+    }
     await performAction('clickButton', preactionProtocol.continueButton);
   }
 
@@ -256,6 +273,7 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', claimantInformation.whatIsCorrectClaimantNameHiddenQuestion, claimantInformation.ClaimantNameTextInput);
     }
     claimantsName = caseData == "No" ? claimantInformation.ClaimantNameTextInput : await this.extractClaimantName(page, claimantInformation.yourClaimantNameRegisteredParagraph);
+    await performAction('clickButton', claimantInformation.continueButton);
   }
 
   private async selectContactPreferences(preferences: actionRecord) {
@@ -437,6 +455,10 @@ export class CreateCaseAction implements IAction {
         case 'discretionaryAccommodation':
           await performAction('check', {question: whatAreYourGroundsForPossession.discretionaryWithAccommodation.discretionaryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.discretionaryAccommodation});
           break;
+        case 'other':
+          await performAction('check', {question: whatAreYourGroundsForPossession.additionalGrounds, option: possessionGrounds.other});
+          await performAction('inputText', whatAreYourGroundsForPossession.giveDetailsHiddenTextLabel, whatAreYourGroundsForPossession.giveDetailsHiddenTextInput);
+          break;
       }
     }
     await performAction('clickButton', whatAreYourGroundsForPossession.continueButton);
@@ -462,7 +484,8 @@ export class CreateCaseAction implements IAction {
       const reason = String(reasons[n]).trim();
       const needsGrounds = /^(other|no)$/i.test(reason);
       const reasonDisplay = needsGrounds ? `${reason} grounds` : reason;
-      await performAction('inputText', {text:`${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})`,index: n}, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
+      await performValidation('text', { text: reasonsForPossession.giveDetailsAboutYourReasonsForPossessionHintText, "elementType": 'paragraph', "index": n });
+      await performAction('inputText', { text: `${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})`, index: n }, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
   }
@@ -474,16 +497,10 @@ export class CreateCaseAction implements IAction {
       question: mediationAndSettlement.haveYouAttemptedMediationWithQuestion,
       option: mediationSettlement.attemptedMediationWithDefendantsOption
     });
-    if (mediationSettlement.attemptedMediationWithDefendantsOption == mediationAndSettlement.yesRadioOption) {
-      await performAction('inputText', mediationAndSettlement.giveDetailsAboutTheAttemptedHiddenTextLabel, mediationAndSettlement.giveDetailsAboutTheAttemptedHiddenTextInput);
-    }
     await performAction('clickRadioButton', {
       question: mediationAndSettlement.haveYouTriedToReachQuestion,
       option: mediationSettlement.settlementWithDefendantsOption
     });
-    if (mediationSettlement.settlementWithDefendantsOption == mediationAndSettlement.yesRadioOption) {
-      await performAction('inputText', mediationAndSettlement.explainWhatStepsYouHaveTakenHiddenTextLabel, mediationAndSettlement.explainWhatStepsYouHaveTakenHiddenTextInput);
-    }
     await performAction('clickButton', mediationAndSettlement.continueButton);
   }
 
@@ -510,6 +527,23 @@ export class CreateCaseAction implements IAction {
       await performAction('uploadFile', noticeData.files);
     }
     await performAction('clickButton', noticeDetails.continueButton);
+  }
+
+  private async selectNoticeDetailsWales(noticeData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performAction('clickRadioButton', { question: noticeData.question, option: noticeData.haveYouServedNoticeToQuestion });
+    if (noticeData.haveYouServedNoticeToQuestion === checkingNoticeWales.noRadioOption) {
+      await performValidation('text', { "text": checkingNoticeWales.ifThisIsAPossessionParagraph, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.eachGroundRequiresParagraph, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.haveYouServedNoticeToQuestion, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.youMustMakeAStatementHiddenParagraph, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.characterLimitHiddenHintText, "elementType": "paragraph" });
+      if (noticeData.walesNoticeStatement) {
+        await performAction('inputText', checkingNoticeWales.enterStatementHiddenTextLabel, noticeData.walesNoticeStatement);
+      }
+    }
+    await performAction('clickButton', checkingNoticeWales.continueButton);
   }
 
   private async provideRentDetails(rentFrequency: actionRecord) {
@@ -601,13 +635,6 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: moneyJudgment.doYouWantTheCourtQuestion, option: option});
     await performAction('clickButton', moneyJudgment.continueButton);
-  }
-
-  private async selectClaimingCosts(option: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question: claimingCosts.doYouWantToAskForYourCostBackQuestion, option: option});
-    await performAction('clickButton', claimingCosts.continueButton);
   }
 
   private async selectAlternativesToPossession(alternatives: actionRecord) {
@@ -879,6 +906,13 @@ export class CreateCaseAction implements IAction {
     //await performAction('searchCaseFromFindCase', caseNumber);
   }
 
+  private async addCaseNotes(caseNote: actionRecord){
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {elementType: 'paragraph', text: `Property address: ${addressInfoCaseTab.buildingStreet}, ${addressInfoCaseTab.townCity}, ${addressInfoCaseTab.engOrWalPostcode}`});
+    await performAction('inputText', caseNote.label, caseNote.input);
+    await performAction('clickButton', addCaseNote.continueButton);
+  }
+
   private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {
 
     const defendant = new Map<string, string>();
@@ -949,7 +983,6 @@ export class CreateCaseAction implements IAction {
       claimant.set(`Postcode/Zipcode`, payLoad.organisationAddress.PostCode);
       claimant.set('Country', payLoad.organisationAddress.Country)
     }
-
     await this.caseTabTableData(page, defendantsDetails.table as string);
 
     const misMatchMap = compareMaps(claimant, caseTabMap, {
@@ -971,6 +1004,38 @@ export class CreateCaseAction implements IAction {
         console.log('\n✅ Case Parties (Claimant) VALIDATION PASSED!\n');
       }
     
+    caseTabMap.clear();
+
+  }
+
+  private async validateCaseNotesDetails(page: Page, caseNotes: actionRecord) {
+
+    const caseNote = new Map<string, string>();
+    caseNote.set(`Created by`, process.env.Display_NAME as string);
+    caseNote.set(`Created on`, caseNotes.createdOn as string);
+    caseNote.set(`Note`, caseNotes.userInput as string);
+
+    await this.caseTabTableData(page, caseNotes.table as string);
+
+    const misMatchMap = compareMaps(caseNote, caseTabMap, {
+      name1: 'CaseNote',
+      name2: 'CaseNotesTab',
+    })
+
+    if (misMatchMap.size > 0) {
+      console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+        console.log('============================================================');
+        console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+      }
+      console.log(`\n**********  END OF FAILURE LIST. ***************`);
+      throw new Error(`Case Notes validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+    } else {
+      console.log('\n✅ Case Notes VALIDATION PASSED!\n');
+    }
+
     caseTabMap.clear();
 
   }
@@ -999,7 +1064,12 @@ export class CreateCaseAction implements IAction {
         if ((await keyQns.count()) === 0 || (await valAns.count()) === 0) continue;
 
         const keyText = (await keyQns.first().innerText()).trim();
-        const valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
+        let valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
+
+        if (keyText === "Created on") {
+          valText = valText.replace(/:\d{2} /, " ");
+        }
+
         if (keyText && keyText.length > 0) {
           caseTabMap.set(keyText ?? '', valText ?? '');
         }

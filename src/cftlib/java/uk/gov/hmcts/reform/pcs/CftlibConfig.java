@@ -45,7 +45,7 @@ public class CftlibConfig implements CFTLibConfigurer {
             "citizen@pcs.com", List.of("citizen"),
             "data.store.idam.system.user@gmail.com", List.of(),
             "ccd.import@pcs.com", List.of("ccd-import"),
-            "pcs-system-user@localhost", List.of("caseworker", "caseworker-pcs", "ccd-import"),
+            "pcs-system-user@localhost", List.of("caseworker", "caseworker-pcs", "ccd-import", "pcs-system-update"),
             "prd-admin-user@localhost", List.of()
         );
 
@@ -72,6 +72,7 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         roleNames.add("caseworker");
         roleNames.add("caseworker-ras-validation");
+        roleNames.add("GS_profile");
 
         lib.createRoles(roleNames.toArray(new String[0]));
     }

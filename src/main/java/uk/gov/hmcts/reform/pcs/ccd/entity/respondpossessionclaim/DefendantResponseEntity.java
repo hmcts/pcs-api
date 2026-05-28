@@ -32,7 +32,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -91,14 +90,6 @@ public class DefendantResponseEntity {
     @Column(name = "tenancy_start_date_confirmation")
     private YesNoNotSure tenancyStartDateConfirmation;
 
-    @Column(name = "tenancy_start_date")
-    private LocalDate tenancyStartDate;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "tenancy_type_correct")
-    private YesNoNotSure tenancyTypeCorrect;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "tenancy_type_confirmation")
@@ -112,12 +103,6 @@ public class DefendantResponseEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo correspondenceAddressConfirmation;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesNoNotSure possessionNoticeReceived;
-
-    private LocalDate noticeReceivedDate;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

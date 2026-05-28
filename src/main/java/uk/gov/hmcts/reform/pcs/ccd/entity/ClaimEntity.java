@@ -25,12 +25,12 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -78,23 +78,17 @@ public class ClaimEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo claimCosts;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo preActionProtocolFollowed;
+
+    private String preActionProtocolIncompleteExplanation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo mediationAttempted;
 
-    private String mediationDetails;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo settlementAttempted;
-
-    private String settlementDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -158,9 +152,10 @@ public class ClaimEntity {
     @JsonManagedReference
     private Set<EnforcementOrderEntity> enforcementOrders = new HashSet<>();
 
-    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
     @JsonManagedReference
-    private HousingActWalesEntity housingActWales;
+    private List<CaseNoteEntity> caseNotes = new ArrayList<>();
 
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
     @JsonManagedReference
@@ -182,17 +177,13 @@ public class ClaimEntity {
     @JsonManagedReference
     private StatementOfTruthEntity statementOfTruth;
 
-    public void setHousingActWales(HousingActWalesEntity housingActWales) {
-        if (this.housingActWales != null) {
-            this.housingActWales.setClaim(null);
-        }
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo isExemptLandlord;
 
-        this.housingActWales = housingActWales;
-
-        if (this.housingActWales != null) {
-            this.housingActWales.setClaim(this);
-        }
-    }
+    @OneToOne(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private FeePaymentEntity feePayment;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
@@ -292,4 +283,9 @@ public class ClaimEntity {
             .count();
     }
 
+
+    public void addCaseNote(CaseNoteEntity caseNote) {
+        caseNotes.add(caseNote);
+        caseNote.setClaim(this);
+    }
 }

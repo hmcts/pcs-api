@@ -1,27 +1,25 @@
 package uk.gov.hmcts.reform.pcs.util;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Component
 public class IdamHelper {
 
-    @Value("${idam.system-user.username}")
-    private String pcsSystemUser;
+    public void stubIdamSystemUser(OAuth2AuthorizedClientManager authorizedClientManager, String accessToken) {
+        OAuth2AccessToken oauthAccessToken = mock(OAuth2AccessToken.class);
+        when(oauthAccessToken.getTokenValue()).thenReturn(accessToken);
 
-    @Value("${idam.system-user.password}")
-    private String pcsSystemPassword;
+        OAuth2AuthorizedClient authorizedClient = mock(OAuth2AuthorizedClient.class);
+        when(authorizedClient.getAccessToken()).thenReturn(oauthAccessToken);
 
-    public void stubIdamSystemUser(IdamClient idamClient, String idToken) {
-        TokenResponse tokenResponse = new TokenResponse("some access token", "expires",
-                                                        idToken, "some refresh token", "some scope",
-                                                        "some token type");
-
-        when(idamClient.getAccessTokenResponse(pcsSystemUser, pcsSystemPassword))
-            .thenReturn(tokenResponse);
+        when(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).thenReturn(authorizedClient);
     }
 }

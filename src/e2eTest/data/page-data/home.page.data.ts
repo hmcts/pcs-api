@@ -7,5 +7,6 @@ export const home =
     findCaseTab: 'Find case',
     caseParties: 'Case Parties',
     globalSearchTab: 'Search',
+    caseNotes: 'Notes',
     signOutButton: 'Sign out'
   };

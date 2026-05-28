@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -18,17 +18,20 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HM
  * Setup some common possessions case type configuration.
  */
 @Component
-public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
+public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private static final String CASE_TYPE_ID = "PCS";
     private static final String CASE_TYPE_NAME = "Possession";
     private static final String CASE_TYPE_DESCRIPTION = "Possession Case Type";
     private static final String JURISDICTION_ID = "PCS";
-    private static final String JURISDICTION_NAME = "Civil Possession";
+    private static final String JURISDICTION_NAME = "Mortgage and Landlord Possession Claims";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
 
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
+
+    @Value("${caseApi.url}")
+    private String caseApiUrl;
 
     public static String getCaseType() {
         return withSuffix(CASE_TYPE_ID, "-");
@@ -49,8 +52,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     @Override
-    public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
-        builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
+    public void configure(final ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.setCallbackHost(caseApiUrl);
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
@@ -92,23 +95,35 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
+        buildCaseNotesTab(builder);
+
         builder.tab("caseFileView", "Case File View")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
         builder.tab("caseLinks", "Linked Cases")
-            .forRoles(UserRole.PCS_SOLICITOR)
+            .forRoles(AccessProfile.PCS_SOLICITOR)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
+
+        builder.tab("caseFlags", "Case flags")
+            .forRoles(AccessProfile.JUDGE, AccessProfile.FEE_PAID_JUDGE, AccessProfile.CIRCUIT_JUDGE,
+                AccessProfile.LEADERSHIP_JUDGE,
+                AccessProfile.CTSC_ADMIN,
+                AccessProfile.HEARING_CENTRE_ADMIN,
+                AccessProfile.WLU_ADMIN)
+            .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
+            .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
+            .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         buildCasePartiesTab(builder);
 
         configureCaseFileCategories(builder);
     }
 
-    private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, UserRole> builder) {
+    private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         for (CaseFileCategory category : CaseFileCategory.values()) {
-            builder.categories(UserRole.PCS_SOLICITOR)
+            builder.categories(AccessProfile.PCS_SOLICITOR)
                 .categoryID(category.getId())
                 .categoryLabel(category.getLabel())
                 .displayOrder(category.getDisplayOrder())
@@ -116,7 +131,12 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         }
     }
 
-    private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+    private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("notes", "Notes")
+            .field(PCSCase::getCaseNotes);
+    }
+
+    private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseParties", "Case Parties")
             .label("Case Parties", null, "#### Case Parties")
             .field("casePartiesTab_ClaimantDetails")
