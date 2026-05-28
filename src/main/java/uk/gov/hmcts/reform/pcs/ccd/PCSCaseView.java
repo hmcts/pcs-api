@@ -24,10 +24,12 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
+import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -35,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -71,8 +74,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFieldsView caseFieldsView;
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
+    private final CaseNoteView caseNoteView;
     private final CaseTabView caseTabView;
     private final PartiesView partiesView;
+    private final GenAppsView genAppsView;
+    private final CaseFlagsView flagsView;
+
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -139,7 +146,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
+        genAppsView.setCaseFields(pcsCase, pcsCaseEntity);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
+        caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
+        flagsView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
@@ -243,6 +253,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                            .url(entity.getUrl())
                            .binaryUrl(entity.getBinaryUrl())
                            .categoryId(entity.getCategoryId())
+                           .uploadTimestamp(entity.getSubmittedDate() == null
+                                               ? null
+                                               : entity.getSubmittedDate()
+                               .atZone(java.time.ZoneOffset.UTC).toLocalDateTime())
                            .build())
                 .build())
             .collect(Collectors.toList());

@@ -84,7 +84,7 @@ public class CaseDetailsTabView {
     private static final String NO_ANSWER = " ";
     private static final DateTimeFormatter DATE_FORMATTER =
         DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
-    private static final DateTimeFormatter SUBMITTED_DATE_FORMATTER =
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
         DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm:ssa", Locale.UK);
 
     private final GroundsBuilder groundsBuilder;
@@ -320,25 +320,25 @@ public class CaseDetailsTabView {
                 case PERSONALLY_HANDED -> {
                     LocalDateTime dateTime = noticeServedDetails.getNoticeHandedOverDateTime();
                     String name = noticeServedDetails.getNoticePersonName();
-                    noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
+                    noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
                     noticeTabDetails.setNoticePersonName(name != null ? name : NO_ANSWER);
                 }
                 case EMAIL -> {
                     LocalDateTime dateTime = noticeServedDetails.getNoticeEmailSentDateTime();
                     String emailAddress = noticeServedDetails.getNoticeEmailAddress();
-                    noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
+                    noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
                     noticeTabDetails.setNoticeEmailAddress(emailAddress != null ? emailAddress : NO_ANSWER);
                 }
                 case OTHER_ELECTRONIC -> {
                     LocalDateTime dateTime = noticeServedDetails.getNoticeOtherElectronicDateTime();
                     String details = noticeServedDetails.getNoticeOtherElectronicMethodExplanation();
-                    noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
+                    noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
                     noticeTabDetails.setNoticeOtherElectronicDetails(details != null ? details : NO_ANSWER);
                 }
                 case OTHER -> {
                     LocalDateTime dateTime = noticeServedDetails.getNoticeOtherDateTime();
                     String explanation = noticeServedDetails.getNoticeOtherExplanation();
-                    noticeTabDetails.setNoticeDate(dateTime != null ? dateTime.format(DATE_FORMATTER) : NO_ANSWER);
+                    noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
                     noticeTabDetails.setNoticeOtherExplanation(explanation != null ? explanation : NO_ANSWER);
                 }
             };
@@ -587,7 +587,11 @@ public class CaseDetailsTabView {
             .withZoneSameInstant(UK_ZONE_ID)
             .toLocalDateTime();
 
-        return ukDateSubmitted.format(SUBMITTED_DATE_FORMATTER).replace("am", "AM").replace("pm", "PM");
+        return formatDateTime(ukDateSubmitted);
+    }
+
+    private String formatDateTime(LocalDateTime localDateTime) {
+        return localDateTime.format(DATE_TIME_FORMATTER).replace("am", "AM").replace("pm", "PM");
     }
 
     private OccupationContractOrLicenceTabDetails buildOccupationContractLicenceTabDetails(PCSCase pcsCase) {

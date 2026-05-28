@@ -317,14 +317,14 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDate())
             .isEqualTo("16 April 2024");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate())
-            .isEqualTo("11 May 2026");
+            .isEqualTo("11 May 2026, 5:02:00PM");
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getHasCopyOfTenancyLicence())
             .isEqualTo("No");
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getReasonsForNoTenancyLicenceDocuments())
             .isEqualTo("Reasons");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo("By email");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
+        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026, 5:02:00PM");
         assertThat(caseDetailsTab.getApplicationsDetails().getPlanToMakeGeneralApplication()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getActionsTakenDetails().getPreactionProtocolFollowed()).isEqualTo("No");
         assertThat(caseDetailsTab.getActionsTakenDetails().getPreActionProtocolIncompleteExplanation())
@@ -634,7 +634,7 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
             .isEqualTo(NoticeServiceMethod.PERSONALLY_HANDED.getLabel());
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
+        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026, 9:00:00AM");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticePersonName()).isEqualTo("Notice name");
     }
 
@@ -657,7 +657,7 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
             .isEqualTo(NoticeServiceMethod.OTHER_ELECTRONIC.getLabel());
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
+        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026, 9:00:00AM");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeOtherElectronicDetails())
             .isEqualTo("explanation");
     }
@@ -680,7 +680,7 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
             .isEqualTo(NoticeServiceMethod.OTHER.getLabel());
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
+        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026, 9:00:00AM");
     }
 
     @Test
@@ -962,10 +962,9 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocumentsPlaceholder()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isNull();
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate())
-            .isEqualTo("11 May 2026");
+            .isEqualTo("11 May 2026, 5:02:00PM");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo("By email");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
         assertThat(caseDetailsTab.getApplicationsDetails().getPlanToMakeGeneralApplication()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getActionsTakenDetails().getPreactionProtocolFollowed()).isEqualTo("No");
         assertThat(caseDetailsTab.getActionsTakenDetails().getMediationAttempted()).isEqualTo("Yes");
