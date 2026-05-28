@@ -110,15 +110,15 @@
       "completionNextStep": "SUBMIT_AND_PAY_NOW",
       "statementOfTruth": {
         "completedBy": "CLAIMANT",
-        "fullNameClaimant": "rew",
-        "positionClaimant": "eww",
+        "fullNameParty": "rew",
+        "positionParty": "eww",
         "fullNameLegalRep": null,
         "firmNameLegalRep": null,
         "positionLegalRep": null,
         "agreementClaimant": [
           "BELIEVE_TRUE"
         ],
-        "agreementLegalRep": []
+        "agreementClaimantLegalRep": []
       }
     }
   }
