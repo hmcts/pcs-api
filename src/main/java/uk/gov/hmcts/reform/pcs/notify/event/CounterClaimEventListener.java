@@ -44,12 +44,14 @@ public class CounterClaimEventListener {
             .filter(dr -> dr.getParty().getId().equals(entity.getParty().getId()))
             .findFirst()
             .map(DefendantResponseEntity::getId)
-            .ifPresent(defendantResponseNotificationService::sendEmailNotificationForCounterclaim);
+            .ifPresent(defendantResponseNotificationService::sendDefendantEmailNotificationForCounterclaim);
     }
 
     private void handleCaseIssued(CounterClaimEntity entity) {
         PartyEntity defendant = entity.getParty();
         PcsCaseEntity pcsCase = entity.getPcsCase();
+
+        defendantResponseNotificationService.sendClaimantEmailNotificationCounterClaimIssued(entity.getId());
 
         FeePaymentEntity feePayment = pcsCase.getClaims().stream()
             .filter(claim -> claim.getFeePayment() != null
