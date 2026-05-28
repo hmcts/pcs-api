@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
@@ -39,6 +41,30 @@ public class ClaimService {
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
             claimEntity
                 .setAsbProhibitedConductEntity(asbProhibitedConductService.createAsbProhibitedConductEntity(pcsCase));
+
+            WalesDocuments walesDocuments = pcsCase.getRequiredDocumentsWales();
+            VerticalYesNo hasEnergyPerformanceCertificate = walesDocuments.getHasEnergyPerformanceCertificate();
+            claimEntity.setEnergyPerformanceCertificateProvided(hasEnergyPerformanceCertificate);
+            if (hasEnergyPerformanceCertificate == VerticalYesNo.NO) {
+                claimEntity.setNoEnergyPerformanceCertificateReason(
+                    walesDocuments.getNoEnergyPerformanceCertificateReason()
+                );
+            }
+
+            VerticalYesNo hasGasSafetyReport = walesDocuments.getHasGasSafetyReport();
+            claimEntity.setGasSafetyReportProvided(hasGasSafetyReport);
+            if (hasGasSafetyReport == VerticalYesNo.NO) {
+                claimEntity.setNoGasSafetyReportReason(walesDocuments.getNoGasSafetyReportReason());
+            }
+
+            VerticalYesNo hasElectricalInstallationConditionReport =
+                walesDocuments.getHasElectricalInstallationConditionReport();
+            claimEntity.setElectricalInstallationConditionProvided(hasElectricalInstallationConditionReport);
+            if (hasElectricalInstallationConditionReport == VerticalYesNo.NO) {
+                claimEntity.setNoElectricalInstallationConditionReason(
+                    walesDocuments.getNoElectricalInstallationConditionReportReason()
+                );
+            }
         }
 
         claimEntity.setRentArrears(rentArrearsService.createRentArrearsEntity(pcsCase));

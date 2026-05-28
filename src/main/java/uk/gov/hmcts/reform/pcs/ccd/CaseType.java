@@ -234,6 +234,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                 "detailsTab_ProhibitedConductStandardContractDetails!=\"\"",
                 "### Prohibited conduct standard contract"
             )
-            .field("detailsTab_ProhibitedConductStandardContractDetails");
+            .field("detailsTab_ProhibitedConductStandardContractDetails")
+            .field("detailsTab_RequiredDocumentsDetails");
     }
 }

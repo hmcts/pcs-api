@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
@@ -40,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
@@ -361,6 +363,7 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getAntisocialAndConductDetails()).isNull();
         assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
         assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails()).isNull();
     }
 
     @Test
@@ -857,6 +860,16 @@ public class CaseDetailsTabViewTest {
                     .detailsOfTerms("agreedTermsOfPeriodicContract")
                     .build()
             )
+            .requiredDocumentsWales(
+                WalesDocuments.builder()
+                    .hasEnergyPerformanceCertificate(VerticalYesNo.NO)
+                    .hasGasSafetyReport(VerticalYesNo.NO)
+                    .hasElectricalInstallationConditionReport(VerticalYesNo.NO)
+                    .noEnergyPerformanceCertificateReason("noEnergyPerformanceCertificateReason")
+                    .noGasSafetyReportReason("noGasSafetyReportReason")
+                    .noElectricalInstallationConditionReportReason("noElectricalInstallationConditionReportReason")
+                    .build()
+            )
             .build();
 
         when(groundsBuilder.getGrounds(pcsCase)).thenReturn(
@@ -1008,6 +1021,19 @@ public class CaseDetailsTabViewTest {
             .isEqualTo("Yes");
         assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails().getTermDetails())
             .isEqualTo("agreedTermsOfPeriodicContract");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasGasSafetyReport()).isEqualTo("No");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasEnergyPerformanceCertificate()).isEqualTo("No");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasElectricalInstallationConditionReport())
+            .isEqualTo("No");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoGasSafetyReportReason())
+            .isEqualTo("noGasSafetyReportReason");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoEnergyPerformanceCertificateReason())
+            .isEqualTo("noEnergyPerformanceCertificateReason");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoElectricalInstallationConditionReportReason())
+            .isEqualTo("noElectricalInstallationConditionReportReason");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReport()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformance()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallation()).isNull();
         assertThat(caseDetailsTab.getTenancyLicenceDetails()).isNull();
     }
 
@@ -1120,6 +1146,43 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("No");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo(noAnswer);
+    }
+
+    @Test
+    void shouldShowDocumentsInRequiredDocumentsTabDetails() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .requiredDocumentsWales(
+                WalesDocuments.builder()
+                    .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
+                    .hasGasSafetyReport(VerticalYesNo.YES)
+                    .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
+                    .noEnergyPerformanceCertificateReason("noEnergyPerformanceCertificateReason")
+                    .noGasSafetyReportReason("noGasSafetyReportReason")
+                    .noElectricalInstallationConditionReportReason("noElectricalInstallationConditionReportReason")
+                    .gasSafetyReport(List.of(listValue(Document.builder().build())))
+                    .energyPerformance((List.of(listValue(Document.builder().build()))))
+                    .electricalInstallation((List.of(listValue(Document.builder().build()))))
+                    .build()
+            )
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+        // Then
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasGasSafetyReport()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasEnergyPerformanceCertificate()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasElectricalInstallationConditionReport())
+            .isEqualTo("Yes");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoGasSafetyReportReason()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoEnergyPerformanceCertificateReason()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoElectricalInstallationConditionReportReason())
+            .isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReport()).hasSize(1);
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformance()).hasSize(1);
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallation()).hasSize(1);
     }
 
     private static <T> ListValue<T> listValue(T value) {
