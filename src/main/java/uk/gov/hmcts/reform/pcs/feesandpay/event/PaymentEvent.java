@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.payment;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.paymentClaim;
 
 @Component
 @AllArgsConstructor
@@ -23,11 +23,16 @@ public class PaymentEvent implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(payment.name(), this::submit)
+            .decentralisedEvent(paymentClaim.name(), this::submit)
             .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
             .name("Payment Confirmation")
             .showCondition(ShowConditions.NEVER_SHOW)
-            .grant(Permission.CRU, UserRole.SYSTEM_USER);
+            .grant(Permission.CRU, UserRole.SYSTEM_USER)
+            .grant(Permission.R, UserRole.PCS_SOLICITOR)
+            .grant(Permission.R, UserRole.CITIZEN)
+            .grant(Permission.R, UserRole.DEFENDANT)
+            .grant(Permission.R, UserRole.PCS_CASE_WORKER)
+            .grant(Permission.R, UserRole.DEFENDANT_SOLICITOR);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
