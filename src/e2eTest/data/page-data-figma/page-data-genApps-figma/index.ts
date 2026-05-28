@@ -4,7 +4,7 @@ export * from './applicationSubmitted.page.data';
 export * from './askToAdjournTheCourtHearing.page.data';
 export * from './helpWithFeesNeeded.page.data';
 export * from './doYouWantToUploadDocumentToSupportYourApplication.page.data';
-export * from './haveTheOtherPartiesAgreedToThisApplication.page.data';
+export * from './hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.page.data';
 export * from './haveTheyAlreadyAppliedForHelpWithFees.page.data';
 export * from './isTheCourtHearingInTheNext14Days.page.data';
 export * from './uploadDocumentsToSupportYourApplication.page.data';
