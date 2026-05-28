@@ -63,8 +63,8 @@
       },
       "statementOfTruth": {
         "completedBy": "CLAIMANT",
-        "fullNameClaimant": "rew",
-        "positionClaimant": "eww",
+        "fullNameParty": "rew",
+        "positionParty": "eww",
         "agreementClaimant": [
           "BELIEVE_TRUE"
         ]

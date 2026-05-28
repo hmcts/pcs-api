@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -38,7 +37,8 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
         DashboardData dashboardData = dashboardJourneyService.computeDashboardData(
             caseReference,
             submittedCaseData,
-            new DashboardContext(caseReference, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
 
         log.debug(
