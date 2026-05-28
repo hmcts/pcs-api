@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+
 @Builder
 @Data
 @NoArgsConstructor
@@ -21,10 +23,16 @@ public class ProhibitedConductStandardContractTabDetails {
     )
     private String agreedTerms;
 
-    @CCD(label = "Details of terms")
+    @CCD(
+        label = "Details of terms",
+        typeOverride = TextArea
+    )
     private String termDetails;
 
-    @CCD(label = "Why are you making this claim?")
+    @CCD(
+        label = "Why are you making this claim?",
+        typeOverride = TextArea
+    )
     private String whyMakingClaim;
 
 }
