@@ -131,6 +131,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performAction('clickButton', mediationAndSettlement.continueButton);
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('clickButton', checkingNotice.previousButton);
+    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
        attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
        settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
