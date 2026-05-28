@@ -30,6 +30,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
 
+    @Value("${caseApi.url}")
+    private String caseApiUrl;
+
     public static String getCaseType() {
         return withSuffix(CASE_TYPE_ID, "-");
     }
@@ -50,7 +53,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-        builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
+        builder.setCallbackHost(caseApiUrl);
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
@@ -102,6 +105,15 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(AccessProfile.PCS_SOLICITOR)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
+
+        builder.tab("caseFlags", "Case flags")
+            .forRoles(AccessProfile.JUDGE, AccessProfile.FEE_PAID_JUDGE, UserRole.CIRCUIT_JUDGE, UserRole.LEADERSHIP_JUDGE,
+                AccessProfile.CTSC_ADMIN,
+                AccessProfile.HEARING_CENTRE_ADMIN,
+                AccessProfile.WLU_ADMIN)
+            .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
+            .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
+            .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         buildCasePartiesTab(builder);
 

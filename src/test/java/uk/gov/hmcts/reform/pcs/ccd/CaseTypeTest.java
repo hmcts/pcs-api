@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.api.Tab;
 import uk.gov.hmcts.ccd.sdk.api.Tab.TabBuilder;
 import uk.gov.hmcts.ccd.sdk.api.TabField;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
@@ -71,6 +72,7 @@ class CaseTypeTest {
         final TabBuilder<PCSCase, AccessProfile> caseLinksTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseFileViewTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> casePartiesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final Tab.TabBuilder<PCSCase, AccessProfile> caseFlagsTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Search.SearchBuilder<PCSCase, AccessProfile> searchBuilder =
             Search.SearchBuilder.builder(PCSCase.class, utils);
         final SearchCases.SearchCasesBuilder<PCSCase> searchCasesBuilder =
@@ -91,6 +93,8 @@ class CaseTypeTest {
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
         when(builder.categories(AccessProfile.PCS_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.PCS_SOLICITOR));
+        when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
+
 
         // When
         caseType.configure(builder);

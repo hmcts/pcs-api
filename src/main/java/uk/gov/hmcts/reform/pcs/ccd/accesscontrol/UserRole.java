@@ -33,7 +33,14 @@ public enum UserRole implements HasRole {
     HMCTS_ADMIN("hmcts-admin", Set.of(R), RAS, GS_PROFILE),
     HMCTS_JUDICIARY("hmcts-judiciary", Set.of(R), RAS, GS_PROFILE),
     HMCTS_CTSC("hmcts-ctsc", Set.of(R), RAS, GS_PROFILE),
-    HMCTS_LEGAL_OPERATIONS("hmcts-legal-operations", Set.of(R), RAS, GS_PROFILE);
+    HMCTS_LEGAL_OPERATIONS("hmcts-legal-operations", Set.of(R), RAS, GS_PROFILE),
+    CTSC_ADMIN("ctsc", Permission.CRU, RAS),
+    HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU, RAS),
+    WLU_ADMIN("wlu-admin", Permission.CRU, RAS),
+    FEE_PAID_JUDGE("fee-paid-judge", Set.of(R), RAS),
+    LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS),
+    CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS),
+    JUDGE("judge", Set.of(R), RAS);
 
     @JsonValue
     private final String role;
