@@ -45,12 +45,17 @@ public class DefendantResponseNotificationService {
         boolean isHwfRequested = counterClaim.getNeedHelpWithFees() != null
             && counterClaim.getNeedHelpWithFees().toBoolean();
 
-        boolean hasHwfReference = isHwfRequested
-            && counterClaim.getHwfReferenceNumber() != null
+        boolean hasHwfReference = counterClaim.getHwfReferenceNumber() != null
             && !counterClaim.getHwfReferenceNumber().isBlank();
 
         if (isHwfRequested && !hasHwfReference) {
             log.info("Not sending email as HWF is requested but reference is blank for defendant response {}",
+                     defendantResponse.getId());
+            return;
+        }
+
+        if (!isHwfRequested && hasHwfReference) {
+            log.info("Not sending email as HWF is not requested but reference is not blank for defendant response {}",
                      defendantResponse.getId());
             return;
         }
