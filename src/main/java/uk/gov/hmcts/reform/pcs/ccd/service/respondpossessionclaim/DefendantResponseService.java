@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -14,11 +13,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -52,6 +52,7 @@ public class DefendantResponseService {
     private final HouseholdCircumstancesService householdCircumstancesService;
     private final PaymentAgreementService paymentAgreementService;
     private final DocumentService documentService;
+    private final PartyAttributeAssertationService partyAttributeAssertationService;
     private final Clock utcClock;
 
     public DefendantResponseService(PartyService partyService,
@@ -63,6 +64,7 @@ public class DefendantResponseService {
                                     HouseholdCircumstancesService householdCircumstancesService,
                                     PaymentAgreementService paymentAgreementService,
                                     DocumentService documentService,
+                                    PartyAttributeAssertationService partyAttributeAssertationService,
                                     @Qualifier("utcClock") Clock utcClock) {
         this.partyService = partyService;
         this.partyRepository = partyRepository;
@@ -73,6 +75,7 @@ public class DefendantResponseService {
         this.householdCircumstancesService = householdCircumstancesService;
         this.paymentAgreementService = paymentAgreementService;
         this.documentService = documentService;
+        this.partyAttributeAssertationService = partyAttributeAssertationService;
         this.utcClock = utcClock;
     }
 
@@ -145,6 +148,8 @@ public class DefendantResponseService {
             );
         }
 
+        partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, partyRef);
+
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
     }
 
@@ -152,12 +157,10 @@ public class DefendantResponseService {
                                                                 PartyEntity partyRef,
                                                                 DefendantResponses responses) {
 
-        YesNoNotSure tenancyStartDateConfirmation = responses.getTenancyStartDateConfirmation();
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
             .freeLegalAdvice(responses.getFreeLegalAdvice())
-            .possessionNoticeReceived(responses.getPossessionNoticeReceived())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
@@ -165,14 +168,9 @@ public class DefendantResponseService {
             .disputeClaim(responses.getDisputeClaim())
             .disputeClaimDetails(responses.getDisputeClaimDetails())
             .makeCounterClaim(responses.getMakeCounterClaim())
-            .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
-            .tenancyStartDate(
-                responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
-                    ? responses.getTenancyStartDate()
-                    : null
-            )
+            .tenancyStartDateConfirmation(responses.getTenancyStartDateConfirmation())
+            .tenancyTypeConfirmation(responses.getTenancyTypeConfirmation())
             .landlordLicensed(responses.getLandlordLicensed())
-            .noticeReceivedDate(responses.getNoticeReceivedDate())
             .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
             .languageUsed(responses.getLanguageUsed())
             .otherConsiderations(responses.getOtherConsiderations())
@@ -225,8 +223,10 @@ public class DefendantResponseService {
                                          ? cc.getEstimatedMaxClaimAmount() : null)
             .counterClaimFor(cc.getCounterClaimFor())
             .counterClaimReasons(cc.getCounterClaimReasons())
-            .otherOrderRequestDetails(cc.getOtherOrderRequestDetails())
-            .otherOrderRequestFacts(cc.getOtherOrderRequestFacts())
+            .otherOrderRequestDetails(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
+                                          ? cc.getOtherOrderRequestDetails() : null)
+            .otherOrderRequestFacts(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
+                                        ? cc.getOtherOrderRequestFacts() : null)
             .needHelpWithFees(cc.getNeedHelpWithFees())
             .appliedForHwf(cc.getAppliedForHwf())
             .hwfReferenceNumber(cc.getHwfReferenceNumber())
@@ -234,6 +234,26 @@ public class DefendantResponseService {
             .party(partyRef)
             .build();
 
+        if (cc.getCounterClaimAgainst() != null) {
+            counterClaimEntity.getCounterClaimParties().addAll(
+                cc.getCounterClaimAgainst().stream()
+                    .filter(lv -> lv.getId() != null)
+                    .map(lv -> CounterClaimPartyEntity.builder()
+                        .counterClaim(counterClaimEntity)
+                        .party(partyRepository.getReferenceById(UUID.fromString(lv.getId())))
+                        .build())
+                    .toList()
+            );
+        }
+
         claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
+    }
+
+    public boolean hasSubmittedResponse(long caseReference) {
+        UUID userId = securityContextService.getCurrentUserId();
+        if (userId == null) {
+            return false;
+        }
+        return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
     }
 }

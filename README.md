@@ -88,6 +88,28 @@ To access the swagger documentation for the API, go to http://localhost:3206/swa
 - To get document upload working locally, it's easier to connect to AAT dependencies using a VPN.
 - Set the authentication mode to `AuthMode.AAT` as described above.
 
+#### Generating the CCD definition XLS
+We can generate the xlsx spreadsheet by running the script:
+```
+./bin/create-xlsx.sh 
+```
+This spreadsheet can be found in: /build/definitions/CCD_Definition_PCS_ENVIRONMENT.xlsx 
+
+You can specify which environment to generate the spreadsheet for by passing it in when calling the script. E.g ./bin/create-xlsx.sh preview.
+
+If you encounter the error: 
+```
+ [{"code":"UNAUTHORIZED","message":"authentication required,}]
+```
+Run:
+```
+az login
+```
+```
+- az acr login -n hmctsprod
+```
+
+
 ### Running the tests
 
 The Functional tests use [Rest Assured](https://rest-assured.io) and [Serenity](https://serenity-bdd.github.io) for reporting, and are located in the `/src/functionalTest` directory.
@@ -184,6 +206,18 @@ Temporary IDAM Users:
 During test execution, temporary users are automatically created and tracked in a file ./data/.temp-users.data.json
 Update ./config/global-setup.config with list of roles for which temporary users needs to be created along with the key/name to
 identify them.
+
+### Running with Wiremock in local environment
+
+The docker-compose-wiremock.yml in the project root will start wiremock with mappings
+from the wiremock/mappings folder. Currently this has mappings to simulate the payment API
+callback and also to provide a fixed professional ref data response for an organisation.
+
+It can be run as follows:
+
+```
+docker compose -f docker-compose-wiremock.yml up -d
+```
 
 ### Running with Wiremock in Preview environment
 

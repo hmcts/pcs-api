@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 
 /**
@@ -26,7 +27,7 @@ public enum State {
 
     @CCD(
         label = "Pending Case Issued",
-        access = {ClaimantAccess.class, CitizenAccess.class,  RasValidationAccess.class},
+        access = {ClaimantAccess.class, CitizenAccess.class,  RasValidationAccess.class, InternalCaseFlagAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     PENDING_CASE_ISSUED,

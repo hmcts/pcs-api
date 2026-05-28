@@ -24,11 +24,11 @@ test.beforeEach(async ({ page }) => {
 
 test.afterEach(async () => {
   if (caseNumber) {
-    await performAction('deleteCaseRole', '[CREATOR]');
+    await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
 });
 
-test.describe('[Common Component Fee And Pay]', async () => {
+test.describe('[Common Component Fee And Pay] @CC' , async () => {
   test('Fee And Pay - Pay by account PBA @nightly @feeAndPay', async () => {
     await performAction('clickButton', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
@@ -36,7 +36,7 @@ test.describe('[Common Component Fee And Pay]', async () => {
       expectedAmount: serviceRequest.amount404,
       payByOption: serviceRequest.payByAccountRadioOption,
       pbaLabel: serviceRequest.selectPBALabel,
-      pbaIndex: serviceRequest.pbaIndex1,
+      pbaValue: serviceRequest.pbaIndex1,
       referenceLabel: serviceRequest.pbaReferenceLable,
       referenceText: serviceRequest.pbaReferenceInputText,
       confirmButton: serviceRequest.confirmPaymentButton,

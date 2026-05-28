@@ -56,10 +56,23 @@ public class PartyService {
         );
     }
 
+    public PartyEntity getPartyEntityByEntityId(UUID entityId, long caseReference) {
+        return partyRepository.queryPartyById(entityId, caseReference)
+            .orElseThrow(() -> new PartyNotFoundException(
+                "No party found for entity ID: " + entityId + " and case reference: " + caseReference));
+    }
+
     public PartyEntity getPartyEntityByIdamId(UUID idamId, long caseReference) {
         return partyRepository.queryPartyByIdamId(idamId, caseReference)
             .orElseThrow(() -> new PartyNotFoundException(
                 "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
+    }
+
+    public boolean canSendEmailNotification(PartyEntity party) {
+        return party.getEmailAddress() != null
+            && party.getContactPreferences() != null
+            && party.getContactPreferences().getContactByEmail() != null
+            && party.getContactPreferences().getContactByEmail().toBoolean();
     }
 
     private PartyEntity createClaimant(PCSCase pcsCase) {

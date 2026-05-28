@@ -30,6 +30,9 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
 
+    @Value("${caseApi.url}")
+    private String caseApiUrl;
+
     public static String getCaseType() {
         return withSuffix(CASE_TYPE_ID, "-");
     }
@@ -50,7 +53,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
-        builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
+        builder.setCallbackHost(caseApiUrl);
 
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
@@ -92,6 +95,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
+        buildCaseNotesTab(builder);
+
         builder.tab("caseFileView", "Case File View")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
@@ -100,6 +105,15 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .forRoles(UserRole.PCS_SOLICITOR)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
+
+        builder.tab("caseFlags", "Case flags")
+            .forRoles(UserRole.JUDGE, UserRole.FEE_PAID_JUDGE, UserRole.CIRCUIT_JUDGE, UserRole.LEADERSHIP_JUDGE,
+                      UserRole.CTSC_ADMIN,
+                      UserRole.HEARING_CENTRE_ADMIN,
+                      UserRole.WLU_ADMIN)
+            .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
+            .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
+            .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         buildCasePartiesTab(builder);
 
@@ -114,6 +128,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+    }
+
+    private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.tab("notes", "Notes")
+            .field(PCSCase::getCaseNotes);
     }
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
