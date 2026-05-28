@@ -9,4 +9,5 @@ export default {
   'makeAnApplicationappliedForHelpWithFees': 'haveTheyAlreadyAppliedForHelpWithFees',
   'makeAnApplicationotherPartiesAgreed': 'hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication',
   'makeAnApplicationreasonsNotToShare': 'areThereAnyReasonsThatThisApplicationShouldNotBeShared',
+  'makeAnApplicationwhatOrderWanted': 'whatOrderDoYouWantTheCourtToMakeAndWhy'
 };
