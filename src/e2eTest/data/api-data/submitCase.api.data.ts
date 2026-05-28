@@ -360,6 +360,111 @@ export const submitCaseApiData = {
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
   },
+  submitCasePayloadDefault: {
+    legislativeCountry: 'England',
+    claimantType: {
+      value: {
+        code: 'PROVIDER_OF_SOCIAL_HOUSING',
+        label: 'Registered provider of social housing',
+      },
+      list_items: [
+        {
+          code: 'PRIVATE_LANDLORD',
+          label: 'Private landlord',
+        },
+        {
+          code: 'PROVIDER_OF_SOCIAL_HOUSING',
+          label: 'Registered provider of social housing',
+        },
+        {
+          code: 'MORTGAGE_LENDER',
+          label: 'Mortgage lender',
+        },
+        {
+          code: 'OTHER',
+          label: 'Other',
+        },
+      ],
+      valueCode: 'PROVIDER_OF_SOCIAL_HOUSING',
+    },
+    claimAgainstTrespassers: 'NO',
+    orgNameFound: 'YES',
+    claimantName: 'Possession Claims Solicitor Org',
+    isClaimantNameCorrect: 'YES',
+    claimantContactEmail: 'pcs-solicitor-automation@test.com',
+    isCorrectClaimantContactEmail: 'YES',
+    orgAddressFound: 'YES',
+    organisationAddress: {
+      AddressLine1: 'Ministry Of Justice',
+      AddressLine2: 'Seventh Floor 102 Petty France',
+      PostTown: 'London',
+      PostCode: 'SW1H 9AJ',
+      Country: 'United Kingdom',
+    },
+    formattedClaimantContactAddress: 'Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ',
+    isCorrectClaimantContactAddress: 'YES',
+    claimantProvidePhoneNumber: 'NO',
+    defendant1: {
+      nameKnown: 'YES',
+      addressKnown: 'YES',
+      addressSameAsPossession: 'YES',
+      firstName: 'John',
+      lastName: 'Doe',
+    },
+    addAnotherDefendant: 'YES',
+    additionalDefendants: [
+      {
+        value: {
+          nameKnown: 'NO',
+          addressKnown: 'NO',
+          addressSameAsPossession: 'NO',
+        },
+        id: null,
+      },
+      {
+        value: {
+          nameKnown: 'NO',
+          addressKnown: 'NO',
+          addressSameAsPossession: 'NO',
+        },
+        id: null,
+      },
+    ],
+    tenancy_TypeOfTenancyLicence: 'OTHER',
+    tenancy_DetailsOfOtherTypeOfTenancyLicence: 'Other tenancy - short term',
+    tenancy_TenancyLicenceDate: null,
+    tenancy_TenancyLicenceDocuments: [],
+    showIntroductoryDemotedOtherGroundReasonPage: 'YES',
+    introGrounds_HasIntroductoryDemotedOtherGroundsForPossession: 'YES',
+    introGrounds_IntroductoryDemotedOrOtherGrounds: ['ANTI_SOCIAL'],
+    antiSocialBehaviourGround: 'Antisocial behaviour',
+    preActionProtocolCompleted: 'NO',
+    mediationAttempted: 'NO',
+    settlementAttempted: 'NO',
+    noticeServed: 'YES',
+    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
+    claimantCircumstancesSelect: 'NO',
+    hasDefendantCircumstancesInfo: 'NO',
+    suspensionOfRTB_ShowHousingActsPage: 'NO',
+    demotionOfTenancy_ShowHousingActsPage: 'NO',
+    suspensionToBuyDemotionOfTenancyPages: 'NO',
+    alternativesToPossession: [],
+    additionalReasonsForPossession: {
+      hasReasons: 'NO',
+    },
+    hasUnderlesseeOrMortgagee: 'NO',
+    wantToUploadDocuments: 'NO',
+    applicationWithClaim: 'YES',
+    languageUsed: 'ENGLISH',
+    completionNextStep: 'SUBMIT_AND_PAY_NOW',
+    statementOfTruth: {
+      completedBy: 'CLAIMANT',
+      fullNameParty: 'fg',
+      positionParty: 'fg',
+      agreementClaimant: ['BELIEVE_TRUE'],
+    },
+  },
+
   submitCaseApiEndPoint: () =>
     `/cases/${process.env.CASE_NUMBER}/events`,
 };
