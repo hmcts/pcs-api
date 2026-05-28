@@ -64,7 +64,7 @@ class DashboardViewTest extends BaseEventTest {
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
                 new HearingsTaskGroupEvaluator(),
-                new ApplicationsTaskGroupEvaluator(),
+                new ApplicationsTaskGroupEvaluator(securityContextService),
                 new ResponseTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
             )

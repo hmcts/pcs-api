@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvalua
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 
@@ -44,6 +45,9 @@ class DashboardJourneyServiceTest {
     @Mock
     private DefendantResponseService defendantResponseService;
 
+    @Mock
+    private SecurityContextService securityContextService;
+
     @BeforeEach
     void setUp() {
         underTest = new DashboardJourneyService(
@@ -51,7 +55,7 @@ class DashboardJourneyServiceTest {
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
                 new ResponseTaskGroupEvaluator(),
-                new ApplicationsTaskGroupEvaluator(),
+                new ApplicationsTaskGroupEvaluator(securityContextService),
                 new HearingsTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
         ));

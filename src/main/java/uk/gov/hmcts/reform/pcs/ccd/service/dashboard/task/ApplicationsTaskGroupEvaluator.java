@@ -10,12 +10,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.MAKE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_ALL_APPLICATIONS;
+import static uk.gov.hmcts.reform.pcs.ccd.util.GenAppUtils.getVisibleGenAppsForUser;
 
 @Component
 public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
+
+    private final SecurityContextService securityContextService;
+
+    public ApplicationsTaskGroupEvaluator(SecurityContextService securityContextService) {
+        this.securityContextService = securityContextService;
+    }
 
     @Override
     public TaskGroupId groupId() {
@@ -40,9 +48,13 @@ public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
     }
 
     private boolean hasRaisedGeneralApplications(DashboardContext ctx) {
-        return ctx != null
-            && ctx.caseEntity() != null
-            && ctx.caseEntity().getGenApps() != null
-            && !ctx.caseEntity().getGenApps().isEmpty();
+        if (ctx == null || ctx.caseEntity() == null || ctx.caseEntity().getGenApps() == null) {
+            return false;
+        }
+
+        return !getVisibleGenAppsForUser(
+            ctx.caseEntity().getGenApps(),
+            securityContextService.getCurrentUserId()
+        ).isEmpty();
     }
 }

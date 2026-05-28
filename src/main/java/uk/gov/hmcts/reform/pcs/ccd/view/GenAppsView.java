@@ -8,16 +8,16 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.util.GenAppUtils.getVisibleGenAppsForUser;
 
 @Component
 @AllArgsConstructor
@@ -29,9 +29,10 @@ public class GenAppsView {
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         UUID currentUserId = securityContextService.getCurrentUserId();
 
-        List<ListValue<GeneralApplication>> genApps = pcsCaseEntity.getGenApps().stream()
-            .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
-            .filter(genAppEntity -> isVisibleToUser(genAppEntity, currentUserId))
+        List<ListValue<GeneralApplication>> genApps = getVisibleGenAppsForUser(
+            pcsCaseEntity.getGenApps(),
+            currentUserId
+        ).stream()
             .map(this::createListValue)
             .toList();
 
@@ -74,11 +75,6 @@ public class GenAppsView {
                 .build()
             )
             .orElse(null);
-    }
-
-    private boolean isVisibleToUser(GenAppEntity genAppEntity, UUID userId) {
-        return genAppEntity.getWithoutNotice() != VerticalYesNo.YES
-            || userId.equals(genAppEntity.getParty().getIdamId());
     }
 
 }
