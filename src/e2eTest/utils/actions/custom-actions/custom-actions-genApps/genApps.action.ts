@@ -3,7 +3,6 @@ import {
   checkYourAnswersGenApps,
   chooseAnApplication,
   doYouWantToUploadDocumentToSupportYourApplication, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
-  haveTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees,
   helpPayingTheFee,
   isTheCourtHearingInTheNext14Days,
