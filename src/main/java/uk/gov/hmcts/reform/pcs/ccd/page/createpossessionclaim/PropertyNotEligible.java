@@ -56,7 +56,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                     <p class="govuk-body">
                       <a class="govuk-link" href="https://www.gov.uk/government/collections/property-possession-forms" target="_blank" rel="noopener noreferrer">
                         View the full list of property possessions forms (opens in new tab)
-                      </a>
+                      </a>.
                     </p>
 
                     <div class="govuk-warning-text">
