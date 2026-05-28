@@ -1,8 +1,8 @@
 import {
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
   checkYourAnswersGenApps,
-  chooseAnApplication,
-  doYouWantToUploadDocumentToSupportYourApplication, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
+  chooseAnApplication, doYouWantToUploadDocumentsToSupportDefendantsApplication,
+  hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees,
   helpPayingTheFee,
   isTheCourtHearingInTheNext14Days,
@@ -184,6 +184,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async confirmOrderDoYouWant(confirmOrder: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', confirmOrder);
     const userInput =
       typeof confirmOrder.input === 'number'
@@ -444,7 +446,7 @@ export class GenAppsAction implements IAction {
           label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
           input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
         });
-        await performValidation('mainHeader', doYouWantToUploadDocumentToSupportYourApplication.mainHeader);
+        await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
         break;
       }
       case 'haveYouAlreadyAppliedForHelpWithYourApplicationFee': {
