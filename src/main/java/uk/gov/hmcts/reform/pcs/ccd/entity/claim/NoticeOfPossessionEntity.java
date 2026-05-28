@@ -56,4 +56,6 @@ public class NoticeOfPossessionEntity {
 
     private LocalDateTime noticeDateTime;
 
+    private String noticeStatement;
+
 }
