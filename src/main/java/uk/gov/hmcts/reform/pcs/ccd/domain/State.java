@@ -28,7 +28,7 @@ public enum State {
 
     @CCD(
         label = "Pending Case Issued",
-        access = {ClaimantAccess.class, CitizenAccess.class,  RasValidationAccess.class, GlobalSearchAccess.class
+        access = {ClaimantAccess.class, CitizenAccess.class,  RasValidationAccess.class, GlobalSearchAccess.class,
             InternalCaseFlagAccess.class},
         hint = "${caseTitleMarkdown}"
     )
