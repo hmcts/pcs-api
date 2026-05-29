@@ -173,20 +173,18 @@ export class CreateCaseAPIAction implements IAction {
   private async getCaseAPI(): Promise<void> {
     const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
 
-    //process.env.CREATE_EVENT_TOKEN = (await getCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
+    process.env.CREATE_EVENT_TOKEN = (await getCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
     try {
       const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
       await this.generateSolicitorAccessToken();
       const allDefendants = createResponse.data.data.allDefendants;
       const defendantIds = allDefendants.map((d: any) => d.id);
-      if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);      
 
       for (const defendantId of defendantIds) {
         process.env.Defendant_ID = defendantId;
 
         await performAction('linkSolicitorAPI');
       }
-      console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);     
 
     } catch (error: any) {
       const status = error?.response?.status;

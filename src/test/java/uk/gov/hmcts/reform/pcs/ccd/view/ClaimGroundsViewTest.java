@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherNoGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
@@ -236,14 +235,6 @@ class ClaimGroundsViewTest {
                 SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.name(),
                 "Reason for deteriation of antisocial ground", // Reason
                 "Antisocial behaviour", // Expected label
-                false // Is rent arrears ground
-            ),
-            argumentSet(
-                "Secure or flexible tenancy antisocial ground",
-                ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL,
-                SecureAntisocialAdditionalGrounds.S84A_CONDITION_1.name(),
-                "Reason for antisocial ground", // Reason
-                "Condition 1 of Section 84A of the Housing Act 1985", // Expected label
                 false // Is rent arrears ground
             ),
             argumentSet(
