@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,6 +49,7 @@ class DocumentsViewTest {
     @Test
     void shouldMapDocuments() {
         // Given
+        Instant submittedDate = Instant.parse("2026-05-14T09:30:00Z");
         UUID document1Id = UUID.randomUUID();
         DocumentEntity entity1 = DocumentEntity.builder()
             .id(document1Id)
@@ -54,6 +57,7 @@ class DocumentsViewTest {
             .url("url1")
             .binaryUrl("binary url1")
             .categoryId("category 1")
+            .submittedDate(submittedDate)
             .build();
 
         UUID document2Id = UUID.randomUUID();
@@ -85,6 +89,8 @@ class DocumentsViewTest {
                     assertThat(document.getUrl()).isEqualTo("url1");
                     assertThat(document.getBinaryUrl()).isEqualTo("binary url1");
                     assertThat(document.getCategoryId()).isEqualTo("category 1");
+                    assertThat(document.getUploadTimestamp())
+                        .isEqualTo(LocalDateTime.of(2026, 5, 14, 9, 30));
                 }
             );
 
@@ -96,8 +102,10 @@ class DocumentsViewTest {
                     assertThat(document.getUrl()).isEqualTo("url2");
                     assertThat(document.getBinaryUrl()).isEqualTo("binary url2");
                     assertThat(document.getCategoryId()).isEqualTo("category 2");
+                    assertThat(document.getUploadTimestamp()).isNull();
                 }
             );
+
     }
 
     @Test
