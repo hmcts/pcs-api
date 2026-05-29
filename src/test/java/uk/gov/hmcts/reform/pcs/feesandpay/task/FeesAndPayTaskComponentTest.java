@@ -20,7 +20,6 @@ import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.time.Duration;
@@ -42,9 +41,6 @@ class FeesAndPayTaskComponentTest {
     private FeesAndPayTaskComponent feesAndPayTaskComponent;
 
     @Mock
-    private FeeService feeService;
-
-    @Mock
     private PaymentService paymentService;
 
     @Mock
@@ -64,7 +60,6 @@ class FeesAndPayTaskComponentTest {
     void setUp() {
         int maxRetriesFeesAndPay = 5;
         feesAndPayTaskComponent = new FeesAndPayTaskComponent(
-            feeService,
             paymentService,
             maxRetriesFeesAndPay,
             feesAndPayBackoffDelay
