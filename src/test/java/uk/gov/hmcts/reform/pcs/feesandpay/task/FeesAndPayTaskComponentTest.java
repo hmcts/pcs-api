@@ -31,7 +31,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -87,9 +87,9 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should create task descriptor with correct name and type")
         void shouldCreateTaskDescriptorWithCorrectNameAndType() {
-            assertThat(FEE_CASE_ISSUED_TASK_DESCRIPTOR.getTaskName())
+            assertThat(FEES_AND_PAY_TASK_DESCRIPTOR.getTaskName())
                 .isEqualTo("fees-and-pay-task");
-            assertThat(FEE_CASE_ISSUED_TASK_DESCRIPTOR.getDataClass())
+            assertThat(FEES_AND_PAY_TASK_DESCRIPTOR.getDataClass())
                 .isEqualTo(FeesAndPayTaskData.class);
         }
 
