@@ -18,24 +18,28 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.config.SchedulingConfig;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -69,10 +73,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final BigDecimal CLAIM_FEE_AMOUNT = new BigDecimal("123.40");
-    public static final String RESPONSIBLE_PARTY_LTD = "Responsible Party Ltd";
 
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private PartyService partyService;
     @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
     @Mock
@@ -91,6 +96,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private FeeService feeService;
     @Mock
     private MoneyFormatter moneyFormatter;
+    @Mock
+    private SchedulingConfig schedulingConfig;
 
     @Mock
     private ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
@@ -104,10 +111,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(userDetails.getUid()).thenReturn(USER_ID.toString());
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
-            pcsCaseService, securityContextService,
+            pcsCaseService, partyService, securityContextService,
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
-            moneyFormatter, resumePossessionClaimConfigurer
+            moneyFormatter, resumePossessionClaimConfigurer, schedulingConfig
         );
 
         setEventUnderTest(underTest);
@@ -389,6 +396,17 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @DisplayName("Submit and pay callback tests")
     class SubmitAndPayTests {
 
+        @Mock
+        private PcsCaseEntity pcsCaseEntity;
+        @Mock
+        private PartyEntity claimantPartyEntity;
+
+        @BeforeEach
+        void setUp() {
+            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantPartyEntity);
+        }
+
         @Test
         void shouldCreateMainClaimOnCase() {
             // Given
@@ -407,21 +425,23 @@ class ResumePossessionClaimTest extends BaseEventTest {
         }
 
         @Test
-        void shouldSchedulePaymentTaskWithResponsiblePartyAsClaimantName() {
+        void shouldSchedulePaymentTaskWithResponsiblePartyIdAsClaimantParty() {
             // Given
             stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .claimantInformation(ClaimantInformation.builder().claimantName(RESPONSIBLE_PARTY_LTD).build())
                 .build();
+
+            UUID claimantPartyId = UUID.randomUUID();
+            when(claimantPartyEntity.getId()).thenReturn(claimantPartyId);
 
             // When
             callSubmitHandler(caseData);
 
             // Then
             FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
-            assertThat(taskData.getResponsibleParty()).isEqualTo(RESPONSIBLE_PARTY_LTD);
+            assertThat(taskData.getResponsiblePartyId()).isEqualTo(claimantPartyId);
         }
 
         @Test
@@ -440,7 +460,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
             assertThat(taskData.getFeeType()).isEqualTo(FeeType.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
-            assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
+            assertThat(taskData.getCaseReference()).isEqualTo(TEST_CASE_REFERENCE);
             assertThat(taskData.getCcdCaseNumber()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
