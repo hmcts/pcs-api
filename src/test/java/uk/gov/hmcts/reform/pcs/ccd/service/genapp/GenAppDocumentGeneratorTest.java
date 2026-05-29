@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.document.model.Document;
 import uk.gov.hmcts.reform.pcs.document.model.Party;
 import uk.gov.hmcts.reform.pcs.document.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.document.model.genapp.GenAppFormPayload;
@@ -377,6 +379,28 @@ class GenAppDocumentGeneratorTest {
     }
 
     @Test
+    void shouldSetSupportingDocumentsFromGenAppEntity() {
+        // Given
+        when(genAppRequest.getHasSupportingDocuments()).thenReturn(VerticalYesNo.YES);
+
+        String filename1 = "filename1";
+        String filename2 = "filename2";
+        DocumentEntity documentEntity1 = createDocumentEntity(filename1);
+        DocumentEntity documentEntity2 = createDocumentEntity(filename2);
+        when(genAppEntity.getDocuments()).thenReturn(List.of(documentEntity1, documentEntity2));
+
+        // When
+        underTest.generateSubmissionDocument(CASE_REFERENCE, genAppRequest, genAppEntity, applicantPartyEntity);
+
+        // Then
+        GenAppFormPayload formPayload = getFormPayload();
+        assertThat(formPayload.getDocumentUploadWanted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(formPayload.getUploadedDocuments())
+            .extracting(Document::getFilename)
+            .containsExactly(filename1, filename2);
+    }
+
+    @Test
     void shouldSetStatementOfTruth() {
         // Given
         String expectedSotFullName = "some full name";
@@ -414,6 +438,12 @@ class GenAppDocumentGeneratorTest {
         when(documentNameService
                  .appendGenAppPostfix(anyString(), any(GenAppEntity.class), any(ClaimEntity.class), any(UUID.class)))
             .thenReturn(modifiedFilename);
+    }
+
+    private static DocumentEntity createDocumentEntity(String filename) {
+        DocumentEntity documentEntity = mock(DocumentEntity.class);
+        when(documentEntity.getFileName()).thenReturn(filename);
+        return documentEntity;
     }
 
     private GenAppFormPayload getFormPayload() {
