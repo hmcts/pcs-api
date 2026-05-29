@@ -104,6 +104,7 @@ export class ActionRegistry {
     ['validateDefendantDetails', new CreateCaseAction()],
     ['validateClaimantDetails', new CreateCaseAction()],
     ['validateCaseNotesDetails', new CreateCaseAction()],
+    ['validateCaseSummaryDetails', new CreateCaseAction()],
     ['addCaseNotes', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
