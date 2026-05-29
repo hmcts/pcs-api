@@ -262,6 +262,7 @@ class PartyServiceTest {
             // Then
             assertThat(partyName).isEqualTo("First name Last name");
         }
+
         @Test
         void shouldGetPrimaryClaimantParty() {
             // Given

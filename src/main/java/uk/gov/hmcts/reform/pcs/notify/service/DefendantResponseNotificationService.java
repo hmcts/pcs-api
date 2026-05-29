@@ -86,17 +86,7 @@ public class DefendantResponseNotificationService {
             .filter(dr -> dr.getParty().getId().equals(counterClaim.getParty().getId()))
             .findFirst()
             .map(DefendantResponseEntity::getId)
-            .ifPresent(this::sendEmailNotificationForCounterclaim);
-    }
-
-    @Transactional
-    public void sendClaimantEmailNotificationCounterClaimIssued(UUID counterClaimId) {
-        CounterClaimEntity counterClaimEntity = counterClaimRepository.findById(counterClaimId)
-            .orElseThrow(() -> new IllegalArgumentException("Counter claim not found: " + counterClaimId));
-
-        DefendantResponseEntity defendantResponse = getAssociatedDefendantResponse(counterClaimEntity);
-
-        notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
+            .ifPresent(this::sendDefendantEmailNotificationForCounterclaim);
     }
 
     private CounterClaimEntity getAssociatedCounterClaim(DefendantResponseEntity defendantResponse) {
@@ -107,16 +97,5 @@ public class DefendantResponseNotificationService {
             .filter(counterClaim -> counterClaim.getParty().getId().equals(partyId))
             .findFirst()
             .orElse(null);
-    }
-
-    private DefendantResponseEntity getAssociatedDefendantResponse(CounterClaimEntity counterClaim) {
-        UUID partyId = counterClaim.getParty().getId();
-
-        return counterClaim.getPcsCase().getDefendantResponses().stream()
-            .filter(defendantResponse -> defendantResponse.getParty().getId().equals(partyId))
-            .findFirst()
-            .orElseThrow(
-                () -> new IllegalArgumentException("Associated defendant response not found for counter claim: "
-                                                       + counterClaim.getId()));
     }
 }

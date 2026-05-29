@@ -101,8 +101,8 @@ class NotificationServiceTest {
             partyService,
             schedulerClient,
             templateConfiguration,
-            pcsCaseService,
-            notificationPersonalisationFactory
+            notificationPersonalisationFactory,
+            pcsCaseService
         );
     }
 
@@ -347,7 +347,7 @@ class NotificationServiceTest {
                 schedulerClient,
                 templateConfiguration,
                 notificationPersonalisationFactory,
-                notificationRepository, schedulerClient, templateConfiguration, partyService, pcsCaseService
+                pcsCaseService
             );
 
             assertThat(service).isNotNull();

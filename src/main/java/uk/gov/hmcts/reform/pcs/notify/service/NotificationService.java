@@ -91,7 +91,7 @@ public class NotificationService {
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLater(long caseReference, PCSCase pcsCase) {
-        NotificationRecipient recipient = claimantRecipient(pcsCase);
+        NotificationRecipient recipient = claimantRecipient(caseReference, pcsCase);
 
         if (recipient.email() == null) {
             log.info("Skipping email notification to claimant on case: {}", caseReference);
@@ -378,11 +378,13 @@ public class NotificationService {
             : claimantContactPreferences.getOverriddenClaimantContactEmail();
     }
 
-    private NotificationRecipient claimantRecipient(PCSCase pcsCase) {
+    private NotificationRecipient claimantRecipient(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+
         return new NotificationRecipient(
             getClaimantEmailAddress(pcsCase.getClaimantContactPreferences()),
             null,
-            null,
+            pcsCaseEntity,
             null,
             PartyRole.CLAIMANT
         );
