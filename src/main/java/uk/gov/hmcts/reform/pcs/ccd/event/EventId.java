@@ -7,10 +7,14 @@ public enum EventId {
     enforceTheOrder,
     respondPossessionClaim,
     submitDefendantResponse,
-    citizenCreateGenApp,
+    makeAnApplication,
     createTestCase,
     createCaseLink,
     maintainCaseLink,
     dashboardView,
-    confirmEviction
+    confirmEviction,
+    addCaseNote,
+    createFlags,
+    amendFlags,
+    payment
 }
