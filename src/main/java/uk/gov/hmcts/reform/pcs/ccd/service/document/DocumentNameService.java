@@ -25,9 +25,9 @@ public class DocumentNameService {
         String baseName = FilenameUtils.getBaseName(originalFilename);
         String extension = FilenameUtils.getExtension(originalFilename);
 
+        // Example label: General Application (GA2) - Defendant 1.pdf
         String partyLabel = getPartyLabel(mainClaim, applicantPartyId);
         String filename = "%s GA%d".formatted(baseName, genAppEntity.getRank());
-
         if (partyLabel != null) {
             filename += " - " + partyLabel;
         }
@@ -78,4 +78,5 @@ public class DocumentNameService {
             .findFirst()
             .orElseThrow(() -> new PartyNotFoundException("Party not found"));
     }
+
 }
