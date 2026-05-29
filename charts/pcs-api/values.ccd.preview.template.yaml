@@ -1,4 +1,4 @@
-global:
+mayglobal:
   ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
   ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
   ccdUserProfileUrl: http://ccd-user-profile-api-aat.service.core-compute-aat.internal
@@ -161,11 +161,6 @@ ccd:
     minimumMasterNodes: 1
     antiAffinity: "soft"
     esJavaOpts: "-Xmx512m -Xms512m"
-    extraEnvs:
-      - name: discovery.type
-        value: single-node
-      - name: action.auto_create_index
-        value: .security*,.watches,.triggered_watches,.watcher-history-*,.logstash_dead_letter,.ml*,global_search
     persistence:
       enabled: false
     ingress:
