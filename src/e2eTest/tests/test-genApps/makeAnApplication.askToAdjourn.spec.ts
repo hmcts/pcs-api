@@ -18,10 +18,10 @@ import {
   isTheCourtHearingInTheNext14Days,
   selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
-  doYouWantToUploadDocumentsToSupportDefendantsApplication, whichLanguageDidYouUseToCompleteThisService
+  doYouWantToUploadDocumentsToSupportDefendantsApplication, whichLanguageDidYouUseToCompleteThisService,
+  statementOfTruth
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
-import {statementOfTruth} from "@data/page-data-figma";
 
 test.use({ storageState: undefined });
 

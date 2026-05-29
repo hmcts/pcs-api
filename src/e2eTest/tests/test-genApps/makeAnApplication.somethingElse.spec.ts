@@ -16,11 +16,12 @@ import {
   askTheCourtToMakeAnOrder, chooseAnApplication,
   doYouWantToUploadDocumentsToSupportDefendantsApplication,
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
-  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy,
+  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty,
+  statementOfTruth, whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
-import {statementOfTruth} from "@data/page-data-figma";
+
 
 test.use({ storageState: undefined });
 
