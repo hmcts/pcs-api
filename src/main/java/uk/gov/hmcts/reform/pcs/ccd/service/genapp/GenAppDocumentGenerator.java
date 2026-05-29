@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.document.model.Document;
 import uk.gov.hmcts.reform.pcs.document.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.document.model.genapp.GenAppFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
@@ -73,7 +75,7 @@ public class GenAppDocumentGenerator {
     }
 
     public String generateSubmissionDocument(long caseReference,
-                                             GenAppRequest citizenGenAppRequest,
+                                             GenAppRequest genAppRequest,
                                              GenAppEntity genAppEntity,
                                              PartyEntity applicantParty) {
 
@@ -83,8 +85,12 @@ public class GenAppDocumentGenerator {
         String outputFilename = documentNameService
             .appendGenAppPostfix(OUTPUT_FILENAME_PREFIX, genAppEntity, mainClaim, applicantPartyId);
 
-        GenAppFormPayload genAppFormPayload
-            = createGenAppFormPayload(caseReference, pcsCaseEntity, mainClaim, citizenGenAppRequest, applicantPartyId);
+        GenAppFormPayload genAppFormPayload = createGenAppFormPayload(caseReference,
+                                                                      pcsCaseEntity,
+                                                                      mainClaim,
+                                                                      genAppRequest,
+                                                                      genAppEntity,
+                                                                      applicantPartyId);
 
         return docAssemblyService
             .generateDocument(genAppFormPayload, TEMPLATE_ID, OutputType.PDF, outputFilename);
@@ -94,6 +100,7 @@ public class GenAppDocumentGenerator {
                                                       PcsCaseEntity pcsCaseEntity,
                                                       ClaimEntity mainClaim,
                                                       GenAppRequest genAppRequest,
+                                                      GenAppEntity genAppEntity,
                                                       UUID applicantPartyId) {
 
         LocalDate currentUkDate = LocalDate.now(ukClock);
@@ -123,12 +130,22 @@ public class GenAppDocumentGenerator {
             .otherPartiesAgreed(genAppRequest.getOtherPartiesAgreed())
             .withoutNotice(genAppRequest.getWithoutNotice())
             .withoutNoticeReason(genAppRequest.getWithoutNoticeReason())
+            .documentUploadWanted(genAppRequest.getHasSupportingDocuments())
+            .uploadedDocuments(getDocumentList(genAppEntity))
             .statementOfTruth(StatementOfTruth.builder()
                                   .fullName(genAppRequest.getSotFullName())
                                   .submittedOn(currentUkDate)
                                   .build()
             )
             .build();
+    }
+
+    private List<Document> getDocumentList(GenAppEntity genAppEntity) {
+        List<DocumentEntity> uploadedDocuments = genAppEntity.getDocuments();
+
+        return uploadedDocuments.stream()
+            .map(documentEntity -> Document.builder().filename(documentEntity.getFileName()).build())
+            .toList();
     }
 
     private String buildCaseName(ClaimEntity mainClaim) {
