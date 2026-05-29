@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
@@ -98,12 +99,12 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.scheduleEmailNotification(request, UUID.randomUUID());
+                notificationService.scheduleEmailNotification(request, createCase(), new ClaimEntity(), createParty());
 
             assertThat(response).isNotNull();
             assertThat(response.getTaskId()).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
-            assertThat(response.getNotificationId()).isEqualTo(savedNotification.getNotificationId());
+            assertThat(response.getNotificationId()).isEqualTo(savedNotification.getId());
 
             verify(notificationRepository, times(2)).save(any(CaseNotification.class));
             verify(schedulerClient).scheduleIfNotExists(any());
@@ -119,7 +120,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(false);
 
             EmailNotificationResponse response =
-                notificationService.scheduleEmailNotification(request, UUID.randomUUID());
+                notificationService.scheduleEmailNotification(request, createCase(), new ClaimEntity(), createParty());
 
             assertThat(response).isNotNull();
             assertThat(response.getTaskId()).isNotNull();
@@ -143,7 +144,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response = notificationService.scheduleEmailNotification(
-                request, UUID.randomUUID()
+                request, createCase(), new ClaimEntity(), createParty()
             );
 
             assertThat(response).isNotNull();
@@ -161,7 +162,8 @@ class NotificationServiceTest {
             when(notificationRepository.save(any(CaseNotification.class)))
                 .thenThrow(new DataAccessException("Database error") {});
 
-            assertThatThrownBy(() -> notificationService.scheduleEmailNotification(request, UUID.randomUUID()))
+            assertThatThrownBy(() -> notificationService
+                .scheduleEmailNotification(request, createCase(), new ClaimEntity(), createParty()))
                 .isInstanceOf(NotificationException.class)
                 .hasMessage("Failed to save Case Notification.");
 
@@ -177,7 +179,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any(CaseNotification.class))).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            notificationService.scheduleEmailNotification(request, UUID.randomUUID());
+            notificationService.scheduleEmailNotification(request, createCase(), new ClaimEntity(), createParty());
 
             ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
             verify(notificationRepository, times(2)).save(notificationCaptor.capture());
@@ -327,15 +329,15 @@ class NotificationServiceTest {
     }
 
     @Test
-    @DisplayName("Should set submittedAt when status is SENDING")
-    void shouldSetSubmittedAtWhenStatusIsSending() {
+    @DisplayName("Should set submittedAt when status is SUBMITTED")
+    void shouldSetSubmittedAtWhenStatusIsSubmitted() {
         CaseNotification notification = createCaseNotification();
         notification.setSubmittedAt(null);
 
         when(notificationRepository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(any(CaseNotification.class))).thenReturn(notification);
 
-        notificationService.updateNotificationStatus(NOTIFICATION_ID, "SENDING");
+        notificationService.updateNotificationStatus(NOTIFICATION_ID, "SUBMITTED");
 
         verify(notificationRepository).findById(NOTIFICATION_ID);
 
@@ -606,19 +608,26 @@ class NotificationServiceTest {
         void shouldBuildRequest() {
             Map<String, Object> personalisation = Map.of("key", "value");
 
-            EmailNotificationRequest request =
-                NotificationService.buildRequest("template-1", "test@example.com", personalisation);
+            EmailNotificationRequest request = NotificationService.buildRequest(
+                "template-1",
+                "test@example.com",
+                NotificationClaimType.COUNTER_CLAIM,
+                personalisation);
 
             assertThat(request.getTemplateId()).isEqualTo("template-1");
             assertThat(request.getEmailAddress()).isEqualTo("test@example.com");
+            assertThat(request.getClaimType()).isEqualTo(NotificationClaimType.COUNTER_CLAIM);
             assertThat(request.getPersonalisation()).isEqualTo(personalisation);
         }
 
         @Test
         @DisplayName("Should allow null personalisation")
         void shouldAllowNullPersonalisation() {
-            EmailNotificationRequest request =
-                NotificationService.buildRequest("template-1", "test@example.com", null);
+            EmailNotificationRequest request = NotificationService.buildRequest(
+                "template-1",
+                "test@example.com",
+                NotificationClaimType.COUNTER_CLAIM,
+                null);
 
             assertThat(request.getPersonalisation()).isNull();
         }
@@ -626,8 +635,11 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should allow empty personalisation")
         void shouldAllowEmptyPersonalisation() {
-            EmailNotificationRequest request =
-                NotificationService.buildRequest("template-1", "test@example.com", Map.of());
+            EmailNotificationRequest request = NotificationService.buildRequest(
+                "template-1",
+                "test@example.com",
+                NotificationClaimType.COUNTER_CLAIM,
+                Map.of());
 
             assertThat(request.getPersonalisation()).isEmpty();
         }
@@ -662,8 +674,8 @@ class NotificationServiceTest {
 
     private CaseNotification createCaseNotification() {
         CaseNotification notification = new CaseNotification();
-        notification.setNotificationId(NOTIFICATION_ID);
-        notification.setCaseId(UUID.randomUUID());
+        notification.setId(NOTIFICATION_ID);
+        notification.setPcsCase(createCase());
         notification.setRecipient(TEST_EMAIL);
         notification.setType("Email");
         notification.setStatus(NotificationStatus.PENDING_SCHEDULE);
