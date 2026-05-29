@@ -494,6 +494,72 @@ class NoticeDetailsServiceTest {
                 .isNotEmpty()
                 .contains("The date and time cannot be today or in the future");
         }
+
+        @Test
+        void shouldNotValidateOtherWithNullDateTime() {
+            // Given
+            LocalDateTime dateTime = null;
+            PCSCase caseData = PCSCase.builder()
+                    .noticeServed(YesOrNo.YES)
+                    .noticeServedDetails(NoticeServedDetails.builder()
+                            .noticeServiceMethod(NoticeServiceMethod.OTHER)
+                            .noticeOtherDateTime(dateTime)
+                            .noticeOtherExplanation("Valid explanation")
+                            .build())
+                    .build();
+
+            // When
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+
+            // Then
+            assertThat(errors)
+                    .isEmpty();
+        }
+    }
+
+    @Nested
+    class UnableToUploadDocTxtValidation {
+
+        @Test
+        void shouldReturnNoErrorsForValidLength() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                    .noticeServed(YesOrNo.YES)
+                    .noticeServedDetails(NoticeServedDetails.builder()
+                            .noticeServiceMethod(NoticeServiceMethod.OTHER)
+                            .unableToUploadTxt("Unable to upload document due to technical issues")
+                            .build())
+                    .build();
+
+            // When
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+
+            // Then
+            assertThat(errors).isEmpty();
+        }
+
+        @Test
+        void shouldReturnErrorWhenTxtTooLong() {
+            // Given
+            String longText = "0123456789".repeat(51);
+
+            PCSCase caseData = PCSCase.builder()
+                    .noticeServed(YesOrNo.YES)
+                    .noticeServedDetails(NoticeServedDetails.builder()
+                            .noticeServiceMethod(NoticeServiceMethod.OTHER)
+                            .unableToUploadTxt(longText)
+                            .build())
+                    .build();
+
+            // When
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+
+            // Then
+            // Text area length validation is now handled by TextAreaValidationService in NoticeDetailsService
+            assertThat(errors)
+                    .isNotEmpty()
+                    .anyMatch(error -> error.contains("more than the maximum number of characters"));
+        }
     }
 
     @Nested

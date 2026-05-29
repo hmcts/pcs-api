@@ -112,16 +112,12 @@ public class NoticeDetails implements CcdPageConfiguration {
             )
 
             // Document upload section
-            .label("noticeDetails-documentUpload-section", """
-                ---
-                <h2 class="govuk-heading-m">Do you want to upload a copy of the notice you served or the
-                certificate of service? (Optional)</h2>
-                <p class="govuk-hint">You can either upload this now or closer to the hearing date.
-                Any documents you upload now will be included in the pack of documents a judge will
-                receive before the hearing (the bundle)</p>
-                """)
-              .optional(NoticeServedDetails::getNoticeDocuments)
-              .label("noticeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .mandatory(NoticeServedDetails::getAbleToUploadDocument)
+            .mandatory(NoticeServedDetails::getNoticeDocuments,
+                    "notice_AbleToUploadDocument=\"YES\"")
+            .mandatory(NoticeServedDetails::getUnableToUploadTxt,
+                    "notice_AbleToUploadDocument=\"NO\"")
+            .label("noticeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

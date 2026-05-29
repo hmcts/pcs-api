@@ -95,18 +95,32 @@ public class NoticeServedDetails {
     private String noticeOtherExplanation;
 
     @CCD(
-        label = "Give details of how the notice was served",
-        hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
+            label = "Give details of how the notice was served",
+            hint = "You can enter up to 250 characters",
+            typeOverride = TextArea
     )
     private String noticeOtherElectronicMethodExplanation;
 
     @CCD(
-            label = "Add document",
+            label = "Are you able to upload a copy of the notice you served?",
+            hint = "If you’ve served multiple notices, only upload one here. You can upload the other "
+            + "copies and explain why you served multiple notices later on when we ask about additional reasons for "
+            + "possession and whether you have other documents to upload"
+    )
+    private CanUploadNoticeServedDocument ableToUploadDocument;
+
+    @CCD(
+            label = "Upload a copy of the notice served",
             hint = "Upload a document to the system",
             typeOverride = FieldType.Collection,
             typeParameterOverride = "Document",
             access = {CaseworkerReadAccess.class}
     )
     private List<ListValue<Document>> noticeDocuments;
+
+    @CCD(
+            label = "Why can you not upload a copy of the notice you served?",
+            typeOverride = TextArea
+    )
+    private String unableToUploadTxt;
 }

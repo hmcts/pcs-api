@@ -35,6 +35,7 @@ public class NoticeOfPossessionService {
         }
 
         noticeOfPossessionEntity.setServingMethod(noticeServiceMethod);
+        noticeOfPossessionEntity.setUnableToUploadTxt(noticeServedDetails.getUnableToUploadTxt());
 
         switch (noticeServiceMethod) {
             case FIRST_CLASS_POST -> {
