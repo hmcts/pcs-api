@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
@@ -53,6 +54,7 @@ public class NotificationService {
     private final SchedulerClient schedulerClient;
     private final NotificationTemplateConfiguration templateConfiguration;
     private final PartyService partyService;
+    private final PcsCaseService pcsCaseService;
 
     private static final String NO_CLAIMANT_PARTY_FOUND_MSG = "No claimant party found for defendant response: %s";
 
@@ -400,6 +402,7 @@ public class NotificationService {
             log.info("Skipping email notification to claimant on case: {}", caseReference);
             return null;
         }
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         return scheduleEmailNotification(
             buildRequest(
@@ -408,7 +411,7 @@ public class NotificationService {
                 claimType,
                 personalisationBuilder.apply(caseReference, pcsCase)
             ),
-            null,
+            pcsCaseEntity,
             null,
             null
         );
@@ -449,7 +452,6 @@ public class NotificationService {
             .templateId(templateId)
             .emailAddress(email)
             .personalisation(personalisation.toMap())
-            .claimType(claimType)
             .claimType(claimType)
             .build();
     }

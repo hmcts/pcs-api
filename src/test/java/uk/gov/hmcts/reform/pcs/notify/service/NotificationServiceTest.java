@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
@@ -77,6 +78,9 @@ class NotificationServiceTest {
     @Mock
     private PartyService partyService;
 
+    @Mock
+    private PcsCaseService pcsCaseService;
+
     private NotificationService notificationService;
 
     private static final String TEST_EMAIL = "test@example.com";
@@ -88,7 +92,7 @@ class NotificationServiceTest {
     @BeforeEach
     void setUp() {
         notificationService = new NotificationService(
-            notificationRepository, schedulerClient, templateConfiguration, partyService
+            notificationRepository, schedulerClient, templateConfiguration, partyService, pcsCaseService
         );
     }
 
@@ -328,7 +332,7 @@ class NotificationServiceTest {
         @DisplayName("Should create service with dependencies")
         void shouldCreateServiceWithDependencies() {
             NotificationService service = new NotificationService(
-                notificationRepository, schedulerClient, templateConfiguration, partyService
+                notificationRepository, schedulerClient, templateConfiguration, partyService, pcsCaseService
             );
 
             assertThat(service).isNotNull();
