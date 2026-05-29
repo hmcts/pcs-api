@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
@@ -331,8 +332,13 @@ public class NotificationService {
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
     ) {
-        if (recipient.party() != null && !partyService.canSendEmailNotification(recipient.party())) {
-            log.info("Skipping email notification to user: {}", recipient.party().getId());
+        PartyEntity party = recipient.party();
+        boolean isDefendantAndCannotSendEmail = party != null
+            && recipient.recipientRole() == PartyRole.DEFENDANT
+            && !partyService.canSendEmailNotification(party);
+
+        if (isDefendantAndCannotSendEmail) {
+            log.info("Skipping email notification to user: {}", party.getId());
             return null;
         }
 
@@ -375,7 +381,8 @@ public class NotificationService {
             getClaimantEmailAddress(pcsCase.getClaimantContactPreferences()),
             null,
             null,
-            null
+            null,
+            PartyRole.CLAIMANT
         );
     }
 
@@ -390,7 +397,8 @@ public class NotificationService {
             claimant.getEmailAddress(),
             claimant,
             claim.getPcsCase(),
-            claim
+            claim,
+            PartyRole.CLAIMANT
         );
     }
 
@@ -405,7 +413,8 @@ public class NotificationService {
             defendant.getEmailAddress(),
             defendant,
             response.getPcsCase(),
-            response.getClaim()
+            response.getClaim(),
+            PartyRole.DEFENDANT
         );
     }
 }

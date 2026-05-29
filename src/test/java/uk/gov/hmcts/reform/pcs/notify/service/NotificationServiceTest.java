@@ -471,7 +471,6 @@ class NotificationServiceTest {
             claimantParty.setEmailAddress(TEST_EMAIL);
             when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
 
-            when(partyService.canSendEmailNotification(any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM))
                 .thenReturn(TEMPLATE_ID);
 
@@ -632,8 +631,8 @@ class NotificationServiceTest {
         }
 
         @Test
-        @DisplayName("Should NOT send email when canSendEmailNotification is false")
-        void shouldNotSendEmailWhenCanSendEmailNotificationIsFalse() {
+        @DisplayName("Should NOT send email when canSendEmailNotification is false for defendant")
+        void shouldNotSendEmailWhenCanSendEmailNotificationIsFalseForDefendant() {
             when(partyService.canSendEmailNotification(any())).thenReturn(false);
 
             EmailNotificationResponse response =
@@ -642,6 +641,32 @@ class NotificationServiceTest {
             assertThat(response).isNull();
 
             verifyNoInteractions(templateConfiguration, notificationRepository, schedulerClient);
+        }
+
+        @Test
+        @DisplayName("Should send email when sending to claimant")
+        void shouldSendEmailWhenCanSendEmailNotificationIsFalseForClaimant() {
+            PartyEntity claimantParty = new PartyEntity();
+            claimantParty.setEmailAddress(TEST_EMAIL);
+            when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
+
+            when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(partyService, never()).canSendEmailNotification(any());
+            verify(templateConfiguration).getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM);
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
         }
     }
 
