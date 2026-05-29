@@ -450,6 +450,7 @@ public class NotificationService {
             .emailAddress(email)
             .personalisation(personalisation.toMap())
             .claimType(claimType)
+            .claimType(claimType)
             .build();
     }
 

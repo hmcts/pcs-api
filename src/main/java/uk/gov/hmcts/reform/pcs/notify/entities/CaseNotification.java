@@ -72,11 +72,11 @@ public class CaseNotification {
     private String recipient;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "party_id")
+    @JoinColumn(name = "party_id", nullable = false)
     private PartyEntity partyId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "claim_id")
+    @JoinColumn(name = "claim_id", nullable = false)
     private ClaimEntity claimId;
 
     @Enumerated(EnumType.STRING)

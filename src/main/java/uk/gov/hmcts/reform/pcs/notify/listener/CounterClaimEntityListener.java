@@ -25,7 +25,7 @@ public class CounterClaimEntityListener {
 
     @PostPersist
     public void onPostPersist(CounterClaimEntity entity) {
-        if (entity.getStatus() == CounterClaimStatus.PENDING_CASE_ISSUED) {
+        if (entity.getStatus() == CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED) {
             applicationEventPublisher.publishEvent(
                 new CounterClaimStatusUpdatedEvent(entity.getId(), entity.getPreviousStatus(), entity.getStatus()));
         }

@@ -30,11 +30,11 @@ class CounterClaimEntityListenerTest {
     @Test
     void shouldSetPreviousStatusOnPostLoad() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(CounterClaimStatus.PENDING_CASE_ISSUED);
+        entity.setStatus(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
 
         underTest.onPostLoad(entity);
 
-        assertEquals(CounterClaimStatus.PENDING_CASE_ISSUED, entity.getPreviousStatus());
+        assertEquals(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED, entity.getPreviousStatus());
     }
 
     @Test
@@ -42,7 +42,7 @@ class CounterClaimEntityListenerTest {
         UUID counterClaimId = UUID.randomUUID();
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CounterClaimStatus.PENDING_CASE_ISSUED)
+            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
             .build();
 
         underTest.onPostPersist(entity);
@@ -53,13 +53,13 @@ class CounterClaimEntityListenerTest {
 
         CounterClaimStatusUpdatedEvent event = eventCaptor.getValue();
         assertEquals(counterClaimId, event.getEntityId());
-        assertEquals(CounterClaimStatus.PENDING_CASE_ISSUED, event.getNewStatus());
+        assertEquals(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED, event.getNewStatus());
     }
 
     @Test
     void shouldNotPublishEventOnPostPersistWhenStatusIsNotPendingCaseIssued() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(CounterClaimStatus.CASE_ISSUED);
+        entity.setStatus(CounterClaimStatus.COUNTER_CLAIM_ISSUED);
 
         underTest.onPostPersist(entity);
 
@@ -69,8 +69,8 @@ class CounterClaimEntityListenerTest {
     @Test
     void shouldDoNothingOnPostUpdateWhenStatusHasNotChanged() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(CounterClaimStatus.PENDING_CASE_ISSUED);
-        entity.setPreviousStatus(CounterClaimStatus.PENDING_CASE_ISSUED);
+        entity.setStatus(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
+        entity.setPreviousStatus(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
 
         underTest.onPostUpdate(entity);
 
@@ -82,8 +82,8 @@ class CounterClaimEntityListenerTest {
         UUID counterClaimId = UUID.randomUUID();
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CounterClaimStatus.PENDING_CASE_ISSUED)
-            .previousStatus(CounterClaimStatus.CASE_ISSUED)
+            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+            .previousStatus(CounterClaimStatus.COUNTER_CLAIM_ISSUED)
             .build();
 
         underTest.onPostUpdate(entity);
@@ -94,7 +94,7 @@ class CounterClaimEntityListenerTest {
 
         CounterClaimStatusUpdatedEvent event = eventCaptor.getValue();
         assertEquals(counterClaimId, event.getEntityId());
-        assertEquals(CounterClaimStatus.CASE_ISSUED, event.getPreviousStatus());
-        assertEquals(CounterClaimStatus.PENDING_CASE_ISSUED, event.getNewStatus());
+        assertEquals(CounterClaimStatus.COUNTER_CLAIM_ISSUED, event.getPreviousStatus());
+        assertEquals(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED, event.getNewStatus());
     }
 }

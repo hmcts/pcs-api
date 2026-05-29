@@ -9,9 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.time.Duration;
@@ -25,18 +23,15 @@ public class FeesAndPayTaskComponent {
     public static final TaskDescriptor<FeesAndPayTaskData> FEE_CASE_ISSUED_TASK_DESCRIPTOR =
         TaskDescriptor.of(FEES_AND_PAY_CASE_ISSUED_TASK_NAME, FeesAndPayTaskData.class);
 
-    private final FeeService feeService;
     private final PaymentService paymentService;
     private final int maxRetriesFeesAndPay;
     private final Duration feesAndPayBackoffDelay;
 
     public FeesAndPayTaskComponent(
-        FeeService feeService,
         PaymentService paymentService,
         @Value("${fees.request.max-retries}") int maxRetriesFeesAndPay,
         @Value("${fees.request.backoff-delay-seconds}") Duration feesAndPayBackoffDelay
     ) {
-        this.feeService = feeService;
         this.paymentService = paymentService;
         this.maxRetriesFeesAndPay = maxRetriesFeesAndPay;
         this.feesAndPayBackoffDelay = feesAndPayBackoffDelay;
@@ -59,20 +54,9 @@ public class FeesAndPayTaskComponent {
             .execute((taskInstance, executionContext) -> {
                 FeesAndPayTaskData taskData = taskInstance.getData();
                 log.debug("Executing fee service request for fee type: {}", taskData.getFeeType());
-
-                FeeDetails feeDetails = taskData.getFeeDetails();
-
                 try {
-                    paymentService.createServiceRequest(
-                        taskData.getCaseReference(),
-                        taskData.getCcdCaseNumber(),
-                        feeDetails,
-                        taskData.getVolume(),
-                        taskData.getResponsibleParty()
-                    );
-
+                    paymentService.createServiceRequest(taskData);
                     return new CompletionHandler.OnCompleteRemove<>();
-
                 } catch (Exception e) {
                     log.error("Failed to create fee service request for type: {}. Attempt {}/{}",
                                 taskData.getFeeType(),
