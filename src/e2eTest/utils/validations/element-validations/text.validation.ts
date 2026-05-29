@@ -33,7 +33,6 @@ export class TextValidation implements IValidation {
       case 'listItem':
         data.elementType = 'li';
     }
-
     const text = String(data.text);
     const locator = data.elementType === 'p'
       ? page.getByText(text, { exact: true }).filter({ visible: true }).first()
@@ -54,5 +53,5 @@ export class TextValidation implements IValidation {
         .first();
     await locator.scrollIntoViewIfNeeded();
     await locator.waitFor({ state: 'visible' });
-}
+  }
 }
