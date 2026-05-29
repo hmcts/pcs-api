@@ -38,51 +38,52 @@ public class GenAppService {
                          DocumentNameService documentNameService,
                          DocumentRepository documentRepository,
                          @Qualifier("utcClock") Clock utcClock) {
+
         this.genAppRepository = genAppRepository;
         this.documentNameService = documentNameService;
         this.documentRepository = documentRepository;
         this.utcClock = utcClock;
     }
 
-    public GenAppEntity createGenAppEntity(GenAppRequest citizenCreateGenApp,
+    public GenAppEntity createGenAppEntity(GenAppRequest genAppRequest,
                                            PcsCaseEntity pcsCaseEntity,
                                            PartyEntity applicantParty) {
 
         GenAppEntity genAppEntity = GenAppEntity.builder()
-            .type(citizenCreateGenApp.getApplicationType())
+            .type(genAppRequest.getApplicationType())
             .party(applicantParty)
             .state(GenAppState.SUBMITTED)
-            .clientReference(citizenCreateGenApp.getClientReference())
-            .within14Days(citizenCreateGenApp.getWithin14Days())
-            .needHwf(citizenCreateGenApp.getNeedHwf())
-            .appliedForHwf(citizenCreateGenApp.getAppliedForHwf())
+            .clientReference(genAppRequest.getClientReference())
+            .within14Days(genAppRequest.getWithin14Days())
+            .needHwf(genAppRequest.getNeedHwf())
+            .appliedForHwf(genAppRequest.getAppliedForHwf())
             .build();
 
         // Adding the Gen App to the PcsCaseEntity allocates it a rank,
         // which we rely on later on in this method to rename the supporting documents
         pcsCaseEntity.addGenApp(genAppEntity);
 
-        if (citizenCreateGenApp.getAppliedForHwf() == VerticalYesNo.YES
-                && citizenCreateGenApp.getHwfReference() != null) {
+        if (genAppRequest.getAppliedForHwf() == VerticalYesNo.YES
+                && genAppRequest.getHwfReference() != null) {
             HelpWithFeesEntity helpWithFeesEntity = new HelpWithFeesEntity();
-            helpWithFeesEntity.setHwfReference(citizenCreateGenApp.getHwfReference());
+            helpWithFeesEntity.setHwfReference(genAppRequest.getHwfReference());
             genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
         }
 
-        genAppEntity.setOtherPartiesAgreed(citizenCreateGenApp.getOtherPartiesAgreed());
-        if (citizenCreateGenApp.getOtherPartiesAgreed() == VerticalYesNo.NO) {
-            genAppEntity.setWithoutNotice(citizenCreateGenApp.getWithoutNotice());
-            if (citizenCreateGenApp.getWithoutNotice() == VerticalYesNo.YES) {
-                genAppEntity.setWithoutNoticeReason(citizenCreateGenApp.getWithoutNoticeReason());
+        genAppEntity.setOtherPartiesAgreed(genAppRequest.getOtherPartiesAgreed());
+        if (genAppRequest.getOtherPartiesAgreed() == VerticalYesNo.NO) {
+            genAppEntity.setWithoutNotice(genAppRequest.getWithoutNotice());
+            if (genAppRequest.getWithoutNotice() == VerticalYesNo.YES) {
+                genAppEntity.setWithoutNoticeReason(genAppRequest.getWithoutNoticeReason());
             }
         }
 
-        genAppEntity.setWhatOrderWanted(citizenCreateGenApp.getWhatOrderWanted());
+        genAppEntity.setWhatOrderWanted(genAppRequest.getWhatOrderWanted());
 
-        genAppEntity.setDocumentsUploaded(citizenCreateGenApp.getHasSupportingDocuments());
-        if (citizenCreateGenApp.getHasSupportingDocuments() == VerticalYesNo.YES) {
+        genAppEntity.setDocumentsUploaded(genAppRequest.getHasSupportingDocuments());
+        if (genAppRequest.getHasSupportingDocuments() == VerticalYesNo.YES) {
             List<DocumentEntity> documentEntities
-                = createDocumentEntities(citizenCreateGenApp.getUploadedDocuments(),
+                = createDocumentEntities(genAppRequest.getUploadedDocuments(),
                                          pcsCaseEntity,
                                          genAppEntity,
                                          applicantParty.getId());
@@ -90,13 +91,13 @@ public class GenAppService {
             genAppEntity.setDocuments(documentEntities);
         }
 
-        genAppEntity.setLanguageUsed(citizenCreateGenApp.getLanguageUsed());
+        genAppEntity.setLanguageUsed(genAppRequest.getLanguageUsed());
         genAppEntity.setApplicationSubmittedDate(LocalDateTime.now(utcClock));
 
-        if (citizenCreateGenApp.getSotAccepted() != null) {
+        if (genAppRequest.getSotAccepted() != null) {
             StatementOfTruthEntity statementOfTruthEntity = StatementOfTruthEntity.builder()
-                .accepted(toYesOrNo(citizenCreateGenApp.getSotAccepted()))
-                .fullName(citizenCreateGenApp.getSotFullName())
+                .accepted(toYesOrNo(genAppRequest.getSotAccepted()))
+                .fullName(genAppRequest.getSotFullName())
                 .completedDate(LocalDateTime.now(utcClock))
                 .build();
             genAppEntity.setStatementOfTruth(statementOfTruthEntity);
