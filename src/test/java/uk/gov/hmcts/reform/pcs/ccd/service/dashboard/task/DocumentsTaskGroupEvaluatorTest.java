@@ -32,7 +32,7 @@ class DocumentsTaskGroupEvaluatorTest {
             .documents(List.of(DocumentEntity.builder().build()))
             .build();
 
-        TaskGroup taskGroup = underTest.evaluate(new DashboardContext(100L, caseEntity, null));
+        TaskGroup taskGroup = underTest.evaluate(new DashboardContext(100L, caseEntity, null, false, false));
 
         assertTaskStatuses(taskGroup, TaskStatus.AVAILABLE);
     }
@@ -43,7 +43,7 @@ class DocumentsTaskGroupEvaluatorTest {
             .documents(List.of())
             .build();
 
-        TaskGroup taskGroup = underTest.evaluate(new DashboardContext(100L, caseEntity, null));
+        TaskGroup taskGroup = underTest.evaluate(new DashboardContext(100L, caseEntity, null, false, false));
 
         assertTaskStatuses(taskGroup, TaskStatus.NOT_AVAILABLE);
     }

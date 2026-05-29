@@ -13,8 +13,10 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
-  askTheCourtToSetAsideTheOrder, chooseAnApplication, haveTheOtherPartiesAgreedToThisApplication,
-  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty
+  askTheCourtToSetAsideTheOrder, chooseAnApplication,
+  doYouWantToUploadDocumentsToSupportDefendantsApplication,
+  hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
+  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
 
@@ -89,7 +91,16 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
       input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
     });
-    await performValidation('mainHeader',haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+    await performAction('confirmOtherPartiesAgreed', {
+      question: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.haveTheOtherPartiesAgreedQuestion,
+      option: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.yesRadioOption,
+    });
+    await performValidation('mainHeader', whatOrderDoYouWantTheCourtToMakeAndWhy.mainHeader);
+    await performAction('confirmOrderDoYouWant', {
+      label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
+      input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+    });
+    await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
   });
 
 });
