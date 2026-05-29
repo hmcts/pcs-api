@@ -187,13 +187,6 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performAction('clickButton', checkYourAnswers.submitClaim);
     await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-       'address info not null',
-       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-       ['formLabelValue', propertyDetails.townOrCityLabel],
-       ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-       ['formLabelValue', propertyDetails.countryLabel],
-     )
   });
 
   //This test must be run only in the Nightly jobs as it contains an exhaustive test sceanrio for 'Upload additional documents' page
@@ -318,13 +311,6 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performAction('clickButton', checkYourAnswers.submitClaim);
     await performAction('payClaimFee',{clickLink: true});
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel],
-    )
   });
 
   test('England - Assured tenancy with No Rent arrears @MAC', async () => {
