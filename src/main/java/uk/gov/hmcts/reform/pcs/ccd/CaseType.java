@@ -77,10 +77,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
             .field("nextStepsMarkdown", NEVER_SHOW);
 
-        builder.tab("summary", "Summary")
-            .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
-            .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
-            .field(PCSCase::getPropertyAddress);
+        buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -141,5 +138,37 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field("casePartiesTab_ClaimantDetails")
             .field("casePartiesTab_DefendantOneDetails")
             .field("casePartiesTab_DefendantsDetails");
+    }
+
+    private void buildSummaryTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.tab("summary", "Summary")
+            .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
+            .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
+            .label("Summary", null, "## Summary")
+            .field("summaryTab_RepossessedPropertyAddress")
+            .field("summaryTab_GroundsForPossession")
+            .field("summaryTab_ReasonsForPossession")
+            .field("summaryTab_DateClaimSubmitted")
+            .label("Claimant details",
+                   "summaryTab_ClaimantDetails!=\"\"",
+                   "## Claimant details")
+            .field("summaryTab_ClaimantDetails")
+            .label("Defendant details",
+                   "summaryTab_DefendantDetails!=\"\"",
+                   "## Defendant details")
+            .field("summaryTab_DefendantDetails")
+            .field("summaryTab_AdditionalDefendants")
+            .label("Rent arrears",
+                   "summaryTab_RentArrearsDetails!=\"\"",
+                   "## Rent arrears")
+            .field("summaryTab_RentArrearsDetails")
+            .label("Tenancy or occupation contract or licence",
+                   "summaryTab_TenancyDetails!=\"\"",
+                   "## Tenancy, occupation contract or licence")
+            .field("summaryTab_TenancyDetails")
+            .label("Notice",
+                   "summaryTab_NoticeDetails!=\"\"",
+                   "## Notice")
+            .field("summaryTab_NoticeDetails");
     }
 }
