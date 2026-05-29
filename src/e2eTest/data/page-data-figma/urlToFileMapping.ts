@@ -13,12 +13,11 @@ export default {
   'resumePossessionClaimpreActionProtocol':'preActionProtocol',
   'resumePossessionClaimmediationAndSettlement': 'mediationAndSettlement',
   'resumePossessionClaimcheckingNotice': 'checkingNotice',
-  'resumePossessionClaimwalesCheckingNotice': 'checkingNotice',
+  'resumePossessionClaimwalesCheckingNotice': 'checkingNoticeWales',
   'resumePossessionClaimnoticeDetails': 'noticeDetails',
   'resumePossessionClaimclaimantCircumstances': 'claimantCircumstances',
   'resumePossessionClaimdefendantCircumstances': 'defendantCircumstances',
   'resumePossessionClaimalternativesToPossession': 'alternativesToPossession',
-  'resumePossessionClaimclaimingCosts': 'claimingCosts',
   'resumePossessionClaimrentDetails': 'rentDetails',
   'resumePossessionClaimdailyRentAmount': 'dailyRentAmount',
   'resumePossessionClaimmoneyJudgment': 'moneyJudgment',
@@ -47,4 +46,7 @@ export default {
   'resumePossessionClaimreasonsForRequestingASuspensionAndDemotionOrder': 'suspensionToBuyDemotionOfTenancyOrderReasons',
   'resumePossessionClaimstatementOfExpressTerms': 'statementOfExpressTerms',
   'resumePossessionClaimunderlesseeMortgageeDetails': 'underlesseeMortgageeDetails',
+  'createFlagscaseworkerCaseFlag': 'whereShouldThisFlagBeAdded',
+  'submit': 'reviewFlagDetails'
+  'addCaseNoteaddCaseNote': 'addCaseNote',
 };

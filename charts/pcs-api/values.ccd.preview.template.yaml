@@ -42,7 +42,6 @@ postgresql:
       - name: "pr-${CHANGE_ID}-data-store"
       - name: "pr-${CHANGE_ID}-definition-store"
       - name: "pr-${CHANGE_ID}-pcs"
-
 ccd:
   enabled: true
   ccd:
@@ -197,10 +196,10 @@ xui-webapp:
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
       SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
-      JURISDICTIONS: PCS,CIVIL
-      GLOBAL_SEARCH_SERVICES: PCS,CIVIL
-      WA_SUPPORTED_JURISDICTIONS: PCS,CIVIL
-      STAFF_SUPPORTED_JURISDICTIONS: PCS
+      JURISDICTIONS: PCS
+      GLOBAL_SEARCH_SERVICES: PCS,CIVIL,SSCS
+      WA_SUPPORTED_JURISDICTIONS: PCS,CIVIL,SSCS
+      STAFF_SUPPORTED_JURISDICTIONS: PCS,CIVIL,SSCS
       FEATURE_REDIS_ENABLED: false
       REDISCLOUD_URL: http://dummyrediscloudurl
       FEATURE_APP_INSIGHTS_ENABLED: false
@@ -238,6 +237,7 @@ ccd-case-document-am-api:
       S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
       DM_STORE_BASE_URL: http://dm-store-aat.service.core-compute-aat.internal
       CCD_DATA_STORE_API_BASE_URL: http://${SERVICE_NAME}-ccd-data-store-api
+      CASE_DOCUMENT_S2S_AUTHORISED_SERVICES: ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,bulk_scan_processor,sscs,probate_backend,iac,em_npa_app,fprl_dgs_api,dg_docassembly_api,em_stitching_api,em_ccd_orchestrator,cmc_claim_store,civil_service,bulk_scan_orchestrator,ethos_repl_service,divorce_document_generator,finrem_document_generator,finrem_case_orchestration,fpl_case_service,et_cos,prl_cos_api,prl_dgs_api,et_sya_api,adoption_cos_api,adoption_web,nfdiv_case_api,divorce_frontend,sptribs_case_api,sptribs_dss_backend,civil_general_applications,pcs_api,pcs_frontend
     keyVaults:
       ccd:
         secrets:

@@ -99,11 +99,13 @@ class NoticeOfPossessionViewTest {
     void shouldSetNoticeOfPossessionServedFlagAndTypeForWales() {
         // Given
         String noticeType = "Wales notice type";
+        String noticeStatement = "Wales notice statement";
 
         when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
         when(noticeOfPossessionEntity.getNoticeServed()).thenReturn(YesOrNo.YES);
         when(noticeOfPossessionEntity.getServingMethod()).thenReturn(EMAIL);
         when(noticeOfPossessionEntity.getNoticeType()).thenReturn(noticeType);
+        when(noticeOfPossessionEntity.getNoticeStatement()).thenReturn(noticeStatement);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -115,6 +117,7 @@ class NoticeOfPossessionViewTest {
         WalesNoticeDetails walesNoticeDetails = walesNoticeDetailsCaptor.getValue();
         assertThat(walesNoticeDetails.getNoticeServed()).isEqualTo(YesOrNo.YES);
         assertThat(walesNoticeDetails.getTypeOfNoticeServed()).isEqualTo(noticeType);
+        assertThat(walesNoticeDetails.getNoticeStatement()).isEqualTo(noticeStatement);
     }
 
     @Test
