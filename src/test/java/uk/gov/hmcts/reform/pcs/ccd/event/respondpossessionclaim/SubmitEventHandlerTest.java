@@ -56,7 +56,11 @@ class SubmitEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(draftCaseDataService, claimResponseService, defendantResponseService);
+        underTest = new SubmitEventHandler(
+            draftCaseDataService,
+            claimResponseService,
+            defendantResponseService
+        );
     }
 
     @Test
@@ -126,7 +130,6 @@ class SubmitEventHandlerTest {
         PCSCase caseData = createDraftSaveCaseData(null, responses);
 
         stubDraft(caseData);
-
         SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
 
         assertThat(result.getErrors()).isNullOrEmpty();
@@ -403,5 +406,4 @@ class SubmitEventHandlerTest {
             .possessionClaimResponse(response)
             .build();
     }
-
 }

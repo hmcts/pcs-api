@@ -161,7 +161,7 @@ public class SendEmailTaskComponent {
 
     private void updateNotificationFromStatusUpdate(NotificationStatusUpdate statusUpdate) {
         notificationService.updateNotificationStatus(
-            statusUpdate.notification().getNotificationId(),
+            statusUpdate.notification().getId(),
             statusUpdate.status().toString()
         );
     }

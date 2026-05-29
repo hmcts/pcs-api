@@ -57,6 +57,7 @@ class ClaimViewTest {
         when(claimEntity.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
         when(claimEntity.getAdditionalDocsProvided()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getPreActionProtocolIncompleteExplanation()).thenReturn("explanation");
+        when(claimEntity.getIsExemptLandlord()).thenReturn(VerticalYesNo.NO);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -74,6 +75,7 @@ class ClaimViewTest {
         assertThat(pcsCase.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
         assertThat(pcsCase.getWantToUploadDocuments()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
+        assertThat(pcsCase.getIsExemptLandlord()).isEqualTo(VerticalYesNo.NO);
     }
 
     @ParameterizedTest
