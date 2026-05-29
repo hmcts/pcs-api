@@ -6,10 +6,14 @@ import uk.gov.hmcts.ccd.sdk.api.HasAccessControl;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
-import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.JUDGE_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.STAFF_PROFILE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
+
 
 
 public class InternalCaseFlagAccess implements HasAccessControl {
@@ -17,9 +21,13 @@ public class InternalCaseFlagAccess implements HasAccessControl {
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.putAll(STAFF_PROFILE, CRU);
-        grants.put(JUDGE_PROFILE, R);
-
+        grants.putAll(CTSC_ADMIN, Permission.CRU);
+        grants.putAll(HEARING_CENTRE_ADMIN, Permission.CRU);
+        grants.putAll(WLU_ADMIN, Permission.CRU);
+        grants.put(FEE_PAID_JUDGE, Permission.R);
+        grants.put(CIRCUIT_JUDGE, Permission.R);
+        grants.put(LEADERSHIP_JUDGE, Permission.R);
+        grants.put(JUDGE, Permission.R);
 
         return grants;
     }
