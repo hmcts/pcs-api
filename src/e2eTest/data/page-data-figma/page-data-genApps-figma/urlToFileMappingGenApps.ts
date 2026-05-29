@@ -6,5 +6,8 @@ export default {
   'makeAnApplicationselectParty': 'selectParty',
   'makeAnApplicationhearingInNext14Days': 'isTheCourtHearingInTheNext14Days',
   'makeAnApplicationhelpWithFeesNeeded' : 'helpWithFeesNeeded',
-  'makeAnApplicationappliedForHelpWithFees': 'haveTheyAlreadyAppliedForHelpWithFees'
+  'makeAnApplicationappliedForHelpWithFees': 'haveTheyAlreadyAppliedForHelpWithFees',
+  'makeAnApplicationotherPartiesAgreed': 'hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication',
+  'makeAnApplicationreasonsNotToShare': 'areThereAnyReasonsThatThisApplicationShouldNotBeShared',
+  'makeAnApplicationwhatOrderWanted': 'whatOrderDoYouWantTheCourtToMakeAndWhy'
 };
