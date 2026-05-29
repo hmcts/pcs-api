@@ -43,27 +43,29 @@ public class ClaimService {
                 .setAsbProhibitedConductEntity(asbProhibitedConductService.createAsbProhibitedConductEntity(pcsCase));
 
             WalesDocuments walesDocuments = pcsCase.getRequiredDocumentsWales();
-            VerticalYesNo hasEnergyPerformanceCertificate = walesDocuments.getHasEnergyPerformanceCertificate();
-            claimEntity.setEnergyPerformanceCertificateProvided(hasEnergyPerformanceCertificate);
-            if (hasEnergyPerformanceCertificate == VerticalYesNo.NO) {
-                claimEntity.setNoEnergyPerformanceCertificateReason(
-                    walesDocuments.getNoEnergyPerformanceCertificateReason()
-                );
-            }
+            if (walesDocuments != null) {
+                VerticalYesNo hasEnergyPerformanceCertificate = walesDocuments.getHasEnergyPerformanceCertificate();
+                claimEntity.setEnergyPerformanceCertificateProvided(hasEnergyPerformanceCertificate);
+                if (hasEnergyPerformanceCertificate == VerticalYesNo.NO) {
+                    claimEntity.setNoEnergyPerformanceCertificateReason(
+                        walesDocuments.getNoEnergyPerformanceCertificateReason()
+                    );
+                }
 
-            VerticalYesNo hasGasSafetyReport = walesDocuments.getHasGasSafetyReport();
-            claimEntity.setGasSafetyReportProvided(hasGasSafetyReport);
-            if (hasGasSafetyReport == VerticalYesNo.NO) {
-                claimEntity.setNoGasSafetyReportReason(walesDocuments.getNoGasSafetyReportReason());
-            }
+                VerticalYesNo hasGasSafetyReport = walesDocuments.getHasGasSafetyReport();
+                claimEntity.setGasSafetyReportProvided(hasGasSafetyReport);
+                if (hasGasSafetyReport == VerticalYesNo.NO) {
+                    claimEntity.setNoGasSafetyReportReason(walesDocuments.getNoGasSafetyReportReason());
+                }
 
-            VerticalYesNo hasElectricalInstallationConditionReport =
-                walesDocuments.getHasElectricalInstallationConditionReport();
-            claimEntity.setElectricalInstallationConditionProvided(hasElectricalInstallationConditionReport);
-            if (hasElectricalInstallationConditionReport == VerticalYesNo.NO) {
-                claimEntity.setNoElectricalInstallationConditionReason(
-                    walesDocuments.getNoElectricalInstallationConditionReportReason()
-                );
+                VerticalYesNo hasElectricalInstallationConditionReport =
+                    walesDocuments.getHasElectricalInstallationConditionReport();
+                claimEntity.setElectricalInstallationConditionProvided(hasElectricalInstallationConditionReport);
+                if (hasElectricalInstallationConditionReport == VerticalYesNo.NO) {
+                    claimEntity.setNoElectricalInstallationConditionReason(
+                        walesDocuments.getNoElectricalInstallationConditionReportReason()
+                    );
+                }
             }
         }
 

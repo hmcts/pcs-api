@@ -30,12 +30,14 @@ public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
             .showCondition("legislativeCountry=\"Wales\"")
             .pageLabel("Upload Required documents")
             .label("uploadRequiredDocuments-infomation", """
+                ---
                 <p class="govuk-body">You must upload copies of the following documents:</p>
                 <ul class="govuk-list govuk-list--bullet">
                     <li class="govuk-!-font-size-19">energy performance certificate</li>
                     <li class="govuk-!-font-size-19">current gas safety report</li>
                     <li class="govuk-!-font-size-19">current Electrical Installation Condition Report (EICR)</li>
                 </ul>
+                <p class="govuk-body">If you cannot upload a copy of a document, you must explain why.</p>
                 """)
             .complex(PCSCase::getRequiredDocumentsWales)
             .mandatory(WalesDocuments::getHasEnergyPerformanceCertificate)
