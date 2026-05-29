@@ -74,7 +74,9 @@ public class UploadRequiredDocumentsWalesTest extends BasePageTest {
                 && f.maxCharacters == 500),
 
             argThat(f -> f.fieldValue.equals(reason3)
-                && f.fieldLabel.equals("Why can you not upload a copy of the current Electrical Installation Condition Report (EICR)")
+                && f.fieldLabel.equals(
+                    "Why can you not upload a copy of the current Electrical Installation Condition Report (EICR)"
+                )
                 && f.maxCharacters == 500)
         );
 
