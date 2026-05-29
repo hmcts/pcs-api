@@ -29,8 +29,8 @@ public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
         pageBuilder
             .page("uploadRequiredDocumentsWales", this::midEvent)
             .showCondition("legislativeCountry=\"Wales\"")
-            .pageLabel("Upload Required documents")
-            .label("uploadRequiredDocuments-infomation", """
+            .pageLabel("Upload required documents")
+            .label("uploadRequiredDocuments-information", """
                 ---
                 <p class="govuk-body">You must upload copies of the following documents:</p>
                 <ul class="govuk-list govuk-list--bullet">
