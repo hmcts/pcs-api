@@ -42,7 +42,7 @@ class NotificationErrorHandlerTest {
         errorHandler = new NotificationErrorHandler();
 
         mockCaseNotification = new CaseNotification();
-        mockCaseNotification.setNotificationId(UUID.randomUUID());
+        mockCaseNotification.setId(UUID.randomUUID());
         mockCaseNotification.setRecipient("test@example.com");
         mockCaseNotification.setType("Email");
     }
