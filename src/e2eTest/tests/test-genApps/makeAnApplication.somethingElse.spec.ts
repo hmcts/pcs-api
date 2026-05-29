@@ -12,7 +12,12 @@ import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { askTheCourtToMakeAnOrder, chooseAnApplication, helpPayingTheFee, selectParty } from "@data/page-data-figma/page-data-genApps-figma";
+import {
+  askTheCourtToMakeAnOrder, chooseAnApplication,
+  doYouWantToUploadDocumentsToSupportDefendantsApplication,
+  hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
+  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy
+} from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
 
 test.use({ storageState: undefined });
@@ -61,7 +66,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Something else @PR @regression @smoke', async () => {
+  test('Select an Application - Something else @regression @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
@@ -76,6 +81,25 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       option: defendantDetails[1],
     });
     await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+    await performAction('doYouNeedHelpPayingFee', {
+      question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+      option: helpPayingTheFee.yesRadioOption,
+    });
+    await performAction('confirmYouHaveAppliedForFeeHelp', {
+      question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
+      option: haveTheyAlreadyAppliedForHelpWithFees.yesRadioOption,
+      label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
+      input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
+    });
+    await performAction('confirmOtherPartiesAgreed', {
+      question: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.haveTheOtherPartiesAgreedQuestion,
+      option: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.yesRadioOption,
+    });
+    await performValidation('mainHeader', whatOrderDoYouWantTheCourtToMakeAndWhy.mainHeader);
+    await performAction('confirmOrderDoYouWant', {
+      label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
+      input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+    });
+    await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
   });
-
 });

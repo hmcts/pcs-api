@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -19,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -29,19 +33,25 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -56,7 +66,7 @@ class MakeAnApplicationTest extends BaseEventTest {
     private PartyService partyService;
     @Mock
     private SecurityContextService securityContextService;
-    @Mock
+    @Mock(strictness = LENIENT)
     private GenAppService genAppService;
     @Mock
     private GenAppRepository genAppRepository;
@@ -66,13 +76,24 @@ class MakeAnApplicationTest extends BaseEventTest {
     private DocumentImportService documentImportService;
     @Mock
     private LegalRepresentativeService legalRepresentativeService;
+    @Mock
+    private FeeApplier feeApplier;
+    @Mock
+    private GenAppEntity genAppEntity;
+    @Captor
+    private ArgumentCaptor<BiConsumer<PCSCase, String>> feeSetterCaptor;
 
     @BeforeEach
     void setUp() {
+        when(genAppService.createGenAppEntity(any(CitizenGenAppRequest.class),
+                                              any(PcsCaseEntity.class),
+                                              any(PartyEntity.class))).thenReturn(genAppEntity);
+
         MakeAnApplication underTest = new MakeAnApplication(pcsCaseService, partyService,
                                                             securityContextService, genAppService,
                                                             genAppRepository, genAppDocumentGenerator,
-                                                            documentImportService, legalRepresentativeService);
+                                                            documentImportService, legalRepresentativeService,
+                                                            feeApplier);
 
         setEventUnderTest(underTest);
     }
@@ -93,6 +114,7 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .thenReturn(Optional.of(expectedPartyNameList));
 
             PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
                 .build();
 
             // When
@@ -121,6 +143,7 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .thenReturn(Optional.of(expectedPartyNameList));
 
             PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
                 .build();
 
             // When
@@ -148,6 +171,7 @@ class MakeAnApplicationTest extends BaseEventTest {
                 .thenReturn(Optional.empty());
 
             PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
                 .build();
 
             // When
@@ -155,6 +179,45 @@ class MakeAnApplicationTest extends BaseEventTest {
 
             // Then
             assertThat(caseData.getRepresentedPartyNames()).isNull();
+        }
+
+        @Test
+        void shouldSetTheApplicationFees() {
+            // Given
+            final String formattedStandardFee = "10.99";
+            final String formattedMaxFee = "20.99";
+
+            PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
+                .build();
+
+            // When
+            callStartHandler(caseData);
+
+            // Then
+            verify(feeApplier)
+                .applyFeeAmount(eq(caseData), eq(FeeType.GEN_APP_STANDARD_FEE), feeSetterCaptor.capture());
+            feeSetterCaptor.getValue().accept(caseData, formattedStandardFee);
+            assertThat(caseData.getXuiGenAppRequest().getStandardFee()).isEqualTo(formattedStandardFee);
+
+            verify(feeApplier)
+                .applyFeeAmount(eq(caseData), eq(FeeType.GEN_APP_MAX_FEE), feeSetterCaptor.capture());
+            feeSetterCaptor.getValue().accept(caseData, formattedMaxFee);
+            assertThat(caseData.getXuiGenAppRequest().getMaxFee()).isEqualTo(formattedMaxFee);
+        }
+
+        @Test
+        void shouldSetShowHwfScreensFlagToYes() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .xuiGenAppRequest(XuiGenAppRequest.builder().build())
+                .build();
+
+            // When
+            callStartHandler(caseData);
+
+            // Then
+            assertThat(caseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(VerticalYesNo.YES);
         }
     }
 
@@ -272,14 +335,14 @@ class MakeAnApplicationTest extends BaseEventTest {
 
             PartyEntity applicantParty = stubCurrentUserParty();
 
-            GenAppEntity genAppEntity = mock(GenAppEntity.class);
-            when(genAppService.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty))
-                .thenReturn(genAppEntity);
-
             String documentUrl = "some document URL";
             when(genAppDocumentGenerator
                      .generateSubmissionDocument(TEST_CASE_REFERENCE, genAppRequest, genAppEntity, applicantParty))
                 .thenReturn(documentUrl);
+
+            DocumentEntity documentEntity = mock(DocumentEntity.class);
+            when(documentImportService.addDocumentToCase(eq(TEST_CASE_REFERENCE), anyString(), any()))
+                .thenReturn(documentEntity);
 
             // When
             callSubmitHandler(caseData);
@@ -288,6 +351,8 @@ class MakeAnApplicationTest extends BaseEventTest {
             verify(documentImportService).addDocumentToCase(TEST_CASE_REFERENCE, documentUrl,
                                                             CaseFileCategory.APPLICATIONS
             );
+
+            verify(genAppEntity).setSubmissionDocument(documentEntity);
         }
 
         private PartyEntity stubCurrentUserParty() {

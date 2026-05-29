@@ -5,7 +5,7 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.event.ExecutionInterceptor;
 import com.github.kagkarlsson.scheduler.event.SchedulerListener;
 import com.github.kagkarlsson.scheduler.task.Task;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,9 +22,11 @@ import static com.github.kagkarlsson.scheduler.boot.config.DbSchedulerConfigurat
 
 @Configuration
 @Slf4j
-@AllArgsConstructor
+@Getter
 public class SchedulingConfig {
 
+    @Value("${db-scheduler.start-interval-seconds:5}")
+    private int scheduleFeeCaseIssuedInSeconds = 5;
 
     /**
      * SchedulerClient bean is always on and this is  used to schedule jobs, but does NOT execute them.
