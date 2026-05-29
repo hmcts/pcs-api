@@ -47,7 +47,7 @@ test.beforeEach(async ({ page, context }) => {
 // });
 
 test.describe('[Global Search - Mortgage and Landlord Possessions @regression @globalSearch @PR @CC]', () => {
-  test('Should find a case by case reference', async () => {
+  test('Should find a case by case reference @smoke', async () => {
     await performAction('accessingTheSearch');
     await performValidation('mainHeader', globalSearch.mainHeader);
     await performAction('searchByCaseReference', process.env.CASE_NUMBER!);
@@ -87,7 +87,7 @@ test.describe('[Global Search - Mortgage and Landlord Possessions @regression @g
     });
     await performValidation('link', { text: process.env.CASE_NUMBER! });
   });
-
+//date of death is out of scope for this service, so not adding test for it
   test('Should find cases by service', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByService', globalSearch.servicesDropdownOption2);
@@ -143,7 +143,7 @@ test.describe('[Global Search - Mortgage and Landlord Possessions @regression @g
     await performValidation('text', { text: globalSearch.noResultsFoundText, elementType: 'paragraph' });
   });
 
-  test('Should display no results for an invalid name @regression @globalSearch', async () => {
+  test('Should display no results for an invalid name', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByInvalidCombination', {
       name: globalSearch.invalidNameInputText

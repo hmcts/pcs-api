@@ -16,8 +16,4 @@ export const user = {
     email: 'pcs-caseworker@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
-  hearingCenterAdmin: {
-  email: 'hearing_center_admin_reg2@justice.gov.uk',
-  password: process.env.HEARING_CENTER_ADMIN_PASSWORD ?? 'Password12!'
-},
 };
