@@ -42,6 +42,8 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -219,6 +221,19 @@ class PCSCaseViewTest {
 
         // Then
         assertThat(pcsCase.getLegislativeCountry()).isEqualTo(expectedLegislativeCountry);
+    }
+
+    @Test
+    void shouldMapDateSubmittedFromClaimSubmittedDate() {
+        // Given
+        LocalDateTime claimSubmittedDate = LocalDateTime.of(2026, 5, 12, 14, 30);
+        when(claimEntity.getClaimSubmittedDate()).thenReturn(claimSubmittedDate);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDateSubmitted()).isEqualTo(claimSubmittedDate);
     }
 
     @Test
