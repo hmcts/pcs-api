@@ -250,7 +250,7 @@ class DefendantResponseNotificationServiceTest {
 
         when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
 
-        underTest.sendEmailNotificationForCounterclaim(defendantResponseId);
+        underTest.sendDefendantEmailNotificationForCounterclaim(defendantResponseId);
 
         verify(notificationService, never())
             .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
@@ -283,7 +283,7 @@ class DefendantResponseNotificationServiceTest {
 
         when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
 
-        underTest.sendEmailNotificationForCounterclaim(defendantResponseId);
+        underTest.sendDefendantEmailNotificationForCounterclaim(defendantResponseId);
 
         verify(notificationService)
             .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
