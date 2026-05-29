@@ -29,6 +29,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 
 @Component
@@ -84,11 +85,13 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         String label = testFilesList.getValue().getLabel();
         if (label.startsWith(MAKE_A_CLAIM_CASE_GENERATOR)) {
             makeAClaimTestCreation(label, caseReference);
+            return SubmitResponse.<State>builder().state(PENDING_CASE_ISSUED).build();
         } else if (label.startsWith(ENFORCEMENT_CASE_GENERATOR)) {
             makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
             enforceTheOrder.submitOrder(caseReference, loadTestPcsCase(label));
+            return SubmitResponse.<State>builder().state(CASE_ISSUED).build();
         }
-        return SubmitResponse.<State>builder().state(CASE_ISSUED).build();
+        return SubmitResponse.<State>builder().state(AWAITING_SUBMISSION_TO_HMCTS).build();
     }
 
     void makeAClaimTestCreation(String label, Long caseReference) {
