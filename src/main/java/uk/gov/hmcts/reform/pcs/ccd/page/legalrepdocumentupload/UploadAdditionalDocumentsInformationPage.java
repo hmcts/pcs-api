@@ -6,7 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 
 public class UploadAdditionalDocumentsInformationPage implements CcdPageConfiguration, CcdPage {
 
-    public static final String CONFIRM_EVICTION_DETAILS_CONTENT  = """
+    private static final String SUPPORTING_EVIDENCE_UPLOAD_CONTENT  = """
                     <p class="govuk-body">
                         You can upload a document to support an application, or to show proof that you have done
                         something.
@@ -37,7 +37,7 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
                         <li class="govuk-!-font-size-19">photographs of the property in a state of disrepair, like a
                         damp in the bathroom</li>
                        <li class="govuk-!-font-size-19">a report from an electrician or a plumber, showing evidence of
-                       a repiar that needs to be done</li>
+                       a repair that needs to be done</li>
                        <li class="govuk-!-font-size-19">emails or letters from the claimant (your landlord, housing
                        association, or mortgage lender)</li>
                     </ul>
@@ -68,7 +68,7 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
             .page(pageKey)
             .pageLabel("Upload Additional Documents")
             .label(pageKey + "-line-separator", "---")
-            .label(pageKey + "-content", CONFIRM_EVICTION_DETAILS_CONTENT);
+            .label(pageKey + "-content", SUPPORTING_EVIDENCE_UPLOAD_CONTENT);
     }
 
     @Override
