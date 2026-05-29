@@ -124,7 +124,8 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
     private static final String LOCAL_SHERIFF_OFFICE_LINK = """
         <a href="https://www.scotcourts.gov.uk/home" rel="noreferrer noopener" target="_blank"
         class="govuk-link" aria-label="Go to Scottish Courts website (opens in new tab)">
-        local sheriff court (opens in new tab)</a>""";
+        local sheriff court (opens in new tab)</a>
+        """;
 
     private static final String FOOTER = """
             <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
