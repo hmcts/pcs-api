@@ -3,12 +3,10 @@ package uk.gov.hmcts.reform.pcs.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 
@@ -44,12 +42,6 @@ public class LegalRepresentativeService {
                     return createPartyNamesDynamicList(partyEntities);
                 }
             );
-    }
-
-    @Cacheable(cacheNames = "legalRep", cacheManager = "requestScopedCacheManager")
-    public Optional<LegalRepresentativeEntity> getLegalRepresentativeForParty(UUID partyId) {
-        return legalRepresentativeRepository.findLegalRepresentativeForParty(
-            partyId);
     }
 
     private DynamicList createPartyNamesDynamicList(List<PartyEntity> partyEntities) {

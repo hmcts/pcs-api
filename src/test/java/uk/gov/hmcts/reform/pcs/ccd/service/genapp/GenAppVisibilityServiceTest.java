@@ -12,11 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -31,13 +29,13 @@ class GenAppVisibilityServiceTest {
     private static final UUID CURRENT_USER_ID = UUID.randomUUID();
 
     @Mock(strictness = Mock.Strictness.LENIENT)
-    private LegalRepresentativeService legalRepresentativeService;
+    private LegalRepresentativeRepository legalRepresentativeRepository;
 
     private GenAppVisibilityService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new GenAppVisibilityService(legalRepresentativeService);
+        underTest = new GenAppVisibilityService(legalRepresentativeRepository);
     }
 
     @ParameterizedTest
@@ -58,7 +56,7 @@ class GenAppVisibilityServiceTest {
     @ParameterizedTest
     @MethodSource("withoutNoticeScenarios")
     void shouldBaseVisibilityOfWithoutNoticeGenAppsOnUserIds(UUID applicantUserId,
-                                                             LegalRepresentativeEntity legalRepresentativeEntity,
+                                                             boolean isLegalRepresentativeLinkedToPartyAndActive,
                                                              boolean expectedIsVisible) {
         // Given
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
@@ -70,8 +68,9 @@ class GenAppVisibilityServiceTest {
         when(applicantParty.getId()).thenReturn(applicantPartyId);
         when(applicantParty.getIdamId()).thenReturn(applicantUserId);
 
-        when(legalRepresentativeService.getLegalRepresentativeForParty(applicantPartyId))
-            .thenReturn(Optional.ofNullable(legalRepresentativeEntity));
+        when(legalRepresentativeRepository
+                 .isLegalRepresentativeLinkedToPartyAndActive(CURRENT_USER_ID, applicantPartyId))
+                .thenReturn(isLegalRepresentativeLinkedToPartyAndActive);
 
         // When
         boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_ID);
@@ -82,25 +81,24 @@ class GenAppVisibilityServiceTest {
 
     private static Stream<Arguments> withoutNoticeScenarios() {
         UUID differentApplicantUserId = UUID.randomUUID();
-        UUID legalRepUserIdForDifferentApplicant = UUID.randomUUID();
 
         return Stream.of(
             Arguments.argumentSet(
                 "current user is applicant",
                 CURRENT_USER_ID,
-                null,
+                false, // isLegalRepresentativeLinkedToPartyAndActive
                 true
             ),
             Arguments.argumentSet(
                 "current user is LR of applicant",
                 differentApplicantUserId,
-                LegalRepresentativeEntity.builder().idamId(CURRENT_USER_ID).build(),
+                true, // isLegalRepresentativeLinkedToPartyAndActive
                 true
             ),
             Arguments.argumentSet(
                 "current user is not LR of applicant",
                 differentApplicantUserId,
-                LegalRepresentativeEntity.builder().idamId(legalRepUserIdForDifferentApplicant).build(),
+                false, // isLegalRepresentativeLinkedToPartyAndActive
                 false
             )
         );
