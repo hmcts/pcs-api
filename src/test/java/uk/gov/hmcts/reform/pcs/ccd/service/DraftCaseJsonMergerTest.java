@@ -77,21 +77,14 @@ class DraftCaseJsonMergerTest {
                             "rentArrearsGroundsReasons.otherGround",
                             "waysToPay",
                             "caseLinks",
+                            "caseFlags",
+                            "genApps",
                             "claimGroundSummaries",
-                            "enforcementOrder.showChangeNameAddressPage",
-                            "enforcementOrder.showPeopleWhoWillBeEvictedPage",
-                            "enforcementOrder.showPeopleYouWantToEvictPage",
-                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails",
-                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.agreementClaimant",
-                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.fullNameClaimant",
-                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.positionClaimant",
-                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails",
-                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.agreementLegalRep",
-                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.fullNameLegalRep",
-                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.firmNameLegalRep",
-                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.positionLegalRep",
-                            "enforcementOrder.rawWarrantDetails.selectedDefendants",
-                            "enforcementOrder.rawWarrantDetails.vulnerablePeoplePresent",
+                            "parties",
+                            "allClaimants",
+                            "allDefendants",
+                            "allUnderlesseeOrMortgagees",
+                            "possessionClaimResponse",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
                             "casePartiesTab.claimantDetails.emailAddress",
                             "casePartiesTab.claimantDetails.name",
@@ -99,7 +92,8 @@ class DraftCaseJsonMergerTest {
                             "casePartiesTab.claimantDetails.telephoneNumber",
                             "casePartiesTab.defendantOneDetails.firstName",
                             "casePartiesTab.defendantOneDetails.lastName",
-                            "casePartiesTab.defendantOneDetails.serviceAddress")
+                            "casePartiesTab.defendantOneDetails.serviceAddress",
+                            "summaryTab")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()

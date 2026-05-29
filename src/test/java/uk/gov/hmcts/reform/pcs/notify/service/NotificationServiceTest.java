@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
@@ -80,6 +81,9 @@ class NotificationServiceTest {
     private PartyService partyService;
 
     @Mock
+    private PcsCaseService pcsCaseService;
+
+    @Mock
     private NotificationPersonalisationFactory notificationPersonalisationFactory;
 
     private NotificationService notificationService;
@@ -97,6 +101,7 @@ class NotificationServiceTest {
             partyService,
             schedulerClient,
             templateConfiguration,
+            pcsCaseService,
             notificationPersonalisationFactory
         );
     }
@@ -341,7 +346,8 @@ class NotificationServiceTest {
                 partyService,
                 schedulerClient,
                 templateConfiguration,
-                notificationPersonalisationFactory
+                notificationPersonalisationFactory,
+                notificationRepository, schedulerClient, templateConfiguration, partyService, pcsCaseService
             );
 
             assertThat(service).isNotNull();

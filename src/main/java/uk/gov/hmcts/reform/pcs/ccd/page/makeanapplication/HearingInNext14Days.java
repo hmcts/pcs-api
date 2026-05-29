@@ -2,9 +2,14 @@ package uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
@@ -12,24 +17,29 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 @AllArgsConstructor
 public class HearingInNext14Days implements CcdPageConfiguration {
 
-    private static final String PLACEHOLDER = """
-      <div class="govuk-notification-banner" role="region" aria-labelledby="placeholder-banner">
-        <div class="govuk-notification-banner__content">
-          <p class="govuk-notification-banner__heading" id="placeholder-banner">
-            Placeholder
-          </p>
-        </div>
-      </div>
-        """;
-
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("hearingInNext14Days")
+            .page("hearingInNext14Days", this::midEvent)
             .pageLabel("Is the defendant’s court hearing in the next 14 days?")
             .showCondition(fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN))
             .label("hearingInNext14Days-lineSeparator", "---")
-            .label("hearingInNext14Days-placeholder", PLACEHOLDER);
+            .complex(PCSCase::getXuiGenAppRequest)
+            .mandatory(XuiGenAppRequest::getWithin14Days)
+            .done();
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+
+        PCSCase caseData = details.getData();
+        XuiGenAppRequest xuiGenAppRequest = caseData.getXuiGenAppRequest();
+
+        xuiGenAppRequest.setShowHwfScreens(xuiGenAppRequest.getWithin14Days());
+
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
     }
 
 }

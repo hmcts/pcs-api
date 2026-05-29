@@ -7,6 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 @Slf4j
 @AllArgsConstructor
 public class ChooseAnApplication implements CcdPageConfiguration {
@@ -17,7 +19,7 @@ public class ChooseAnApplication implements CcdPageConfiguration {
         <ul class="govuk-list govuk-list--bullet">
             <li class="govuk-!-font-size-19">
                 <a href="https://www.gov.uk/repossession/delay-eviction" target="_blank" rel="noopener noreferrer"
-                class="govuk-link">read the guidance explaining how to suspend the eviction
+                class="govuk-link">read the guidance explaining how to suspend an eviction
                  (GOV.UK, opens in a new tab)</a>
             </li>
             <li class="govuk-!-font-size-19">
@@ -41,6 +43,9 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             .label("chooseAnApplication-lineSeparator", "---")
             .label("chooseAnApplication-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
+            .readonly(XuiGenAppRequest::getStandardFee, NEVER_SHOW, true)
+            .readonly(XuiGenAppRequest::getMaxFee, NEVER_SHOW, true)
+            .readonly(XuiGenAppRequest::getShowHwfScreens, NEVER_SHOW, true)
             .mandatory(XuiGenAppRequest::getApplicationType)
             .done();
     }

@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
@@ -43,6 +44,7 @@ public class NotificationService {
     private final SchedulerClient schedulerClient;
     private final NotificationTemplateConfiguration templateConfiguration;
     private final NotificationPersonalisationFactory notificationPersonalisationFactory;
+    private final PcsCaseService pcsCaseService;
 
     public EmailNotificationResponse sendDefendantResponseNoCounterclaimEmailNotification(
         DefendantResponseEntity defendantResponse

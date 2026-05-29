@@ -192,6 +192,20 @@ fees:
       applicantType: all
       amountOrVolume: 1
       keyword: PossessionCC
+    genAppStandardFee:
+      service: general
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: general application
+      keyword: GeneralAppWithoutNotice
+    genAppMaxFee:
+      service: general
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: general application
+      keyword: GAOnNotice
     enforcementWarrantFee: # FEE0380 - County Court
       service: civil money claims
       jurisdiction1: civil
@@ -225,6 +239,16 @@ role-assignment:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}
     backoff-delay-seconds: ${ROLE_ASSIGNMENT_BACKOFF_DELAY_SECONDS:3600s}
 
+counter-claim-notification:
+  request:
+    max-retries: ${COUNTER_CLAIM_NOTIFICATION_MAX_RETRIES:5}
+    backoff-delay-seconds: ${COUNTER_CLAIM_NOTIFICATION_BACKOFF_DELAY_SECONDS:3600s}
+
+defendant-response-notification:
+  request:
+    max-retries: ${DEFENDANT_RESPONSE_NOTIFICAITON_MAX_RETRIES:5}
+    backoff-delay-seconds: ${DEFENDANT_RESPONSE_NOTIFICAITON_BACKOFF_DELAY_SECONDS:3600s}
+
 payments:
   api:
     url: ${PAYMENT_API_URL:http://localhost:8083/payments}
@@ -236,3 +260,7 @@ payments:
 core_case_data:
   api:
     url: ${CCD_DATA_STORE_URL:localhost:4452}
+
+caseApi:
+  url: ${CASE_API_URL:http://localhost:3206}
+

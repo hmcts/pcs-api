@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
+import io.micrometer.common.util.StringUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -69,16 +70,24 @@ public class PartyService {
                 "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
     }
 
-    public PartyEntity getPrimaryClaimantPartyEntity(PcsCaseEntity pcsCase) {
-        return getPrimaryPartyEntityOfRole(pcsCase, PartyRole.CLAIMANT);
+    public String getPartyName(PartyEntity partyEntity) {
+        if (StringUtils.isNotBlank(partyEntity.getOrgName())) {
+            return partyEntity.getOrgName();
+        } else {
+            return partyEntity.getFirstName() + " " + partyEntity.getLastName();
+        }
     }
 
-    public PartyEntity getPrimaryDefendantPartyEntity(PcsCaseEntity pcsCase) {
-        return getPrimaryPartyEntityOfRole(pcsCase, PartyRole.DEFENDANT);
+    public PartyEntity getPrimaryClaimantPartyEntity(PcsCaseEntity pcsCaseEntity) {
+        return getPrimaryPartyEntityOfRole(pcsCaseEntity, PartyRole.CLAIMANT);
     }
 
-    private static PartyEntity getPrimaryPartyEntityOfRole(PcsCaseEntity pcsCase, PartyRole role) {
-        ClaimEntity mainClaim = pcsCase.getClaims().getFirst();
+    public PartyEntity getPrimaryDefendantPartyEntity(PcsCaseEntity pcsCaseEntity) {
+        return getPrimaryPartyEntityOfRole(pcsCaseEntity, PartyRole.DEFENDANT);
+    }
+
+    private static PartyEntity getPrimaryPartyEntityOfRole(PcsCaseEntity pcsCaseEntity, PartyRole role) {
+        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
         return mainClaim.getClaimParties().stream()
             .filter(claimPartyEntity -> claimPartyEntity.getRole() == role)

@@ -96,8 +96,8 @@
   },
   "statementOfTruth": {
     "completedBy": "CLAIMANT",
-    "fullNameClaimant": "wert",
-    "positionClaimant": "ewrt",
+    "fullNameParty": "wert",
+    "positionParty": "ewrt",
     "agreementClaimant": [
       "BELIEVE_TRUE"
     ]
@@ -169,9 +169,9 @@
   "formattedDefendantNames": "TVR HN<br>\nTest1 Testing1<br>",
   "vulnerablePeoplePresent": "NO",
   "warrantAnyRiskToBailiff": "NO",
-  "warrantFullNameClaimant": "fgsdfg",
+  "warrantFullNameParty": "fgsdfg",
   "warrantIsSuspendedOrder": "NO",
-  "warrantPositionClaimant": "sdfgsdfgsdfg",
+  "warrantPositionParty": "sdfgsdfgsdfg",
   "formattedPropertyAddress": "1 Rse Way<br>London<br>SW11 1PD",
   "warrantAgreementClaimant": [
     "BELIEVE_TRUE"
