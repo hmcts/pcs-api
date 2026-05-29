@@ -48,14 +48,14 @@ public class ClaimService {
                 claimEntity.setEnergyPerformanceCertificateProvided(hasEnergyPerformanceCertificate);
                 if (hasEnergyPerformanceCertificate == VerticalYesNo.NO) {
                     claimEntity.setNoEnergyPerformanceCertificateReason(
-                        walesDocuments.getNoEnergyPerformanceCertificateReason()
+                        walesDocuments.getNoEpcReason()
                     );
                 }
 
                 VerticalYesNo hasGasSafetyReport = walesDocuments.getHasGasSafetyReport();
                 claimEntity.setGasSafetyReportProvided(hasGasSafetyReport);
                 if (hasGasSafetyReport == VerticalYesNo.NO) {
-                    claimEntity.setNoGasSafetyReportReason(walesDocuments.getNoGasSafetyReportReason());
+                    claimEntity.setNoGasSafetyReportReason(walesDocuments.getNoGasReportReason());
                 }
 
                 VerticalYesNo hasElectricalInstallationConditionReport =
@@ -63,7 +63,7 @@ public class ClaimService {
                 claimEntity.setElectricalInstallationConditionProvided(hasElectricalInstallationConditionReport);
                 if (hasElectricalInstallationConditionReport == VerticalYesNo.NO) {
                     claimEntity.setNoElectricalInstallationConditionReason(
-                        walesDocuments.getNoElectricalInstallationConditionReportReason()
+                        walesDocuments.getNoEicrReason()
                     );
                 }
             }

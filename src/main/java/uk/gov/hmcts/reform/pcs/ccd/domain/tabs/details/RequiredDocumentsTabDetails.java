@@ -23,7 +23,7 @@ public class RequiredDocumentsTabDetails {
     private String noEnergyPerformanceCertificateReason;
 
     @CCD(label = "Energy performance certificate")
-    private List<ListValue<Document>> energyPerformance;
+    private List<ListValue<Document>> energyPerformanceCertificates;
 
     @CCD(label = "Can the claimant upload a copy of the current gas safety report?")
     private String hasGasSafetyReport;
@@ -32,7 +32,7 @@ public class RequiredDocumentsTabDetails {
     private String noGasSafetyReportReason;
 
     @CCD(label = "Gas safety report")
-    private List<ListValue<Document>> gasSafetyReport;
+    private List<ListValue<Document>> gasSafetyReports;
 
     @CCD(label = "Can the claimant upload a copy of the Electrical Installation Condition Report (EICR)?")
     private String hasElectricalInstallationConditionReport;
@@ -41,5 +41,5 @@ public class RequiredDocumentsTabDetails {
     private String noElectricalInstallationConditionReportReason;
 
     @CCD(label = "Electrical Installation Condition Report (EICR)")
-    private List<ListValue<Document>> electricalInstallation;
+    private List<ListValue<Document>> electricalInstallationReports;
 }

@@ -740,26 +740,28 @@ public class CaseDetailsTabView {
 
         if (hasEnergyPerformanceCertificate == VerticalYesNo.NO) {
             requiredDocumentsTabDetails.setNoEnergyPerformanceCertificateReason(
-                walesDocuments.getNoEnergyPerformanceCertificateReason()
+                walesDocuments.getNoEpcReason()
             );
         } else {
-            requiredDocumentsTabDetails.setEnergyPerformance(walesDocuments.getEnergyPerformance());
+            requiredDocumentsTabDetails.setEnergyPerformanceCertificates(walesDocuments.getEnergyPerformance());
         }
 
         if (hasGasSafetyReport == VerticalYesNo.NO) {
             requiredDocumentsTabDetails.setNoGasSafetyReportReason(
-                walesDocuments.getNoGasSafetyReportReason()
+                walesDocuments.getNoGasReportReason()
             );
         } else {
-            requiredDocumentsTabDetails.setGasSafetyReport(walesDocuments.getGasSafetyReport());
+            requiredDocumentsTabDetails.setGasSafetyReports(walesDocuments.getGasSafetyReport());
         }
 
         if (hasElectricalInstallationConditionReport == VerticalYesNo.NO) {
             requiredDocumentsTabDetails.setNoElectricalInstallationConditionReportReason(
-                walesDocuments.getNoElectricalInstallationConditionReportReason()
+                walesDocuments.getNoEicrReason()
             );
         } else {
-            requiredDocumentsTabDetails.setElectricalInstallation(walesDocuments.getElectricalInstallation());
+            requiredDocumentsTabDetails.setElectricalInstallationReports(
+                walesDocuments.getElectricalInstallation()
+            );
         }
 
         return requiredDocumentsTabDetails;

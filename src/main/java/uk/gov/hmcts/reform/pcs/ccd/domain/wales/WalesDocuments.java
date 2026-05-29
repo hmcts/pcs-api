@@ -41,9 +41,10 @@ public class WalesDocuments {
     @CCD(
         label = NO_ENERGY_PERFORMANCE_CERTIFICATE_REASON_LABEL,
         hint = "You can enter up to 500 characters",
-        typeOverride = FieldType.TextArea
+        typeOverride = FieldType.TextArea,
+        max = 500
     )
-    private String noEnergyPerformanceCertificateReason;
+    private String noEpcReason;
 
     @CCD(
         label = "Can you upload a copy of the current gas safety report"
@@ -58,9 +59,10 @@ public class WalesDocuments {
     @CCD(
         label = NO_GAS_SAFETY_REPORT_REASON_LABEL,
         hint = "You can enter up to 500 characters",
-        typeOverride = FieldType.TextArea
+        typeOverride = FieldType.TextArea,
+        max = 500
     )
-    private String noGasSafetyReportReason;
+    private String noGasReportReason;
 
     @CCD(
         label = "Can you upload a copy of the current Electrical Installation Condition Report (EICR)"
@@ -75,8 +77,9 @@ public class WalesDocuments {
     @CCD(
         label = NO_ELECTRICAL_INSTALLATION_CONDITION_REPORT_REASON_LABEL,
         hint = "You can enter up to 500 characters",
-        typeOverride = FieldType.TextArea
+        typeOverride = FieldType.TextArea,
+        max = 500
     )
-    private String noElectricalInstallationConditionReportReason;
+    private String noEicrReason;
 
 }

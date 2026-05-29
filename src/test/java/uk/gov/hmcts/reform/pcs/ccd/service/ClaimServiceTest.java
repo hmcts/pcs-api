@@ -309,9 +309,9 @@ class ClaimServiceTest {
                 .hasEnergyPerformanceCertificate(VerticalYesNo.NO)
                 .hasGasSafetyReport(VerticalYesNo.NO)
                 .hasElectricalInstallationConditionReport(VerticalYesNo.NO)
-                .noEnergyPerformanceCertificateReason("noEnergyPerformanceCertificateReason")
-                .noGasSafetyReportReason("noGasSafetyReportReason")
-                .noElectricalInstallationConditionReportReason("noElectricalInstallationConditionReportReason")
+                .noEpcReason("noEpcReason")
+                .noGasReportReason("noGasReportReason")
+                .noEicrReason("noEicrReason")
                 .build()
         );
 
@@ -323,10 +323,10 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getGasSafetyReportProvided()).isEqualTo(VerticalYesNo.NO);
         assertThat(createdClaimEntity.getElectricalInstallationConditionProvided()).isEqualTo(VerticalYesNo.NO);
         assertThat(createdClaimEntity.getNoEnergyPerformanceCertificateReason())
-            .isEqualTo("noEnergyPerformanceCertificateReason");
-        assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isEqualTo("noGasSafetyReportReason");
+            .isEqualTo("noEpcReason");
+        assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isEqualTo("noGasReportReason");
         assertThat(createdClaimEntity.getNoElectricalInstallationConditionReason())
-            .isEqualTo("noElectricalInstallationConditionReportReason");
+            .isEqualTo("noEicrReason");
     }
 
     @Test
@@ -338,9 +338,9 @@ class ClaimServiceTest {
                 .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
                 .hasGasSafetyReport(VerticalYesNo.YES)
                 .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
-                .noEnergyPerformanceCertificateReason("noEnergyPerformanceCertificateReason")
-                .noGasSafetyReportReason("noGasSafetyReportReason")
-                .noElectricalInstallationConditionReportReason("noElectricalInstallationConditionReportReason")
+                .noEpcReason("noEpcReason")
+                .noGasReportReason("noGasReportReason")
+                .noEicrReason("noEicrReason")
                 .build()
         );
 

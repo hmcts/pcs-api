@@ -865,9 +865,9 @@ public class CaseDetailsTabViewTest {
                     .hasEnergyPerformanceCertificate(VerticalYesNo.NO)
                     .hasGasSafetyReport(VerticalYesNo.NO)
                     .hasElectricalInstallationConditionReport(VerticalYesNo.NO)
-                    .noEnergyPerformanceCertificateReason("noEnergyPerformanceCertificateReason")
-                    .noGasSafetyReportReason("noGasSafetyReportReason")
-                    .noElectricalInstallationConditionReportReason("noElectricalInstallationConditionReportReason")
+                    .noEpcReason("noEpcReason")
+                    .noGasReportReason("noGasReportReason")
+                    .noEicrReason("noEicrReason")
                     .build()
             )
             .build();
@@ -1026,14 +1026,14 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasElectricalInstallationConditionReport())
             .isEqualTo("No");
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoGasSafetyReportReason())
-            .isEqualTo("noGasSafetyReportReason");
+            .isEqualTo("noGasReportReason");
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoEnergyPerformanceCertificateReason())
-            .isEqualTo("noEnergyPerformanceCertificateReason");
+            .isEqualTo("noEpcReason");
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoElectricalInstallationConditionReportReason())
-            .isEqualTo("noElectricalInstallationConditionReportReason");
-        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReport()).isNull();
-        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformance()).isNull();
-        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallation()).isNull();
+            .isEqualTo("noEicrReason");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReports()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformanceCertificates()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallationReports()).isNull();
         assertThat(caseDetailsTab.getTenancyLicenceDetails()).isNull();
     }
 
@@ -1158,9 +1158,9 @@ public class CaseDetailsTabViewTest {
                     .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
                     .hasGasSafetyReport(VerticalYesNo.YES)
                     .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
-                    .noEnergyPerformanceCertificateReason("noEnergyPerformanceCertificateReason")
-                    .noGasSafetyReportReason("noGasSafetyReportReason")
-                    .noElectricalInstallationConditionReportReason("noElectricalInstallationConditionReportReason")
+                    .noEpcReason("noEpcReason")
+                    .noGasReportReason("noGasReportReason")
+                    .noEicrReason("noEicrReason")
                     .gasSafetyReport(List.of(listValue(Document.builder().build())))
                     .energyPerformance((List.of(listValue(Document.builder().build()))))
                     .electricalInstallation((List.of(listValue(Document.builder().build()))))
@@ -1180,9 +1180,9 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoEnergyPerformanceCertificateReason()).isNull();
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoElectricalInstallationConditionReportReason())
             .isNull();
-        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReport()).hasSize(1);
-        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformance()).hasSize(1);
-        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallation()).hasSize(1);
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReports()).hasSize(1);
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformanceCertificates()).hasSize(1);
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallationReports()).hasSize(1);
     }
 
     private static <T> ListValue<T> listValue(T value) {

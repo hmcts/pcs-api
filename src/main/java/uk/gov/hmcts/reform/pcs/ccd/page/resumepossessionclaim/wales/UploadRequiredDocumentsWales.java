@@ -1,33 +1,19 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
-import java.util.List;
-
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments.NO_ELECTRICAL_INSTALLATION_CONDITION_REPORT_REASON_LABEL;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments.NO_ENERGY_PERFORMANCE_CERTIFICATE_REASON_LABEL;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments.NO_GAS_SAFETY_REPORT_REASON_LABEL;
-
-@AllArgsConstructor
 @Component
 public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
-
-    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("uploadRequiredDocumentsWales", this::midEvent)
+            .page("uploadRequiredDocumentsWales")
             .showCondition("legislativeCountry=\"Wales\"")
             .pageLabel("Upload required documents")
             .label("uploadRequiredDocuments-information", """
@@ -47,7 +33,7 @@ public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
                 "walesDocs_HasEnergyPerformanceCertificate=\"YES\""
             )
             .mandatory(
-                WalesDocuments::getNoEnergyPerformanceCertificateReason,
+                WalesDocuments::getNoEpcReason,
                 "walesDocs_HasEnergyPerformanceCertificate=\"NO\""
             )
             .mandatory(WalesDocuments::getHasGasSafetyReport)
@@ -56,7 +42,7 @@ public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
                 "walesDocs_HasGasSafetyReport=\"YES\""
             )
             .mandatory(
-                WalesDocuments::getNoGasSafetyReportReason,
+                WalesDocuments::getNoGasReportReason,
                 "walesDocs_HasGasSafetyReport=\"NO\""
             )
             .mandatory(WalesDocuments::getHasElectricalInstallationConditionReport)
@@ -65,33 +51,10 @@ public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
                 "walesDocs_HasElectricalInstallationConditionReport=\"YES\""
             )
             .mandatory(
-                WalesDocuments::getNoElectricalInstallationConditionReportReason,
+                WalesDocuments::getNoEicrReason,
                 "walesDocs_HasElectricalInstallationConditionReport=\"NO\""
             )
+            .done()
             .label("uploadRequiredDocumentsWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
-    }
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
-        PCSCase caseData = details.getData();
-        List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
-            TextAreaValidationService.FieldValidation.of(
-                caseData.getRequiredDocumentsWales().getNoEnergyPerformanceCertificateReason(),
-                NO_ENERGY_PERFORMANCE_CERTIFICATE_REASON_LABEL,
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
-            ),
-            TextAreaValidationService.FieldValidation.of(
-                caseData.getRequiredDocumentsWales().getNoGasSafetyReportReason(),
-                NO_GAS_SAFETY_REPORT_REASON_LABEL,
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
-            ),
-            TextAreaValidationService.FieldValidation.of(
-                caseData.getRequiredDocumentsWales().getNoElectricalInstallationConditionReportReason(),
-                NO_ELECTRICAL_INSTALLATION_CONDITION_REPORT_REASON_LABEL,
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
-            )
-        );
-
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

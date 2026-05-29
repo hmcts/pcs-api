@@ -148,9 +148,9 @@ class ClaimViewTest {
         assertThat(requiredDocumentsWales.getHasEnergyPerformanceCertificate()).isEqualTo(VerticalYesNo.NO);
         assertThat(requiredDocumentsWales.getHasGasSafetyReport()).isEqualTo(VerticalYesNo.YES);
         assertThat(requiredDocumentsWales.getHasElectricalInstallationConditionReport()).isEqualTo(VerticalYesNo.NO);
-        assertThat(requiredDocumentsWales.getNoEnergyPerformanceCertificateReason()).isEqualTo("No EPC reason");
-        assertThat(requiredDocumentsWales.getNoGasSafetyReportReason()).isEqualTo("No gas safety reason");
-        assertThat(requiredDocumentsWales.getNoElectricalInstallationConditionReportReason()).isEqualTo(
+        assertThat(requiredDocumentsWales.getNoEpcReason()).isEqualTo("No EPC reason");
+        assertThat(requiredDocumentsWales.getNoGasReportReason()).isEqualTo("No gas safety reason");
+        assertThat(requiredDocumentsWales.getNoEicrReason()).isEqualTo(
             "No EICR reason"
         );
         assertThat(requiredDocumentsWales.getEnergyPerformance()).isEmpty();
