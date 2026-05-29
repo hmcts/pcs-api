@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
@@ -21,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +38,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final GenAppRepository genAppRepository;
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final DocumentImportService documentImportService;
-    private final LegalRepresentativeService legalRepresentativeService;
+    private final LegalRepresentativeRepository legalRepresentativeRepository;
     private final ConfirmationScreenFactory confirmationScreenFactory;
 
     @Override
@@ -76,9 +76,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     }
 
     private void validateCurrentUserIsLegalRepForParty(UUID currentUserId, UUID representedPartyId) {
-        boolean isLegalRepForParty = legalRepresentativeService.getLegalRepresentativeForParty(representedPartyId)
-            .map(legalRepresentativeEntity -> currentUserId.equals(legalRepresentativeEntity.getIdamId()))
-            .orElse(false);
+        boolean isLegalRepForParty = legalRepresentativeRepository
+            .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, representedPartyId);
 
         if (!isLegalRepForParty) {
             throw new PartyNotFoundException("No matching party found represented by current user");

@@ -5,9 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
@@ -22,9 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
@@ -32,15 +29,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -72,7 +65,7 @@ class SubmitEventHandlerTest {
     @Mock(strictness = LENIENT)
     private DocumentImportService documentImportService;
     @Mock
-    private LegalRepresentativeService legalRepresentativeService;
+    private LegalRepresentativeRepository legalRepresentativeRepository;
     @Mock
     private ConfirmationScreenFactory confirmationScreenFactory;
 
@@ -82,7 +75,7 @@ class SubmitEventHandlerTest {
     void setUp() {
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, documentImportService,
-                                           legalRepresentativeService, confirmationScreenFactory);
+                                           legalRepresentativeRepository, confirmationScreenFactory);
     }
 
     @Nested
@@ -160,9 +153,8 @@ class SubmitEventHandlerTest {
             assertThat(actualSubmitResponse).isEqualTo(expectedSubmitResponse);
         }
 
-        @ParameterizedTest
-        @MethodSource("applicantPartyRepresentativeInvalidScenarios")
-        void shouldThrowErrorIfApplicantIsNotRepresentedByCurrentUser(LegalRepresentativeEntity applicantsLegalRep) {
+        @Test
+        void shouldThrowErrorIfApplicantIsNotRepresentedByCurrentUser() {
             // Given
             UUID representedPartyUuid = UUID.randomUUID();
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
@@ -177,8 +169,9 @@ class SubmitEventHandlerTest {
             UUID currentUserId = UUID.randomUUID();
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
 
-            when(legalRepresentativeService.getLegalRepresentativeForParty(representedPartyUuid))
-                .thenReturn(Optional.ofNullable(applicantsLegalRep));
+            when(legalRepresentativeRepository
+                     .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, representedPartyUuid))
+                .thenReturn(false);
 
             // When
             Throwable throwable = catchThrowable(() -> underTest.submit(eventPayload(caseData)));
@@ -187,27 +180,12 @@ class SubmitEventHandlerTest {
             assertThat(throwable).isInstanceOf(PartyNotFoundException.class);
         }
 
-        private static Stream<Arguments> applicantPartyRepresentativeInvalidScenarios() {
-            return Stream.of(
-                argumentSet(
-                    "Applicant represented by different legal rep",
-                    LegalRepresentativeEntity.builder().idamId(UUID.randomUUID()).build()
-                ),
-                argumentSet(
-                    "Applicant not represented by legal rep",
-                    (LegalRepresentativeEntity) null
-                )
-            );
-        }
-
         private void stubLegalRepForParty(UUID representedPartyUuid) {
             UUID currentUserId = UUID.randomUUID();
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
-            LegalRepresentativeEntity legalRepresentativeEntity
-                = LegalRepresentativeEntity.builder().idamId(currentUserId).build();
-
-            when(legalRepresentativeService.getLegalRepresentativeForParty(representedPartyUuid))
-                .thenReturn(Optional.of(legalRepresentativeEntity));
+            when(legalRepresentativeRepository
+                     .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, representedPartyUuid))
+                .thenReturn(true);
         }
 
     }
