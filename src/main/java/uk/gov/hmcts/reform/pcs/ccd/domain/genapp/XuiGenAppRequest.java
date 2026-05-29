@@ -68,8 +68,15 @@ public class XuiGenAppRequest implements GenAppRequest {
     )
     private String whatOrderWanted;
 
+    @CCD(
+        label = "Do you want to upload documents to support the defendant’s application?"
+    )
     private VerticalYesNo hasSupportingDocuments;
 
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system"
+    )
     private List<ListValue<UploadedDocument>> uploadedDocuments;
 
     @CCD(label = "Which language did you use to complete this service?")
