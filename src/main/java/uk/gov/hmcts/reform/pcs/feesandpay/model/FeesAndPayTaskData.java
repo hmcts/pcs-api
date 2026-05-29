@@ -16,7 +16,7 @@ import java.util.UUID;
 public class FeesAndPayTaskData implements Serializable {
 
     @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private String feeType;
 
