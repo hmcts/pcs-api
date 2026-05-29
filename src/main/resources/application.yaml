@@ -238,6 +238,16 @@ role-assignment:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}
     backoff-delay-seconds: ${ROLE_ASSIGNMENT_BACKOFF_DELAY_SECONDS:3600s}
 
+counter-claim-notification:
+  request:
+    max-retries: ${COUNTER_CLAIM_NOTIFICAITON_MAX_RETRIES:5}
+    backoff-delay-seconds: ${COUNTER_CLAIM_NOTIFICAITON_BACKOFF_DELAY_SECONDS:3600s}
+
+defendant-response-notification:
+  request:
+    max-retries: ${DEFENDANT_RESPONSE_NOTIFICAITON_MAX_RETRIES:5}
+    backoff-delay-seconds: ${DEFENDANT_RESPONSE_NOTIFICAITON_BACKOFF_DELAY_SECONDS:3600s}
+
 payments:
   api:
     url: ${PAYMENT_API_URL:http://localhost:8083/payments}

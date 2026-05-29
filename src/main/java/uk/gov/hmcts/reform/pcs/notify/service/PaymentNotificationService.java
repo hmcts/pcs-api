@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -23,6 +24,7 @@ public class PaymentNotificationService {
     private final NotificationService notificationService;
     private final FeePaymentRepository feePaymentRepository;
 
+    @Transactional
     public void sendCounterClaimPaymentSuccessNotification(UUID feePaymentId) {
         FeePaymentEntity feePayment = feePaymentRepository.findById(feePaymentId)
             .orElseThrow(() -> new IllegalArgumentException("Fee payment not found: " + feePaymentId));

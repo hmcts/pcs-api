@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -18,6 +19,7 @@ public class DefendantResponseNotificationService {
     private final NotificationService notificationService;
     private final DefendantResponseRepository defendantResponseRepository;
 
+    @Transactional
     public void sendEmailNotificationForNoCounterClaim(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
@@ -31,6 +33,7 @@ public class DefendantResponseNotificationService {
         notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
     }
 
+    @Transactional
     public void sendEmailNotificationForCounterclaim(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
