@@ -188,10 +188,9 @@ class GenAppsViewTest {
         GenAppEntity genAppEntity1 = createGenAppEntity(UUID.randomUUID(), genApp1SubmittedDate);
         DocumentEntity submissionDocumentEntity = mock(DocumentEntity.class);
         genAppEntity1.setSubmissionDocument(submissionDocumentEntity);
-        when(submissionDocumentEntity.getId()).thenReturn(pcsDocumentId);
 
-        Document expectedSubmissionDocument = mock(Document.class);
-        when(modelMapper.map(submissionDocumentEntity, Document.class)).thenReturn(expectedSubmissionDocument);
+        final Document expectedSubmissionDocument = stubDocument(submissionDocumentEntity, pcsDocumentId);
+
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1));
 
         // When
@@ -202,10 +201,54 @@ class GenAppsViewTest {
 
         assertThat(genApps).hasSize(1);
 
-        DocumentWithId actualSubmission = genApps.getFirst().getValue().getSubmissionDocument();
+        DocumentWithId actualSubmissionDocument = genApps.getFirst().getValue().getSubmissionDocument();
 
-        assertThat(actualSubmission.getId()).isEqualTo(pcsDocumentId.toString());
-        assertThat(actualSubmission.getDocument()).isEqualTo(expectedSubmissionDocument);
+        assertThat(actualSubmissionDocument.getId()).isEqualTo(pcsDocumentId.toString());
+        assertThat(actualSubmissionDocument.getDocument()).isEqualTo(expectedSubmissionDocument);
+    }
+
+    @Test
+    void shouldSetSupporingDocsDocument() {
+        // Given
+        UUID pcsDocumentId1 = UUID.randomUUID();
+        UUID pcsDocumentId2 = UUID.randomUUID();
+
+        LocalDateTime genAppSubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
+        GenAppEntity genAppEntity = createGenAppEntity(UUID.randomUUID(), genAppSubmittedDate);
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity));
+        DocumentEntity documentEntity1 = mock(DocumentEntity.class);
+        DocumentEntity documentEntity2 = mock(DocumentEntity.class);
+
+        final Document expectedSupportingDocument1 = stubDocument(documentEntity1, pcsDocumentId1);
+        final Document expectedSupportingDocument2 = stubDocument(documentEntity2, pcsDocumentId2);
+
+        genAppEntity.setDocuments(List.of(documentEntity1, documentEntity2));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
+
+        assertThat(genApps).hasSize(1);
+
+        List<ListValue<Document>> actualSupportingDocuments = genApps.getFirst().getValue().getSupportingDocuments();
+
+        assertThat(actualSupportingDocuments).hasSize(2);
+        assertThat(actualSupportingDocuments.get(0).getId()).isEqualTo(pcsDocumentId1.toString());
+        assertThat(actualSupportingDocuments.get(0).getValue()).isEqualTo(expectedSupportingDocument1);
+
+        assertThat(actualSupportingDocuments.get(1).getId()).isEqualTo(pcsDocumentId2.toString());
+        assertThat(actualSupportingDocuments.get(1).getValue()).isEqualTo(expectedSupportingDocument2);
+
+    }
+
+    private Document stubDocument(DocumentEntity documentEntity, UUID pcsDocumentId) {
+        when(documentEntity.getId()).thenReturn(pcsDocumentId);
+
+        Document document = mock(Document.class);
+        when(modelMapper.map(documentEntity, Document.class)).thenReturn(document);
+        return document;
     }
 
     private static PartyEntity createPartyEntityWithIdamId(UUID currentUserIdamId) {
