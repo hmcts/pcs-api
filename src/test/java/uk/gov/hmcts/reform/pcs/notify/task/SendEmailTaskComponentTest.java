@@ -345,7 +345,7 @@ class SendEmailTaskComponentTest {
 
             statusUpdater.accept(statusUpdate);
             verify(notificationService).updateNotificationStatus(
-                statusUpdate.notification().getNotificationId(),
+                statusUpdate.notification().getId(),
                 statusUpdate.status().toString()
             );
         }

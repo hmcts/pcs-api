@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -15,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
@@ -50,6 +53,7 @@ public class NotificationService {
         return sendDefendantEmail(
             defendantResponse,
             EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
+            NotificationClaimType.NO_COUNTER_CLAIM,
             NotificationService::buildBasePersonalisation
         );
     }
@@ -60,6 +64,7 @@ public class NotificationService {
         return sendDefendantEmail(
             defendantResponse,
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
+            NotificationClaimType.COUNTER_CLAIM,
             NotificationService::buildBasePersonalisation
         );
     }
@@ -70,6 +75,7 @@ public class NotificationService {
         return sendDefendantEmail(
             defendantResponse,
             EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS,
+            NotificationClaimType.COUNTER_CLAIM,
             NotificationService::buildCounterclaimPaymentSuccessPersonalisation
         );
     }
@@ -80,6 +86,7 @@ public class NotificationService {
         return sendDefendantEmail(
             defendantResponse,
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
+            NotificationClaimType.COUNTER_CLAIM,
             NotificationService::buildBasePersonalisation
         );
     }
@@ -93,17 +100,26 @@ public class NotificationService {
      * @param emailRequest the request object containing details needed to send the email,
      *                     such as email address, template ID, personalisation details,
      *                     reference, and email reply-to ID
-     * @param caseId the id for the associated case
+     * @param pcsCase the associated case entity
+     * @param claim the associated claim entity
+     * @param party the associated party entity
      * @return an instance of EmailNotificationResponse containing the task ID, notification status,
      *         and notification ID associated with the scheduled email notification
      */
-    public EmailNotificationResponse scheduleEmailNotification(EmailNotificationRequest emailRequest, UUID caseId) {
+    public EmailNotificationResponse scheduleEmailNotification(
+        EmailNotificationRequest emailRequest,
+        PcsCaseEntity pcsCase,
+        ClaimEntity claim,
+        PartyEntity party
+    ) {
         String taskId = UUID.randomUUID().toString();
 
         CaseNotification caseNotification = createCaseNotification(
-            emailRequest.getEmailAddress(),
-            caseId,
-            taskId
+            emailRequest,
+            taskId,
+            pcsCase,
+            claim,
+            party
         );
 
         EmailState emailState = new EmailState(
@@ -114,7 +130,7 @@ public class NotificationService {
             emailRequest.getReference(),
             emailRequest.getEmailReplyToId(),
             null, // notification ID will be set after sending
-            caseNotification.getNotificationId()
+            caseNotification.getId()
         );
 
         boolean scheduled = schedulerClient.scheduleIfNotExists(
@@ -133,10 +149,10 @@ public class NotificationService {
         EmailNotificationResponse response = new EmailNotificationResponse();
         response.setTaskId(taskId);
         response.setStatus(NotificationStatus.SCHEDULED.toString());
-        response.setNotificationId(caseNotification.getNotificationId());
+        response.setNotificationId(caseNotification.getId());
 
         log.info("Email notification scheduled with task ID: {} and notification ID: {}",
-                 taskId, caseNotification.getNotificationId());
+                 taskId, caseNotification.getId());
 
         return response;
     }
@@ -184,30 +200,41 @@ public class NotificationService {
      * and returns the saved notification.
      * Throws a NotificationException if the save operation fails.
      *
-     * @param recipient the recipient email address for the notification
-     * @param caseId the unique identifier of the case associated with the notification
+     * @param request the email notification request
      * @param taskId the identifier of the associated task for logging purposes
+     * @param pcsCase the associated case entity
+     * @param claim the associated claim entity
+     * @param party the associated party entity
      * @return the saved CaseNotification object
      * @throws NotificationException if an error occurs while saving the notification
      */
-    private CaseNotification createCaseNotification(String recipient, UUID caseId, String taskId) {
+    private CaseNotification createCaseNotification(
+        EmailNotificationRequest request,
+        String taskId,
+        PcsCaseEntity pcsCase,
+        ClaimEntity claim,
+        PartyEntity party
+    ) {
         CaseNotification toSaveNotification = new CaseNotification();
-        toSaveNotification.setCaseId(caseId);
+        toSaveNotification.setPcsCase(pcsCase);
+        toSaveNotification.setClaimId(claim);
+        toSaveNotification.setPartyId(party);
+        toSaveNotification.setClaimType(request.getClaimType());
         toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE);
         toSaveNotification.setType("Email");
-        toSaveNotification.setRecipient(recipient);
+        toSaveNotification.setRecipient(request.getEmailAddress());
 
         try {
             CaseNotification savedNotification = notificationRepository.save(toSaveNotification);
             log.info(
                 "Case Notification with ID {} has been saved to the database with task ID {}",
-                savedNotification.getNotificationId(), taskId
+                savedNotification.getId(), taskId
             );
             return savedNotification;
         } catch (DataAccessException dataAccessException) {
             log.error(
                 "Failed to save Case Notification with Case ID: {}. Reason: {}",
-                toSaveNotification.getCaseId(),
+                toSaveNotification.getPcsCase(),
                 dataAccessException.getMessage(),
                 dataAccessException
             );
@@ -255,20 +282,22 @@ public class NotificationService {
         UUID providerNotificationId) {
 
         try {
+            Instant now = Instant.now();
             notification.setStatus(status);
-            notification.setLastUpdatedAt(Instant.now());
+            notification.setLastUpdatedAt(now);
 
             if (providerNotificationId != null) {
                 notification.setProviderNotificationId(providerNotificationId);
             }
 
-            if (status == NotificationStatus.SENDING) {
-                notification.setSubmittedAt(Instant.now());
+            switch (status) {
+                case SUBMITTED -> notification.setSubmittedAt(now);
+                case SCHEDULED -> notification.setScheduledAt(now);
             }
 
             notificationRepository.save(notification);
             log.info("Updated notification status to {} for notification ID: {}",
-                        status, notification.getNotificationId());
+                        status, notification.getId());
         } catch (Exception e) {
             log.error("Error updating notification status to {}: {}",
                         status, e.getMessage(), e);
@@ -322,6 +351,7 @@ public class NotificationService {
     private EmailNotificationResponse sendDefendantEmail(
         DefendantResponseEntity defendantResponse,
         EmailTemplate template,
+        NotificationClaimType claimType,
         Function<DefendantResponseEntity, Map<String, Object>> personalisationBuilder
     ) {
         if (!partyService.canSendEmailNotification(defendantResponse.getParty())) {
@@ -329,25 +359,31 @@ public class NotificationService {
             return null;
         }
 
+        PartyEntity recipientParty = defendantResponse.getParty();
         return scheduleEmailNotification(
             buildRequest(
                 templateConfiguration.getTemplateId(template),
-                defendantResponse.getParty().getEmailAddress(),
+                recipientParty.getEmailAddress(),
+                claimType,
                 personalisationBuilder.apply(defendantResponse)
             ),
-            defendantResponse.getPcsCase().getId()
+            defendantResponse.getPcsCase(),
+            defendantResponse.getClaim(),
+            recipientParty
         );
     }
 
     protected static EmailNotificationRequest buildRequest(
         String templateId,
         String email,
+        NotificationClaimType claimType,
         Map<String, Object> personalisation
     ) {
         return EmailNotificationRequest.builder()
             .templateId(templateId)
             .emailAddress(email)
             .personalisation(personalisation)
+            .claimType(claimType)
             .build();
     }
 
