@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 
 import java.util.UUID;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class GenAppVisibilityService {
 
-    private final LegalRepresentativeService legalRepresentativeService;
+    private final LegalRepresentativeRepository legalRepresentativeRepository;
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity, UUID currentUserId) {
         if (genAppEntity.getWithoutNotice() != VerticalYesNo.YES) {
@@ -25,9 +25,8 @@ public class GenAppVisibilityService {
             return true;
         }
 
-        return legalRepresentativeService.getLegalRepresentativeForParty(applicantParty.getId())
-            .map(legalRepresentativeEntity -> currentUserId.equals(legalRepresentativeEntity.getIdamId()))
-            .orElse(false);
+        return legalRepresentativeRepository
+            .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, applicantParty.getId());
     }
 
 }
