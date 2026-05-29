@@ -17,7 +17,7 @@ import {
   doYouWantToUploadDocumentsToSupportDefendantsApplication,
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty,
-  statementOfTruth, whatOrderDoYouWantTheCourtToMakeAndWhy,
+  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
@@ -102,8 +102,18 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
       input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
     });
-    await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
-    await performAction('clickButton', doYouWantToUploadDocumentsToSupportDefendantsApplication.continueButton);
+    await performAction('confirmDocumentToUpload', {
+      question: doYouWantToUploadDocumentsToSupportDefendantsApplication.doYouWantToUploadDocumentQuestion,
+      option: doYouWantToUploadDocumentsToSupportDefendantsApplication.yesRadioOption,
+    });
+    await performValidation('mainHeader', uploadDocumentsToSupportDefendantsApplication.mainHeader);
+    await performAction('uploadFilesGenApps', {
+      documents: [
+        {type: uploadDocumentsToSupportDefendantsApplication.tenancyAgreementDropDownInput, fileName: 'genApps.xlsx'},
+        {type: uploadDocumentsToSupportDefendantsApplication.rentStatementDropDownInput, fileName: 'genApps.docx'},
+        {type: uploadDocumentsToSupportDefendantsApplication.photographicEvidenceDropDownInput, fileName: 'genApps.ppt'},
+      ]
+    });
     await performAction('selectLanguageUsedToComplete', {
       question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
       option: whichLanguageDidYouUseToCompleteThisService.englishRadioOption,

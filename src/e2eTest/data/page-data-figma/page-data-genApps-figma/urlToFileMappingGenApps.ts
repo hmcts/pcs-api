@@ -10,5 +10,7 @@ export default {
   'makeAnApplicationotherPartiesAgreed': 'hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication',
   'makeAnApplicationreasonsNotToShare': 'areThereAnyReasonsThatThisApplicationShouldNotBeShared',
   'makeAnApplicationwhatOrderWanted': 'whatOrderDoYouWantTheCourtToMakeAndWhy',
-  'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService'
+  'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService',
+  'makeAnApplicationdocumentUploadWanted' : 'doYouWantToUploadDocumentsToSupportDefendantsApplication',
+  'makeAnApplicationuploadSupportingDocuments': 'uploadDocumentsToSupportDefendantsApplication'
 };
