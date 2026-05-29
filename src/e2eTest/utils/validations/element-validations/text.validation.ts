@@ -1,6 +1,5 @@
 import { Page, expect } from '@playwright/test';
 import { IValidation, validationRecord } from '@utils/interfaces';
-import { exactTextWithOptionalWhitespaceRegex } from '@utils/common/string.utils';
 
 export class TextValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationRecord): Promise<void> {
@@ -33,6 +32,7 @@ export class TextValidation implements IValidation {
       case 'listItem':
         data.elementType = 'li';
     }
+
     const text = String(data.text);
     const locator = data.elementType === 'p'
       ? page.getByText(text, { exact: true }).filter({ visible: true }).first()
@@ -46,12 +46,21 @@ export class TextValidation implements IValidation {
   private async linkValidation(page: Page, data: validationRecord): Promise<void> {
     const text = data?.text != null ? String(data.text) : '';
     if (!text) throw new Error('Link validation requires data: { text: "link text" }');
-    const locator = page
-      .locator('xpath=//a[not(ancestor::*[@hidden])]')
-      .filter({ hasText: exactTextWithOptionalWhitespaceRegex(text) })
-        .filter({ visible: true })
-        .first();
-    await locator.scrollIntoViewIfNeeded();
-    await locator.waitFor({ state: 'visible' });
+
+    const rowLocator = page.getByRole('row', { name: new RegExp(text) }).first();
+    const linkLocator = page.getByRole('link', { name: text, exact: true }).filter({ visible: true }).first();
+    const textLocator = page.getByText(text, { exact: true }).filter({ visible: true }).first();
+
+    try {
+      await rowLocator.waitFor({ state: 'visible', timeout: 40000 });
+      return;
+    } catch {
+      try {
+        await linkLocator.waitFor({ state: 'visible', timeout: 40000 });
+        return;
+      } catch {
+        await textLocator.waitFor({ state: 'visible', timeout: 40000 });
+      }
+    }
   }
 }

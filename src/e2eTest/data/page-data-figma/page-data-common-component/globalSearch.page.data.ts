@@ -22,7 +22,7 @@ export const globalSearch =
     servicesDropdownLabel: 'Services',
     servicesDropdownOption1: 'All',
     servicesDropdownOption2: 'Mortgage and Landlord Possession Claims',
-    search: 'Search',
+    searchButton: 'Search',
     caseReferenceInputText: '1710487227220264',
     searchPartyNameInputText: 'Smith',
     searchPostcodeInputText: 'W3 7RX',
