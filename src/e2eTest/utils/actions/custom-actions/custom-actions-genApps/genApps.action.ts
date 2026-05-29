@@ -221,7 +221,8 @@ export class GenAppsAction implements IAction {
           'Add Document',
           ['uploadFile', document.fileName],
           ['select', {dropdown: uploadDocumentsToSupportDefendantsApplication.typeOfDocumentHiddenTextLabel, index: fileIndex}, document.type],
-        );
+        )
+        FieldsStore.set('Upload documents', String(document));
       }
     }
     await performAction('clickButton', uploadDocumentsToSupportDefendantsApplication.continueButton);
