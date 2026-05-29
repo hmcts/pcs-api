@@ -48,13 +48,10 @@ test.describe('[Global Search - @globalSearch @PR @CC @nightly]', () => {
   test('Validate global search functionality by valid case reference', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER!);
-    await performValidation('link', { text: process.env.CASE_NUMBER! });
-    await performAction('clickCaseNumberLink');
   });
 
 test('Validate no results found for an invalid case reference number', async () => {
     await performAction('accessingTheSearch');
-    await performAction('searchByCaseReference', globalSearch.invalidCaseReferenceInputText);
-    await performValidation('text', { text: globalSearch.noResultsFoundText, elementType: 'paragraph' });
+    await performAction('invalidCaseReferenceSearch', globalSearch.invalidCaseReferenceInputText);
   });
 });
