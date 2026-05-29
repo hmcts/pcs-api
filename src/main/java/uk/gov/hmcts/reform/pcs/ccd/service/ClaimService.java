@@ -28,7 +28,6 @@ public class ClaimService {
     private final StatementOfTruthService statementOfTruthService;
 
     public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
-
         ClaimEntity claimEntity = buildClaimEntity(pcsCase);
 
         List<ClaimGroundEntity> claimGrounds = claimGroundService.createClaimGroundEntities(pcsCase);
