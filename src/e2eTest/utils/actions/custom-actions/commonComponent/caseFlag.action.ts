@@ -23,18 +23,18 @@ export class CaseFlagAction implements IAction {
       ['whereShouldThisFlagBeAdded', () => this.whereShouldThisFlagBeAdded(fieldName as actionRecord, page)],
       ['selectFlagType', () => this.selectFlagType(fieldName as actionRecord, page)],
       ['selectSpecialMeasureForFlag', () => this.selectSpecialMeasureForFlag(fieldName as actionRecord, page)],
-      ['addCommentsForFlag', () => this.addCommentsForFlag(fieldName as actionRecord, page)],
+      ['addCommentsForFlag', () => this.addCommentsForFlag(fieldName as actionRecord)],
       ['clickChangeLinkForRow', () => this.clickChangeLinkForRow(fieldName as actionRecord, page)],
-      ['reviewFlagDetails', () => this.reviewFlagDetails(fieldName as actionRecord, page)],
+      ['reviewFlagDetails', () => this.reviewFlagDetails(fieldName as actionRecord)],
       ['viewCaseFlags', () => this.viewCaseFlags(fieldName as actionRecord, page)],
       ['manageCaseFlags', () => this.manageCaseFlags(fieldName as actionRecord, page)],
-      ['makeFlagInactive', () => this.makeFlagInactive(fieldName as actionRecord, page)],
+      ['makeFlagInactive', () => this.makeFlagInactive(fieldName as actionRecord)],
       ['navigateToCaseSummary',() => this.navigateToCaseSummary(page)],
       ['canCreateCaseLevelFlag', () => this.canCreateCaseLevelFlag(fieldName as actionRecord, page)],
       ['canCreatePartyLevelFlag', () => this.canCreatePartyLevelFlag(fieldName as actionRecord, page)],
       ['canManageCaseLevelFlag', () => this.canManageCaseLevelFlag(fieldName as actionRecord, page)],
       ['canManagePartyLevelFlag', () => this.canManagePartyLevelFlag(fieldName as actionRecord, page)],
-      ['canViewCaseAndPartyFlag', () => this.canViewCaseAndPartyFlag(fieldName as actionRecord, page)],
+      ['canViewCaseAndPartyFlag', () => this.canViewCaseAndPartyFlag(fieldName as actionRecord)],
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -71,7 +71,7 @@ export class CaseFlagAction implements IAction {
     await performAction('clickButton', selectOptions.continueButton);
   }
 
-  private async addCommentsForFlag(addComments: actionRecord, page: Page) {
+  private async addCommentsForFlag(addComments: actionRecord) {
     await this.validateCaseContext();
     if (addComments.addCommentHintText) await performValidation('text', { elementType: 'inlineText', text: String(addComments.addCommentHintText) });
     await performAction('inputText', addComments.label, addComments.input);
@@ -92,7 +92,7 @@ export class CaseFlagAction implements IAction {
     await propertyChangeLink.click();
   }
 
-  private async reviewFlagDetails(reviewOptions: actionRecord, page: Page) {
+  private async reviewFlagDetails(reviewOptions: actionRecord) {
     await this.validateCaseContext();
     await performAction('clickButton', reviewOptions.saveButton);
   }
@@ -110,7 +110,7 @@ export class CaseFlagAction implements IAction {
     await performAction('clickButton', selectOptions.continueButton);
   }
 
-  private async makeFlagInactive(commentUpdate: actionRecord, page: Page) {
+  private async makeFlagInactive(commentUpdate: actionRecord) {
     await this.validateCaseContext();
     await performAction('clickButton', commentUpdate.inactiveButton);
     await performAction('clickButton', commentUpdate.continueButton);
@@ -278,7 +278,7 @@ export class CaseFlagAction implements IAction {
     }
   }
 
-  private async canViewCaseAndPartyFlag(option: actionData, page: Page): Promise<void> {
+  private async canViewCaseAndPartyFlag(option: actionData): Promise<void> {
     if (option == 'yes') {
 // add steps to click on tab and validate the header
     }
