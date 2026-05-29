@@ -2,6 +2,20 @@ import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller';
 import { addressInfo, caseNumber } from '../createCase.action';
+import {caseInfo} from "@utils/actions/custom-actions";
+import {expect} from "@utils/test-fixtures";
+import {VERY_LONG_TIMEOUT} from "../../../../playwright.config";
+import {caseSummary} from "@data/page-data";
+import {
+  specialMeasureForFlag,
+  whereShouldThisFlagBeAdded,
+  selectFlagType,
+  addCommentsForFlag,
+  reviewFlagDetails,
+  viewCaseFlag,
+  manageCaseFlags,
+  updateFlagComments
+} from '@data/page-data-figma';
 
 export class CaseFlagAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -14,7 +28,13 @@ export class CaseFlagAction implements IAction {
       ['reviewFlagDetails', () => this.reviewFlagDetails(fieldName as actionRecord, page)],
       ['viewCaseFlags', () => this.viewCaseFlags(fieldName as actionRecord, page)],
       ['manageCaseFlags', () => this.manageCaseFlags(fieldName as actionRecord, page)],
-      ['makeFlagInactive', () => this.makeFlagInactive(fieldName as actionRecord, page)]
+      ['makeFlagInactive', () => this.makeFlagInactive(fieldName as actionRecord, page)],
+      ['navigateToCaseSummary',() => this.navigateToCaseSummary(page)],
+      ['canCreateCaseLevelFlag', () => this.canCreateCaseLevelFlag(fieldName as actionRecord, page)],
+      ['canCreatePartyLevelFlag', () => this.canCreatePartyLevelFlag(fieldName as actionRecord, page)],
+      ['canManageCaseLevelFlag', () => this.canManageCaseLevelFlag(fieldName as actionRecord, page)],
+      ['canManagePartyLevelFlag', () => this.canManagePartyLevelFlag(fieldName as actionRecord, page)],
+      ['canViewCaseAndPartyFlag', () => this.canViewCaseAndPartyFlag(fieldName as actionRecord, page)],
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -94,5 +114,176 @@ export class CaseFlagAction implements IAction {
     await this.validateCaseContext();
     await performAction('clickButton', commentUpdate.inactiveButton);
     await performAction('clickButton', commentUpdate.continueButton);
+  }
+
+  private async navigateToCaseSummary(page: Page): Promise<void> {
+    await performAction('searchCaseFromFindCase', caseInfo.fid);
+    await expect(async () => {
+      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+    }).toPass({ timeout: VERY_LONG_TIMEOUT });
+  }
+
+  private async canCreateCaseLevelFlag(option: actionData, page: Page): Promise<void> {
+    if (option == 'yes') {
+      await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
+      await performAction('clickButton', caseSummary.go);
+      await performAction('whereShouldThisFlagBeAdded', {
+        flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
+        flagLevelOption: whereShouldThisFlagBeAdded.caseLevelRadioOption,
+        continueButton: whereShouldThisFlagBeAdded.continueButton
+      });
+      await performAction('selectFlagType', {
+        selectFlagQuestion: selectFlagType.selectFlagTypeLabel,
+        selectFlagOption: selectFlagType.urgentCaseRadioOption,
+        continueButton: selectFlagType.continueButton
+      });
+      await performAction('addCommentsForFlag', {
+        label: addCommentsForFlag.addCommentsOptionalLabel,
+        input: addCommentsForFlag.addCommentTextInput,
+        continueButton: addCommentsForFlag.continueButton
+      });
+      await performAction('reviewFlagDetails', {
+        saveButton: reviewFlagDetails.saveAndContinueButton
+      });
+      await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
+    }
+    else
+    {
+      await expect(page.locator(
+        `button:has-text("${viewCaseFlag.viewFlagLink}"), a >> text=${viewCaseFlag.viewFlagLink}`
+      ).first()).not.toBeVisible();
+
+      const select = page.locator(
+        `:has-text("${caseSummary.nextStepEventList}") + select, :has-text("${caseSummary.nextStepEventList}") ~ select`
+      ).first();
+      await select.waitFor({ state: 'visible' });
+
+      let options = await select.locator('option').allTextContents();
+      options = options.map((option) => option.trim()).filter(Boolean);
+      expect(options).not.toContain(caseSummary.createFlagsEvent);
+    }
+  }
+
+  private async canCreatePartyLevelFlag(option: actionData, page: Page): Promise<void> {
+    if (option == 'yes') {
+      await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
+      await performAction('clickButton', caseSummary.go);
+      await performAction('whereShouldThisFlagBeAdded', {
+        flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
+        flagLevelOption: whereShouldThisFlagBeAdded.respondentRadioOption,
+        continueButton: whereShouldThisFlagBeAdded.continueButton
+      });
+      await performAction('selectFlagType', {
+        selectFlagQuestion: selectFlagType.selectFlagTypeLabel,
+        selectFlagOption: selectFlagType.specialMeasureRadioOption,
+        continueButton: selectFlagType.continueButton
+      });
+      await performAction('selectSpecialMeasureForFlag', {
+        specialMeasurelabel: specialMeasureForFlag.specialMeasureLabel,
+        specialMeasureOption: specialMeasureForFlag.evidenceByLiveLinkRadioOption,
+        continueButton: specialMeasureForFlag.continueButton
+      });
+      await performAction('addCommentsForFlag', {
+        label: addCommentsForFlag.addCommentsLabel,
+        input: addCommentsForFlag.addCommentTextInput,
+        continueButton: addCommentsForFlag.continueButton
+      });
+      await performAction('reviewFlagDetails', {
+        saveButton: reviewFlagDetails.saveAndContinueButton
+      });
+      await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
+    }
+    else
+    {
+      await expect(page.locator(
+        `button:has-text("${viewCaseFlag.viewFlagLink}"), a >> text=${viewCaseFlag.viewFlagLink}`
+      ).first()).not.toBeVisible();
+
+      const select = page.locator(
+        `:has-text("${caseSummary.nextStepEventList}") + select, :has-text("${caseSummary.nextStepEventList}") ~ select`
+      ).first();
+      await select.waitFor({ state: 'visible' });
+
+      let options = await select.locator('option').allTextContents();
+      options = options.map((option) => option.trim()).filter(Boolean);
+      expect(options).not.toContain(caseSummary.createFlagsEvent);
+    }
+  }
+
+  private async canManageCaseLevelFlag(option: actionData, page: Page): Promise<void> {
+    if (option == 'yes') {
+      await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
+      await performAction('clickButton', manageCaseFlags.goButton);
+      await performAction('manageCaseFlags', {
+        flagOption: manageCaseFlags.caseLevelUrgentCaseRadioOption,
+        continueButton: manageCaseFlags.continueButton
+      });
+      await performAction('makeFlagInactive', {
+        inactiveButton: updateFlagComments.makeInactiveButton,
+        continueButton: updateFlagComments.continueButton
+      });
+      await performAction('reviewFlagDetails', {
+        saveButton: reviewFlagDetails.saveAndContinueButton
+      });
+      await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
+    }
+    else
+    {
+      await expect(page.locator(
+        `button:has-text("${viewCaseFlag.viewFlagLink}"), a >> text=${viewCaseFlag.viewFlagLink}`
+      ).first()).not.toBeVisible();
+
+      const select = page.locator(
+        `:has-text("${caseSummary.nextStepEventList}") + select, :has-text("${caseSummary.nextStepEventList}") ~ select`
+      ).first();
+      await select.waitFor({ state: 'visible' });
+
+      let options = await select.locator('option').allTextContents();
+      options = options.map((option) => option.trim()).filter(Boolean);
+      expect(options).not.toContain(manageCaseFlags.manageCaseFlagsEvent);
+    }
+  }
+
+  private async canManagePartyLevelFlag(option: actionData, page: Page): Promise<void> {
+    if (option == 'yes') {
+      await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
+      await performAction('clickButton', manageCaseFlags.goButton);
+      await performAction('manageCaseFlags', {
+        flagOption: manageCaseFlags.respondentRadioOption,
+        continueButton: manageCaseFlags.continueButton
+      });
+      await performAction('makeFlagInactive', {
+        inactiveButton: updateFlagComments.makeInactiveButton,
+        continueButton: updateFlagComments.continueButton
+      });
+      await performAction('reviewFlagDetails', {
+        saveButton: reviewFlagDetails.saveAndContinueButton
+      });
+      await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
+    }
+    else
+    {
+      await expect(page.locator(
+        `button:has-text("${viewCaseFlag.viewFlagLink}"), a >> text=${viewCaseFlag.viewFlagLink}`
+      ).first()).not.toBeVisible();
+
+      const select = page.locator(
+        `:has-text("${caseSummary.nextStepEventList}") + select, :has-text("${caseSummary.nextStepEventList}") ~ select`
+      ).first();
+      await select.waitFor({ state: 'visible' });
+
+      let options = await select.locator('option').allTextContents();
+      options = options.map((option) => option.trim()).filter(Boolean);
+      expect(options).not.toContain(manageCaseFlags.manageCaseFlagsEvent);
+    }
+  }
+
+  private async canViewCaseAndPartyFlag(option: actionData, page: Page): Promise<void> {
+    if (option == 'yes') {
+// add steps to click on tab and validate the header
+    }
+    else {
+//add step that tab is not visible
+    }
   }
 }
