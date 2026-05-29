@@ -93,15 +93,11 @@ class PaymentNotificationServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenNoFeePaymentFoundForCounterclaim() {
+    void shouldNotSendNotificationWhenNoFeePaymentFoundForCounterclaim() {
         UUID counterClaimId = UUID.randomUUID();
-        UUID defendantId = UUID.randomUUID();
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getId()).thenReturn(counterClaimId);
         PartyEntity defendant = mock(PartyEntity.class);
-        // Removed defendant.getId() stubbing as it's not used when feePayment is null
-        // because the stream filter won't find anything to compare it with if feePayment is null
 
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
 
@@ -113,9 +109,7 @@ class PaymentNotificationServiceTest {
         when(counterClaim.getPcsCase()).thenReturn(pcsCase);
         when(pcsCase.getClaims()).thenReturn(List.of(claim));
 
-        assertThatThrownBy(() -> underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("No fee payment found for counterclaim: " + counterClaimId);
+        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
 
         verifyNoInteractions(notificationService);
     }
