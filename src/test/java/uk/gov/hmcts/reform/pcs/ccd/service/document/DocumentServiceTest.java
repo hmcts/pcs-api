@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -331,6 +332,99 @@ class DocumentServiceTest {
         assertThat(entity.getType()).isEqualTo(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION);
         assertThat(entity.getFileName()).isEqualTo("file4");
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
+    }
+
+    @Test
+    void shouldSaveEnergyPerformanceDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document doc = Document.builder()
+            .url("url4/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+            .filename("file4")
+            .binaryUrl("bin4")
+            .categoryId("cat4")
+            .build();
+
+        WalesDocuments walesDocuments = WalesDocuments.builder()
+            .energyPerformance(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+            .build();
+
+        when(pcsCase.getRequiredDocumentsWales()).thenReturn(walesDocuments);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE);
+        assertThat(entity.getFileName()).isEqualTo("file4");
+        assertThat(entity.getCategoryId()).isNull();
+    }
+
+    @Test
+    void shouldSaveGasSafetyReportDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document doc = Document.builder()
+            .url("url4/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+            .filename("file4")
+            .binaryUrl("bin4")
+            .categoryId("cat4")
+            .build();
+
+        WalesDocuments walesDocuments = WalesDocuments.builder()
+            .gasSafetyReport(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+            .build();
+
+        when(pcsCase.getRequiredDocumentsWales()).thenReturn(walesDocuments);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(DocumentType.GAS_SAFETY_REPORT);
+        assertThat(entity.getFileName()).isEqualTo("file4");
+        assertThat(entity.getCategoryId()).isNull();
+    }
+
+    @Test
+    void shouldSaveElectricalInstallationDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document doc = Document.builder()
+            .url("url4/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+            .filename("file4")
+            .binaryUrl("bin4")
+            .categoryId("cat4")
+            .build();
+
+        WalesDocuments walesDocuments = WalesDocuments.builder()
+            .electricalInstallation(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+            .build();
+
+        when(pcsCase.getRequiredDocumentsWales()).thenReturn(walesDocuments);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(DocumentType.ELECTRICAL_INSTALLATION_CONDITION);
+        assertThat(entity.getFileName()).isEqualTo("file4");
+        assertThat(entity.getCategoryId()).isNull();
     }
 
     @Test

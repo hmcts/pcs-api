@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -239,7 +240,7 @@ class ClaimServiceTest {
     }
 
     @Test
-    void shouldNotSSetAsbProhibitedConductForNonWalesProperties() {
+    void shouldNotSetAsbProhibitedConductAndWalesDocumentsForNonWalesProperties() {
         // Given
         when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
 
@@ -248,6 +249,12 @@ class ClaimServiceTest {
 
         // Then
         assertThat(createdClaimEntity.getAsbProhibitedConductEntity()).isNull();
+        assertThat(createdClaimEntity.getEnergyPerformanceCertificateProvided()).isNull();
+        assertThat(createdClaimEntity.getGasSafetyReportProvided()).isNull();
+        assertThat(createdClaimEntity.getElectricalInstallationConditionProvided()).isNull();
+        assertThat(createdClaimEntity.getNoEnergyPerformanceCertificateReason()).isNull();
+        assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isNull();
+        assertThat(createdClaimEntity.getNoElectricalInstallationConditionReason()).isNull();
         verify(asbProhibitedConductService, never()).createAsbProhibitedConductEntity(pcsCase);
     }
 
@@ -291,6 +298,62 @@ class ClaimServiceTest {
 
         // Then
         assertThat(createdClaimEntity.getStatementOfTruth()).isEqualTo(statementOfTruthEntity);
+    }
+
+    @Test
+    void shouldSetWalesDocuments() {
+        // Given
+        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
+        when(pcsCase.getRequiredDocumentsWales()).thenReturn(
+            WalesDocuments.builder()
+                .hasEnergyPerformanceCertificate(VerticalYesNo.NO)
+                .hasGasSafetyReport(VerticalYesNo.NO)
+                .hasElectricalInstallationConditionReport(VerticalYesNo.NO)
+                .noEnergyPerformanceCertificateReason("noEnergyPerformanceCertificateReason")
+                .noGasSafetyReportReason("noGasSafetyReportReason")
+                .noElectricalInstallationConditionReportReason("noElectricalInstallationConditionReportReason")
+                .build()
+        );
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getEnergyPerformanceCertificateProvided()).isEqualTo(VerticalYesNo.NO);
+        assertThat(createdClaimEntity.getGasSafetyReportProvided()).isEqualTo(VerticalYesNo.NO);
+        assertThat(createdClaimEntity.getElectricalInstallationConditionProvided()).isEqualTo(VerticalYesNo.NO);
+        assertThat(createdClaimEntity.getNoEnergyPerformanceCertificateReason())
+            .isEqualTo("noEnergyPerformanceCertificateReason");
+        assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isEqualTo("noGasSafetyReportReason");
+        assertThat(createdClaimEntity.getNoElectricalInstallationConditionReason())
+            .isEqualTo("noElectricalInstallationConditionReportReason");
+    }
+
+    @Test
+    void shouldSetNotWalesDocumentsReasonsIfUserHasDocuments() {
+        // Given
+        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
+        when(pcsCase.getRequiredDocumentsWales()).thenReturn(
+            WalesDocuments.builder()
+                .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
+                .hasGasSafetyReport(VerticalYesNo.YES)
+                .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
+                .noEnergyPerformanceCertificateReason("noEnergyPerformanceCertificateReason")
+                .noGasSafetyReportReason("noGasSafetyReportReason")
+                .noElectricalInstallationConditionReportReason("noElectricalInstallationConditionReportReason")
+                .build()
+        );
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getEnergyPerformanceCertificateProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(createdClaimEntity.getGasSafetyReportProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(createdClaimEntity.getElectricalInstallationConditionProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(createdClaimEntity.getNoEnergyPerformanceCertificateReason()).isNull();
+        assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isNull();
+        assertThat(createdClaimEntity.getNoElectricalInstallationConditionReason()).isNull();
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {
