@@ -16,6 +16,7 @@ import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-action
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
+import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action'; 
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
 
@@ -60,6 +61,7 @@ export class ActionRegistry {
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectNoticeDetails', new CreateCaseAction()],
+    ['selectNoticeDetailsWales', new CreateCaseAction()],
     ['selectBorderPostcode', new CreateCaseAction()],
     ['selectYourPossessionGrounds', new CreateCaseAction()],
     ['selectOtherGrounds', new CreateCaseAction()],
@@ -106,6 +108,15 @@ export class ActionRegistry {
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
+    ['whereShouldThisFlagBeAdded', new CaseFlagAction()],
+    ['selectFlagType', new CaseFlagAction()],
+    ['selectSpecialMeasureForFlag', new CaseFlagAction()],
+    ['addCommentsForFlag', new CaseFlagAction()],
+    ['clickChangeLinkForRow', new CaseFlagAction()],
+    ['reviewFlagDetails', new CaseFlagAction()],
+    ['viewCaseFlags', new CaseFlagAction()],
+    ['manageCaseFlags', new CaseFlagAction()],
+    ['makeFlagInactive', new CaseFlagAction()],
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],

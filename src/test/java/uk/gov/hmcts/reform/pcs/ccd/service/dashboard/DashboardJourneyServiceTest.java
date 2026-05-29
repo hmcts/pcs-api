@@ -2,6 +2,10 @@ package uk.gov.hmcts.reform.pcs.ccd.service.dashboard;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
@@ -11,15 +15,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.time.LocalDateTime;
@@ -29,22 +36,31 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class DashboardJourneyServiceTest {
 
     private static final long CASE_REFERENCE = 99_887_766L;
 
     private DashboardJourneyService underTest;
 
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
+
+    @Mock
+    private DefendantResponseService defendantResponseService;
+
     @BeforeEach
     void setUp() {
-        underTest = new DashboardJourneyService(List.of(
-            new ClaimTaskGroupEvaluator(),
-            new DocumentsTaskGroupEvaluator(),
-            new ResponseTaskGroupEvaluator(),
-            new ApplicationsTaskGroupEvaluator(),
-            new HearingsTaskGroupEvaluator(),
-            new NoticesTaskGroupEvaluator()
+        underTest = new DashboardJourneyService(
+            draftCaseDataService, defendantResponseService, List.of(
+                new ClaimTaskGroupEvaluator(),
+                new DocumentsTaskGroupEvaluator(),
+                new ResponseTaskGroupEvaluator(),
+                new ApplicationsTaskGroupEvaluator(),
+                new HearingsTaskGroupEvaluator(),
+                new NoticesTaskGroupEvaluator()
         ));
     }
 
@@ -72,15 +88,8 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
             .extracting(n -> n.getTemplateId(), n -> n.getTemplateValues().size())
             .containsExactly(
-                tuple("Defendant.CaseIssued", 2),
-                tuple("Defendant.ResponseToClaim", 1)
-            );
-
-        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()).getFirst().getTemplateValues())
-            .extracting(lv -> lv.getValue().getKey(), lv -> lv.getValue().getValue())
-            .contains(
-                tuple("hearingDateTime", "2026-06-15T10:30:00Z"),
-                tuple("responseEndDate", "2026-05-15")
+                tuple("Defendant.NoHearingArranged", 0),
+                tuple("Defendant.ResponseNotStarted", 0)
             );
     }
 
@@ -95,7 +104,7 @@ class DashboardJourneyServiceTest {
             .containsExactly(
                 tuple(TaskGroupId.CLAIM, 1),
                 tuple(TaskGroupId.DOCUMENTS, 2),
-                tuple(TaskGroupId.RESPONSE, 3),
+                tuple(TaskGroupId.RESPONSE, 2),
                 tuple(TaskGroupId.HEARING, 1),
                 tuple(TaskGroupId.NOTICE, 1),
                 tuple(TaskGroupId.APPLICATIONS, 2)
@@ -118,8 +127,7 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.NOT_STARTED),
-                tuple(DashboardTaskTemplateIds.REVIEW_RESPONSE, TaskStatus.IN_PROGRESS),
-                tuple(DashboardTaskTemplateIds.SUBMIT_RESPONSE, TaskStatus.COMPLETED)
+                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.NOT_AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(3).getTasks())
@@ -153,7 +161,8 @@ class DashboardJourneyServiceTest {
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(5).getTasks())
@@ -182,7 +191,8 @@ class DashboardJourneyServiceTest {
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
@@ -194,6 +204,42 @@ class DashboardJourneyServiceTest {
         assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
             .extracting(RelatedApplication::getId)
             .allMatch(id -> id != null && !id.isBlank());
+    }
+
+    @Test
+    void shouldOrderRelatedApplicationsBySubmittedDateNewestFirst() {
+        PCSCase submitted = PCSCase.builder().build();
+
+        GenAppEntity olderGenApp = GenAppEntity.builder()
+            .id(UUID.randomUUID())
+            .type(GenAppType.SET_ASIDE)
+            .applicationSubmittedDate(LocalDateTime.of(2026, 3, 1, 9, 0))
+            .build();
+
+        GenAppEntity newerGenApp = GenAppEntity.builder()
+            .id(UUID.randomUUID())
+            .type(GenAppType.ADJOURN)
+            .applicationSubmittedDate(LocalDateTime.of(2026, 5, 15, 14, 30))
+            .build();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .genApps(Set.of(olderGenApp, newerGenApp))
+            .build();
+
+        PartyEntity defendant = PartyEntity.builder().idamId(UUID.randomUUID()).build();
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            submitted,
+            caseEntity,
+            defendant
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
+            .extracting(RelatedApplication::getType, RelatedApplication::getApplicationSubmittedDate)
+            .containsExactly(
+                tuple(GenAppType.ADJOURN, LocalDateTime.of(2026, 5, 15, 14, 30)),
+                tuple(GenAppType.SET_ASIDE, LocalDateTime.of(2026, 3, 1, 9, 0))
+            );
     }
 
     @Test
@@ -219,7 +265,8 @@ class DashboardJourneyServiceTest {
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications())).isEmpty();
@@ -253,7 +300,8 @@ class DashboardJourneyServiceTest {
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
-            new DashboardContext(CASE_REFERENCE, caseEntity, defendant)
+            caseEntity,
+            defendant
         );
 
         assertThat(ListValueUtils.unwrapListItems(result.getRelatedApplications()))
@@ -263,20 +311,48 @@ class DashboardJourneyServiceTest {
 
     @Test
     void shouldOnlyExposeDeclaredPlaceholdersForResponseToClaimNotification() {
-        PCSCase submitted = PCSCase.builder().build();
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(true);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(false);
 
+        PCSCase submitted = PCSCase.builder().build();
         DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, submitted);
 
-        List<String> keysForResponseNotification = ListValueUtils.unwrapListItems(result.getNotifications()).stream()
-            .filter(n -> "Defendant.ResponseToClaim".equals(n.getTemplateId()))
-            .findFirst()
-            .orElseThrow()
-            .getTemplateValues()
-            .stream()
-            .map(lv -> lv.getValue().getKey())
-            .toList();
+        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
+            .extracting(n -> n.getTemplateId())
+            .containsExactly(
+                "Defendant.NoHearingArranged",
+                "Defendant.ResponseInProgress"
+            );
+    }
 
-        assertThat(keysForResponseNotification).containsExactly("ctaLabel");
+    @Test
+    void shouldMarkRespondToClaimInProgressWhenDraftExists() {
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(true);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(false);
+
+        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, PCSCase.builder().build());
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .contains(tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.IN_PROGRESS));
+    }
+
+    @Test
+    void shouldMarkRespondCompletedAndViewResponseAvailableWhenSubmittedExists() {
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(false);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(true);
+
+        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, PCSCase.builder().build());
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.COMPLETED),
+                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.AVAILABLE)
+            );
     }
 
 }
