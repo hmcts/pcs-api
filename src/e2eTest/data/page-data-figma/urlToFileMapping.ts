@@ -47,6 +47,6 @@ export default {
   'resumePossessionClaimstatementOfExpressTerms': 'statementOfExpressTerms',
   'resumePossessionClaimunderlesseeMortgageeDetails': 'underlesseeMortgageeDetails',
   'createFlagscaseworkerCaseFlag': 'whereShouldThisFlagBeAdded',
-  'submit': 'reviewFlagDetails'
+  'submit': 'reviewFlagDetails',
   'addCaseNoteaddCaseNote': 'addCaseNote',
 };
