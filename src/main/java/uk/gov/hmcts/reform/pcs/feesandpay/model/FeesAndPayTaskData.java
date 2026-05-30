@@ -3,33 +3,27 @@ package uk.gov.hmcts.reform.pcs.feesandpay.model;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.util.UUID;
 
 @Data
-@Builder
-@NoArgsConstructor
+@Builder(toBuilder = true)
 @AllArgsConstructor
-public class FeesAndPayTaskData implements Serializable {
+public class FeesAndPayTaskData {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    private final String feeType;
 
-    private String feeType;
+    private final FeeDetails feeDetails;
 
-    private FeeDetails feeDetails;
+    private final long caseReference;
 
-    private long caseReference;
-
-    private String ccdCaseNumber;
+    private final String ccdCaseNumber;
 
     @Builder.Default
-    private Integer volume = 1;
+    private final Integer volume = 1;
 
-    private UUID responsiblePartyId;
+    private final UUID responsiblePartyId;
 
-    private PaymentCallbackHandlerType paymentCallbackHandlerType;
+    private final PaymentCallbackHandlerType paymentCallbackHandlerType;
+
 }
