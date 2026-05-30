@@ -23,9 +23,6 @@ import {
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { BrowserContext, Page } from '@playwright/test';
 
-const caseSummaryUrl = () =>
-  `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`;
-
 const staffUserEmails = Object.values(staff);
 const judicialUserEmails = Object.values(judicialEmails);
 const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
@@ -50,14 +47,14 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await page.evaluate(() => {
-    try {
-      localStorage.clear();
-      sessionStorage.clear();
-    } catch (e) {
-      // Ignore if storage is not accessible
-    }
-  });
+  // await page.evaluate(() => {
+  //   try {
+  //     localStorage.clear();
+  //     sessionStorage.clear();
+  //   } catch (e) {
+  //     // Ignore if storage is not accessible
+  //   }
+  // });
   await dismissCookieBanner(page, 'additional');
 });
 
@@ -213,12 +210,12 @@ test.describe('[Common Component Case Flags - Access control] @CC @caseFlags @ac
       await test.step(`Staff user ${email}`, async () => {
         await performAction('login', {email, password});
         await dismissCookieBanner(page, 'analytics');
-        await performAction('navigateToCaseSummary');
+        await performAction('navigateToCaseSummary', 'yes');
         await performAction('canCreateCaseLevelFlag', 'yes');
         await performAction('canCreatePartyLevelFlag', 'yes');
         await performAction('canManageCaseLevelFlag', 'yes');
         await performAction('canManagePartyLevelFlag', 'yes');
-        await performAction('canViewFlag', 'yes');
+        await performAction('canViewCaseAndPartyFlag', 'yes');
         await clearBrowserSession(page, context);
       });
     }
@@ -231,12 +228,12 @@ test.describe('[Common Component Case Flags - Access control] @CC @caseFlags @ac
       await test.step(`Judicial user ${email}`, async () => {
         await performAction('login', {email, password});
         await dismissCookieBanner(page, 'analytics');
-        await performAction('navigateToCaseSummary');
+        await performAction('navigateToCaseSummary', 'yes');
         await performAction('canCreateCaseLevelFlag', 'no');
         await performAction('canCreatePartyLevelFlag', 'no');
         await performAction('canManageCaseLevelFlag', 'no');
         await performAction('canManagePartyLevelFlag', 'no');
-        await performAction('canViewFlag', 'yes');
+        await performAction('canViewCaseAndPartyFlag', 'yes');
         await clearBrowserSession(page, context);
       });
     }
@@ -246,12 +243,12 @@ test.describe('[Common Component Case Flags - Access control] @CC @caseFlags @ac
     const { email, password } = user.claimantSolicitor;
     await performAction('login', {email, password});
     await dismissCookieBanner(page, 'analytics');
-    await performAction('navigateToCaseSummary');
+    await performAction('navigateToCaseSummary', 'yes');
     await performAction('canCreateCaseLevelFlag', 'no');
     await performAction('canCreatePartyLevelFlag', 'no');
     await performAction('canManageCaseLevelFlag', 'no');
     await performAction('canManagePartyLevelFlag', 'no');
-    await performAction('canViewFlag', 'no');
+    await performAction('canViewCaseAndPartyFlag', 'no');
     await clearBrowserSession(page, context);
   });
 
@@ -259,12 +256,7 @@ test.describe('[Common Component Case Flags - Access control] @CC @caseFlags @ac
     const { email, password } = user.caseworker;
     await performAction('login', {email, password});
     await dismissCookieBanner(page, 'analytics');
-    await performAction('navigateToCaseSummary');
-    await performAction('canCreateCaseLevelFlag', 'no');
-    await performAction('canCreatePartyLevelFlag', 'no');
-    await performAction('canManageCaseLevelFlag', 'no');
-    await performAction('canManagePartyLevelFlag', 'no');
-    await performAction('canViewFlag', 'no');
+    await performAction('navigateToCaseSummary', 'no');
     await clearBrowserSession(page, context);
   });
 });

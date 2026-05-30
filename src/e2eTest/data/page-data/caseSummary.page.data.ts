@@ -6,6 +6,7 @@ export const caseSummary = {
   manageCaseEvent: 'Manage case links',
   enforceTheOrderEvent: 'Enforce the order',
   createFlagsEvent: 'Create case flags',
+  manageFlagsEvent: 'Manage case flags',
   confirmEvictionEvent: 'Confirm the eviction details',
   makeAnApplication: 'Make an application',
   addCaseNote: 'Add a case note',

@@ -4,8 +4,9 @@ import { performAction, performValidation } from '@utils/controller';
 import { addressInfo, caseNumber } from '../createCase.action';
 import {caseInfo} from "@utils/actions/custom-actions";
 import {expect} from "@utils/test-fixtures";
-import {VERY_LONG_TIMEOUT} from "../../../../playwright.config";
-import {caseSummary} from "@data/page-data";
+import {LONG_TIMEOUT} from "../../../../playwright.config";
+import {caseSummary, home, caseList} from "@data/page-data";
+import { getCaseTypeId } from '@utils/common/caseType.utils';
 import {
   specialMeasureForFlag,
   whereShouldThisFlagBeAdded,
@@ -29,12 +30,12 @@ export class CaseFlagAction implements IAction {
       ['viewCaseFlags', () => this.viewCaseFlags(fieldName as actionRecord, page)],
       ['manageCaseFlags', () => this.manageCaseFlags(fieldName as actionRecord, page)],
       ['makeFlagInactive', () => this.makeFlagInactive(fieldName as actionRecord)],
-      ['navigateToCaseSummary',() => this.navigateToCaseSummary(page)],
+      ['navigateToCaseSummary', () => this.navigateToCaseSummary((fieldName ?? 'yes') as actionData, page)],
       ['canCreateCaseLevelFlag', () => this.canCreateCaseLevelFlag(fieldName as actionRecord, page)],
       ['canCreatePartyLevelFlag', () => this.canCreatePartyLevelFlag(fieldName as actionRecord, page)],
       ['canManageCaseLevelFlag', () => this.canManageCaseLevelFlag(fieldName as actionRecord, page)],
       ['canManagePartyLevelFlag', () => this.canManagePartyLevelFlag(fieldName as actionRecord, page)],
-      ['canViewCaseAndPartyFlag', () => this.canViewCaseAndPartyFlag(fieldName as actionRecord)],
+      ['canViewCaseAndPartyFlag', () => this.canViewCaseAndPartyFlag(fieldName as actionData, page)],
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -116,11 +117,40 @@ export class CaseFlagAction implements IAction {
     await performAction('clickButton', commentUpdate.continueButton);
   }
 
-  private async navigateToCaseSummary(page: Page): Promise<void> {
-    await performAction('searchCaseFromFindCase', caseInfo.fid);
-    await expect(async () => {
-      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
-    }).toPass({ timeout: VERY_LONG_TIMEOUT });
+  private async navigateToCaseSummary(option: actionData, page: Page): Promise<void> {
+    const summaryUrl = `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`;
+    const summaryUrlPattern = `${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`;
+
+    if (option === 'no') {
+      await performAction('navigateToUrl', summaryUrl);
+      await performValidation('mainHeader', caseList.noResultsFoundHeader);
+      return;
+    }
+
+    try {
+      await performAction('searchCaseFromFindCase', caseInfo.fid);
+    } catch {
+      try {
+        await performAction('searchCase', caseInfo.fid);
+      } catch {
+        await performAction('navigateToUrl', summaryUrl);
+      }
+    } finally {
+      await expect(async () => {
+        await page.waitForURL(summaryUrlPattern);
+      }).toPass({ timeout: LONG_TIMEOUT });
+    }
+  }
+
+  private async assertCaseFlagsNotInNextStep(flag: String, page: Page): Promise<void> {
+    const select = page.locator(
+      `:has-text("${caseSummary.nextStepEventList}") + select, :has-text("${caseSummary.nextStepEventList}") ~ select`
+    ).first();
+    await select.waitFor({ state: 'visible' });
+    const options = (await select.locator('option').allTextContents())
+      .map((option) => option.trim())
+      .filter(Boolean);
+    expect(options).not.toContain(flag);
   }
 
   private async canCreateCaseLevelFlag(option: actionData, page: Page): Promise<void> {
@@ -146,21 +176,8 @@ export class CaseFlagAction implements IAction {
         saveButton: reviewFlagDetails.saveAndContinueButton
       });
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
-    }
-    else
-    {
-      await expect(page.locator(
-        `button:has-text("${viewCaseFlag.viewFlagLink}"), a >> text=${viewCaseFlag.viewFlagLink}`
-      ).first()).not.toBeVisible();
-
-      const select = page.locator(
-        `:has-text("${caseSummary.nextStepEventList}") + select, :has-text("${caseSummary.nextStepEventList}") ~ select`
-      ).first();
-      await select.waitFor({ state: 'visible' });
-
-      let options = await select.locator('option').allTextContents();
-      options = options.map((option) => option.trim()).filter(Boolean);
-      expect(options).not.toContain(caseSummary.createFlagsEvent);
+    } else {
+      await this.assertCaseFlagsNotInNextStep(caseSummary.createFlagsEvent, page);
     }
   }
 
@@ -192,21 +209,8 @@ export class CaseFlagAction implements IAction {
         saveButton: reviewFlagDetails.saveAndContinueButton
       });
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
-    }
-    else
-    {
-      await expect(page.locator(
-        `button:has-text("${viewCaseFlag.viewFlagLink}"), a >> text=${viewCaseFlag.viewFlagLink}`
-      ).first()).not.toBeVisible();
-
-      const select = page.locator(
-        `:has-text("${caseSummary.nextStepEventList}") + select, :has-text("${caseSummary.nextStepEventList}") ~ select`
-      ).first();
-      await select.waitFor({ state: 'visible' });
-
-      let options = await select.locator('option').allTextContents();
-      options = options.map((option) => option.trim()).filter(Boolean);
-      expect(options).not.toContain(caseSummary.createFlagsEvent);
+    } else {
+      await this.assertCaseFlagsNotInNextStep(caseSummary.createFlagsEvent, page);
     }
   }
 
@@ -226,21 +230,8 @@ export class CaseFlagAction implements IAction {
         saveButton: reviewFlagDetails.saveAndContinueButton
       });
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
-    }
-    else
-    {
-      await expect(page.locator(
-        `button:has-text("${viewCaseFlag.viewFlagLink}"), a >> text=${viewCaseFlag.viewFlagLink}`
-      ).first()).not.toBeVisible();
-
-      const select = page.locator(
-        `:has-text("${caseSummary.nextStepEventList}") + select, :has-text("${caseSummary.nextStepEventList}") ~ select`
-      ).first();
-      await select.waitFor({ state: 'visible' });
-
-      let options = await select.locator('option').allTextContents();
-      options = options.map((option) => option.trim()).filter(Boolean);
-      expect(options).not.toContain(manageCaseFlags.manageCaseFlagsEvent);
+    } else {
+      await this.assertCaseFlagsNotInNextStep(caseSummary.manageFlagsEvent, page);
     }
   }
 
@@ -260,30 +251,24 @@ export class CaseFlagAction implements IAction {
         saveButton: reviewFlagDetails.saveAndContinueButton
       });
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
-    }
-    else
-    {
-      await expect(page.locator(
-        `button:has-text("${viewCaseFlag.viewFlagLink}"), a >> text=${viewCaseFlag.viewFlagLink}`
-      ).first()).not.toBeVisible();
-
-      const select = page.locator(
-        `:has-text("${caseSummary.nextStepEventList}") + select, :has-text("${caseSummary.nextStepEventList}") ~ select`
-      ).first();
-      await select.waitFor({ state: 'visible' });
-
-      let options = await select.locator('option').allTextContents();
-      options = options.map((option) => option.trim()).filter(Boolean);
-      expect(options).not.toContain(manageCaseFlags.manageCaseFlagsEvent);
+    } else {
+      await this.assertCaseFlagsNotInNextStep(caseSummary.manageFlagsEvent, page);
     }
   }
 
-  private async canViewCaseAndPartyFlag(option: actionData): Promise<void> {
-    if (option == 'yes') {
-// add steps to click on tab and validate the header
-    }
-    else {
-//add step that tab is not visible
+  private caseFlagsTabLocator(page: Page) {
+    return page.locator('div.mat-tab-label-content', { hasText: viewCaseFlag.caseFlagsTab });
+  }
+
+  private async canViewCaseAndPartyFlag(option: actionData, page: Page): Promise<void> {
+    const caseFlagsTab = this.caseFlagsTabLocator(page);
+
+    if (option === 'yes') {
+      await expect(caseFlagsTab).toBeVisible();
+      await performAction('clickTab', viewCaseFlag.caseFlagsTab);
+      await performValidation('text', { elementType: 'subHeading', text: viewCaseFlag.caseFlagsViewHeader });
+    } else {
+      await expect(caseFlagsTab).not.toBeVisible();
     }
   }
 }
