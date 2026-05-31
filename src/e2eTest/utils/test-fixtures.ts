@@ -6,7 +6,7 @@ export const test = base.extend<{ _consoleLogCapture: void }>({
     async ({ page }, use, testInfo) => {
       startLogCapture(page, testInfo);
       await use();
-      await   attachLogToTest(testInfo);
+      await attachLogToTest(testInfo);
     },
     { auto: true },
   ],
