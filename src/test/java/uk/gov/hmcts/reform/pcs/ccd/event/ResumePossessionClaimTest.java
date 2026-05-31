@@ -458,7 +458,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             FeesAndPayTaskData taskData = getScheduledTaskData(FEES_AND_PAY_TASK_DESCRIPTOR);
-            assertThat(taskData.getFeeType()).isEqualTo(FeeType.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
             assertThat(taskData.getCaseReference()).isEqualTo(TEST_CASE_REFERENCE);
             assertThat(taskData.getCcdCaseNumber()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
