@@ -53,13 +53,13 @@ public class FeesAndPayTaskComponent {
             ))
             .execute((taskInstance, executionContext) -> {
                 FeesAndPayTaskData taskData = taskInstance.getData();
-                log.debug("Executing fee service request for fee type: {}", taskData.getFeeType());
+                log.debug("Executing fee service request for fee details: {}", taskData.getFeeDetails());
                 try {
                     paymentService.createServiceRequest(taskData);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
-                    log.error("Failed to create fee service request for type: {}. Attempt {}/{}",
-                                taskData.getFeeType(),
+                    log.error("Failed to create fee service request for fee details: {}. Attempt {}/{}",
+                                taskData.getFeeDetails(),
                                 executionContext.getExecution().consecutiveFailures + 1,
                                 maxRetriesFeesAndPay,
                                 e);
