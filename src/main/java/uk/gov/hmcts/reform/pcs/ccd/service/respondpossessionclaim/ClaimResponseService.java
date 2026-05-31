@@ -112,6 +112,14 @@ public class ClaimResponseService {
                 party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
             }
         }
+
+        // Defendant disagreed with the claim-recorded address and supplied a different one,
+        // so addressSameAsProperty no longer holds. On YES we leave the claim-time value alone:
+        //   claim YES + def YES → property still applies                            ✓
+        //   claim NO  + def YES → claimant-typed (on party.address) still applies   ✓
+        if (defendantResponses.getCorrespondenceAddressConfirmation() == VerticalYesNo.NO) {
+            party.setAddressSameAsProperty(VerticalYesNo.NO);
+        }
     }
 
     /**
