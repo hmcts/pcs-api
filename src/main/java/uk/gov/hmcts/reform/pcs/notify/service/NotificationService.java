@@ -335,11 +335,8 @@ public class NotificationService {
         TemplatePersonalisation personalisation
     ) {
         PartyEntity party = recipient.party();
-        boolean isDefendantAndCannotSendEmail = party != null
-            && recipient.recipientRole() == PartyRole.DEFENDANT
-            && !partyService.canSendEmailNotification(party);
 
-        if (isDefendantAndCannotSendEmail) {
+        if (!partyService.canSendEmailNotification(party, recipient.recipientRole())) {
             log.info("Skipping email notification to user: {}", party.getId());
             return null;
         }

@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
@@ -1177,12 +1178,26 @@ class PartyServiceTest {
         void shouldReturnTrueWhenAllConditionsMet() {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress("test@example.com")
-                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                .contactPreferences(ContactPreferencesEntity.builder()
                     .contactByEmail(VerticalYesNo.YES)
                     .build())
                 .build();
 
-            boolean result = underTest.canSendEmailNotification(party);
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        void shouldReturnTrueForClaimantWhenEmailIsPresent() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress("test@example.com")
+                .contactPreferences(ContactPreferencesEntity.builder()
+                    .contactByEmail(VerticalYesNo.NO)
+                    .build())
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.CLAIMANT);
 
             assertThat(result).isTrue();
         }
@@ -1191,12 +1206,12 @@ class PartyServiceTest {
         void shouldReturnFalseWhenEmailIsNull() {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress(null)
-                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                .contactPreferences(ContactPreferencesEntity.builder()
                     .contactByEmail(VerticalYesNo.YES)
                     .build())
                 .build();
 
-            boolean result = underTest.canSendEmailNotification(party);
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
 
             assertThat(result).isFalse();
         }
@@ -1208,7 +1223,7 @@ class PartyServiceTest {
                 .contactPreferences(null)
                 .build();
 
-            boolean result = underTest.canSendEmailNotification(party);
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
 
             assertThat(result).isFalse();
         }
@@ -1217,12 +1232,12 @@ class PartyServiceTest {
         void shouldReturnFalseWhenContactByEmailIsNull() {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress("test@example.com")
-                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                .contactPreferences(ContactPreferencesEntity.builder()
                     .contactByEmail(null)
                     .build())
                 .build();
 
-            boolean result = underTest.canSendEmailNotification(party);
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
 
             assertThat(result).isFalse();
         }
@@ -1231,12 +1246,23 @@ class PartyServiceTest {
         void shouldReturnFalseWhenContactByEmailIsNo() {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress("test@example.com")
-                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                .contactPreferences(ContactPreferencesEntity.builder()
                     .contactByEmail(VerticalYesNo.NO)
                     .build())
                 .build();
 
-            boolean result = underTest.canSendEmailNotification(party);
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        void shouldReturnFalseForClaimantWhenEmailIsNull() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress(null)
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.CLAIMANT);
 
             assertThat(result).isFalse();
         }

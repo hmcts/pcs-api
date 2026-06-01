@@ -57,6 +57,7 @@ import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -476,6 +477,7 @@ class NotificationServiceTest {
             PartyEntity claimantParty = new PartyEntity();
             claimantParty.setEmailAddress(TEST_EMAIL);
             when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
+            when(partyService.canSendEmailNotification(any(), eq(PartyRole.CLAIMANT))).thenReturn(true);
 
             when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM))
                 .thenReturn(TEMPLATE_ID);
@@ -535,7 +537,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should send defendant response no counterclaim email")
         void shouldSendDefendantResponseNoCounterclaimEmail() {
-            when(partyService.canSendEmailNotification(any())).thenReturn(true);
+            when(partyService.canSendEmailNotification(any(), any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM))
                 .thenReturn(TEMPLATE_ID);
 
@@ -558,7 +560,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should send counterclaim payment required email")
         void shouldSendCounterclaimPaymentRequiredEmail() {
-            when(partyService.canSendEmailNotification(any())).thenReturn(true);
+            when(partyService.canSendEmailNotification(any(), any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(
                 EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED))
                 .thenReturn(TEMPLATE_ID);
@@ -581,7 +583,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should send counterclaim payment success email")
         void shouldSendCounterclaimPaymentSuccessEmail() {
-            when(partyService.canSendEmailNotification(any())).thenReturn(true);
+            when(partyService.canSendEmailNotification(any(), any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(
                 EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS))
                 .thenReturn(TEMPLATE_ID);
@@ -612,7 +614,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should send counterclaim no payment required email")
         void shouldSendCounterclaimNoPaymentRequiredEmail() {
-            when(partyService.canSendEmailNotification(any())).thenReturn(true);
+            when(partyService.canSendEmailNotification(any(), any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(
                 EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED))
                 .thenReturn(TEMPLATE_ID);
@@ -639,7 +641,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should NOT send email when canSendEmailNotification is false for defendant")
         void shouldNotSendEmailWhenCanSendEmailNotificationIsFalseForDefendant() {
-            when(partyService.canSendEmailNotification(any())).thenReturn(false);
+            when(partyService.canSendEmailNotification(any(), any())).thenReturn(false);
 
             EmailNotificationResponse response =
                 notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
@@ -655,6 +657,7 @@ class NotificationServiceTest {
             PartyEntity claimantParty = new PartyEntity();
             claimantParty.setEmailAddress(TEST_EMAIL);
             when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
+            when(partyService.canSendEmailNotification(any(), eq(PartyRole.CLAIMANT))).thenReturn(true);
 
             when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM))
                 .thenReturn(TEMPLATE_ID);
@@ -669,7 +672,7 @@ class NotificationServiceTest {
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
 
-            verify(partyService, never()).canSendEmailNotification(any());
+            verify(partyService).canSendEmailNotification(any(), eq(PartyRole.CLAIMANT));
             verify(templateConfiguration).getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM);
             verify(notificationRepository, times(2)).save(any());
             verify(schedulerClient).scheduleIfNotExists(any());
@@ -681,6 +684,8 @@ class NotificationServiceTest {
     class ClaimantDraftSavedForLaterTests {
         @BeforeEach
         void setUp() {
+            lenient().when(partyService.canSendEmailNotification(any(), eq(PartyRole.CLAIMANT)))
+                .thenReturn(true);
             lenient().when(notificationPersonalisationFactory.forClaimant(anyLong(), any()))
                 .thenReturn(ClaimantBasePersonalisation.builder()
                     .toLineClaimantName("Jane Smith")
