@@ -47,8 +47,13 @@ export class GlobalSearchCaseAction implements IAction {
   private async searchResults(page: Page): Promise<void> {
     const caseReference = String(process.env.CASE_NUMBER ?? '');
     const resultRow = page.locator('tr').filter({ hasText: caseReference });
+    const caseCell = resultRow.locator('td').first();
     await expect(page.getByRole('heading', { name: searchResults.mainHeader })).toBeVisible();
     await expect(resultRow).toContainText(caseReference);
+    await expect(caseCell).toContainText(caseReference);
+    const caseCellText = (await caseCell.innerText()).trim();
+    const caseNameText = caseCellText.replace(caseReference, '').trim();
+    expect(caseNameText.length).toBeGreaterThan(0); 
     await expect(resultRow).toContainText(searchResults.serviceLabel);  
     await expect(resultRow).toContainText(searchResults.stateLabel);
     await expect (resultRow).toContainText(searchResults.locationLabel);
