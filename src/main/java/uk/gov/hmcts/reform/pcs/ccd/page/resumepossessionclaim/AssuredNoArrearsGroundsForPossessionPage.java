@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
+
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -36,7 +38,7 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
             .page("assuredNoArrearsGroundsForPossession", this::midEvent)
             .pageLabel("What are your grounds for possession?")
             .showCondition("claimDueToRentArrears=\"No\" AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                             + " AND legislativeCountry=\"England\""
+                             + " AND " + ShowConditions.ENGLAND
             )
             .readonly(PCSCase::getShowRentSectionPage, NEVER_SHOW)
             .complex(PCSCase::getNoRentArrearsGroundsOptions)

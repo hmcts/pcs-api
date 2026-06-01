@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
+
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -42,7 +44,7 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
         pageBuilder
             .page(OCCUPATION_CONTRACT_DETAILS, this::midEvent)
             .pageLabel(OCCUPATION_CONTRACT_DETAILS_LABEL)
-            .showCondition("legislativeCountry=\"Wales\"")
+            .showCondition(ShowConditions.WALES)
             .complex(PCSCase::getOccupationLicenceDetailsWales)
             .label("OccupationLicenceDetailsWales-info", """
                 ---

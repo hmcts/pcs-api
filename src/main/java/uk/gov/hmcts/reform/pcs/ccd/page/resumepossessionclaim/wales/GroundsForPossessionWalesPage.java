@@ -34,7 +34,7 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
         pageBuilder
             .page("groundsForPossessionWales", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showCondition("legislativeCountry=\"Wales\" AND "
+            .showCondition(ShowConditions.WALES + " AND "
                 + "(occupationLicenceTypeWales=\"STANDARD_CONTRACT\" OR occupationLicenceTypeWales=\"OTHER\")")
             .label(
                 "groundsForPossessionWales-info",

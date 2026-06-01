@@ -34,7 +34,7 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
                 .pageLabel("What are your grounds for possession?")
                 .showCondition(
                         "occupationLicenceTypeWales=\"SECURE_CONTRACT\""
-                        + " AND legislativeCountry=\"Wales\""
+                        + " AND " + ShowConditions.WALES
                 )
                 .label("secureOrFlexibleGroundsForPossessionWales-info", """
                ---

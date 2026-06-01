@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -23,7 +25,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
         pageBuilder
             .page("walesCheckingNotice", this::midEvent)
             .pageLabel("Notice of your intention to begin possession proceedings")
-            .showCondition("legislativeCountry=\"Wales\"")
+            .showCondition(ShowConditions.WALES)
             .label("walesCheckingNotice-info",
                    """
                    ---

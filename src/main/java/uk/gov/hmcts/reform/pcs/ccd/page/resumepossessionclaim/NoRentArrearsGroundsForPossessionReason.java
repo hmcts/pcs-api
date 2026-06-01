@@ -39,7 +39,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .showCondition("claimDueToRentArrears=\"No\" "
                                + "AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                                + " AND noRentArrears_ShowGroundReasonPage=\"Yes\""
-                               + " AND legislativeCountry=\"England\"")
+                               + " AND " + ShowConditions.ENGLAND)
             .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsGroundsReasons)
             // Ground 1

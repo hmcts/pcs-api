@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
+
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -20,7 +22,7 @@ public class RentArrearsGroundsForPossessionPage implements CcdPageConfiguration
                 .pageLabel("Grounds for possession")
                 .showCondition("claimDueToRentArrears=\"Yes\""
                                +  " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND legislativeCountry=\"England\"")
+                               + " AND " + ShowConditions.ENGLAND)
                 .complex(PCSCase::getAssuredRentArrearsPossessionGrounds)
                 .label("groundForPossessionRentArrears-info", """
                 ---

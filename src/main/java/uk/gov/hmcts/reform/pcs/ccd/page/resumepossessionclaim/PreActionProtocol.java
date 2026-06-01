@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
+
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -63,7 +65,7 @@ public class PreActionProtocol implements CcdPageConfiguration {
                   </section>
 
                   """,
-                        "legislativeCountry=\"England\"")
+                        ShowConditions.ENGLAND)
                 .label("preActionProtocol-info-wales",
                         """
                   ---
@@ -101,11 +103,11 @@ public class PreActionProtocol implements CcdPageConfiguration {
                   </section>
 
                   """,
-                        "legislativeCountry=\"Wales\"")
+                        ShowConditions.WALES)
                 .mandatoryWithLabel(PCSCase::getPreActionProtocolCompleted,
                         "Have you followed the pre-action protocol?")
                 .mandatory(PCSCase::getPreActionProtocolIncompleteExplanation,
-                           "legislativeCountry=\"England\" AND "
+                           ShowConditions.ENGLAND + " AND "
                                + "preActionProtocolCompleted=\"NO\"")
                 .label("preActionProtocol-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
