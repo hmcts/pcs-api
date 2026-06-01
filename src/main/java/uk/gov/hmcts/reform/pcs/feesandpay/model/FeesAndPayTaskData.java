@@ -24,4 +24,6 @@ public class FeesAndPayTaskData {
 
     private final PaymentCallbackHandlerType paymentCallbackHandlerType;
 
+    private final UUID relatedEntityId;
+
 }
