@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -76,7 +77,10 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
         PCSCase caseData = caseDetails.getData();
         LegalRepDocumentUploadDetails caseLegalRepDocs = caseData.getLegalRepDocumentUploadDetails();
 
-        List<String> errors = validateDocumentDescription(caseLegalRepDocs.getLegalRepDocuments(), DESCRIPTION_LABEL);
+        List<String> errors = new ArrayList<>();
+
+        errors.addAll(validateDocumentDescription(caseLegalRepDocs.getLegalRepDocuments(), DESCRIPTION_LABEL));
+        errors.addAll(validateDocumentFileTypes(caseLegalRepDocs.getLegalRepDocuments()));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
@@ -99,4 +103,32 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
         }
         return validationErrorsList;
     }
+
+    public List<String> validateDocumentFileTypes(
+        List<ListValue<LegalRepDocument>> legalRepDocuments) {
+
+        List<String> validationErrorsList = new ArrayList<>();
+
+        List<String> fileTypes = List.of(".docx", ".doc", ".xlsm", ".xls", ".ppt",".pptx",".pdf",".rtf",
+                                         ".txt", ".csv", ".png", ".jpg", ".jpeg", ".bmp", ".tif", "tiff");
+
+        for (int i = 0; i < legalRepDocuments.size(); i++) {
+            String documentFileName = legalRepDocuments.get(i).getValue().getDocument().getFilename();
+
+            if(documentFileName != null){
+                String lowercaseFileName = documentFileName.toLowerCase();
+
+                Boolean isDocumentTypeValid = fileTypes.stream().anyMatch(lowercaseFileName::endsWith);
+
+                if (!isDocumentTypeValid) {
+                    validationErrorsList.add(
+                        "Document %d has an invalid file format (%s). Please upload an allowed format."
+                            .formatted(i + 1, lowercaseFileName)
+                    );
+                }
+            }
+        }
+        return validationErrorsList;
+    }
+
 }
