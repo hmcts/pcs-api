@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IndividualOrOrganisation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -190,7 +191,12 @@ public class PartyService {
         VerticalYesNo nameKnown = underlesseeMortgageeDetails.getNameKnown();
         underlesseeMortgageeEntity.setNameKnown(nameKnown);
         if (nameKnown == VerticalYesNo.YES) {
-            underlesseeMortgageeEntity.setOrgName(underlesseeMortgageeDetails.getName());
+            if (underlesseeMortgageeDetails.getPartyType() == IndividualOrOrganisation.INDIVIDUAL) {
+                underlesseeMortgageeEntity.setFirstName(underlesseeMortgageeDetails.getFirstName());
+                underlesseeMortgageeEntity.setLastName(underlesseeMortgageeDetails.getLastName());
+            } else {
+                underlesseeMortgageeEntity.setOrgName(underlesseeMortgageeDetails.getOrganisationName());
+            }
         }
 
         VerticalYesNo addressKnown = underlesseeMortgageeDetails.getAddressKnown();
