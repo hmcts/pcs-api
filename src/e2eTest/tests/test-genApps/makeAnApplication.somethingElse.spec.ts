@@ -16,9 +16,12 @@ import {
   askTheCourtToMakeAnOrder, chooseAnApplication,
   doYouWantToUploadDocumentsToSupportDefendantsApplication,
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
-  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy
+  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty,
+  statementOfTruth, whatOrderDoYouWantTheCourtToMakeAndWhy,
+  whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
+
 
 test.use({ storageState: undefined });
 
@@ -101,5 +104,11 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
     });
     await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
+    await performAction('clickButton', doYouWantToUploadDocumentsToSupportDefendantsApplication.continueButton);
+    await performAction('selectLanguageUsedToComplete', {
+      question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
+      option: whichLanguageDidYouUseToCompleteThisService.englishAndWelshRadioOption,
+    });
+    await performValidation('mainHeader', statementOfTruth.mainHeader);
   });
 });
