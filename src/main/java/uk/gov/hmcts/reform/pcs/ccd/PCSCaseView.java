@@ -44,6 +44,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Arrays;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -116,15 +117,37 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private SearchCriteria buildSearchCriteriaForIndexing(PCSCase pcsCase) {
-        List<SearchParty> searchParties = Optional.ofNullable(pcsCase.getParties())
-            .orElse(List.of())
-            .stream()
-            .map(ListValue::getValue)
-            .map(this::toSearchParty)
-            .toList();
+        List<SearchParty> searchParties = new ArrayList<>(
+            Optional.ofNullable(pcsCase.getParties())
+                .orElse(List.of())
+                .stream()
+                .map(ListValue::getValue)
+                .map(this::toSearchParty)
+                .toList());
+
+        // Global search only indexes postcodes that appear on a SearchParty.
+        // We add the property to be repossessed address as an extra SearchParty here to make it searchable.
+        SearchParty propertySearchParty = toPropertySearchParty(pcsCase.getPropertyAddress());
+        if (propertySearchParty != null) {
+            searchParties.add(propertySearchParty);
+        }
 
         return SearchCriteria.builder()
             .parties(ListValueUtils.wrapListItems(searchParties))
+            .build();
+    }
+
+    private SearchParty toPropertySearchParty(AddressUK propertyAddress) {
+        if (propertyAddress == null
+            || propertyAddress.getPostCode() == null
+            || propertyAddress.getPostCode().isBlank()) {
+            return null;
+        }
+
+        return SearchParty.builder()
+            .collectionFieldName("parties")
+            .addressLine1(propertyAddress.getAddressLine1())
+            .postcode(propertyAddress.getPostCode())
             .build();
     }
 
