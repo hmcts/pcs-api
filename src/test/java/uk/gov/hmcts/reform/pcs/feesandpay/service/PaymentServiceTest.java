@@ -253,7 +253,7 @@ class PaymentServiceTest {
             // Then
             verify(feePaymentRepository).findByRequestReference(requestReference);
             verify(feePaymentRepository, never()).save(any(FeePaymentEntity.class));
-    }
+        }
 
         @Test
         void shouldCallPaymentCallbackStrategyWhenStrategyExistsForJourneyId() {

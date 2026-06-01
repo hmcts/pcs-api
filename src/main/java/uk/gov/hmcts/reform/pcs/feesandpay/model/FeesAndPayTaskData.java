@@ -11,8 +11,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class FeesAndPayTaskData {
 
-    private final String feeType;
-
     private final FeeDetails feeDetails;
 
     private final long caseReference;

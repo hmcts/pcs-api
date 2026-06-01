@@ -10,7 +10,7 @@ import java.util.UUID;
 @Data
 @Builder(toBuilder = true)
 @AllArgsConstructor
-public class EmailState {
+public class SendEmailTaskData {
 
     private final String id;
     private final String emailAddress;

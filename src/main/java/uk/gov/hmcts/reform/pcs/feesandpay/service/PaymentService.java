@@ -92,7 +92,6 @@ public class PaymentService {
         FeesAndPayTaskData feesAndPayTaskData = FeesAndPayTaskData.builder()
             .caseReference(caseReference)
             .feeDetails(feeDetails)
-            .feeType(feeType.getCode())
             .ccdCaseNumber(Long.toString(caseReference))
             .responsiblePartyId(responsibleParty.getId())
             .paymentCallbackHandlerType(GEN_APP_ISSUE)
