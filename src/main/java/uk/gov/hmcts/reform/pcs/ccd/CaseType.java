@@ -146,7 +146,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("summary", "Summary")
             .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
             .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
-            .label("Summary", null, "## Summary")
+            .label("Summary", null, "# Summary")
             .field("summaryTab_RepossessedPropertyAddress")
             .field("summaryTab_GroundsForPossession")
             .field("summaryTab_ReasonsForPossession")
