@@ -23,12 +23,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
@@ -47,6 +48,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
@@ -58,6 +60,7 @@ class PaymentServiceTest {
     private static final String CCD_CASE_NUMBER = "1111-2222-3333-4444";
     private static final int VOLUME = 2;
     private static final String RESPONSIBLE_PARTY = "Applicant";
+    private static final UUID RESPONSIBLE_PARTY_ID = UUID.randomUUID();
     private static final String SYSTEM_TOKEN = "Bearer sys-token";
     private static final BigDecimal CALCULATED_AMOUNT = new BigDecimal("808.00");
     private static final String SERVICE_REQUEST_REFERENCE = "SR-123";
@@ -74,6 +77,8 @@ class PaymentServiceTest {
     private FeePaymentRepository feePaymentRepository;
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private PartyService partyService;
     @Mock
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
 
@@ -104,6 +109,8 @@ class PaymentServiceTest {
         when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
             .thenReturn(expectedResponse);
         FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
+
+        stubResponsibleParty();
 
         // When
         PaymentServiceResponse result = underTest.createServiceRequest(feesAndPayTaskData);
@@ -169,7 +176,7 @@ class PaymentServiceTest {
 
         // Then
         verify(feePaymentRepository).findByRequestReference(requestReference);
-        verify(feePaymentRepository, org.mockito.Mockito.never()).save(any(FeePaymentEntity.class));
+        verify(feePaymentRepository, never()).save(any(FeePaymentEntity.class));
     }
 
     @Test
@@ -179,10 +186,6 @@ class PaymentServiceTest {
         FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
         String asString = objectMapper.writeValueAsString(feesAndPayTaskData);
         ClaimEntity claimEntity = new ClaimEntity();
-        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID())
-            .orgName(feesAndPayTaskData.getResponsibleParty()).build();
-        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder().claim(claimEntity).party(partyEntity).build();
-        claimEntity.setClaimParties(List.of(claimPartyEntity));
 
         // When
         underTest.saveNewFeePayment(asString, feesAndPayTaskData, claimEntity, SERVICE_REQUEST_REFERENCE);
@@ -207,6 +210,8 @@ class PaymentServiceTest {
         when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
             .thenReturn(createPaymentServiceResponse());
         FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
+
+        stubResponsibleParty();
 
         // When
         underTest.createServiceRequest(feesAndPayTaskData);
@@ -295,6 +300,7 @@ class PaymentServiceTest {
         setPrivateField(underTest, "objectMapper", mapper);
         FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
         paymentsClientDependencies(feeDetails);
+        stubResponsibleParty();
 
         // When / Then
         assertThatExceptionOfType(PaymentException.class)
@@ -376,7 +382,7 @@ class PaymentServiceTest {
             .feeDetails(feeDetails)
             .caseReference(CASE_REFERENCE)
             .volume(VOLUME)
-            .responsibleParty(RESPONSIBLE_PARTY)
+            .responsiblePartyId(RESPONSIBLE_PARTY_ID)
             .paymentCallbackHandlerType(CLAIM)
             .build();
     }
@@ -385,6 +391,13 @@ class PaymentServiceTest {
         return FeeDetails.builder().feeAmount(CALCULATED_AMOUNT)
             .code("FEE123")
             .build();
+    }
+
+    private void stubResponsibleParty() {
+        PartyEntity responsiblePartyEntity = mock(PartyEntity.class);
+        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE))
+            .thenReturn(responsiblePartyEntity);
+        when(partyService.getPartyName(responsiblePartyEntity)).thenReturn(RESPONSIBLE_PARTY);
     }
 
 }
