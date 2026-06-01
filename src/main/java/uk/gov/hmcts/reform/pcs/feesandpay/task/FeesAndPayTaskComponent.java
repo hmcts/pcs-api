@@ -18,10 +18,10 @@ import java.time.Duration;
 @Component
 public class FeesAndPayTaskComponent {
 
-    private static final String FEES_AND_PAY_CASE_ISSUED_TASK_NAME = "fees-and-pay-task";
+    private static final String FEES_AND_PAY_TASK_NAME = "fees-and-pay-task";
 
-    public static final TaskDescriptor<FeesAndPayTaskData> FEE_CASE_ISSUED_TASK_DESCRIPTOR =
-        TaskDescriptor.of(FEES_AND_PAY_CASE_ISSUED_TASK_NAME, FeesAndPayTaskData.class);
+    public static final TaskDescriptor<FeesAndPayTaskData> FEES_AND_PAY_TASK_DESCRIPTOR =
+        TaskDescriptor.of(FEES_AND_PAY_TASK_NAME, FeesAndPayTaskData.class);
 
     private final PaymentService paymentService;
     private final int maxRetriesFeesAndPay;
@@ -46,20 +46,20 @@ public class FeesAndPayTaskComponent {
      */
     @Bean
     public CustomTask<FeesAndPayTaskData> feePaymentTask() {
-        return Tasks.custom(FEE_CASE_ISSUED_TASK_DESCRIPTOR)
+        return Tasks.custom(FEES_AND_PAY_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetriesFeesAndPay,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(feesAndPayBackoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
                 FeesAndPayTaskData taskData = taskInstance.getData();
-                log.debug("Executing fee service request for fee type: {}", taskData.getFeeType());
+                log.debug("Executing fee service request for fee details: {}", taskData.getFeeDetails());
                 try {
                     paymentService.createServiceRequest(taskData);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
-                    log.error("Failed to create fee service request for type: {}. Attempt {}/{}",
-                                taskData.getFeeType(),
+                    log.error("Failed to create fee service request for fee details: {}. Attempt {}/{}",
+                                taskData.getFeeDetails(),
                                 executionContext.getExecution().consecutiveFailures + 1,
                                 maxRetriesFeesAndPay,
                                 e);
