@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -364,6 +365,7 @@ public class ClaimGroundSummaryBuilder {
                     .label(ground.getLabel())
                     .reason(getDraftReason(draftCaseData, ground))
                     .description(getDescription(draftCaseData, ground))
+                    .isRentArrears(YesOrNo.from(isRentArrearsGround(draftCaseData, ground)))
                     .build())
                 .map(summary -> ListValue.<ClaimGroundSummary>builder().value(summary).build())
                 .forEach(summaries::add);
@@ -387,10 +389,29 @@ public class ClaimGroundSummaryBuilder {
                     .code(((Enum<?>) ground).name())
                     .label(ground.getLabel())
                     .reason(getSecureWalesEstateManagementDraftReason(draftCaseData, ground))
+                    .isRentArrears(YesOrNo.from(isRentArrearsGround(draftCaseData, ground)))
                     .build())
                 .map(summary -> ListValue.<ClaimGroundSummary>builder().value(summary).build())
                 .forEach(summaries::add);
         }
+    }
+
+    private boolean isRentArrearsGround(PCSCase draftCaseData, PossessionGroundEnum ground) {
+        return ground == AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8
+            || ground == AssuredDiscretionaryGround.RENT_ARREARS_GROUND10
+            || ground == AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11
+            || ground == IntroductoryDemotedOrOtherGrounds.RENT_ARREARS
+            || ground == MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181
+            || ground == MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187
+            || ground == DiscretionaryGroundWales.RENT_ARREARS_S157
+            || ground == SecureContractDiscretionaryGroundsWales.RENT_ARREARS_S157
+            || isSecureOrFlexibleRentArrearsGround(draftCaseData, ground);
+    }
+
+    private boolean isSecureOrFlexibleRentArrearsGround(PCSCase draftCaseData, PossessionGroundEnum ground) {
+        return ground == SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY
+            && !CollectionUtils.isEmpty(draftCaseData.getRentArrearsOrBreachOfTenancy())
+            && draftCaseData.getRentArrearsOrBreachOfTenancy().contains(RentArrearsOrBreachOfTenancy.RENT_ARREARS);
     }
 
     private String getDescription(PCSCase draftCaseData, PossessionGroundEnum ground) {

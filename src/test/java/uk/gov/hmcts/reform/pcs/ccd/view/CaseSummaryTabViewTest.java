@@ -172,8 +172,10 @@ public class CaseSummaryTabViewTest {
 
         when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(
             DefendantInformationTabDetails.builder()
+                .nameKnown("Yes")
                 .firstName("Defendant")
                 .lastName("One")
+                .addressKnown("Yes")
                 .addressForService(propertyAddress)
                 .build()
         );
@@ -215,8 +217,10 @@ public class CaseSummaryTabViewTest {
             .isEqualTo("Additional reasons");
         assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
         assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Fallback claimant");
+        assertThat(summaryTab.getDefendantDetails().getNameKnown()).isEqualTo("Yes");
         assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("One");
+        assertThat(summaryTab.getDefendantDetails().getAddressKnown()).isEqualTo("Yes");
         assertThat(summaryTab.getDefendantDetails().getAddressForService()).isEqualTo(propertyAddress);
         assertThat(summaryTab.getAdditionalDefendants()).hasSize(2);
         assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getFirstName()).isEqualTo("Defendant");
