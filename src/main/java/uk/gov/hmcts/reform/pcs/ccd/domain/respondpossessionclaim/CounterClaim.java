@@ -64,6 +64,6 @@ public class CounterClaim {
     private List<ListValue<Party>> counterClaimAgainst;
 
     @CCD(access = {CitizenAccess.class})
-    private CounterClaimState state;
+    private CounterClaimStatus status;
 
 }

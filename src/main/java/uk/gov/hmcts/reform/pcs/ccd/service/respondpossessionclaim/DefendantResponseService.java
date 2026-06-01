@@ -6,9 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -55,6 +54,7 @@ public class DefendantResponseService {
     private final HouseholdCircumstancesService householdCircumstancesService;
     private final PaymentAgreementService paymentAgreementService;
     private final DocumentService documentService;
+    private final PartyAttributeAssertationService partyAttributeAssertationService;
     private final Clock utcClock;
 
     public DefendantResponseService(PartyService partyService,
@@ -66,6 +66,7 @@ public class DefendantResponseService {
                                     HouseholdCircumstancesService householdCircumstancesService,
                                     PaymentAgreementService paymentAgreementService,
                                     DocumentService documentService,
+                                    PartyAttributeAssertationService partyAttributeAssertationService,
                                     @Qualifier("utcClock") Clock utcClock) {
         this.partyService = partyService;
         this.partyRepository = partyRepository;
@@ -76,6 +77,7 @@ public class DefendantResponseService {
         this.householdCircumstancesService = householdCircumstancesService;
         this.paymentAgreementService = paymentAgreementService;
         this.documentService = documentService;
+        this.partyAttributeAssertationService = partyAttributeAssertationService;
         this.utcClock = utcClock;
     }
 
@@ -101,7 +103,10 @@ public class DefendantResponseService {
      * @throws IllegalStateException if user ID is null, response already exists,
      *         party not found, or claim not found
      */
-    public void saveDefendantResponse(long caseReference, PossessionClaimResponse possessionClaimResponse) {
+    public void saveDefendantResponse(
+        long caseReference,
+        PossessionClaimResponse possessionClaimResponse
+    ) {
         UUID userId = securityContextService.getCurrentUserId();
 
         if (userId == null) {
@@ -149,6 +154,8 @@ public class DefendantResponseService {
             );
         }
 
+        partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, partyRef);
+
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
     }
 
@@ -157,14 +164,12 @@ public class DefendantResponseService {
                                                                 DefendantResponses responses,
                                                                 LocalDateTime submittedAt) {
 
-        YesNoNotSure tenancyStartDateConfirmation = responses.getTenancyStartDateConfirmation();
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
             .status(DefendantResponseStatus.SUBMITTED)
             .responseSubmittedDate(submittedAt)
             .freeLegalAdvice(responses.getFreeLegalAdvice())
-            .possessionNoticeReceived(responses.getPossessionNoticeReceived())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())
@@ -172,15 +177,9 @@ public class DefendantResponseService {
             .disputeClaim(responses.getDisputeClaim())
             .disputeClaimDetails(responses.getDisputeClaimDetails())
             .makeCounterClaim(responses.getMakeCounterClaim())
+            .tenancyStartDateConfirmation(responses.getTenancyStartDateConfirmation())
             .tenancyTypeConfirmation(responses.getTenancyTypeConfirmation())
-            .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
-            .tenancyStartDate(
-                responses.getTenancyStartDate() != null && tenancyStartDateConfirmation != YesNoNotSure.NOT_SURE
-                    ? responses.getTenancyStartDate()
-                    : null
-            )
             .landlordLicensed(responses.getLandlordLicensed())
-            .noticeReceivedDate(responses.getNoticeReceivedDate())
             .rentArrearsAmountConfirmation(responses.getRentArrearsAmountConfirmation())
             .languageUsed(responses.getLanguageUsed())
             .otherConsiderations(responses.getOtherConsiderations())
@@ -243,7 +242,7 @@ public class DefendantResponseService {
             .needHelpWithFees(cc.getNeedHelpWithFees())
             .appliedForHwf(cc.getAppliedForHwf())
             .hwfReferenceNumber(cc.getHwfReferenceNumber())
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
             .claimSubmittedDate(submittedAt)
             .party(partyRef)
             .build();

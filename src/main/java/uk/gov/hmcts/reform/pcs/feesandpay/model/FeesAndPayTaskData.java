@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -17,16 +18,16 @@ public class FeesAndPayTaskData implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private String feeType;
-
     private FeeDetails feeDetails;
 
-    private String caseReference;
+    private long caseReference;
 
     private String ccdCaseNumber;
 
     @Builder.Default
     private Integer volume = 1;
 
-    private String responsibleParty;
+    private UUID responsiblePartyId;
+
+    private PaymentCallbackHandlerType paymentCallbackHandlerType;
 }
