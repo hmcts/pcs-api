@@ -388,12 +388,13 @@ public class NotificationService {
     }
 
     private NotificationRecipient partyRecipient(PartyEntity party) {
+        PartyRole partyRole = partyService.getPartyRole(party);
         return new NotificationRecipient(
             party.getEmailAddress(),
             party,
             party.getPcsCase(),
             null,
-            null
+            partyRole
         );
     }
 

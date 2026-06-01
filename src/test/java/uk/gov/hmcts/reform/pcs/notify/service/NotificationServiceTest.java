@@ -702,7 +702,8 @@ class NotificationServiceTest {
 
             PartyEntity applicantPartyEntity = mock(PartyEntity.class);
             when(genAppEntity.getParty()).thenReturn(applicantPartyEntity);
-            when(partyService.canSendEmailNotification(applicantPartyEntity, null)).thenReturn(true);
+            when(partyService.getPartyRole(applicantPartyEntity)).thenReturn(PartyRole.DEFENDANT);
+            when(partyService.canSendEmailNotification(applicantPartyEntity, PartyRole.DEFENDANT)).thenReturn(true);
             when(applicantPartyEntity.getEmailAddress()).thenReturn(expectedEmailAddress);
 
             BasePersonalisation personalisation = mock(BasePersonalisation.class);
@@ -735,7 +736,8 @@ class NotificationServiceTest {
             GenAppEntity genAppEntity = mock(GenAppEntity.class);
             PartyEntity applicantParty = mock(PartyEntity.class);
             when(genAppEntity.getParty()).thenReturn(applicantParty);
-            when(partyService.canSendEmailNotification(applicantParty, null)).thenReturn(false);
+            when(partyService.getPartyRole(applicantParty)).thenReturn(PartyRole.DEFENDANT);
+            when(partyService.canSendEmailNotification(applicantParty, PartyRole.DEFENDANT)).thenReturn(false);
 
             // When
             notificationService.sendGenAppReceivedEmail(genAppEntity);
@@ -1043,6 +1045,7 @@ class NotificationServiceTest {
         return notification;
     }
 
+    @SuppressWarnings("SameParameterValue")
     private PartyEntity createParty(String firstName, String lastName, String email) {
         PartyEntity party = new PartyEntity();
         party.setFirstName(firstName);
@@ -1061,32 +1064,7 @@ class NotificationServiceTest {
         return pcsCase;
     }
 
-    private PaymentAgreementEntity createPaymentAgreement() {
-        PaymentAgreementEntity paymentAgreement = new PaymentAgreementEntity();
-        paymentAgreement.setId(UUID.randomUUID());
-        paymentAgreement.setAnyPaymentsMade(VerticalYesNo.YES);
-        return paymentAgreement;
-    }
-
-    private DefendantResponseEntity createDefendantResponse() {
-        DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
-        defendantResponse.setId(UUID.randomUUID());
-        defendantResponse.setParty(createParty());
-        defendantResponse.setPcsCase(createCase());
-        defendantResponse.setPaymentAgreement(createPaymentAgreement());
-
-        ClaimEntity claim = new ClaimEntity();
-        PartyEntity claimantParty = createParty("Jane", "Smith", "claimant@example.com");
-        ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
-            .party(claimantParty)
-            .role(PartyRole.CLAIMANT)
-            .build();
-        claim.setClaimParties(new ArrayList<>(List.of(claimParty)));
-        defendantResponse.setClaim(claim);
-
-        return defendantResponse;
-    }
-
+    @SuppressWarnings("SameParameterValue")
     private PCSCase createPcsCase(
         VerticalYesNo emailFlag,
         String claimantEmail,

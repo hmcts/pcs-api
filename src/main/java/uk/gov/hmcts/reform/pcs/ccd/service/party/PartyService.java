@@ -112,6 +112,15 @@ public class PartyService {
             && preferences.getContactByEmail().toBoolean();
     }
 
+    public PartyRole getPartyRole(PartyEntity partyEntity) {
+        ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
+        return mainClaim.getClaimParties().stream()
+            .filter(claimPartyEntity -> claimPartyEntity.getParty().getId().equals(partyEntity.getId()))
+            .findFirst()
+            .map(ClaimPartyEntity::getRole)
+            .orElseThrow(() -> new PartyNotFoundException("Party not found on main claim"));
+    }
+
     private PartyEntity createClaimant(PCSCase pcsCase) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
