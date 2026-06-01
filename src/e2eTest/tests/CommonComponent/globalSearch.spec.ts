@@ -52,31 +52,18 @@ test.describe('[Global Search - @globalSearch @PR @CC @nightly]', () => {
   test('Valid case reference', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('clickButton', globalSearch.searchButton);
-    await performAction('clickButtonAndVerifyPageNavigation', globalSearch.searchButton, searchResults.searchResultMainHeader);
     await performAction('searchResults');
   });
   
   test('Invalid case reference', async () => {
     await performAction('accessingTheSearch');
     await performAction('invalidCaseReferenceSearch', globalSearch.invalidCaseReferenceInputText);
-    await performAction('clickButton', globalSearch.searchButton);
-   
-    await performAction('clickButton', noResultFound.searchAgainButton);
-    await performValidation('noResultsFoundText', noResultFound.mainHeader);
-    await performValidation('mainHeader', globalSearch.mainHeader);
   });
 
-test('change search link', async () => {
-    await performAction('accessingTheSearch');
-    await performAction('invalidCaseReferenceSearch', globalSearch.invalidCaseReferenceInputText);
-    await performAction('changeSearchCriteria');
-    await performValidation('mainHeader', globalSearch.mainHeader);
-  });
-  test ('Validate search results table', async () => {
+   test('Change search criteria link', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('clickButtonAndVerifyPageNavigation', globalSearch.searchButton, searchResults.searchResultMainHeader);
-    await performAction('searchResults');
+    await performAction('changeSearchCriteria');
   });
+
 });

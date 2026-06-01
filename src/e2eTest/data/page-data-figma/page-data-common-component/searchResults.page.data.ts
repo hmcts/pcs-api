@@ -1,9 +1,8 @@
 export const searchResults = {
-    searchResultMainHeader: 'Search results',
+    mainHeader: 'Search results',
     changeSearchLink: 'Change search',
     caseColumnHeader: 'Case',
-    caseNameLabel: 'Possesion Claims Soliitor Org vs persons unknown',
-    //caseNumberLabel: '1710487227220264',
+    //caseNameLabel: 'Possession Claims Solicitor Org vs vs Doe and Others 1780318088516869 Possession Claims  Pending Case Issued    View',
     serviceColumnHeader: 'Service',
     serviceLabel: 'Possession Claims',
     stateColumnHeader: 'State',
