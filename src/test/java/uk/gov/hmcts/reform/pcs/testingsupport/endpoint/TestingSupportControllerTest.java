@@ -19,8 +19,6 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -34,7 +32,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
-import uk.gov.hmcts.reform.pcs.testingsupport.service.EntityTestStatusService;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -78,8 +75,6 @@ class TestingSupportControllerTest {
     @Mock
     private IdamAuthenticator idamAuthenticator;
     @Mock
-    private EntityTestStatusService entityTestStatusService;
-    @Mock
     private User user;
     @Mock
     private UserInfo userInfo;
@@ -95,8 +90,7 @@ class TestingSupportControllerTest {
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
-                                                 idamAuthenticator,
-                                                 entityTestStatusService
+                                                 idamAuthenticator
         );
     }
 
@@ -405,44 +399,6 @@ class TestingSupportControllerTest {
         assertEquals("CREATED", body.get("status"));
         assertEquals(caseIdValue, body.get(caseIdKey));
         assertThat(HttpStatus.CREATED.equals(response.getStatusCode()));
-    }
-
-    @Test
-    void shouldUpdateCounterClaimStatus() {
-        // Given
-        UUID counterClaimId = UUID.randomUUID();
-        CounterClaimStatus status = CounterClaimStatus.COUNTER_CLAIM_ISSUED;
-        String serviceAuth = "Bearer s2sToken";
-
-        // When
-        ResponseEntity<Void> response = underTest.updateCounterClaimStatus(
-            serviceAuth,
-            counterClaimId,
-            status
-        );
-
-        // Then
-        verify(entityTestStatusService).updateCounterClaimStatus(counterClaimId, status);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    }
-
-    @Test
-    void shouldUpdateDefendantResponseStatus() {
-        // Given
-        UUID defendantResponseId = UUID.randomUUID();
-        DefendantResponseStatus status = DefendantResponseStatus.SUBMITTED;
-        String serviceAuth = "Bearer s2sToken";
-
-        // When
-        ResponseEntity<Void> response = underTest.updateDefendantResponseStatus(
-            serviceAuth,
-            defendantResponseId,
-            status
-        );
-
-        // Then
-        verify(entityTestStatusService).updateDefendantResponseStatus(defendantResponseId, status);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName) {
