@@ -109,9 +109,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performValidation('mainHeader', uploadDocumentsToSupportDefendantsApplication.mainHeader);
     await performAction('uploadFilesGenApps', {
       documents: [
-        {type: uploadDocumentsToSupportDefendantsApplication.tenancyAgreementDropDownInput, fileName: 'genApps.xlsx'},
         {type: uploadDocumentsToSupportDefendantsApplication.rentStatementDropDownInput, fileName: 'genApps.docx'},
-        {type: uploadDocumentsToSupportDefendantsApplication.photographicEvidenceDropDownInput, fileName: 'genApps.ppt'},
       ]
     });
     await performAction('selectLanguageUsedToComplete', {

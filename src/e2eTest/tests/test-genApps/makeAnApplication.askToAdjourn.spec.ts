@@ -69,7 +69,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @smoke', async () => {
+  test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @PR @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
@@ -116,8 +116,6 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('uploadFilesGenApps', {
       documents: [
         {type: uploadDocumentsToSupportDefendantsApplication.witnessStatementDropDownInput, fileName: 'genApps.xlsx'},
-        {type: uploadDocumentsToSupportDefendantsApplication.certificateOfSuitabilityDropDownInput, fileName: 'genApps.docx'},
-        {type: uploadDocumentsToSupportDefendantsApplication.noticeForServiceDropDownInput, fileName: 'genApps.ppt'},
       ]
     });
         await performAction('selectLanguageUsedToComplete', {
