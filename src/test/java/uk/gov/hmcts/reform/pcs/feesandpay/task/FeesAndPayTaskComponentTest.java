@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
@@ -31,7 +30,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -69,9 +68,8 @@ class FeesAndPayTaskComponentTest {
         when(executionContext.getExecution()).thenReturn(execution);
     }
 
-    private FeesAndPayTaskData buildTaskData(String feeType, FeeDetails feeDetails) {
+    private FeesAndPayTaskData buildTaskData(FeeDetails feeDetails) {
         return FeesAndPayTaskData.builder()
-            .feeType(feeType)
             .feeDetails(feeDetails)
             .caseReference(123)
             .ccdCaseNumber("1111-2222-3333-4444")
@@ -87,9 +85,9 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should create task descriptor with correct name and type")
         void shouldCreateTaskDescriptorWithCorrectNameAndType() {
-            assertThat(FEE_CASE_ISSUED_TASK_DESCRIPTOR.getTaskName())
+            assertThat(FEES_AND_PAY_TASK_DESCRIPTOR.getTaskName())
                 .isEqualTo("fees-and-pay-task");
-            assertThat(FEE_CASE_ISSUED_TASK_DESCRIPTOR.getDataClass())
+            assertThat(FEES_AND_PAY_TASK_DESCRIPTOR.getDataClass())
                 .isEqualTo(FeesAndPayTaskData.class);
         }
 
@@ -109,7 +107,7 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should create service request with fee details")
         void shouldCreateServiceRequestWithFeeDetails() {
             FeeDetails feeDetails = mock(FeeDetails.class);
-            FeesAndPayTaskData data = buildTaskData("some fee type", feeDetails);
+            FeesAndPayTaskData data = buildTaskData(feeDetails);
             when(taskInstance.getData()).thenReturn(data);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feePaymentTask();
@@ -129,7 +127,7 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should rethrow exception when payment service call fails")
         void shouldThrowFeeNotFoundExceptionWhenApiCallFails() {
             FeeDetails feeDetails = mock(FeeDetails.class);
-            FeesAndPayTaskData data = buildTaskData(FeeType.CASE_ISSUE_FEE.getCode(), feeDetails);
+            FeesAndPayTaskData data = buildTaskData(feeDetails);
             when(taskInstance.getData()).thenReturn(data);
 
             FeignException exception = mock(FeignException.class);
