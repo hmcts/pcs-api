@@ -8,5 +8,6 @@ export const home =
     caseParties: 'Case Parties',
     globalSearchTab: 'Search',
     caseNotes: 'Notes',
+    caseSummary: 'Summary',
     signOutButton: 'Sign out'
   };
