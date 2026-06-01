@@ -31,10 +31,10 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
 
                     <p class="govuk-body govuk-!-margin-bottom-0">For example, you can share:</p>
                     <ul class="govuk-list govuk-list--bullet">
-                        <li class="govuk-!-font-size-19">evidence that a judge has asked for, like a bank statements
+                        <li class="govuk-!-font-size-19">evidence that a judge has asked for, like bank statements
                         showing your rent payments
                         </li>
-                        <li class="govuk-!-font-size-19">photographs of the property in a state of disrepair, like a
+                        <li class="govuk-!-font-size-19">photographs of the property in a state of disrepair, like
                         damp in the bathroom</li>
                        <li class="govuk-!-font-size-19">a report from an electrician or a plumber, showing evidence of
                        a repair that needs to be done</li>
