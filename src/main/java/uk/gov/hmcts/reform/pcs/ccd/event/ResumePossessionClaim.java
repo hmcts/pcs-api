@@ -51,7 +51,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
 @Slf4j
 @Component
@@ -208,7 +208,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private FeeDetails scheduleCaseIssueFeePayment(long caseReference, UUID responsiblePartyId) {
         FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeType(FeeType.CASE_ISSUE_FEE.getCode())
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(caseReference)
@@ -217,7 +216,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
 
         schedulerClient.scheduleIfNotExists(
-            FEE_CASE_ISSUED_TASK_DESCRIPTOR
+            FEES_AND_PAY_TASK_DESCRIPTOR
                 .instance(UUID.randomUUID().toString())
                 .data(taskData)
                 .scheduledTo(Instant.now().plusSeconds(schedulingConfig.getScheduleFeeCaseIssuedInSeconds()))
