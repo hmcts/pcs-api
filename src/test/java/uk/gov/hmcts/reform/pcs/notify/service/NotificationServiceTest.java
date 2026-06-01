@@ -504,7 +504,7 @@ class NotificationServiceTest {
             claimantParty.setEmailAddress(TEST_EMAIL);
             when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
 
-            when(partyService.canSendEmailNotification(any())).thenReturn(true);
+            when(partyService.canSendEmailNotification(any(), any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED))
                 .thenReturn(TEMPLATE_ID);
 
