@@ -4,14 +4,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -65,32 +69,79 @@ class CaseFlagsViewTest {
 
     @Test
     void shouldMapComplexPartyFlagFieldsWhenPartiesExist() {
-        // Given
-        PartyEntity partyEntityFirst = createPartyEntity(null);
-        PartyEntity partyEntitySecond = createPartyEntity("King Smith");
+        // Given - a defendant (with flags) and a non-defendant organisation party,
+        // both already mapped onto the case earlier (as PCSCaseView does)
+        PartyEntity defendantEntity = createPartyEntity(null);
+        markAsDefendant(defendantEntity);
+        defendantEntity.setDefendantFlags(List.of(createMockCasePartyFlagsEntity()));
 
+        PartyEntity orgEntity = createPartyEntity("King Smith");
 
-        CasePartyFlagEntity defendantFlags = createMockCasePartyFlagsEntity();
-        partyEntityFirst.setDefendantFlags(List.of(defendantFlags));
-
-        PCSCase pcsCase = PCSCase.builder().build();
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(defendantEntity), mappedParty(orgEntity)))
+            .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-
-        pcsCaseEntity.setParties(Set.of(partyEntityFirst, partyEntitySecond));
+        pcsCaseEntity.setParties(Set.of(defendantEntity, orgEntity));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
-        // Then
+        // Then - both parties remain, but only the defendant is given flags
         assertNotNull(pcsCase.getParties());
-        assertEquals(1, pcsCase.getParties().size());
-        Party party = pcsCase.getParties().getFirst().getValue();
-        assertNotNull(party.getDefendantFlags());
-        assertEquals(1, party.getDefendantFlags().getDetails().size());
-        assertEquals("PF0015", party.getDefendantFlags().getDetails().getFirst().getValue().getFlagCode());
+        assertEquals(2, pcsCase.getParties().size());
+
+        Party mappedDefendant = findPartyById(pcsCase, defendantEntity.getId().toString());
+        assertNotNull(mappedDefendant.getDefendantFlags());
+        assertEquals(1, mappedDefendant.getDefendantFlags().getDetails().size());
+        assertEquals("PF0015",
+            mappedDefendant.getDefendantFlags().getDetails().getFirst().getValue().getFlagCode());
+
+        Party mappedOrgParty = findPartyById(pcsCase, orgEntity.getId().toString());
+        assertNull(mappedOrgParty.getDefendantFlags());
     }
 
-    private PartyEntity createPartyEntity(String orgName) {  //, String firstName, String lastName
+    @Test
+    void shouldNotMapDefendantFlagsForNonDefendantIndividual() {
+        // Given - an individual (no orgName) who is an underlessee, not a defendant
+        PartyEntity individualUnderlessee = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Under")
+            .lastName("Lessee")
+            .build();
+        individualUnderlessee.setClaimParties(new HashSet<>(Set.of(
+            ClaimPartyEntity.builder().role(PartyRole.UNDERLESSEE_OR_MORTGAGEE).build())));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(individualUnderlessee)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(individualUnderlessee));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then - retained, but no defendant flags applied
+        assertEquals(1, pcsCase.getParties().size());
+        Party mapped = pcsCase.getParties().getFirst().getValue();
+        assertNull(mapped.getDefendantFlags());
+        assertEquals("Under", mapped.getFirstName());
+        assertEquals("Lessee", mapped.getLastName());
+    }
+
+    private Party findPartyById(PCSCase pcsCase, String id) {
+        return pcsCase.getParties().stream()
+            .map(ListValue::getValue)
+            .filter(party -> id.equals(party.getId()))
+            .findFirst()
+            .orElseThrow();
+    }
+
+    private void markAsDefendant(PartyEntity partyEntity) {
+        partyEntity.setClaimParties(new HashSet<>(Set.of(
+            ClaimPartyEntity.builder().role(PartyRole.DEFENDANT).build())));
+    }
+
+    private PartyEntity createPartyEntity(String orgName) {
 
         return PartyEntity.builder()
             .id(UUID.randomUUID())
@@ -98,15 +149,28 @@ class CaseFlagsViewTest {
             .build();
     }
 
+    private ListValue<Party> mappedParty(PartyEntity entity) {
+        return ListValue.<Party>builder()
+            .value(Party.builder()
+                .id(entity.getId().toString())
+                .orgName(entity.getOrgName())
+                .firstName(entity.getFirstName())
+                .lastName(entity.getLastName())
+                .build())
+            .build();
+    }
+
     @Test
     void shouldMapComplexPartyFlagFieldsWhenPartiesExistsWithNoFlags() {
-        // Given
-        PartyEntity partyEntity = new PartyEntity();
-        partyEntity.setId(UUID.randomUUID());
+        // Given - a defendant with no party flags
+        PartyEntity defendantEntity = createPartyEntity(null);
+        markAsDefendant(defendantEntity);
 
-        PCSCase pcsCase = PCSCase.builder().build();
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(defendantEntity)))
+            .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        pcsCaseEntity.setParties(Set.of(partyEntity));
+        pcsCaseEntity.setParties(Set.of(defendantEntity));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -134,15 +198,15 @@ class CaseFlagsViewTest {
 
     @Test
     void shouldHandleNullPartiesGracefully() {
-        // Given
+        // Given - no parties have been mapped onto the case
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
-        // Then
-        assertEquals(0, pcsCase.getParties().size());
+        // Then - nothing to enrich, no failure
+        assertNull(pcsCase.getParties());
     }
 
     private CaseFlagEntity createMockCaseFlagsEntity() {

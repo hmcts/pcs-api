@@ -13,10 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNullElse;
 
@@ -89,29 +93,27 @@ public class CaseFlagsView {
     }
 
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        List<ListValue<Party>> mappedParties = pcsCaseEntity.getParties().stream()
-            .filter(partyEntity -> partyEntity.getOrgName() == null || partyEntity.getOrgName().isEmpty())
-            .map(this::mapPartyWithDefendantFlags)
-            .toList();
+        if (CollectionUtils.isEmpty(pcsCase.getParties())) {
+            return;
+        }
 
-        pcsCase.setParties(mappedParties);
+        Map<String, PartyEntity> defendantEntitiesById = pcsCaseEntity.getParties().stream()
+            .filter(this::isDefendant)
+            .collect(Collectors.toMap(partyEntity -> partyEntity.getId().toString(), Function.identity()));
+
+        pcsCase.getParties().forEach(partyListValue -> {
+            Party party = partyListValue.getValue();
+            PartyEntity defendantEntity = defendantEntitiesById.get(party.getId());
+            if (defendantEntity != null) {
+                party.setDefendantFlags(mapDefendantFlags(defendantEntity));
+            }
+        });
     }
 
-    private ListValue<Party> mapPartyWithDefendantFlags(PartyEntity partyEntity) {
-        return ListValue.<Party>builder()
-            .id(partyEntity.getId().toString())
-            .value(
-                Party.builder()
-                    .nameKnown(partyEntity.getNameKnown())
-                    .addressKnown(partyEntity.getAddressKnown())
-                    .phoneNumberProvided(partyEntity.getPhoneNumberProvided())
-                    .emailAddress(partyEntity.getEmailAddress())
-                    .firstName(partyEntity.getFirstName())
-                    .lastName(partyEntity.getLastName())
-                    .defendantFlags(mapDefendantFlags(partyEntity))
-                    .build()
-            )
-            .build();
+    private boolean isDefendant(PartyEntity partyEntity) {
+        return !CollectionUtils.isEmpty(partyEntity.getClaimParties())
+            && partyEntity.getClaimParties().stream()
+                .anyMatch(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT);
     }
 
     private Flags mapDefendantFlags(PartyEntity partyEntity) {
