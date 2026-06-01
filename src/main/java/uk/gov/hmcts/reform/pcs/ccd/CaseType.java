@@ -141,7 +141,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("casePartiesTab_DefendantsDetails");
     }
 
-    private void buildSummaryTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+    private void buildSummaryTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("summary", "Summary")
             .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
             .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
