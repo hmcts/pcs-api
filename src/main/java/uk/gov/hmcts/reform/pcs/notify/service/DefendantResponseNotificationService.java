@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -17,14 +19,9 @@ public class DefendantResponseNotificationService {
 
     private final NotificationService notificationService;
     private final DefendantResponseRepository defendantResponseRepository;
+    private final CounterClaimRepository counterClaimRepository;
 
-    public void sendDefendantResponseReceived(UUID defendantResponseId) {
-        DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
-            .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
-
-        notificationService.sendClaimantDefendantResponseReceived(defendantResponse.getClaim());
-    }
-
+    @Transactional
     public void sendEmailNotificationForNoCounterClaim(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
@@ -38,7 +35,8 @@ public class DefendantResponseNotificationService {
         notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
     }
 
-    public void sendEmailNotificationForCounterclaim(UUID defendantResponseId) {
+    @Transactional
+    public void sendDefendantEmailNotificationForCounterclaim(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 
@@ -52,12 +50,17 @@ public class DefendantResponseNotificationService {
         boolean isHwfRequested = counterClaim.getNeedHelpWithFees() != null
             && counterClaim.getNeedHelpWithFees().toBoolean();
 
-        boolean hasHwfReference = isHwfRequested
-            && counterClaim.getHwfReferenceNumber() != null
+        boolean hasHwfReference = counterClaim.getHwfReferenceNumber() != null
             && !counterClaim.getHwfReferenceNumber().isBlank();
 
         if (isHwfRequested && !hasHwfReference) {
             log.info("Not sending email as HWF is requested but reference is blank for defendant response {}",
+                     defendantResponse.getId());
+            return;
+        }
+
+        if (!isHwfRequested && hasHwfReference) {
+            log.info("Not sending email as HWF is not requested but reference is not blank for defendant response {}",
                      defendantResponse.getId());
             return;
         }
@@ -72,7 +75,18 @@ public class DefendantResponseNotificationService {
         log.info("Sending counterclaim no payment required email for defendant response {}",
                  defendantResponse.getId());
         notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
-        notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
+    }
+
+    @Transactional
+    public void sendPendingCounterClaimIssuedNotification(UUID counterClaimId) {
+        CounterClaimEntity counterClaim = counterClaimRepository.findById(counterClaimId)
+            .orElseThrow(() -> new IllegalArgumentException("Counter claim not found: " + counterClaimId));
+
+        counterClaim.getPcsCase().getDefendantResponses().stream()
+            .filter(dr -> dr.getParty().getId().equals(counterClaim.getParty().getId()))
+            .findFirst()
+            .map(DefendantResponseEntity::getId)
+            .ifPresent(this::sendDefendantEmailNotificationForCounterclaim);
     }
 
     private CounterClaimEntity getAssociatedCounterClaim(DefendantResponseEntity defendantResponse) {

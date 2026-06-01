@@ -80,11 +80,31 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
+            claimantParty.setFirstName(null);
+            claimantParty.setLastName(null);
             claimantParty.setOrgName("Claimant Corp");
 
             BasePersonalisation result = factory.forDefendant(response);
 
             assertThat(result.toMap()).containsEntry("claimantName", "CLAIMANT CORP");
+        }
+
+        @Test
+        @DisplayName("Should use organisation name as firstName when firstName is null for defendant")
+        void shouldBuildBasePersonalisationWithDefendantOrgName() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            defendantParty.setFirstName(null);
+            defendantParty.setLastName(null);
+            defendantParty.setOrgName("Defendant Corp");
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            BasePersonalisation result = factory.forDefendant(response);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("firstName", "Defendant Corp")
+                .containsEntry("lastName", "");
         }
     }
 
@@ -106,6 +126,23 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE");
+        }
+
+        @Test
+        @DisplayName("Should use organisation name as firstName when firstName is null for claimant")
+        void shouldBuildBasePersonalisationWithClaimantOrgName() {
+            PartyEntity claimantParty = stubClaimantParty();
+            claimantParty.setFirstName(null);
+            claimantParty.setLastName(null);
+            claimantParty.setOrgName("Claimant Corp");
+            ClaimEntity claim = createClaim(claimantParty);
+
+            BasePersonalisation result = factory.forClaimant(claim);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("firstName", "Claimant Corp")
+                .containsEntry("lastName", "");
         }
     }
 

@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
@@ -141,6 +142,126 @@ class PartyServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(PartyNotFoundException.class);
+        }
+
+        @Test
+        void shouldGetPrimaryClaimantParty() {
+            // Given
+            PartyEntity claimant1 = mock(PartyEntity.class);
+            PartyEntity claimant2 = mock(PartyEntity.class);
+            PartyEntity defendant1 = mock(PartyEntity.class);
+            PartyEntity defendant2 = mock(PartyEntity.class);
+
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                ClaimPartyEntity.builder().party(claimant1).role(PartyRole.CLAIMANT).build(),
+                ClaimPartyEntity.builder().party(claimant2).role(PartyRole.CLAIMANT).build(),
+                ClaimPartyEntity.builder().party(defendant1).role(PartyRole.DEFENDANT).build(),
+                ClaimPartyEntity.builder().party(defendant2).role(PartyRole.DEFENDANT).build()
+            ));
+
+            // When
+            PartyEntity primaryClaimantPartyEntity = underTest.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+
+            // Then
+            assertThat(primaryClaimantPartyEntity).isEqualTo(claimant1);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenNoPrimaryClaimantParty() {
+            // Given
+            PartyEntity defendant1 = mock(PartyEntity.class);
+
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                ClaimPartyEntity.builder().party(defendant1).role(PartyRole.DEFENDANT).build()
+            ));
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.getPrimaryClaimantPartyEntity(pcsCaseEntity));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(PartyNotFoundException.class);
+        }
+
+        @Test
+        void shouldGetPrimaryDefendantParty() {
+            // Given
+            PartyEntity claimant1 = mock(PartyEntity.class);
+            PartyEntity claimant2 = mock(PartyEntity.class);
+            PartyEntity defendant1 = mock(PartyEntity.class);
+            PartyEntity defendant2 = mock(PartyEntity.class);
+
+            ClaimPartyEntity.builder().party(claimant1).role(PartyRole.CLAIMANT).build();
+
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                ClaimPartyEntity.builder().party(claimant1).role(PartyRole.CLAIMANT).build(),
+                ClaimPartyEntity.builder().party(claimant2).role(PartyRole.CLAIMANT).build(),
+                ClaimPartyEntity.builder().party(defendant1).role(PartyRole.DEFENDANT).build(),
+                ClaimPartyEntity.builder().party(defendant2).role(PartyRole.DEFENDANT).build()
+            ));
+
+            // When
+            PartyEntity primaryDefendantPartyEntity = underTest.getPrimaryDefendantPartyEntity(pcsCaseEntity);
+
+            // Then
+            assertThat(primaryDefendantPartyEntity).isEqualTo(defendant1);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenNoPrimaryDefendantParty() {
+            // Given
+            PartyEntity clamaint1 = mock(PartyEntity.class);
+
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                ClaimPartyEntity.builder().party(clamaint1).role(PartyRole.CLAIMANT).build()
+            ));
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.getPrimaryDefendantPartyEntity(pcsCaseEntity));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(PartyNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("Get Party Name")
+    class GetPartyNameTests {
+
+        @Test
+        void shouldReturnOrgNameWhenSet() {
+            // Given
+            PartyEntity partyEntity = PartyEntity.builder()
+                .orgName("Org name")
+                .firstName("First name")
+                .lastName("Last name")
+                .build();
+
+            // When
+            String partyName = underTest.getPartyName(partyEntity);
+
+            // Then
+            assertThat(partyName).isEqualTo("Org name");
+        }
+
+        @Test
+        void shouldReturnFirstAndLastNamesWhenOrgNameNotSet() {
+            // Given
+            PartyEntity partyEntity = PartyEntity.builder()
+                .firstName("First name")
+                .lastName("Last name")
+                .build();
+
+            // When
+            String partyName = underTest.getPartyName(partyEntity);
+
+            // Then
+            assertThat(partyName).isEqualTo("First name Last name");
         }
 
         @Test
@@ -1057,12 +1178,26 @@ class PartyServiceTest {
         void shouldReturnTrueWhenAllConditionsMet() {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress("test@example.com")
-                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                .contactPreferences(ContactPreferencesEntity.builder()
                     .contactByEmail(VerticalYesNo.YES)
                     .build())
                 .build();
 
-            boolean result = underTest.canSendEmailNotification(party);
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        void shouldReturnTrueForClaimantWhenEmailIsPresent() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress("test@example.com")
+                .contactPreferences(ContactPreferencesEntity.builder()
+                    .contactByEmail(VerticalYesNo.NO)
+                    .build())
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.CLAIMANT);
 
             assertThat(result).isTrue();
         }
@@ -1071,12 +1206,12 @@ class PartyServiceTest {
         void shouldReturnFalseWhenEmailIsNull() {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress(null)
-                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                .contactPreferences(ContactPreferencesEntity.builder()
                     .contactByEmail(VerticalYesNo.YES)
                     .build())
                 .build();
 
-            boolean result = underTest.canSendEmailNotification(party);
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
 
             assertThat(result).isFalse();
         }
@@ -1088,7 +1223,7 @@ class PartyServiceTest {
                 .contactPreferences(null)
                 .build();
 
-            boolean result = underTest.canSendEmailNotification(party);
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
 
             assertThat(result).isFalse();
         }
@@ -1097,12 +1232,12 @@ class PartyServiceTest {
         void shouldReturnFalseWhenContactByEmailIsNull() {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress("test@example.com")
-                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                .contactPreferences(ContactPreferencesEntity.builder()
                     .contactByEmail(null)
                     .build())
                 .build();
 
-            boolean result = underTest.canSendEmailNotification(party);
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
 
             assertThat(result).isFalse();
         }
@@ -1111,12 +1246,23 @@ class PartyServiceTest {
         void shouldReturnFalseWhenContactByEmailIsNo() {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress("test@example.com")
-                .contactPreferences(uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity.builder()
+                .contactPreferences(ContactPreferencesEntity.builder()
                     .contactByEmail(VerticalYesNo.NO)
                     .build())
                 .build();
 
-            boolean result = underTest.canSendEmailNotification(party);
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        void shouldReturnFalseForClaimantWhenEmailIsNull() {
+            PartyEntity party = PartyEntity.builder()
+                .emailAddress(null)
+                .build();
+
+            boolean result = underTest.canSendEmailNotification(party, PartyRole.CLAIMANT);
 
             assertThat(result).isFalse();
         }

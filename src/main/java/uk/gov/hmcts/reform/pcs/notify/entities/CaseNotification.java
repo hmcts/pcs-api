@@ -45,7 +45,7 @@ public class CaseNotification {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id")
+    @JoinColumn(name = "case_id", nullable = false)
     private PcsCaseEntity pcsCase;
 
     @Column(name = "provider_notification_id", nullable = true)
