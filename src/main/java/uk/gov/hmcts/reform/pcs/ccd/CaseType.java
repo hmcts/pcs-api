@@ -24,7 +24,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String CASE_TYPE_NAME = "Possession";
     private static final String CASE_TYPE_DESCRIPTION = "Possession Case Type";
     private static final String JURISDICTION_ID = "PCS";
-    private static final String JURISDICTION_NAME = "Civil Possession Test";
+    private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
 
     @Value("${hmcts.hmctsOrgId}")
