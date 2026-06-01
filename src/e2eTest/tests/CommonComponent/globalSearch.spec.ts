@@ -1,14 +1,12 @@
 import { expect, test } from '@utils/test-fixtures';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
-import { globalSearch } from '@data/page-data-figma';
-import { user } from '@data/user-data';
+import { globalSearch,searchResults,noResultFound } from '@data/page-data-figma';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { createCaseApiData } from '@data/api-data/createCase.api.data';
-import { submitCaseApiData } from '@data/api-data/submitCase.api.data';
-
-test.use({ storageState: { cookies: [], origins: [] } });
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+import {caseSummary, user} from '@data/page-data';
 
 test.use({ storageState: undefined });
 
@@ -39,19 +37,46 @@ test.beforeEach(async ({ page, context }) => {
   });
 });
 
+test.afterEach(async () => {
+  if (caseNumber) {
+    await performAction('deleteCaseRole', '[CREATOR]');
+  }
+});
+
 test.describe('[Global Search - @globalSearch @PR @CC @nightly]', () => {
-  test('Validate global search menu @smoke', async () => {
+  test('Global search menu @smoke', async () => {
     await performAction('accessingTheSearch');
     await performValidation('mainHeader', globalSearch.mainHeader);
   });
   
-  test('Validate global search functionality by valid case reference', async () => {
+  test('Valid case reference', async () => {
     await performAction('accessingTheSearch');
-    await performAction('searchByCaseReference', process.env.CASE_NUMBER!);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('clickButton', globalSearch.searchButton);
+    await performAction('clickButtonAndVerifyPageNavigation', globalSearch.searchButton, searchResults.searchResultMainHeader);
+    await performAction('searchResults');
   });
-
-test('Validate no results found for an invalid case reference number', async () => {
+  
+  test('Invalid case reference', async () => {
     await performAction('accessingTheSearch');
     await performAction('invalidCaseReferenceSearch', globalSearch.invalidCaseReferenceInputText);
+    await performAction('clickButton', globalSearch.searchButton);
+   
+    await performAction('clickButton', noResultFound.searchAgainButton);
+    await performValidation('noResultsFoundText', noResultFound.mainHeader);
+    await performValidation('mainHeader', globalSearch.mainHeader);
+  });
+
+test('change search link', async () => {
+    await performAction('accessingTheSearch');
+    await performAction('invalidCaseReferenceSearch', globalSearch.invalidCaseReferenceInputText);
+    await performAction('changeSearchCriteria');
+    await performValidation('mainHeader', globalSearch.mainHeader);
+  });
+  test ('Validate search results table', async () => {
+    await performAction('accessingTheSearch');
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('clickButtonAndVerifyPageNavigation', globalSearch.searchButton, searchResults.searchResultMainHeader);
+    await performAction('searchResults');
   });
 });

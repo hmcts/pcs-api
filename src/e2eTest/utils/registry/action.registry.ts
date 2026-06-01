@@ -94,6 +94,8 @@ export class ActionRegistry {
     ['accessingTheSearch', new GlobalSearchCaseAction()],
     ['searchByCaseReference', new GlobalSearchCaseAction()],
     ['invalidCaseReferenceSearch', new GlobalSearchCaseAction()],
+    ['changeSearchCriteria', new GlobalSearchCaseAction()],
+    ['searchResults', new GlobalSearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],
@@ -125,6 +127,7 @@ export class ActionRegistry {
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
+    ['searchResults', new GlobalSearchCaseAction()],
     ['enterPaymentDetails', new FeeAndPayAction()]
   ]);
 
