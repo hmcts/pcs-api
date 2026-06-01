@@ -1,0 +1,17 @@
+export const selectFlagType = {
+    title: `Case Details - HM Courts & Tribunals Service - GOV.UK`,
+    mainHeader: `Create case flags`,
+    selectFlagTypeLabel: `Select flag type`,
+    complexCaseRadioOption: `Complex Case`,
+    urgentCaseRadioOption: `Urgent case`,
+    powerOfArrestWithPoliceRadioOption: `Power of arrest with police`,
+    warrantOfArrestConclusionOrWithdrawnRadioOption: `Warrant of arrest conclusion/withdrawn`,
+    welshFormsAndCommunicationsRadioOption: `Welsh forms and communications`,
+    specialMeasureRadioOption: `Special measure`,
+    otherRadioOption: `Other`,
+    enterAFlagTypeInputLabel: `Enter a flag type`,
+    enterAFlagTypeInputText: `Test Flag`,
+    continueButton: `Continue`,
+    previousButton: `Previous`,
+    cancelButton: `Cancel`,
+};

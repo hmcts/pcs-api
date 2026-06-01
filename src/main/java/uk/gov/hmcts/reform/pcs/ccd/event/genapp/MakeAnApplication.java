@@ -16,16 +16,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.AppliedForHelpWithFees;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ChooseAnApplication;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.DocumentUploadWanted;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HearingInNext14Days;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HelpWithFeesNeeded;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.MustApplyForHelpWithFees;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.OtherPartiesAgreed;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ReasonsNotToShare;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.SelectParty;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartAdjourn;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSetAside;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSomethingElse;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StatementOfTruth;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhatOrderWanted;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhichLanguage;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -33,6 +41,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
@@ -56,6 +66,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final DocumentImportService documentImportService;
     private final LegalRepresentativeService legalRepresentativeService;
+    private final FeeApplier feeApplier;
     private final NotificationService notificationService;
 
     @Override
@@ -69,14 +80,21 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .showSummary();
 
         new PageBuilder(eventBuilder)
-                .add(new ChooseAnApplication())
-                .add(new StartAdjourn())
-                .add(new StartSetAside())
-                .add(new StartSomethingElse())
-                .add(new SelectParty())
-                .add(new HearingInNext14Days())
-                .add(new HelpWithFeesNeeded())
-                .add(new WhichLanguage());
+            .add(new ChooseAnApplication())
+            .add(new StartAdjourn())
+            .add(new StartSetAside())
+            .add(new StartSomethingElse())
+            .add(new SelectParty())
+            .add(new HearingInNext14Days())
+            .add(new HelpWithFeesNeeded())
+            .add(new AppliedForHelpWithFees())
+            .add(new MustApplyForHelpWithFees())
+            .add(new OtherPartiesAgreed())
+            .add(new ReasonsNotToShare())
+            .add(new WhatOrderWanted())
+            .add(new DocumentUploadWanted())
+            .add(new WhichLanguage())
+            .add(new StatementOfTruth());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -84,6 +102,10 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
 
         setRepresentedParties(caseReference, caseData);
+
+        applyApplicationFeeAmounts(caseData);
+
+        caseData.getXuiGenAppRequest().setShowHwfScreens(VerticalYesNo.YES);
 
         return caseData;
     }
@@ -101,6 +123,21 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
                     caseData.setCurrentRepresentedPartyId(soleRepresentedParty.toString());
                 }
             });
+    }
+
+    private void applyApplicationFeeAmounts(PCSCase caseData) {
+
+        feeApplier.applyFeeAmount(
+            caseData,
+            FeeType.GEN_APP_STANDARD_FEE,
+            (suppliedCaseData, feeString) -> suppliedCaseData.getXuiGenAppRequest().setStandardFee(feeString)
+        );
+
+        feeApplier.applyFeeAmount(
+            caseData,
+            FeeType.GEN_APP_MAX_FEE,
+            (suppliedCaseData, feeString) -> suppliedCaseData.getXuiGenAppRequest().setMaxFee(feeString)
+        );
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -163,7 +200,10 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             applicantParty
         );
 
-        documentImportService.addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
+        DocumentEntity documentEntity = documentImportService
+            .addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
+
+        genAppEntity.setSubmissionDocument(documentEntity);
     }
 
     private void sendNotificationEmail(GenAppEntity genAppEntity, PCSCase caseData) {

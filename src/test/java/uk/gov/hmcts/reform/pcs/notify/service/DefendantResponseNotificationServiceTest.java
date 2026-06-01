@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -227,6 +226,72 @@ class DefendantResponseNotificationServiceTest {
     }
 
     @Test
+    void shouldNotSendEmailWhenHwfNotRequestedButHwfReferenceIsPresent() {
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        UUID defendantResponseId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+
+        when(defendantResponseRepository.findById(defendantResponseId))
+            .thenReturn(Optional.of(response));
+
+        when(response.getPcsCase()).thenReturn(caseEntity);
+        when(response.getParty()).thenReturn(party);
+
+        when(party.getId()).thenReturn(partyId);
+
+        when(counterClaim.getParty()).thenReturn(party);
+        when(counterClaim.getNeedHelpWithFees()).thenReturn(VerticalYesNo.NO);
+        when(counterClaim.getHwfReferenceNumber()).thenReturn("HWF123");
+
+        when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+        underTest.sendDefendantEmailNotificationForCounterclaim(defendantResponseId);
+
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
+
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(response);
+    }
+
+    @Test
+    void shouldSendPaymentRequiredEmailWhenHwfNotRequestedAndNoHwfReference() {
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        UUID defendantResponseId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+
+        when(defendantResponseRepository.findById(defendantResponseId))
+            .thenReturn(Optional.of(response));
+
+        when(response.getPcsCase()).thenReturn(caseEntity);
+        when(response.getParty()).thenReturn(party);
+
+        when(party.getId()).thenReturn(partyId);
+
+        when(counterClaim.getParty()).thenReturn(party);
+        when(counterClaim.getNeedHelpWithFees()).thenReturn(VerticalYesNo.NO);
+        when(counterClaim.getHwfReferenceNumber()).thenReturn(null);
+
+        when(caseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+        underTest.sendDefendantEmailNotificationForCounterclaim(defendantResponseId);
+
+        verify(notificationService)
+            .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(response);
+
+        verify(notificationService, never())
+            .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(response);
+    }
+
+    @Test
     void shouldIgnoreCounterclaimForDifferentParty() {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
@@ -308,71 +373,45 @@ class DefendantResponseNotificationServiceTest {
     }
 
     @Test
-    void shouldSendClaimantNotificationWhenCounterClaimIssued() {
+    void shouldSendPendingCounterClaimIssuedNotification() {
         UUID counterClaimId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
-
-        PartyEntity party = mock(PartyEntity.class);
-        when(party.getId()).thenReturn(partyId);
-
-        ClaimEntity claim = mock(ClaimEntity.class);
-
-        DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
-        when(defendantResponse.getParty()).thenReturn(party);
-        when(defendantResponse.getClaim()).thenReturn(claim);
-
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
+        UUID defendantResponseId = UUID.randomUUID();
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getParty()).thenReturn(party);
-        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
+        when(counterClaim.getParty()).thenReturn(party);
+        when(party.getId()).thenReturn(partyId);
+        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
 
-        underTest.sendClaimantEmailNotificationCounterClaimIssued(counterClaimId);
+        when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
+        when(defendantResponse.getParty()).thenReturn(party);
+        when(defendantResponse.getId()).thenReturn(defendantResponseId);
 
-        verify(notificationService).sendClaimantDefendantHasMadeCounterclaimEmail(claim);
+        when(defendantResponseRepository.findById(defendantResponseId)).thenReturn(Optional.of(defendantResponse));
+        when(defendantResponse.getPcsCase()).thenReturn(pcsCase);
+        when(pcsCase.getCounterClaims()).thenReturn(List.of(counterClaim));
+        when(counterClaim.getNeedHelpWithFees()).thenReturn(VerticalYesNo.YES);
+        when(counterClaim.getHwfReferenceNumber()).thenReturn("HWF123");
+
+        underTest.sendPendingCounterClaimIssuedNotification(counterClaimId);
+
+        verify(notificationService)
+            .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
     }
 
     @Test
-    void shouldThrowExceptionWhenCounterClaimNotFoundForClaimantNotification() {
+    void shouldThrowExceptionWhenCounterClaimNotFoundForPendingNotification() {
         UUID counterClaimId = UUID.randomUUID();
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.empty());
 
         assertThrows(
             IllegalArgumentException.class,
-            () -> underTest.sendClaimantEmailNotificationCounterClaimIssued(counterClaimId)
-        );
-    }
-
-    @Test
-    void shouldThrowExceptionWhenAssociatedDefendantResponseNotFound() {
-        UUID counterClaimId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-        UUID otherPartyId = UUID.randomUUID();
-
-        PartyEntity party = mock(PartyEntity.class);
-        when(party.getId()).thenReturn(partyId);
-
-        PartyEntity otherParty = mock(PartyEntity.class);
-        when(otherParty.getId()).thenReturn(otherPartyId);
-
-        DefendantResponseEntity otherDefendantResponse = mock(DefendantResponseEntity.class);
-        when(otherDefendantResponse.getParty()).thenReturn(otherParty);
-
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getDefendantResponses()).thenReturn(List.of(otherDefendantResponse));
-
-        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getParty()).thenReturn(party);
-        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
-
-        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
-
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> underTest.sendClaimantEmailNotificationCounterClaimIssued(counterClaimId)
+            () -> underTest.sendPendingCounterClaimIssuedNotification(counterClaimId)
         );
     }
 }

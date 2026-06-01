@@ -12,21 +12,23 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
-import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
+import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
@@ -43,6 +45,7 @@ public class NotificationService {
     private final SchedulerClient schedulerClient;
     private final NotificationTemplateConfiguration templateConfiguration;
     private final NotificationPersonalisationFactory notificationPersonalisationFactory;
+    private final PcsCaseService pcsCaseService;
 
     public EmailNotificationResponse sendDefendantResponseNoCounterclaimEmailNotification(
         DefendantResponseEntity defendantResponse
@@ -89,7 +92,7 @@ public class NotificationService {
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLater(long caseReference, PCSCase pcsCase) {
-        NotificationRecipient recipient = claimantRecipient(pcsCase);
+        NotificationRecipient recipient = claimantRecipient(caseReference, pcsCase);
 
         if (recipient.email() == null) {
             log.info("Skipping email notification to claimant on case: {}", caseReference);
@@ -343,8 +346,10 @@ public class NotificationService {
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
     ) {
-        if (recipient.party() != null && !partyService.canSendEmailNotification(recipient.party())) {
-            log.info("Skipping email notification to user: {}", recipient.party().getId());
+        PartyEntity party = recipient.party();
+
+        if (!partyService.canSendEmailNotification(party, recipient.recipientRole())) {
+            log.info("Skipping email notification to user: {}", party.getId());
             return null;
         }
 
@@ -387,16 +392,20 @@ public class NotificationService {
             party.getEmailAddress(),
             party,
             party.getPcsCase(),
+            null,
             null
         );
     }
 
-    private NotificationRecipient claimantRecipient(PCSCase pcsCase) {
+    private NotificationRecipient claimantRecipient(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+
         return new NotificationRecipient(
             getClaimantEmailAddress(pcsCase.getClaimantContactPreferences()),
             null,
+            pcsCaseEntity,
             null,
-            null
+            PartyRole.CLAIMANT
         );
     }
 
@@ -411,7 +420,8 @@ public class NotificationService {
             claimant.getEmailAddress(),
             claimant,
             claim.getPcsCase(),
-            claim
+            claim,
+            PartyRole.CLAIMANT
         );
     }
 
@@ -426,7 +436,8 @@ public class NotificationService {
             defendant.getEmailAddress(),
             defendant,
             response.getPcsCase(),
-            response.getClaim()
+            response.getClaim(),
+            PartyRole.DEFENDANT
         );
     }
 }

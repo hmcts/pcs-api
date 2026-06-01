@@ -18,5 +18,5 @@ export const asbQuestionsWales = {
   previousButton: `Previous`,
   yesRadioOption: `Yes`,
   youCanEnterUpToHintText: `You can enter up to 500 characters`,
-  youllHaveTheOptionToParagraph: `You’ll have the option to upload documents that give more details about the antisocial behaviour or illegal or prohibited conduct you’re describing or evidence of this behaviour later on.`
+  youllHaveTheOptionToParagraph: `You can upload documents that give more details about the antisocial behaviour or illegal or prohibited conduct you’re describing or evidence of this behaviour later on.`
 };

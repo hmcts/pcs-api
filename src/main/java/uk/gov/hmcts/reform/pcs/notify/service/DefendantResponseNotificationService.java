@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -20,6 +21,7 @@ public class DefendantResponseNotificationService {
     private final DefendantResponseRepository defendantResponseRepository;
     private final CounterClaimRepository counterClaimRepository;
 
+    @Transactional
     public void sendEmailNotificationForNoCounterClaim(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
@@ -33,6 +35,7 @@ public class DefendantResponseNotificationService {
         notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse);
     }
 
+    @Transactional
     public void sendDefendantEmailNotificationForCounterclaim(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
@@ -47,12 +50,17 @@ public class DefendantResponseNotificationService {
         boolean isHwfRequested = counterClaim.getNeedHelpWithFees() != null
             && counterClaim.getNeedHelpWithFees().toBoolean();
 
-        boolean hasHwfReference = isHwfRequested
-            && counterClaim.getHwfReferenceNumber() != null
+        boolean hasHwfReference = counterClaim.getHwfReferenceNumber() != null
             && !counterClaim.getHwfReferenceNumber().isBlank();
 
         if (isHwfRequested && !hasHwfReference) {
             log.info("Not sending email as HWF is requested but reference is blank for defendant response {}",
+                     defendantResponse.getId());
+            return;
+        }
+
+        if (!isHwfRequested && hasHwfReference) {
+            log.info("Not sending email as HWF is not requested but reference is not blank for defendant response {}",
                      defendantResponse.getId());
             return;
         }
@@ -69,13 +77,16 @@ public class DefendantResponseNotificationService {
         notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
     }
 
-    public void sendClaimantEmailNotificationCounterClaimIssued(UUID counterClaimId) {
-        CounterClaimEntity counterClaimEntity = counterClaimRepository.findById(counterClaimId)
+    @Transactional
+    public void sendPendingCounterClaimIssuedNotification(UUID counterClaimId) {
+        CounterClaimEntity counterClaim = counterClaimRepository.findById(counterClaimId)
             .orElseThrow(() -> new IllegalArgumentException("Counter claim not found: " + counterClaimId));
 
-        DefendantResponseEntity defendantResponse = getAssociatedDefendantResponse(counterClaimEntity);
-
-        notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
+        counterClaim.getPcsCase().getDefendantResponses().stream()
+            .filter(dr -> dr.getParty().getId().equals(counterClaim.getParty().getId()))
+            .findFirst()
+            .map(DefendantResponseEntity::getId)
+            .ifPresent(this::sendDefendantEmailNotificationForCounterclaim);
     }
 
     private CounterClaimEntity getAssociatedCounterClaim(DefendantResponseEntity defendantResponse) {
@@ -86,16 +97,5 @@ public class DefendantResponseNotificationService {
             .filter(counterClaim -> counterClaim.getParty().getId().equals(partyId))
             .findFirst()
             .orElse(null);
-    }
-
-    private DefendantResponseEntity getAssociatedDefendantResponse(CounterClaimEntity counterClaim) {
-        UUID partyId = counterClaim.getParty().getId();
-
-        return counterClaim.getPcsCase().getDefendantResponses().stream()
-            .filter(defendantResponse -> defendantResponse.getParty().getId().equals(partyId))
-            .findFirst()
-            .orElseThrow(
-                () -> new IllegalArgumentException("Associated defendant response not found for counter claim: "
-                                                       + counterClaim.getId()));
     }
 }

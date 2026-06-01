@@ -92,8 +92,10 @@ public class NotificationPersonalisationFactory {
             = formatNameUpperForNotification(primaryDefendant.getFirstName(), primaryDefendant.getLastName());
 
         return BasePersonalisation.builder()
-            .firstName(emailRecipient.getFirstName())
-            .lastName(emailRecipient.getLastName())
+            .firstName(emailRecipient.getFirstName() != null
+                           ? emailRecipient.getFirstName() : emailRecipient.getOrgName())
+            .lastName(emailRecipient.getLastName() != null
+                          ? emailRecipient.getLastName() : "")
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
