@@ -203,7 +203,7 @@ class TestCaseGenerationTest {
         SubmitResponse<State> response = spyUnderTest.submit(eventPayload);
 
         // Then
-        assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
+        assertThat(response.getState()).isEqualTo(State.PENDING_CASE_ISSUED);
         verify(spyUnderTest).makeAClaimTestCreation(label, caseReference);
     }
 

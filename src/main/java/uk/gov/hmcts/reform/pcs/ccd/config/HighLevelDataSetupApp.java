@@ -50,7 +50,8 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         new CcdRoleConfig("caseworker-sscs-hmrcresponsewriter", "PUBLIC"),
         new CcdRoleConfig("caseworker-sscs-ibcaresponsewriter", "PUBLIC"),
         new CcdRoleConfig("caseworker-wa-task-configuration", "RESTRICTED"),
-        new CcdRoleConfig("GS_profile", "PUBLIC")
+        new CcdRoleConfig("GS_profile", "PUBLIC"),
+        new CcdRoleConfig("pcs-system-update", "PUBLIC")
     };
 
 
