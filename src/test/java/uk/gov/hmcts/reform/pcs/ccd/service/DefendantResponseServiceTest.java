@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
@@ -963,6 +964,7 @@ class DefendantResponseServiceTest {
         assertThat(saved.getNeedHelpWithFees()).isEqualTo(VerticalYesNo.YES);
         assertThat(saved.getAppliedForHwf()).isEqualTo(VerticalYesNo.NO);
         assertThat(saved.getHwfReferenceNumber()).isEqualTo("HWF-123-456");
+        assertThat(saved.getStatus()).isEqualTo(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
         assertThat(saved.getClaimSubmittedDate()).isEqualTo("2026-04-22T21:00");
         assertThat(saved.getParty()).isEqualTo(partyEntity);
     }
