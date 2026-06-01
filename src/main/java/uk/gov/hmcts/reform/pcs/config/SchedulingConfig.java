@@ -6,6 +6,8 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.event.ExecutionInterceptor;
 import com.github.kagkarlsson.scheduler.event.SchedulerListener;
 import com.github.kagkarlsson.scheduler.serializer.JacksonSerializer;
+import com.github.kagkarlsson.scheduler.serializer.JavaSerializer;
+import com.github.kagkarlsson.scheduler.serializer.SerializerWithFallbackDeserializers;
 import com.github.kagkarlsson.scheduler.task.Task;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +67,8 @@ public class SchedulingConfig {
         var builder = Scheduler.create(dataSource, tasks)
             .threads(threadCount)
             .pollingInterval(Duration.ofSeconds(interval))
-            .serializer(new JacksonSerializer(objectMapper))
+            .serializer(
+                new SerializerWithFallbackDeserializers(new JacksonSerializer(objectMapper), new JavaSerializer()))
             .registerShutdownHook();
 
         schedulerListeners.forEach(builder::addSchedulerListener);
