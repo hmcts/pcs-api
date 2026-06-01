@@ -18,8 +18,6 @@ public class FeesAndPayTaskData implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private String feeType;
-
     private FeeDetails feeDetails;
 
     private long caseReference;
