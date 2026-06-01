@@ -145,7 +145,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         }
 
         return SearchParty.builder()
-            .collectionFieldName("parties")
             .addressLine1(propertyAddress.getAddressLine1())
             .postcode(propertyAddress.getPostCode())
             .build();
@@ -154,7 +153,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private SearchParty toSearchParty(Party party) {
         AddressUK address = party.getAddress();
         return SearchParty.builder()
-            .collectionFieldName("parties")
             .name(joinNonBlank(party.getFirstName(), party.getLastName()))
             .emailAddress(party.getEmailAddress())
             .addressLine1(address == null ? null : address.getAddressLine1())
