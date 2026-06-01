@@ -39,7 +39,8 @@ class LegalRepresentativeServiceTest {
     void shouldReturnOptionalEmptyWhenIdamIdIsNotLegalRep() {
         // Given
         String orgId = "org";
-        when(legalRepresentativeOrganisationRepository.findByOrganisationId(orgId, CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, CASE_REFERENCE))
+            .thenReturn(Optional.empty());
 
         // When
         Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(orgId, CASE_REFERENCE);
@@ -61,18 +62,19 @@ class LegalRepresentativeServiceTest {
             .firstName("Richard")
             .lastName("Represented")
             .build();
-        PartyLegalRepresentativeOrganisationEntity casePartyLegalRepOrgEntity = PartyLegalRepresentativeOrganisationEntity.builder()
+        PartyLegalRepresentativeOrganisationEntity casePartyLegalRepOrgEntity =
+            PartyLegalRepresentativeOrganisationEntity.builder()
             .party(casePartyEntity)
             .build();
         LegalRepresentativeOrganisationEntity legalRepEntity = LegalRepresentativeOrganisationEntity.builder()
             .partyLegalRepresentativeOrganisationList(List.of(casePartyLegalRepOrgEntity))
             .build();
 
-        when(legalRepresentativeOrganisationRepository.findByOrganisationId(orgId, CASE_REFERENCE))
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, CASE_REFERENCE))
             .thenReturn(Optional.of(legalRepEntity));
 
         // When
-        Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(idamId, CASE_REFERENCE);
+        Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(orgId, CASE_REFERENCE);
 
         // Then
         DynamicListElement expectedListValue = DynamicListElement.builder()

@@ -8,8 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -46,14 +46,13 @@ class LegalRepForDefendantAccessValidatorTest {
         String organisationId = "ORG-123";
 
         PartyEntity defendant = PartyEntity.builder().build();
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId(organisationId)
-            .idamId(authenticatedUserId)
             .build();
         defendant.setPartyLegalRepresentativeOrganisationList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.YES)
                 .build()
         ));
@@ -73,18 +72,24 @@ class LegalRepForDefendantAccessValidatorTest {
     @Test
     void shouldReturnDefendant() {
         UUID authenticatedUserId = UUID.randomUUID();
-        UUID authenticatedUserIdamId = UUID.randomUUID();
         String organisationId = "ORG-123";
 
         PartyEntity defendant = PartyEntity.builder().build();
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId(organisationId)
-            .idamId(authenticatedUserIdamId)
+            .build();
+        LegalRepresentativeOrganisationEntity linkedRepresentative2 = LegalRepresentativeOrganisationEntity.builder()
+            .organisationId(organisationId + "1")
             .build();
         defendant.setPartyLegalRepresentativeOrganisationList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative2)
+                .active(YesOrNo.NO)
+                .build(),
+            PartyLegalRepresentativeOrganisationEntity.builder()
+                .party(defendant)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.YES)
                 .build()
         ));
@@ -106,13 +111,13 @@ class LegalRepForDefendantAccessValidatorTest {
         UUID authenticatedUserId = UUID.randomUUID();
 
         PartyEntity defendant = PartyEntity.builder().build();
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId("ORG-123")
             .build();
         defendant.setPartyLegalRepresentativeOrganisationList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.YES)
                 .build()
         ));
@@ -132,13 +137,13 @@ class LegalRepForDefendantAccessValidatorTest {
         UUID authenticatedUserId = UUID.randomUUID();
 
         PartyEntity defendant = PartyEntity.builder().build();
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId("ORG-123")
             .build();
         defendant.setPartyLegalRepresentativeOrganisationList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.NO)
                 .build()
         ));
@@ -157,19 +162,17 @@ class LegalRepForDefendantAccessValidatorTest {
     void shouldThrowWhenAuthenticatedOrganisationIdIsBlankAndUserIdsDoNotMatch() {
         // Given
         UUID authenticatedUserId = UUID.randomUUID();
-        UUID linkedUserId = UUID.randomUUID();
 
         PartyEntity defendant = PartyEntity.builder().build();
 
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId("ORG-123")
-            .idamId(linkedUserId)
             .build();
 
         defendant.setPartyLegalRepresentativeOrganisationList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.YES)
                 .build()
         ));
@@ -195,19 +198,17 @@ class LegalRepForDefendantAccessValidatorTest {
     void shouldThrowWhenOrganisationIdsDoNotMatchAndUserIdsDiffer() {
         // Given
         UUID authenticatedUserId = UUID.randomUUID();
-        UUID linkedUserId = UUID.randomUUID();
 
         PartyEntity defendant = PartyEntity.builder().build();
 
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId("ORG-123")
-            .idamId(linkedUserId)
             .build();
 
         defendant.setPartyLegalRepresentativeOrganisationList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.YES)
                 .build()
         ));

@@ -8,14 +8,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -26,19 +26,21 @@ class LegalRepresentativeSummaryServiceTest {
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
 
     @Mock
-    private SecurityContextService securityContextService;
+    private OrganisationService organisationService;
 
     @Test
     void handleLegalRepresentativeSummary_WithLinkedAndActive_ReturnsMarkDown() {
         // given
-        UUID userId = UUID.randomUUID();
+        String organisationId = "org";
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
+            LegalRepresentativeOrganisationEntity.builder()
+            .organisationId(organisationId)
+            .build();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
                                             .partyLegalRepresentativeOrganisationList(List.of(
                                                 PartyLegalRepresentativeOrganisationEntity.builder()
                                                     .active(YesOrNo.YES)
-                                                    .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
-                                                                             .idamId(userId)
-                                                                             .build())
+                                                    .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                     .build()))
                                             .build());
 
@@ -48,7 +50,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity);
@@ -60,14 +62,16 @@ class LegalRepresentativeSummaryServiceTest {
     @Test
     void handleLegalRepresentativeSummary_WithLinkedAndNotActive_ReturnsEmptyMarkDown() {
         // given
-        UUID userId = UUID.randomUUID();
+        String organisationId = "org";
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
+            LegalRepresentativeOrganisationEntity.builder()
+            .organisationId(organisationId)
+            .build();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
                                                   PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
-                                                      .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
-                                                                               .idamId(userId)
-                                                                               .build())
+                                                      .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
                                               .build());
 
@@ -77,7 +81,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity);
@@ -89,14 +93,16 @@ class LegalRepresentativeSummaryServiceTest {
     @Test
     void handleLegalRepresentativeSummary_WithNotLinkedAndActive_ReturnsEmptyMarkDown() {
         // given
-        UUID userId = UUID.randomUUID();
+        String organisationId = "org";
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
+            LegalRepresentativeOrganisationEntity.builder()
+            .organisationId(organisationId + "1")
+            .build();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
                                                   PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
-                                                      .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
-                                                                               .idamId(UUID.randomUUID())
-                                                                               .build())
+                                                      .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
                                               .build());
 
@@ -106,7 +112,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity);
@@ -118,14 +124,16 @@ class LegalRepresentativeSummaryServiceTest {
     @Test
     void handleLegalRepresentativeSummary_WithNotLinkedAndNotActive_ReturnsEmptyMarkDown() {
         // given
-        UUID userId = UUID.randomUUID();
+        String organisationId = "org";
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
+            LegalRepresentativeOrganisationEntity.builder()
+            .organisationId(organisationId)
+            .build();
         Set<PartyEntity> parties = Set.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
                                                   PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
-                                                      .legalRepresentative(LegalRepresentativeOrganisationEntity.builder()
-                                                                               .idamId(UUID.randomUUID())
-                                                                               .build())
+                                                      .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
                                               .build());
 
@@ -135,7 +143,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity);

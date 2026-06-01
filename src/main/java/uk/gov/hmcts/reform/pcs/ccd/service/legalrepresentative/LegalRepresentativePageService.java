@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -28,8 +27,9 @@ public class LegalRepresentativePageService {
 
     @Transactional
     public void save(String organisationId, long caseReference, LegalRepresentativeDetails legalRepresentativeDetails) {
-        Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisation = legalRepresentativeOrganisationRepository
-            .findByOrganisationIdAndCaseReference(organisationId, caseReference);
+        Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisation =
+            legalRepresentativeOrganisationRepository
+                .findByOrganisationIdAndCaseReference(organisationId, caseReference);
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             legalRepresentativeOrganisation.orElseGet(LegalRepresentativeOrganisationEntity::new);

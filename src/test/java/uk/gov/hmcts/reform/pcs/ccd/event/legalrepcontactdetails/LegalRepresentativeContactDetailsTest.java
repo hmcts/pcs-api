@@ -19,8 +19,6 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -140,13 +138,12 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
     @Test
     void submit_SavesLegalRepresentativeDetails() {
         // given
-        UUID userId = UUID.randomUUID();
         String organisationId = "org";
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder().build();
         PCSCase caseData = PCSCase.builder()
             .legalRepresentativeDetails(legalRepresentativeDetails)
             .build();
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // when
         SubmitResponse<State> submitResponse = callSubmitHandler(caseData);

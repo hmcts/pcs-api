@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresent
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +30,12 @@ public class LegalRepresentativeService {
      *     correspond to a known legal rep in the PCS database
      */
     public Optional<DynamicList> getRepresentedPartiesDynamicList(String legalRepOrgId, long caseReference) {
-        return legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(  legalRepOrgId, caseReference)
+        return legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(legalRepOrgId,
+                                                                                              caseReference)
             .map(
                 legalRepresentativeOrganisationEntity -> {
-                    List<PartyEntity> partyEntities = legalRepresentativeOrganisationEntity.getPartyLegalRepresentativeOrganisationList()
+                    List<PartyEntity> partyEntities = legalRepresentativeOrganisationEntity
+                        .getPartyLegalRepresentativeOrganisationList()
                         .stream()
                         .map(PartyLegalRepresentativeOrganisationEntity::getParty)
                         .toList();

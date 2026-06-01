@@ -155,7 +155,8 @@ public class PcsCaseEntity {
         counterClaim.setPcsCase(this);
     }
 
-    public void addLegalRepresentativeOrganisation(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation) {
+    public void addLegalRepresentativeOrganisation(LegalRepresentativeOrganisationEntity
+                                                       legalRepresentativeOrganisation) {
         legalRepresentativeOrganisations.add(legalRepresentativeOrganisation);
         legalRepresentativeOrganisation.setPcsCase(this);
     }

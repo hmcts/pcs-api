@@ -40,7 +40,8 @@ public class LegalRepForDefendantAccessValidator {
                 .anyMatch(partyLegalRepresentativeOrganisation ->
                               partyLegalRepresentativeOrganisation.getActive().equals(YesOrNo.YES)
                                   && isOrganisationMatch(
-                                  partyLegalRepresentativeOrganisation.getLegalRepresentativeOrganisation().getOrganisationId(),
+                                  partyLegalRepresentativeOrganisation.getLegalRepresentativeOrganisation()
+                                      .getOrganisationId(),
                                   organisationId
                               )
                 ))
