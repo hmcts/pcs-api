@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
 
 @AllArgsConstructor
 @Component
@@ -47,7 +47,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         pageBuilder
             .page("reasonsForPossessionWales", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showCondition(ShowConditions.WALES + " AND showReasonsForGroundsPageWales=\"Yes\"")
+            .showCondition(WALES + " AND showReasonsForGroundsPageWales=\"Yes\"")
             .readonly(PCSCase::getShowReasonsForGroundsPageWales, NEVER_SHOW)
             .label("reasonsForPossessionWales-separator", "---")
             .complex(PCSCase::getGroundsReasonsWales)

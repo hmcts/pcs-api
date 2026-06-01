@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -16,6 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
+
 
 @AllArgsConstructor
 @Component
@@ -65,7 +66,7 @@ public class PreActionProtocol implements CcdPageConfiguration {
                   </section>
 
                   """,
-                        ShowConditions.ENGLAND)
+                        ENGLAND)
                 .label("preActionProtocol-info-wales",
                         """
                   ---
@@ -103,11 +104,11 @@ public class PreActionProtocol implements CcdPageConfiguration {
                   </section>
 
                   """,
-                        ShowConditions.WALES)
+                        WALES)
                 .mandatoryWithLabel(PCSCase::getPreActionProtocolCompleted,
                         "Have you followed the pre-action protocol?")
                 .mandatory(PCSCase::getPreActionProtocolIncompleteExplanation,
-                           ShowConditions.ENGLAND + " AND "
+                           ENGLAND + " AND "
                                + "preActionProtocolCompleted=\"NO\"")
                 .label("preActionProtocol-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -12,6 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentSectionRoutingService;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +24,7 @@ public class CheckingNotice implements CcdPageConfiguration {
         pageBuilder
                 .page("checkingNotice", this::midEvent)
                 .pageLabel("Notice of your intention to begin possession proceedings")
-                .showCondition(ShowConditions.ENGLAND)
+                .showCondition(ENGLAND)
                 .label("checkingNotice-info",
                         """
                         ---

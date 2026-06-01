@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGro
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 @Slf4j
 @AllArgsConstructor
@@ -38,7 +36,7 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
             .page("assuredNoArrearsGroundsForPossession", this::midEvent)
             .pageLabel("What are your grounds for possession?")
             .showCondition("claimDueToRentArrears=\"No\" AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                             + " AND " + ShowConditions.ENGLAND
+                             + " AND " + ENGLAND
             )
             .readonly(PCSCase::getShowRentSectionPage, NEVER_SHOW)
             .complex(PCSCase::getNoRentArrearsGroundsOptions)

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
+
 // Grounds for possession Standard Contract and Other Contract
 @Component
 @Slf4j
@@ -34,7 +36,7 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
         pageBuilder
             .page("groundsForPossessionWales", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showCondition(ShowConditions.WALES + " AND "
+            .showCondition(WALES + " AND "
                 + "(occupationLicenceTypeWales=\"STANDARD_CONTRACT\" OR occupationLicenceTypeWales=\"OTHER\")")
             .label(
                 "groundsForPossessionWales-info",
@@ -75,11 +77,11 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
             data.setGroundsForPossessionWales(grounds);
         }
 
-        Set<DiscretionaryGroundWales> discretionaryGrounds = 
+        Set<DiscretionaryGroundWales> discretionaryGrounds =
             Objects.requireNonNullElse(grounds.getDiscretionaryGrounds(), Set.of());
-        Set<MandatoryGroundWales> mandatoryGrounds = 
+        Set<MandatoryGroundWales> mandatoryGrounds =
             Objects.requireNonNullElse(grounds.getMandatoryGrounds(), Set.of());
-        Set<EstateManagementGroundsWales> estateManagementGrounds = 
+        Set<EstateManagementGroundsWales> estateManagementGrounds =
             Objects.requireNonNullElse(grounds.getEstateManagementGrounds(), Set.of());
 
         boolean hasDiscretionary = !discretionaryGrounds.isEmpty();

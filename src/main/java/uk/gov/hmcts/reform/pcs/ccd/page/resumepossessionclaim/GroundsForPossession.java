@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 import java.util.Set;
 
@@ -36,7 +35,7 @@ public class GroundsForPossession implements CcdPageConfiguration {
                     + "AND tenancy_TypeOfTenancyLicence!=\"INTRODUCTORY_TENANCY\" "
                     + "AND tenancy_TypeOfTenancyLicence!=\"DEMOTED_TENANCY\" "
                     + "AND tenancy_TypeOfTenancyLicence!=\"OTHER\""
-                    + " AND " + ShowConditions.ENGLAND)
+                    + " AND " + ENGLAND)
             .label("groundsForPossession-lineSeparator", "---")
             .mandatory(PCSCase::getClaimDueToRentArrears)
             .label("groundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

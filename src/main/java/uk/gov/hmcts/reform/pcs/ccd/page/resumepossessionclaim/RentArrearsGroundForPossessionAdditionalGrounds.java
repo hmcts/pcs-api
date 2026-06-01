@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGroundsValidationUtil;
 
 import java.util.Set;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 /**
  * Page for selecting additional grounds for possession on an assured tenancy.
@@ -38,7 +38,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             .showCondition("hasOtherAdditionalGrounds=\"Yes\""
                            + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                            + " AND claimDueToRentArrears=\"Yes\""
-                           + " AND " + ShowConditions.ENGLAND)
+                           + " AND " + ENGLAND)
             .label("groundForPossessionAdditionalGrounds-info", """
             ---
             <p class="govuk-body">You may have already given the defendants notice of your intention to begin

@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -16,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 @AllArgsConstructor
 @Component
@@ -32,7 +32,7 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                     + " AND (tenancy_TypeOfTenancyLicence=\"INTRODUCTORY_TENANCY\""
                     + " OR tenancy_TypeOfTenancyLicence=\"DEMOTED_TENANCY\""
                     +  " OR tenancy_TypeOfTenancyLicence=\"OTHER\")"
-                    + " AND " + ShowConditions.ENGLAND)
+                    + " AND " + ENGLAND)
             .complex(PCSCase::getIntroductoryDemotedOtherGroundReason)
             .label("introductoryDemotedOtherGroundsReasons-antiSocial-label","""
                 ---

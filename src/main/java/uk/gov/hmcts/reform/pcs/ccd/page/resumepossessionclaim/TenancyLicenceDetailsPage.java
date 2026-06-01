@@ -1,8 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -18,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 @Component
 public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
@@ -36,7 +35,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
         pageBuilder
             .page("tenancyLicenceDetails", this::midEvent)
             .pageLabel("Tenancy or licence details")
-            .showCondition(ShowConditions.ENGLAND)
+            .showCondition(ENGLAND)
             .label("tenancyLicenceDetails-info", """
                ---
                <h2 class="govuk-heading-m">Tenancy or licence type</h2>

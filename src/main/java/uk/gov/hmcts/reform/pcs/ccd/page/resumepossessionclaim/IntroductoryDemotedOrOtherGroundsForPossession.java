@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -23,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 @AllArgsConstructor
 @Component
@@ -39,7 +38,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                 "tenancy_TypeOfTenancyLicence=\"INTRODUCTORY_TENANCY\" "
                   + "OR tenancy_TypeOfTenancyLicence=\"DEMOTED_TENANCY\" "
                   + "OR tenancy_TypeOfTenancyLicence=\"OTHER\""
-                  + " AND " + ShowConditions.ENGLAND)
+                  + " AND " + ENGLAND)
             .readonly(PCSCase::getShowIntroductoryDemotedOtherGroundReasonPage, NEVER_SHOW)
             .complex(PCSCase::getIntroductoryDemotedOrOtherGroundsForPossession)
                 .label(

@@ -21,6 +21,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretiona
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS_S160;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.RENT_ARREARS_S157;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
 
 @Component
 public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfiguration {
@@ -34,7 +35,7 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
                 .pageLabel("What are your grounds for possession?")
                 .showCondition(
                         "occupationLicenceTypeWales=\"SECURE_CONTRACT\""
-                        + " AND " + ShowConditions.WALES
+                        + " AND " + WALES
                 )
                 .label("secureOrFlexibleGroundsForPossessionWales-info", """
                ---

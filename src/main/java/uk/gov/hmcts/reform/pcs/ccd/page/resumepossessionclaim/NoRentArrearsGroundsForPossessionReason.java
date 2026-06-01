@@ -20,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
+
 @Component
 @Slf4j
 @AllArgsConstructor
@@ -39,7 +41,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .showCondition("claimDueToRentArrears=\"No\" "
                                + "AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                                + " AND noRentArrears_ShowGroundReasonPage=\"Yes\""
-                               + " AND " + ShowConditions.ENGLAND)
+                               + " AND " + ENGLAND)
             .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsGroundsReasons)
             // Ground 1

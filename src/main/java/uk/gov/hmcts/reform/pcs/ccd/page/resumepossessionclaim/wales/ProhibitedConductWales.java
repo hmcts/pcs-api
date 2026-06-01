@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
-
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -18,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
+
 @Component
 @AllArgsConstructor
 public class ProhibitedConductWales implements CcdPageConfiguration {
@@ -29,7 +29,7 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
         pageBuilder
             .page("prohibitedConductWales", this::midEvent)
             .pageLabel("Prohibited conduct standard contract")
-            .showCondition(ShowConditions.WALES)
+            .showCondition(WALES)
             .label("prohibitedConductWales-info", """
                  ---
                 <p class="govuk-body" tabindex="0">
