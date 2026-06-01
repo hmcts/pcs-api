@@ -13,5 +13,8 @@ public enum EventId {
     maintainCaseLink,
     dashboardView,
     confirmEviction,
-    addCaseNote
+    addCaseNote,
+    createFlags,
+    amendFlags,
+    payment
 }

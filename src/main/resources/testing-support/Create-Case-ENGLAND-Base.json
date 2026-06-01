@@ -94,7 +94,7 @@
     "fullNameLegalRep": "John",
     "firmNameLegalRep": "Doe",
     "positionLegalRep": "Solicitor",
-    "agreementLegalRep": [
+    "agreementClaimantLegalRep": [
       "AGREED"
     ]
   }

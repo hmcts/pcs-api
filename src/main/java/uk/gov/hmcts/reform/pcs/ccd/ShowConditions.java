@@ -25,4 +25,8 @@ public class ShowConditions {
         return "%sCONTAINS\"%s\"".formatted(fieldId, value.name());
     }
 
+    public static String and(String... conditions) {
+        return String.join(" AND ", conditions);
+    }
+
 }
