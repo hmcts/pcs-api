@@ -55,6 +55,6 @@ export class GlobalSearchCaseAction implements IAction {
     await expect(resultRow.getByRole('link', { name: searchResults.viewLinkText })).toBeVisible();
     await resultRow.getByRole('link', { name: searchResults.viewLinkText }).click();
     await expect(page).toHaveURL(/#Summary$/);
-    //await expect(page.locator('.mat-tab-label-active .mat-tab-label-content', { hasText: /^Summary$/ })).toBeVisible();
+    await expect(page.locator('.mat-tab-label-active .mat-tab-label-content', { hasText: /^Summary$/ })).toBeVisible();
   }
 }

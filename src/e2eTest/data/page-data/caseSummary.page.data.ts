@@ -10,6 +10,5 @@ export const caseSummary = {
   makeAnApplication: 'Make an application',
   addCaseNote: 'Add a case note',
   go: "Go",
-  linkedCasesTab: 'Linked cases',
-  summaryTab: 'Summary',
+  linkedCasesTab: 'Linked cases'
 }
