@@ -18,6 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -30,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateServiceRequestResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
@@ -39,6 +43,8 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.GEN_APP_ISSUE;
 
 @Slf4j
@@ -49,6 +55,7 @@ public class PaymentService {
     private final PaymentRequestMapper paymentRequestMapper;
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final FeePaymentRepository feePaymentRepository;
+    private final CounterClaimRepository counterClaimRepository;
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
     private final FeeService feeService;
@@ -64,7 +71,8 @@ public class PaymentService {
 
     public PaymentService(PaymentsClient paymentsClient, PaymentRequestMapper paymentRequestMapper,
                           @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
-                          FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
+                          FeePaymentRepository feePaymentRepository, CounterClaimRepository counterClaimRepository,
+                          PcsCaseService pcsCaseService,
                           PartyService partyService, FeeService feeService,
                           PaymentCallbackStrategyFactory paymentCallbackStrategyFactory,
                           SecurityContextService securityContextService, ObjectMapper objectMapper) {
@@ -72,6 +80,7 @@ public class PaymentService {
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
         this.feePaymentRepository = feePaymentRepository;
+        this.counterClaimRepository = counterClaimRepository;
         this.pcsCaseService = pcsCaseService;
         this.partyService = partyService;
         this.feeService = feeService;
@@ -88,13 +97,16 @@ public class PaymentService {
         FeeDetails feeDetails = feeService.getFee(feeType);
         UUID currentUserId = securityContextService.getCurrentUserId();
         PartyEntity responsibleParty = partyService.getPartyEntityByIdamId(currentUserId, caseReference);
+        PaymentCallbackHandlerType callbackHandlerType = getCallbackHandlerType(feeType);
+        UUID relatedEntityId = getRelatedEntityId(feeType, caseReference, responsibleParty.getId());
 
         FeesAndPayTaskData feesAndPayTaskData = FeesAndPayTaskData.builder()
             .caseReference(caseReference)
             .feeDetails(feeDetails)
             .ccdCaseNumber(Long.toString(caseReference))
             .responsiblePartyId(responsibleParty.getId())
-            .paymentCallbackHandlerType(GEN_APP_ISSUE)
+            .paymentCallbackHandlerType(callbackHandlerType)
+            .relatedEntityId(relatedEntityId)
             .build();
 
         PaymentServiceResponse paymentServiceResponse = createServiceRequest(feesAndPayTaskData);
@@ -165,6 +177,42 @@ public class PaymentService {
             .status(govPayCardPaymentResponse.getStatus())
             .nextUrl(govPayCardPaymentResponse.getNextUrl())
             .build();
+    }
+
+    private PaymentCallbackHandlerType getCallbackHandlerType(FeeType feeType) {
+        if (feeType == FeeType.GEN_APP_STANDARD_FEE || feeType == FeeType.GEN_APP_MAX_FEE) {
+            return GEN_APP_ISSUE;
+        }
+        if (isCounterClaimFeeType(feeType)) {
+            return COUNTER_CLAIM_ISSUE;
+        }
+        return CLAIM;
+    }
+
+    private UUID getRelatedEntityId(FeeType feeType, long caseReference, UUID responsiblePartyId) {
+        if (!isCounterClaimFeeType(feeType)) {
+            return null;
+        }
+
+        return counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdAndStatusOrderByClaimSubmittedDateDesc(
+                caseReference,
+                responsiblePartyId,
+                CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED
+            )
+            .or(() -> counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdOrderByClaimSubmittedDateDesc(
+                caseReference,
+                responsiblePartyId
+            ))
+            .map(CounterClaimEntity::getId)
+            .orElseThrow(() -> new IllegalStateException(
+                "Counterclaim not found for case %d and party %s".formatted(caseReference, responsiblePartyId)
+            ));
+    }
+
+    private boolean isCounterClaimFeeType(FeeType feeType) {
+        return feeType == FeeType.COUNTER_CLAIM
+            || feeType == FeeType.COUNTER_CLAIM_RANGED
+            || feeType == FeeType.COUNTER_CLAIM_FLAT_FEE_FEE0450;
     }
 
 
