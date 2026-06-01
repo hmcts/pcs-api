@@ -1,12 +1,10 @@
-import { expect, test } from '@utils/test-fixtures';
+import { test } from '@utils/test-fixtures';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
-import { globalSearch,searchResults,noResultFound } from '@data/page-data-figma';
+import { globalSearch} from '@data/page-data-figma';
 import { dismissCookieBanner } from '@config/cookie-banner';
-import { getCaseTypeId } from '@utils/common/caseType.utils';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-import {caseSummary, user} from '@data/page-data';
+import { user} from '@data/page-data';
 
 test.use({ storageState: undefined });
 
@@ -28,13 +26,6 @@ test.beforeEach(async ({ page, context }) => {
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.ctscAdministrator);
   await dismissCookieBanner(page, 'analytics');
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
-  await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
-  }).toPass({
-    timeout: VERY_LONG_TIMEOUT,
-  });
 });
 
 test.afterEach(async () => {
@@ -48,11 +39,17 @@ test.describe('[Global Search - @globalSearch @PR @CC @nightly]', () => {
     await performAction('accessingTheSearch');
     await performValidation('mainHeader', globalSearch.mainHeader);
   });
-  
-  test('Valid case reference', async () => {
+
+  test('Valid Case Reference with Mortage and Landlord Possession Claim Service', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('searchResults');
+    await performAction('validateResults');
+  });
+
+  test('Valid Case Reference with All Service', async () => {
+    await performAction('accessingTheSearch');
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('validateResults');
   });
   
   test('Invalid case reference', async () => {
@@ -63,7 +60,6 @@ test.describe('[Global Search - @globalSearch @PR @CC @nightly]', () => {
    test('Change search criteria link', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('changeSearchCriteria');
+    await performAction('changeSearchLink', 'changeSearch');
   });
-
 });

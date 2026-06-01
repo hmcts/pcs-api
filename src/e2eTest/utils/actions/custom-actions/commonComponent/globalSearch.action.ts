@@ -2,7 +2,7 @@ import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '../../../controller';
 import { actionRecord, IAction } from '@utils/interfaces';
 import { globalSearch,searchResults,noResultFound } from '@data/page-data-figma';
-import { home,caseSummary } from '@data/page-data';
+import { home } from '@data/page-data';
 
 export class GlobalSearchCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord): Promise<void> {
@@ -10,8 +10,8 @@ export class GlobalSearchCaseAction implements IAction {
       ['accessingTheSearch', () => this.accessingTheSearch(page)],
       ['searchByCaseReference', () => this.searchByCaseReference(fieldName as string, page)],
       ['invalidCaseReferenceSearch', () => this.invalidCaseReferenceSearch(fieldName as string, page)],
-      ['changeSearchCriteria', () => this.changeSearchCriteria(page)],
-      ['searchResults', () => this.searchResults(page)]
+      ['changeSearchLink', () => this.changeSearchLink(fieldName as string, page)],
+      ['validateResults', () => this.validateResults(page)]
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -39,12 +39,12 @@ export class GlobalSearchCaseAction implements IAction {
     await performValidation('mainHeader', noResultFound.mainHeader);
   }
 
-  private async changeSearchCriteria(page: Page): Promise<void> {
-    await page.getByRole('link', { name: searchResults.changeSearchLink }).click();
-    await expect(page.getByRole('heading', { name: globalSearch.mainHeader })).toBeVisible();
+  private async changeSearchLink(changeSearch: string, page: Page): Promise<void> {
+    await performAction('clickLink', searchResults.changeSearchLink);
+    await performValidation('mainHeader', globalSearch.mainHeader);
   }
 
-  private async searchResults(page: Page): Promise<void> {
+  private async validateResults(page: Page): Promise<void> {
     const caseReference = String(process.env.CASE_NUMBER ?? '');
     const resultRow = page.locator('tr').filter({ hasText: caseReference });
     const caseCell = resultRow.locator('td').first();

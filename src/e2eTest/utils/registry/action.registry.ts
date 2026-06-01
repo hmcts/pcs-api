@@ -14,6 +14,7 @@ import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action'
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
 import {GlobalSearchCaseAction} from '@utils/actions/custom-actions/commonComponent/globalSearch.action';
 import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
+import {ClickLinkAction} from '@utils/actions/element-actions/clickLink.action';
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
@@ -94,8 +95,8 @@ export class ActionRegistry {
     ['accessingTheSearch', new GlobalSearchCaseAction()],
     ['searchByCaseReference', new GlobalSearchCaseAction()],
     ['invalidCaseReferenceSearch', new GlobalSearchCaseAction()],
-    ['changeSearchCriteria', new GlobalSearchCaseAction()],
-    ['searchResults', new GlobalSearchCaseAction()],
+    ['changeSearchLink', new GlobalSearchCaseAction()],
+    ['validateResults', new GlobalSearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],
@@ -103,6 +104,7 @@ export class ActionRegistry {
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
     ['provideMoreDetailsOfClaim', new CreateCaseAction()],
+    ['clickLink', new ClickLinkAction()],
     ['clickLinkAndVerifyNewTabTitle', new ClickLinkAndVerifyNewTabTitleAction()],
     ['selectStatementOfTruth', new CreateCaseAction()],
     ['selectAsb', new CreateCaseWalesAction()],
