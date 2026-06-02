@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 
 @Data
 @Builder
@@ -20,16 +19,16 @@ public class AdditionalDocument {
         label = "Type of document",
         typeOverride = FieldType.FixedList,
         typeParameterOverride = "AdditionalDocumentType",
-        access = {CitizenAccess.class, DefendantSolicitorAccess.class}
+        access = {DefendantAccess.class}
     )
     private AdditionalDocumentType documentType;
 
-    @CCD(label = "Document", access = {CitizenAccess.class, DefendantSolicitorAccess.class})
+    @CCD(label = "Document", access = {DefendantAccess.class})
     private Document document;
 
     @CCD(label = "Short description",
         typeOverride = FieldType.TextArea,
-        access = {CitizenAccess.class, DefendantSolicitorAccess.class}
+        access = {DefendantAccess.class}
     )
     private String description;
 }

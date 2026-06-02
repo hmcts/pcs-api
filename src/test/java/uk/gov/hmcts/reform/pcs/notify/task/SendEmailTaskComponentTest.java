@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler.Notificati
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.service.notify.NotificationClient;
@@ -63,7 +63,7 @@ class SendEmailTaskComponentTest {
     private NotificationRepository notificationRepository;
 
     @Mock
-    private TaskInstance<EmailState> taskInstance;
+    private TaskInstance<SendEmailTaskData> taskInstance;
 
     @Mock
     private ExecutionContext executionContext;
@@ -77,7 +77,7 @@ class SendEmailTaskComponentTest {
     private final Duration sendingBackoffDelay = Duration.ofSeconds(30);
     private final Duration statusCheckTaskDelay = Duration.ofMinutes(5);
 
-    private EmailState emailState;
+    private SendEmailTaskData sendEmailTaskData;
     private final UUID dbNotificationId = UUID.randomUUID();
     private final String templateId = "template-456";
     private final String emailAddress = "test@example.com";
@@ -98,7 +98,7 @@ class SendEmailTaskComponentTest {
         );
 
         String taskId = "task-123";
-        emailState = EmailState.builder()
+        sendEmailTaskData = SendEmailTaskData.builder()
             .id(taskId)
             .dbNotificationId(dbNotificationId)
             .templateId(templateId)
@@ -106,7 +106,7 @@ class SendEmailTaskComponentTest {
             .personalisation(personalisation)
             .build();
 
-        when(taskInstance.getData()).thenReturn(emailState);
+        when(taskInstance.getData()).thenReturn(sendEmailTaskData);
         when(taskInstance.getId()).thenReturn(taskId);
     }
 
@@ -118,13 +118,13 @@ class SendEmailTaskComponentTest {
         @DisplayName("Should create task descriptor with correct name and type")
         void shouldCreateTaskDescriptorWithCorrectNameAndType() {
             assertThat(SendEmailTaskComponent.sendEmailTask.getTaskName()).isEqualTo("send-email-task");
-            assertThat(SendEmailTaskComponent.sendEmailTask.getDataClass()).isEqualTo(EmailState.class);
+            assertThat(SendEmailTaskComponent.sendEmailTask.getDataClass()).isEqualTo(SendEmailTaskData.class);
         }
 
         @Test
         @DisplayName("Should create send email task bean")
         void shouldCreateSendEmailTaskBean() {
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
             assertThat(task).isNotNull();
         }
@@ -142,9 +142,9 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenReturn(sendEmailResponse);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString());
             verify(notificationService).updateNotificationAfterSending(dbNotificationId, notificationId);
@@ -160,7 +160,7 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenReturn(sendEmailResponse);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
             task.execute(taskInstance, executionContext);
 
@@ -181,9 +181,9 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenReturn(sendEmailResponse);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteReplace.class);
         }
@@ -198,9 +198,9 @@ class SendEmailTaskComponentTest {
         void shouldReturnOnCompleteRemoveWhenNotificationNotFound() throws Exception {
             when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.empty());
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
             verify(notificationClient, never()).sendEmail(anyString(), anyString(), any(), anyString());
@@ -212,9 +212,9 @@ class SendEmailTaskComponentTest {
         void shouldLogErrorWhenNotificationNotFound() {
             when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.empty());
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         }
@@ -232,7 +232,7 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenReturn(sendEmailResponse);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
             assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
                 .isInstanceOf(PermanentNotificationException.class)
@@ -257,9 +257,9 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenThrow(exception);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
             verify(errorHandler).handleSendEmailException(eq(exception), eq(caseNotification), anyString(), any());
@@ -277,9 +277,9 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenThrow(exception);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
             verify(errorHandler).handleSendEmailException(eq(exception), eq(caseNotification), anyString(), any());
@@ -300,7 +300,7 @@ class SendEmailTaskComponentTest {
                 when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                     .thenThrow(exception);
 
-                CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+                CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
                 assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
                     .isInstanceOf(TemporaryNotificationException.class)
@@ -323,7 +323,7 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenThrow(exception);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
             task.execute(taskInstance, executionContext);
 
@@ -345,7 +345,7 @@ class SendEmailTaskComponentTest {
 
             statusUpdater.accept(statusUpdate);
             verify(notificationService).updateNotificationStatus(
-                statusUpdate.notification().getNotificationId(),
+                statusUpdate.notification().getId(),
                 statusUpdate.status().toString()
             );
         }
@@ -363,9 +363,9 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenReturn(sendEmailResponse);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString());
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteReplace.class);
@@ -374,7 +374,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should handle empty personalisation map")
         void shouldHandleEmptyPersonalisationMap() throws Exception {
-            EmailState emptyPersonalisationState = emailState.toBuilder()
+            SendEmailTaskData emptyPersonalisationState = sendEmailTaskData.toBuilder()
                 .personalisation(Map.of())
                 .build();
             when(taskInstance.getData()).thenReturn(emptyPersonalisationState);
@@ -383,9 +383,9 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(Map.of()), anyString()))
                 .thenReturn(sendEmailResponse);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).sendEmail(eq(templateId), eq(emailAddress), eq(Map.of()), anyString());
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteReplace.class);
@@ -399,7 +399,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should configure task with correct failure handlers")
         void shouldConfigureTaskWithCorrectFailureHandlers() {
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
             assertThat(task).isNotNull();
         }
@@ -417,7 +417,7 @@ class SendEmailTaskComponentTest {
                 Duration.ofMinutes(10)
             );
 
-            CustomTask<EmailState> task = component.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = component.sendEmailTask();
             assertThat(task).isNotNull();
         }
     }
@@ -434,9 +434,9 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenReturn(sendEmailResponse);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationRepository).findById(dbNotificationId);
             verify(notificationClient).sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString());
@@ -455,9 +455,9 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenThrow(exception);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationRepository).findById(dbNotificationId);
             verify(notificationClient).sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString());
@@ -477,7 +477,7 @@ class SendEmailTaskComponentTest {
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenThrow(exception);
 
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+            CustomTask<SendEmailTaskData> task = sendEmailTaskComponent.sendEmailTask();
 
             assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
                 .isInstanceOf(TemporaryNotificationException.class)

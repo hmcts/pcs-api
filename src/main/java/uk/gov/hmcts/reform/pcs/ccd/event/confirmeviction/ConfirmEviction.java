@@ -27,7 +27,7 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(confirmEviction.name(), this::submit)
-                .forAllStates()
+                .forState(State.CASE_ISSUED)
                 .name("Confirm the eviction details")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();

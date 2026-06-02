@@ -1,11 +1,13 @@
 package uk.gov.hmcts.reform.pcs.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.Scheduler;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.event.ExecutionInterceptor;
 import com.github.kagkarlsson.scheduler.event.SchedulerListener;
+import com.github.kagkarlsson.scheduler.serializer.JacksonSerializer;
 import com.github.kagkarlsson.scheduler.task.Task;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -18,13 +20,13 @@ import javax.sql.DataSource;
 import java.time.Duration;
 import java.util.List;
 
-import static com.github.kagkarlsson.scheduler.boot.config.DbSchedulerConfigurationSupport.SPRING_JAVA_SERIALIZER;
-
 @Configuration
 @Slf4j
-@AllArgsConstructor
+@Getter
 public class SchedulingConfig {
 
+    @Value("${db-scheduler.start-interval-seconds:5}")
+    private int scheduleFeeCaseIssuedInSeconds = 5;
 
     /**
      * SchedulerClient bean is always on and this is  used to schedule jobs, but does NOT execute them.
@@ -32,8 +34,11 @@ public class SchedulingConfig {
      */
     @Bean
     @Primary
-    public SchedulerClient schedulerClient(DataSource dataSource) {
-        return SchedulerClient.Builder.create(dataSource).build();
+    public SchedulerClient schedulerClient(DataSource dataSource, ObjectMapper objectMapper) {
+        return SchedulerClient.Builder
+            .create(dataSource)
+            .serializer(new JacksonSerializer(objectMapper))
+            .build();
     }
 
     /**
@@ -49,19 +54,18 @@ public class SchedulingConfig {
     @ConditionalOnProperty(prefix = "db-scheduler", name = "executor-enabled", havingValue = "true")
     @DependsOn("schedulerClient")
     public Scheduler startupTasksScheduler(DataSource dataSource,
-                                            @Value("${db-scheduler.threads}")
-                                            int threadCount,
-                                            @Value("${db-scheduler.polling-interval-seconds}")
-                                            long interval,
-                                            List<Task<?>> tasks,
-                                            List<SchedulerListener> schedulerListeners,
-                                            List<ExecutionInterceptor> executionInterceptors) {
+                                           ObjectMapper objectMapper,
+                                           @Value("${db-scheduler.threads}") int threadCount,
+                                           @Value("${db-scheduler.polling-interval-seconds}") long interval,
+                                           List<Task<?>> tasks,
+                                           List<SchedulerListener> schedulerListeners,
+                                           List<ExecutionInterceptor> executionInterceptors) {
         log.info("Starting scheduler");
 
         var builder = Scheduler.create(dataSource, tasks)
             .threads(threadCount)
             .pollingInterval(Duration.ofSeconds(interval))
-            .serializer(SPRING_JAVA_SERIALIZER)
+            .serializer(new JacksonSerializer(objectMapper))
             .registerShutdownHook();
 
         schedulerListeners.forEach(builder::addSchedulerListener);

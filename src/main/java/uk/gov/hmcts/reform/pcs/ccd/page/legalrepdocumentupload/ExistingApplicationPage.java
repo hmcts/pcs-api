@@ -27,7 +27,7 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
         pageBuilder
             .page(pageKey)
             .pageLabel("Confirm if these documents relate to an existing application")
-            .showCondition("showExistingApplicationPage=\"No\"")
+            .showCondition("showExistingApplicationPage=\"Yes\"")
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
             .readonly(LegalRepDocumentUploadDetails::getShowExistingApplicationPage, NEVER_SHOW)
             .done()

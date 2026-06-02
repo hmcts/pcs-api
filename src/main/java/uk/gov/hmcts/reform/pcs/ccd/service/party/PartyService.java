@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
+import io.micrometer.common.util.StringUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -14,12 +15,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +35,10 @@ public class PartyService {
 
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
-    private final OrganisationService organisationService;
 
-    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
-        PartyEntity claimant = createClaimant(pcsCase);
+    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
+                                 String organisationIdForCurrentUser) {
+        PartyEntity claimant = createClaimant(pcsCase, organisationIdForCurrentUser);
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
@@ -58,13 +59,59 @@ public class PartyService {
         );
     }
 
+    public PartyEntity getPartyEntityByEntityId(UUID entityId, long caseReference) {
+        return partyRepository.queryPartyById(entityId, caseReference)
+            .orElseThrow(() -> new PartyNotFoundException(
+                "No party found for entity ID: " + entityId + " and case reference: " + caseReference));
+    }
+
     public PartyEntity getPartyEntityByIdamId(UUID idamId, long caseReference) {
         return partyRepository.queryPartyByIdamId(idamId, caseReference)
             .orElseThrow(() -> new PartyNotFoundException(
                 "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
     }
 
-    private PartyEntity createClaimant(PCSCase pcsCase) {
+    public String getPartyName(PartyEntity partyEntity) {
+        if (StringUtils.isNotBlank(partyEntity.getOrgName())) {
+            return partyEntity.getOrgName();
+        } else {
+            return partyEntity.getFirstName() + " " + partyEntity.getLastName();
+        }
+    }
+
+    public PartyEntity getPrimaryClaimantPartyEntity(PcsCaseEntity pcsCaseEntity) {
+        return getPrimaryPartyEntityOfRole(pcsCaseEntity, PartyRole.CLAIMANT);
+    }
+
+    public PartyEntity getPrimaryDefendantPartyEntity(PcsCaseEntity pcsCaseEntity) {
+        return getPrimaryPartyEntityOfRole(pcsCaseEntity, PartyRole.DEFENDANT);
+    }
+
+    private static PartyEntity getPrimaryPartyEntityOfRole(PcsCaseEntity pcsCaseEntity, PartyRole role) {
+        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
+
+        return mainClaim.getClaimParties().stream()
+            .filter(claimPartyEntity -> claimPartyEntity.getRole() == role)
+            .findFirst()
+            .map(ClaimPartyEntity::getParty)
+            .orElseThrow(() -> new PartyNotFoundException("No party of type %s found on case".formatted(role)));
+    }
+
+    public boolean canSendEmailNotification(PartyEntity party) {
+        return party.getEmailAddress() != null
+            && party.getContactPreferences() != null
+            && party.getContactPreferences().getContactByEmail() != null
+            && party.getContactPreferences().getContactByEmail().toBoolean();
+    }
+
+    public PartyEntity getPartyEntityById(UUID partyId, long caseReference) {
+        return partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
+            .orElseThrow(() -> new IllegalStateException(
+                "No party found for party ID: " + partyId + " and case reference: " + caseReference
+            ));
+    }
+
+    private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
         Objects.requireNonNull(claimantInformation, "Claimant must be provided");
@@ -72,7 +119,7 @@ public class PartyService {
         PartyEntity claimantParty = new PartyEntity();
 
         setClaimantOrgName(claimantInformation, claimantParty);
-        claimantParty.setOrganisationId(organisationService.getOrganisationIdForCurrentUser());
+        claimantParty.setOrganisationId(organisationIdForCurrentUser);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);

@@ -123,7 +123,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {
         return switch (category) {
             case ADJOURN_HEARING_APPLICATION -> GenAppType.ADJOURN;
-            case SUSPEND_EVICTION_APPLICATION -> GenAppType.SUSPEND;
             case SET_ASIDE_ORDER_APPLICATION -> GenAppType.SET_ASIDE;
             case GENERAL_APPLICATION -> GenAppType.SOMETHING_ELSE;
             default -> null;

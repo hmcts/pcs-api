@@ -12,9 +12,6 @@ public enum DocumentUploadCategory {
     ADJOURN_HEARING_APPLICATION(
         "Yes, the documents I’m uploading relate to the application to adjourn the hearing - submitted on %s",
         true),
-    SUSPEND_EVICTION_APPLICATION(
-        "Yes, the documents I’m uploading relate to an application to suspend the eviction - submitted on %s",
-        true),
     SET_ASIDE_ORDER_APPLICATION(
         "Yes, the documents I’m uploading relate to an application to set aside the order - submitted on %s",
         true),

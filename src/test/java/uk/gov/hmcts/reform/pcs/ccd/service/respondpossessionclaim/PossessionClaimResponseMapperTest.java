@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.ClaimantOrgNameListCreator;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.util.List;
@@ -36,13 +37,14 @@ class PossessionClaimResponseMapperTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new PossessionClaimResponseMapper(addressMapper);
+        underTest = new PossessionClaimResponseMapper(addressMapper, new ClaimantOrgNameListCreator());
     }
 
     @Test
     void shouldMapDefendantDataWithContactDetails() {
         // Given
         UUID defendantUserId = UUID.randomUUID();
+        UUID defendantPartyId = UUID.randomUUID();
 
         AddressEntity addressEntity = AddressEntity.builder()
             .addressLine1("123 Test Street")
@@ -50,6 +52,7 @@ class PossessionClaimResponseMapperTest {
             .build();
 
         PartyEntity matchedDefendant = PartyEntity.builder()
+            .id(defendantPartyId)
             .idamId(defendantUserId)
             .firstName("John")
             .lastName("Doe")
@@ -96,6 +99,7 @@ class PossessionClaimResponseMapperTest {
         assertThat(contactDetails.getParty().getAddressKnown()).isEqualTo(VerticalYesNo.YES);
         assertThat(contactDetails.getParty().getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
         assertThat(contactDetails.getParty().getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getCurrentDefendantPartyId()).isEqualTo(defendantPartyId.toString());
     }
 
     @Test
