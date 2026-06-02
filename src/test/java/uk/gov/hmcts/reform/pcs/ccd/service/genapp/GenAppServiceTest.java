@@ -15,7 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -31,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -62,6 +65,8 @@ class GenAppServiceTest {
     @Mock
     private GenAppRepository genAppRepository;
     @Mock
+    private DocumentService documentService;
+    @Mock
     private DocumentNameService documentNameService;
     @Mock(strictness = LENIENT)
     private DocumentRepository documentRepository;
@@ -85,7 +90,8 @@ class GenAppServiceTest {
         stubUtcClock(TEST_UTC_DATE_TIME);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
-        underTest = new GenAppService(genAppRepository, documentNameService, documentRepository, utcClock);
+        underTest = new GenAppService(genAppRepository, documentService, documentNameService,
+                                      documentRepository, utcClock);
     }
 
     @Test
@@ -299,8 +305,10 @@ class GenAppServiceTest {
                                       eq(mainClaim), eq(applicantPartyId)))
             .thenReturn(modifiedFilename);
 
+        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.CERTIFICATE_OF_SERVICE;
         UploadedDocument uploadedDocument = UploadedDocument.builder()
             .document(document)
+            .documentType(additionalDocumentType)
             .contentType("test content type")
             .sizeInBytes(1234L)
             .build();
@@ -312,6 +320,10 @@ class GenAppServiceTest {
 
         List<DocumentEntity> savedDocumentEntities = List.of(mock(DocumentEntity.class));
         when(documentRepository.saveAll(anyList())).thenReturn(savedDocumentEntities);
+
+        DocumentType expectedDocumentType = DocumentType.CERTIFICATE_OF_SERVICE;
+        when(documentService.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType))
+            .thenReturn(expectedDocumentType);
 
         // When
         underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
@@ -328,6 +340,7 @@ class GenAppServiceTest {
         assertThat(documentEntity.getFileName()).isEqualTo(modifiedFilename);
         assertThat(documentEntity.getUrl()).isEqualTo("test url");
         assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
+        assertThat(documentEntity.getType()).isEqualTo(expectedDocumentType);
         assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
         assertThat(documentEntity.getContentType()).isEqualTo("test content type");
         assertThat(documentEntity.getSize()).isEqualTo(1234L);
