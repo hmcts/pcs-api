@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,6 +33,7 @@ public class PcsCaseService {
     private final AddressMapper addressMapper;
     private final CaseLinkService caseLinkService;
     private final CaseFlagService caseFlagService;
+    private final PostCodeCourtService postCodeCourtService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -85,6 +87,16 @@ public class PcsCaseService {
     public PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    }
+
+    public void allocateCaseManagementLocation(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+        Integer caseManagementLocation =
+            postCodeCourtService.getCourtManagementLocation(pcsCaseEntity.getPropertyAddress().getPostcode());
+        if (caseManagementLocation != null) {
+            pcsCaseEntity.setCaseManagementLocation(caseManagementLocation);
+            pcsCaseRepository.save(pcsCaseEntity);
+        }
     }
 
     public void patchCaseLinks(long caseReference, PCSCase pcsCase) {
