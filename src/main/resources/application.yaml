@@ -252,3 +252,7 @@ core_case_data:
 caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
+data_store_default:
+  log:
+    level: ${DATA_STORE_DEFAULT_LOG_LEVEL:DEBUG}
+

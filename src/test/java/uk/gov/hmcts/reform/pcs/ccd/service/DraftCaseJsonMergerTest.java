@@ -83,7 +83,6 @@ class DraftCaseJsonMergerTest {
                             "parties",
                             "allClaimants",
                             "allDefendants",
-                            "regionId",
                             "allUnderlesseeOrMortgagees",
                             "possessionClaimResponse",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
