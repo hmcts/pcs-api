@@ -1070,6 +1070,30 @@ export class CreateCaseAction implements IAction {
           caseSummary.set('Country', 'United Kingdom')
         }
         break;
+        
+      case 'Defendant Case details':        
+        caseSummary.set(`Defendant 1’s name known?`, formatWord(submitPayLoad.defendant1.nameKnown));
+        caseSummary.set(`First name`, submitPayLoad.defendant1.firstName);
+        caseSummary.set(`Last name`, submitPayLoad.defendant1.lastName);
+        
+        if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'YES') {
+          const address = submitPayLoad.formattedClaimantContactAddress.split('<br>');
+          caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
+          caseSummary.set(`Building and Street`, address[0]);
+          caseSummary.set(`Address Line 2`, address[1]);
+          caseSummary.set(`Town or City`, address[2]);
+          caseSummary.set(`Postcode/Zipcode`, address[3]);
+          caseSummary.set('Country', 'United Kingdom')
+
+        } else if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'NO') {
+          caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
+          caseSummary.set(`Building and Street`, submitPayLoad.defendant1.correspondenceAddress.AddressLine1);
+          caseSummary.set(`Address Line 2`, submitPayLoad.defendant1.correspondenceAddress.AddressLine2);
+          caseSummary.set(`Town or City`, submitPayLoad.defendant1.correspondenceAddress.PostTown);
+          caseSummary.set(`Postcode/Zipcode`, submitPayLoad.defendant1.correspondenceAddress.PostCode);
+          caseSummary.set('Country', 'United Kingdom')
+        }
+        break;
 
       case 'Address of property':
         caseSummary.set(`Building and Street`, createPayLoad.propertyAddress.AddressLine1);
@@ -1089,12 +1113,27 @@ export class CreateCaseAction implements IAction {
           .replace(/_/g, " ")
           .replace(/^\w/, (c: string) => c.toUpperCase())
         );
-        caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate));
+        caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate,'DD/MM/YYYY'));
+        break;
+
+      case 'Tenancy and Occupation Case details':
+        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
+          .toLowerCase()
+          .replace(/_/g, " ")
+          .replace(/^\w/, (c: string) => c.toUpperCase())
+        );
+        caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate,'DD/MONTH/YYYY'));
+        caseSummary.set(`Do you have a copy of the tenancy or licence agreement?`, formatWord(submitPayLoad.tenancy_HasCopyOfTenancyLicence));
+        caseSummary.set(`Details of why you do not have a copy`, submitPayLoad.tenancy_ReasonsForNoTenancyLicenceDocuments);
         break;
 
       case 'Grounds of possession':
         if (submitPayLoad.introGrounds_HasIntroductoryDemotedOtherGroundsForPossession === 'YES') {
-          caseSummary.set(`Grounds`, formatText(submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds[0]));
+          caseSummary.set(`Grounds`, submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds.map(formatText).
+            map((item: string) =>
+              item === "Anti social" ? "Antisocial behaviour" : item
+            )
+            .join(','));
         };
         break;
 
@@ -1105,11 +1144,19 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
         caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
         break;
+      
+      case 'Rent arrears Case details':
+        caseSummary.set(`Rent amount`, formatCurrency(submitPayLoad.rentDetails_CurrentRent));
+        caseSummary.set(`How rent is calculated`, formatWord(submitPayLoad.rentDetails_Frequency));
+        caseSummary.set(`Daily rate`, formatCurrency(submitPayLoad.rentDetails_CalculatedDailyCharge));
+        caseSummary.set(`Previous steps taken to recover rent arrears?`, formatWord(submitPayLoad.rentArrears_RecoveryAttempted));
+        caseSummary.set(`Rent statement`, submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename);
+        caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
+        caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
+        break;
 
       case 'Notice':
-
         const serviceMethod = submitPayLoad.notice_NoticeServiceMethod;
-
         const dateServed =
           serviceMethod === 'FIRST_CLASS_POST'
             ? submitPayLoad.notice_NoticePostedDate
@@ -1120,12 +1167,44 @@ export class CreateCaseAction implements IAction {
         if (dateServed) {
           const formattedDate =
             serviceMethod === 'FIRST_CLASS_POST'
-              ? formatDate(dateServed)
+              ? formatDate(dateServed,'DD/MM/YYYY')
               : formatDateTime(dateServed);
 
           caseSummary.set('Date notice was served', formattedDate);
         }
+        break;
 
+      case 'Notice Case details':
+        const serviceMethodCaseDetails = submitPayLoad.notice_NoticeServiceMethod;
+        const dateServedCaseDetails =
+          serviceMethodCaseDetails === 'FIRST_CLASS_POST'
+            ? submitPayLoad.notice_NoticePostedDate
+            : serviceMethodCaseDetails === 'EMAIL'
+              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              : null;
+        const methodOfService = serviceMethodCaseDetails === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetails === 'EMAIL' ? 'By Email' : null;
+        caseSummary.set('Has notice been served?',formatWord(submitPayLoad.noticeServed));
+        caseSummary.set('Method of service', methodOfService as string);
+
+        if (dateServedCaseDetails) {
+          const formattedDate =
+            serviceMethodCaseDetails === 'FIRST_CLASS_POST'
+              ? formatDate(dateServedCaseDetails, 'DD/MONTH/YYYY')
+              : formatDateTime(dateServedCaseDetails);
+
+          caseSummary.set('Date and time notice served (if applicable)', formattedDate);
+        }
+        break;
+
+      case 'Claim details':
+        caseSummary.set(`Claimant type`, submitPayLoad.claimantType.value.label);
+        caseSummary.set(`Is your claim a trespass claim?`, formatWord(submitPayLoad.claimAgainstTrespassers));
+        break;
+
+      case 'Actions taken':
+        caseSummary.set(`Pre-action protocol followed?`, formatWord(submitPayLoad.preActionProtocolCompleted));
+        caseSummary.set(`Mediation attempted?`, formatWord(submitPayLoad.mediationAttempted));
+        caseSummary.set(`Settlement attempted?`, formatWord(submitPayLoad.settlementAttempted));
         break;
 
       default:
@@ -1135,8 +1214,8 @@ export class CreateCaseAction implements IAction {
     await this.caseTabTableData(page, caseSummarySection.table as string);
 
     const misMatchMap = compareMaps(caseSummary, caseTabMap, {
-      name1: 'CaseSummary',
-      name2: 'CaseSummaryTab',
+      name1: 'CaseSummaryDetails',
+      name2: 'CaseSummaryDetailsTab',
     })
 
     if (misMatchMap.size > 0) {
@@ -1148,9 +1227,9 @@ export class CreateCaseAction implements IAction {
         console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
       }
       console.log(`\n**********  END OF FAILURE LIST. ***************`);
-      throw new Error(`Case Summary validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+      throw new Error(`Case Summary/Details validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
     } else {
-      console.log(`\n✅ Case Summary VALIDATION for section ${caseSummarySection.section} PASSED!\n`);
+      console.log(`\n✅ Case Summary/Details VALIDATION for section ${caseSummarySection.section} PASSED!\n`);
     }
 
     caseTabMap.clear();
