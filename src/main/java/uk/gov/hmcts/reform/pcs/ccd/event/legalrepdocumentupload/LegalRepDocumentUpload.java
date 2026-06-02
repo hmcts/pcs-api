@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
@@ -50,7 +51,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .forAllStates()
                 .name("Upload additional documents")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                .showSummary();
+                .showSummary()
+                .endButtonLabel("${endButtonLabel}");
         legalRepDocumentUploadConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
 
@@ -136,7 +138,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = pcsCase.getLegalRepDocumentUploadDetails();
         if (legalRepDocumentUploadDetails != null) {
             List<LegalRepDocument> legalRepDocuments = legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
-                .map(c -> c.getValue()).toList();
+                .map(ListValue::getValue).toList();
 
             List<DocumentEntity> documentEntities = legalRepDocuments.stream()
                 .map(legalRepDoc -> DocumentEntity.builder()
@@ -163,7 +165,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             case POLICE_REPORT -> DocumentType.POLICE_REPORT;
             case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
             case OTHER -> DocumentType.OTHER;
-            default -> null;
         };
     }
 
