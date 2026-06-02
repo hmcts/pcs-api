@@ -16,6 +16,5 @@ public enum FeeType {
     FeeType(String code) {
         this.code = code;
     }
-
 }
 
