@@ -654,4 +654,7 @@ public class PCSCase {
      */
     @JsonUnwrapped
     private LegalRepresentativeDetails legalRepresentativeDetails;
+
+    @CCD(searchable = false)
+    private VerticalYesNo legalRepUpdatedDetails;
 }

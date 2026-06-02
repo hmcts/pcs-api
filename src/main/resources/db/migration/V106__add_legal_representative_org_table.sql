@@ -1,6 +1,6 @@
 create TABLE legal_representative_org (
   id uuid primary key,
-  organisation_id varchar(80),
+  organisation_id varchar(80) UNIQUE,
   case_id UUID NOT NULL REFERENCES public.pcs_case (id),
   organisation_name varchar(120),
   email varchar(120),
@@ -23,6 +23,9 @@ ALTER TABLE legal_representative
   DROP Column organisation_name;
 
 ALTER TABLE legal_representative
+DROP Column organisation_id;
+
+ALTER TABLE legal_representative
   DROP Column first_name;
 
 ALTER TABLE legal_representative
@@ -36,3 +39,6 @@ ALTER TABLE legal_representative
 
 ALTER TABLE legal_representative
   DROP Column address_id;
+
+ALTER TABLE legal_representative
+  ADD COLUMN organisation_id UUID REFERENCES legal_representative_org(id);
