@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -53,6 +54,7 @@ public class DefendantResponseService {
     private final PaymentAgreementService paymentAgreementService;
     private final DocumentService documentService;
     private final PartyAttributeAssertationService partyAttributeAssertationService;
+    private final CounterClaimRepository counterClaimRepository;
     private final Clock utcClock;
 
     public DefendantResponseService(PartyService partyService,
@@ -65,6 +67,7 @@ public class DefendantResponseService {
                                     PaymentAgreementService paymentAgreementService,
                                     DocumentService documentService,
                                     PartyAttributeAssertationService partyAttributeAssertationService,
+                                    CounterClaimRepository counterClaimRepository,
                                     @Qualifier("utcClock") Clock utcClock) {
         this.partyService = partyService;
         this.partyRepository = partyRepository;
@@ -76,6 +79,7 @@ public class DefendantResponseService {
         this.paymentAgreementService = paymentAgreementService;
         this.documentService = documentService;
         this.partyAttributeAssertationService = partyAttributeAssertationService;
+        this.counterClaimRepository = counterClaimRepository;
         this.utcClock = utcClock;
     }
 
@@ -261,7 +265,7 @@ public class DefendantResponseService {
 
         claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
 
-        return counterClaimEntity;
+        return counterClaimRepository.save(counterClaimEntity);
     }
 
     public boolean hasSubmittedResponse(long caseReference) {
