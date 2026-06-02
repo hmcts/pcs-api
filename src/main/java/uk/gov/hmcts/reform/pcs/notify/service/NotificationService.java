@@ -90,7 +90,7 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendClaimantDraftSavedForLater(long caseReference, PCSCase pcsCase) {
+    public EmailNotificationResponse sendClaimantDraftSavedForLaterEmailNotification(long caseReference, PCSCase pcsCase) {
         NotificationRecipient recipient = claimantRecipient(caseReference, pcsCase);
 
         if (recipient.email() == null) {
@@ -106,7 +106,7 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendClaimantDefendantHasMadeCounterclaimEmail(ClaimEntity claim) {
+    public EmailNotificationResponse sendClaimantDefendantHasMadeCounterclaimEmailNotification(ClaimEntity claim) {
         return sendEmail(
             claimantRecipient(claim),
             EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM,
@@ -115,7 +115,7 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendClaimantDefendantResponseReceived(ClaimEntity claim) {
+    public EmailNotificationResponse sendClaimantDefendantResponseReceivedEmailNotification(ClaimEntity claim) {
         return sendEmail(
             claimantRecipient(claim),
             EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED,

@@ -62,6 +62,6 @@ public class PaymentNotificationService {
 
         log.info("Sending counterclaim payment success email for claim {}", claim.getId());
         notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
-        notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
+        notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(defendantResponse.getClaim());
     }
 }

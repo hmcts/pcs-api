@@ -487,7 +487,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
+                notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(defendantResponse.getClaim());
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
@@ -504,7 +504,7 @@ class NotificationServiceTest {
             claimantParty.setEmailAddress(TEST_EMAIL);
             when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
 
-            when(partyService.canSendEmailNotification(any())).thenReturn(true);
+            when(partyService.canSendEmailNotification(any(), any())).thenReturn(true);
             when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED))
                 .thenReturn(TEMPLATE_ID);
 
@@ -513,7 +513,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDefendantResponseReceived(defendantResponse.getClaim());
+                notificationService.sendClaimantDefendantResponseReceivedEmailNotification(defendantResponse.getClaim());
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
@@ -532,7 +532,7 @@ class NotificationServiceTest {
             ClaimEntity claim = defendantResponse.getClaim();
             claim.setId(claimId);
 
-            assertThatThrownBy(() -> notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(claim))
+            assertThatThrownBy(() -> notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(claim))
                 .isInstanceOf(PartyNotFoundException.class)
                 .hasMessage("No claimant party found for claim: " + claimId);
 
@@ -693,7 +693,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
+                notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(defendantResponse.getClaim());
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
@@ -741,7 +741,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any())).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+            notificationService.sendClaimantDraftSavedForLaterEmailNotification(1234567890L, pcsCase);
 
             ArgumentCaptor<CaseNotification> captor =
                 ArgumentCaptor.forClass(CaseNotification.class);
@@ -772,7 +772,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any())).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+            notificationService.sendClaimantDraftSavedForLaterEmailNotification(1234567890L, pcsCase);
 
             ArgumentCaptor<CaseNotification> captor =
                 ArgumentCaptor.forClass(CaseNotification.class);
@@ -803,7 +803,7 @@ class NotificationServiceTest {
             when(notificationRepository.save(any())).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
-            notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+            notificationService.sendClaimantDraftSavedForLaterEmailNotification(1234567890L, pcsCase);
 
             ArgumentCaptor<CaseNotification> captor =
                 ArgumentCaptor.forClass(CaseNotification.class);
@@ -836,7 +836,7 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+                notificationService.sendClaimantDraftSavedForLaterEmailNotification(1234567890L, pcsCase);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus())
@@ -862,7 +862,7 @@ class NotificationServiceTest {
             );
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+                notificationService.sendClaimantDraftSavedForLaterEmailNotification(1234567890L, pcsCase);
 
             assertThat(response).isNull();
 

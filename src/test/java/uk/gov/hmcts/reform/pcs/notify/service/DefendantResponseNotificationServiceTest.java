@@ -61,21 +61,6 @@ class DefendantResponseNotificationServiceTest {
     }
 
     @Test
-    void shouldSendDefendantResponseReceivedEmail() {
-        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
-        ClaimEntity claim = mock(ClaimEntity.class);
-        UUID defendantResponseId = UUID.randomUUID();
-
-        when(defendantResponseRepository.findById(defendantResponseId))
-            .thenReturn(Optional.of(response));
-        when(response.getClaim()).thenReturn(claim);
-
-        underTest.sendDefendantResponseReceived(defendantResponseId);
-
-        verify(notificationService).sendClaimantDefendantResponseReceived(claim);
-    }
-
-    @Test
     void shouldSendNoCounterClaimEmail() {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
