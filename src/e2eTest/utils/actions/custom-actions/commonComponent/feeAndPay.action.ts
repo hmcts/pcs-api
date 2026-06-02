@@ -2,6 +2,7 @@ import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { expect, Page } from '@playwright/test';
 import { performAction, performActions, performValidation } from '@utils/controller';
 import { enterPaymentDetails } from '@data/page-data/enterPaymentDetails.page.data';
+import { caseSummary } from '@data/page-data';
 
 export class FeeAndPayAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -9,6 +10,7 @@ export class FeeAndPayAction implements IAction {
       ['selectPaymentTypePBA', () => this.selectPaymentTypePBA(fieldName as actionRecord, page)],
       ['selectPaymentByCard', () => this.selectPaymentByCard(fieldName as actionRecord, page)],
       ['enterPaymentDetails', () => this.enterPaymentDetails(fieldName as actionRecord)],
+      ['clickPayNowLink', () => this.clickPayNowLink(fieldName as actionRecord, page)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -63,5 +65,33 @@ export class FeeAndPayAction implements IAction {
       , ['inputText', enterPaymentDetails.emailLabel, payDetails.emailInput]
     );
     await performAction('clickButton', enterPaymentDetails.continueButton);
+  }
+
+  private async clickPayNowLink(pay: actionRecord, page: Page) {
+    const maxRetries = 10;
+    let retryCount = 0;
+    while (retryCount < maxRetries) {
+      await performAction('clickTab', caseSummary.servieRequestTab);
+      const payNowLocator = page.locator(`text=${String(pay)}`);
+      // Wait for Pay Now to load
+      await payNowLocator.waitFor({
+          state: 'visible',
+          timeout: 5000,
+        }).catch(() => { });
+      const isPayNowVisible = await payNowLocator
+        .isVisible()
+        .catch(() => false);
+      if (isPayNowVisible) {
+        await performAction('clickButton', pay);
+        break;
+      }
+      await performAction('clickTab', caseSummary.HistoryTab);
+      retryCount++;
+    }
+    if (retryCount === maxRetries) {
+      throw new Error(
+        `${String(pay)} link was not visible after maximum retries`
+      );
+    }
   }
 }

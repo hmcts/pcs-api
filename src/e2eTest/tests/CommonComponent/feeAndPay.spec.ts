@@ -30,9 +30,7 @@ test.afterEach(async () => {
 
 test.describe('[Common Component Fee And Pay] @CC' , async () => {
   test('Fee And Pay - Pay by account PBA @nightly @feeAndPay', async () => {
-    await performAction('clickTab', caseSummary.HistoryTab);
-    await performAction('clickTab', caseSummary.servieRequestTab);
-    await performAction('clickButton', serviceRequest.payNowLink);
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
       expectedAmount: serviceRequest.amount404,
@@ -47,9 +45,7 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
   });
 
   test('Fee And Pay - Pay by Card @nightly @feeAndPay', async () => {
-    await performAction('clickTab', caseSummary.HistoryTab);
-    await performAction('clickTab', caseSummary.servieRequestTab);
-    await performAction('clickButton', serviceRequest.payNowLink);
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
@@ -75,9 +71,7 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
   });
 
   test('Fee And Pay - Cancel Payment from You Card Details Page @nightly @feeAndPay', async () => {
-    await performAction('clickTab', caseSummary.HistoryTab);
-    await performAction('clickTab', caseSummary.servieRequestTab);
-    await performAction('clickButton', serviceRequest.payNowLink);
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
@@ -89,9 +83,7 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
   });
 
   test('Fee And Pay - Cancel Payment from Confirm Card Details Page @nightly @feeAndPay', async () => {
-   await performAction('clickTab', caseSummary.HistoryTab);
-     await performAction('clickTab', caseSummary.servieRequestTab);
-     await performAction('clickButton', serviceRequest.payNowLink);
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
