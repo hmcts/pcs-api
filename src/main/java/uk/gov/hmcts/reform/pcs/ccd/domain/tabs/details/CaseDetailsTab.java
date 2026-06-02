@@ -76,7 +76,10 @@ public class CaseDetailsTab {
     @CCD(label = "Defendant circumstances")
     private DefendantCircumstanceTabDetails defendantCircumstanceDetails;
 
-    @CCD(label = "Underlessee or mortgagee")
+    @CCD(label = "Underlessee or mortgagee 1")
+    private UnderlesseeOrMortgageInformationTabDetails mortgageOneDetails;
+
+    @CCD(label = "Additional underlessee or mortgagee")
     private List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> mortgageDetails;
 
     @CCD(label = "Demotion of tenancy claim")
