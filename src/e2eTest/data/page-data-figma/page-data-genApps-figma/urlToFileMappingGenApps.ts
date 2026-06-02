@@ -1,3 +1,5 @@
+import {checkYourAnswersGenApps} from "@data/page-data-figma/page-data-genApps-figma/checkYourAnswersGenApps.page.data";
+
 export default {
   'makeAnApplicationchooseAnApplication': 'chooseAnApplication',
   'makeAnApplicationstartAdjourn': 'askToAdjournTheCourtHearing',
@@ -11,6 +13,8 @@ export default {
   'makeAnApplicationreasonsNotToShare': 'areThereAnyReasonsThatThisApplicationShouldNotBeShared',
   'makeAnApplicationwhatOrderWanted': 'whatOrderDoYouWantTheCourtToMakeAndWhy',
   'makeAnApplicationdocumentUploadWanted' : 'doYouWantToUploadDocumentsToSupportDefendantsApplication',
-  'makeAnApplicationuploadSupportingDocuments': 'uploadDocumentsToSupportDefendantsApplication'
-  'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService'
+  'makeAnApplicationuploadSupportingDocuments': 'uploadDocumentsToSupportDefendantsApplication',
+  'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService',
+  'makeAnApplicationstatementOfTruth': 'statementOfTruth',
+  'submit':'checkYourAnswersGenApps',
 };

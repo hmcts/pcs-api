@@ -21,6 +21,7 @@ import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selec
 import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 import {performActions} from "@utils/controller";
+import {statementOfTruth} from "@data/page-data-figma";
 
 
 export const addressInfo = {
@@ -240,22 +241,23 @@ export class GenAppsAction implements IAction {
   }
 
   private async selectStatementOfTruth(sot: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
+    await performAction('recordUserEntry', sot);
     await performAction('check', {
       question: sot.question,
       option: sot.option,
     });
-    await performAction('inputText', sot.label, sot.input);
-
+    await performAction('inputText', sot.label1, sot.input1);
+    await performAction('inputText', sot.label2, sot.input2);
+    await performAction('inputText', sot.label3, sot.input3);
     const key = isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion as string;
 
     const isKeyPresent = FieldsStore.has(key);
     const value = isKeyPresent ? FieldsStore.get(key) : undefined;
+    await performAction('clickButton', statementOfTruth.continueButton);
 
-    const button =
-      isKeyPresent && value === 'No'
-        ? checkYourAnswersGenApps.submitHiddenButton
-        : checkYourAnswersGenApps.continueToPaymentHiddenButton;
-    await performAction('clickButton', button);
+
   }
 
   private async inputErrorValidationGenApp(validationArr: actionRecord) {
@@ -365,6 +367,7 @@ export class GenAppsAction implements IAction {
       }
     });
     cyaMap.clear();
+    await performAction('clickButton', checkYourAnswersGenApps.submitButton);
   }
 
   private async reviewCYA(page: Page, startPage: actionData) {
