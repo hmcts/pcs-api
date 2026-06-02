@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -30,16 +31,19 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 public class GenAppService {
 
     private final GenAppRepository genAppRepository;
+    private final DocumentService documentService;
     private final DocumentNameService documentNameService;
     private final DocumentRepository documentRepository;
     private final Clock utcClock;
 
     public GenAppService(GenAppRepository genAppRepository,
+                         DocumentService documentService,
                          DocumentNameService documentNameService,
                          DocumentRepository documentRepository,
                          @Qualifier("utcClock") Clock utcClock) {
 
         this.genAppRepository = genAppRepository;
+        this.documentService = documentService;
         this.documentNameService = documentNameService;
         this.documentRepository = documentRepository;
         this.utcClock = utcClock;
@@ -135,6 +139,7 @@ public class GenAppService {
                     .fileName(updatedFilename)
                     .binaryUrl(uploadedDocument.getDocument().getBinaryUrl())
                     .categoryId(CaseFileCategory.APPLICATIONS.getId())
+                    .type(documentService.mapAdditionalDocumentTypeToDocumentType(uploadedDocument.getDocumentType()))
                     .contentType(uploadedDocument.getContentType())
                     .size(uploadedDocument.getSizeInBytes())
                     .build();
