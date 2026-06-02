@@ -1,27 +1,22 @@
+import {initializeExecutor, performAction, performValidation} from '@utils/controller';
+import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
+import {test} from '@utils/test-fixtures';
+import {createCaseApiData, submitCaseApiData} from '@data/api-data';
+import {caseSummary, user} from '@data/page-data';
+import {staff} from '@data/user-data/staff.user.data';
+import {judicialEmails} from '@data/user-data/judicial.user.data';
 import {
-  initializeExecutor,
-  performAction,
-  performValidation
-} from '@utils/controller';
-import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-import { test } from '@utils/test-fixtures';
-import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { getCaseTypeId } from '@utils/common/caseType.utils';
-import { caseSummary, user } from '@data/page-data';
-import { staff } from '@data/user-data/staff.user.data';
-import { judicialEmails } from '@data/user-data/judicial.user.data';
-import {
-  specialMeasureForFlag,
-  whereShouldThisFlagBeAdded,
-  selectFlagType,
   addCommentsForFlag,
-  reviewFlagDetails,
-  viewCaseFlag,
   manageCaseFlags,
-  updateFlagComments
+  reviewFlagDetails,
+  selectFlagType,
+  specialMeasureForFlag,
+  updateFlagComments,
+  viewCaseFlag,
+  whereShouldThisFlagBeAdded
 } from '@data/page-data-figma';
-import { dismissCookieBanner } from '@config/cookie-banner';
-import { BrowserContext, Page } from '@playwright/test';
+import {dismissCookieBanner} from '@config/cookie-banner';
+import {BrowserContext, Page} from '@playwright/test';
 
 const staffUserEmails = Object.values(staff);
 const judicialUserEmails = Object.values(judicialEmails);
@@ -39,13 +34,13 @@ async function clearBrowserSession(page: Page, context: BrowserContext): Promise
   });
 }
 
-test.use({ storageState: undefined });
+test.use({storageState: undefined});
 
-test.beforeEach(async ({ page, context }) => {
+test.beforeEach(async ({page, context}) => {
   await context.clearCookies();
   initializeExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
+  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   // await page.evaluate(() => {
   //   try {
@@ -66,7 +61,7 @@ test.afterEach(async () => {
 
 test.describe('[Common Component Case Flags] @CC @caseFlags @nightly', async () => {
 
-  test('Case Flags - Verify the create and manage case flag menu @smoke', async ({ page }) => {
+  test('Case Flags - Verify the create and manage case flag menu @smoke', async ({page}) => {
     await performAction('login', user.ctscAdministrator);
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
@@ -78,7 +73,7 @@ test.describe('[Common Component Case Flags] @CC @caseFlags @nightly', async () 
     await performAction('clickButton', manageCaseFlags.goButton);
     await performAction('clickButton', manageCaseFlags.cancelButton);
   });
-  test('Case Flags - Create case level Flag', async ({ page }) => {
+  test('Case Flags - Create case level Flag', async ({page}) => {
     await performAction('login', user.ctscAdministrator);
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
@@ -136,7 +131,7 @@ test.describe('[Common Component Case Flags] @CC @caseFlags @nightly', async () 
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
 
-  test('Case Flags - Create Party Level Case Flag', async ({ page }) => {
+  test('Case Flags - Create Party Level Case Flag', async ({page}) => {
     await performAction('login', user.ctscAdministrator);
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
@@ -203,44 +198,86 @@ test.describe('[Common Component Case Flags] @CC @caseFlags @nightly', async () 
 
 test.describe('[Common Component Case Flags - Access control] @CC @caseFlags @access', async () => {
 
-  test('Staff users can create, manage and view case-level and party-level flags', async ({ page, context }) => {
+  test('Staff users can create, manage and view case-level and party-level flags', async ({page, context}) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
+    const results: { email: string; status: 'PASS' | 'FAIL'; error?: string }[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
     for (const email of staffUserEmails) {
-      await test.step(`Staff user ${email}`, async () => {
-        await performAction('login', {email, password});
-        await dismissCookieBanner(page, 'analytics');
-        await performAction('navigateToCaseSummary', 'yes');
-        await performAction('canCreateCaseLevelFlag', 'yes');
-        await performAction('canCreatePartyLevelFlag', 'yes');
-        await performAction('canManageCaseLevelFlag', 'yes');
-        await performAction('canManagePartyLevelFlag', 'yes');
-        await performAction('canViewCaseAndPartyFlag', 'yes');
-        await clearBrowserSession(page, context);
-      });
+      try {
+        await test.step(`Staff user ${email}`, async () => {
+          await performAction('login', {email, password});
+          await dismissCookieBanner(page, 'analytics');
+          await performAction('navigateToCaseSummary', 'yes');
+          await performAction('canCreateCaseLevelFlag', 'yes');
+          await performAction('canCreatePartyLevelFlag', 'yes');
+          await performAction('canManageCaseLevelFlag', 'yes');
+          await performAction('canManagePartyLevelFlag', 'yes');
+          await performAction('canViewCaseAndPartyFlag', 'yes');
+          await clearBrowserSession(page, context);
+        });
+        results.push({email, status: 'PASS'});
+      } catch (error) {
+        results.push({email, status: 'FAIL', error: error instanceof Error ? error.message : String(error)});
+        console.error(`❌ ${email} failed`, error);
+        await clearBrowserSession(page, context).catch(() => {
+        });
+      }
+    }
+    console.log('\n===== STAFF USER RESULTS =====');
+    results.forEach(result => {
+      console.log(`${result.status === 'PASS' ? '✅' : '❌'} ${result.email} - ${result.status}`);
+    });
+    const failedUsers = results.filter(r => r.status === 'FAIL');
+    if (failedUsers.length > 0) {
+      console.log('\nFailed Users:');
+      failedUsers.forEach(u =>
+        console.log(`- ${u.email}: ${u.error}`)
+      );
+      throw new Error(`${failedUsers.length} user(s) failed. See summary above.`);
     }
   });
 
-  test('Judicial users can view only case-level and party-level flags and cannot create or manage flags', async ({ page, context }) => {
+  test('Judicial users can view only case-level and party-level flags and cannot create or manage flags', async ({page, context}) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
+    const results: { email: string; status: 'PASS' | 'FAIL'; error?: string }[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
     for (const email of judicialUserEmails) {
-      await test.step(`Judicial user ${email}`, async () => {
-        await performAction('login', {email, password});
-        await dismissCookieBanner(page, 'analytics');
-        await performAction('navigateToCaseSummary', 'yes');
-        await performAction('canCreateCaseLevelFlag', 'no');
-        await performAction('canCreatePartyLevelFlag', 'no');
-        await performAction('canManageCaseLevelFlag', 'no');
-        await performAction('canManagePartyLevelFlag', 'no');
-        await performAction('canViewCaseAndPartyFlag', 'yes');
-        await clearBrowserSession(page, context);
-      });
+      try {
+        await test.step(`Judicial user ${email}`, async () => {
+          await performAction('login', {email, password});
+          await dismissCookieBanner(page, 'analytics');
+          await performAction('navigateToCaseSummary', 'yes');
+          await performAction('canCreateCaseLevelFlag', 'no');
+          await performAction('canCreatePartyLevelFlag', 'no');
+          await performAction('canManageCaseLevelFlag', 'no');
+          await performAction('canManagePartyLevelFlag', 'no');
+          await performAction('canViewCaseAndPartyFlag', 'yes');
+          await clearBrowserSession(page, context);
+        });
+        results.push({email, status: 'PASS'});
+      } catch (error) {
+        results.push({email, status: 'FAIL', error: error instanceof Error ? error.message : String(error)});
+        console.error(`❌ ${email} failed`, error);
+        await clearBrowserSession(page, context).catch(() => {
+        });
+      }
+    }
+    console.log('\n===== STAFF USER RESULTS =====');
+    results.forEach(result => {
+      console.log(`${result.status === 'PASS' ? '✅' : '❌'} ${result.email} - ${result.status}`);
+    });
+    const failedUsers = results.filter(r => r.status === 'FAIL');
+    if (failedUsers.length > 0) {
+      console.log('\nFailed Users:');
+      failedUsers.forEach(u =>
+        console.log(`- ${u.email}: ${u.error}`)
+      );
+      throw new Error(`${failedUsers.length} user(s) failed. See summary above.`);
     }
   });
 
-  test('Claimant solicitor cannot view, create or manage case-level and party-level flags', async ({ page, context }) => {
-    const { email, password } = user.claimantSolicitor;
+  test('Claimant solicitor cannot view, create or manage case-level and party-level flags', async ({page, context}) => {
+    const {email, password} = user.claimantSolicitor;
     await performAction('login', {email, password});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'yes');
@@ -252,8 +289,8 @@ test.describe('[Common Component Case Flags - Access control] @CC @caseFlags @ac
     await clearBrowserSession(page, context);
   });
 
-  test('Internal user with Caseworker IDAM role without AM roles cannot view, create or manage case-level and party-level flags', async ({ page, context }) => {
-    const { email, password } = user.caseworker;
+  test('Internal user with Caseworker IDAM role without AM roles cannot view, create or manage case-level and party-level flags', async ({page, context}) => {
+    const {email, password} = user.caseworker;
     await performAction('login', {email, password});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'no');
