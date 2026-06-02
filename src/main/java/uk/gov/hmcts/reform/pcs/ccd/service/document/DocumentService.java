@@ -172,7 +172,7 @@ public class DocumentService {
                 + FilenameUtils.getExtension(uploadedFilename);
     }
 
-    private DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
+    public DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
 
         return switch (additionalType) {
             case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
