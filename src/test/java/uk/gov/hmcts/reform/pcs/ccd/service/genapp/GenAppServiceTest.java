@@ -9,17 +9,22 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -27,20 +32,26 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,12 +64,18 @@ class GenAppServiceTest {
 
     @Mock
     private GenAppRepository genAppRepository;
+    @Mock
+    private DocumentService documentService;
+    @Mock
+    private DocumentNameService documentNameService;
     @Mock(strictness = LENIENT)
     private DocumentRepository documentRepository;
     @Mock
     private Clock utcClock;
-    @Mock
+    @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
+    @Mock
+    private ClaimEntity mainClaim;
     @Mock
     private PartyEntity applicantParty;
     @Captor
@@ -71,8 +88,10 @@ class GenAppServiceTest {
     @BeforeEach
     void setUp() {
         stubUtcClock(TEST_UTC_DATE_TIME);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
-        underTest = new GenAppService(genAppRepository, documentRepository, utcClock);
+        underTest = new GenAppService(genAppRepository, documentService, documentNameService,
+                                      documentRepository, utcClock);
     }
 
     @Test
@@ -271,14 +290,25 @@ class GenAppServiceTest {
     @Test
     void shouldSaveUploadedDocuments() {
         // Given
+        String originalFilename = "original filename";
+        String modifiedFilename = "modified filename";
+
         Document document = Document.builder()
-            .filename("test filename")
+            .filename(originalFilename)
             .url("test url")
             .binaryUrl("test binary url")
             .build();
 
+        UUID applicantPartyId = UUID.randomUUID();
+        when(applicantParty.getId()).thenReturn(applicantPartyId);
+        when(documentNameService.appendGenAppPostfix(eq(originalFilename), isA(GenAppEntity.class),
+                                      eq(mainClaim), eq(applicantPartyId)))
+            .thenReturn(modifiedFilename);
+
+        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.CERTIFICATE_OF_SERVICE;
         UploadedDocument uploadedDocument = UploadedDocument.builder()
             .document(document)
+            .documentType(additionalDocumentType)
             .contentType("test content type")
             .sizeInBytes(1234L)
             .build();
@@ -290,6 +320,10 @@ class GenAppServiceTest {
 
         List<DocumentEntity> savedDocumentEntities = List.of(mock(DocumentEntity.class));
         when(documentRepository.saveAll(anyList())).thenReturn(savedDocumentEntities);
+
+        DocumentType expectedDocumentType = DocumentType.CERTIFICATE_OF_SERVICE;
+        when(documentService.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType))
+            .thenReturn(expectedDocumentType);
 
         // When
         underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
@@ -303,10 +337,11 @@ class GenAppServiceTest {
 
         assertThat(documentEntityListCaptor.getValue()).hasSize(1);
         DocumentEntity documentEntity = documentEntityListCaptor.getValue().getFirst();
-        assertThat(documentEntity.getFileName()).isEqualTo("test filename");
+        assertThat(documentEntity.getFileName()).isEqualTo(modifiedFilename);
         assertThat(documentEntity.getUrl()).isEqualTo("test url");
         assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
-        assertThat(documentEntity.getCategoryId()).isNull();
+        assertThat(documentEntity.getType()).isEqualTo(expectedDocumentType);
+        assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
         assertThat(documentEntity.getContentType()).isEqualTo("test content type");
         assertThat(documentEntity.getSize()).isEqualTo(1234L);
     }
@@ -341,6 +376,37 @@ class GenAppServiceTest {
         verify(genAppRepository).save(genAppEntityCaptor.capture());
         GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
         assertThat(genAppEntity.getDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldAddGenAppToCaseEntityBeforeRenamingDocuments() {
+        // Given
+        Document document = Document.builder()
+            .filename("test filename")
+            .url("test url")
+            .binaryUrl("test binary url")
+            .build();
+
+        UUID applicantPartyId = UUID.randomUUID();
+        when(applicantParty.getId()).thenReturn(applicantPartyId);
+
+        UploadedDocument uploadedDocument = UploadedDocument.builder()
+            .document(document)
+            .build();
+
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .hasSupportingDocuments(VerticalYesNo.YES)
+            .uploadedDocuments(List.of(ListValue.<UploadedDocument>builder().value(uploadedDocument).build()))
+            .build();
+
+        // When
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+
+        // Then
+        InOrder inOrder = inOrder(pcsCaseEntity, documentNameService);
+        inOrder.verify(pcsCaseEntity).addGenApp(isA(GenAppEntity.class));
+        inOrder.verify(documentNameService)
+            .appendGenAppPostfix(anyString(), isA(GenAppEntity.class), eq(mainClaim), eq(applicantPartyId));
     }
 
     @ParameterizedTest

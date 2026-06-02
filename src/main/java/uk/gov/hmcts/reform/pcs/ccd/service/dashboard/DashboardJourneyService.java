@@ -6,15 +6,24 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardNotification;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.RelatedApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.ResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TemplateValue;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Computes dashboard data (notifications + task groups) from submitted case data.
@@ -33,25 +42,50 @@ public class DashboardJourneyService {
         TaskGroupId.APPLICATIONS
     );
 
-    private final List<TaskGroupEvaluator> taskGroupEvaluators;
+    private final List<TaskGroupEvaluator> evaluatorsInOrder;
+    private final DraftCaseDataService draftCaseDataService;
+    private final DefendantResponseService defendantResponseService;
 
-    public DashboardJourneyService(List<TaskGroupEvaluator> taskGroupEvaluators) {
-        this.taskGroupEvaluators = taskGroupEvaluators.stream()
-            .sorted(Comparator.comparingInt(evaluator -> orderIndex(evaluator.groupId())))
+    public DashboardJourneyService(
+        DraftCaseDataService draftCaseDataService,
+        DefendantResponseService defendantResponseService,
+        List<TaskGroupEvaluator> evaluators
+    ) {
+        this.draftCaseDataService = draftCaseDataService;
+        this.defendantResponseService = defendantResponseService;
+        this.evaluatorsInOrder = evaluators.stream()
+            .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
             .toList();
     }
 
     public DashboardData computeDashboardData(long caseReference, PCSCase submittedCaseData) {
-        return computeDashboardData(caseReference, submittedCaseData, null);
+        return computeDashboardData(caseReference, submittedCaseData, null, null);
     }
 
     public DashboardData computeDashboardData(
         long caseReference,
         PCSCase submittedCaseData,
-        DashboardContext dashboardContext
+        PcsCaseEntity caseEntity,
+        PartyEntity defendant
     ) {
-        List<ListValue<DashboardNotification>> notifications = computeNotifications();
-        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(dashboardContext);
+
+        boolean hasDraftResponse = draftCaseDataService.hasMeaningfulRespondDraft(
+            caseReference, EventId.respondPossessionClaim);
+        boolean hasSubmittedResponse = defendantResponseService.hasSubmittedResponse(caseReference);
+
+        DashboardContext ctx = new DashboardContext(
+            caseReference,
+            caseEntity,
+            defendant,
+            hasDraftResponse,
+            hasSubmittedResponse
+        );
+
+        ResponseStatus responseStatus = getResponseStatus(hasDraftResponse, hasSubmittedResponse);
+
+        List<ListValue<DashboardNotification>> notifications = computeNotifications(responseStatus);
+        List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(ctx);
+        List<ListValue<RelatedApplication>> relatedApplications = computeRelatedApplications(ctx);
 
         log.info("DashboardJourneyService computed {} notification(s) and {} taskGroup(s) for case={}",
                  notifications.size(), taskGroups.size(), caseReference);
@@ -61,34 +95,75 @@ public class DashboardJourneyService {
             .propertyAddress(submittedCaseData.getPropertyAddress())
             .notifications(notifications)
             .taskGroups(taskGroups)
+            .relatedApplications(relatedApplications)
             .build();
     }
 
-    private List<ListValue<DashboardNotification>> computeNotifications() {
+    private List<ListValue<DashboardNotification>> computeNotifications(ResponseStatus responseStatus) {
+        String responseTemplateId = switch (responseStatus) {
+            case NOT_STARTED -> "Defendant.ResponseNotStarted";
+            case IN_PROGRESS -> "Defendant.ResponseInProgress";
+            case SUBMITTED -> "Defendant.ResponseSubmitted";
+        };
+
         return ListValueUtils.wrapListItems(List.of(
             DashboardNotification.builder()
-                .templateId("Defendant.CaseIssued")
-                .templateValues(toTemplateValues(Map.of(
-                    "hearingDateTime", "2026-06-15T10:30:00Z",
-                    "responseEndDate", "2026-05-15"
-                )))
+                .templateId("Defendant.NoHearingArranged")
+                .templateValues(toTemplateValues(Map.of()))
                 .build(),
             DashboardNotification.builder()
-                .templateId("Defendant.ResponseToClaim")
-                .templateValues(toTemplateValues(Map.of(
-                    "ctaLabel", "Start your response."
-                )))
+                .templateId(responseTemplateId)
+                .templateValues(toTemplateValues(Map.of()))
                 .build()
         ));
     }
 
-    private List<ListValue<TaskGroup>> computeTaskGroups(DashboardContext dashboardContext) {
+    private List<ListValue<TaskGroup>> computeTaskGroups(DashboardContext ctx) {
+        List<TaskGroup> groups = evaluatorsInOrder.stream()
+            .map(e -> e.evaluate(ctx))
+            .toList();
+        return ListValueUtils.wrapListItems(groups);
+    }
+
+    private ResponseStatus getResponseStatus(boolean hasDraft, boolean hasSubmitted) {
+        if (hasSubmitted) {
+            return ResponseStatus.SUBMITTED;
+        }
+        return hasDraft ? ResponseStatus.IN_PROGRESS : ResponseStatus.NOT_STARTED;
+    }
+
+    private List<ListValue<RelatedApplication>> computeRelatedApplications(DashboardContext dashboardContext) {
+        if (dashboardContext == null
+            || dashboardContext.caseEntity() == null
+            || dashboardContext.caseEntity().getGenApps() == null
+            || dashboardContext.caseEntity().getGenApps().isEmpty()) {
+            return List.of();
+        }
+
+        UUID viewerIdamId = dashboardContext.defendant() != null
+            ? dashboardContext.defendant().getIdamId()
+            : null;
+
+        var visibleApps = dashboardContext.caseEntity().getGenApps().stream()
+            .filter(genApp -> dashboardContext.isVisibleToUser(genApp, viewerIdamId))
+            .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
+            .toList();
+
+        if (visibleApps.isEmpty()) {
+            return List.of();
+        }
+
         return ListValueUtils.wrapListItems(
-            taskGroupEvaluators.stream()
-                .map(evaluator -> evaluator.evaluate(dashboardContext))
+            visibleApps.stream()
+                .map(genApp -> RelatedApplication.builder()
+                    .id(genApp.getId() != null ? genApp.getId().toString() : null)
+                    .type(genApp.getType())
+                    .applicationSubmittedDate(genApp.getApplicationSubmittedDate())
+                    .build())
                 .toList()
         );
     }
+      
 
     /**
      * Entries with a null value are omitted so optional placeholders (for example {@code ctaLink}) can be left out

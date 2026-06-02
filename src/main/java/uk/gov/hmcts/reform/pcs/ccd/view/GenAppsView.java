@@ -46,6 +46,7 @@ public class GenAppsView {
             .party(party)
             .submittedOn(genAppEntity.getApplicationSubmittedDate())
             .submissionDocument(getSubmissionDocument(genAppEntity))
+            .supportingDocuments(createSupportingDocumentList(genAppEntity))
             .build();
 
         return new ListValue<>(genAppEntity.getId().toString(), generalApplication);
@@ -74,6 +75,18 @@ public class GenAppsView {
                 .build()
             )
             .orElse(null);
+    }
+
+    private List<ListValue<Document>> createSupportingDocumentList(GenAppEntity genAppEntity) {
+        return genAppEntity.getDocuments().stream()
+            .map(documentEntity -> {
+                Document document = modelMapper.map(documentEntity, Document.class);
+                return ListValue.<Document>builder()
+                    .id(documentEntity.getId().toString())
+                    .value(document)
+                    .build();
+            })
+            .toList();
     }
 
     private boolean isVisibleToUser(GenAppEntity genAppEntity, UUID userId) {
