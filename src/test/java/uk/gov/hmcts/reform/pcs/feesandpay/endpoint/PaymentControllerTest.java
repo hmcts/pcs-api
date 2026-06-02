@@ -19,7 +19,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PaymentControllerTest {
 
-    private static final String AUTH_TOKEN = "some auth token";
     private static final String S2S_TOKEN = "some s2s token";
     @Mock
     private PaymentService paymentService;
@@ -43,7 +42,6 @@ class PaymentControllerTest {
 
         // When
         ResponseEntity<CreateCardPaymentResponse> response = underTest.createPaymentRequest(
-            AUTH_TOKEN,
             S2S_TOKEN,
             serviceRequestReference,
             cardPaymentRequest
@@ -65,7 +63,6 @@ class PaymentControllerTest {
 
         // When
         ResponseEntity<CardPaymentStatusResponse> response = underTest.getCardPaymentStatus(
-            AUTH_TOKEN,
             S2S_TOKEN,
             paymentReference
         );

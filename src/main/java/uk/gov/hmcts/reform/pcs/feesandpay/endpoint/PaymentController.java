@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -59,12 +58,10 @@ public class PaymentController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Payment request created successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<CreateCardPaymentResponse> createPaymentRequest(
-        @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
         @PathVariable("serviceRequestReference") String serviceRequestReference,
         @RequestBody @Valid CreateCardPaymentRequest cardPaymentRequest) {
@@ -79,13 +76,11 @@ public class PaymentController {
     @Operation(summary = "Get status of a card payment")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Payment status found"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
         @ApiResponse(responseCode = "404", description = "Payment status not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<CardPaymentStatusResponse> getCardPaymentStatus(
-        @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
         @PathVariable("paymentReference") String paymentReference) {
 
