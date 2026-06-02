@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateServiceRequestPayload;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateServiceRequestResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -38,42 +36,6 @@ public class PaymentController {
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
 
     private final PaymentService paymentService;
-
-    @PostMapping(path = "service-request", consumes = APPLICATION_JSON_VALUE)
-    @Operation(
-        summary = "Create a payment service request",
-        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            required = true,
-            content = @Content(
-                mediaType = APPLICATION_JSON_VALUE,
-                examples = @ExampleObject(
-                    name = "Create service request",
-                    value = """
-                    {
-                        "caseReference": 9315681809157729,
-                        "feeType": "genAppStandardFee"
-                    }
-                    """
-                )
-            )
-        )
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Service request created successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<CreateServiceRequestResponse> createServiceRequest(
-        @RequestHeader(AUTHORIZATION) String authorisation,
-        @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
-        @RequestBody @Valid CreateServiceRequestPayload serviceRequestPayload) {
-
-        CreateServiceRequestResponse createServiceRequestResponse
-            = paymentService.createServiceRequest(serviceRequestPayload);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(createServiceRequestResponse);
-    }
 
     @PostMapping(path = "service-request/{serviceRequestReference}/card-payment", consumes = APPLICATION_JSON_VALUE)
     @Operation(

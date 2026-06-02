@@ -25,21 +25,14 @@ import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateServiceRequestPayload;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateServiceRequestResponse;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
-
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.GEN_APP_ISSUE;
 
 @Slf4j
 @Service
@@ -51,9 +44,7 @@ public class PaymentService {
     private final FeePaymentRepository feePaymentRepository;
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
-    private final FeeService feeService;
     private final PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
-    private final SecurityContextService securityContextService;
     private final ObjectMapper objectMapper;
 
     @Value("${payments.api.callback-url}")
@@ -63,46 +54,17 @@ public class PaymentService {
     private String hmctsOrgId;
 
     public PaymentService(PaymentsClient paymentsClient, PaymentRequestMapper paymentRequestMapper,
-                          @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
-                          FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
-                          PartyService partyService, FeeService feeService,
-                          PaymentCallbackStrategyFactory paymentCallbackStrategyFactory,
-                          SecurityContextService securityContextService, ObjectMapper objectMapper) {
+        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
+        FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService, PartyService partyService,
+        PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
         this.feePaymentRepository = feePaymentRepository;
         this.pcsCaseService = pcsCaseService;
         this.partyService = partyService;
-        this.feeService = feeService;
         this.paymentCallbackStrategyFactory = paymentCallbackStrategyFactory;
-        this.securityContextService = securityContextService;
         this.objectMapper = objectMapper;
-    }
-
-    @Transactional
-    public CreateServiceRequestResponse createServiceRequest(CreateServiceRequestPayload paymentServiceRequest) {
-        long caseReference = paymentServiceRequest.getCaseReference();
-
-        FeeType feeType = FeeType.fromCode(paymentServiceRequest.getFeeType());
-        FeeDetails feeDetails = feeService.getFee(feeType);
-        UUID currentUserId = securityContextService.getCurrentUserId();
-        PartyEntity responsibleParty = partyService.getPartyEntityByIdamId(currentUserId, caseReference);
-
-        FeesAndPayTaskData feesAndPayTaskData = FeesAndPayTaskData.builder()
-            .caseReference(caseReference)
-            .feeDetails(feeDetails)
-            .ccdCaseNumber(Long.toString(caseReference))
-            .responsiblePartyId(responsibleParty.getId())
-            .paymentCallbackHandlerType(GEN_APP_ISSUE)
-            .build();
-
-        PaymentServiceResponse paymentServiceResponse = createServiceRequest(feesAndPayTaskData);
-
-        return CreateServiceRequestResponse.builder()
-            .serviceRequestReference(paymentServiceResponse.getServiceRequestReference())
-            .feeAmount(feeDetails.getFeeAmount())
-            .build();
     }
 
     /**

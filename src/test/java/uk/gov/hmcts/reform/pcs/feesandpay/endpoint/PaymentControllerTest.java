@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateServiceRequestPayload;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateServiceRequestResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,26 +29,6 @@ class PaymentControllerTest {
     @BeforeEach
     void setUp() {
         underTest = new PaymentController(paymentService);
-    }
-
-    @Test
-    void shouldDelegateRequestToCreateServiceRequest() {
-        // Given
-        CreateServiceRequestPayload serviceRequestPayload = mock(CreateServiceRequestPayload.class);
-        CreateServiceRequestResponse createServiceRequestResponse = mock(CreateServiceRequestResponse.class);
-
-        when(paymentService.createServiceRequest(serviceRequestPayload)).thenReturn(createServiceRequestResponse);
-
-        // When
-        ResponseEntity<CreateServiceRequestResponse> response = underTest.createServiceRequest(
-            AUTH_TOKEN,
-            S2S_TOKEN,
-            serviceRequestPayload
-        );
-
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isEqualTo(createServiceRequestResponse);
     }
 
     @Test
