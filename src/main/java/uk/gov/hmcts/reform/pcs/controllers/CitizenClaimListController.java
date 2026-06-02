@@ -26,7 +26,7 @@ import java.util.UUID;
 public class CitizenClaimListController {
 
     private final IdamAuthenticator idamAuthenticator;
-    private final CitizenClaimListService defendantClaimService;
+    private final CitizenClaimListService citizenClaimListService;
 
     @GetMapping(value = "/citizen-claims", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
@@ -47,6 +47,6 @@ public class CitizenClaimListController {
         @RequestHeader("ServiceAuthorization") String s2sToken
     ) {
         UUID idamId = UUID.fromString(idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid());
-        return ResponseEntity.ok(defendantClaimService.getClaimsAgainst(idamId));
+        return ResponseEntity.ok(citizenClaimListService.getClaimsAgainst(idamId));
     }
 }

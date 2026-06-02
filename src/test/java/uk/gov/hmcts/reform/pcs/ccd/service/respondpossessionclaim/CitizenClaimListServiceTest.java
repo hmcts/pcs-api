@@ -42,7 +42,7 @@ class CitizenClaimListServiceTest {
 
         ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCase).build();
         claim.addParty(claimant, PartyRole.CLAIMANT);
-        when(partyRepository.findClaimsByDefendantIdamId(IDAM_ID, PartyRole.DEFENDANT))
+        when(partyRepository.findClaimsByIdamIdAndRole(IDAM_ID, PartyRole.DEFENDANT))
             .thenReturn(List.of(claim));
 
         // When
@@ -50,7 +50,7 @@ class CitizenClaimListServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getCaseRef()).isEqualTo("1234567890");
+        assertThat(result.get(0).getCaseReference()).isEqualTo("1234567890");
         assertThat(result.get(0).getClaimantName()).isEqualTo("Smith & Co");
         assertThat(result.get(0).getPropertyPostcode()).isEqualTo("SW1A 1AA");
     }
@@ -58,7 +58,7 @@ class CitizenClaimListServiceTest {
     @Test
     void shouldReturnEmptyListWhenNoClaimsExist() {
         // Given
-        when(partyRepository.findClaimsByDefendantIdamId(IDAM_ID, PartyRole.DEFENDANT))
+        when(partyRepository.findClaimsByIdamIdAndRole(IDAM_ID, PartyRole.DEFENDANT))
             .thenReturn(List.of());
         // When
         List<ClaimSummary> result = underTest.getClaimsAgainst(IDAM_ID);
@@ -77,7 +77,7 @@ class CitizenClaimListServiceTest {
 
         ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCase).build();
         claim.addParty(defendant, PartyRole.DEFENDANT);
-        when(partyRepository.findClaimsByDefendantIdamId(IDAM_ID, PartyRole.DEFENDANT))
+        when(partyRepository.findClaimsByIdamIdAndRole(IDAM_ID, PartyRole.DEFENDANT))
             .thenReturn(List.of(claim));
 
         // When
@@ -96,7 +96,7 @@ class CitizenClaimListServiceTest {
             .build();
 
         ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCase).build();
-        when(partyRepository.findClaimsByDefendantIdamId(IDAM_ID, PartyRole.DEFENDANT))
+        when(partyRepository.findClaimsByIdamIdAndRole(IDAM_ID, PartyRole.DEFENDANT))
             .thenReturn(List.of(claim));
 
         // When
@@ -116,7 +116,7 @@ class CitizenClaimListServiceTest {
 
         ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCase).build();
         claim.addParty(claimant, PartyRole.CLAIMANT);
-        when(partyRepository.findClaimsByDefendantIdamId(IDAM_ID, PartyRole.DEFENDANT))
+        when(partyRepository.findClaimsByIdamIdAndRole(IDAM_ID, PartyRole.DEFENDANT))
             .thenReturn(List.of(claim));
 
         // When

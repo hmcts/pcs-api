@@ -2,11 +2,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimSummary;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 
@@ -16,14 +16,15 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CitizenClaimListService {
 
     private final PartyRepository partyRepository;
 
     public List<ClaimSummary> getClaimsAgainst(UUID idamId) {
-        return partyRepository.findClaimsByDefendantIdamId(idamId, PartyRole.DEFENDANT).stream()
+        return partyRepository.findClaimsByIdamIdAndRole(idamId, PartyRole.DEFENDANT).stream()
             .map(claim -> ClaimSummary.builder()
-                .caseRef(String.valueOf(claim.getPcsCase().getCaseReference()))
+                .caseReference(String.valueOf(claim.getPcsCase().getCaseReference()))
                 .claimantName(extractClaimantName(claim))
                 .propertyPostcode(extractPostcode(claim))
                 .build())
@@ -34,7 +35,9 @@ public class CitizenClaimListService {
         return claim.getClaimParties().stream()
             .filter(cp -> cp.getRole() == PartyRole.CLAIMANT)
             .map(ClaimPartyEntity::getParty)
-            .map(PartyEntity::getOrgName)
+            .map(claimant -> (claimant.getOrgName() != null
+                ? claimant.getOrgName()
+                : String.format("%s %s", claimant.getFirstName(), claimant.getLastName())))
             .findFirst()
             .orElse(null);
     }

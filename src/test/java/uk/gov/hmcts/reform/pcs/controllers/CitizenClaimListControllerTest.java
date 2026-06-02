@@ -46,7 +46,7 @@ class CitizenClaimListControllerTest {
         when(idamAuthenticator.validateAuthToken(AUTH_HEADER)).thenReturn(user);
 
         List<ClaimSummary> claims = List.of(
-            ClaimSummary.builder().caseRef("123").claimantName("Smith & Co").propertyPostcode("SW1A 1AA").build()
+            ClaimSummary.builder().caseReference("123").claimantName("Smith & Co").propertyPostcode("SW1A 1AA").build()
         );
         when(citizenClaimListService.getClaimsAgainst(IDAM_ID)).thenReturn(claims);
 

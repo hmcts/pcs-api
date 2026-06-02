@@ -22,6 +22,6 @@ public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
     Optional<PartyEntity> queryPartyByIdamId(@Param("idamId") UUID idamId, @Param("caseReference") long caseReference);
 
     @Query("SELECT cp.claim FROM ClaimPartyEntity cp WHERE cp.party.idamId = :idamId AND cp.role = :role")
-    List<ClaimEntity> findClaimsByDefendantIdamId(@Param("idamId") UUID idamId, @Param("role") PartyRole role);
+    List<ClaimEntity> findClaimsByIdamIdAndRole(@Param("idamId") UUID idamId, @Param("role") PartyRole role);
 
 }

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ClaimSummary {
 
-    private String caseRef;
+    private String caseReference;
 
     private String claimantName;
 
