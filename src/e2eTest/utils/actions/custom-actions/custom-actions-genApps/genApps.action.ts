@@ -1,9 +1,8 @@
 import {
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
   checkYourAnswersGenApps,
-  chooseAnApplication,
-  doYouWantToUploadDocumentToSupportYourApplication,
-  haveTheOtherPartiesAgreedToThisApplication,
+  chooseAnApplication, doYouWantToUploadDocumentsToSupportDefendantsApplication,
+  hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees,
   helpPayingTheFee,
   isTheCourtHearingInTheNext14Days,
@@ -95,7 +94,7 @@ export class GenAppsAction implements IAction {
 
   private async selectApplicant(applicant: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', applicant);
     await performAction('clickRadioButton', { question: applicant.question, option: applicant.option });
     await performAction('clickButton', selectParty.continueButton);
@@ -112,7 +111,7 @@ export class GenAppsAction implements IAction {
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', courtHearing);
     await performAction('clickRadioButton', {
       question: courtHearing.question,
@@ -123,7 +122,7 @@ export class GenAppsAction implements IAction {
 
   private async doYouNeedHelpPayingFee(feeHelp: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', feeHelp);
     await performAction('clickRadioButton', {
       question: feeHelp.question,
@@ -134,7 +133,7 @@ export class GenAppsAction implements IAction {
 
   private async confirmYouHaveAppliedForFeeHelp(confirmFeeHelp: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', confirmFeeHelp);
     await performAction('clickRadioButton', {
       question: confirmFeeHelp.question,
@@ -155,15 +154,19 @@ export class GenAppsAction implements IAction {
   }
 
   private async confirmOtherPartiesAgreed(confirmOtherParty: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', confirmOtherParty);
     await performAction('clickRadioButton', {
       question: confirmOtherParty.question,
       option: confirmOtherParty.option,
     });
-    await performAction('clickButton', haveTheOtherPartiesAgreedToThisApplication.continueButton);
+    await performAction('clickButton', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.continueButton);
   }
 
   private async reasonsApplicationShouldNotBeShared(reason: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', reason);
     await performAction('clickRadioButton', {
       question: reason.question,
@@ -181,6 +184,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async confirmOrderDoYouWant(confirmOrder: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', confirmOrder);
     const userInput =
       typeof confirmOrder.input === 'number'
@@ -193,6 +198,8 @@ export class GenAppsAction implements IAction {
   }
 
   private async selectLanguageUsedToComplete(selectLanguageData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', selectLanguageData);
     await performAction('clickRadioButton', {
       question: selectLanguageData.question,
@@ -398,7 +405,7 @@ export class GenAppsAction implements IAction {
             option: helpPayingTheFee.noRadioOption,
           });
         } else {
-          await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+          await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
           FieldsStore.deleteKeys([
             helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
             haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
@@ -432,7 +439,7 @@ export class GenAppsAction implements IAction {
             input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
           });
         }
-        await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+        await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
         break;
       }
       case 'whatOrderDoYouWantTheCourtToMakeAndWhy': {
@@ -441,7 +448,7 @@ export class GenAppsAction implements IAction {
           label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
           input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
         });
-        await performValidation('mainHeader', doYouWantToUploadDocumentToSupportYourApplication.mainHeader);
+        await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
         break;
       }
       case 'haveYouAlreadyAppliedForHelpWithYourApplicationFee': {
@@ -452,7 +459,7 @@ export class GenAppsAction implements IAction {
           label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
           input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
         });
-        await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+        await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
         break;
       }
 

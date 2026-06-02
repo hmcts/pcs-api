@@ -15,5 +15,6 @@ public enum EventId {
     confirmEviction,
     addCaseNote,
     createFlags,
-    amendFlags
+    amendFlags,
+    payment
 }
