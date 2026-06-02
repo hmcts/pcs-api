@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -51,6 +51,9 @@ public class GenAppsView {
             .supportingDocuments(getSupportingDocuments(genAppEntity))
             .build();
 
+        generalApplication.setSubmissionDocument(getSubmissionDocument(genAppEntity));
+        generalApplication.setSupportingDocuments(getSupportingDocuments(genAppEntity));
+
         return new ListValue<>(genAppEntity.getId().toString(), generalApplication);
     }
 
@@ -81,14 +84,13 @@ public class GenAppsView {
 
     private List<ListValue<Document>> getSupportingDocuments(GenAppEntity genAppEntity) {
         return Optional.ofNullable(genAppEntity.getDocuments())
-            .filter(documents -> !documents.isEmpty())
             .map(documents -> documents.stream()
-                .map(this::toListValue)
+                .map(this::toSupportingDocument)
                 .collect(Collectors.toList()))
-            .orElse(null);
+            .orElse(List.of());
     }
 
-    private ListValue<Document> toListValue(DocumentEntity documentEntity) {
+    private ListValue<Document> toSupportingDocument(DocumentEntity documentEntity) {
         return ListValue.<Document>builder()
             .id(documentEntity.getId().toString())
             .value(modelMapper.map(documentEntity, Document.class))
