@@ -48,8 +48,8 @@
   },
   "statementOfTruth": {
     "completedBy": "CLAIMANT",
-    "fullNameClaimant": "wert",
-    "positionClaimant": "ewrt",
+    "fullNameParty": "wert",
+    "positionParty": "ewrt",
     "agreementClaimant": [
       "BELIEVE_TRUE"
     ]

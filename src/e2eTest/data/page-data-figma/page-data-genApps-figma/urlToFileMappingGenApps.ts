@@ -5,4 +5,10 @@ export default {
   'makeAnApplicationstartSomethingElse': 'askTheCourtToMakeAnOrder',
   'makeAnApplicationselectParty': 'selectParty',
   'makeAnApplicationhearingInNext14Days': 'isTheCourtHearingInTheNext14Days',
+  'makeAnApplicationhelpWithFeesNeeded' : 'helpWithFeesNeeded',
+  'makeAnApplicationappliedForHelpWithFees': 'haveTheyAlreadyAppliedForHelpWithFees',
+  'makeAnApplicationotherPartiesAgreed': 'hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication',
+  'makeAnApplicationreasonsNotToShare': 'areThereAnyReasonsThatThisApplicationShouldNotBeShared',
+  'makeAnApplicationwhatOrderWanted': 'whatOrderDoYouWantTheCourtToMakeAndWhy',
+  'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService'
 };

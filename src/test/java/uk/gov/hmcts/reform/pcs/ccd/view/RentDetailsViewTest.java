@@ -17,7 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -82,6 +84,23 @@ class RentDetailsViewTest {
         assertThat(rentDetails.getOtherFrequency()).isEqualTo(otherRentFrequency);
         assertThat(rentDetails.getDailyCharge()).isEqualTo(dailyRent);
         assertThat(rentDetails.getPerDayCorrect()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void shouldNotSetShowRentSectionPageIfRentAmountIsNull() {
+        // Given
+        TenancyLicenceEntity tenancyLicenceEntity = mock(TenancyLicenceEntity.class);
+        when(pcsCaseEntity.getTenancyLicence()).thenReturn(tenancyLicenceEntity);
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        ArgumentCaptor<RentDetails> rentDetailsCaptor
+            = ArgumentCaptor.forClass(RentDetails.class);
+
+        verify(pcsCase).setRentDetails(rentDetailsCaptor.capture());
+        verify(pcsCase, times(0)).setShowRentSectionPage(any());
     }
 
 }
