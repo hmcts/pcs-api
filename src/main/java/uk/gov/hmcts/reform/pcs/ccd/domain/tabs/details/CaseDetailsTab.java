@@ -73,7 +73,7 @@ public class CaseDetailsTab {
     @CCD(label = "Additional defendant")
     private List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendants;
 
-    @CCD(label = "Defendants’ circumstances")
+    @CCD(label = "Defendant circumstances")
     private DefendantCircumstanceTabDetails defendantCircumstanceDetails;
 
     @CCD(label = "Underlessee or mortgagee")
