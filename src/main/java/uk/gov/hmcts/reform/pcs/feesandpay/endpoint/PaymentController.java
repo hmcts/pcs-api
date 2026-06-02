@@ -38,7 +38,7 @@ public class PaymentController {
 
     @PostMapping(path = "service-request/{serviceRequestReference}/card-payment", consumes = APPLICATION_JSON_VALUE)
     @Operation(
-        summary = "Create a payment service request",
+        summary = "Create a payment request",
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
             content = @Content(
