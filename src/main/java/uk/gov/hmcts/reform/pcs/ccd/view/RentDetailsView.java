@@ -7,6 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 
+import java.math.BigDecimal;
+
 @Component
 public class RentDetailsView {
 
@@ -14,6 +16,11 @@ public class RentDetailsView {
         TenancyLicenceEntity tenancyLicence = pcsCaseEntity.getTenancyLicence();
 
         if (tenancyLicence != null) {
+            BigDecimal rentAmount = tenancyLicence.getRentAmount();
+            if (rentAmount != null) {
+                pcsCase.setShowRentSectionPage(YesOrNo.YES);
+            }
+
             RentDetails rentDetails = RentDetails.builder()
                 .currentRent(tenancyLicence.getRentAmount())
                 .frequency(tenancyLicence.getRentFrequency())
@@ -23,7 +30,6 @@ public class RentDetailsView {
                 .build();
 
             pcsCase.setRentDetails(rentDetails);
-            pcsCase.setShowRentSectionPage(YesOrNo.YES);
         }
     }
 
