@@ -29,7 +29,7 @@ export class ActionGenAppsRegistry {
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
     ['getCaseAPI', new CreateCaseAPIAction()],
-    ['linkSolicitorAPI', new LinkSolicitorAPIAction()], 
+    ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['chooseAnApplication', new GenAppsAction()],
     ['confirmIfCourtHearingInNext14Days', new GenAppsAction()],
     ['doYouNeedHelpPayingFee', new GenAppsAction()],
@@ -47,7 +47,9 @@ export class ActionGenAppsRegistry {
     ['reviewAndUpdateCYA', new GenAppsAction()],
     ['getDefendantDetails', new GenAppsAction()],
     ['selectApplicant', new GenAppsAction()],
-   
+    ['confirmDocumentToUpload', new GenAppsAction()],
+    ['uploadFilesGenApps', new GenAppsAction()],
+
   ]);
 
   static getAction(actionName: string): IAction {
