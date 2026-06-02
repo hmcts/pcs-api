@@ -12,7 +12,15 @@ import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { askToAdjournTheCourtHearing, chooseAnApplication, isTheCourtHearingInTheNext14Days, selectParty } from '@data/page-data-figma/page-data-genApps-figma';
+import {
+  askToAdjournTheCourtHearing, haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee,
+  chooseAnApplication,
+  isTheCourtHearingInTheNext14Days,
+  selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
+  areThereAnyReasonsThatThisApplicationShouldNotBeShared,
+  doYouWantToUploadDocumentsToSupportDefendantsApplication, whichLanguageDidYouUseToCompleteThisService,
+  statementOfTruth
+} from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
 
 test.use({ storageState: undefined });
@@ -61,7 +69,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @PR @smoke', async () => {
+  test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
@@ -75,7 +83,82 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       question: selectParty.partyMakingApplicationQuestion,
       option: defendantDetails[0],
     });
-    await performValidation('mainHeader', isTheCourtHearingInTheNext14Days.mainHeader);
+    await performAction('confirmIfCourtHearingInNext14Days', {
+      question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
+      option: isTheCourtHearingInTheNext14Days.yesRadioOption,
+    });
+    await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+    await performAction('doYouNeedHelpPayingFee', {
+      question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+      option: helpPayingTheFee.yesRadioOption,
+    });
+    await performAction('confirmYouHaveAppliedForFeeHelp', {
+      question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
+      option: haveTheyAlreadyAppliedForHelpWithFees.yesRadioOption,
+      label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
+      input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
+    });
+    await performValidation('mainHeader',hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
+    await performAction('confirmOtherPartiesAgreed', {
+      question: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.haveTheOtherPartiesAgreedQuestion,
+      option: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.yesRadioOption,
+    });
+    await performValidation('mainHeader', whatOrderDoYouWantTheCourtToMakeAndWhy.mainHeader);
+    await performAction('confirmOrderDoYouWant', {
+      label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
+      input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+    });
+    await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
+    await performAction('clickButton', doYouWantToUploadDocumentsToSupportDefendantsApplication.continueButton);
+    await performAction('selectLanguageUsedToComplete', {
+      question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
+      option: whichLanguageDidYouUseToCompleteThisService.englishRadioOption,
+    });
+    await performValidation('mainHeader', statementOfTruth.mainHeader);
   });
 
+test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]', async () => {
+  await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
+  await performAction('clickButton', caseSummary.go);
+  await performAction('chooseAnApplication', {
+    question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
+    option: chooseAnApplication.adjournTheHearingRadioOption,
+  });
+  await performValidation('mainHeader', askToAdjournTheCourtHearing.mainHeader);
+  await performAction('clickButton', askToAdjournTheCourtHearing.continueButton);
+  await performValidation('mainHeader', selectParty.mainHeader);
+  await performAction('selectApplicant', {
+    question: selectParty.partyMakingApplicationQuestion,
+    option: defendantDetails[0],
+  });
+  await performAction('confirmIfCourtHearingInNext14Days', {
+    question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
+    option: isTheCourtHearingInTheNext14Days.noRadioOption,
+  });
+  await performValidation('mainHeader',hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
+  await performAction('confirmOtherPartiesAgreed', {
+    question: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.haveTheOtherPartiesAgreedQuestion,
+    option: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.noRadioOption,
+  });
+  await performValidation('mainHeader', areThereAnyReasonsThatThisApplicationShouldNotBeShared.mainHeader);
+  await performAction('reasonsApplicationShouldNotBeShared', {
+    question: areThereAnyReasonsThatThisApplicationShouldNotBeShared.areThereAnyReasonQuestion,
+    option: areThereAnyReasonsThatThisApplicationShouldNotBeShared.yesRadioOption,
+    label: areThereAnyReasonsThatThisApplicationShouldNotBeShared.provideReasonHiddenTextLabel,
+    input: areThereAnyReasonsThatThisApplicationShouldNotBeShared.provideReasonTextInput,
+  });
+  await performValidation('mainHeader', whatOrderDoYouWantTheCourtToMakeAndWhy.mainHeader);
+  await performAction('confirmOrderDoYouWant', {
+    label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
+    input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+  });
+  await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
+  await performAction('clickButton', doYouWantToUploadDocumentsToSupportDefendantsApplication.continueButton);
+  await performAction('selectLanguageUsedToComplete', {
+    question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
+    option: whichLanguageDidYouUseToCompleteThisService.welshRadioOption,
+  });
+  await performValidation('mainHeader', statementOfTruth.mainHeader);
+
+});
 });

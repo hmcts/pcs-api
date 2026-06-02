@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -54,7 +55,8 @@ class DocumentServiceTest {
 
     @Mock
     private DocumentRepository documentRepository;
-
+    @Mock
+    private DocumentIdExtractor documentIdExtractor;
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
@@ -62,7 +64,45 @@ class DocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentService(documentRepository);
+        underTest = new DocumentService(documentRepository, documentIdExtractor);
+    }
+
+    @Test
+    void shouldSetDocumentIdFromUrl() {
+        // Given
+        UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
+        String documentUrl = "document URL";
+        when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(expectedDocumentId);
+
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        DynamicList documentTypeList1 = new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), "Witness statement"),
+                new ArrayList<>()
+        );
+
+        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
+            .document(Document.builder()
+                          .url(documentUrl)
+                          .filename("file-WITNESS_STATEMENT")
+                          .binaryUrl("bin-WITNESS_STATEMENT")
+                          .categoryId("cat-WITNESS_STATEMENT")
+                          .build())
+            .documentType(documentTypeList1)
+            .build();
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(ListValueUtils.wrapListItems(List.of(additionalDocument1)));
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+
+        assertThat(capturedEntities.getFirst().getDocumentId()).isEqualTo(expectedDocumentId);
     }
 
     @Test
@@ -74,36 +114,34 @@ class DocumentServiceTest {
                 new DynamicListElement(UUID.randomUUID(), "Witness statement"),
                 new ArrayList<>()
         );
-
         AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
-                .document(Document.builder()
-                        .url("url-WITNESS_STATEMENT")
-                        .filename("file-WITNESS_STATEMENT")
-                        .binaryUrl("bin-WITNESS_STATEMENT")
-                        .categoryId("cat-WITNESS_STATEMENT")
-                        .build())
-                .documentType(documentTypeList1)
-                .build();
+            .document(Document.builder()
+                          .url("url-WITNESS_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+                          .filename("file-WITNESS_STATEMENT")
+                          .binaryUrl("bin-WITNESS_STATEMENT")
+                          .categoryId("cat-WITNESS_STATEMENT")
+                          .build())
+            .documentType(documentTypeList1)
+            .build();
 
         DynamicList documentTypeList2 = new DynamicList(
                 new DynamicListElement(UUID.randomUUID(), "Rent statement"),
                 new ArrayList<>()
         );
-
         AdditionalDocument additionalDocument2 = AdditionalDocument.builder()
-                .document(Document.builder()
-                        .url("url-RENT_STATEMENT")
-                        .filename("file-RENT_STATEMENT")
-                        .binaryUrl("bin-RENT_STATEMENT")
-                        .categoryId("cat-RENT_STATEMENT")
-                        .build())
-                .documentType(documentTypeList2)
-                .build();
+            .document(Document.builder()
+                           .url("url-RENT_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+                           .filename("file-RENT_STATEMENT")
+                           .binaryUrl("bin-RENT_STATEMENT")
+                           .categoryId("cat-RENT_STATEMENT")
+                           .build())
+            .documentType(documentTypeList2)
+            .build();
 
         ListValue<AdditionalDocument> lv1 = ListValue.<AdditionalDocument>builder()
-                .id("1").value(additionalDocument1).build();
+            .id("1").value(additionalDocument1).build();
         ListValue<AdditionalDocument> lv2 = ListValue.<AdditionalDocument>builder()
-                .id("2").value(additionalDocument2).build();
+            .id("2").value(additionalDocument2).build();
 
         List<ListValue<AdditionalDocument>> additionalDocuments = List.of(lv1, lv2);
 
@@ -137,16 +175,16 @@ class DocumentServiceTest {
                 new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
                 new ArrayList<>()
         );
-
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
-                .document(Document.builder()
-                        .filename("userEnteredDetails.pdf")
-                        .uploadTimestamp(LocalDateTime.now())
-                        .url("someUrl")
-                        .binaryUrl("someUrl")
-                        .categoryId("uploaded-category").build())
-                .documentType(documentTypeList)
-                .build();
+            .document(Document.builder()
+                    .filename("userEnteredDetails.pdf")
+                    .uploadTimestamp(LocalDateTime.now())
+                    .url("https://host/" + UUID.randomUUID())
+                    .binaryUrl("someUrl")
+                    .categoryId("uploaded-category")
+                    .build())
+            .documentType(documentTypeList)
+            .build();
 
         when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
                 ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
@@ -177,16 +215,17 @@ class DocumentServiceTest {
                 new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
                 new ArrayList<>()
         );
-
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
-                .document(Document.builder()
+            .document(Document.builder()
+                        .url("https://host/" + UUID.randomUUID())
                         .filename("filename.txt")
-                        .categoryId("uploaded-category").build())
-                .documentType(documentTypeList)
-                .build();
+                        .categoryId("uploaded-category")
+                        .build())
+            .documentType(documentTypeList)
+            .build();
 
         when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
-                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         ));
 
         // When
@@ -199,6 +238,7 @@ class DocumentServiceTest {
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getCategoryId)
             .containsExactly(expectedCategoryId);
+
     }
 
     @Test
@@ -206,7 +246,7 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         Document doc = Document.builder()
-            .url("url1")
+            .url("url1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
             .filename("file1")
             .binaryUrl("bin1")
             .categoryId("cat1")
@@ -236,7 +276,7 @@ class DocumentServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         Document doc = Document.builder()
-            .url("url2")
+            .url("url2/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
             .filename("file2")
             .binaryUrl("bin2")
             .categoryId("cat2")
@@ -267,7 +307,7 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document doc = Document.builder()
-            .url("url3")
+            .url("url3/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
             .filename("file3")
             .binaryUrl("bin3")
             .categoryId("cat3")
@@ -298,7 +338,7 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document doc = Document.builder()
-            .url("url4")
+            .url("url4/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
             .filename("file4")
             .binaryUrl("bin4")
             .categoryId("cat4")
@@ -343,7 +383,7 @@ class DocumentServiceTest {
         // Given
         EvidenceOfDefendants evidenceDocument = EvidenceOfDefendants.builder()
                 .document(Document.builder()
-                        .url("url-WITNESS_STATEMENT")
+                        .url("url-WITNESS_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
                         .filename("file-WITNESS_STATEMENT")
                         .binaryUrl("bin-WITNESS_STATEMENT")
                         .categoryId("cat-WITNESS_STATEMENT")
@@ -433,12 +473,11 @@ class DocumentServiceTest {
                 new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
                 new ArrayList<>()
         );
-
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
                 .document(Document.builder()
                         .filename("witness1.pdf")
                         .binaryUrl("someUrl")
-                        .url("someUrl")
+                        .url("https://host/" + UUID.randomUUID())
                         .categoryId("cat1")
                         .uploadTimestamp(LocalDateTime.now())
                         .build())
@@ -479,10 +518,9 @@ class DocumentServiceTest {
                 new DynamicListElement(UUID.randomUUID(), "Witness statement"),
                 new ArrayList<>()
         );
-
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
                 .document(Document.builder()
-                        .url("url1")
+                        .url("url1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
                         .filename("file1")
                         .binaryUrl("bin1")
                         .categoryId("cat1")
@@ -514,7 +552,7 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document validDoc = Document.builder()
-                .url("url1")
+                .url("url1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
                 .filename("file1")
                 .binaryUrl("bin1")
                 .categoryId("cat1")
@@ -547,11 +585,14 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document rentDoc = Document.builder()
-                .url("url-rent").filename("file-rent").binaryUrl("bin-rent").categoryId("cat-rent").build();
+            .url("url-rent/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-rent")
+            .binaryUrl("bin-rent").categoryId("cat-rent").build();
         Document tenancyDoc = Document.builder()
-                .url("url-tenancy").filename("file-tenancy").binaryUrl("bin-tenancy").categoryId("cat-tenancy").build();
+            .url("url-tenancy/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-tenancy")
+            .binaryUrl("bin-tenancy").categoryId("cat-tenancy").build();
         Document noticeDoc = Document.builder()
-                .url("url-notice").filename("file-notice").binaryUrl("bin-notice").categoryId("cat-notice").build();
+            .url("url-notice/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-notice")
+            .binaryUrl("bin-notice").categoryId("cat-notice").build();
 
         when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
                 .statementDocuments(List.of(ListValue.<Document>builder().id("1").value(rentDoc).build()))
@@ -581,8 +622,8 @@ class DocumentServiceTest {
 
         assertThat(entities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactlyInAnyOrder("file-rent - Claimant 1", "file-tenancy - Claimant 1",
-                    "file-notice - Claimant 1");
+                .containsExactlyInAnyOrder("file-rent - Claimant 1", "file-tenancy - Claimant 1",
+                        "file-notice - Claimant 1");
     }
 
     @Test
@@ -591,8 +632,9 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document doc = Document.builder()
-                .filename("filename.txt")
-                .build();
+            .filename("filename.txt")
+            .url("https://host/" + UUID.randomUUID())
+            .build();
 
         NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
                 .noticeDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))

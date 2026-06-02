@@ -42,6 +42,7 @@ import java.util.Optional;
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
+    private final DocumentIdExtractor documentIdExtractor;
 
     private static final String CLAIMANT_1 = "Claimant 1";
 
@@ -154,8 +155,8 @@ public class DocumentService {
         return documents.stream()
                 .map(holder -> DocumentEntity.builder()
                         .url(holder.getDocument().getUrl())
+                        .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
                         .fileName(getFilename(holder.getDocument().getFilename()))
-                        .displayFileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
                         .categoryId(mapDocumentTypeToCategory(holder.getType())
                                         .map(CaseFileCategory::getId)
