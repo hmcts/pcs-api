@@ -175,7 +175,8 @@ public class PCSCase {
     private Integer caseManagementLocationNumber;
 
     @CCD(
-        label = "Region Id"
+        label = "Region Id",
+        access = ClaimantAccess.class
     )
     @Builder.Default
     private Integer regionId = 1;
