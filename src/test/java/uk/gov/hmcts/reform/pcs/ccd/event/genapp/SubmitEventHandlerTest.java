@@ -1,20 +1,26 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.genapp;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.MakeAnApplicationResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -25,11 +31,17 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresent
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +54,11 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.GEN_APP_ISSUE;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -62,20 +78,28 @@ class SubmitEventHandlerTest {
     private GenAppRepository genAppRepository;
     @Mock
     private GenAppDocumentGenerator genAppDocumentGenerator;
+    @Mock
+    private GenAppFeeCalculator genAppFeeCalculator;
     @Mock(strictness = LENIENT)
     private DocumentImportService documentImportService;
     @Mock
     private LegalRepresentativeRepository legalRepresentativeRepository;
     @Mock
     private ConfirmationScreenFactory confirmationScreenFactory;
+    @Mock
+    private PaymentService paymentService;
+    @Mock
+    private ObjectMapper objectMapper;
 
     private SubmitEventHandler underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
-                                           genAppRepository, genAppDocumentGenerator, documentImportService,
-                                           legalRepresentativeRepository, confirmationScreenFactory);
+                                           genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
+                                           documentImportService, legalRepresentativeRepository,
+                                           confirmationScreenFactory, paymentService, objectMapper
+        );
     }
 
     @Nested
@@ -108,6 +132,8 @@ class SubmitEventHandlerTest {
 
             stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
 
+            stubApplicationFeeCalculation(genAppRequest);
+
             PCSCase caseData = PCSCase.builder()
                 .currentRepresentedPartyId(representedPartyUuid.toString())
                 .xuiGenAppRequest(genAppRequest)
@@ -117,7 +143,8 @@ class SubmitEventHandlerTest {
             underTest.submit(eventPayload(caseData));
 
             // Then
-            verify(genAppService).createGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
+            verify(genAppService)
+                .createGenAppEntity(genAppRequest, pcsCaseEntity, representedParty, PENDING_GEN_APP_ISSUED);
         }
 
         @Test
@@ -137,8 +164,11 @@ class SubmitEventHandlerTest {
 
             stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
 
+            FeeDetails feeDetails = stubApplicationFeeCalculation(genAppRequest);
+
             SubmitResponse<State> expectedSubmitResponse = createMockSubmitResponse();
-            when(confirmationScreenFactory.buildConfirmationScreenResponse(genAppRequest, TEST_CASE_REFERENCE))
+            when(confirmationScreenFactory
+                     .buildConfirmationScreenResponse(genAppRequest, TEST_CASE_REFERENCE, feeDetails))
                 .thenReturn(expectedSubmitResponse);
 
             PCSCase caseData = PCSCase.builder()
@@ -190,6 +220,15 @@ class SubmitEventHandlerTest {
 
     }
 
+    private FeeDetails stubApplicationFeeCalculation(GenAppRequest genAppRequest) {
+        BigDecimal applicationFee = new BigDecimal("55.00");
+        FeeDetails feeDetails = FeeDetails.builder()
+            .feeAmount(applicationFee)
+            .build();
+        when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.of(feeDetails));
+        return feeDetails;
+    }
+
     @Nested
     @DisplayName("Citizen submit event tests")
     class CitizenSubmitEventTests {
@@ -204,7 +243,7 @@ class SubmitEventHandlerTest {
         }
 
         @Test
-        void shouldCreateGenAppWithCaseDataAndApplicantParty() {
+        void shouldCreateGenAppWithCaseDataAndApplicantPartyWhenNoFeeDue() {
             // Given
             final PartyEntity applicantParty = mock(PartyEntity.class);
 
@@ -219,6 +258,8 @@ class SubmitEventHandlerTest {
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
             given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
 
+            when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.empty());
+
             PCSCase caseData = PCSCase.builder()
                 .citizenGenAppRequest(genAppRequest)
                 .build();
@@ -227,7 +268,8 @@ class SubmitEventHandlerTest {
             underTest.submit(eventPayload(caseData));
 
             // Then
-            verify(genAppService).createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+            verify(genAppService)
+                .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
         }
 
         @Test
@@ -253,7 +295,7 @@ class SubmitEventHandlerTest {
             assertThat(submitResponse.getErrors())
                 .containsExactly("Application already exists for client reference");
 
-            verify(genAppService, never()).createGenAppEntity(any(), any(), any());
+            verify(genAppService, never()).createGenAppEntity(any(), any(), any(), any());
         }
 
         @Test
@@ -316,7 +358,54 @@ class SubmitEventHandlerTest {
         }
 
         @Test
-        void shouldBuildConfirmationScreenResponse() {
+        void shouldCreateServiceRequestWhenFeeDue() throws JsonProcessingException {
+            // Given
+            final PartyEntity applicantParty = mock(PartyEntity.class);
+            UUID applicantPartyId = UUID.randomUUID();
+            when(applicantParty.getId()).thenReturn(applicantPartyId);
+
+            CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .clientReference("some reference")
+                .build();
+
+            UUID expectedGenAppEntityId = UUID.randomUUID();
+            GenAppEntity genAppEntity = stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+            when(genAppEntity.getId()).thenReturn(expectedGenAppEntityId);
+
+            UUID currentUserId = UUID.randomUUID();
+            given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
+            given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
+
+            stubApplicationFeeCalculation(genAppRequest);
+            stubPaymentServiceResponse();
+
+            when(objectMapper.writeValueAsString(any(MakeAnApplicationResponse.class)))
+                .thenReturn("serialised response JSON");
+
+            PCSCase caseData = PCSCase.builder()
+                .citizenGenAppRequest(genAppRequest)
+                .build();
+
+            // When
+            underTest.submit(eventPayload(caseData));
+
+            // Then
+            ArgumentCaptor<FeesAndPayTaskData> feesAndPayTaskDataCaptor
+                = ArgumentCaptor.forClass(FeesAndPayTaskData.class);
+
+            verify(paymentService).createServiceRequest(feesAndPayTaskDataCaptor.capture());
+
+            FeesAndPayTaskData feesAndPayTaskData = feesAndPayTaskDataCaptor.getValue();
+            assertThat(feesAndPayTaskData.getCcdCaseNumber()).isEqualTo(Long.toString(TEST_CASE_REFERENCE));
+            assertThat(feesAndPayTaskData.getCaseReference()).isEqualTo(TEST_CASE_REFERENCE);
+            assertThat(feesAndPayTaskData.getResponsiblePartyId()).isEqualTo(applicantPartyId);
+            assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
+            assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
+        }
+
+        @Test
+        void shouldSetGenAppStateAsPendingAndReturnPaymentDetailsWhenFeeDue() throws JsonProcessingException {
             // Given
             final PartyEntity applicantParty = mock(PartyEntity.class);
 
@@ -326,14 +415,16 @@ class SubmitEventHandlerTest {
                 .build();
 
             stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+            final String expectedServiceRequestReference = stubPaymentServiceResponse();
 
             UUID currentUserId = UUID.randomUUID();
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
             given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
 
-            SubmitResponse<State> expectedSubmitResponse = createMockSubmitResponse();
-            when(confirmationScreenFactory.buildConfirmationScreenResponse(genAppRequest, TEST_CASE_REFERENCE))
-                .thenReturn(expectedSubmitResponse);
+            final FeeDetails feeDetails = stubApplicationFeeCalculation(genAppRequest);
+
+            when(objectMapper.writeValueAsString(any(MakeAnApplicationResponse.class)))
+                .thenReturn("serialised response JSON");
 
             PCSCase caseData = PCSCase.builder()
                 .citizenGenAppRequest(genAppRequest)
@@ -343,7 +434,28 @@ class SubmitEventHandlerTest {
             SubmitResponse<State> actualSubmitResponse = underTest.submit(eventPayload(caseData));
 
             // Then
-            assertThat(actualSubmitResponse).isEqualTo(expectedSubmitResponse);
+            verifyNoInteractions(genAppDocumentGenerator);
+
+            String confirmationBody = actualSubmitResponse.getConfirmationBody();
+            assertThat(confirmationBody).isEqualTo("serialised response JSON");
+            ArgumentCaptor<MakeAnApplicationResponse> makeAnApplicationResponseCaptor
+                = ArgumentCaptor.forClass(MakeAnApplicationResponse.class);
+
+            verify(objectMapper).writeValueAsString(makeAnApplicationResponseCaptor.capture());
+            MakeAnApplicationResponse makeAnApplicationResponse = makeAnApplicationResponseCaptor.getValue();
+
+            assertThat(makeAnApplicationResponse.getState()).isEqualTo(PENDING_GEN_APP_ISSUED);
+            assertThat(makeAnApplicationResponse.getServiceRequestReference())
+                .isEqualTo(expectedServiceRequestReference);
+            assertThat(makeAnApplicationResponse.getFeeAmount()).isEqualTo(feeDetails.getFeeAmount());
+        }
+
+        private String stubPaymentServiceResponse() {
+            PaymentServiceResponse paymentResponse = mock(PaymentServiceResponse.class);
+            when(paymentService.createServiceRequest(any(FeesAndPayTaskData.class))).thenReturn(paymentResponse);
+            String expectedServiceRequestReference = "SR-1234";
+            when(paymentResponse.getServiceRequestReference()).thenReturn(expectedServiceRequestReference);
+            return expectedServiceRequestReference;
         }
 
     }
@@ -372,7 +484,9 @@ class SubmitEventHandlerTest {
                                                 PcsCaseEntity pcsCaseEntity,
                                                 PartyEntity applicantParty) {
         GenAppEntity genAppEntity = mock(GenAppEntity.class);
-        when(genAppService.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty)).thenReturn(genAppEntity);
+        when(genAppService
+                 .createGenAppEntity(eq(genAppRequest), eq(pcsCaseEntity), eq(applicantParty), any(GenAppState.class)))
+            .thenReturn(genAppEntity);
         return genAppEntity;
     }
 

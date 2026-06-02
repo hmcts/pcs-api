@@ -199,7 +199,7 @@ public class PaymentService {
     public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback) {
         log.info("PaymentStatusCallback status: {}", paymentStatusCallback.getServiceRequestStatus());
         Optional<FeePaymentEntity> byCaseReference = feePaymentRepository
-            .findByRequestReference(paymentStatusCallback.getServiceRequestReference());
+            .findByServiceRequestReference(paymentStatusCallback.getServiceRequestReference());
         if (byCaseReference.isPresent()) {
             FeePaymentEntity feePaymentEntity = byCaseReference.get();
             feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
@@ -208,6 +208,8 @@ public class PaymentService {
                 .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
             if (paymentCallbackStrategy != null) {
                 paymentCallbackStrategy.handle(paymentStatusCallback, feePaymentEntity);
+            } else {
+                log.warn("No handler found for type {}", feePaymentEntity.getPaymentCallbackHandlerType());
             }
             feePaymentRepository.save(feePaymentEntity);
         } else {
@@ -223,10 +225,11 @@ public class PaymentService {
                  feesAndPayTaskData.getCaseReference(), serviceRequestReference);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
-            .requestReference(serviceRequestReference)
+            .serviceRequestReference(serviceRequestReference)
             .amount(feesAndPayTaskData.getFeeDetails().getFeeAmount())
             .paymentCallbackHandlerType(feesAndPayTaskData.getPaymentCallbackHandlerType())
             .taskData(feesAndPayTaskDataAsString)
+            .relatedEntityId(feesAndPayTaskData.getRelatedEntityId())
             .build();
         feePaymentRepository.save(feePaymentEntity);
     }

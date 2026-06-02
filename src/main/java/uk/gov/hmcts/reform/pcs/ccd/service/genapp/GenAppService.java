@@ -51,12 +51,13 @@ public class GenAppService {
 
     public GenAppEntity createGenAppEntity(GenAppRequest genAppRequest,
                                            PcsCaseEntity pcsCaseEntity,
-                                           PartyEntity applicantParty) {
+                                           PartyEntity applicantParty,
+                                           GenAppState initialState) {
 
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .type(genAppRequest.getApplicationType())
             .party(applicantParty)
-            .state(GenAppState.SUBMITTED)
+            .state(initialState)
             .clientReference(genAppRequest.getClientReference())
             .within14Days(genAppRequest.getWithin14Days())
             .needHwf(genAppRequest.getNeedHwf())

@@ -105,7 +105,9 @@ class GenAppServiceTest {
         when(genAppRepository.save(isA(GenAppEntity.class))).thenReturn(savedGenAppEntity);
 
         // When
-        GenAppEntity returnedGenAppEntity = underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        GenAppEntity returnedGenAppEntity = underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty,
+                                                                         GenAppState.PENDING_GEN_APP_ISSUED
+        );
 
         // Then
         verify(genAppRepository).save(any(GenAppEntity.class));
@@ -124,7 +126,7 @@ class GenAppServiceTest {
         when(genAppRepository.save(isA(GenAppEntity.class))).thenReturn(savedGenAppEntity);
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(pcsCaseEntity).addGenApp(genAppEntityCaptor.capture());
@@ -140,25 +142,26 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
         assertThat(genAppEntityCaptor.getValue().getType()).isEqualTo(genAppType);
     }
 
-    @Test
-    void shouldSetInitialState() {
+    @ParameterizedTest
+    @EnumSource(GenAppState.class)
+    void shouldSetInitialState(GenAppState initialState) {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, initialState);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
-        assertThat(genAppEntityCaptor.getValue().getState()).isEqualTo(GenAppState.SUBMITTED);
+        assertThat(genAppEntityCaptor.getValue().getState()).isEqualTo(initialState);
     }
 
     @Test
@@ -169,7 +172,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -185,7 +188,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -203,7 +206,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -224,7 +227,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -245,7 +248,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -264,7 +267,7 @@ class GenAppServiceTest {
                                             String expectedWithoutNoticeReason) {
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -285,7 +288,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -301,7 +304,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -347,7 +350,7 @@ class GenAppServiceTest {
             .thenReturn(expectedDocumentType);
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -391,7 +394,7 @@ class GenAppServiceTest {
         when(documentRepository.saveAll(anyList())).thenReturn(savedDocumentEntities);
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -421,7 +424,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         InOrder inOrder = inOrder(pcsCaseEntity, documentNameService);
@@ -439,7 +442,7 @@ class GenAppServiceTest {
                 .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -453,7 +456,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -470,7 +473,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());

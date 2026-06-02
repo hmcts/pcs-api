@@ -1,14 +1,20 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.genapp;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.MakeAnApplicationResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -18,14 +24,22 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresent
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.GEN_APP_ISSUE;
 
 @Component("genAppSubmitEventHandler")
 @RequiredArgsConstructor
@@ -37,9 +51,12 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final GenAppService genAppService;
     private final GenAppRepository genAppRepository;
     private final GenAppDocumentGenerator genAppDocumentGenerator;
+    private final GenAppFeeCalculator genAppFeeCalculator;
     private final DocumentImportService documentImportService;
     private final LegalRepresentativeRepository legalRepresentativeRepository;
     private final ConfirmationScreenFactory confirmationScreenFactory;
+    private final PaymentService paymentService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -55,12 +72,87 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return errorResponse("Application already exists for client reference");
         }
 
-        GenAppEntity genAppEntity = genAppService
-            .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty);
+        FeeDetails feeDetails = genAppFeeCalculator.getApplicationFeeDetails(createGenAppRequest)
+            .orElse(null);
 
+        boolean paymentRequired = feeDetails != null;
+
+        GenAppState initialState = paymentRequired ? PENDING_GEN_APP_ISSUED : GEN_APP_ISSUED;
+
+        GenAppEntity genAppEntity = genAppService
+            .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
+
+        if (isXuiJourney(createGenAppRequest)) {
+            return handleXuiSubmit(caseReference, createGenAppRequest, genAppEntity, applicantParty, feeDetails);
+        } else {
+            return handleCuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, applicantParty,
+                initialState, feeDetails);
+        }
+    }
+
+    private SubmitResponse<State> handleXuiSubmit(long caseReference,
+                                                  GenAppRequest createGenAppRequest,
+                                                  GenAppEntity genAppEntity,
+                                                  PartyEntity applicantParty,
+                                                  FeeDetails feeDetails) {
+
+        // TODO: Schedule service request task for ExUI journey (HDPI-6034)
         createSubmissionDocument(caseReference, createGenAppRequest, genAppEntity, applicantParty);
 
-        return confirmationScreenFactory.buildConfirmationScreenResponse(createGenAppRequest, caseReference);
+        return confirmationScreenFactory
+            .buildConfirmationScreenResponse(createGenAppRequest, caseReference, feeDetails);
+    }
+
+    private SubmitResponse<State> handleCuiSubmit(boolean paymentRequired,
+                                                  long caseReference,
+                                                  GenAppRequest createGenAppRequest,
+                                                  GenAppEntity genAppEntity,
+                                                  PartyEntity applicantParty,
+                                                  GenAppState initialState,
+                                                  FeeDetails feeDetails) {
+        if (!paymentRequired) {
+            createSubmissionDocument(caseReference, createGenAppRequest, genAppEntity, applicantParty);
+
+            MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
+                .state(initialState)
+                .build();
+
+            return SubmitResponse.<State>builder()
+                .confirmationBody(toJson(response))
+                .build();
+
+        } else {
+
+            String serviceRequestReference = createPaymentServiceRequest(genAppEntity, feeDetails, caseReference);
+
+            MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
+                .state(initialState)
+                .serviceRequestReference(serviceRequestReference)
+                .feeAmount(feeDetails.getFeeAmount())
+                .build();
+
+            return SubmitResponse.<State>builder()
+                .confirmationBody(toJson(response))
+                .build();
+        }
+    }
+
+    private String createPaymentServiceRequest(GenAppEntity genAppEntity, FeeDetails feeDetails, long caseReference) {
+        UUID currentUserId = securityContextService.getCurrentUserId();
+        PartyEntity responsibleParty = partyService.getPartyEntityByIdamId(currentUserId, caseReference);
+
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeDetails(feeDetails)
+            .ccdCaseNumber(String.valueOf(caseReference))
+            .caseReference(caseReference)
+            .responsiblePartyId(responsibleParty.getId())
+            .paymentCallbackHandlerType(GEN_APP_ISSUE)
+            .relatedEntityId(genAppEntity.getId())
+            .build();
+
+        PaymentServiceResponse paymentServiceResponse = paymentService.createServiceRequest(taskData);
+
+        return paymentServiceResponse.getServiceRequestReference();
     }
 
     private PartyEntity getApplicantParty(long caseReference, PCSCase caseData) {
@@ -125,6 +217,18 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         return SubmitResponse.<State>builder()
             .errors(List.of(errorMessage))
             .build();
+    }
+
+    private static boolean isXuiJourney(GenAppRequest genAppRequest) {
+        return genAppRequest instanceof XuiGenAppRequest;
+    }
+
+    private String toJson(MakeAnApplicationResponse makeAnApplicationResponse) {
+        try {
+            return objectMapper.writeValueAsString(makeAnApplicationResponse);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialise JSON", e);
+        }
     }
 
 }
