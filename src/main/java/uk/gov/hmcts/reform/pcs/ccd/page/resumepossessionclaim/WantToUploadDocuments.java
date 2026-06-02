@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
@@ -36,10 +37,10 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        if (caseData.getWantToUploadDocuments().equals(VerticalYesNo.YES)) {
+        if (caseData.getWantToUploadDocuments().equals(VerticalYesNo.YES)
+            && CollectionUtils.isEmpty(caseData.getAdditionalDocuments())) {
             AdditionalDocument additionalDocuments = new AdditionalDocument();
             LegislativeCountry legislativeCountry = caseData.getLegislativeCountry();
-
             additionalDocuments.setDocumentType(createAdditionalDocumentList(legislativeCountry));
             caseData.setAdditionalDocuments(new ArrayList<>());
             caseData.getAdditionalDocuments().add(ListValue.<AdditionalDocument>builder()
