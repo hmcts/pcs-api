@@ -22,6 +22,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEval
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -47,6 +49,9 @@ class DashboardViewTest extends BaseEventTest {
     @Mock
     private SecurityContextService securityContextService;
 
+    @Mock
+    private LegalRepresentativeRepository legalRepresentativeRepository;
+
     private DashboardJourneyService dashboardJourneyService;
 
     @Mock
@@ -55,8 +60,11 @@ class DashboardViewTest extends BaseEventTest {
     @Mock
     private DefendantResponseService defendantResponseService;
 
+    private GenAppVisibilityService genAppVisibilityService;
+
     @BeforeEach
     void setUp() {
+        genAppVisibilityService = new GenAppVisibilityService(legalRepresentativeRepository);
         dashboardJourneyService = new DashboardJourneyService(
             draftCaseDataService,
             defendantResponseService,
@@ -64,7 +72,7 @@ class DashboardViewTest extends BaseEventTest {
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
                 new HearingsTaskGroupEvaluator(),
-                new ApplicationsTaskGroupEvaluator(securityContextService),
+                new ApplicationsTaskGroupEvaluator(securityContextService, genAppVisibilityService),
                 new ResponseTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
             )

@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -18,6 +19,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
@@ -46,6 +48,7 @@ public class GenAppsView {
             .party(party)
             .submittedOn(genAppEntity.getApplicationSubmittedDate())
             .submissionDocument(getSubmissionDocument(genAppEntity))
+            .supportingDocuments(getSupportingDocuments(genAppEntity))
             .build();
 
         return new ListValue<>(genAppEntity.getId().toString(), generalApplication);
@@ -74,6 +77,22 @@ public class GenAppsView {
                 .build()
             )
             .orElse(null);
+    }
+
+    private List<ListValue<Document>> getSupportingDocuments(GenAppEntity genAppEntity) {
+        return Optional.ofNullable(genAppEntity.getDocuments())
+            .filter(documents -> !documents.isEmpty())
+            .map(documents -> documents.stream()
+                .map(this::toListValue)
+                .collect(Collectors.toList()))
+            .orElse(null);
+    }
+
+    private ListValue<Document> toListValue(DocumentEntity documentEntity) {
+        return ListValue.<Document>builder()
+            .id(documentEntity.getId().toString())
+            .value(modelMapper.map(documentEntity, Document.class))
+            .build();
     }
 
     private boolean isVisibleToUser(GenAppEntity genAppEntity, UUID userId) {

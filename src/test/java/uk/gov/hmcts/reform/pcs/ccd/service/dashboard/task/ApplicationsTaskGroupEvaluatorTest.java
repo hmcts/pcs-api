@@ -10,7 +10,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Set;
@@ -29,7 +31,12 @@ class ApplicationsTaskGroupEvaluatorTest {
     private static final UUID OTHER_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
 
     private final SecurityContextService securityContextService = mock(SecurityContextService.class);
-    private final ApplicationsTaskGroupEvaluator underTest = new ApplicationsTaskGroupEvaluator(securityContextService);
+    private final LegalRepresentativeRepository legalRepresentativeRepository =
+        mock(LegalRepresentativeRepository.class);
+    private final GenAppVisibilityService genAppVisibilityService =
+        new GenAppVisibilityService(legalRepresentativeRepository);
+    private final ApplicationsTaskGroupEvaluator underTest =
+        new ApplicationsTaskGroupEvaluator(securityContextService, genAppVisibilityService);
 
     @Test
     void shouldReturnApplicationsGroupId() {
