@@ -8,7 +8,11 @@ import { user} from '@data/page-data';
 
 test.use({ storageState: undefined });
 
-test.beforeEach(async ({ page, context }) => {
+const setupGlobalSearchUser = async (
+  page: any,
+  context: any,
+  loggedInUser: typeof user.ctscAdministrator
+) => {
   await context.clearCookies();
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -24,9 +28,14 @@ test.beforeEach(async ({ page, context }) => {
   });
 
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.ctscAdministrator);
+  await performAction('login', loggedInUser);
+
+  if (loggedInUser.email === user.judge.email) {
+    await performAction('handleJudgeBookingPage');
+  }
+
   await dismissCookieBanner(page, 'analytics');
-});
+};
 
 test.afterEach(async () => {
   if (caseNumber) {
@@ -34,19 +43,19 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Global Search - @globalSearch @PR @CC @nightly]', () => {
+const runGlobalSearchScenarios = () => {
   test('Global search menu @smoke', async () => {
     await performAction('accessingTheSearch');
     await performValidation('mainHeader', globalSearch.mainHeader);
   });
 
-  test('Valid Case Reference with Mortage and Landlord Possession Claim Service', async () => {
+  test('Valid case reference using Mortage and Landlord Possession Claim Service', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
     await performAction('validateResults');
   });
 
-  test('Valid Case Reference with All Service', async () => {
+  test('Valid case reference using All Services', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
     await performAction('validateResults');
@@ -57,9 +66,22 @@ test.describe('[Global Search - @globalSearch @PR @CC @nightly]', () => {
     await performAction('invalidCaseReferenceSearch', globalSearch.invalidCaseReferenceInputText);
   });
 
-   test('Change search criteria link', async () => {
+  test('Change search criteria link', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
     await performAction('changeSearchLink', 'changeSearch');
+  });
+};
+
+[
+  { roleName: 'CTSC User', account: user.ctscAdministrator },
+  { roleName: 'Judge', account: user.judge }
+].forEach(({ roleName, account }) => {
+  test.describe(`[Global Search - ${roleName} - @globalSearch @PR @CC @nightly]`, () => {
+    test.beforeEach(async ({ page, context }) => {
+      await setupGlobalSearchUser(page, context, account);
+    });
+
+    runGlobalSearchScenarios();
   });
 });

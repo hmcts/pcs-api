@@ -50,6 +50,7 @@ export default {
   'createFlagscaseworkerCaseFlag': 'whereShouldThisFlagBeAdded',
   'submit': 'reviewFlagDetails',
   'addCaseNoteaddCaseNote': 'addCaseNote',
+  'booking': 'workAccess',
   'noresults': 'noResultFound',
   'results': 'searchResults'
 };

@@ -16,4 +16,8 @@ export const user = {
     email: 'pcs-caseworker@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
+  judge:  {
+    email: 'DeputyMaster.Bruce@ejudiciary.net',
+    password: process.env.IDAM_PCS_USER_PASSWORD
+  },
 };

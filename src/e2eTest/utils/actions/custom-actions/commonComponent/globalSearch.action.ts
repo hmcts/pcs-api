@@ -1,8 +1,8 @@
 import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '../../../controller';
 import { actionRecord, IAction } from '@utils/interfaces';
-import { globalSearch,searchResults,noResultFound } from '@data/page-data-figma';
-import { home } from '@data/page-data';
+import { globalSearch, noResultFound, searchResults, workAccess } from '@data/page-data-figma';
+import { caseList, home } from '@data/page-data';
 
 export class GlobalSearchCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord): Promise<void> {
@@ -11,6 +11,7 @@ export class GlobalSearchCaseAction implements IAction {
       ['searchByCaseReference', () => this.searchByCaseReference(fieldName as string, page)],
       ['invalidCaseReferenceSearch', () => this.invalidCaseReferenceSearch(fieldName as string, page)],
       ['changeSearchLink', () => this.changeSearchLink(fieldName as string, page)],
+      ['handleJudgeBookingPage', () => this.handleJudgeBookingPage(page)],
       ['validateResults', () => this.validateResults(page)]
     ]);
 
@@ -42,6 +43,14 @@ export class GlobalSearchCaseAction implements IAction {
   private async changeSearchLink(changeSearch: string, page: Page): Promise<void> {
     await performAction('clickLink', searchResults.changeSearchLink);
     await performValidation('mainHeader', globalSearch.mainHeader);
+  }
+
+  private async handleJudgeBookingPage(page: Page): Promise<void> {
+    await performValidation('mainHeader', workAccess.mainHeader);
+    await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
+    await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
+    await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
+    await performValidation('mainHeader', caseList.mainHeader);
   }
 
   private async validateResults(page: Page): Promise<void> {

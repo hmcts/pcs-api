@@ -96,6 +96,7 @@ export class ActionRegistry {
     ['searchByCaseReference', new GlobalSearchCaseAction()],
     ['invalidCaseReferenceSearch', new GlobalSearchCaseAction()],
     ['changeSearchLink', new GlobalSearchCaseAction()],
+    ['handleJudgeBookingPage', new GlobalSearchCaseAction()],
     ['validateResults', new GlobalSearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
