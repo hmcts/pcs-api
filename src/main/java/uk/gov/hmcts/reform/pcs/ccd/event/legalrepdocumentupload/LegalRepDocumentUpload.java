@@ -152,7 +152,9 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
             pcsCaseEntity.addDocuments(documentEntities);
         }
-        return SubmitResponse.defaultResponse();
+        return SubmitResponse.<State>builder()
+            .confirmationBody(getDocumentUploadedConfirmationMarkdown())
+            .build();
     }
 
     private DocumentType mapEvidenceTypeToDocumentType(EvidenceDocumentType evidenceDocumentType) {
@@ -163,6 +165,18 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             case OTHER -> DocumentType.OTHER;
             default -> null;
         };
+    }
+
+    private static String getDocumentUploadedConfirmationMarkdown() {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+                <span class="govuk-panel__title govuk-!-font-size-36">Document uploaded</span>
+            </div>
+            <p class="govuk-body">We have received the documents you uploaded.</p>
+             <h3>What happens next</h3>
+            <p class="govuk-body">You do not need to do anything else. We will review the documents.</p>
+            """;
     }
 }
 

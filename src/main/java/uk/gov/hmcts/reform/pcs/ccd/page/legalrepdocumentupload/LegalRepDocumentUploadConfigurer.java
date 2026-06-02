@@ -16,7 +16,6 @@ public class LegalRepDocumentUploadConfigurer implements PageConfigurer {
         pageBuilder
             .add(new UploadAdditionalDocumentsInformationPage())
             .add(new ExistingApplicationPage())
-            .add(uploadAdditionalDocumentsPage)
-            .add(new UploadedDocumentsPage());
+            .add(uploadAdditionalDocumentsPage);
     }
 }
