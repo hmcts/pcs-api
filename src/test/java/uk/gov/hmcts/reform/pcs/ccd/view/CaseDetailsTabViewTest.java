@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -49,6 +50,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBui
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.RequiredDocumentsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -88,6 +90,9 @@ public class CaseDetailsTabViewTest {
 
     @Mock
     private AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
+
+    @Spy
+    private RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
 
     @InjectMocks
     private CaseDetailsTabView caseDetailsTabView;

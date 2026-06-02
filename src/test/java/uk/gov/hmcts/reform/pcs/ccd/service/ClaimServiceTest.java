@@ -33,6 +33,8 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -67,6 +69,8 @@ class ClaimServiceTest {
         claimService = new ClaimService(claimRepository, claimGroundService, possessionAlternativesService,
                                         asbProhibitedConductService, rentArrearsService,
                                         noticeOfPossessionService, statementOfTruthService);
+        lenient().when(claimRepository.save(any(ClaimEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -107,6 +111,19 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
 
         verify(claimRepository).save(createdClaimEntity);
+    }
+
+    @Test
+    void shouldReturnSavedClaimEntity() {
+        // Given
+        ClaimEntity savedClaimEntity = mock(ClaimEntity.class);
+        when(claimRepository.save(any(ClaimEntity.class))).thenReturn(savedClaimEntity);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity).isSameAs(savedClaimEntity);
     }
 
     @Test
@@ -240,7 +257,7 @@ class ClaimServiceTest {
     }
 
     @Test
-    void shouldNotSetAsbProhibitedConductAndWalesDocumentsForNonWalesProperties() {
+    void shouldNotSetAsbProhibitedConductForNonWalesProperties() {
         // Given
         when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
 
@@ -249,13 +266,25 @@ class ClaimServiceTest {
 
         // Then
         assertThat(createdClaimEntity.getAsbProhibitedConductEntity()).isNull();
+        verify(asbProhibitedConductService, never()).createAsbProhibitedConductEntity(pcsCase);
+    }
+
+    @Test
+    void shouldNotSetWalesDocumentsForNonWalesProperties() {
+        // Given
+        when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
         assertThat(createdClaimEntity.getEnergyPerformanceCertificateProvided()).isNull();
         assertThat(createdClaimEntity.getGasSafetyReportProvided()).isNull();
         assertThat(createdClaimEntity.getElectricalInstallationConditionProvided()).isNull();
         assertThat(createdClaimEntity.getNoEnergyPerformanceCertificateReason()).isNull();
         assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isNull();
         assertThat(createdClaimEntity.getNoElectricalInstallationConditionReason()).isNull();
-        verify(asbProhibitedConductService, never()).createAsbProhibitedConductEntity(pcsCase);
+        verify(pcsCase, never()).getRequiredDocumentsWales();
     }
 
     @Test

@@ -39,7 +39,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DefendantCircumstanceTabD
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DemotionOfTenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ProhibitedConductStandardContractTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.RequiredDocumentsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.SuspensionOfRightToBuyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.UnderlesseeOrMortgageInformationTabDetails;
@@ -54,12 +53,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.RequiredDocumentsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -95,6 +94,7 @@ public class CaseDetailsTabView {
     private final ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
     private final DefendantInformationTabDetailsBuilder defendantInformationTabDetailsBuilder;
     private final AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
+    private final RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
 
     public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
@@ -121,8 +121,6 @@ public class CaseDetailsTabView {
         AntisocialAndConductTabDetails antisocialAndConductTabDetails = buildAntisocialAndConductTabDetails(pcsCase);
         ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractTabDetails =
             buildProhibitedConductStandardContractTabDetails(pcsCase);
-        RequiredDocumentsTabDetails requiredDocumentsTabDetails = buildRequiredDocumentsTabDetails(pcsCase);
-
         CaseDetailsTab caseDetailsTab = CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
             .propertyAddress(pcsCase.getPropertyAddress())
@@ -142,7 +140,7 @@ public class CaseDetailsTabView {
             .occupationContractLicenceDetails(occupationContractLicenceTabDetails)
             .antisocialAndConductDetails(antisocialAndConductTabDetails)
             .prohibitedConductStandardContractDetails(prohibitedConductStandardContractTabDetails)
-            .requiredDocumentsDetails(requiredDocumentsTabDetails)
+            .requiredDocumentsDetails(requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase))
             .build();
 
         if (claimantInformationTabDetails != null) {
@@ -716,54 +714,4 @@ public class CaseDetailsTabView {
         return prohibitedConductStandardContractTabDetails;
     }
 
-    private RequiredDocumentsTabDetails buildRequiredDocumentsTabDetails(PCSCase pcsCase) {
-        WalesDocuments walesDocuments = pcsCase.getRequiredDocumentsWales();
-        if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES || walesDocuments == null) {
-            return null;
-        }
-
-        VerticalYesNo hasEnergyPerformanceCertificate = walesDocuments.getHasEnergyPerformanceCertificate();
-        VerticalYesNo hasGasSafetyReport = walesDocuments.getHasGasSafetyReport();
-        VerticalYesNo hasElectricalInstallationConditionReport
-            = walesDocuments.getHasElectricalInstallationConditionReport();
-
-        RequiredDocumentsTabDetails requiredDocumentsTabDetails = RequiredDocumentsTabDetails.builder()
-            .hasEnergyPerformanceCertificate(
-                hasEnergyPerformanceCertificate != null ? hasEnergyPerformanceCertificate.getLabel() : NO_ANSWER
-            )
-            .hasGasSafetyReport(hasGasSafetyReport != null ? hasGasSafetyReport.getLabel() : NO_ANSWER)
-            .hasElectricalInstallationConditionReport(
-                hasElectricalInstallationConditionReport != null
-                    ? hasElectricalInstallationConditionReport.getLabel() : NO_ANSWER
-            )
-            .build();
-
-        if (hasEnergyPerformanceCertificate == VerticalYesNo.NO) {
-            requiredDocumentsTabDetails.setNoEnergyPerformanceCertificateReason(
-                walesDocuments.getNoEpcReason()
-            );
-        } else {
-            requiredDocumentsTabDetails.setEnergyPerformanceCertificates(walesDocuments.getEnergyPerformance());
-        }
-
-        if (hasGasSafetyReport == VerticalYesNo.NO) {
-            requiredDocumentsTabDetails.setNoGasSafetyReportReason(
-                walesDocuments.getNoGasReportReason()
-            );
-        } else {
-            requiredDocumentsTabDetails.setGasSafetyReports(walesDocuments.getGasSafetyReport());
-        }
-
-        if (hasElectricalInstallationConditionReport == VerticalYesNo.NO) {
-            requiredDocumentsTabDetails.setNoElectricalInstallationConditionReportReason(
-                walesDocuments.getNoEicrReason()
-            );
-        } else {
-            requiredDocumentsTabDetails.setElectricalInstallationReports(
-                walesDocuments.getElectricalInstallation()
-            );
-        }
-
-        return requiredDocumentsTabDetails;
-    }
 }
