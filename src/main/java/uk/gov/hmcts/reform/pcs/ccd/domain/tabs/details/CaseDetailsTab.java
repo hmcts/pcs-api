@@ -82,6 +82,6 @@ public class CaseDetailsTab {
     @CCD(label = "Demotion of tenancy claim")
     private DemotionOfTenancyTabDetails demotionOfTenancyDetails;
 
-    @CCD(label = "Suspension of right to buy")
+    @CCD(label = "Suspension of right to buy claim")
     private SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyDetails;
 }
