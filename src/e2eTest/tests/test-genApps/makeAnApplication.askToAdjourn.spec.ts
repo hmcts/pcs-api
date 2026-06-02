@@ -69,7 +69,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @PR @smoke', async () => {
+  test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
@@ -126,7 +126,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
   });
 
 
-test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No] @PR', async () => {
+test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]', async () => {
   await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
   await performAction('clickButton', caseSummary.go);
   await performAction('chooseAnApplication', {
