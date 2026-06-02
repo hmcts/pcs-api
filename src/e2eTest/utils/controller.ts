@@ -101,7 +101,7 @@ export async function performAction(action: string, fieldName?: actionData | act
     const obj = fieldName as Record<string, any>;    
     displayValue = Object.fromEntries(
       Object.entries(obj).map(([key, value]) =>
-        key.includes('Payload is Input')
+        key.includes('Payload')
           ? [key, 'Payload is Input']
           : [key, value]
       )
