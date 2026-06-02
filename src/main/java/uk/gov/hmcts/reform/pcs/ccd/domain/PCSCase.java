@@ -179,7 +179,7 @@ public class PCSCase {
     @CCD(
         label = "Region Id"
     )
-    private Integer regionId;
+    private Integer regionId = 1;
 
     @CCD(access = {InternalCaseFlagAccess.class},
         label = "Party")
