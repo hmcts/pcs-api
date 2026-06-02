@@ -41,6 +41,7 @@ public class NoticeOfPossessionView {
             WalesNoticeDetails walesNoticeDetails = WalesNoticeDetails.builder()
                 .noticeServed(noticeOfPossessionEntity.getNoticeServed())
                 .typeOfNoticeServed(noticeOfPossessionEntity.getNoticeType())
+                .noticeStatement(noticeOfPossessionEntity.getNoticeStatement())
                 .build();
 
             pcsCase.setWalesNoticeDetails(walesNoticeDetails);
