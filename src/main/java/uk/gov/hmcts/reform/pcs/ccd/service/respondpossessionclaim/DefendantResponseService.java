@@ -138,7 +138,7 @@ public class DefendantResponseService {
 
         buildAndLinkChildEntities(responseEntity, responses);
 
-        saveCounterClaim(responses, partyRef, claimRef);
+        CounterClaimEntity savedCounterClaim = saveCounterClaim(responses, partyRef, claimRef);
 
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
@@ -146,6 +146,15 @@ public class DefendantResponseService {
             documentService.createDefendantUploadedDocuments(
                 responses.getDefendantDocuments(),
                 savedResponse,
+                claimRef.getPcsCase(),
+                partyRef
+            );
+        }
+
+        if (savedCounterClaim != null && !CollectionUtils.isEmpty(responses.getCounterClaimDocuments())) {
+            documentService.createCounterClaimUploadedDocuments(
+                responses.getCounterClaimDocuments(),
+                savedCounterClaim,
                 claimRef.getPcsCase(),
                 partyRef
             );
@@ -210,10 +219,10 @@ public class DefendantResponseService {
         );
     }
 
-    private void saveCounterClaim(DefendantResponses responses, PartyEntity partyRef, ClaimEntity claimRef) {
+    private CounterClaimEntity saveCounterClaim(DefendantResponses responses, PartyEntity partyRef, ClaimEntity claimRef) {
         CounterClaim cc = responses.getCounterClaim();
         if (cc == null) {
-            return;
+            return null;
         }
 
         boolean claimAmountApplies = cc.getClaimType() != null && cc.getClaimType() != CounterClaimType.SOMETHING_ELSE;
@@ -251,6 +260,8 @@ public class DefendantResponseService {
         }
 
         claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
+
+        return counterClaimEntity;
     }
 
     public boolean hasSubmittedResponse(long caseReference) {
