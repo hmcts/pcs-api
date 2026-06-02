@@ -50,8 +50,8 @@ class LegalRepDocumentUploadDetailsConfigurerTest extends BasePageTest {
 
         verifyAndCount(inOrder, pageBuilder, UploadAdditionalDocumentsInformationPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ExistingApplicationPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, UploadedDocumentsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, uploadAdditionalDocumentsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, UploadedDocumentsPage.class, verificationCount);
 
 
         int numberOfPages = pageCaptor.getAllValues().size();

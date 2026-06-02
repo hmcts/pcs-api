@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -115,7 +114,7 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
         for (int i = 0; i < legalRepDocuments.size(); i++) {
             String documentFileName = legalRepDocuments.get(i).getValue().getDocument().getFilename();
 
-            if(documentFileName != null){
+            if (documentFileName != null) {
                 String lowercaseFileName = documentFileName.toLowerCase();
 
                 Boolean isDocumentTypeValid = fileTypes.stream().anyMatch(lowercaseFileName::endsWith);
