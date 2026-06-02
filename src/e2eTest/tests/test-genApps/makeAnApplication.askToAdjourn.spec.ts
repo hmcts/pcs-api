@@ -19,7 +19,7 @@ import {
   selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
   doYouWantToUploadDocumentsToSupportDefendantsApplication, whichLanguageDidYouUseToCompleteThisService,
-  statementOfTruth
+  statementOfTruth, uploadDocumentsToSupportDefendantsApplication
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
 
@@ -108,14 +108,23 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
       input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
     });
-    await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
-    await performAction('clickButton', doYouWantToUploadDocumentsToSupportDefendantsApplication.continueButton);
-    await performAction('selectLanguageUsedToComplete', {
+    await performAction('confirmDocumentToUpload', {
+      question: doYouWantToUploadDocumentsToSupportDefendantsApplication.doYouWantToUploadDocumentQuestion,
+      option: doYouWantToUploadDocumentsToSupportDefendantsApplication.yesRadioOption,
+    });
+    await performValidation('mainHeader', uploadDocumentsToSupportDefendantsApplication.mainHeader);
+    await performAction('uploadFilesGenApps', {
+      documents: [
+        {type: uploadDocumentsToSupportDefendantsApplication.witnessStatementDropDownInput, fileName: 'genApps.xlsx'},
+      ]
+    });
+        await performAction('selectLanguageUsedToComplete', {
       question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
       option: whichLanguageDidYouUseToCompleteThisService.englishRadioOption,
     });
     await performValidation('mainHeader', statementOfTruth.mainHeader);
   });
+
 
 test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]', async () => {
   await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
@@ -152,8 +161,10 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
     label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
     input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
   });
-  await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
-  await performAction('clickButton', doYouWantToUploadDocumentsToSupportDefendantsApplication.continueButton);
+  await performAction('confirmDocumentToUpload', {
+    question: doYouWantToUploadDocumentsToSupportDefendantsApplication.doYouWantToUploadDocumentQuestion,
+    option: doYouWantToUploadDocumentsToSupportDefendantsApplication.noRadioOption,
+  });
   await performAction('selectLanguageUsedToComplete', {
     question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
     option: whichLanguageDidYouUseToCompleteThisService.welshRadioOption,
