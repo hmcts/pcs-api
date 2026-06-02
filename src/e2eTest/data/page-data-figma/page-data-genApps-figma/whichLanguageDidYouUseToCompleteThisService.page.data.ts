@@ -6,18 +6,7 @@ export const whichLanguageDidYouUseToCompleteThisService = {
   englishRadioOption: `English`,
   welshRadioOption: `Welsh`,
   englishAndWelshRadioOption: `English and Welsh`,
-  backLink: `Back`,
   continueButton: `Continue`,
+  previousButton: `Previous`,
   cancelLink: `Cancel`,
-  feedbackLink: `feedback (opens in new tab)`,
-  pageSlug: `which-language-did-you-use-to-complete-this-service`,
-  thereIsAProblemErrorMessageHeader: `There is a problem`,
-  errorValidationType: { one: `radioOptions`, two: `textField`, three: `checkBox` },
-  errorValidationField: {
-    errorRadioOption: {
-      type: `none`,
-      input: ``,
-      errMessage: `Confirm which language you used to complete this service`,
-    },
-  },
 };
