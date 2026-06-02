@@ -3,14 +3,18 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -80,6 +84,7 @@ public class PartiesView {
             .phoneNumber(entity.getPhoneNumber())
             .phoneNumberProvided(entity.getPhoneNumberProvided())
             .dateOfBirth(entity.getDateOfBirth())
+            .legalRepresentative(buildLegalRepresentative(entity))
             .build();
     }
 
@@ -88,6 +93,29 @@ public class PartiesView {
             .firstName(entity.getFirstName())
             .lastName(entity.getLastName())
             .orgName(entity.getOrgName())
+            .build();
+    }
+
+    private LegalRepresentative buildLegalRepresentative(PartyEntity entity) {
+        List<ClaimPartyLegalRepresentativeEntity> claimPartyLegalRepresentativeEntities =
+            entity.getClaimPartyLegalRepresentativeList();
+
+        if (CollectionUtils.isEmpty(claimPartyLegalRepresentativeEntities)) {
+            return null;
+        }
+
+        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentativeEntity =
+            claimPartyLegalRepresentativeEntities.getFirst();
+
+        LegalRepresentativeEntity legalRepresentative = claimPartyLegalRepresentativeEntity.getLegalRepresentative();
+
+        return LegalRepresentative.builder()
+            .firstName(legalRepresentative.getFirstName())
+            .lastName(legalRepresentative.getLastName())
+            .telephoneNumber(legalRepresentative.getPhone())
+            .emailAddress(legalRepresentative.getEmail())
+            .organisationName(legalRepresentative.getOrganisationName())
+            .address(convertAddress(legalRepresentative.getAddress()))
             .build();
     }
 
