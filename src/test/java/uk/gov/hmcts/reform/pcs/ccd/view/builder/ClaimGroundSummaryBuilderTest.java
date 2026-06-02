@@ -159,6 +159,9 @@ class ClaimGroundSummaryBuilderTest {
         assertReason(summaries, "Breach of tenancy conditions (ground 12)", "Breach reason");
         assertNoReason(summaries, "Serious rent arrears (ground 8)");
         assertNoReason(summaries, "Rent arrears (ground 10)");
+        assertRentArrearsFlag(summaries, "Serious rent arrears (ground 8)", YesOrNo.YES);
+        assertRentArrearsFlag(summaries, "Rent arrears (ground 10)", YesOrNo.YES);
+        assertRentArrearsFlag(summaries, "Owner occupier (ground 1)", YesOrNo.NO);
     }
 
     @Test
@@ -328,7 +331,10 @@ class ClaimGroundSummaryBuilderTest {
                                                .occupationLicenceTypeWales(OccupationLicenceTypeWales.STANDARD_CONTRACT)
                                                .build())
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
-                                           .mandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
+                                           .mandatoryGrounds(Set.of(
+                                               MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181,
+                                               MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199
+                                           ))
                                            .discretionaryGrounds(Set.of(
                                                DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
                                            ))
@@ -338,6 +344,7 @@ class ClaimGroundSummaryBuilderTest {
                                            .build())
             .groundsReasonsWales(GroundsReasonsWales.builder()
                                       .landlordBreakClauseS199Reason("section 199 reason")
+                                      .seriousArrearsPeriodicS181Reason("section 181 reason")
                                       .otherBreachSection157Reason("other breach reason")
                                       .redevelopmentSchemesReason("redevelopment schemes reason")
                                       .build())
@@ -352,15 +359,19 @@ class ClaimGroundSummaryBuilderTest {
             .map(ListValue::getValue)
             .map(ClaimGroundSummary::getLabel)
             .containsExactlyInAnyOrder(
+                MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.getLabel(),
                 MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
                 DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel()
             );
+        assertReason(summaries, MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.getLabel(), "section 181 reason");
         assertReason(summaries, MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(), "section 199 reason");
         assertReason(summaries, DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
                      "other breach reason");
         assertReason(summaries, EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel(),
                      "redevelopment schemes reason");
+        assertRentArrearsFlag(summaries, MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.getLabel(), YesOrNo.YES);
+        assertRentArrearsFlag(summaries, MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(), YesOrNo.NO);
     }
 
     @Test
@@ -891,6 +902,17 @@ class ClaimGroundSummaryBuilderTest {
             .singleElement()
             .extracting(ClaimGroundSummary::getReason)
             .isNull();
+    }
+
+    private static void assertRentArrearsFlag(List<ListValue<ClaimGroundSummary>> summaries,
+                                              String label,
+                                              YesOrNo expected) {
+        assertThat(summaries)
+            .map(ListValue::getValue)
+            .filteredOn(summary -> label.equals(summary.getLabel()))
+            .singleElement()
+            .extracting(ClaimGroundSummary::getIsRentArrears)
+            .isEqualTo(expected);
     }
 
 
