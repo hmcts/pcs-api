@@ -177,8 +177,40 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails.addAnotherDefendant,
       createPayload: createCaseApiData.createCasePayload,
       submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
+      section: 'Claimant address',
+      table: 'Claimant address for service'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
+      section: 'Claimant contact details',
+      table: 'Claimant contact details'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
+      section: 'Claimant circumstances',
+      table: 'Claimant circumstances'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
       section: 'Defendant Case details',
       table: 'Defendant 1'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
+      section: 'Defendant circumstances',
+      table: 'Defendant circumstances'
     });
     await performAction('validateCaseSummaryDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
@@ -219,6 +251,46 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
       section: 'Actions taken',
       table: 'Actions already taken'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
+      section: 'Reasons for possession',
+      table: 'Reasons for possession'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
+      section: 'Applications',
+      table: 'Applications'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
+      section: 'Demotion of tenancy',
+      table: 'Demotion of tenancy claim'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
+      section: 'Suspension of right to buy',
+      table: 'Suspension of right to buy claim'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
+      section: 'Underlessee or mortgagee',
+      table: 'Underlessee or mortgagee 1'
     });
 
   });

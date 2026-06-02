@@ -1047,7 +1047,7 @@ export class CreateCaseAction implements IAction {
     let caseSummary = new Map<string, string>();
     let submitPayLoad = caseSummarySection.submitPayload as Record<string, any>;
     let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
-    
+
     switch (caseSummarySection.section) {
       case 'Defendant details':
         if (submitPayLoad.defendant1.nameKnown === 'YES') {
@@ -1070,12 +1070,12 @@ export class CreateCaseAction implements IAction {
           caseSummary.set('Country', 'United Kingdom')
         }
         break;
-        
-      case 'Defendant Case details':        
+
+      case 'Defendant Case details':
         caseSummary.set(`Defendant 1’s name known?`, formatWord(submitPayLoad.defendant1.nameKnown));
         caseSummary.set(`First name`, submitPayLoad.defendant1.firstName);
         caseSummary.set(`Last name`, submitPayLoad.defendant1.lastName);
-        
+
         if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'YES') {
           const address = submitPayLoad.formattedClaimantContactAddress.split('<br>');
           caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
@@ -1095,6 +1095,13 @@ export class CreateCaseAction implements IAction {
         }
         break;
 
+      case 'Defendant circumstances':
+        caseSummary.set(`Is there any information you’re required to provide, or you want to provide, about the defendants’ circumstances?`, formatWord(submitPayLoad.hasDefendantCircumstancesInfo));
+        if (submitPayLoad.hasDefendantCircumstancesInfo === 'YES') {
+          caseSummary.set(`Details of defendants’ circumstances`, submitPayLoad.defendantCircumstancesInfo);
+        }
+        break;
+
       case 'Address of property':
         caseSummary.set(`Building and Street`, createPayLoad.propertyAddress.AddressLine1);
         caseSummary.set(`Address Line 2`, createPayLoad.propertyAddress.AddressLine2);
@@ -1107,13 +1114,34 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`Claimant name`, submitPayLoad.claimantName);
         break;
 
+      case 'Claimant address':
+        caseSummary.set(`Building and Street`, submitPayLoad.organisationAddress.AddressLine1);
+        caseSummary.set(`Address Line 2`, submitPayLoad.organisationAddress.AddressLine2);
+        caseSummary.set(`Town or City`, submitPayLoad.organisationAddress.PostTown);
+        caseSummary.set(`Postcode/Zipcode`, submitPayLoad.organisationAddress.PostCode);
+        caseSummary.set('Country', submitPayLoad.organisationAddress.Country);
+        break;
+
+      case 'Claimant contact details':
+        caseSummary.set(`Email address for notifications`, submitPayLoad.claimantContactEmail);
+        caseSummary.set(`Do you want to provide a phone number for urgent updates about your case?`, formatWord(submitPayLoad.claimantProvidePhoneNumber));
+        caseSummary.set(`Contact phone number`, submitPayLoad.claimantContactPhoneNumber);
+        break;
+
+      case 'Claimant circumstances':
+        caseSummary.set(`Is there any information you’d like to provide about the claimant’s circumstances?`, formatWord(submitPayLoad.claimantCircumstancesSelect));
+        if (submitPayLoad.claimantCircumstancesSelect === 'YES') {
+          caseSummary.set(`Claimant circumstances`, submitPayLoad.claimantCircumstancesDetails);
+        }
+        break;
+
       case 'Tenancy and Occupation':
         caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
           .toLowerCase()
           .replace(/_/g, " ")
           .replace(/^\w/, (c: string) => c.toUpperCase())
         );
-        caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate,'DD/MM/YYYY'));
+        caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate, 'DD/MM/YYYY'));
         break;
 
       case 'Tenancy and Occupation Case details':
@@ -1122,7 +1150,7 @@ export class CreateCaseAction implements IAction {
           .replace(/_/g, " ")
           .replace(/^\w/, (c: string) => c.toUpperCase())
         );
-        caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate,'DD/MONTH/YYYY'));
+        caseSummary.set(`Tenancy, occupation contract or licence start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate, 'DD/MONTH/YYYY'));
         caseSummary.set(`Do you have a copy of the tenancy or licence agreement?`, formatWord(submitPayLoad.tenancy_HasCopyOfTenancyLicence));
         caseSummary.set(`Details of why you do not have a copy`, submitPayLoad.tenancy_ReasonsForNoTenancyLicenceDocuments);
         break;
@@ -1144,7 +1172,7 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
         caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
         break;
-      
+
       case 'Rent arrears Case details':
         caseSummary.set(`Rent amount`, formatCurrency(submitPayLoad.rentDetails_CurrentRent));
         caseSummary.set(`How rent is calculated`, formatWord(submitPayLoad.rentDetails_Frequency));
@@ -1207,6 +1235,61 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`Settlement attempted?`, formatWord(submitPayLoad.settlementAttempted));
         break;
 
+      case 'Reasons for possession':
+        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('ANTI_SOCIAL')) {
+          caseSummary.set(`Reasons for claiming possession under Antisocial behaviour`, submitPayLoad.antiSocialBehaviourGround);
+        }
+        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('BREACH_OF_THE_TENANCY')) {
+          caseSummary.set(`Reasons for claiming possession under Breach of the tenancy`, submitPayLoad.breachOfTheTenancyGround);
+        }
+        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('ABSOLUTE_GROUNDS')) {
+          caseSummary.set(`Reasons for claiming possession under Absolute grounds`, submitPayLoad.absoluteGrounds);
+        }
+        caseSummary.set(`Do you have any additional reasons for possession?`, formatWord(submitPayLoad.additionalReasonsForPossession.hasReasons));
+        if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
+          caseSummary.set(`Details of additional reasons`, formatWord(submitPayLoad.additionalReasonsForPossession.reasons));
+        }
+        break;
+
+      case 'Applications':
+        caseSummary.set(`Are you planning to make an application at the same time as your claim?`, formatWord(submitPayLoad.applicationWithClaim));
+        break;
+
+      case 'Demotion of tenancy':
+        if (submitPayLoad.alternativesToPossession?.includes('DEMOTION_OF_TENANCY')) {
+          const sectionOfHousingAct = submitPayLoad.demotionOfTenancyActs === 'SECTION_82A_2' ? 'Section 82A(2) of the Housing Act 1985' : 'Section 6A(2) of the Housing Act 1988';
+          caseSummary.set(`Section of the Housing Act demotion of tenancy claim made under`, sectionOfHousingAct);
+          caseSummary.set(`Have you served the defendants with a statement of the express terms which will apply to the demoted tenancy?`, formatWord(submitPayLoad.demotionOfTenancy_StatementOfExpressTermsServed));
+          if (submitPayLoad.demotionOfTenancy_StatementOfExpressTermsServed === 'YES') {
+            caseSummary.set(`Details of terms`, submitPayLoad.demotionOfTenancy_StatementOfExpressTermsDetails)
+          }
+          caseSummary.set(`Reasons for requesting a demotion of tenancy order`, submitPayLoad.demotionOrderReason)
+        }
+        break;
+
+      case 'Suspension of right to buy':
+        if (submitPayLoad.alternativesToPossession?.includes('SUSPENSION_OF_RIGHT_TO_BUY')) {
+          const sectionOfHousingActSuspension = submitPayLoad.suspensionOfRightToBuyActs === 'SECTION_82A_2' ? 'Section 82A(2) of the Housing Act 1985' : 'Section 6A(2) of the Housing Act 1988';
+          caseSummary.set(`Section of the Housing Act suspension of right to buy claim made under`, sectionOfHousingActSuspension);
+          caseSummary.set(`Reasons for requesting suspension of right to buy order`, submitPayLoad.suspensionOrderReason)
+        }
+        break;
+
+      case 'Underlessee or mortgagee':
+        if (submitPayLoad.hasUnderlesseeOrMortgagee === 'YES') {
+          caseSummary.set(`Underlessee or mortgagee’s name known?`, formatWord(submitPayLoad.underlesseeOrMortgagee1.nameKnown));
+          caseSummary.set(`Name`, submitPayLoad.underlesseeOrMortgagee1.nameKnown === 'YES' ? submitPayLoad.underlesseeOrMortgagee1.name : '');
+          caseSummary.set(`Underlessee or mortgagee’s address for service known?`, formatWord(submitPayLoad.underlesseeOrMortgagee1.addressKnown));
+          if (submitPayLoad.underlesseeOrMortgagee1.addressKnown === 'YES') {
+            caseSummary.set(`Building and Street`, submitPayLoad.underlesseeOrMortgagee1.address.AddressLine1);
+            caseSummary.set(`Address Line 2`, submitPayLoad.underlesseeOrMortgagee1.address.AddressLine2);
+            caseSummary.set(`Town or City`, submitPayLoad.underlesseeOrMortgagee1.address.PostTown);
+            caseSummary.set(`Postcode/Zipcode`, submitPayLoad.underlesseeOrMortgagee1.address.PostCode);
+            caseSummary.set('Country', submitPayLoad.underlesseeOrMortgagee1.address.Country);
+          }
+        }
+        break;
+
       default:
         break;
     };
@@ -1214,7 +1297,7 @@ export class CreateCaseAction implements IAction {
     await this.caseTabTableData(page, caseSummarySection.table as string);
 
     const misMatchMap = compareMaps(caseSummary, caseTabMap, {
-      name1: 'CaseSummaryDetails',
+      name1: `${caseSummarySection.section}`,
       name2: 'CaseSummaryDetailsTab',
     })
 
@@ -1227,9 +1310,9 @@ export class CreateCaseAction implements IAction {
         console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
       }
       console.log(`\n**********  END OF FAILURE LIST. ***************`);
-      throw new Error(`Case Summary/Details validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+      throw new Error(`Case Summary/Details validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'} in "${caseSummarySection.section}" section`);
     } else {
-      console.log(`\n✅ Case Summary/Details VALIDATION for section ${caseSummarySection.section} PASSED!\n`);
+      console.log(`\n✅ Case Summary/Details VALIDATION for section "${caseSummarySection.section}" PASSED!\n`);
     }
 
     caseTabMap.clear();
