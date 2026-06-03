@@ -136,8 +136,21 @@ public class PaymentService {
             systemUpdateUserTokenProvider.getAuthToken()
         );
 
+        String status = govPayCardPaymentStatus.getStatus();
+
+        if (status.equals("Success")) {
+            String serviceRequestReference = govPayCardPaymentStatus.getPaymentGroupReference();
+            getFeePaymentEntity(serviceRequestReference)
+                .ifPresent(feePaymentEntity -> {
+                    if (feePaymentEntity.getPaymentStatus() != PaymentStatus.PAID) {
+                        feePaymentEntity.setPaymentStatus(PaymentStatus.PAID);
+                        callPaymentCallbackHandler(feePaymentEntity);
+                    }
+                });
+        }
+
         return CardPaymentStatusResponse.builder()
-            .status(govPayCardPaymentStatus.getStatus())
+            .status(status)
             .build();
     }
 
@@ -160,23 +173,28 @@ public class PaymentService {
     @Transactional
     public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback) {
         log.info("PaymentStatusCallback status: {}", paymentStatusCallback.getServiceRequestStatus());
-        Optional<FeePaymentEntity> byCaseReference = feePaymentRepository
-            .findByServiceRequestReference(paymentStatusCallback.getServiceRequestReference());
-        if (byCaseReference.isPresent()) {
-            FeePaymentEntity feePaymentEntity = byCaseReference.get();
-            feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
-            feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
-            PaymentCallbackStrategy paymentCallbackStrategy = paymentCallbackStrategyFactory
-                .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
-            if (paymentCallbackStrategy != null) {
-                paymentCallbackStrategy.handle(paymentStatusCallback, feePaymentEntity);
-            } else {
-                log.warn("No handler found for type {}", feePaymentEntity.getPaymentCallbackHandlerType());
-            }
-            feePaymentRepository.save(feePaymentEntity);
+
+        getFeePaymentEntity(paymentStatusCallback.getServiceRequestReference())
+            .ifPresent(
+                feePaymentEntity -> {
+                    feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
+                    feePaymentEntity
+                        .setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
+
+                    callPaymentCallbackHandler(feePaymentEntity);
+
+                    feePaymentRepository.save(feePaymentEntity);
+                });
+    }
+
+    private void callPaymentCallbackHandler(FeePaymentEntity feePaymentEntity) {
+        PaymentCallbackStrategy paymentCallbackStrategy = paymentCallbackStrategyFactory
+            .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
+
+        if (paymentCallbackStrategy != null) {
+            paymentCallbackStrategy.handle(feePaymentEntity);
         } else {
-            log.error("Unable to find a payment with the service request reference : {}",
-                      paymentStatusCallback.getServiceRequestReference());
+            log.warn("No handler found for type {}", feePaymentEntity.getPaymentCallbackHandlerType());
         }
     }
 
@@ -200,6 +218,17 @@ public class PaymentService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         // Assuming 1 claim per PcsCase
         return pcsCaseEntity.getClaims().getFirst();
+    }
+
+    private Optional<FeePaymentEntity> getFeePaymentEntity(String serviceRequestReference) {
+        Optional<FeePaymentEntity> optionalFeePaymentEntity = feePaymentRepository
+            .findByServiceRequestReference(serviceRequestReference);
+
+        if (optionalFeePaymentEntity.isEmpty()) {
+            log.error("Unable to find a payment with the service request reference : {}", serviceRequestReference);
+        }
+
+        return optionalFeePaymentEntity;
     }
 
 }

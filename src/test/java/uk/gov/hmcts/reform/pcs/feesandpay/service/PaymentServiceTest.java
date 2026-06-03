@@ -61,6 +61,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.GEN_APP_ISSUE;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
@@ -268,7 +269,7 @@ class PaymentServiceTest {
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(strategy).handle(paymentStatusCallback, feePaymentEntity);
+            verify(strategy).handle(feePaymentEntity);
             verify(feePaymentRepository).save(feePaymentEntity);
         }
 
@@ -421,7 +422,64 @@ class PaymentServiceTest {
 
             // Then
             assertThat(paymentStatusResponse.getStatus()).isEqualTo(expectedStatus);
+        }
 
+        @Test
+        void shouldCallPaymentCallbackHandlerIfStatusChangedToSuccess() {
+            // Given
+            String paymentReference = "CP-123";
+            String successStatus = "Success";
+            String serviceRequestReference = "SR-1234";
+
+            PaymentDto paymentDto = PaymentDto.builder()
+                .status(successStatus)
+                .paymentGroupReference(serviceRequestReference)
+                .build();
+
+            when(paymentsClient.getGovPayCardPaymentStatus(paymentReference, SYSTEM_TOKEN)).thenReturn(paymentDto);
+
+            FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(feePaymentEntity));
+            when(feePaymentEntity.getPaymentStatus()).thenReturn(PaymentStatus.NOT_PAID);
+            when(feePaymentEntity.getPaymentCallbackHandlerType()).thenReturn(GEN_APP_ISSUE);
+
+            PaymentCallbackStrategy paymentCallbackHandler = mock(PaymentCallbackStrategy.class);
+            when(paymentCallbackStrategyFactory.getStrategy(GEN_APP_ISSUE))
+                .thenReturn(paymentCallbackHandler);
+
+            // When
+            underTest.getPaymentStatus(paymentReference);
+
+            // Then
+            verify(paymentCallbackHandler).handle(feePaymentEntity);
+            verify(feePaymentEntity).setPaymentStatus(PaymentStatus.PAID);
+        }
+
+        @Test
+        void shouldNotCallPaymentCallbackHandlerIfStatusAlreadyPaid() {
+            // Given
+            String paymentReference = "CP-123";
+            String successStatus = "Success";
+            String serviceRequestReference = "SR-1234";
+
+            PaymentDto paymentDto = PaymentDto.builder()
+                .status(successStatus)
+                .paymentGroupReference(serviceRequestReference)
+                .build();
+
+            when(paymentsClient.getGovPayCardPaymentStatus(paymentReference, SYSTEM_TOKEN)).thenReturn(paymentDto);
+
+            FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(feePaymentEntity));
+            when(feePaymentEntity.getPaymentStatus()).thenReturn(PaymentStatus.PAID);
+
+            // When
+            underTest.getPaymentStatus(paymentReference);
+
+            // Then
+            verify(paymentCallbackStrategyFactory, never()).getStrategy(any());
         }
 
     }

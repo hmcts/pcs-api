@@ -8,21 +8,18 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.MakeAnApplicationResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
@@ -52,7 +49,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final GenAppRepository genAppRepository;
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final GenAppFeeCalculator genAppFeeCalculator;
-    private final DocumentImportService documentImportService;
     private final LegalRepresentativeRepository legalRepresentativeRepository;
     private final ConfirmationScreenFactory confirmationScreenFactory;
     private final PaymentService paymentService;
@@ -83,35 +79,33 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
 
         if (isXuiJourney(createGenAppRequest)) {
-            return handleXuiSubmit(caseReference, createGenAppRequest, genAppEntity, applicantParty, feeDetails);
+            return handleXuiSubmit(caseReference, createGenAppRequest, genAppEntity, feeDetails);
         } else {
-            return handleCuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, applicantParty,
-                initialState, feeDetails);
+            return handleCuiSubmit(paymentRequired, caseReference, genAppEntity, initialState, feeDetails);
         }
     }
 
     private SubmitResponse<State> handleXuiSubmit(long caseReference,
-                                                  GenAppRequest createGenAppRequest,
+                                                  GenAppRequest genAppRequest,
                                                   GenAppEntity genAppEntity,
-                                                  PartyEntity applicantParty,
                                                   FeeDetails feeDetails) {
 
         // TODO: Schedule service request task for ExUI journey (HDPI-6034)
-        createSubmissionDocument(caseReference, createGenAppRequest, genAppEntity, applicantParty);
+        genAppDocumentGenerator
+            .createSubmissionDocument(caseReference, genAppEntity);
 
         return confirmationScreenFactory
-            .buildConfirmationScreenResponse(createGenAppRequest, caseReference, feeDetails);
+            .buildConfirmationScreenResponse(genAppRequest, caseReference, feeDetails);
     }
 
     private SubmitResponse<State> handleCuiSubmit(boolean paymentRequired,
                                                   long caseReference,
-                                                  GenAppRequest createGenAppRequest,
                                                   GenAppEntity genAppEntity,
-                                                  PartyEntity applicantParty,
                                                   GenAppState initialState,
                                                   FeeDetails feeDetails) {
         if (!paymentRequired) {
-            createSubmissionDocument(caseReference, createGenAppRequest, genAppEntity, applicantParty);
+            genAppDocumentGenerator
+                .createSubmissionDocument(caseReference, genAppEntity);
 
             MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
                 .state(initialState)
@@ -188,28 +182,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         String clientReference = genAppRequest.getClientReference();
         return clientReference != null
             && genAppRepository.existsByPcsCaseAndClientReference(pcsCaseEntity, clientReference);
-    }
-
-    private void createSubmissionDocument(long caseReference,
-                                          GenAppRequest genAppRequest,
-                                          GenAppEntity genAppEntity,
-                                          PartyEntity applicantParty) {
-
-        String documentUrl = genAppDocumentGenerator.generateSubmissionDocument(
-            caseReference,
-            genAppRequest,
-            genAppEntity,
-            applicantParty
-        );
-
-        DocumentEntity importedDocumentEntity = documentImportService.addDocumentToCase(
-            caseReference,
-            documentUrl,
-            CaseFileCategory.APPLICATIONS
-        );
-
-        importedDocumentEntity.setGeneralApplication(genAppEntity);
-        genAppEntity.setSubmissionDocument(importedDocumentEntity);
     }
 
     @SuppressWarnings("SameParameterValue")

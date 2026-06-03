@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.io.IOException;
 
@@ -24,7 +23,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     private final ObjectMapper objectMapper;
 
     @Override
-    public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
+    public void handle(FeePaymentEntity feePaymentEntity) {
         FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity.getTaskData());
 
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
