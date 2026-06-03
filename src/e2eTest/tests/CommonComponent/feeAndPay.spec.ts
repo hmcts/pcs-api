@@ -43,9 +43,7 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
       confirmButton: serviceRequest.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await performAction('clickButton', confirmYourPayment.confirmButton);
-    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await performAction('clickButton', cancelPayment.returnServiceReqLink);
+    await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqTab: caseSummary.servieRequestTab,
       historyTab: caseSummary.HistoryTab,
@@ -79,7 +77,7 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
     await performAction('clickButton', confirmYourPayment.confirmButton);
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await performAction('clickButton', cancelPayment.returnServiceReqLink);
+    await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqTab: caseSummary.servieRequestTab,
       historyTab: caseSummary.HistoryTab,

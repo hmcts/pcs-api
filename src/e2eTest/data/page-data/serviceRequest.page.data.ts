@@ -14,5 +14,7 @@ export const serviceRequest = {
   confirmPaymentButton: `Confirm payment`,
   paymentSuccessMainHeader: `Payment successful`,
   notPaidStatus: `Not paid`,
-  paidStatus: `Paid`
+  paidStatus: `Paid`,
+  returnToServiceRequestLink: `Return to service request`,
+  viewServiceRequestsLink: `View service requests`
 }
