@@ -88,7 +88,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).createAdditionalDocumentsForParty(uploadedDocs, pcsCaseEntity, currentParty, null);
+            verify(documentService).linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, currentParty, null);
         }
 
         @Test
@@ -98,7 +98,7 @@ class UploadDocumentsTest extends BaseEventTest {
             when(selectedGenApp.getId()).thenReturn(selectedId);
             when(selectedGenApp.getState()).thenReturn(GenAppState.SUBMITTED);
             when(selectedGenApp.getApplicationSubmittedDate()).thenReturn(LocalDateTime.now());
-            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(selectedGenApp));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(selectedGenApp));
 
             UploadedDocument uploaded = UploadedDocument.builder()
                 .document(Document.builder().url("url-1").filename("f.pdf").binaryUrl("bin").build())
@@ -118,7 +118,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).createAdditionalDocumentsForParty(
+            verify(documentService).linkAdditionalDocumentsToCase(
                 uploadedDocs, pcsCaseEntity, currentParty, selectedGenApp);
         }
 
@@ -129,7 +129,7 @@ class UploadDocumentsTest extends BaseEventTest {
             when(otherGenApp.getId()).thenReturn(UUID.randomUUID());
             when(otherGenApp.getState()).thenReturn(GenAppState.SUBMITTED);
             when(otherGenApp.getApplicationSubmittedDate()).thenReturn(LocalDateTime.now());
-            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(otherGenApp));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(otherGenApp));
 
             PCSCase caseData = PCSCase.builder()
                 .documentUploadDetails(DocumentUploadDetails.builder()
@@ -141,7 +141,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).createAdditionalDocumentsForParty(null, pcsCaseEntity, currentParty, null);
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null);
         }
 
         @Test
@@ -156,7 +156,20 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).createAdditionalDocumentsForParty(null, pcsCaseEntity, currentParty, null);
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null);
+        }
+
+        @Test
+        void shouldPassNullGenAppWhenDocumentUploadDetailsHasNoSelection() {
+            PCSCase caseData = PCSCase.builder()
+                .documentUploadDetails(DocumentUploadDetails.builder().build())
+                .build();
+
+            PartyEntity currentParty = stubCurrentUserParty();
+
+            callSubmitHandler(caseData);
+
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null);
         }
 
         @Test
@@ -166,15 +179,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).createAdditionalDocumentsForParty(null, pcsCaseEntity, currentParty, null);
-        }
-
-        private Set<GenAppEntity> setOf(GenAppEntity... entities) {
-            Set<GenAppEntity> set = new HashSet<>();
-            for (GenAppEntity entity : entities) {
-                set.add(entity);
-            }
-            return set;
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null);
         }
 
         private PartyEntity stubCurrentUserParty() {
@@ -217,7 +222,7 @@ class UploadDocumentsTest extends BaseEventTest {
             LocalDateTime submittedDate = LocalDateTime.now();
             GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, submittedDate);
 
-            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(adjourn));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -225,7 +230,7 @@ class UploadDocumentsTest extends BaseEventTest {
             assertThat(details.getRelatedApplicationOptions())
                 .extracting(option -> option.getValue().getCategory())
                 .containsExactly(DocumentUploadCategory.ADJOURN_HEARING_APPLICATION);
-            assertThat(details.getRelatedApplicationOptions().get(0).getValue().getSubmittedDate())
+            assertThat(details.getRelatedApplicationOptions().getFirst().getValue().getSubmittedDate())
                 .isEqualTo(submittedDate);
             assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.YES);
         }
@@ -235,7 +240,7 @@ class UploadDocumentsTest extends BaseEventTest {
             LocalDateTime submittedDate = LocalDateTime.now();
             GenAppEntity pending = stubGenApp(GenAppType.SET_ASIDE, GenAppState.PENDING_SUBMISSION, submittedDate);
 
-            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(pending));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(pending));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -249,7 +254,22 @@ class UploadDocumentsTest extends BaseEventTest {
             // Defensive: a genApp with a null state must not surface a radio option.
             GenAppEntity stateless = stubGenApp(GenAppType.ADJOURN, null, LocalDateTime.now());
 
-            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(stateless));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(stateless));
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions()).isEmpty();
+            assertThat(result.getDocumentUploadDetails().getShowRelatedApplicationsPage())
+                .isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
+        void shouldExcludeGenAppsWithNoType() {
+            // A genApp with a null type means mapGenAppTypeToCategory returns null,
+            // toOption returns null, and the option is filtered out.
+            GenAppEntity typeless = stubGenApp(null, GenAppState.SUBMITTED, LocalDateTime.now());
+
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(typeless));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -265,7 +285,7 @@ class UploadDocumentsTest extends BaseEventTest {
             GenAppEntity midSetAside = stubGenApp(GenAppType.SET_ASIDE, GenAppState.SUBMITTED, now.minusDays(3));
             GenAppEntity newestGeneral = stubGenApp(GenAppType.SOMETHING_ELSE, GenAppState.SUBMITTED, now);
 
-            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(oldestAdjourn, midSetAside, newestGeneral));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(oldestAdjourn, midSetAside, newestGeneral));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -284,7 +304,7 @@ class UploadDocumentsTest extends BaseEventTest {
             GenAppEntity olderAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, older);
             GenAppEntity newerAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, newer);
 
-            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(olderAdjourn, newerAdjourn));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(olderAdjourn, newerAdjourn));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -301,7 +321,7 @@ class UploadDocumentsTest extends BaseEventTest {
             UUID genAppId = UUID.randomUUID();
             when(adjourn.getId()).thenReturn(genAppId);
 
-            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(adjourn));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -320,7 +340,7 @@ class UploadDocumentsTest extends BaseEventTest {
             // SUSPEND_EVICTION_APPLICATION category must be filtered out so we don't render
             // a radio backed by no data.
             GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, LocalDateTime.now());
-            when(pcsCaseEntity.getGenApps()).thenReturn(setOf(adjourn));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -337,14 +357,6 @@ class UploadDocumentsTest extends BaseEventTest {
             lenient().when(entity.getState()).thenReturn(state);
             lenient().when(entity.getApplicationSubmittedDate()).thenReturn(submittedDate);
             return entity;
-        }
-
-        private Set<GenAppEntity> setOf(GenAppEntity... entities) {
-            Set<GenAppEntity> set = new HashSet<>();
-            for (GenAppEntity entity : entities) {
-                set.add(entity);
-            }
-            return set;
         }
 
         @Test
