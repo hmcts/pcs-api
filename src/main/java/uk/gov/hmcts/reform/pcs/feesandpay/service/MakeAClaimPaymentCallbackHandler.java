@@ -33,15 +33,16 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         feePaymentEntity.setParty(claimParty);
 
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            long caseReference = feesAndPayTaskData.getCaseReference();
-            ccdPaymentStateUpdateService.submitPaymentSuccess(caseReference);
-            // Producer-side gate of the §3.1 invariant: scheduling happens only on PAID, with
-            // caseReference as the db-scheduler instance id so re-fired callbacks no-op.
-            claimPackScheduler.scheduleClaimPackGeneration(caseReference);
+            handleSuccessfulPayment(feesAndPayTaskData.getCaseReference());
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
                      feePaymentEntity.getClaim().getPcsCase().getCaseReference());
         }
+    }
+
+    private void handleSuccessfulPayment(long caseReference) {
+        ccdPaymentStateUpdateService.submitPaymentSuccess(caseReference);
+        claimPackScheduler.scheduleClaimPackGeneration(caseReference);
     }
 
     private FeesAndPayTaskData toFeesAndPayTaskData(String feesAndPayTaskDataAsString) {
