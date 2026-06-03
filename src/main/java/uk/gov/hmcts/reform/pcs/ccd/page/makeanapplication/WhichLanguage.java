@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -16,14 +17,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @AllArgsConstructor
 public class WhichLanguage implements CcdPageConfiguration {
 
-    private static final String PLACEHOLDER = """
-      <div class="govuk-notification-banner" role="region" aria-labelledby="placeholder-banner">
-        <div class="govuk-notification-banner__content">
-          <p class="govuk-notification-banner__heading" id="placeholder-banner">
-            Placeholder
-          </p>
-        </div>
-      </div>
+    private static final String INFO_MARKDOWN = """
+        <p class="govuk-body">If someone else helped you to answer a question in this service,
+        ask them if they answered any questions in Welsh. We’ll use this to make sure
+        your claim is processed correctly.</p>
         """;
 
     @Override
@@ -32,8 +29,11 @@ public class WhichLanguage implements CcdPageConfiguration {
             .page("whichLanguage", this::midEvent)
             .pageLabel("Which language did you use to complete this service?")
             .label("whichLanguage-lineSeparator", "---")
-            .label("whichLanguage-placeholder", PLACEHOLDER)
-            .readonly(PCSCase::getCurrentRepresentedPartyId, NEVER_SHOW, true);
+            .label("whichLanguage-info", INFO_MARKDOWN)
+            .readonly(PCSCase::getCurrentRepresentedPartyId, NEVER_SHOW, true)
+            .complex(PCSCase::getXuiGenAppRequest)
+            .mandatory(XuiGenAppRequest::getLanguageUsed)
+            .done();
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

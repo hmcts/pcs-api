@@ -225,8 +225,8 @@ fees:
       amountOrVolume: 1
       keyword: SealWrit
   request:
-    max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
-    backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
+    max-retries: ${FEES_AND_PAY_TASK_MAX_RETRIES:5}
+    backoff-delay-seconds: ${FEES_AND_PAY_TASK_BACKOFF_DELAY_SECONDS:600s}
 
 access-code:
   hash-pins-enabled: ${HASH_PINS_ENABLED:false}
