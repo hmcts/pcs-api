@@ -417,7 +417,8 @@ public class RentArrearsTabDetailsBuilderTest {
             .build();
 
         // When
-        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase);
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildDetailedRentArrearsTabDetails(pcsCase);
 
         // Then
         assertThat(rentArrearsDetails.getCalculationFrequency()).isNull();
