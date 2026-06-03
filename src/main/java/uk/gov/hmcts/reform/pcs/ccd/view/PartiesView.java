@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -15,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -104,13 +102,13 @@ public class PartiesView {
         return claimPartyLegalRepresentativeEntities.stream()
                 .filter(legalRepEntity -> legalRepEntity.getActive() == YesOrNo.YES)
                 .map(ClaimPartyLegalRepresentativeEntity::getLegalRepresentative)
-                .map(legalRep -> LegalRepresentative.builder()
-                    .firstName(legalRep.getFirstName())
-                    .lastName(legalRep.getLastName())
-                    .telephoneNumber(legalRep.getPhone())
-                    .emailAddress(legalRep.getEmail())
-                    .organisationName(legalRep.getOrganisationName())
-                    .address(convertAddress(legalRep.getAddress()))
+                .map(legalRepEntity -> LegalRepresentative.builder()
+                    .firstName(legalRepEntity.getFirstName())
+                    .lastName(legalRepEntity.getLastName())
+                    .telephoneNumber(legalRepEntity.getPhone())
+                    .emailAddress(legalRepEntity.getEmail())
+                    .organisationName(legalRepEntity.getOrganisationName())
+                    .address(convertAddress(legalRepEntity.getAddress()))
                     .build()
                 )
             .findFirst()
