@@ -18,6 +18,6 @@ public class DefendantCircumstanceTabDetails {
     )
     private String defendantCircumstancesGiven;
 
-    @CCD(label = "Defendants’ circumstances")
+    @CCD(label = "Details of defendants’ circumstances")
     private String defendantCircumstances;
 }
