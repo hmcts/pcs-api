@@ -6,9 +6,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
 
-    public static final String EVICTION_DETAILS_CONTENT  = """
+    private static final String WITHOUT_NOTICE_APPLICATION_GUIDANCE  = """
                     <p class="govuk-body">
                         We usually share anything you upload with the other party, for example your landlord, housing
                         association or mortgage provider.
@@ -25,10 +27,15 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
         pageBuilder
             .page(pageKey)
             .pageLabel("Confirm if these documents relate to an existing application")
-            .label(pageKey + "-line-separator", "---")
-            .label(pageKey + "-content", EVICTION_DETAILS_CONTENT)
+            .showCondition("showExistingApplicationPage=\"Yes\"")
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
-            .mandatory(LegalRepDocumentUploadDetails::getValidCategories);
+            .readonly(LegalRepDocumentUploadDetails::getShowExistingApplicationPage, NEVER_SHOW)
+            .done()
+            .label(pageKey + "-line-separator", "---")
+            .label(pageKey + "-content", WITHOUT_NOTICE_APPLICATION_GUIDANCE)
+            .complex(PCSCase::getLegalRepDocumentUploadDetails)
+            .mandatory(LegalRepDocumentUploadDetails::getValidCategories)
+            .done();
     }
 
     @Override

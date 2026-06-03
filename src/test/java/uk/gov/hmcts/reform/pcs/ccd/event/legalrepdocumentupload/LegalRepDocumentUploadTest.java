@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -46,6 +47,10 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     void shouldConfigurePages() {
         PCSCase caseData = PCSCase.builder().build();
 
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
+            .thenReturn(PcsCaseEntity.builder()
+                            .build());
+
         callStartHandler(caseData);
 
         verify(legalRepDocumentUploadConfigurer).configurePages(any());
@@ -68,10 +73,14 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .type(GenAppType.SOMETHING_ELSE)
             .applicationSubmittedDate(laterDate)
             .build();
+        GenAppEntity generalGenAppWithNullDate = GenAppEntity.builder()
+            .type(GenAppType.SOMETHING_ELSE)
+            .applicationSubmittedDate(null)
+            .build();
 
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
             .thenReturn(PcsCaseEntity.builder()
-                .genApps(Set.of(earlierGenApp, laterGenApp, generalGenApp))
+                .genApps(Set.of(earlierGenApp, laterGenApp, generalGenApp,  generalGenAppWithNullDate))
                 .build());
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -82,7 +91,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         assertThat(categories.getListItems()).hasSize(3);
         assertThat(categories.getListItems())
             .extracting(DynamicStringListElement::getCode)
-            .containsExactlyInAnyOrder(
+            .containsExactly(
                 DocumentUploadCategory.ADJOURN_HEARING_APPLICATION.name(),
                 DocumentUploadCategory.GENERAL_APPLICATION.name(),
                 DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name());
@@ -91,15 +100,17 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .filteredOn(item -> DocumentUploadCategory.ADJOURN_HEARING_APPLICATION.name()
                 .equals(item.getCode()))
             .extracting(DynamicStringListElement::getLabel)
-            .containsExactly("Yes, the documents I'm uploading relate to the application to adjourn the "
+            .containsExactly("Yes, the documents I’m uploading relate to the application to adjourn the "
                                  + "hearing - submitted on Saturday 25 Apr 2026");
 
         assertThat(categories.getListItems())
             .filteredOn(item -> DocumentUploadCategory.GENERAL_APPLICATION.name()
                 .equals(item.getCode()))
             .extracting(DynamicStringListElement::getLabel)
-            .containsExactly("Yes, the documents I'm uploading relate to an application submitted on "
+            .containsExactly("Yes, the documents I’m uploading relate to an application submitted on "
                                  + "Saturday 25 Apr 2026");
+
+        assertThat(result.getLegalRepDocumentUploadDetails().getShowExistingApplicationPage()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
@@ -115,5 +126,41 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         assertThat(categories.getListItems()).hasSize(1);
         assertThat(categories.getListItems().getFirst().getCode())
             .isEqualTo(DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name());
+    }
+
+    @Test
+    void shouldReturnNullForLatestGenAppDateWhenGenAppsIsNull() {
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
+            .thenReturn(PcsCaseEntity.builder()
+                .genApps(null)
+                .build());
+
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
+        DynamicStringList categories = result.getLegalRepDocumentUploadDetails().getValidCategories();
+        assertThat(categories).isNotNull();
+        assertThat(categories.getListItems()).hasSize(1);
+        assertThat(categories.getListItems().getFirst().getCode())
+            .isEqualTo(DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name());
+    }
+
+    @Test
+    void shouldReturnNullForUnmappedCategoryType() {
+        assertThat(legalRepDocumentUpload.mapCategoryToGenAppType(
+            DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
+            .isNull();
+    }
+
+    @Test
+    void shouldReturnNullForLatestGenAppDateWhenCategoryIsUnmapped() {
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .genApps(Set.of())
+            .build();
+
+        assertThat(legalRepDocumentUpload.findLatestGenAppDateForCategory(
+            pcsCaseEntity,
+            DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
+            .isNull();
     }
 }

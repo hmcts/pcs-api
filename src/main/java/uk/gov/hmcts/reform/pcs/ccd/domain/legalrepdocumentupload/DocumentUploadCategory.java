@@ -1,33 +1,25 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 @AllArgsConstructor
-@Getter
-public enum DocumentUploadCategory implements HasLabel {
+public enum DocumentUploadCategory {
 
     ADJOURN_HEARING_APPLICATION(
-        "Yes, the documents I'm uploading relate to the application to adjourn the hearing - submitted on %s",
-        true),
-    SUSPEND_EVICTION_APPLICATION(
-        "Yes, the documents I'm uploading relate to an application to suspend the eviction - submitted on %s",
+        "Yes, the documents I’m uploading relate to the application to adjourn the hearing - submitted on %s",
         true),
     SET_ASIDE_ORDER_APPLICATION(
-        "Yes, the documents I'm uploading relate to an application to set aside the order - submitted on %s",
+        "Yes, the documents I’m uploading relate to an application to set aside the order - submitted on %s",
         true),
     GENERAL_APPLICATION(
-        "Yes, the documents I'm uploading relate to an application submitted on %s",
+        "Yes, the documents I’m uploading relate to an application submitted on %s",
         true),
     MAIN_CLAIM_OR_COUNTERCLAIM(
-        "No, the documents I'm uploading relate to the main claim or counterclaim",
+        "No, the documents I’m uploading relate to the main claim or counterclaim",
         false);
 
     private final String label;
@@ -36,21 +28,11 @@ public enum DocumentUploadCategory implements HasLabel {
     private static final DateTimeFormatter LABEL_DATE_FORMAT =
         DateTimeFormatter.ofPattern("EEEE d MMM uuuu", Locale.UK);
 
-    public static List<DocumentUploadCategory> existingApplicationCategories() {
-        return Arrays.stream(values())
-            .filter(DocumentUploadCategory::isExistingApplicationCategory)
-            .toList();
-    }
-
-    public boolean isExistingApplicationCategory() {
-        return this != MAIN_CLAIM_OR_COUNTERCLAIM;
-    }
-
-    public String getLabel(LocalDateTime date) {
+    public String getLabel(LocalDateTime dateTime) {
         if (!requiresDate) {
             return label;
         }
-        String dateText = date == null ? "" : date.format(LABEL_DATE_FORMAT);
+        String dateText = dateTime == null ? "" : dateTime.format(LABEL_DATE_FORMAT);
         return String.format(label, dateText);
     }
 }

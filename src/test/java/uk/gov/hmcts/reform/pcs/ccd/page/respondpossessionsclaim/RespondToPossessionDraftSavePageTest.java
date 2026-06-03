@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -29,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
@@ -140,7 +140,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
@@ -208,7 +208,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     void shouldSaveDefendantResponsesData() {
         //Given
         DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .freeLegalAdvice(YesNoPreferNotToSay.YES)
             .contactByEmail(VerticalYesNo.YES)
@@ -227,7 +227,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         DefendantResponses savedResponses = savedDraft.getPossessionClaimResponse().getDefendantResponses();
-        assertThat(savedResponses.getTenancyTypeCorrect()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedResponses.getTenancyTypeConfirmation()).isEqualTo(YesNoNotSure.YES);
         assertThat(savedResponses.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponses.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
@@ -255,7 +255,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .dependantChildren(VerticalYesNo.YES)
+            .dependantChildren(YesOrNo.YES)
             .build();
 
         PaymentAgreement paymentAgreement = PaymentAgreement.builder()
@@ -349,14 +349,14 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     @Test
     void shouldSaveRegularIncomeFieldsInDraft() {
         HouseholdCircumstances householdCircumstances = HouseholdCircumstances.builder()
-            .shareIncomeExpenseDetails(VerticalYesNo.YES)
+            .shareIncomeExpenseDetails(YesOrNo.YES)
             .incomeFromJobs(YesOrNo.YES)
             .incomeFromJobsAmount(new BigDecimal("150000")) // £1500.00 in pence
             .incomeFromJobsFrequency(RecurrenceFrequency.MONTHLY)
             .pension(YesOrNo.YES)
             .pensionAmount(new BigDecimal("50000")) // £500.00 in pence
             .pensionFrequency(RecurrenceFrequency.MONTHLY)
-            .universalCredit(VerticalYesNo.YES)
+            .universalCredit(YesOrNo.YES)
             .ucApplicationDate(LocalDate.of(2024, 1, 15))
             .universalCreditAmount(new BigDecimal("80000")) // £800.00 in pence
             .universalCreditFrequency(RecurrenceFrequency.MONTHLY)
@@ -390,7 +390,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .getHouseholdCircumstances();
 
         // Assert all regular income fields are saved correctly
-        assertThat(savedHousehold.getShareIncomeExpenseDetails()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedHousehold.getShareIncomeExpenseDetails()).isEqualTo(YesOrNo.YES);
 
         assertThat(savedHousehold.getIncomeFromJobs()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getIncomeFromJobsAmount()).isEqualByComparingTo("150000");
@@ -400,7 +400,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedHousehold.getPensionAmount()).isEqualByComparingTo("50000");
         assertThat(savedHousehold.getPensionFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
 
-        assertThat(savedHousehold.getUniversalCredit()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedHousehold.getUniversalCredit()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getUcApplicationDate()).isEqualTo(LocalDate.of(2024, 1, 15));
         assertThat(savedHousehold.getUniversalCreditAmount()).isEqualByComparingTo("80000");
         assertThat(savedHousehold.getUniversalCreditFrequency()).isEqualTo(RecurrenceFrequency.MONTHLY);
@@ -457,7 +457,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         assertThat(response.getErrors()).isNull();
-        verify(draftCaseDataService).patchUnsubmittedEventData(
+        verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId)
         );
     }

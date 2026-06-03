@@ -30,13 +30,15 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
         log.debug("DashboardView START invoked for caseReference={}", caseReference);
 
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
-        accessValidator.validateAndGetDefendant(caseEntity, securityContextService.getCurrentUserId());
+        var defendant = accessValidator.validateAndGetDefendant(caseEntity, securityContextService.getCurrentUserId());
 
         PCSCase submittedCaseData = eventPayload.caseData();
 
         DashboardData dashboardData = dashboardJourneyService.computeDashboardData(
             caseReference,
-            submittedCaseData
+            submittedCaseData,
+            caseEntity,
+            defendant
         );
 
         log.debug(

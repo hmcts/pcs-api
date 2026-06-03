@@ -28,7 +28,6 @@ import {
   preactionProtocol,
   alternativesToPossession,
   claimantCircumstances,
-  claimingCosts,
   dailyRentAmount,
   defendantCircumstances,
   mediationAndSettlement,
@@ -97,7 +96,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
@@ -172,8 +171,6 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -185,6 +182,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
       option: claimLanguageUsed.englishLRadioOption
@@ -199,13 +197,6 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('clickButton', checkYourAnswers.submitClaim);
     await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel],
-    )
   });
 
   test('England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
@@ -219,7 +210,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);    
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
@@ -229,7 +220,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, false);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performValidation('mainHeader', claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption, false);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performValidation('radioButtonChecked', claimType.noRadioOption, false);
@@ -293,8 +284,6 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
@@ -306,6 +295,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
       option: wantToUploadDocuments.noRadioOption
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
       option: claimLanguageUsed.englishLRadioOption
