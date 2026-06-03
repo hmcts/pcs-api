@@ -57,8 +57,7 @@ class CaseFieldsViewTest {
     void shouldSetCaseManagementLocation() {
 
         //Given
-        //when(pcsCase.getCaseManagementLocationNumber()).thenReturn(CASE_MANAGEMENT_LOCATION_NUMBER);
-        //when(pcsCase.getRegionId()).thenReturn(1);
+
 
         //When
         underTest.setCaseFields(pcsCase);
@@ -77,8 +76,6 @@ class CaseFieldsViewTest {
     void shouldNotCallSetCaseManagementLocationWhenEitherIdIsNull(Integer epimsId, Integer regionId) {
 
         //Given
-        //when(pcsCase.getCaseManagementLocationNumber()).thenReturn(epimsId);
-        //when(pcsCase.getRegionId()).thenReturn(regionId);
 
         //When
         underTest.setCaseFields(pcsCase);
