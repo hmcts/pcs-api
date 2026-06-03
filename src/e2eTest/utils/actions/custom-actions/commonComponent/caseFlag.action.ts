@@ -1,6 +1,7 @@
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller';
+import { ActionRegistry } from '@utils/registry/action.registry';
 import { addressInfo, caseNumber } from '../createCase.action';
 import {caseInfo} from "@utils/actions/custom-actions";
 import {expect} from "@utils/test-fixtures";
@@ -129,19 +130,23 @@ export class CaseFlagAction implements IAction {
       return;
     }
 
-    try {
-      await performAction('searchCaseFromFindCase', caseInfo.fid);
-    } catch {
+    const isOnSummary = () => page.url().includes('#Summary');
+    const trySearch = async (action: string): Promise<boolean> => {
       try {
-        await performAction('searchCase', caseInfo.fid);
+        await ActionRegistry.getAction(action).execute(page, action, caseInfo.fid);
+        return isOnSummary();
       } catch {
-        await performAction('navigateToUrl', summaryUrl);
+        return false;
       }
-    } finally {
-      await expect(async () => {
-        await page.waitForURL(summaryUrlPattern);
-      }).toPass({ timeout: LONG_TIMEOUT });
+    };
+
+    if (!(await trySearch('searchCaseFromFindCase')) && !(await trySearch('searchCase'))) {
+      await ActionRegistry.getAction('navigateToUrl').execute(page, 'navigateToUrl', summaryUrl);
     }
+
+    await expect(async () => {
+      await page.waitForURL(summaryUrlPattern);
+    }).toPass({ timeout: LONG_TIMEOUT });
   }
 
   private async assertCaseFlagsNotInNextStep(flag: String, page: Page): Promise<void> {
