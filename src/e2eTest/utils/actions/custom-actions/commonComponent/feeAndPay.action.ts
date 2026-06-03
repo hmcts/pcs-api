@@ -11,6 +11,7 @@ export class FeeAndPayAction implements IAction {
       ['selectPaymentByCard', () => this.selectPaymentByCard(fieldName as actionRecord, page)],
       ['enterPaymentDetails', () => this.enterPaymentDetails(fieldName as actionRecord)],
       ['clickPayNowLink', () => this.clickPayNowLink(fieldName as actionRecord, page)],
+      ['verifyStatusInHistoryAndSummaryTab', () => this.verifyStatusInHistoryAndSummaryTab(fieldName as actionRecord, page)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -96,4 +97,13 @@ export class FeeAndPayAction implements IAction {
       `${payNowText} link was not visible after maximum retries`
     );
   }
+  
+  private async verifyStatusInHistoryAndSummaryTab(statusDetails: actionRecord,page: Page) {
+  await performAction('clickTab', statusDetails.historyTab);
+  const endStateElement = page.locator(`th:has-text("${String(statusDetails.endState)}") ~ td span.text-16`);
+  await expect(endStateElement).toHaveText(String(statusDetails.historyStatus));
+  await performAction('clickTab', statusDetails.serviceReqTab);
+  const summaryStatusElement = page.locator(`text=${String(statusDetails.status)}`);
+  await expect(summaryStatusElement).toBeVisible();
+}
 }

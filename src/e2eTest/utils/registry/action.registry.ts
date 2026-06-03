@@ -109,6 +109,7 @@ export class ActionRegistry {
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
+    ['verifyStatusInHistoryAndSummaryTab', new FeeAndPayAction()],
     ['clickPayNowLink', new FeeAndPayAction()],
     ['whereShouldThisFlagBeAdded', new CaseFlagAction()],
     ['selectFlagType', new CaseFlagAction()],
@@ -121,8 +122,7 @@ export class ActionRegistry {
     ['makeFlagInactive', new CaseFlagAction()],
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
-    ['verifyLinkedCases', new CaseLinking()],
-    ['enterPaymentDetails', new FeeAndPayAction()]
+    ['verifyLinkedCases', new CaseLinking()]
   ]);
 
   static getAction(actionName: string): IAction {
