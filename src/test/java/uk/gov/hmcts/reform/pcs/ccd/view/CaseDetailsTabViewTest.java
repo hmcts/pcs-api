@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBu
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -168,6 +169,7 @@ public class CaseDetailsTabViewTest {
             .arrearsJudgmentWanted(VerticalYesNo.YES)
             .tenancyLicenceDetails(TenancyLicenceDetails.builder()
                                        .typeOfTenancyLicence(TenancyLicenceType.OTHER)
+                                       .detailsOfOtherTypeOfTenancyLicence("other tenancy details")
                                        .tenancyLicenceDate(LocalDate.of(2024, 4, 16))
                                        .hasCopyOfTenancyLicence(VerticalYesNo.NO)
                                        .reasonsForNoTenancyLicenceDocuments("Reasons")
@@ -312,6 +314,8 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTypeOfTenancyLicence())
             .isEqualTo("Other");
+        assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDescription())
+            .isEqualTo("other tenancy details");
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDate())
             .isEqualTo("16 April 2024");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate())
@@ -748,6 +752,26 @@ public class CaseDetailsTabViewTest {
         } finally {
             TimeZone.setDefault(originalTimeZone);
         }
+    }
+
+    @Test
+    void shouldNotSetTenancyLicenceDescriptionWhenTenancyTypeIsNotOther() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                       .tenancyLicenceDate(LocalDate.of(2024, 4, 16))
+                                       .hasCopyOfTenancyLicence(VerticalYesNo.NO)
+                                       .reasonsForNoTenancyLicenceDocuments("Reasons")
+                                       .build())
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+        // Then
+        assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDescription()).isNull();
     }
 
     private static <T> ListValue<T> listValue(T value) {
