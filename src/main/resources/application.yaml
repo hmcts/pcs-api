@@ -232,6 +232,11 @@ access-code:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
 
+claim-pack:
+  request:
+    max-retries: ${CLAIM_PACK_MAX_RETRIES:5}
+    backoff-delay-seconds: ${CLAIM_PACK_BACKOFF_DELAY_SECONDS:3600s}
+
 role-assignment:
   request:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}

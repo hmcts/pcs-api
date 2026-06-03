@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -50,6 +51,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private PartyService partyService;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private ClaimPackScheduler claimPackScheduler;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
@@ -79,8 +82,11 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+            // §3.1 producer-side gate: scheduler is invoked ONLY on PAID.
+            verify(claimPackScheduler).scheduleClaimPackGeneration(taskData.getCaseReference());
         } else {
             verifyNoInteractions(ccdPaymentStateUpdateService);
+            verifyNoInteractions(claimPackScheduler);
         }
     }
 
@@ -98,6 +104,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThatExceptionOfType(PaymentCallbackException.class)
             .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .withMessageContaining("Unable to process");
+        verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimPackScheduler);
     }
 
     @Test
@@ -122,6 +130,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Then
         assertThat(throwable).isEqualTo(expectedException);
         verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimPackScheduler);
     }
 
     private FeesAndPayTaskData buildTaskData() {

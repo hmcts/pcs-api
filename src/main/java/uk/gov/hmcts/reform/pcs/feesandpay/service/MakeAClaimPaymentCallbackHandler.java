@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -22,6 +23,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final PartyService partyService;
     private final ObjectMapper objectMapper;
+    private final ClaimPackScheduler claimPackScheduler;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -31,7 +33,11 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         feePaymentEntity.setParty(claimParty);
 
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
+            long caseReference = feesAndPayTaskData.getCaseReference();
+            ccdPaymentStateUpdateService.submitPaymentSuccess(caseReference);
+            // Producer-side gate of the §3.1 invariant: scheduling happens only on PAID, with
+            // caseReference as the db-scheduler instance id so re-fired callbacks no-op.
+            claimPackScheduler.scheduleClaimPackGeneration(caseReference);
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
                      feePaymentEntity.getClaim().getPcsCase().getCaseReference());
