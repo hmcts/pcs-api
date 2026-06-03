@@ -13,10 +13,10 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @AllArgsConstructor
 public class DefendantTabDetails {
 
-    @CCD(label = "Defendant's first name")
+    @CCD(label = "Defendant’s first name")
     private String firstName;
 
-    @CCD(label = "Defendant's last name")
+    @CCD(label = "Defendant’s last name")
     private String lastName;
 
     @CCD(label = "Service address")
