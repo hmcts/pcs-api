@@ -83,12 +83,6 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     }
 
     @Override
-    protected boolean shouldTolerateDataSetupFailure() {
-        var env = getDataSetupEnvironment();
-        return CcdEnvironment.PERFTEST == env || CcdEnvironment.DEMO == env || CcdEnvironment.ITHC == env;
-    }
-
-    @Override
     protected boolean shouldTolerateDataSetupFailure(Throwable e) {
         return switch (e) {
             case ImportException importException -> isGatewayTimeout(importException);
