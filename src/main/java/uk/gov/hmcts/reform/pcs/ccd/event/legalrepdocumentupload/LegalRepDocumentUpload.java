@@ -52,7 +52,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .name("Upload additional documents")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary()
-                .endButtonLabel("${legalRepDocumentUploadDetails.endButtonLabel}");
+                .endButtonLabel("Submit");
         legalRepDocumentUploadConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
 
