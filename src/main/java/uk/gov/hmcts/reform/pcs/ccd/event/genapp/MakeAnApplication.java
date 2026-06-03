@@ -51,6 +51,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .name("Make an application")
             .grant(Permission.CRUD, UserRole.DEFENDANT)
             .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
+            .endButtonLabel("Submit")
             .showSummary();
 
         new PageBuilder(eventBuilder)

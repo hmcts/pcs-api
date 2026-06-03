@@ -115,10 +115,10 @@ public class GenAppService {
         return genAppRepository.save(genAppEntity);
     }
 
-    public List<DocumentEntity> createDocumentEntities(List<ListValue<UploadedDocument>> uploadedDocuments,
-                                                       PcsCaseEntity pcsCaseEntity,
-                                                       GenAppEntity genAppEntity,
-                                                       UUID applicantPartyId) {
+    private List<DocumentEntity> createDocumentEntities(List<ListValue<UploadedDocument>> uploadedDocuments,
+                                                        PcsCaseEntity pcsCaseEntity,
+                                                        GenAppEntity genAppEntity,
+                                                        UUID applicantPartyId) {
 
         if (uploadedDocuments == null) {
             return List.of();
