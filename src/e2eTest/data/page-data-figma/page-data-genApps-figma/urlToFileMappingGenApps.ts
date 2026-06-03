@@ -11,6 +11,6 @@ export default {
   'makeAnApplicationreasonsNotToShare': 'areThereAnyReasonsThatThisApplicationShouldNotBeShared',
   'makeAnApplicationwhatOrderWanted': 'whatOrderDoYouWantTheCourtToMakeAndWhy',
   'makeAnApplicationdocumentUploadWanted' : 'doYouWantToUploadDocumentsToSupportDefendantsApplication',
-  'makeAnApplicationuploadSupportingDocuments': 'uploadDocumentsToSupportDefendantsApplication'
-  'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService'
+  'makeAnApplicationuploadSupportingDocuments': 'uploadDocumentsToSupportDefendantsApplication',
+  'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService',
 };
