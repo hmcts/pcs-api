@@ -12,5 +12,7 @@ export const serviceRequest = {
   pbaReferenceInputText: `UniqueCaseIdentifier-Automation`,
   continueButton: `Continue`,
   confirmPaymentButton: `Confirm payment`,
-  paymentSuccessMainHeader: `Payment successful`
+  paymentSuccessMainHeader: `Payment successful`,
+  notPaidStatus: `Not paid`,
+  paidStatus: `Paid`
 }
