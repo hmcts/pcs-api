@@ -856,6 +856,8 @@ public class CaseDetailsTabViewTest {
             .walesNoticeDetails(
                 WalesNoticeDetails.builder()
                     .noticeServed(YesOrNo.YES)
+                    .typeOfNoticeServed("notice type")
+                    .noticeStatement("notice statement")
                     .build()
             )
             .noticeServedDetails(NoticeServedDetails.builder()
@@ -1005,18 +1007,17 @@ public class CaseDetailsTabViewTest {
             .isEqualTo("11 May 2026, 5:02:00PM");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo("By email");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getNoticeDetails().getTypeOfNoticeServed()).isEqualTo("notice type");
+        assertThat(caseDetailsTab.getNoticeDetails().getStatement()).isNull();
         assertThat(caseDetailsTab.getApplicationsDetails().getPlanToMakeGeneralApplication()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getActionsTakenDetails().getPreactionProtocolFollowed()).isEqualTo("No");
         assertThat(caseDetailsTab.getActionsTakenDetails().getMediationAttempted()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getActionsTakenDetails().getSettlementAttempted()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getMortgageDetails()).hasSize(1);
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getNameKnown()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getName())
-            .isEqualTo("underlessee name");
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getAddressKnown())
-            .isEqualTo("Yes");
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getAddress())
-            .isEqualTo(underlesseeAddress);
+        assertThat(caseDetailsTab.getMortgageDetails()).isNull();
+        assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getName()).isEqualTo("underlessee name");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddressKnown()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddress()).isEqualTo(underlesseeAddress);
         assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
         assertThat(caseDetailsTab.getClaimantContactDetails().getEmailAddress()).isEqualTo("claimant@email.com");
         assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumberProvided()).isEqualTo("Yes");
@@ -1157,9 +1158,32 @@ public class CaseDetailsTabViewTest {
         // When
         CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
 
+        // Then
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("No");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo(noAnswer);
+    }
+
+    @Test
+    void shouldSetNoticeStatementIfNoticeServedIsNoWales() {
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .walesNoticeDetails(
+                WalesNoticeDetails.builder()
+                    .noticeServed(YesOrNo.NO)
+                    .typeOfNoticeServed("notice type")
+                    .noticeStatement("notice statement")
+                    .build()
+            )
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+        // Then
+        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("No");
+        assertThat(caseDetailsTab.getNoticeDetails().getStatement()).isEqualTo("notice statement");
+        assertThat(caseDetailsTab.getNoticeDetails().getTypeOfNoticeServed()).isNull();
     }
 
     private static <T> ListValue<T> listValue(T value) {

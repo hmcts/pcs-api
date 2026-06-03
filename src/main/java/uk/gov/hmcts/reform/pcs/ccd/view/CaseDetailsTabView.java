@@ -290,6 +290,8 @@ public class CaseDetailsTabView {
 
         NoticeTabDetails noticeTabDetails = NoticeTabDetails.builder()
             .noticeServed(noticeServed != null ? noticeServed.getValue() : NO_ANSWER)
+            .typeOfNoticeServed(noticeServed == YesOrNo.YES ? walesNoticeDetails.getTypeOfNoticeServed() : null)
+            .statement(noticeServed == YesOrNo.NO ? walesNoticeDetails.getNoticeStatement() : null)
             .noticeMethod(NO_ANSWER)
             .noticeDate(NO_ANSWER)
             .build();
