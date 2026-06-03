@@ -213,6 +213,9 @@ public class CaseDetailsTabView {
 
         return TenancyLicenceTabDetails.builder()
             .typeOfTenancyLicence(tenancyType != null ? tenancyType.getLabel() : NO_ANSWER)
+            .tenancyLicenceDescription(
+                tenancyType == OTHER ? tenancyLicenceDetails.getDetailsOfOtherTypeOfTenancyLicence() : null
+            )
             .tenancyLicenceDate(tenancyDate != null ? tenancyDate.format(DATE_FORMATTER) : NO_ANSWER)
             .hasCopyOfTenancyLicence(hasTenancyLicence != null ? hasTenancyLicence.getLabel() : NO_ANSWER)
             .tenancyLicenceDocuments(tenancyLicenceDetails.getTenancyLicenceDocuments())
