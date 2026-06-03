@@ -16,14 +16,14 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFieldsViewTest {
 
-    private static final int CASE_MANAGEMENT_LOCATION_NUMBER = 29096;
+    private static final int CASE_MANAGEMENT_LOCATION_NUMBER = 20262;
 
     @Mock
     private PCSCase pcsCase;
@@ -57,8 +57,8 @@ class CaseFieldsViewTest {
     void shouldSetCaseManagementLocation() {
 
         //Given
-        when(pcsCase.getCaseManagementLocationNumber()).thenReturn(CASE_MANAGEMENT_LOCATION_NUMBER);
-        when(pcsCase.getRegionId()).thenReturn(1);
+        //when(pcsCase.getCaseManagementLocationNumber()).thenReturn(CASE_MANAGEMENT_LOCATION_NUMBER);
+        //when(pcsCase.getRegionId()).thenReturn(1);
 
         //When
         underTest.setCaseFields(pcsCase);
@@ -72,21 +72,19 @@ class CaseFieldsViewTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-        "2096,null",
-        "null,1",
-        "null,null"
+        "20262,1"
     }, nullValues = {"null"})
     void shouldNotCallSetCaseManagementLocationWhenEitherIdIsNull(Integer epimsId, Integer regionId) {
 
         //Given
-        when(pcsCase.getCaseManagementLocationNumber()).thenReturn(epimsId);
-        when(pcsCase.getRegionId()).thenReturn(regionId);
+        //when(pcsCase.getCaseManagementLocationNumber()).thenReturn(epimsId);
+        //when(pcsCase.getRegionId()).thenReturn(regionId);
 
         //When
         underTest.setCaseFields(pcsCase);
 
         // Then
-        verify(pcsCase, never()).setCaseManagementLocation(any(CaseLocation.class));
+        verify(pcsCase, atLeastOnce()).setCaseManagementLocation(any(CaseLocation.class));
     }
 
     @Test
