@@ -29,6 +29,7 @@
   "orgNameFound":"YES",
   "claimantName":"Possession Claims Solicitor Org",
   "isClaimantNameCorrect":"YES",
+  "isExemptLandlord":"NO",
   "claimantContactEmail":"pcs-solicitor1@test.com",
   "isCorrectClaimantContactEmail":"YES",
   "orgAddressFound":"YES",
