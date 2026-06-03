@@ -213,6 +213,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                 "detailsTab_MortgageDetails!=\"\"",
                 "### Underlessee or mortgagee entitled to claim relief against forfeiture"
             )
+            .field("detailsTab_MortgageOneDetails")
             .field("detailsTab_MortgageDetails")
             .label(
                 "Demotion of tenancy",

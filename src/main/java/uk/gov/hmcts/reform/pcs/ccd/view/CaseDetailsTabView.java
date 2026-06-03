@@ -97,8 +97,8 @@ public class CaseDetailsTabView {
         ClaimantInformationTabDetails claimantInformationTabDetails = buildClaimantInformationTabDetails(pcsCase);
         DefendantInformationTabDetails defendantInformationTabDetails =
             defendantInformationTabDetailsBuilder.buildDetailedDefendantDetails(pcsCase);
-        List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> underlesseeMortgageTabDetailsList =
-            buildUnderlesseeMortgageTabDetailsList(pcsCase);
+        UnderlesseeOrMortgageInformationTabDetails underlesseeMortgageOneTabDetails =
+            buildUnderlesseeOrMortgageOneInformationTabDetails(pcsCase);
         DemotionOfTenancyTabDetails demotionOfTenancyTabDetails = buildDemotionOfTenancyTabDetails(pcsCase);
         SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyTabDetails =
             buildSuspensionOfRightToBuyTabDetails(pcsCase);
@@ -116,7 +116,7 @@ public class CaseDetailsTabView {
             .applicationsDetails(applicationsTabDetails)
             .claimantInformation(claimantInformationTabDetails)
             .defendantInformationDetails(defendantInformationTabDetails)
-            .mortgageDetails(underlesseeMortgageTabDetailsList)
+            .mortgageOneDetails(underlesseeMortgageOneTabDetails)
             .demotionOfTenancyDetails(demotionOfTenancyTabDetails)
             .suspensionOfRightToBuyDetails(suspensionOfRightToBuyTabDetails)
             .dateClaimSubmitted(dateSubmitted != null ? dateSubmitted : NO_ANSWER)
@@ -134,6 +134,13 @@ public class CaseDetailsTabView {
             caseDetailsTab.setAdditionalDefendants(additionalDefendantInformationTabDetails);
             caseDetailsTab.setDefendantCircumstanceDetails(buildDefendantCircumstanceTabDetails(pcsCase));
         }
+
+        if (underlesseeMortgageOneTabDetails != null) {
+            List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> underlesseeMortgageTabDetailsList =
+                buildUnderlesseeMortgageTabDetailsList(pcsCase);
+            caseDetailsTab.setMortgageDetails(underlesseeMortgageTabDetailsList);
+        }
+
         return caseDetailsTab;
     }
 
@@ -412,7 +419,7 @@ public class CaseDetailsTabView {
             .build();
     }
 
-    private List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> buildUnderlesseeMortgageTabDetailsList(
+    private UnderlesseeOrMortgageInformationTabDetails buildUnderlesseeOrMortgageOneInformationTabDetails(
         PCSCase pcsCase
     ) {
         List<ListValue<Party>> underlesseeMortgageParties = pcsCase.getAllUnderlesseeOrMortgagees();
@@ -420,12 +427,26 @@ public class CaseDetailsTabView {
             return null;
         }
 
-        return underlesseeMortgageParties.stream()
-            .map(this::buildUnderlesseeMortgageTabDetails)
-            .toList();
+        return buildUnderlesseeMortgageTabDetails(underlesseeMortgageParties.getFirst());
     }
 
-    private ListValue<UnderlesseeOrMortgageInformationTabDetails> buildUnderlesseeMortgageTabDetails(
+    private List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> buildUnderlesseeMortgageTabDetailsList(
+        PCSCase pcsCase
+    ) {
+        List<ListValue<Party>> underlesseeMortgageParties = pcsCase.getAllUnderlesseeOrMortgagees();
+        if (CollectionUtils.isEmpty(underlesseeMortgageParties) || underlesseeMortgageParties.size() < 2) {
+            return null;
+        }
+
+        return underlesseeMortgageParties.stream()
+            .skip(1)
+            .map(this::buildUnderlesseeMortgageTabDetails)
+            .map(details ->
+                     ListValue.<UnderlesseeOrMortgageInformationTabDetails>builder().value(details).build()
+            ).toList();
+    }
+
+    private UnderlesseeOrMortgageInformationTabDetails buildUnderlesseeMortgageTabDetails(
         ListValue<Party> underlesseeMortgageePartyListValue
     ) {
         Party underlesseeMortgageeParty = underlesseeMortgageePartyListValue.getValue();
@@ -434,13 +455,11 @@ public class CaseDetailsTabView {
         VerticalYesNo addressKnown = underlesseeMortgageeParty.getAddressKnown();
         AddressUK address = addressKnown == VerticalYesNo.YES ? underlesseeMortgageeParty.getAddress() : null;
 
-        return ListValue.<UnderlesseeOrMortgageInformationTabDetails>builder()
-            .value(UnderlesseeOrMortgageInformationTabDetails.builder()
-                       .nameKnown(nameKnown.getLabel())
-                       .name(name)
-                       .addressKnown(addressKnown.getLabel())
-                       .address(address)
-                       .build())
+        return UnderlesseeOrMortgageInformationTabDetails.builder()
+            .nameKnown(nameKnown.getLabel())
+            .name(name)
+            .addressKnown(addressKnown.getLabel())
+            .address(address)
             .build();
     }
 

@@ -73,15 +73,18 @@ public class CaseDetailsTab {
     @CCD(label = "Additional defendant")
     private List<ListValue<AdditionalDefendantInformationTabDetails>> additionalDefendants;
 
-    @CCD(label = "Defendants’ circumstances")
+    @CCD(label = "Defendant circumstances")
     private DefendantCircumstanceTabDetails defendantCircumstanceDetails;
 
-    @CCD(label = "Underlessee or mortgagee")
+    @CCD(label = "Underlessee or mortgagee 1")
+    private UnderlesseeOrMortgageInformationTabDetails mortgageOneDetails;
+
+    @CCD(label = "Additional underlessee or mortgagee")
     private List<ListValue<UnderlesseeOrMortgageInformationTabDetails>> mortgageDetails;
 
     @CCD(label = "Demotion of tenancy claim")
     private DemotionOfTenancyTabDetails demotionOfTenancyDetails;
 
-    @CCD(label = "Suspension of right to buy")
+    @CCD(label = "Suspension of right to buy claim")
     private SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyDetails;
 }
