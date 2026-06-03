@@ -39,6 +39,30 @@ public class DocumentNameService {
         return filename;
     }
 
+    public String appendDefendantPostfix(String originalFilename,
+                                         ClaimEntity mainClaim,
+                                         UUID defendantPartyId) {
+
+        if (originalFilename == null) {
+            return null;
+        }
+
+        String baseName = FilenameUtils.getBaseName(originalFilename);
+        String extension = FilenameUtils.getExtension(originalFilename);
+
+        String filename = baseName;
+        String partyLabel = getPartyLabel(mainClaim, defendantPartyId);
+        if (partyLabel != null) {
+            filename += " - " + partyLabel;
+        }
+
+        if (!extension.isBlank()) {
+            filename += "." + extension;
+        }
+
+        return filename;
+    }
+
     private static String getPartyLabel(ClaimEntity mainClaim, UUID partyId) {
         ClaimPartyEntity applicantClaimParty = getClaimParty(mainClaim, partyId);
 
