@@ -1,12 +1,11 @@
 export const judicialEmails = {
-  // Appointment: Adjudicator, Type: Fee-paid, Mapping: Possession Fee Paid
-  dj_catherine_maldonado_email: 'DJ.Catherine.Maldonado@ejudiciary.net',
-  // Appointment: Circuit Judge, Type: Salaried / SPTW, Mapping: Possession Leadership Judge Salaried
+  // Appointment: Recorder, Type: Fee-paid, Mapping: Possession Fee Paid
+  recorder_tyler_murphy_email: 'Recorder.TylerMurphy@ejudiciary.net',
+  // Appointment: Insolvency and Companies Court Judge, Type: Salaried / SPTW, Mapping: Possession Salaried
+  icc_judge_barry_email: 'ICCJudge.Barry@ejudiciary.net',
+  // Appointment: Court of Appeal Judge, Type: Salaried / SPTW, Mapping: Possession Circuit Judge Salaried
+  lady_justice_butler_email: 'LadyJustice.Butler@ejudiciary.net',
+  // Appointment: Chief Master, Type: Salaried / SPTW, Mapping: Possession Leadership Judge Salaried
+  master_mendoza_email: 'Master.Mendoza@ejudiciary.net',
 
-  // Appointment: Senior Circuit Judge, Type: Salaried / SPTW, Mapping: Possession Circuit Judge Salaried
-  hhj_jack_daniel_email: 'HHJ.Jack.Daniel@ejudiciary.net',
-  // Appointment: Costs Judge, Type: Salaried / SPTW, Mapping: Possession Salaried
-
-  // Appointment: Circuit Judge (sitting in retirement), Type: Fee-paid, Mapping: Circuit Judge Fee Paid
-  //No data found
 };

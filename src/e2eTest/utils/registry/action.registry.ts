@@ -130,6 +130,7 @@ export class ActionRegistry {
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
     ['enterPaymentDetails', new FeeAndPayAction()],
+    ['handleJudgeBookingPage', new CaseFlagAction()],
   ]);
 
   static getAction(actionName: string): IAction {

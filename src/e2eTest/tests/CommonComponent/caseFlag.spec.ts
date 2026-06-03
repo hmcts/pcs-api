@@ -17,6 +17,11 @@ import {
 } from '@data/page-data-figma';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {BrowserContext, Page} from '@playwright/test';
+import {
+  logUserTestResultsAndAssert,
+  recordUserTestFailure,
+  UserTestResult
+} from '@utils/common/userTestResults.utils';
 
 const staffUserEmails = Object.values(staff);
 const judicialUserEmails = Object.values(judicialEmails);
@@ -200,7 +205,7 @@ test.describe('[Common Component Case Flags - Access control] @CC @caseFlags @ac
 
   test('Staff users can create, manage and view case-level and party-level flags', async ({page, context}) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
-    const results: { email: string; status: 'PASS' | 'FAIL'; error?: string }[] = [];
+    const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
     for (const email of staffUserEmails) {
       try {
@@ -217,63 +222,37 @@ test.describe('[Common Component Case Flags - Access control] @CC @caseFlags @ac
         });
         results.push({email, status: 'PASS'});
       } catch (error) {
-        results.push({email, status: 'FAIL', error: error instanceof Error ? error.message : String(error)});
-        console.error(`❌ ${email} failed`, error);
+        recordUserTestFailure(results, email, error);
         await clearBrowserSession(page, context).catch(() => {
         });
       }
     }
-    console.log('\n===== STAFF USER RESULTS =====');
-    results.forEach(result => {
-      console.log(`${result.status === 'PASS' ? '✅' : '❌'} ${result.email} - ${result.status}`);
-    });
-    const failedUsers = results.filter(r => r.status === 'FAIL');
-    if (failedUsers.length > 0) {
-      console.log('\nFailed Users:');
-      failedUsers.forEach(u =>
-        console.log(`- ${u.email}: ${u.error}`)
-      );
-      throw new Error(`${failedUsers.length} user(s) failed. See summary above.`);
-    }
+    logUserTestResultsAndAssert('STAFF USER RESULTS', results);
   });
 
   test('Judicial users can view only case-level and party-level flags and cannot create or manage flags', async ({page, context}) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
-    const results: { email: string; status: 'PASS' | 'FAIL'; error?: string }[] = [];
+    const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
     for (const email of judicialUserEmails) {
       try {
         await test.step(`Judicial user ${email}`, async () => {
           await performAction('login', {email, password});
           await dismissCookieBanner(page, 'analytics');
+          await performAction('handleJudgeBookingPage');
           await performAction('navigateToCaseSummary', 'yes');
-          await performAction('canCreateCaseLevelFlag', 'no');
-          await performAction('canCreatePartyLevelFlag', 'no');
-          await performAction('canManageCaseLevelFlag', 'no');
-          await performAction('canManagePartyLevelFlag', 'no');
+          await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);
           await performAction('canViewCaseAndPartyFlag', 'yes');
           await clearBrowserSession(page, context);
         });
         results.push({email, status: 'PASS'});
       } catch (error) {
-        results.push({email, status: 'FAIL', error: error instanceof Error ? error.message : String(error)});
-        console.error(`❌ ${email} failed`, error);
+        recordUserTestFailure(results, email, error);
         await clearBrowserSession(page, context).catch(() => {
         });
       }
     }
-    console.log('\n===== STAFF USER RESULTS =====');
-    results.forEach(result => {
-      console.log(`${result.status === 'PASS' ? '✅' : '❌'} ${result.email} - ${result.status}`);
-    });
-    const failedUsers = results.filter(r => r.status === 'FAIL');
-    if (failedUsers.length > 0) {
-      console.log('\nFailed Users:');
-      failedUsers.forEach(u =>
-        console.log(`- ${u.email}: ${u.error}`)
-      );
-      throw new Error(`${failedUsers.length} user(s) failed. See summary above.`);
-    }
+    logUserTestResultsAndAssert('JUDICIAL USER RESULTS', results);
   });
 
   test('Claimant solicitor cannot view, create or manage case-level and party-level flags', async ({page, context}) => {

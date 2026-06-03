@@ -5,7 +5,7 @@ import { addressInfo, caseNumber } from '../createCase.action';
 import {caseInfo} from "@utils/actions/custom-actions";
 import {expect} from "@utils/test-fixtures";
 import {LONG_TIMEOUT} from "../../../../playwright.config";
-import {caseSummary, home, caseList} from "@data/page-data";
+import {caseSummary, caseList} from "@data/page-data";
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import {
   specialMeasureForFlag,
@@ -17,6 +17,7 @@ import {
   manageCaseFlags,
   updateFlagComments
 } from '@data/page-data-figma';
+import {workAccess} from "@data/page-data-figma/page-data-common-component/workAccess.page.data";
 
 export class CaseFlagAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -36,6 +37,7 @@ export class CaseFlagAction implements IAction {
       ['canManageCaseLevelFlag', () => this.canManageCaseLevelFlag(fieldName as actionRecord, page)],
       ['canManagePartyLevelFlag', () => this.canManagePartyLevelFlag(fieldName as actionRecord, page)],
       ['canViewCaseAndPartyFlag', () => this.canViewCaseAndPartyFlag(fieldName as actionData, page)],
+      ['handleJudgeBookingPage', () => this.handleJudgeBookingPage(page)],
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -271,4 +273,13 @@ export class CaseFlagAction implements IAction {
       await expect(caseFlagsTab).not.toBeVisible();
     }
   }
+
+  private async handleJudgeBookingPage(page: Page): Promise<void> {
+    await performValidation('mainHeader', workAccess.mainHeader);
+    await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
+    await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
+    await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
+    await performValidation('mainHeader', caseList.mainHeader);
+  }
 }
+
