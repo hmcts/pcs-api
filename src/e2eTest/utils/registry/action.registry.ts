@@ -110,6 +110,7 @@ export class ActionRegistry {
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
+    ['clickPayNowLink', new FeeAndPayAction()],
     ['whereShouldThisFlagBeAdded', new CaseFlagAction()],
     ['selectFlagType', new CaseFlagAction()],
     ['selectSpecialMeasureForFlag', new CaseFlagAction()],
