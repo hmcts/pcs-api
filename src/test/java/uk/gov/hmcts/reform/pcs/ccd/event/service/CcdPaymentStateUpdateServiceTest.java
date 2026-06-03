@@ -13,11 +13,15 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.PcsCaseNotificationService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,6 +42,8 @@ class CcdPaymentStateUpdateServiceTest {
     private CoreCaseDataApi coreCaseDataApi;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private PcsCaseNotificationService pcsCaseNotificationService;
 
     @InjectMocks
     private CcdPaymentStateUpdateService underTest;
@@ -45,19 +51,11 @@ class CcdPaymentStateUpdateServiceTest {
     @Test
     void shouldStartEventAndSubmitPaymentSuccessfully() {
         // Given
-        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_TOKEN);
-        when(s2sAuthTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-
-        StartEventResponse startEventResponse = StartEventResponse.builder().token(IDAM_TOKEN).build();
-        when(coreCaseDataApi.startEvent(IDAM_TOKEN, S2S_TOKEN, String.valueOf(CASE_ID), payment.name()))
-            .thenReturn(startEventResponse);
-
+        setupMocks();
         CaseResource expectedCaseResource = new CaseResource();
         when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(S2S_TOKEN), eq(String.valueOf(CASE_ID)),
-                                         org.mockito.ArgumentMatchers.any(CaseDataContent.class)))
+                                         any(CaseDataContent.class)))
             .thenReturn(expectedCaseResource);
-        when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
-
         // When
         CaseResource result = underTest.submitPaymentSuccess(CASE_ID);
 
@@ -70,5 +68,56 @@ class CcdPaymentStateUpdateServiceTest {
         CaseDataContent submitted = contentCaptor.getValue();
         assertThat(submitted.getEventToken()).isEqualTo(IDAM_TOKEN);
         assertThat(submitted.getEvent().getId()).isEqualTo(payment.name());
+        verify(pcsCaseNotificationService).sendClaimIssuedNotificationOnPayment(CASE_ID);
+    }
+
+    @Test
+    void shouldHandleClaimNotFoundExceptionWhenSendingNotification() {
+        // Given
+        setupMocks();
+        CaseResource expectedCaseResource = new CaseResource();
+        when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(S2S_TOKEN), eq(String.valueOf(CASE_ID)),
+                                         any(CaseDataContent.class)))
+            .thenReturn(expectedCaseResource);
+
+        doThrow(new ClaimNotFoundException(CASE_ID))
+            .when(pcsCaseNotificationService).sendClaimIssuedNotificationOnPayment(CASE_ID);
+
+        // When
+        CaseResource result = underTest.submitPaymentSuccess(CASE_ID);
+
+        // Then
+        assertThat(result).isSameAs(expectedCaseResource);
+        verify(pcsCaseNotificationService).sendClaimIssuedNotificationOnPayment(CASE_ID);
+    }
+
+    @Test
+    void shouldHandleCaseNotFoundExceptionWhenSendingNotification() {
+        // Given
+        setupMocks();
+        CaseResource expectedCaseResource = new CaseResource();
+        when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(S2S_TOKEN), eq(String.valueOf(CASE_ID)),
+                                         any(CaseDataContent.class)))
+            .thenReturn(expectedCaseResource);
+
+        doThrow(new CaseNotFoundException(CASE_ID))
+            .when(pcsCaseNotificationService).sendClaimIssuedNotificationOnPayment(CASE_ID);
+
+        // When
+        CaseResource result = underTest.submitPaymentSuccess(CASE_ID);
+
+        // Then
+        assertThat(result).isSameAs(expectedCaseResource);
+        verify(pcsCaseNotificationService).sendClaimIssuedNotificationOnPayment(CASE_ID);
+    }
+
+    private void setupMocks() {
+        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_TOKEN);
+        when(s2sAuthTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+
+        StartEventResponse startEventResponse = StartEventResponse.builder().token(IDAM_TOKEN).build();
+        when(coreCaseDataApi.startEvent(IDAM_TOKEN, S2S_TOKEN, String.valueOf(CASE_ID), payment.name()))
+            .thenReturn(startEventResponse);
+        when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
     }
 }

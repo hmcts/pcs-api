@@ -12,6 +12,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.PcsCaseNotificationService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.payment;
@@ -25,6 +28,7 @@ public class CcdPaymentStateUpdateService {
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi coreCaseDataApi;
     private final ObjectMapper objectMapper;
+    private final PcsCaseNotificationService pcsCaseNotificationService;
 
     public CaseResource submitPaymentSuccess(long caseId) {
         String serviceAuthorization = authTokenGenerator.generate();
@@ -37,6 +41,13 @@ public class CcdPaymentStateUpdateService {
         CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
                                                                 String.valueOf(caseId), submitContent);
         log.debug("CaseResource response : {}", caseResource);
+
+        try {
+            pcsCaseNotificationService.sendClaimIssuedNotificationOnPayment(caseId);
+        } catch (ClaimNotFoundException | CaseNotFoundException e) {
+            log.error("Failed to send claim issued notification for case {}", caseId, e);
+        }
+
         return caseResource;
     }
 

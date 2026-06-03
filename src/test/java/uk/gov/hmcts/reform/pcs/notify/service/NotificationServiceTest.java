@@ -487,7 +487,9 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(defendantResponse.getClaim());
+                notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(
+                    defendantResponse.getClaim()
+                );
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
@@ -513,12 +515,40 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDefendantResponseReceivedEmailNotification(defendantResponse.getClaim());
+                notificationService.sendClaimantDefendantResponseReceivedEmailNotification(
+                    defendantResponse.getClaim()
+                );
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
 
             verify(templateConfiguration).getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED);
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should send claimant claim issued email notification")
+        void shouldSendClaimantClaimIssuedEmailNotification() {
+            PartyEntity claimantParty = new PartyEntity();
+            claimantParty.setEmailAddress(TEST_EMAIL);
+            when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
+
+            when(partyService.canSendEmailNotification(any(), any())).thenReturn(true);
+            when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_CLAIM_ISSUED))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendClaimantClaimIssuedEmailNotification(defendantResponse.getClaim());
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration).getTemplateId(EmailTemplate.MAKE_A_CLAIM_CLAIM_ISSUED);
             verify(notificationRepository, times(2)).save(any());
             verify(schedulerClient).scheduleIfNotExists(any());
         }
@@ -532,7 +562,8 @@ class NotificationServiceTest {
             ClaimEntity claim = defendantResponse.getClaim();
             claim.setId(claimId);
 
-            assertThatThrownBy(() -> notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(claim))
+            assertThatThrownBy(
+                () -> notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(claim))
                 .isInstanceOf(PartyNotFoundException.class)
                 .hasMessage("No claimant party found for claim: " + claimId);
 
@@ -693,7 +724,9 @@ class NotificationServiceTest {
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(defendantResponse.getClaim());
+                notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(
+                    defendantResponse.getClaim()
+                );
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
