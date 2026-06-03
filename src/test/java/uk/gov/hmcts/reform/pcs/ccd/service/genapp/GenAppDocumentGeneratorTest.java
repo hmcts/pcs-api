@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -29,11 +30,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.document.model.Document;
 import uk.gov.hmcts.reform.pcs.document.model.Party;
 import uk.gov.hmcts.reform.pcs.document.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.document.model.genapp.GenAppFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -59,8 +60,6 @@ class GenAppDocumentGeneratorTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private PartyService partyService;
-    @Mock
-    private SecurityContextService securityContextService;
     @Mock
     private DocAssemblyService docAssemblyService;
     @Mock
@@ -94,9 +93,9 @@ class GenAppDocumentGeneratorTest {
         stubUKClock();
         stubCaseData();
 
-        underTest = new GenAppDocumentGenerator(pcsCaseService, partyService, securityContextService,
-                                                docAssemblyService, addressMapper, addressFormatter,
-                                                caseReferenceFormatter, caseNameFormatter, modelMapper, ukClock);
+        underTest = new GenAppDocumentGenerator(pcsCaseService, partyService, docAssemblyService, addressMapper,
+                                                addressFormatter, caseReferenceFormatter, caseNameFormatter,
+                                                modelMapper, ukClock);
     }
 
     private void stubUKClock() {
@@ -112,8 +111,6 @@ class GenAppDocumentGeneratorTest {
         ClaimEntity mainClaimEntity = mock(ClaimEntity.class);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaimEntity));
 
-        UUID applicantUserId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(applicantUserId);
 
         ClaimPartyEntity claimantClaimPartyEntity = mock(ClaimPartyEntity.class);
         PartyEntity claimantPartyEntity = mock(PartyEntity.class);
@@ -122,14 +119,15 @@ class GenAppDocumentGeneratorTest {
 
         ClaimPartyEntity applicantClaimPartyEntity = mock(ClaimPartyEntity.class);
         applicantPartyEntity = mock(PartyEntity.class);
-        when(applicantPartyEntity.getIdamId()).thenReturn(applicantUserId);
+        UUID applicantPartyId = UUID.randomUUID();
 
         when(applicantClaimPartyEntity.getRole()).thenReturn(PartyRole.DEFENDANT);
         when(applicantClaimPartyEntity.getParty()).thenReturn(applicantPartyEntity);
+        when(applicantPartyEntity.getId()).thenReturn(applicantPartyId);
 
         when(mainClaimEntity.getClaimParties())
             .thenReturn(List.of(claimantClaimPartyEntity, applicantClaimPartyEntity));
-        when(partyService.getPartyEntityByIdamId(applicantUserId, CASE_REFERENCE)).thenReturn(applicantPartyEntity);
+        when(partyService.getPartyEntityByEntityId(applicantPartyId, CASE_REFERENCE)).thenReturn(applicantPartyEntity);
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
     }
@@ -142,7 +140,7 @@ class GenAppDocumentGeneratorTest {
             .thenReturn(expectedFormattedCaseReference);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -156,7 +154,7 @@ class GenAppDocumentGeneratorTest {
         when(caseNameFormatter.formatCaseName(anyList(), anyList())).thenReturn(expectedCaseName);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -170,7 +168,7 @@ class GenAppDocumentGeneratorTest {
         stubFormattedPropertyAddress(expectedPropertyAddress);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -180,7 +178,7 @@ class GenAppDocumentGeneratorTest {
     @Test
     void shouldSetSubmittedOnDate() {
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -190,7 +188,7 @@ class GenAppDocumentGeneratorTest {
     @Test
     void shouldSetIssuedOnDate() {
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -211,7 +209,7 @@ class GenAppDocumentGeneratorTest {
         when(applicantPartyEntity.getPhoneNumber()).thenReturn(phoneNumber);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -233,7 +231,7 @@ class GenAppDocumentGeneratorTest {
         stubFormattedApplicantAddress(formattedApplicantAddress);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -251,7 +249,7 @@ class GenAppDocumentGeneratorTest {
         stubFormattedPropertyAddress(formattedPropertyAddress);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -265,7 +263,7 @@ class GenAppDocumentGeneratorTest {
         when(applicantPartyEntity.getAddressKnown()).thenReturn(VerticalYesNo.NO);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -280,7 +278,7 @@ class GenAppDocumentGeneratorTest {
         when(citizenGenAppRequest.getApplicationType()).thenReturn(expectedApplicationType);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -294,7 +292,7 @@ class GenAppDocumentGeneratorTest {
         when(citizenGenAppRequest.getWithin14Days()).thenReturn(isWithin14Days);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -308,7 +306,7 @@ class GenAppDocumentGeneratorTest {
         when(citizenGenAppRequest.getWhatOrderWanted()).thenReturn(expectedOrderWanted);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -322,7 +320,7 @@ class GenAppDocumentGeneratorTest {
         when(citizenGenAppRequest.getOtherPartiesAgreed()).thenReturn(otherPartiesAgreed);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -336,7 +334,7 @@ class GenAppDocumentGeneratorTest {
         when(citizenGenAppRequest.getWithoutNotice()).thenReturn(isWithoutNotice);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -350,11 +348,33 @@ class GenAppDocumentGeneratorTest {
         when(citizenGenAppRequest.getWithoutNoticeReason()).thenReturn(expectedWithoutNoticeReason);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
         assertThat(formPayload.getWithoutNoticeReason()).isEqualTo(expectedWithoutNoticeReason);
+    }
+
+    @Test
+    void shouldSetSupportingDocumentsFromGenAppEntity() {
+        // Given
+        when(citizenGenAppRequest.getHasSupportingDocuments()).thenReturn(VerticalYesNo.YES);
+
+        String filename1 = "filename1";
+        String filename2 = "filename2";
+        DocumentEntity documentEntity1 = createDocumentEntity(filename1);
+        DocumentEntity documentEntity2 = createDocumentEntity(filename2);
+        when(genAppEntity.getDocuments()).thenReturn(List.of(documentEntity1, documentEntity2));
+
+        // When
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
+
+        // Then
+        GenAppFormPayload formPayload = getFormPayload();
+        assertThat(formPayload.getDocumentUploadWanted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(formPayload.getUploadedDocuments())
+            .extracting(Document::getFilename)
+            .containsExactly(filename1, filename2);
     }
 
     @Test
@@ -364,7 +384,7 @@ class GenAppDocumentGeneratorTest {
         when(citizenGenAppRequest.getSotFullName()).thenReturn(expectedSotFullName);
 
         // When
-        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity);
+        underTest.generateSubmissionDocument(CASE_REFERENCE, citizenGenAppRequest, genAppEntity, applicantPartyEntity);
 
         // Then
         GenAppFormPayload formPayload = getFormPayload();
@@ -389,6 +409,12 @@ class GenAppDocumentGeneratorTest {
         when(addressMapper.toAddressUK(applicantAddressEntity)).thenReturn(applicantAddressUK);
         when(addressFormatter.formatFullAddress(applicantAddressUK, "\n"))
             .thenReturn(formattedApplicantAddress);
+    }
+
+    private static DocumentEntity createDocumentEntity(String filename) {
+        DocumentEntity documentEntity1 = mock(DocumentEntity.class);
+        when(documentEntity1.getFileName()).thenReturn(filename);
+        return documentEntity1;
     }
 
     private GenAppFormPayload getFormPayload() {

@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -45,7 +46,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .decentralisedEvent(legalRepDocumentUpload.name(), this::submit, this::start)
                 .forAllStates()
                 .name("Upload additional documents")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
                 .showSummary();
         legalRepDocumentUploadConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
@@ -83,10 +84,14 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .listItems(validCategoryItems)
                 .build()
         );
+
+        // By default, Main claim is always added
+        caseData.getLegalRepDocumentUploadDetails().setShowExistingApplicationPage(validCategoryItems.size() >= 2
+                                                                                       ? YesOrNo.YES : YesOrNo.NO);
         return caseData;
     }
 
-    private DynamicStringListElement buildCategoryItem(
+    DynamicStringListElement buildCategoryItem(
         DocumentUploadCategory category,
         LocalDateTime genAppDate
     ) {
@@ -96,9 +101,9 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .build();
     }
 
-    private LocalDateTime findLatestGenAppDateForCategory(PcsCaseEntity pcsCaseEntity,
+    LocalDateTime findLatestGenAppDateForCategory(PcsCaseEntity pcsCaseEntity,
                                                           DocumentUploadCategory category) {
-        if (pcsCaseEntity == null || pcsCaseEntity.getGenApps() == null) {
+        if (pcsCaseEntity.getGenApps() == null) {
             return null;
         }
 
@@ -115,10 +120,9 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .orElse(null);
     }
 
-    private GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {
+    GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {
         return switch (category) {
             case ADJOURN_HEARING_APPLICATION -> GenAppType.ADJOURN;
-            case SUSPEND_EVICTION_APPLICATION -> GenAppType.SUSPEND;
             case SET_ASIDE_ORDER_APPLICATION -> GenAppType.SET_ASIDE;
             case GENERAL_APPLICATION -> GenAppType.SOMETHING_ELSE;
             default -> null;

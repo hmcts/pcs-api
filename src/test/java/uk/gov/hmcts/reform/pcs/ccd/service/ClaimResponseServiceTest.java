@@ -3,8 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
@@ -17,14 +15,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,16 +42,11 @@ class ClaimResponseServiceTest {
     @Mock
     private PartyService partyService;
     @Mock
-    private PartyRepository partyRepository;
-    @Mock
     private SecurityContextService securityContextService;
     @Mock
     private ModelMapper modelMapper;
 
     private ClaimResponseService underTest;
-
-    @Captor
-    private ArgumentCaptor<PartyEntity> partyCaptor;
 
     private PartyEntity testParty;
 
@@ -65,7 +56,7 @@ class ClaimResponseServiceTest {
         testParty.setId(TEST_PARTY_ID);
         testParty.setIdamId(TEST_IDAM_ID);
 
-        underTest = new ClaimResponseService(partyService, partyRepository, securityContextService, modelMapper);
+        underTest = new ClaimResponseService(partyService, securityContextService, modelMapper);
     }
 
     @Test
@@ -287,16 +278,11 @@ class ClaimResponseServiceTest {
     }
 
     @Test
-    void shouldUpdateFirstNameAndLastName() {
+    void shouldUpdateNameWhenClaimantDidNotProvideIt() {
         // Given
         final PossessionClaimResponse response = buildResponse(
-            Party.builder()
-                .firstName("John")
-                .lastName("Doe")
-                .build(),
-            DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
-                .build()
+            Party.builder().firstName("John").lastName("Doe").build(),
+            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build()
         );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
@@ -311,20 +297,18 @@ class ClaimResponseServiceTest {
     }
 
     @Test
-    void shouldNotUpdateFirstNameAndLastNameWhenBlank() {
+    void shouldNotUpdateNameWhenClaimantProvided() {
         // Given
+        testParty.setFirstName("ClaimantFirst");
+        testParty.setLastName("ClaimantLast");
+
         final PossessionClaimResponse response = buildResponse(
-            Party.builder()
-                .firstName("")
-                .lastName("   ")
-                .build(),
+            Party.builder().firstName("DefendantFirst").lastName("DefendantLast").build(),
             DefendantResponses.builder()
                 .contactByEmail(VerticalYesNo.YES)
+                .defendantNameConfirmation(VerticalYesNo.YES)
                 .build()
         );
-
-        testParty.setFirstName("ExistingFirst");
-        testParty.setLastName("ExistingLast");
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
@@ -333,8 +317,52 @@ class ClaimResponseServiceTest {
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
-        assertThat(testParty.getFirstName()).isEqualTo("ExistingFirst");
-        assertThat(testParty.getLastName()).isEqualTo("ExistingLast");
+        assertThat(testParty.getFirstName()).isEqualTo("ClaimantFirst");
+        assertThat(testParty.getLastName()).isEqualTo("ClaimantLast");
+    }
+
+    @Test
+    void shouldUpdateAddressWhenClaimantDidNotProvideIt() {
+        // Given
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().address(TEST_ADDRESS).build(),
+            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build()
+        );
+
+        final AddressEntity addressEntity = new AddressEntity();
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+    }
+
+    @Test
+    void shouldNotUpdateAddressWhenClaimantProvided() {
+        // Given
+        AddressEntity existingAddress = AddressEntity.builder().addressLine1("Claimant Street").build();
+        testParty.setAddress(existingAddress);
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().address(AddressUK.builder().addressLine1("Defendant Street").build()).build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .correspondenceAddressConfirmation(VerticalYesNo.YES)
+                .build()
+        );
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getAddress().getAddressLine1()).isEqualTo("Claimant Street");
     }
 
     @Test
@@ -356,8 +384,8 @@ class ClaimResponseServiceTest {
 
         AddressEntity addressEntity = new AddressEntity();
         UUID partyId = UUID.randomUUID();
-        when(partyRepository.findByIdAndPcsCaseCaseReference(partyId, TEST_CASE_REFERENCE))
-            .thenReturn(Optional.of(testParty));
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE))
+            .thenReturn(testParty);
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
@@ -396,8 +424,8 @@ class ClaimResponseServiceTest {
 
         AddressEntity addressEntity = new AddressEntity();
         UUID partyId = UUID.randomUUID();
-        when(partyRepository.findByIdAndPcsCaseCaseReference(partyId, TEST_CASE_REFERENCE))
-            .thenReturn(Optional.of(testParty));
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE))
+            .thenReturn(testParty);
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When

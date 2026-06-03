@@ -12,7 +12,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
@@ -414,4 +414,83 @@ class DraftCaseDataServiceTest {
             .hasCause(jsonProcessingException);
     }
 
+    @Test
+    void shouldPatchUnsubmittedCaseData_WithPartyId() {
+        // Given
+        String existingJson = "existing json";
+        UUID partyId = UUID.randomUUID();
+        UUID userId = USER_ID;
+
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+
+        when(draftCaseDataEntity.getCaseData()).thenReturn(existingJson);
+
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(userId.toString()).build());
+
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+            CASE_REFERENCE, eventId, userId, partyId))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+        String patchJson = "patch json";
+        // When
+        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, patchJson, partyId);
+
+        // Then
+        verify(draftCaseDataEntity).getCaseData();
+        verify(draftCaseDataEntity).setCaseData(any()); // safer than strict match here
+        verify(draftCaseDataRepository).save(draftCaseDataEntity);
+    }
+
+    @Test
+    void shouldThrowWhenNoDraftExistsForSave_WithPartyId() throws JsonProcessingException {
+        // Given
+        PCSCase caseData = mock(PCSCase.class);
+        UUID partyId = UUID.randomUUID();
+
+        when(objectMapper.writeValueAsString(caseData)).thenReturn("case data json");
+
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                                          USER_ID, partyId))
+            .thenReturn(Optional.empty());
+
+        // When / Then
+        assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId))
+            .isInstanceOf(UnsubmittedDataException.class)
+            .hasMessageContaining("No draft found");
+
+        verify(draftCaseDataRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldReplaceExistingUnsubmittedEventData_WithPartyId() throws JsonProcessingException {
+
+        // Given
+        String newCaseDataJson = "new case data json";
+        UUID partyId = UUID.randomUUID();
+
+        PCSCase newCaseData = mock(PCSCase.class);
+
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn(newCaseDataJson);
+
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                                          USER_ID, partyId))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, partyId);
+
+        // Then
+        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+
+        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
+
+        assertThat(savedEntity).isSameAs(draftCaseDataEntity);
+
+        verify(draftCaseDataEntity).setCaseData(newCaseDataJson);
+    }
 }

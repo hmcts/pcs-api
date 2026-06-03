@@ -15,7 +15,7 @@
       "legislativeCountry": "England",
       "possessionClaimResponse": {
         "defendantResponses": {
-          "tenancyTypeCorrect": "YES",
+          "tenancyTypeConfirmation": "YES",
           "tenancyType": "Assured Shorthold Tenancy",
           "tenancyStartDate": "2020-01-01",
           "defendantContactDetails": {

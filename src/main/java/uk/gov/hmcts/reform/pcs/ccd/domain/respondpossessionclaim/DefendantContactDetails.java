@@ -5,8 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 @Builder
@@ -15,6 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 @AllArgsConstructor
 public class DefendantContactDetails {
 
-    @CCD(access = {CitizenAccess.class, DefendantSolicitorAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private Party party;
 }

@@ -62,7 +62,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
                     return error(List.of("No selected responding party id for respond to claim"));
                 }
                 UUID representedPartyId = selectedPartyId.get();
-                draftCaseDataService.patchUnsubmittedEventData(
+                draftCaseDataService.saveUnsubmittedEventData(
                     caseRef,
                     partialUpdate,
                     respondPossessionClaim,

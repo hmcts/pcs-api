@@ -15,7 +15,7 @@ public class ClaimantTypeNotEligibleWales implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("claimantTypeNotEligibleWales", this::midEvent)
-            .pageLabel("You’re not eligible for this online service")
+            .pageLabel("You cannot use this online service")
             .showCondition("showClaimantTypeNotEligibleWales=\"Yes\"")
             .readonly(PCSCase::getShowClaimantTypeNotEligibleWales, NEVER_SHOW)
             .label("claimantTypeNotEligibleWales-info", """
@@ -29,7 +29,7 @@ public class ClaimantTypeNotEligibleWales implements CcdPageConfiguration {
 
                 <a href="https://www.gov.uk/government/collections/property-possession-forms" rel="noreferrer noopener"
                     target="_blank"
-                    class="govuk-link">View the full list of property possessions forms (opens in a new tab)</a>.
+                    class="govuk-link">View the full list of property possessions forms (opens in a new tab)</a>
                 </p>
 
                 <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
@@ -37,7 +37,7 @@ public class ClaimantTypeNotEligibleWales implements CcdPageConfiguration {
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-warning-text__assistive">Warning</span>
                     <span id="warning-message">
-                      To exit to the case overview, select ‘Cancel’
+                      To exit to the case list, select ‘Cancel’
                     </span>
                   </strong>
                 </div>
@@ -48,7 +48,7 @@ public class ClaimantTypeNotEligibleWales implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errorMessageOverride("You’re not eligible for this online service")
+            .errorMessageOverride("You cannot use this online service")
             .build();
     }
 

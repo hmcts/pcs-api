@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant.BELIEVE_TRUE;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep.AGREED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep.AGREED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE;
 
@@ -96,10 +96,10 @@ class StatementOfTruthViewTest {
         assertThat(statementOfTruthDetails.getCompletedBy()).isEqualTo(CLAIMANT);
 
         assertThat(statementOfTruthDetails.getAgreementClaimant()).containsExactly(BELIEVE_TRUE);
-        assertThat(statementOfTruthDetails.getFullNameClaimant()).isEqualTo(fullName);
-        assertThat(statementOfTruthDetails.getPositionClaimant()).isEqualTo(positionHeld);
+        assertThat(statementOfTruthDetails.getFullNameParty()).isEqualTo(fullName);
+        assertThat(statementOfTruthDetails.getPositionParty()).isEqualTo(positionHeld);
 
-        assertThat(statementOfTruthDetails.getAgreementLegalRep()).isNull();
+        assertThat(statementOfTruthDetails.getAgreementClaimantLegalRep()).isNull();
         assertThat(statementOfTruthDetails.getFirmNameLegalRep()).isNull();
         assertThat(statementOfTruthDetails.getFullNameLegalRep()).isNull();
     }
@@ -130,10 +130,10 @@ class StatementOfTruthViewTest {
         assertThat(statementOfTruthDetails.getCompletedBy()).isEqualTo(LEGAL_REPRESENTATIVE);
 
         assertThat(statementOfTruthDetails.getAgreementClaimant()).isNull();
-        assertThat(statementOfTruthDetails.getFullNameClaimant()).isNull();
-        assertThat(statementOfTruthDetails.getPositionClaimant()).isNull();
+        assertThat(statementOfTruthDetails.getFullNameParty()).isNull();
+        assertThat(statementOfTruthDetails.getPositionParty()).isNull();
 
-        assertThat(statementOfTruthDetails.getAgreementLegalRep()).containsExactly(AGREED);
+        assertThat(statementOfTruthDetails.getAgreementClaimantLegalRep()).containsExactly(AGREED);
         assertThat(statementOfTruthDetails.getFullNameLegalRep()).isEqualTo(fullName);
         assertThat(statementOfTruthDetails.getFirmNameLegalRep()).isEqualTo(firmName);
     }
