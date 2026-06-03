@@ -12,10 +12,10 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class RepresentativeTabDetails {
 
-    @CCD(label = "Representative's first name")
+    @CCD(label = "Representative’s first name")
     private String firstName;
 
-    @CCD(label = "Representative's last name")
+    @CCD(label = "Representative’s last name")
     private String lastName;
 
     @CCD(label = "Telephone number")

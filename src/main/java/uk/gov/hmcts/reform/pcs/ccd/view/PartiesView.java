@@ -97,32 +97,24 @@ public class PartiesView {
             .build();
     }
 
-    private LegalRepresentative buildLegalRepresentative(PartyEntity entity) {
+    private LegalRepresentative buildLegalRepresentative(PartyEntity partyEntity) {
         List<ClaimPartyLegalRepresentativeEntity> claimPartyLegalRepresentativeEntities =
-            entity.getClaimPartyLegalRepresentativeList();
+            partyEntity.getClaimPartyLegalRepresentativeList();
 
-        claimPartyLegalRepresentativeEntities =
-            claimPartyLegalRepresentativeEntities.stream()
-                .filter(partyEntity -> partyEntity.getActive() == YesOrNo.YES)
-                .toList();
-
-        if (CollectionUtils.isEmpty(claimPartyLegalRepresentativeEntities)) {
-            return null;
-        }
-
-        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentativeEntity =
-            claimPartyLegalRepresentativeEntities.getFirst();
-
-        LegalRepresentativeEntity legalRepresentative = claimPartyLegalRepresentativeEntity.getLegalRepresentative();
-
-        return LegalRepresentative.builder()
-            .firstName(legalRepresentative.getFirstName())
-            .lastName(legalRepresentative.getLastName())
-            .telephoneNumber(legalRepresentative.getPhone())
-            .emailAddress(legalRepresentative.getEmail())
-            .organisationName(legalRepresentative.getOrganisationName())
-            .address(convertAddress(legalRepresentative.getAddress()))
-            .build();
+        return claimPartyLegalRepresentativeEntities.stream()
+                .filter(legalRepEntity -> legalRepEntity.getActive() == YesOrNo.YES)
+                .map(ClaimPartyLegalRepresentativeEntity::getLegalRepresentative)
+                .map(legalRep -> LegalRepresentative.builder()
+                    .firstName(legalRep.getFirstName())
+                    .lastName(legalRep.getLastName())
+                    .telephoneNumber(legalRep.getPhone())
+                    .emailAddress(legalRep.getEmail())
+                    .organisationName(legalRep.getOrganisationName())
+                    .address(convertAddress(legalRep.getAddress()))
+                    .build()
+                )
+            .findFirst()
+            .orElse(null);
     }
 
     private AddressUK convertAddress(AddressEntity address) {
