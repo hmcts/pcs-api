@@ -205,6 +205,12 @@ public class CaseDetailsTabViewTest {
                         .addressKnown(VerticalYesNo.YES)
                         .address(underlesseeAddress)
                         .build()
+                ),
+                listValue(
+                    Party.builder()
+                        .nameKnown(VerticalYesNo.NO)
+                        .addressKnown(VerticalYesNo.NO)
+                        .build()
                 )
             ))
             .alternativesToPossession(Set.of(DEMOTION_OF_TENANCY, SUSPENSION_OF_RIGHT_TO_BUY))
@@ -338,14 +344,18 @@ public class CaseDetailsTabViewTest {
             .isEqualTo("preaction explanation");
         assertThat(caseDetailsTab.getActionsTakenDetails().getMediationAttempted()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getActionsTakenDetails().getSettlementAttempted()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getMortgageDetails()).hasSize(1);
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getNameKnown()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getName())
+        assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getName())
             .isEqualTo("underlessee name");
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getAddressKnown())
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddressKnown())
             .isEqualTo("Yes");
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getAddress())
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddress())
             .isEqualTo(underlesseeAddress);
+        assertThat(caseDetailsTab.getMortgageDetails()).hasSize(1);
+        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getNameKnown()).isEqualTo("No");
+        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getName()).isNull();
+        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getAddressKnown()).isEqualTo("No");
+        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getAddress()).isNull();
         assertThat(caseDetailsTab.getSuspensionOfRightToBuyDetails().getHousingAct())
             .isEqualTo(SuspensionOfRightToBuyHousingAct.SECTION_6A_2.getLabel());
         assertThat(caseDetailsTab.getSuspensionOfRightToBuyDetails().getReasons())
@@ -413,6 +423,36 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getDefendantCircumstanceDetails()).isNull();
         assertThat(caseDetailsTab.getClaimantContactDetails()).isNull();
         assertThat(caseDetailsTab.getClaimantAddress()).isNull();
+    }
+
+    @Test
+    void shouldHandleOneUnderlesseeOrMortgageParty() {
+        AddressUK underlesseeAddress = AddressUK.builder().postCode("CV1 1DF").build();
+        PCSCase pcsCase = PCSCase.builder()
+            .allUnderlesseeOrMortgagees(List.of(
+                listValue(
+                    Party.builder()
+                        .nameKnown(VerticalYesNo.YES)
+                        .orgName("underlessee name")
+                        .addressKnown(VerticalYesNo.YES)
+                        .address(underlesseeAddress)
+                        .build()
+                )
+            ))
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+        // Then
+        assertThat(caseDetailsTab.getMortgageDetails()).isNull();
+        assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getName())
+            .isEqualTo("underlessee name");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddressKnown())
+            .isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddress())
+            .isEqualTo(underlesseeAddress);
     }
 
     @Test
@@ -824,6 +864,8 @@ public class CaseDetailsTabViewTest {
             .walesNoticeDetails(
                 WalesNoticeDetails.builder()
                     .noticeServed(YesOrNo.YES)
+                    .typeOfNoticeServed("notice type")
+                    .noticeStatement("notice statement")
                     .build()
             )
             .noticeServedDetails(NoticeServedDetails.builder()
@@ -983,18 +1025,17 @@ public class CaseDetailsTabViewTest {
             .isEqualTo("11 May 2026, 5:02:00PM");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo("By email");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getNoticeDetails().getTypeOfNoticeServed()).isEqualTo("notice type");
+        assertThat(caseDetailsTab.getNoticeDetails().getStatement()).isNull();
         assertThat(caseDetailsTab.getApplicationsDetails().getPlanToMakeGeneralApplication()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getActionsTakenDetails().getPreactionProtocolFollowed()).isEqualTo("No");
         assertThat(caseDetailsTab.getActionsTakenDetails().getMediationAttempted()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getActionsTakenDetails().getSettlementAttempted()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getMortgageDetails()).hasSize(1);
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getNameKnown()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getName())
-            .isEqualTo("underlessee name");
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getAddressKnown())
-            .isEqualTo("Yes");
-        assertThat(caseDetailsTab.getMortgageDetails().getFirst().getValue().getAddress())
-            .isEqualTo(underlesseeAddress);
+        assertThat(caseDetailsTab.getMortgageDetails()).isNull();
+        assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getName()).isEqualTo("underlessee name");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddressKnown()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddress()).isEqualTo(underlesseeAddress);
         assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
         assertThat(caseDetailsTab.getClaimantContactDetails().getEmailAddress()).isEqualTo("claimant@email.com");
         assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumberProvided()).isEqualTo("Yes");
@@ -1148,6 +1189,7 @@ public class CaseDetailsTabViewTest {
         // When
         CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
 
+        // Then
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("No");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo(noAnswer);
@@ -1188,6 +1230,28 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReports()).hasSize(1);
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformanceCertificates()).hasSize(1);
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallationReports()).hasSize(1);
+    }
+
+    @Test
+    void shouldSetNoticeStatementIfNoticeServedIsNoWales() {
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .walesNoticeDetails(
+                WalesNoticeDetails.builder()
+                    .noticeServed(YesOrNo.NO)
+                    .typeOfNoticeServed("notice type")
+                    .noticeStatement("notice statement")
+                    .build()
+            )
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+        // Then
+        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("No");
+        assertThat(caseDetailsTab.getNoticeDetails().getStatement()).isEqualTo("notice statement");
+        assertThat(caseDetailsTab.getNoticeDetails().getTypeOfNoticeServed()).isNull();
     }
 
     private static <T> ListValue<T> listValue(T value) {
