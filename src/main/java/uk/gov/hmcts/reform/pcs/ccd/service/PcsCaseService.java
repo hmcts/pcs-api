@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -89,13 +90,13 @@ public class PcsCaseService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
+    @Transactional
     public void allocateCaseManagementLocation(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         Integer caseManagementLocation =
             postCodeCourtService.getCourtManagementLocation(pcsCaseEntity.getPropertyAddress().getPostcode());
         if (caseManagementLocation != null) {
             pcsCaseEntity.setCaseManagementLocation(caseManagementLocation);
-            pcsCaseRepository.save(pcsCaseEntity);
         }
     }
 
