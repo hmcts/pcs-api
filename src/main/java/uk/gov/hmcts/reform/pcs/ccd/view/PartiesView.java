@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -99,6 +100,11 @@ public class PartiesView {
     private LegalRepresentative buildLegalRepresentative(PartyEntity entity) {
         List<ClaimPartyLegalRepresentativeEntity> claimPartyLegalRepresentativeEntities =
             entity.getClaimPartyLegalRepresentativeList();
+
+        claimPartyLegalRepresentativeEntities =
+            claimPartyLegalRepresentativeEntities.stream()
+                .filter(partyEntity -> partyEntity.getActive() == YesOrNo.YES)
+                .toList();
 
         if (CollectionUtils.isEmpty(claimPartyLegalRepresentativeEntities)) {
             return null;

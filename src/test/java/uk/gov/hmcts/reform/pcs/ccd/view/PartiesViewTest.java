@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
@@ -157,6 +158,7 @@ class PartiesViewTest {
         ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative =
             ClaimPartyLegalRepresentativeEntity.builder()
                 .legalRepresentative(legalRepresentativeEntity)
+                .active(YesOrNo.YES)
                 .build();
         PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
         defendant.setClaimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentative));
@@ -177,6 +179,39 @@ class PartiesViewTest {
         assertThat(legalRepresentative.getTelephoneNumber()).isEqualTo("phone");
         assertThat(legalRepresentative.getOrganisationName()).isEqualTo("org name");
         assertThat(legalRepresentative.getAddress()).isEqualTo(address);
+    }
+
+    @Test
+    void shouldNotMapLegalRepresentativeIfNotActive() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
+
+        AddressEntity addressEntity = AddressEntity.builder().build();
+        LegalRepresentativeEntity legalRepresentativeEntity = LegalRepresentativeEntity.builder()
+            .firstName("first")
+            .lastName("last")
+            .phone("phone")
+            .email("email@test.com")
+            .organisationName("org name")
+            .address(addressEntity)
+            .build();
+        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative =
+            ClaimPartyLegalRepresentativeEntity.builder()
+                .legalRepresentative(legalRepresentativeEntity)
+                .active(YesOrNo.NO)
+                .build();
+        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        defendant.setClaimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentative));
+        when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
+        ));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllDefendants()).hasSize(1);
+        LegalRepresentative legalRepresentative = pcsCase.getAllDefendants().getFirst()
+            .getValue().getLegalRepresentative();
+        assertThat(legalRepresentative).isNull();
     }
 
     @Test
