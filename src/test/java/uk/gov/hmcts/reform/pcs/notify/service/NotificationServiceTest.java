@@ -37,10 +37,10 @@ import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
@@ -90,7 +90,7 @@ class NotificationServiceTest {
     @Mock
     private NotificationPersonalisationFactory notificationPersonalisationFactory;
     @Captor
-    private ArgumentCaptor<SchedulableInstance<EmailState>> schedulableInstanceCaptor;
+    private ArgumentCaptor<SchedulableInstance<SendEmailTaskData>> schedulableInstanceCaptor;
 
     private NotificationService notificationService;
 
@@ -719,11 +719,11 @@ class NotificationServiceTest {
             // Then
             verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
 
-            SchedulableInstance<EmailState> schedulableInstance = schedulableInstanceCaptor.getValue();
-            TaskInstance<EmailState> taskInstance = schedulableInstance.getTaskInstance();
+            SchedulableInstance<SendEmailTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+            TaskInstance<SendEmailTaskData> taskInstance = schedulableInstance.getTaskInstance();
             assertThat(taskInstance.getId()).isNotNull();
 
-            EmailState taskData = taskInstance.getData();
+            SendEmailTaskData taskData = taskInstance.getData();
             assertThat(taskData.getEmailAddress()).isEqualTo(expectedEmailAddress);
             assertThat(taskData.getTemplateId()).isEqualTo(expectedTemplateId);
             assertThat(taskData.getPersonalisation()).isEqualTo(expectedPersonalisationMap);
