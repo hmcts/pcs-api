@@ -79,7 +79,6 @@ class DraftCaseJsonMergerTest {
                             "caseLinks",
                             "caseFlags",
                             "genApps",
-                            "regionId",
                             "claimGroundSummaries",
                             "parties",
                             "allClaimants",

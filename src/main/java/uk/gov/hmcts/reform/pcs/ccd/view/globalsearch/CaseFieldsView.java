@@ -29,6 +29,7 @@ public class CaseFieldsView {
         setCaseNameHmctsField(pcsCase);
         setCaseManagementLocationField(pcsCase);
         setCaseManagementCategory(pcsCase);
+
     }
 
     private void setCaseNameHmctsField(final PCSCase pcsCase) {
@@ -43,6 +44,7 @@ public class CaseFieldsView {
     private void setCaseManagementLocationField(final PCSCase pcsCase) {
         Integer epimsId = pcsCase.getCaseManagementLocationNumber();
         Integer region = pcsCase.getRegionId();
+        pcsCase.setRegionId(1);
 
         if (epimsId != null && region != null) {
             pcsCase.setCaseManagementLocation(CaseLocation.builder()

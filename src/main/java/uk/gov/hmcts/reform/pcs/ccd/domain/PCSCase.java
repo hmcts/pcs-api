@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
-import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
@@ -177,11 +176,9 @@ public class PCSCase {
     private Integer caseManagementLocationNumber;
 
     @CCD(
-        label = "Region Id",
-        access = ClaimantAccess.class
+        label = "Region Id"
     )
-    @Builder.Default
-    private Integer regionId = 1;
+    private Integer regionId;
 
     @CCD(access = {InternalCaseFlagAccess.class},
         label = "Party")
