@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -14,14 +15,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
+@AllArgsConstructor
 @Component
 public class WantToUploadDocuments implements CcdPageConfiguration {
+
+    private DraftCaseDataService draftCaseDataService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -37,6 +44,8 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
+        setAdditionalDocumentsFromDraft(details.getId(), caseData);
+
         if (caseData.getWantToUploadDocuments().equals(VerticalYesNo.YES)
             && CollectionUtils.isEmpty(caseData.getAdditionalDocuments())) {
             AdditionalDocument additionalDocuments = new AdditionalDocument();
@@ -51,6 +60,15 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
                 .build();
+    }
+
+    private void setAdditionalDocumentsFromDraft(long caseReference, PCSCase caseData) {
+        Optional<PCSCase> draftCaseData =
+                draftCaseDataService.getUnsubmittedCaseData(caseReference, EventId.resumePossessionClaim);
+
+        if (draftCaseData.isPresent() && draftCaseData.get().getAdditionalDocuments() != null) {
+            caseData.setAdditionalDocuments(draftCaseData.get().getAdditionalDocuments());
+        }
     }
 
     private DynamicList createAdditionalDocumentList(LegislativeCountry legislativeCountry) {
