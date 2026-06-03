@@ -20,7 +20,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -300,6 +303,25 @@ class PCSCaseViewTest {
             .containsExactly("doc1.pdf", "doc2.pdf");
         assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getUploadTimestamp())
             .containsExactly(LocalDateTime.of(2026, 5, 14, 9, 30), null);
+    }
+
+    private static ListValue<Party> asListValue(UUID id, Party party) {
+        return ListValue.<Party>builder().id(id.toString()).value(party).build();
+    }
+
+    private ClaimPartyEntity createClaimPartyEntity(Party party, UUID partyId, PartyRole partyRole) {
+        PartyEntity partyEntity = mock(PartyEntity.class);
+
+        when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
+
+        ClaimPartyId claimPartyId = new ClaimPartyId();
+        claimPartyId.setPartyId(partyId);
+
+        return ClaimPartyEntity.builder()
+            .id(claimPartyId)
+            .role(partyRole)
+            .party(partyEntity)
+            .build();
     }
 
     @Test

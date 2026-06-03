@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreemen
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondToClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -390,6 +391,34 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedHousehold.getMoneyFromElsewhere()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getMoneyFromElsewhereDetails())
             .isEqualTo("Child maintenance payments of £100 per week");
+    }
+
+    @Test
+    void shouldRoundTripCompletedSectionsInDraft() {
+        //Given
+        DefendantResponses responses = DefendantResponses.builder()
+            .completedSections(java.util.List.of(
+                RespondToClaimSection.START_NOW_AND_DETAILS,
+                RespondToClaimSection.PERSONAL_DETAILS))
+            .build();
+
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantResponses(responses)
+                                             .build());
+
+        //When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        //Then
+        assertThat(response.getErrors()).isNull();
+        verify(draftCaseDataService).saveUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses().getCompletedSections())
+            .containsExactly(
+                RespondToClaimSection.START_NOW_AND_DETAILS,
+                RespondToClaimSection.PERSONAL_DETAILS);
     }
 
     @Test
