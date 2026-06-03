@@ -42,16 +42,15 @@ public class CaseFieldsView {
 
 
     private void setCaseManagementLocationField(final PCSCase pcsCase) {
-        Integer epimsId = 20262; //pcsCase.getCaseManagementLocationNumber();
-        Integer region = 1; //pcsCase.getRegionId();
-        pcsCase.setRegionId(1);
+        Integer epimsId = 20262;
+        Integer region = 1;
+        pcsCase.setRegionId(region);
 
-        if (epimsId != null && region != null) {
-            pcsCase.setCaseManagementLocation(CaseLocation.builder()
-                .baseLocation(String.valueOf(20262))
-                .region(String.valueOf(1))
-                .build());
-        }
+        pcsCase.setCaseManagementLocation(CaseLocation.builder()
+            .baseLocation(String.valueOf(epimsId))
+            .region(String.valueOf(region))
+            .build());
+
     }
 
     private void setCaseManagementCategory(PCSCase pcsCase) {
