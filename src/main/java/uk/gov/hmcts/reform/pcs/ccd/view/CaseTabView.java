@@ -139,7 +139,18 @@ public class CaseTabView {
     private RepresentativeTabDetails buildRepresentativeTabDetails(Party party) {
         LegalRepresentative legalRepresentative = party.getLegalRepresentative();
         if (legalRepresentative == null) {
-            return  null;
+            return null;
+        }
+
+        OrganisationTabDetails organisationTabDetails = null;
+        String orgName = legalRepresentative.getOrganisationName();
+        AddressUK addressUK = legalRepresentative.getAddress();
+
+        if (orgName != null || addressUK != null) {
+            organisationTabDetails = OrganisationTabDetails.builder()
+                .name(legalRepresentative.getOrganisationName())
+                .address(legalRepresentative.getAddress())
+                .build();
         }
 
         return RepresentativeTabDetails.builder()
@@ -147,12 +158,7 @@ public class CaseTabView {
             .lastName(legalRepresentative.getLastName())
             .telephoneNumber(legalRepresentative.getTelephoneNumber())
             .emailAddress(legalRepresentative.getEmailAddress())
-            .organisation(
-                OrganisationTabDetails.builder()
-                    .name(legalRepresentative.getOrganisationName())
-                    .address(legalRepresentative.getAddress())
-                    .build()
-            )
+            .organisation(organisationTabDetails)
             .build();
     }
 }

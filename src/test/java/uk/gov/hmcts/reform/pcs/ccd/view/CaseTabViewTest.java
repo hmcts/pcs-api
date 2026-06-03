@@ -275,6 +275,56 @@ class CaseTabViewTest {
     }
 
     @Test
+    void shouldNotSetDefendantRepresentativeOrgDetailsIfAddressAndOrgNameAreMissing() {
+        // Given
+        String defendant1FirstName = "defendant1";
+        String defendant1LastName = "one";
+        AddressUK address1 = AddressUK.builder().build();
+        LegalRepresentative legalRepresentative1 = LegalRepresentative.builder()
+            .firstName("legal1")
+            .lastName("representative1")
+            .telephoneNumber("telephone1")
+            .emailAddress("rep1@email.com")
+            .build();
+        Party defendant1 = Party.builder()
+            .firstName(defendant1FirstName)
+            .lastName(defendant1LastName)
+            .nameKnown(VerticalYesNo.YES)
+            .address(address1)
+            .legalRepresentative(legalRepresentative1)
+            .build();
+
+        ListValue<Party> defendant1ListValue = ListValue.<Party>builder()
+            .value(defendant1)
+            .build();
+
+        List<ListValue<Party>> defendants = new ArrayList<>();
+        defendants.add(defendant1ListValue);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(defendants)
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getCasePartiesTab()).isNotNull();
+        DefendantTabDetails defendant1TabDetails = pcsCase.getCasePartiesTab().getDefendantOneDetails();
+
+        assertThat(defendant1TabDetails.getFirstName()).isEqualTo(defendant1FirstName);
+        assertThat(defendant1TabDetails.getLastName()).isEqualTo(defendant1LastName);
+        assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address1);
+
+        RepresentativeTabDetails representativeTabDetails1 = defendant1TabDetails.getRepresentative();
+        assertThat(representativeTabDetails1.getFirstName()).isEqualTo(legalRepresentative1.getFirstName());
+        assertThat(representativeTabDetails1.getLastName()).isEqualTo(legalRepresentative1.getLastName());
+        assertThat(representativeTabDetails1.getTelephoneNumber()).isEqualTo(legalRepresentative1.getTelephoneNumber());
+        assertThat(representativeTabDetails1.getEmailAddress()).isEqualTo(legalRepresentative1.getEmailAddress());
+        assertThat(representativeTabDetails1.getOrganisation()).isNull();
+    }
+
+    @Test
     void shouldSetDefaultDefendantNameInCasePartiesTabIfNameNotKnown() {
         // Given
         String firstName = "defendant";
