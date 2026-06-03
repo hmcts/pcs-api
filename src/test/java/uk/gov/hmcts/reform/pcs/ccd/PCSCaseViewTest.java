@@ -219,6 +219,67 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldIndexPropertyAddressLine1AndPostcodeOnSearchParty() {
+        // Given - a property address with both an address line and a postcode
+        AddressEntity addressEntity = mock(AddressEntity.class);
+        when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
+        AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
+        when(addressUK.getPostCode()).thenReturn("AB1 2CD");
+        when(addressUK.getAddressLine1()).thenReturn("1 Test Street");
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then - both fields are copied onto the property SearchParty
+        assertThat(pcsCase.getSearchCriteria().getParties())
+            .extracting(ListValue::getValue)
+            .anySatisfy(searchParty -> {
+                assertThat(searchParty.getAddressLine1()).isEqualTo("1 Test Street");
+                assertThat(searchParty.getPostcode()).isEqualTo("AB1 2CD");
+            });
+    }
+
+    @Test
+    void shouldNotIndexPropertyWhenAddressIsNull() {
+        // Given - no property address (pcsCaseEntity.getPropertyAddress() returns null)
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then - no property SearchParty is added
+        assertThat(pcsCase.getSearchCriteria().getParties()).isEmpty();
+    }
+
+    @Test
+    void shouldNotIndexPropertyWhenPostcodeIsNull() {
+        // Given - a property address with no postcode
+        AddressEntity addressEntity = mock(AddressEntity.class);
+        when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
+        stubAddressEntityModelMapper(addressEntity);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then - no property SearchParty is added
+        assertThat(pcsCase.getSearchCriteria().getParties()).isEmpty();
+    }
+
+    @Test
+    void shouldNotIndexPropertyWhenPostcodeIsBlank() {
+        // Given - a property address with a blank postcode
+        AddressEntity addressEntity = mock(AddressEntity.class);
+        when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
+        AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
+        when(addressUK.getPostCode()).thenReturn("   ");
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then - no property SearchParty is added
+        assertThat(pcsCase.getSearchCriteria().getParties()).isEmpty();
+    }
+
+    @Test
     void shouldMapPartyEntity() {
         // Given
         PartyEntity partyEntity = mock(PartyEntity.class);
