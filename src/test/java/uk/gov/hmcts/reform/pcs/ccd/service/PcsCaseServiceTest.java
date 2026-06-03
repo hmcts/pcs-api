@@ -162,7 +162,7 @@ class PcsCaseServiceTest {
 
         // Then
         assertThat(pcsCaseEntity.getCaseManagementLocation()).isEqualTo(epimsId);
-        verify(pcsCaseRepository).save(pcsCaseEntity);
+        verify(pcsCaseRepository, never()).save(pcsCaseEntity);
     }
 
     @Test
@@ -207,7 +207,7 @@ class PcsCaseServiceTest {
 
         // Then
         assertThat(pcsCaseEntity.getCaseManagementLocation()).isEqualTo(newEpimsId);
-        verify(pcsCaseRepository).save(pcsCaseEntity);
+        verify(pcsCaseRepository, never()).save(pcsCaseEntity);
     }
 
     @Test
