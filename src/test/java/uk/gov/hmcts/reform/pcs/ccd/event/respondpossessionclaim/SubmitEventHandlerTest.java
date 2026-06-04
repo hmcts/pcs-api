@@ -61,8 +61,8 @@ class SubmitEventHandlerTest {
         underTest.submit(eventPayload);
 
         // then
-        verify(citizenSubmissionEventStrategy).process(CASE_REFERENCE);
-        verify(legalRepSubmissionEventStrategy, never()).process(CASE_REFERENCE);
+        verify(citizenSubmissionEventStrategy).process(eventPayload);
+        verify(legalRepSubmissionEventStrategy, never()).process(eventPayload);
     }
 
     @Test
@@ -78,8 +78,8 @@ class SubmitEventHandlerTest {
         underTest.submit(eventPayload);
 
         // then
-        verify(citizenSubmissionEventStrategy, never()).process(CASE_REFERENCE);
-        verify(legalRepSubmissionEventStrategy).process(CASE_REFERENCE);
+        verify(citizenSubmissionEventStrategy, never()).process(eventPayload);
+        verify(legalRepSubmissionEventStrategy).process(eventPayload);
     }
 
     @Test
@@ -96,8 +96,8 @@ class SubmitEventHandlerTest {
         )).hasMessage("No submit event strategy found");
 
         // then
-        verify(citizenSubmissionEventStrategy, never()).process(CASE_REFERENCE);
-        verify(legalRepSubmissionEventStrategy, never()).process(CASE_REFERENCE);
+        verify(citizenSubmissionEventStrategy, never()).process(eventPayload);
+        verify(legalRepSubmissionEventStrategy, never()).process(eventPayload);
     }
 
     private EventPayload<PCSCase, State> createEventPayload() {

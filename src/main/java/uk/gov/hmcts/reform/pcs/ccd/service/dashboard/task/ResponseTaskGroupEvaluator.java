@@ -12,8 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.RESPOND_TO_CLAIM;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.REVIEW_RESPONSE;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.SUBMIT_RESPONSE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds.VIEW_RESPONSE;
 
 @Component
 public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
@@ -25,20 +24,35 @@ public class ResponseTaskGroupEvaluator implements TaskGroupEvaluator {
 
     @Override
     public TaskGroup evaluate(DashboardContext ctx) {
+
+        boolean hasDraftResponse = ctx.hasDraftResponse();
+        boolean hasSubmittedResponse = ctx.hasSubmittedResponse();
+
+        TaskStatus respondToClaimStatus;
+        TaskStatus viewResponseStatus;
+
+        // If conflicting state exists, disable both links.
+        if (hasSubmittedResponse) {
+            respondToClaimStatus = TaskStatus.COMPLETED;
+            viewResponseStatus = TaskStatus.AVAILABLE;
+        } else if (hasDraftResponse) {
+            respondToClaimStatus = TaskStatus.IN_PROGRESS;
+            viewResponseStatus = TaskStatus.NOT_AVAILABLE;
+        } else {
+            respondToClaimStatus = TaskStatus.NOT_STARTED;
+            viewResponseStatus = TaskStatus.NOT_AVAILABLE;
+        }
+
         return TaskGroup.builder()
-            .groupId(TaskGroupId.RESPONSE)
+            .groupId(groupId())
             .tasks(ListValueUtils.wrapListItems(List.of(
                 Task.builder()
                     .templateId(RESPOND_TO_CLAIM)
-                    .status(TaskStatus.NOT_STARTED)
+                    .status(respondToClaimStatus)
                     .build(),
                 Task.builder()
-                    .templateId(REVIEW_RESPONSE)
-                    .status(TaskStatus.IN_PROGRESS)
-                    .build(),
-                Task.builder()
-                    .templateId(SUBMIT_RESPONSE)
-                    .status(TaskStatus.COMPLETED)
+                    .templateId(VIEW_RESPONSE)
+                    .status(viewResponseStatus)
                     .build()
             )))
             .build();

@@ -29,9 +29,7 @@
   "orgNameFound":"YES",
   "claimantName":"Possession Claims Solicitor Org",
   "isClaimantNameCorrect":"YES",
-  "walesRegistered":"NO",
-  "walesLicensed":"NO",
-  "walesLicensedAgentAppointed":"NO",
+  "isExemptLandlord":"NO",
   "claimantContactEmail":"pcs-solicitor1@test.com",
   "isCorrectClaimantContactEmail":"YES",
   "orgAddressFound":"YES",
@@ -86,7 +84,7 @@
     "fullNameLegalRep":"John",
     "firmNameLegalRep":"Doe",
     "positionLegalRep":"Solicitor",
-    "agreementLegalRep":[
+    "agreementClaimantLegalRep":[
       "AGREED"
     ]
   }

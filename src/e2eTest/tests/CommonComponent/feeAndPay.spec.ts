@@ -8,15 +8,15 @@ import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { cancelPayment, confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
+import { cancelPayment, caseSummary, confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Service%20Request`);
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Service%20Request`);
+    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
@@ -30,7 +30,7 @@ test.afterEach(async () => {
 
 test.describe('[Common Component Fee And Pay] @CC' , async () => {
   test('Fee And Pay - Pay by account PBA @nightly @feeAndPay', async () => {
-    await performAction('clickButton', serviceRequest.payNowLink);
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
       expectedAmount: serviceRequest.amount404,
@@ -45,7 +45,7 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
   });
 
   test('Fee And Pay - Pay by Card @nightly @feeAndPay', async () => {
-    await performAction('clickButton', serviceRequest.payNowLink);
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
@@ -71,7 +71,7 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
   });
 
   test('Fee And Pay - Cancel Payment from You Card Details Page @nightly @feeAndPay', async () => {
-    await performAction('clickButton', serviceRequest.payNowLink);
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
@@ -83,7 +83,7 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
   });
 
   test('Fee And Pay - Cancel Payment from Confirm Card Details Page @nightly @feeAndPay', async () => {
-    await performAction('clickButton', serviceRequest.payNowLink);
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
       payByOption: serviceRequest.payByCardRadioOption,
@@ -105,6 +105,6 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
     });
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
     await performAction('clickButton', confirmYourPayment.cancelPaymentButton);
-    await performValidation('mainHeader', cancelPayment.mainHeader);
+    await performValidation('mainHeader', cancelPayment.mainHeader); 
   });
 });

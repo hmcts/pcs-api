@@ -6,6 +6,7 @@ import { ValidationRegistry } from '@utils/registry/validation.registry';
 import { AxeUtils } from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from '@utils/test-logger';
+import { axe_Exclusions } from '@config/axe_exclusions.config';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
@@ -54,9 +55,10 @@ async function validatePageIfNavigated(action: string): Promise<void> {
       await performValidation('autoValidatePageContent');
       try {
         await test.step("Running Accessibility Scan", async () => {
-          await new AxeUtils(executor.page).audit();
-        })
-
+          await new AxeUtils(executor.page).audit({
+            exclude: axe_Exclusions,
+          });
+        });
       } catch (error) {
         const errorMessage = String((error as Error).message || error).toLowerCase();
         if (errorMessage.includes('execution context was destroyed') ||
@@ -71,7 +73,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'selectClaimantType' || action ==='addCaseNotes') {
+  if (action === 'selectClaimantType' || action === 'addCaseNotes') {
     captureDataForCYAPage = true;
   }
 
@@ -95,7 +97,18 @@ export async function performAction(action: string, fieldName?: actionData | act
     const obj = fieldName as Record<string, any>;
     displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
     displayFieldName = displayValue;
+  } else if (typeof fieldName === 'object' && fieldName !== null && Object.keys(fieldName).some(key => key.includes('Payload'))) {
+    const obj = fieldName as Record<string, any>;    
+    displayValue = Object.fromEntries(
+      Object.entries(obj).map(([key, value]) =>
+        key.includes('Payload')
+          ? [key, 'Payload is Input']
+          : [key, value]
+      )
+    );
+    displayFieldName = displayValue;
   }
+
 
   const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
   await test.step(stepText, async () => {

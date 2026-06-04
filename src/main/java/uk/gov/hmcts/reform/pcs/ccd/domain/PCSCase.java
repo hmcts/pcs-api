@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
-import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
+import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
@@ -17,6 +17,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.FlagLauncher;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
@@ -24,8 +26,9 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
@@ -42,6 +45,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -52,6 +57,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -176,7 +182,8 @@ public class PCSCase {
     )
     private Integer regionId;
 
-    @CCD(label = "Party")
+    @CCD(access = {InternalCaseFlagAccess.class},
+        label = "Party")
     private List<ListValue<Party>> parties;
 
     @JsonUnwrapped
@@ -247,7 +254,7 @@ public class PCSCase {
 
     @CCD(
         label = "Have you served notice to the defendants?",
-        access = {DefendantAccess.class}
+        access = {CitizenAccess.class}
     )
     private YesOrNo noticeServed;
 
@@ -260,7 +267,7 @@ public class PCSCase {
     @CCD(access = {DefendantAccess.class})
     private DashboardData dashboardData;
 
-    @CCD(access = {DefendantAccess.class})
+    @CCD(access = {CitizenAccess.class})
     private LegislativeCountry legislativeCountry;
 
     @CCD(
@@ -287,7 +294,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
 
-    @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
+    @CCD(label = "Are you seeking an order imposing a prohibited conduct standard contract?")
     private VerticalYesNo prohibitedConductWalesClaim;
 
     @CCD(
@@ -334,7 +341,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
@@ -570,6 +577,9 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private LocalDateTime dateSubmitted;
+
     @CCD(
         searchable = false
     )
@@ -633,6 +643,14 @@ public class PCSCase {
     @CCD
     private CasePartiesTab casePartiesTab;
 
+    @JsonUnwrapped(prefix = "summaryTab_")
+    @CCD(searchable = false)
+    private SummaryTab summaryTab;
+
+    @JsonUnwrapped(prefix = "detailsTab_")
+    @CCD
+    private CaseDetailsTab caseDetailsTab;
+
     @CCD(
         label = NOTE_LABEL,
         hint = "Add note detail, including relevant dates and people involved",
@@ -645,6 +663,19 @@ public class PCSCase {
         typeOverride = Collection,
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
+
+    @CCD(
+        access = {InternalCaseFlagAccess.class},
+        label = "Case Flags"
+    )
+    private Flags caseFlags;
+
+    @CCD(
+        access = {InternalCaseFlagAccess.class},
+        label = "Launch the flags screen"
+    )
+
+    private FlagLauncher flagLauncherInternal;
 
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;

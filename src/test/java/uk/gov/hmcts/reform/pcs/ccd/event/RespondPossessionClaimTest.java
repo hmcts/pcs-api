@@ -911,7 +911,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .possessionClaimResponse(possessionClaimResponse)
             .build();
 
-        when(selectedPartyRetriever.getSelectedPartyId(TEST_CASE_REFERENCE))
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData))
             .thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                          representedPartyId))
@@ -939,7 +939,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
-        when(selectedPartyRetriever.getSelectedPartyId(TEST_CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
 
         // when / then
         assertThatThrownBy(() -> callSubmitHandler(caseData))

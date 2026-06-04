@@ -31,6 +31,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .filter(strategy -> strategy.supports(securityContextService.getCurrentUserDetails().getRoles()))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No submit event strategy found"))
-            .process(caseReference);
+            .process(eventPayload);
     }
 }

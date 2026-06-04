@@ -49,12 +49,14 @@ import {
   suspensionOfRightToBuyOrderReason,
   suspensionToBuyDemotionOfTenancyOrderReasons,
   underlesseeMortgageeDetails,
-  addCaseNote
+  checkingNoticeWales,
+  addCaseNote,
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo} from './createCaseAPI.action';
-import { createCaseApiData } from '@data/api-data';
+import {createCaseApiData} from '@data/api-data';
+import {formatCurrency, formatDate, formatDateTime, formatText, formatWord} from '@utils/common/string.utils';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -82,7 +84,7 @@ export class CreateCaseAction implements IAction {
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent(page)],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
-      ['selectClaimantName', () => this.selectClaimantName(page,fieldName)],
+      ['selectClaimantName', () => this.selectClaimantName(page, fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName as actionRecord)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName as actionRecord)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName as actionRecord)],
@@ -90,6 +92,7 @@ export class CreateCaseAction implements IAction {
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName as actionRecord)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName as actionRecord)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName as actionRecord)],
+      ['selectNoticeDetailsWales', () => this.selectNoticeDetailsWales(fieldName as actionRecord)],
       ['selectBorderPostcode', () => this.selectBorderPostcode(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName as actionRecord)],
       ['selectOtherGrounds', () => this.selectYourPossessionGrounds(fieldName as actionRecord)],
@@ -123,6 +126,7 @@ export class CreateCaseAction implements IAction {
       ['validateClaimantDetails', () => this.validateClaimantDetails(page, fieldName as actionRecord)],
       ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
+      ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -482,7 +486,8 @@ export class CreateCaseAction implements IAction {
       const reason = String(reasons[n]).trim();
       const needsGrounds = /^(other|no)$/i.test(reason);
       const reasonDisplay = needsGrounds ? `${reason} grounds` : reason;
-      await performAction('inputText', {text:`${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})`,index: n}, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
+      await performValidation('text', { text: reasonsForPossession.giveDetailsAboutYourReasonsForPossessionHintText, "elementType": 'paragraph', "index": n });
+      await performAction('inputText', { text: `${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})`, index: n }, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
   }
@@ -524,6 +529,23 @@ export class CreateCaseAction implements IAction {
       await performAction('uploadFile', noticeData.files);
     }
     await performAction('clickButton', noticeDetails.continueButton);
+  }
+
+  private async selectNoticeDetailsWales(noticeData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performAction('clickRadioButton', { question: noticeData.question, option: noticeData.haveYouServedNoticeToQuestion });
+    if (noticeData.haveYouServedNoticeToQuestion === checkingNoticeWales.noRadioOption) {
+      await performValidation('text', { "text": checkingNoticeWales.ifThisIsAPossessionParagraph, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.eachGroundRequiresParagraph, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.haveYouServedNoticeToQuestion, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.youMustMakeAStatementHiddenParagraph, "elementType": "paragraph" });
+      await performValidation('text', { "text": checkingNoticeWales.characterLimitHiddenHintText, "elementType": "paragraph" });
+      if (noticeData.walesNoticeStatement) {
+        await performAction('inputText', checkingNoticeWales.enterStatementHiddenTextLabel, noticeData.walesNoticeStatement);
+      }
+    }
+    await performAction('clickButton', checkingNoticeWales.continueButton);
   }
 
   private async provideRentDetails(rentFrequency: actionRecord) {
@@ -963,7 +985,6 @@ export class CreateCaseAction implements IAction {
       claimant.set(`Postcode/Zipcode`, payLoad.organisationAddress.PostCode);
       claimant.set('Country', payLoad.organisationAddress.Country)
     }
-
     await this.caseTabTableData(page, defendantsDetails.table as string);
 
     const misMatchMap = compareMaps(claimant, caseTabMap, {
@@ -1015,6 +1036,283 @@ export class CreateCaseAction implements IAction {
       throw new Error(`Case Notes validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
     } else {
       console.log('\n✅ Case Notes VALIDATION PASSED!\n');
+    }
+
+    caseTabMap.clear();
+
+  }
+
+  private async validateCaseSummaryDetails(page: Page, caseSummarySection: actionRecord) {
+
+    let caseSummary = new Map<string, string>();
+    let submitPayLoad = caseSummarySection.submitPayload as Record<string, any>;
+    let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
+
+    switch (caseSummarySection.section) {
+      case 'Defendant details':
+        if (submitPayLoad.defendant1.nameKnown === 'YES') {
+          caseSummary.set(`First name`, submitPayLoad.defendant1.firstName);
+          caseSummary.set(`Last name`, submitPayLoad.defendant1.lastName);
+        }
+        if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'YES') {
+          const address = submitPayLoad.formattedClaimantContactAddress.split('<br>');
+          caseSummary.set(`Building and Street`, address[0]);
+          caseSummary.set(`Address Line 2`, address[1]);
+          caseSummary.set(`Town or City`, address[2]);
+          caseSummary.set(`Postcode/Zipcode`, address[3]);
+          caseSummary.set('Country', 'United Kingdom')
+
+        } else if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'NO') {
+          caseSummary.set(`Building and Street`, submitPayLoad.defendant1.correspondenceAddress.AddressLine1);
+          caseSummary.set(`Address Line 2`, submitPayLoad.defendant1.correspondenceAddress.AddressLine2);
+          caseSummary.set(`Town or City`, submitPayLoad.defendant1.correspondenceAddress.PostTown);
+          caseSummary.set(`Postcode/Zipcode`, submitPayLoad.defendant1.correspondenceAddress.PostCode);
+          caseSummary.set('Country', 'United Kingdom')
+        }
+        break;
+
+      case 'Defendant Case details':
+        caseSummary.set(`Defendant 1’s name known?`, formatWord(submitPayLoad.defendant1.nameKnown));
+        caseSummary.set(`First name`, submitPayLoad.defendant1.firstName);
+        caseSummary.set(`Last name`, submitPayLoad.defendant1.lastName);
+
+        if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'YES') {
+          const address = submitPayLoad.formattedClaimantContactAddress.split('<br>');
+          caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
+          caseSummary.set(`Building and Street`, address[0]);
+          caseSummary.set(`Address Line 2`, address[1]);
+          caseSummary.set(`Town or City`, address[2]);
+          caseSummary.set(`Postcode/Zipcode`, address[3]);
+          caseSummary.set('Country', 'United Kingdom')
+
+        } else if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'NO') {
+          caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
+          caseSummary.set(`Building and Street`, submitPayLoad.defendant1.correspondenceAddress.AddressLine1);
+          caseSummary.set(`Address Line 2`, submitPayLoad.defendant1.correspondenceAddress.AddressLine2);
+          caseSummary.set(`Town or City`, submitPayLoad.defendant1.correspondenceAddress.PostTown);
+          caseSummary.set(`Postcode/Zipcode`, submitPayLoad.defendant1.correspondenceAddress.PostCode);
+          caseSummary.set('Country', 'United Kingdom')
+        }
+        break;
+
+      case 'Defendant circumstances':
+        caseSummary.set(`Is there any information you’re required to provide, or you want to provide, about the defendants’ circumstances?`, formatWord(submitPayLoad.hasDefendantCircumstancesInfo));
+        if (submitPayLoad.hasDefendantCircumstancesInfo === 'YES') {
+          caseSummary.set(`Details of defendants’ circumstances`, submitPayLoad.defendantCircumstancesInfo);
+        }
+        break;
+
+      case 'Address of property':
+        caseSummary.set(`Building and Street`, createPayLoad.propertyAddress.AddressLine1);
+        caseSummary.set(`Address Line 2`, createPayLoad.propertyAddress.AddressLine2);
+        caseSummary.set(`Town or City`, createPayLoad.propertyAddress.PostTown);
+        caseSummary.set(`Postcode/Zipcode`, createPayLoad.propertyAddress.PostCode);
+        caseSummary.set('Country', createPayLoad.propertyAddress.Country);
+        break;
+
+      case 'Claimant details':
+        caseSummary.set(`Claimant name`, submitPayLoad.claimantName);
+        break;
+
+      case 'Claimant address':
+        caseSummary.set(`Building and Street`, submitPayLoad.organisationAddress.AddressLine1);
+        caseSummary.set(`Address Line 2`, submitPayLoad.organisationAddress.AddressLine2);
+        caseSummary.set(`Town or City`, submitPayLoad.organisationAddress.PostTown);
+        caseSummary.set(`Postcode/Zipcode`, submitPayLoad.organisationAddress.PostCode);
+        caseSummary.set('Country', submitPayLoad.organisationAddress.Country);
+        break;
+
+      case 'Claimant contact details':
+        caseSummary.set(`Email address for notifications`, submitPayLoad.claimantContactEmail);
+        caseSummary.set(`Do you want to provide a phone number for urgent updates about your case?`, formatWord(submitPayLoad.claimantProvidePhoneNumber));
+        caseSummary.set(`Contact phone number`, submitPayLoad.claimantContactPhoneNumber);
+        break;
+
+      case 'Claimant circumstances':
+        caseSummary.set(`Is there any information you’d like to provide about the claimant’s circumstances?`, formatWord(submitPayLoad.claimantCircumstancesSelect));
+        if (submitPayLoad.claimantCircumstancesSelect === 'YES') {
+          caseSummary.set(`Claimant circumstances`, submitPayLoad.claimantCircumstancesDetails);
+        }
+        break;
+
+      case 'Tenancy and Occupation':
+        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
+          .toLowerCase()
+          .replace(/_/g, " ")
+          .replace(/^\w/, (c: string) => c.toUpperCase())
+        );
+        caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate, 'DD/MM/YYYY'));
+        break;
+
+      case 'Tenancy and Occupation Case details':
+        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
+          .toLowerCase()
+          .replace(/_/g, " ")
+          .replace(/^\w/, (c: string) => c.toUpperCase())
+        );
+        caseSummary.set(`Tenancy, occupation contract or licence start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate, 'DD/MONTH/YYYY'));
+        caseSummary.set(`Do you have a copy of the tenancy or licence agreement?`, formatWord(submitPayLoad.tenancy_HasCopyOfTenancyLicence));
+        caseSummary.set(`Details of why you do not have a copy`, submitPayLoad.tenancy_ReasonsForNoTenancyLicenceDocuments);
+        break;
+
+      case 'Grounds of possession':
+        if (submitPayLoad.introGrounds_HasIntroductoryDemotedOtherGroundsForPossession === 'YES') {
+          caseSummary.set(`Grounds`, submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds.map(formatText).
+            map((item: string) =>
+              item === "Anti social" ? "Antisocial behaviour" : item
+            )
+            .join(','));
+        };
+        break;
+
+      case 'Rent arrears':
+        caseSummary.set(`Rent amount`, formatCurrency(submitPayLoad.rentDetails_CurrentRent));
+        caseSummary.set(`How rent is calculated`, formatWord(submitPayLoad.rentDetails_Frequency));
+        caseSummary.set(`Daily rate`, formatCurrency(submitPayLoad.rentDetails_CalculatedDailyCharge));
+        caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
+        caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
+        break;
+
+      case 'Rent arrears Case details':
+        caseSummary.set(`Rent amount`, formatCurrency(submitPayLoad.rentDetails_CurrentRent));
+        caseSummary.set(`How rent is calculated`, formatWord(submitPayLoad.rentDetails_Frequency));
+        caseSummary.set(`Daily rate`, formatCurrency(submitPayLoad.rentDetails_CalculatedDailyCharge));
+        caseSummary.set(`Previous steps taken to recover rent arrears?`, formatWord(submitPayLoad.rentArrears_RecoveryAttempted));
+        caseSummary.set(`Rent statement`, submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename);
+        caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
+        caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
+        break;
+
+      case 'Notice':
+        const serviceMethod = submitPayLoad.notice_NoticeServiceMethod;
+        const dateServed =
+          serviceMethod === 'FIRST_CLASS_POST'
+            ? submitPayLoad.notice_NoticePostedDate
+            : serviceMethod === 'EMAIL'
+              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              : null;
+
+        if (dateServed) {
+          const formattedDate =
+            serviceMethod === 'FIRST_CLASS_POST'
+              ? formatDate(dateServed,'DD/MM/YYYY')
+              : formatDateTime(dateServed);
+
+          caseSummary.set('Date notice was served', formattedDate);
+        }
+        break;
+
+      case 'Notice Case details':
+        const serviceMethodCaseDetails = submitPayLoad.notice_NoticeServiceMethod;
+        const dateServedCaseDetails =
+          serviceMethodCaseDetails === 'FIRST_CLASS_POST'
+            ? submitPayLoad.notice_NoticePostedDate
+            : serviceMethodCaseDetails === 'EMAIL'
+              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              : null;
+        const methodOfService = serviceMethodCaseDetails === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetails === 'EMAIL' ? 'By Email' : null;
+        caseSummary.set('Has notice been served?',formatWord(submitPayLoad.noticeServed));
+        caseSummary.set('Method of service', methodOfService as string);
+
+        if (dateServedCaseDetails) {
+          const formattedDate =
+            serviceMethodCaseDetails === 'FIRST_CLASS_POST'
+              ? formatDate(dateServedCaseDetails, 'DD/MONTH/YYYY')
+              : formatDateTime(dateServedCaseDetails);
+
+          caseSummary.set('Date and time notice served (if applicable)', formattedDate);
+        }
+        break;
+
+      case 'Claim details':
+        caseSummary.set(`Claimant type`, submitPayLoad.claimantType.value.label);
+        caseSummary.set(`Is your claim a trespass claim?`, formatWord(submitPayLoad.claimAgainstTrespassers));
+        break;
+
+      case 'Actions taken':
+        caseSummary.set(`Pre-action protocol followed?`, formatWord(submitPayLoad.preActionProtocolCompleted));
+        caseSummary.set(`Mediation attempted?`, formatWord(submitPayLoad.mediationAttempted));
+        caseSummary.set(`Settlement attempted?`, formatWord(submitPayLoad.settlementAttempted));
+        break;
+
+      case 'Reasons for possession':
+        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('ANTI_SOCIAL')) {
+          caseSummary.set(`Reasons for claiming possession under Antisocial behaviour`, submitPayLoad.antiSocialBehaviourGround);
+        }
+        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('BREACH_OF_THE_TENANCY')) {
+          caseSummary.set(`Reasons for claiming possession under Breach of the tenancy`, submitPayLoad.breachOfTheTenancyGround);
+        }
+        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('ABSOLUTE_GROUNDS')) {
+          caseSummary.set(`Reasons for claiming possession under Absolute grounds`, submitPayLoad.absoluteGrounds);
+        }
+        caseSummary.set(`Do you have any additional reasons for possession?`, formatWord(submitPayLoad.additionalReasonsForPossession.hasReasons));
+        if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
+          caseSummary.set(`Details of additional reasons`, formatWord(submitPayLoad.additionalReasonsForPossession.reasons));
+        }
+        break;
+
+      case 'Applications':
+        caseSummary.set(`Are you planning to make an application at the same time as your claim?`, formatWord(submitPayLoad.applicationWithClaim));
+        break;
+
+      case 'Demotion of tenancy':
+        if (submitPayLoad.alternativesToPossession?.includes('DEMOTION_OF_TENANCY')) {
+          const sectionOfHousingAct = submitPayLoad.demotionOfTenancyActs === 'SECTION_82A_2' ? 'Section 82A(2) of the Housing Act 1985' : 'Section 6A(2) of the Housing Act 1988';
+          caseSummary.set(`Section of the Housing Act demotion of tenancy claim made under`, sectionOfHousingAct);
+          caseSummary.set(`Have you served the defendants with a statement of the express terms which will apply to the demoted tenancy?`, formatWord(submitPayLoad.demotionOfTenancy_StatementOfExpressTermsServed));
+          if (submitPayLoad.demotionOfTenancy_StatementOfExpressTermsServed === 'YES') {
+            caseSummary.set(`Details of terms`, submitPayLoad.demotionOfTenancy_StatementOfExpressTermsDetails)
+          }
+          caseSummary.set(`Reasons for requesting a demotion of tenancy order`, submitPayLoad.demotionOrderReason)
+        }
+        break;
+
+      case 'Suspension of right to buy':
+        if (submitPayLoad.alternativesToPossession?.includes('SUSPENSION_OF_RIGHT_TO_BUY')) {
+          const sectionOfHousingActSuspension = submitPayLoad.suspensionOfRightToBuyActs === 'SECTION_82A_2' ? 'Section 82A(2) of the Housing Act 1985' : 'Section 6A(2) of the Housing Act 1988';
+          caseSummary.set(`Section of the Housing Act suspension of right to buy claim made under`, sectionOfHousingActSuspension);
+          caseSummary.set(`Reasons for requesting suspension of right to buy order`, submitPayLoad.suspensionOrderReason)
+        }
+        break;
+
+      case 'Underlessee or mortgagee':
+        if (submitPayLoad.hasUnderlesseeOrMortgagee === 'YES') {
+          caseSummary.set(`Underlessee or mortgagee’s name known?`, formatWord(submitPayLoad.underlesseeOrMortgagee1.nameKnown));
+          caseSummary.set(`Name`, submitPayLoad.underlesseeOrMortgagee1.nameKnown === 'YES' ? submitPayLoad.underlesseeOrMortgagee1.name : '');
+          caseSummary.set(`Underlessee or mortgagee’s address for service known?`, formatWord(submitPayLoad.underlesseeOrMortgagee1.addressKnown));
+          if (submitPayLoad.underlesseeOrMortgagee1.addressKnown === 'YES') {
+            caseSummary.set(`Building and Street`, submitPayLoad.underlesseeOrMortgagee1.address.AddressLine1);
+            caseSummary.set(`Address Line 2`, submitPayLoad.underlesseeOrMortgagee1.address.AddressLine2);
+            caseSummary.set(`Town or City`, submitPayLoad.underlesseeOrMortgagee1.address.PostTown);
+            caseSummary.set(`Postcode/Zipcode`, submitPayLoad.underlesseeOrMortgagee1.address.PostCode);
+            caseSummary.set('Country', submitPayLoad.underlesseeOrMortgagee1.address.Country);
+          }
+        }
+        break;
+
+      default:
+        break;
+    };
+
+    await this.caseTabTableData(page, caseSummarySection.table as string);
+
+    const misMatchMap = compareMaps(caseSummary, caseTabMap, {
+      name1: `${caseSummarySection.section}`,
+      name2: 'CaseSummaryDetailsTab',
+    })
+
+    if (misMatchMap.size > 0) {
+      console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+        console.log('============================================================');
+        console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+      }
+      console.log(`\n**********  END OF FAILURE LIST. ***************`);
+      throw new Error(`Case Summary/Details validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'} in "${caseSummarySection.section}" section`);
+    } else {
+      console.log(`\n✅ Case Summary/Details VALIDATION for section "${caseSummarySection.section}" PASSED!\n`);
     }
 
     caseTabMap.clear();

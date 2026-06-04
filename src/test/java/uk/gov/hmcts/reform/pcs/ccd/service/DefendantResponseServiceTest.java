@@ -42,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.HouseholdCircumstancesService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PartyAttributeAssertationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PaymentAgreementService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ReasonableAdjustmentsService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
@@ -93,6 +94,8 @@ class DefendantResponseServiceTest {
     @Mock
     private DocumentService documentService;
     @Mock
+    private PartyAttributeAssertationService partyAttributeAssertationService;
+    @Mock
     private PartyEntity partyEntity;
     @Mock
     private ClaimEntity claimEntity;
@@ -121,6 +124,7 @@ class DefendantResponseServiceTest {
             householdCircumstancesService,
             paymentAgreementService,
             documentService,
+            partyAttributeAssertationService,
             FIXED_UTC_CLOCK
         );
     }
@@ -165,8 +169,6 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getParty()).isEqualTo(partyEntity);
         assertThat(savedResponse.getClaim()).isEqualTo(claimEntity);
         assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
-        assertThat(savedResponse.getPossessionNoticeReceived()).isEqualTo(YesNoNotSure.YES);
-        assertThat(savedResponse.getNoticeReceivedDate()).isEqualTo(LocalDate.of(2024, 1, 15));
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);
@@ -251,40 +253,6 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getFreeLegalAdvice()).isNull();
     }
 
-    @ParameterizedTest(name = "possessionNoticeReceived={0}")
-    @MethodSource("possessionNoticeReceivedScenarios")
-    void shouldPersistPossessionNoticeReceived(YesNoNotSure possessionNoticeReceived) {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubPartyLookup();
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .possessionNoticeReceived(possessionNoticeReceived)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getPossessionNoticeReceived()).isEqualTo(possessionNoticeReceived);
-    }
-
-    private static Stream<Arguments> possessionNoticeReceivedScenarios() {
-        return Stream.of(
-            Arguments.of(YesNoNotSure.YES),
-            Arguments.of(YesNoNotSure.NO),
-            Arguments.of(YesNoNotSure.NOT_SURE),
-            Arguments.of((YesNoNotSure) null)
-        );
-    }
 
     @ParameterizedTest(name = "landlordRegistered={0}")
     @MethodSource("landlordRegisteredPersistenceScenarios")
@@ -517,49 +485,9 @@ class DefendantResponseServiceTest {
         verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
     }
 
-    @ParameterizedTest(name = "tenancyStartDate={0}")
-    @MethodSource("tenancyStartDatePersistenceScenarios")
-    void shouldPersistTenancyStartDate(LocalDate tenancyStartDate) {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-
-        stubPartyLookup();
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .freeLegalAdvice(YesNoPreferNotToSay.YES)
-            .tenancyStartDate(tenancyStartDate)
-            .build();
-
-        // When
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getTenancyStartDate()).isEqualTo(tenancyStartDate);
-    }
-
-
-    private static Stream<Arguments> tenancyStartDatePersistenceScenarios() {
-        return Stream.of(
-            Arguments.of(LocalDate.of(2010, 1, 1)),
-            Arguments.of((LocalDate) null)
-        );
-    }
-
     @ParameterizedTest
     @MethodSource("tenancyStartDateConfirmationScenarios")
-    void shouldSaveDefendantResponseWithTenancyStartDateConfirmation(
-        YesNoNotSure tenancyStartDateConfirmation,
-        LocalDate inputTenancyStartDate,
-        LocalDate expectedSavedTenancyStartDate
-    ) {
-
+    void shouldSaveDefendantResponseWithTenancyStartDateConfirmation(YesNoNotSure tenancyStartDateConfirmation) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
 
@@ -568,7 +496,6 @@ class DefendantResponseServiceTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyStartDateConfirmation(tenancyStartDateConfirmation)
-            .tenancyStartDate(inputTenancyStartDate)
             .build();
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(responses)
@@ -578,11 +505,7 @@ class DefendantResponseServiceTest {
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
-
-        DefendantResponseEntity saved = responseCaptor.getValue();
-
-        assertThat(saved.getTenancyStartDateConfirmation()).isEqualTo(tenancyStartDateConfirmation);
-        assertThat(saved.getTenancyStartDate()).isEqualTo(expectedSavedTenancyStartDate);
+        assertThat(responseCaptor.getValue().getTenancyStartDateConfirmation()).isEqualTo(tenancyStartDateConfirmation);
     }
 
     @Test
@@ -650,13 +573,11 @@ class DefendantResponseServiceTest {
 
     private static Stream<Arguments> tenancyStartDateConfirmationScenarios() {
         return Stream.of(
-            Arguments.of(YesNoNotSure.YES, LocalDate.of(2007, 7, 7), LocalDate.of(2007, 7, 7)),
-            Arguments.of(YesNoNotSure.NOT_SURE, LocalDate.of(2012, 9, 11), null),
-            Arguments.of(YesNoNotSure.NO, null, null),
-            Arguments.of(YesNoNotSure.NO, LocalDate.of(2024, 5, 15), LocalDate.of(2024, 5, 15)),
-            Arguments.of(null, LocalDate.of(2018, 3, 10), LocalDate.of(2018, 3, 10))
+            Arguments.of(YesNoNotSure.YES),
+            Arguments.of(YesNoNotSure.NOT_SURE),
+            Arguments.of(YesNoNotSure.NO),
+            Arguments.of((YesNoNotSure) null)
         );
-
     }
 
     @ParameterizedTest(name = "tenancyTypeConfirmation={0}")
@@ -794,38 +715,6 @@ class DefendantResponseServiceTest {
         );
     }
 
-    @ParameterizedTest(name = "noticeReceivedDate={0}")
-    @MethodSource("noticeReceivedDateScenarios")
-    void shouldPersistNoticeReceivedDate(LocalDate noticeReceivedDate) {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubPartyLookup();
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .noticeReceivedDate(noticeReceivedDate)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getNoticeReceivedDate()).isEqualTo(noticeReceivedDate);
-    }
-
-    private static Stream<Arguments> noticeReceivedDateScenarios() {
-        return Stream.of(
-            Arguments.of(LocalDate.of(2024, 6, 15)),
-            Arguments.of((LocalDate) null)
-        );
-    }
 
     @ParameterizedTest(name = "rentArrearsAmountConfirmation={0}")
     @MethodSource("rentArrearsAmountConfirmationScenarios")
@@ -1409,8 +1298,6 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getParty()).isEqualTo(partyEntity);
         assertThat(savedResponse.getClaim()).isEqualTo(claimEntity);
         assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
-        assertThat(savedResponse.getPossessionNoticeReceived()).isEqualTo(YesNoNotSure.YES);
-        assertThat(savedResponse.getNoticeReceivedDate()).isEqualTo(LocalDate.of(2024, 1, 15));
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);

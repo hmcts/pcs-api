@@ -104,6 +104,10 @@ public class PcsCaseEntity {
     @Builder.Default
     private List<CaseLinkEntity> caseLinks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CaseFlagEntity> caseFlags = new ArrayList<>();
+
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference

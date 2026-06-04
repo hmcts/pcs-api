@@ -70,6 +70,8 @@ class CaseTypeTest {
         final Tab.TabBuilder<PCSCase, UserRole> caseLinksTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, UserRole> caseFileViewTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, UserRole> casePartiesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
+        final Tab.TabBuilder<PCSCase, UserRole> caseFlagsTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
+        final Tab.TabBuilder<PCSCase, UserRole> caseDetailsTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Search.SearchBuilder<PCSCase, UserRole> searchBuilder =
             Search.SearchBuilder.builder(PCSCase.class, utils);
         final SearchCases.SearchCasesBuilder<PCSCase> searchCasesBuilder =
@@ -88,6 +90,8 @@ class CaseTypeTest {
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
         when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
+        when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
+        when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
         when(builder.categories(UserRole.PCS_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(UserRole.PCS_SOLICITOR));
 
@@ -101,6 +105,7 @@ class CaseTypeTest {
         final Tab<PCSCase, UserRole> caseLinksTab = caseLinksTabBuilder.build();
         final Tab<PCSCase, UserRole> casePartiesTab = casePartiesTabBuilder.build();
         final Tab<PCSCase, UserRole> caseFileViewTab = caseFileViewTabBuilder.build();
+        final Tab<PCSCase, UserRole> caseDetailsTab = caseDetailsTabBuilder.build();
 
         // Then
         assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
@@ -112,5 +117,6 @@ class CaseTypeTest {
             .contains("LinkedCasesComponentLauncher!=\"\"");
         assertThat(caseFileViewTab.getFields().size()).isEqualTo(1);
         assertThat(casePartiesTab.getFields()).extracting(TabField::getId).contains("casePartiesTab_ClaimantDetails");
+        assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
     }
 }
