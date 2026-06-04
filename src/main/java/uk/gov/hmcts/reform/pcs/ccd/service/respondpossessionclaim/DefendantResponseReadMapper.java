@@ -110,7 +110,6 @@ public class DefendantResponseReadMapper {
             .freeLegalAdvice(entity.getFreeLegalAdvice())
             .defendantNameConfirmation(entity.getDefendantNameConfirmation())
             .correspondenceAddressConfirmation(entity.getCorrespondenceAddressConfirmation())
-            .responseSubmittedDate(entity.getResponseSubmittedDate())
             .statementOfTruthCompletedBy(mapStatementOfTruthCompletedBy(entity))
             .paymentAgreement(toPaymentAgreement(entity.getPaymentAgreement()))
             .householdCircumstances(toHouseholdCircumstances(entity.getHouseholdCircumstances()))

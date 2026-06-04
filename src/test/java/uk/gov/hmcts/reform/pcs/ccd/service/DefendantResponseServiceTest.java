@@ -181,8 +181,6 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
-        assertThat(savedResponse.getResponseSubmittedDate())
-            .isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);
 
     }

@@ -181,7 +181,6 @@ public class DefendantResponseService {
             .languageUsed(responses.getLanguageUsed())
             .otherConsiderations(responses.getOtherConsiderations())
             .otherConsiderationsDetails(responses.getOtherConsiderationsDetails())
-            .responseSubmittedDate(LocalDateTime.now(utcClock))
             .build();
 
         //set bidirectional relationship with the pcs case
