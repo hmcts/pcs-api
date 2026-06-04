@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
-import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
@@ -45,6 +44,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
@@ -643,6 +643,10 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "summaryTab_")
     @CCD(searchable = false)
     private SummaryTab summaryTab;
+
+    @JsonUnwrapped(prefix = "detailsTab_")
+    @CCD
+    private CaseDetailsTab caseDetailsTab;
 
     @CCD(
         label = NOTE_LABEL,
