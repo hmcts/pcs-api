@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreemen
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondToClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
