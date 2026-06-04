@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IndividualOrOrganisation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
@@ -531,12 +532,15 @@ class CaseTabViewTest {
 
     @Test
     void shouldSetDraftUnderlesseeOrMortgagePartiesWhenThereIsMoreThanOneParty() {
-        // Given
-        String name1 = "name1";
+        // Given - an individual underlessee/mortgagee
+        String firstName1 = "first1";
+        String lastName1 = "last1";
         AddressUK address1 = AddressUK.builder().build();
         UnderlesseeMortgageeDetails underlesseeMortgageeDetails1 = UnderlesseeMortgageeDetails.builder()
             .nameKnown(VerticalYesNo.YES)
-            .name(name1)
+            .partyType(IndividualOrOrganisation.INDIVIDUAL)
+            .firstName(firstName1)
+            .lastName(lastName1)
             .addressKnown(VerticalYesNo.YES)
             .address(address1)
             .build();
@@ -578,7 +582,9 @@ class CaseTabViewTest {
         assertThat(allUnderlesseeOrMortgagees).hasSize(2);
         Party party1 = allUnderlesseeOrMortgagees.getFirst().getValue();
         assertThat(party1.getNameKnown()).isEqualTo(VerticalYesNo.YES);
-        assertThat(party1.getOrgName()).isEqualTo(name1);
+        assertThat(party1.getFirstName()).isEqualTo(firstName1);
+        assertThat(party1.getLastName()).isEqualTo(lastName1);
+        assertThat(party1.getOrgName()).isNull();
         assertThat(party1.getAddressKnown()).isEqualTo(VerticalYesNo.YES);
         assertThat(party1.getAddress()).isEqualTo(address1);
 
@@ -591,12 +597,13 @@ class CaseTabViewTest {
 
     @Test
     void shouldSetDraftUnderlesseeOrMortgagePartiesWhenThereIsOnlyOneParty() {
-        // Given
+        // Given - an organisation underlessee/mortgagee
         String name1 = "name1";
         AddressUK address1 = AddressUK.builder().build();
         UnderlesseeMortgageeDetails underlesseeMortgageeDetails1 = UnderlesseeMortgageeDetails.builder()
             .nameKnown(VerticalYesNo.YES)
-            .name(name1)
+            .partyType(IndividualOrOrganisation.ORGANISATION)
+            .organisationName(name1)
             .addressKnown(VerticalYesNo.YES)
             .address(address1)
             .build();

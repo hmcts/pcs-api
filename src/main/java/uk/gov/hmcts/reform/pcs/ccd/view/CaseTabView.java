@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IndividualOrOrganisation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
@@ -144,13 +145,21 @@ public class CaseTabView {
     }
 
     private ListValue<Party> buildUnderlesseeOrMortgageParty(UnderlesseeMortgageeDetails underlesseeMortgageeDetails) {
+        Party.PartyBuilder partyBuilder = Party.builder()
+            .nameKnown(underlesseeMortgageeDetails.getNameKnown())
+            .addressKnown(underlesseeMortgageeDetails.getAddressKnown())
+            .address(underlesseeMortgageeDetails.getAddress());
+
+        if (underlesseeMortgageeDetails.getPartyType() == IndividualOrOrganisation.INDIVIDUAL) {
+            partyBuilder
+                .firstName(underlesseeMortgageeDetails.getFirstName())
+                .lastName(underlesseeMortgageeDetails.getLastName());
+        } else {
+            partyBuilder.orgName(underlesseeMortgageeDetails.getOrganisationName());
+        }
+
         return ListValue.<Party>builder()
-            .value(Party.builder()
-                       .nameKnown(underlesseeMortgageeDetails.getNameKnown())
-                       .orgName(underlesseeMortgageeDetails.getName())
-                       .addressKnown(underlesseeMortgageeDetails.getAddressKnown())
-                       .address(underlesseeMortgageeDetails.getAddress())
-                       .build())
+            .value(partyBuilder.build())
             .build();
     }
 
