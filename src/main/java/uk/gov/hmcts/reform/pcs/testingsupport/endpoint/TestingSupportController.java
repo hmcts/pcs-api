@@ -70,7 +70,6 @@ public class TestingSupportController {
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
-    private final FeePaymentRepository feePaymentRepository;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
