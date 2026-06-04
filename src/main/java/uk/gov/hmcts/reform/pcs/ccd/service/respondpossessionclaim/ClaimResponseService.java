@@ -99,12 +99,10 @@ public class ClaimResponseService {
         }
 
         AddressUK newAddress = defendantContactDetails.getParty().getAddress();
-        // Persist the supplied address unless the defendant explicitly confirmed the claim-time
-        // address is correct (YES). null = page not yet visited, NO = defendant supplied a different one.
-        boolean addressUnconfirmedOrChanged =
-            defendantResponses.getCorrespondenceAddressConfirmation() != VerticalYesNo.YES;
-
-        if (addressUnconfirmedOrChanged && newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
+        // Only override the party address when claimant did not provide it
+        // and property address was shown as a fallback for user to confirm or enter a new address
+        boolean isFallbackScenario = defendantResponses.getPropertyAddressConfirmation() != null;
+        if (isFallbackScenario && newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
             AddressEntity existingAddress = party.getAddress();
 
             if (existingAddress != null) {
