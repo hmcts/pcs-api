@@ -47,7 +47,7 @@ public class WalesDocuments {
     private String noEpcReason;
 
     @CCD(
-        label = "Can you upload a copy of the current gas safety report"
+        label = "Can you upload a copy of the current gas safety report?"
     )
     private VerticalYesNo hasGasSafetyReport;
 
@@ -65,7 +65,7 @@ public class WalesDocuments {
     private String noGasReportReason;
 
     @CCD(
-        label = "Can you upload a copy of the current Electrical Installation Condition Report (EICR)"
+        label = "Can you upload a copy of the current Electrical Installation Condition Report (EICR)?"
     )
     private VerticalYesNo hasElectricalInstallationConditionReport;
 
