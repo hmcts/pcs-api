@@ -4,13 +4,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
@@ -25,6 +29,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Service for managing defendant responses.
@@ -47,6 +53,7 @@ public class DefendantResponseService {
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final DefendantResponseRepository defendantResponseRepository;
+    private final DefendantResponseReadMapper defendantResponseReadMapper;
     private final SecurityContextService securityContextService;
     private final ReasonableAdjustmentsService reasonableAdjustmentsService;
     private final HouseholdCircumstancesService householdCircumstancesService;
@@ -59,6 +66,7 @@ public class DefendantResponseService {
                                     PartyRepository partyRepository,
                                     ClaimRepository claimRepository,
                                     DefendantResponseRepository defendantResponseRepository,
+                                    DefendantResponseReadMapper defendantResponseReadMapper,
                                     SecurityContextService securityContextService,
                                     ReasonableAdjustmentsService reasonableAdjustmentsService,
                                     HouseholdCircumstancesService householdCircumstancesService,
@@ -70,6 +78,7 @@ public class DefendantResponseService {
         this.partyRepository = partyRepository;
         this.claimRepository = claimRepository;
         this.defendantResponseRepository = defendantResponseRepository;
+        this.defendantResponseReadMapper = defendantResponseReadMapper;
         this.securityContextService = securityContextService;
         this.reasonableAdjustmentsService = reasonableAdjustmentsService;
         this.householdCircumstancesService = householdCircumstancesService;
@@ -137,6 +146,7 @@ public class DefendantResponseService {
             buildDefendantResponseEntity(claimRef, partyRef, responses);
 
         buildAndLinkChildEntities(responseEntity, responses);
+        linkStatementOfTruth(responseEntity, responses, partyRef);
 
         saveCounterClaim(responses, partyRef, claimRef);
 
@@ -178,6 +188,7 @@ public class DefendantResponseService {
             .languageUsed(responses.getLanguageUsed())
             .otherConsiderations(responses.getOtherConsiderations())
             .otherConsiderationsDetails(responses.getOtherConsiderationsDetails())
+            .responseSubmittedDate(LocalDateTime.now(utcClock))
             .build();
 
         //set bidirectional relationship with the pcs case
@@ -207,6 +218,48 @@ public class DefendantResponseService {
                 response.getPaymentAgreement()
             )
         );
+    }
+
+    // TODO(HDPI-5535): Capture user-typed SoT full name on respond CYA (like gen app sotFullName) 
+    // instead of deriving from party.
+    private void linkStatementOfTruth(
+        DefendantResponseEntity defendantResponse,
+        DefendantResponses responses,
+        PartyEntity party
+    ) {
+        if (StringUtils.isBlank(responses.getStatementOfTruthCompletedBy())) {
+            return;
+        }
+        StatementOfTruthCompletedBy completedBy = parseStatementOfTruthCompletedBy(
+            responses.getStatementOfTruthCompletedBy()
+        );
+        // TODO(HDPI-5535): Extract party display-name logic to PartyService 
+        String fullName = Stream.of(party.getFirstName(), party.getLastName())
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.joining(" "));
+        if (fullName.isBlank()) {
+            fullName = StatementOfTruthCompletedBy.DEFENDANT == completedBy
+                ? "Defendant"
+                : completedBy.name();
+        }
+    
+        // TODO(HDPI-5535): Map accepted from respond SoT checkbox (like gen app sotAccepted) instead of hardcoding YES.
+        defendantResponse.setStatementOfTruth(
+            StatementOfTruthEntity.builder()
+                .completedBy(completedBy)
+                .accepted(YesOrNo.YES)
+                .fullName(fullName)
+                .completedDate(LocalDateTime.now(utcClock))
+                .build()
+        );
+    }
+
+    private static StatementOfTruthCompletedBy parseStatementOfTruthCompletedBy(String value) {
+        try {
+            return StatementOfTruthCompletedBy.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            return StatementOfTruthCompletedBy.DEFENDANT;
+        }
     }
 
     private void saveCounterClaim(DefendantResponses responses, PartyEntity partyRef, ClaimEntity claimRef) {
@@ -258,5 +311,19 @@ public class DefendantResponseService {
             return false;
         }
         return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
+    }
+    
+    @Transactional(readOnly = true)
+    public PossessionClaimResponse getSubmittedResponse(long caseReference) {
+        UUID userId = securityContextService.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("No submitted defendant response for case " + caseReference);
+        }
+
+        DefendantResponseEntity entity = defendantResponseRepository
+            .findWithDetailsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId)
+            .orElseThrow(() -> new IllegalStateException("No submitted defendant response for case " + caseReference));
+
+        return defendantResponseReadMapper.toPossessionClaimResponse(entity);
     }
 }

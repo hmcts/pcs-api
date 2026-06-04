@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,6 +24,10 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -31,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -51,8 +57,18 @@ class MakeAClaimPaymentCallbackHandlerTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    @Mock
+    private Clock utcClock;
+
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
+
+    @BeforeEach
+    void stubUtcClock() {
+        Instant defaultInstant = LocalDateTime.of(2020, 1, 1, 0, 0).toInstant(ZoneOffset.UTC);
+        lenient().when(utcClock.instant()).thenReturn(defaultInstant);
+        lenient().when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
+    }
 
     @ParameterizedTest
     @MethodSource("paymentStatus")
@@ -82,6 +98,101 @@ class MakeAClaimPaymentCallbackHandlerTest {
         } else {
             verifyNoInteractions(ccdPaymentStateUpdateService);
         }
+    }
+
+    @Test
+    void shouldStampClaimIssuedDateWhenPaymentIsPaid() throws Exception {
+        // Given
+        Instant fixedInstant = LocalDateTime.of(2026, 2, 5, 10, 30).toInstant(ZoneOffset.UTC);
+        when(utcClock.instant()).thenReturn(fixedInstant);
+        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
+
+        FeesAndPayTaskData taskData = buildTaskData();
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
+
+        PartyEntity partyEntity = PartyEntity.builder().id(RESPONSIBLE_PARTY_ID).orgName(RESPONSIBLE_PARTY).build();
+        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+
+        ClaimEntity claimEntity = new ClaimEntity();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
+        claimEntity.setPcsCase(pcsCase);
+
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .claim(claimEntity)
+            .taskData(taskDataJson)
+            .paymentStatus(PaymentStatus.PAID)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
+            .build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
+
+        // When
+        underTest.handle(callback, feePaymentEntity);
+
+        // Then
+        assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2026, 2, 5, 10, 30));
+        verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+    }
+
+    @Test
+    void shouldNotOverwriteExistingClaimIssuedDate() throws Exception {
+        // Given
+        LocalDateTime existing = LocalDateTime.of(2026, 1, 1, 0, 0);
+        FeesAndPayTaskData taskData = buildTaskData();
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        
+        PartyEntity partyEntity = PartyEntity.builder().id(RESPONSIBLE_PARTY_ID).orgName(RESPONSIBLE_PARTY).build();
+        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        
+        ClaimEntity claimEntity = new ClaimEntity();
+        claimEntity.setClaimIssuedDate(existing);
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
+        claimEntity.setPcsCase(pcsCase);
+        
+        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .claim(claimEntity)
+            .taskData(taskDataJson)
+            .paymentStatus(PaymentStatus.PAID)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
+            .build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
+
+        // When
+        underTest.handle(callback, feePaymentEntity);
+
+        // Then
+        assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(existing);
+    }
+
+    @Test
+    void shouldNotStampClaimIssuedDateWhenPaymentIsNotPaid() throws Exception {
+        // Given
+        FeesAndPayTaskData taskData = buildTaskData();
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
+
+        PartyEntity partyEntity = PartyEntity.builder().id(RESPONSIBLE_PARTY_ID).orgName(RESPONSIBLE_PARTY).build();
+        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+
+        ClaimEntity claimEntity = new ClaimEntity();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
+        claimEntity.setPcsCase(pcsCase);
+
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .claim(claimEntity)
+            .taskData(taskDataJson)
+            .paymentStatus(PaymentStatus.NOT_PAID)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
+            .build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
+
+        // When
+        underTest.handle(callback, feePaymentEntity);
+
+        // Then
+        assertThat(claimEntity.getClaimIssuedDate()).isNull();
+        verifyNoInteractions(ccdPaymentStateUpdateService);
     }
 
     @Test

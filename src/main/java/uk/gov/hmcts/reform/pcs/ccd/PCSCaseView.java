@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
@@ -79,6 +80,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final PartiesView partiesView;
     private final GenAppsView genAppsView;
     private final CaseFlagsView flagsView;
+    private final DefendantResponseView defendantResponseView;
 
 
     /**
@@ -150,6 +152,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
+        defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }

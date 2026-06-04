@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -116,6 +117,13 @@ public class DefendantResponses {
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;
+    
     @CCD
     private VerticalYesNo makeCounterClaim;
+
+    @CCD
+    private LocalDateTime responseSubmittedDate;
+
+    @CCD(max = 100)
+    private String statementOfTruthCompletedBy;
 }

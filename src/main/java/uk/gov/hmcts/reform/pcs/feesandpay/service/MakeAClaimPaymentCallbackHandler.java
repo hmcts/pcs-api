@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
@@ -13,8 +15,9 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.io.IOException;
+import java.time.Clock;
+import java.time.LocalDateTime;
 
-@AllArgsConstructor
 @Component
 @Slf4j
 public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy {
@@ -22,6 +25,19 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final PartyService partyService;
     private final ObjectMapper objectMapper;
+    private final Clock utcClock;
+
+    public MakeAClaimPaymentCallbackHandler(
+        CcdPaymentStateUpdateService ccdPaymentStateUpdateService,
+        PartyService partyService,
+        ObjectMapper objectMapper,
+        @Qualifier("utcClock") Clock utcClock
+    ) {
+        this.ccdPaymentStateUpdateService = ccdPaymentStateUpdateService;
+        this.partyService = partyService;
+        this.objectMapper = objectMapper;
+        this.utcClock = utcClock;
+    }
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -31,6 +47,10 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         feePaymentEntity.setParty(claimParty);
 
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
+            ClaimEntity claim = feePaymentEntity.getClaim();
+            if (claim != null && claim.getClaimIssuedDate() == null) {
+                claim.setClaimIssuedDate(LocalDateTime.now(utcClock));
+            }
             ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
