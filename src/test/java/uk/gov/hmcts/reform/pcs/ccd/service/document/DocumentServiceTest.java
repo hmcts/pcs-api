@@ -117,7 +117,7 @@ class DocumentServiceTest {
         AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
             .document(Document.builder()
                           .url("url-WITNESS_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-                          .filename("file-WITNESS_STATEMENT")
+                          .filename("file-WITNESS_STATEMENT.pdf")
                           .binaryUrl("bin-WITNESS_STATEMENT")
                           .categoryId("cat-WITNESS_STATEMENT")
                           .build())
@@ -131,7 +131,7 @@ class DocumentServiceTest {
         AdditionalDocument additionalDocument2 = AdditionalDocument.builder()
             .document(Document.builder()
                            .url("url-RENT_STATEMENT/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-                           .filename("file-RENT_STATEMENT")
+                           .filename("file-RENT_STATEMENT.pdf")
                            .binaryUrl("bin-RENT_STATEMENT")
                            .categoryId("cat-RENT_STATEMENT")
                            .build())
@@ -158,7 +158,8 @@ class DocumentServiceTest {
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactlyInAnyOrder("file-WITNESS_STATEMENT - Claimant 1", "file-RENT_STATEMENT - Claimant 1");
+            .containsExactlyInAnyOrder("file-WITNESS_STATEMENT - Claimant 1.pdf",
+                    "file-RENT_STATEMENT - Claimant 1.pdf");
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getType)
@@ -247,7 +248,7 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
         Document doc = Document.builder()
             .url("url1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-            .filename("file1")
+            .filename("file1.pdf")
             .binaryUrl("bin1")
             .categoryId("cat1")
             .build();
@@ -267,7 +268,7 @@ class DocumentServiceTest {
         assertThat(entities).hasSize(1);
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.RENT_STATEMENT);
-        assertThat(entity.getFileName()).isEqualTo("file1 - Claimant 1");
+        assertThat(entity.getFileName()).isEqualTo("file1 - Claimant 1.pdf");
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
@@ -277,7 +278,7 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
         Document doc = Document.builder()
             .url("url2/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-            .filename("file2")
+            .filename("file2.txt")
             .binaryUrl("bin2")
             .categoryId("cat2")
             .build();
@@ -297,7 +298,7 @@ class DocumentServiceTest {
         assertThat(entities).hasSize(1);
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.TENANCY_AGREEMENT);
-        assertThat(entity.getFileName()).isEqualTo("file2 - Claimant 1");
+        assertThat(entity.getFileName()).isEqualTo("file2 - Claimant 1.txt");
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
@@ -308,7 +309,7 @@ class DocumentServiceTest {
 
         Document doc = Document.builder()
             .url("url3/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-            .filename("file3")
+            .filename("file3.pdf")
             .binaryUrl("bin3")
             .categoryId("cat3")
             .build();
@@ -328,7 +329,7 @@ class DocumentServiceTest {
         assertThat(entities).hasSize(1);
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.OCCUPATION_LICENCE);
-        assertThat(entity.getFileName()).isEqualTo("file3 - Claimant 1");
+        assertThat(entity.getFileName()).isEqualTo("file3 - Claimant 1.pdf");
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
@@ -339,7 +340,7 @@ class DocumentServiceTest {
 
         Document doc = Document.builder()
             .url("url4/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-            .filename("file4")
+            .filename("file4.pdf")
             .binaryUrl("bin4")
             .categoryId("cat4")
             .build();
@@ -359,7 +360,7 @@ class DocumentServiceTest {
         assertThat(entities).hasSize(1);
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.POSSESSION_NOTICE);
-        assertThat(entity.getFileName()).isEqualTo("file4 - Claimant 1");
+        assertThat(entity.getFileName()).isEqualTo("file4 - Claimant 1.pdf");
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 
@@ -367,15 +368,15 @@ class DocumentServiceTest {
     void shouldReturnEmptyListIfNoDocuments() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        when(documentRepository.saveAll(anyList())).thenReturn(List.of());
 
         // When
         List<DocumentEntity> entities = underTest.createAllDocuments(pcsCase);
 
         // Then
         assertThat(entities).isEmpty();
-        verify(documentRepository).saveAll(anyList());
+        verify(documentRepository, never()).saveAll(anyList());
     }
+
 
     @ParameterizedTest
     @EnumSource(EvidenceDocumentType.class)
@@ -458,7 +459,7 @@ class DocumentServiceTest {
         underTest.createAllDocuments(enforcementOrder);
 
         // Then
-        verify(documentRepository).saveAll(List.of());
+        verify(documentRepository, never()).saveAll(List.of());
     }
 
     @Test
@@ -553,7 +554,7 @@ class DocumentServiceTest {
 
         Document validDoc = Document.builder()
                 .url("url1/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
-                .filename("file1")
+                .filename("file1.txt")
                 .binaryUrl("bin1")
                 .categoryId("cat1")
                 .build();
@@ -576,7 +577,7 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
-        assertThat(entities.getFirst().getFileName()).isEqualTo("file1 - Claimant 1");
+        assertThat(entities.getFirst().getFileName()).isEqualTo("file1 - Claimant 1.txt");
     }
 
     @Test
@@ -585,13 +586,13 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         Document rentDoc = Document.builder()
-            .url("url-rent/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-rent")
+            .url("url-rent/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-rent.pdf")
             .binaryUrl("bin-rent").categoryId("cat-rent").build();
         Document tenancyDoc = Document.builder()
-            .url("url-tenancy/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-tenancy")
+            .url("url-tenancy/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-tenancy.pdf")
             .binaryUrl("bin-tenancy").categoryId("cat-tenancy").build();
         Document noticeDoc = Document.builder()
-            .url("url-notice/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-notice")
+            .url("url-notice/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef").filename("file-notice.pdf")
             .binaryUrl("bin-notice").categoryId("cat-notice").build();
 
         when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
@@ -622,8 +623,8 @@ class DocumentServiceTest {
 
         assertThat(entities)
             .extracting(DocumentEntity::getFileName)
-                .containsExactlyInAnyOrder("file-rent - Claimant 1", "file-tenancy - Claimant 1",
-                        "file-notice - Claimant 1");
+                .containsExactlyInAnyOrder("file-rent - Claimant 1.pdf", "file-tenancy - Claimant 1.pdf",
+                        "file-notice - Claimant 1.pdf");
     }
 
     @Test
@@ -650,6 +651,34 @@ class DocumentServiceTest {
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getDescription()).isNull();
+    }
+
+    @Test
+    void shouldChangeFileNameForClaimDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document doc = Document.builder()
+                .filename("filename.txt")
+                .url("https://host/" + UUID.randomUUID())
+                .build();
+
+        NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
+                .noticeDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+                .build();
+
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+        assertThat(capturedEntities.getFirst().getFileName())
+                .isEqualTo("filename - Claimant 1.txt");
     }
 
     @Test

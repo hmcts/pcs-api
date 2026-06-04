@@ -50,12 +50,22 @@ public class DocumentService {
 
         List<DocumentHolder> allDocuments = getPcsCaseDocuments(pcsCase);
 
+        if (allDocuments.isEmpty()) {
+            return List.of();
+        }
+
+        applyClaimFilename(allDocuments);
+
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
 
         List<DocumentHolder> allDocuments = getWarrantOfRestitutionDocuments(enforcementOrder);
+
+        if (allDocuments.isEmpty()) {
+            return List.of();
+        }
 
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
@@ -148,15 +158,11 @@ public class DocumentService {
     private List<DocumentEntity> createDocumentEntities(
             List<DocumentHolder> documents) {
 
-        if (CollectionUtils.isEmpty(documents)) {
-            return List.of();
-        }
-
         return documents.stream()
                 .map(holder -> DocumentEntity.builder()
                         .url(holder.getDocument().getUrl())
                         .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
-                        .fileName(getFilename(holder.getDocument().getFilename()))
+                        .fileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
                         .categoryId(mapDocumentTypeToCategory(holder.getType())
                                         .map(CaseFileCategory::getId)
@@ -167,9 +173,13 @@ public class DocumentService {
                 .toList();
     }
 
-    private String getFilename(String uploadedFilename) {
-        return FilenameUtils.getBaseName(uploadedFilename) + " - " + CLAIMANT_1
-                + FilenameUtils.getExtension(uploadedFilename);
+    private void applyClaimFilename(List<DocumentHolder> allDocuments) {
+        allDocuments.forEach(dh -> {
+                String uploadedFilename = dh.getDocument().getFilename();
+                dh.getDocument().setFilename(FilenameUtils.getBaseName(uploadedFilename) + " - " + CLAIMANT_1
+                        + "." + FilenameUtils.getExtension(uploadedFilename));
+            });
+
     }
 
     public DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
