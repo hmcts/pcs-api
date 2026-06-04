@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
@@ -40,9 +41,11 @@ public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
     }
 
     private boolean hasRaisedGeneralApplications(DashboardContext ctx) {
-        return ctx != null
-            && ctx.caseEntity() != null
-            && ctx.caseEntity().getGenApps() != null
-            && !ctx.caseEntity().getGenApps().isEmpty();
+        if (ctx == null || ctx.caseEntity() == null || ctx.caseEntity().getGenApps() == null) {
+            return false;
+        }
+        UUID viewerIdamId = ctx.defendant() != null ? ctx.defendant().getIdamId() : null;
+        return ctx.caseEntity().getGenApps().stream()
+            .anyMatch(genApp -> ctx.isVisibleToUser(genApp, viewerIdamId));
     }
 }
