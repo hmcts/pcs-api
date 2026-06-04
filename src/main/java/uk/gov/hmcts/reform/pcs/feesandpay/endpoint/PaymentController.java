@@ -21,11 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateServiceRequestPayload;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateServiceRequestResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -39,45 +36,9 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping(path = "service-request", consumes = APPLICATION_JSON_VALUE)
-    @Operation(
-        summary = "Create a payment service request",
-        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            required = true,
-            content = @Content(
-                mediaType = APPLICATION_JSON_VALUE,
-                examples = @ExampleObject(
-                    name = "Create service request",
-                    value = """
-                    {
-                        "caseReference": 9315681809157729,
-                        "feeType": "genAppStandardFee"
-                    }
-                    """
-                )
-            )
-        )
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Service request created successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<CreateServiceRequestResponse> createServiceRequest(
-        @RequestHeader(AUTHORIZATION) String authorisation,
-        @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
-        @RequestBody @Valid CreateServiceRequestPayload serviceRequestPayload) {
-
-        CreateServiceRequestResponse createServiceRequestResponse
-            = paymentService.createServiceRequest(serviceRequestPayload);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(createServiceRequestResponse);
-    }
-
     @PostMapping(path = "service-request/{serviceRequestReference}/card-payment", consumes = APPLICATION_JSON_VALUE)
     @Operation(
-        summary = "Create a payment service request",
+        summary = "Create a payment request",
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
             content = @Content(
@@ -97,12 +58,10 @@ public class PaymentController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Payment request created successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<CreateCardPaymentResponse> createPaymentRequest(
-        @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
         @PathVariable("serviceRequestReference") String serviceRequestReference,
         @RequestBody @Valid CreateCardPaymentRequest cardPaymentRequest) {
@@ -117,13 +76,11 @@ public class PaymentController {
     @Operation(summary = "Get status of a card payment")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Payment status found"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
         @ApiResponse(responseCode = "404", description = "Payment status not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<CardPaymentStatusResponse> getCardPaymentStatus(
-        @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
         @PathVariable("paymentReference") String paymentReference) {
 

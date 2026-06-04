@@ -15,8 +15,6 @@ class PaymentCallbackStrategyFactoryTest {
     @Mock
     private MakeAClaimPaymentCallbackHandler makeAClaimPaymentCallbackHandler;
     @Mock
-    private GenAppPaymentCallbackHandler genAppPaymentCallbackHandler;
-    @Mock
     private CounterClaimPaymentCallbackHandler counterClaimPaymentCallbackHandler;
 
     @InjectMocks
@@ -29,15 +27,6 @@ class PaymentCallbackStrategyFactoryTest {
 
         // Then
         assertThat(result).isSameAs(makeAClaimPaymentCallbackHandler);
-    }
-
-    @Test
-    void shouldReturnPaymentCallbackHandlerForGenApp() {
-        // When
-        PaymentCallbackStrategy result = underTest.getStrategy(PaymentCallbackHandlerType.GEN_APP_ISSUE);
-
-        // Then
-        assertThat(result).isSameAs(genAppPaymentCallbackHandler);
     }
 
     @Test

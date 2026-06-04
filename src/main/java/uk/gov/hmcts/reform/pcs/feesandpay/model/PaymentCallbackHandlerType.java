@@ -11,7 +11,6 @@ import lombok.Getter;
 public enum PaymentCallbackHandlerType {
 
     CLAIM,
-    GEN_APP_ISSUE,
     COUNTER_CLAIM_ISSUE
 
 }

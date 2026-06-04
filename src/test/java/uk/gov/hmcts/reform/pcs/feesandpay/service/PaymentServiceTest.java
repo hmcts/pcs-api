@@ -26,8 +26,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -36,7 +34,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateServiceRequestPayload;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
@@ -44,7 +41,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -64,10 +60,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType.COUNTER_CLAIM_RANGED;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType.GEN_APP_MAX_FEE;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
@@ -92,17 +85,11 @@ class PaymentServiceTest {
     @Mock
     private FeePaymentRepository feePaymentRepository;
     @Mock
-    private CounterClaimRepository counterClaimRepository;
-    @Mock
     private PcsCaseService pcsCaseService;
     @Mock
     private PartyService partyService;
     @Mock
-    private FeeService feeService;
-    @Mock
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
-    @Mock
-    private SecurityContextService securityContextService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -357,97 +344,6 @@ class PaymentServiceTest {
     }
 
     @Nested
-    @DisplayName("Create service request from request payload")
-    class CreateServiceRequestFromRequestPayload {
-
-        @Test
-        void shouldCreateServiceRequest() {
-            // Given
-            FeeDetails feeDetails = mock(FeeDetails.class);
-            FeeDto mappedFee = mock(FeeDto.class);
-            when(paymentRequestMapper.toFeeDto(feeDetails, 1)).thenReturn(mappedFee);
-
-            when(feeService.getFee(GEN_APP_MAX_FEE)).thenReturn(feeDetails);
-
-            final CreateServiceRequestPayload createServiceRequestPayload = CreateServiceRequestPayload.builder()
-                .caseReference(CASE_REFERENCE)
-                .feeType(GEN_APP_MAX_FEE.getCode())
-                .build();
-
-            stubPcsCaseEntity();
-            stubCurrentUserParty("Current party name");
-
-            CasePaymentRequestDto casePaymentRequestDto = mock(CasePaymentRequestDto.class);
-            when(paymentRequestMapper.toCasePaymentRequest("Current party name"))
-                .thenReturn(casePaymentRequestDto);
-
-            PaymentServiceResponse paymentServiceResponse = createPaymentServiceResponse();
-            when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
-                .thenReturn(paymentServiceResponse);
-
-            // When
-            underTest.createServiceRequest(createServiceRequestPayload);
-
-            // Then
-            verify(paymentsClient).createServiceRequest(eq(SYSTEM_TOKEN), createServiceRequestCaptor.capture());
-
-            CreateServiceRequestDTO createServiceRequestDto = createServiceRequestCaptor.getValue();
-
-            assertThat(createServiceRequestDto.getCallBackUrl()).isEqualTo(CALLBACK_URL);
-            assertThat(createServiceRequestDto.getHmctsOrgId()).isEqualTo(HMCTS_ORG_ID);
-            assertThat(createServiceRequestDto.getFees()[0]).isEqualTo(mappedFee);
-            assertThat(createServiceRequestDto.getCcdCaseNumber()).isEqualTo(Long.toString(CASE_REFERENCE));
-            assertThat(createServiceRequestDto.getCaseReference()).isEqualTo(Long.toString(CASE_REFERENCE));
-        }
-
-        @Test
-        void shouldCreateServiceRequestForCounterClaimAndStoreCounterClaimTaskData() {
-            // Given
-            FeeDetails feeDetails = mock(FeeDetails.class);
-            FeeDto mappedFee = mock(FeeDto.class);
-            when(paymentRequestMapper.toFeeDto(feeDetails, 1)).thenReturn(mappedFee);
-            when(feeService.getFee(COUNTER_CLAIM_RANGED)).thenReturn(feeDetails);
-
-            final CreateServiceRequestPayload payload = CreateServiceRequestPayload.builder()
-                .caseReference(CASE_REFERENCE)
-                .feeType(COUNTER_CLAIM_RANGED.getCode())
-                .build();
-
-            stubPcsCaseEntity();
-            stubCurrentUserParty("Current party name");
-
-            UUID counterClaimId = UUID.randomUUID();
-            CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder().id(counterClaimId).build();
-            when(counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdAndStatusOrderByClaimSubmittedDateDesc(
-                eq(CASE_REFERENCE),
-                any(UUID.class),
-                any(uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus.class)
-            )).thenReturn(Optional.of(counterClaimEntity));
-
-            CasePaymentRequestDto casePaymentRequestDto = mock(CasePaymentRequestDto.class);
-            when(paymentRequestMapper.toCasePaymentRequest("Current party name"))
-                .thenReturn(casePaymentRequestDto);
-
-            PaymentServiceResponse paymentServiceResponse = createPaymentServiceResponse();
-            when(paymentsClient.createServiceRequest(any(), any(CreateServiceRequestDTO.class)))
-                .thenReturn(paymentServiceResponse);
-
-            // When
-            underTest.createServiceRequest(payload);
-
-            // Then
-            ArgumentCaptor<FeePaymentEntity> feePaymentCaptor = ArgumentCaptor.forClass(FeePaymentEntity.class);
-            verify(feePaymentRepository).save(feePaymentCaptor.capture());
-            FeePaymentEntity savedFeePayment = feePaymentCaptor.getValue();
-
-            assertThat(savedFeePayment.getPaymentCallbackHandlerType()).isEqualTo(COUNTER_CLAIM_ISSUE);
-            assertThat(savedFeePayment.getTaskData()).contains("\"relatedEntityId\":\"" + counterClaimId + "\"");
-            assertThat(savedFeePayment.getTaskData())
-                .contains("\"paymentCallbackHandlerType\":\"COUNTER_CLAIM_ISSUE\"");
-        }
-    }
-
-    @Nested
     @DisplayName("Create payment request")
     class CreatePaymentRequest {
 
@@ -534,19 +430,6 @@ class PaymentServiceTest {
         ClaimPartyEntity claimPartyEntity = claimPartyEntity();
         PcsCaseEntity pcsCaseEntity = setupPcsCase(claimPartyEntity);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private void stubCurrentUserParty(String name) {
-        UUID currentUserIdamId = UUID.randomUUID();
-        UUID currentUserPartyId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(currentUserIdamId);
-
-        PartyEntity currentParty = mock(PartyEntity.class);
-        when(currentParty.getId()).thenReturn(currentUserPartyId);
-        when(partyService.getPartyEntityByEntityId(currentUserPartyId, CASE_REFERENCE)).thenReturn(currentParty);
-        when(partyService.getPartyEntityByIdamId(currentUserIdamId, CASE_REFERENCE)).thenReturn(currentParty);
-        when(partyService.getPartyName(currentParty)).thenReturn(name);
     }
 
     private void paymentsClientDependencies(FeeDetails feeDetails) {
