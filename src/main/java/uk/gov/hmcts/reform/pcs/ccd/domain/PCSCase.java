@@ -176,9 +176,11 @@ public class PCSCase {
     private Integer caseManagementLocationNumber;
 
     @CCD(
-        label = "Region Id"
+        label = "Region Id",
+        access = InternalCaseFlagAccess.class
     )
-    private Integer regionId;
+    @Builder.Default
+    private Integer regionId = 1;
 
     @CCD(access = {InternalCaseFlagAccess.class},
         label = "Party")
