@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackAddress;
+import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackDefendantRow;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackGround;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackParty;
@@ -80,7 +81,7 @@ public class ClaimPackPayloadBuilder {
         final List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         mapClaimants(claimants, p);
         final List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);
-        mapDefendants(defendants, p);
+        mapDefendants(defendants, pcsCase.getPropertyAddress(), p);
         mapUnderlessees(partiesByRole(claim, PartyRole.UNDERLESSEE_OR_MORTGAGEE), p);
 
         mapFromGrounds(claim.getClaimGrounds(), p);
@@ -93,16 +94,63 @@ public class ClaimPackPayloadBuilder {
 
         // Derived after individual mappers populate the source data.
         mapCaseName(claimants, defendants, p);
+        mapClaimDetailsShowFlags(pcsCase, claim, p);
 
         return p.build();
+    }
+
+    // Cross-cutting flags for the Claim details section — depend on country + tenancy + grounds.
+    // Computed at the end so we can read consistent source state without coupling the
+    // individual mappers to each other.
+    private void mapClaimDetailsShowFlags(PcsCaseEntity pcsCase, ClaimEntity claim,
+                                          ClaimPackFormPayload.ClaimPackFormPayloadBuilder p) {
+        boolean isWales = pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
+        boolean isEngland = !isWales;
+        TenancyLicenceEntity tenancy = pcsCase.getTenancyLicence();
+        boolean isIntroDemotedOther = tenancy != null
+            && tenancy.getType() != null
+            && INTRO_DEMOTED_OTHER_TYPES.contains(tenancy.getType());
+        Set<ClaimGroundEntity> grounds = claim.getClaimGrounds();
+        boolean hasNoGrounds = grounds == null || grounds.isEmpty();
+        boolean hasOther = grounds != null && grounds.stream()
+            .filter(g -> g.getCategory() != null && g.getCode() != null)
+            .anyMatch(g -> g.getCategory().name().contains("OTHER") || "OTHER".equals(g.getCode()));
+        // Wales ASB ground identity lives in the `code` field, not the category (see
+        // WalesSecureClaimGroundService + WalesStandardClaimGroundService — both persist
+        // ANTISOCIAL_BEHAVIOUR_S157 as the code under a non-ASB category).
+        boolean hasWalesAsbGround = grounds != null && grounds.stream()
+            .anyMatch(g -> "ANTISOCIAL_BEHAVIOUR_S157".equals(g.getCode()));
+
+        p.showDescriptionOfGrounds(isEngland && isIntroDemotedOther && hasOther);
+        p.showWhyClaimingPossession(isEngland && isIntroDemotedOther && (hasNoGrounds || hasOther));
+        p.showAsbSection(isWales && hasWalesAsbGround);
+
+        // Wales-only "Notice type" row — only when notice has actually been served.
+        NoticeOfPossessionEntity notice = claim.getNoticeOfPossession();
+        boolean noticeServedYes = notice != null
+            && notice.getNoticeServed() != null
+            && "YES".equalsIgnoreCase(notice.getNoticeServed().name());
+        p.showNoticeType(isWales && noticeServedYes);
+
+        // Wales-only PCSC + Required documents section gates.
+        p.showPcscSection(isWales);
+        p.showRequiredDocumentsSection(isWales);
     }
 
     // -----------------------------------------------------------------------
     // PcsCaseEntity — §13.2 "From PcsCaseEntity"
     // -----------------------------------------------------------------------
     private void mapFromPcsCase(PcsCaseEntity pcsCase, ClaimPackFormPayload.ClaimPackFormPayloadBuilder p) {
-        p.isWales(pcsCase.getLegislativeCountry() == LegislativeCountry.WALES);
-        p.propertyAddress(toClaimPackAddress(pcsCase.getPropertyAddress()));
+        boolean isWales = pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
+        p.isWales(isWales);
+        p.isEngland(!isWales);
+        AddressEntity propertyAddress = pcsCase.getPropertyAddress();
+        p.propertyAddress(toClaimPackAddress(propertyAddress));
+        if (propertyAddress != null) {
+            p.hasPropertyAddressLine2(isPopulated(propertyAddress.getAddressLine2()));
+            p.hasPropertyAddressLine3(isPopulated(propertyAddress.getAddressLine3()));
+            p.hasPropertyCounty(isPopulated(propertyAddress.getCounty()));
+        }
         p.referenceNumber(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference()));
     }
 
@@ -116,28 +164,41 @@ public class ClaimPackPayloadBuilder {
         }
         // issueDateSealed is §13.3 gap (1) — left null.
 
-        // §6.3.10
-        p.preActionProtocolFollowedYesNo(claim.getPreActionProtocolFollowed());
+        // §6.3.10 — Y/N to title-case labels; "Why not followed" row gated by complementary boolean.
+        VerticalYesNo preActionEnum = claim.getPreActionProtocolFollowed();
+        p.preActionProtocolFollowedYesNo(preActionEnum == null ? null : preActionEnum.getLabel());
+        p.showPreActionProtocolNotFollowedReason(preActionEnum == VerticalYesNo.NO);
         p.preActionProtocolNotFollowedReason(claim.getPreActionProtocolIncompleteExplanation());
-        p.mediationAttemptedYesNo(claim.getMediationAttempted());
-        p.settlementAttemptedYesNo(claim.getSettlementAttempted());
 
-        // §6.3.13 / §6.3.14
-        p.hasClaimantCircsYesNo(claim.getClaimantCircumstancesProvided());
+        VerticalYesNo mediationEnum = claim.getMediationAttempted();
+        p.mediationAttemptedYesNo(mediationEnum == null ? null : mediationEnum.getLabel());
+        VerticalYesNo settlementEnum = claim.getSettlementAttempted();
+        p.settlementAttemptedYesNo(settlementEnum == null ? null : settlementEnum.getLabel());
+
+        // §6.3.13 / §6.3.14 — title-case labels + details show-flag gated on YES.
+        VerticalYesNo claimantCircsEnum = claim.getClaimantCircumstancesProvided();
+        p.hasClaimantCircsYesNo(claimantCircsEnum == null ? null : claimantCircsEnum.getLabel());
+        p.showClaimantCircsFreeText(claimantCircsEnum == VerticalYesNo.YES);
         p.claimantCircsFreeText(claim.getClaimantCircumstances());
-        p.hasDefendantCircsYesNo(claim.getDefendantCircumstancesProvided());
+
+        VerticalYesNo defendantCircsEnum = claim.getDefendantCircumstancesProvided();
+        p.hasDefendantCircsYesNo(defendantCircsEnum == null ? null : defendantCircsEnum.getLabel());
+        p.showDefendantCircsFreeText(defendantCircsEnum == VerticalYesNo.YES);
         p.defendantCircsFreeText(claim.getDefendantCircumstances());
 
-        // §6.3.7 additional reasons row
-        p.hasAdditionalReasonsYesNo(claim.getAdditionalReasonsProvided());
-        p.additionalReasonsProvided(claim.getAdditionalReasonsProvided() == VerticalYesNo.YES);
+        // §6.3.7 additional reasons row — title-case label for direct Docmosis render.
+        VerticalYesNo additionalReasonsEnum = claim.getAdditionalReasonsProvided();
+        p.hasAdditionalReasonsYesNo(additionalReasonsEnum == null ? null : additionalReasonsEnum.getLabel());
+        p.additionalReasonsProvided(additionalReasonsEnum == VerticalYesNo.YES);
         p.additionalReasonsFreeText(claim.getAdditionalReasons());
 
         // §6.3.15 yes/no gate (parties themselves are mapped separately)
         p.hasUnderlesseeYesNo(claim.getUnderlesseeOrMortgagee());
 
-        // §6.3.2 Wales-only row
-        p.claimantIsExemptLandlord(claim.getIsExemptLandlord());
+        // §6.3.2 Wales-only row — convert to title-case "Yes"/"No" string for direct Docmosis render.
+        p.claimantIsExemptLandlord(
+            claim.getIsExemptLandlord() == null ? null : claim.getIsExemptLandlord().getLabel()
+        );
 
         // whyClaimingPossession is §13.3 gap (2) — left null.
     }
@@ -146,27 +207,76 @@ public class ClaimPackPayloadBuilder {
     // PartyEntity (claimant) — §13.2 "From PartyEntity"
     // -----------------------------------------------------------------------
     private void mapClaimants(List<PartyEntity> claimants, ClaimPackFormPayload.ClaimPackFormPayloadBuilder p) {
-        if (!claimants.isEmpty()) {
-            p.claimant(toClaimPackParty(claimants.getFirst()));
+        if (claimants.isEmpty()) {
+            return;
         }
+        PartyEntity head = claimants.getFirst();
+        ClaimPackParty mapped = toClaimPackParty(head);
+        p.claimant(mapped);
+        p.claimantDisplayName(deriveDisplayName(mapped));
+        ClaimPackAddress addr = mapped.getAddress();
+        p.hasClaimantAddressLine2(addr != null && isPopulated(addr.getAddressLine2()));
+        p.hasClaimantAddressLine3(addr != null && isPopulated(addr.getAddressLine3()));
+        p.hasClaimantCounty(addr != null && isPopulated(addr.getCounty()));
     }
 
     // -----------------------------------------------------------------------
     // PartyEntity (defendants) — §13.2 "From PartyEntity"
+    //
+    // Produces one flat list rendered by a single <<rs_defendants>>...<<es_>> loop.
+    // Address fallback: defendant.address used if its addressLine1 is populated,
+    // otherwise the property address (spec: "address cannot be Unknown").
     // -----------------------------------------------------------------------
-    private void mapDefendants(List<PartyEntity> defendants, ClaimPackFormPayload.ClaimPackFormPayloadBuilder p) {
-        if (!defendants.isEmpty()) {
-            p.defendant1(toClaimPackParty(defendants.getFirst()));
-            if (defendants.size() > 1) {
-                p.additionalDefendants(
-                    defendants.subList(1, defendants.size()).stream()
-                        .map(this::toClaimPackParty)
-                        .toList()
-                );
-            } else {
-                p.additionalDefendants(Collections.emptyList());
-            }
+    private void mapDefendants(List<PartyEntity> defendants,
+                               AddressEntity propertyAddress,
+                               ClaimPackFormPayload.ClaimPackFormPayloadBuilder p) {
+        List<ClaimPackDefendantRow> rows = new ArrayList<>(defendants.size());
+        int number = 1;
+        for (PartyEntity def : defendants) {
+            rows.add(toDefendantRow(def, number++, propertyAddress));
         }
+        p.defendants(rows);
+    }
+
+    private ClaimPackDefendantRow toDefendantRow(PartyEntity def, int number, AddressEntity propertyAddress) {
+        AddressEntity addr = pickAddressOrFallback(def.getAddress(), propertyAddress);
+        return ClaimPackDefendantRow.builder()
+            .defendantNumber(number)
+            .heading("Defendant " + number + " details")
+            .displayName(derivePartyDisplayName(def))
+            .addressLine1(addr.getAddressLine1())
+            .addressLine2(addr.getAddressLine2())
+            .addressLine3(addr.getAddressLine3())
+            .postTown(addr.getPostTown())
+            .county(addr.getCounty())
+            .postcode(addr.getPostcode())
+            .hasAddressLine2(isPopulated(addr.getAddressLine2()))
+            .hasAddressLine3(isPopulated(addr.getAddressLine3()))
+            .hasCounty(isPopulated(addr.getCounty()))
+            .build();
+    }
+
+    private static AddressEntity pickAddressOrFallback(AddressEntity defendantAddress, AddressEntity propertyAddress) {
+        if (defendantAddress != null && isPopulated(defendantAddress.getAddressLine1())) {
+            return defendantAddress;
+        }
+        return propertyAddress;
+    }
+
+    private static String derivePartyDisplayName(PartyEntity p) {
+        if (isPopulated(p.getOrgName())) {
+            return p.getOrgName();
+        }
+        if (p.getNameKnown() == VerticalYesNo.NO) {
+            return "Persons unknown";
+        }
+        boolean hasFirst = isPopulated(p.getFirstName());
+        boolean hasLast = isPopulated(p.getLastName());
+        if (!hasFirst && !hasLast) {
+            return "Persons unknown";
+        }
+        return (hasFirst ? p.getFirstName() : "") + (hasFirst && hasLast ? " " : "")
+            + (hasLast ? p.getLastName() : "");
     }
 
     // -----------------------------------------------------------------------
@@ -193,7 +303,8 @@ public class ClaimPackPayloadBuilder {
     private void mapFromGrounds(Set<ClaimGroundEntity> grounds, ClaimPackFormPayload.ClaimPackFormPayloadBuilder p) {
         if (grounds == null || grounds.isEmpty()) {
             p.grounds(Collections.emptyList());
-            p.hasGroundsYesNo(VerticalYesNo.NO);
+            p.groundsWithReasons(Collections.emptyList());
+            p.hasGroundsYesNo(VerticalYesNo.NO.getLabel());
             p.hasRentArrearsGround(false);
             p.hasAsbGround(false);
             p.hasOtherGround(false);
@@ -209,7 +320,8 @@ public class ClaimPackPayloadBuilder {
                 .build())
             .toList();
         p.grounds(mapped);
-        p.hasGroundsYesNo(VerticalYesNo.YES);
+        p.groundsWithReasons(mapped.stream().filter(ClaimPackGround::isHasReason).toList());
+        p.hasGroundsYesNo(VerticalYesNo.YES.getLabel());
 
         boolean hasRentArrears = grounds.stream()
             .anyMatch(g -> Boolean.TRUE.equals(g.getIsRentArrears()));
@@ -246,10 +358,10 @@ public class ClaimPackPayloadBuilder {
         if (notice == null) {
             return;
         }
-        // YesOrNo (CCD SDK) -> VerticalYesNo bridge needed for noticeServed / noticeUploaded
-        p.noticeServedYesNo(yesOrNoToVertical(notice.getNoticeServed()));
-        boolean notServed = notice.getNoticeServed() != null
-            && "NO".equalsIgnoreCase(notice.getNoticeServed().name());
+        // YesOrNo (CCD SDK) → title-case label; same bridge but rendered directly.
+        VerticalYesNo noticeServedEnum = yesOrNoToVertical(notice.getNoticeServed());
+        p.noticeServedYesNo(noticeServedEnum == null ? null : noticeServedEnum.getLabel());
+        boolean notServed = noticeServedEnum == VerticalYesNo.NO;
         p.noticeNotServedDisplayed(notServed);
         p.noticeNotServedReason(notice.getNoticeStatement());
         p.noticeType(notice.getNoticeType());
@@ -281,6 +393,11 @@ public class ClaimPackPayloadBuilder {
         }
         // noticeUploadedYesNo and noticeNotUploadedReason — see plan §13.3 gap (3) and the
         // ClaimDocumentEntity-driven derivation; deferred to follow-up.
+        // The complementary booleans below will gate "Yes, a copy attached"/"No" conditionals
+        // once that source field is wired — for now both are false (null upstream).
+        VerticalYesNo uploaded = null; // placeholder until §13.3 gap (3) is closed
+        p.noticeUploadedYes(uploaded == VerticalYesNo.YES);
+        p.noticeUploadedNo(uploaded == VerticalYesNo.NO);
     }
 
     // -----------------------------------------------------------------------
@@ -296,7 +413,11 @@ public class ClaimPackPayloadBuilder {
             p.tenancyTypeLabel(formatTenancyLabel(tenancy));
         }
         p.tenancyStartDate(tenancy.getStartDate());
-        p.tenancyUploadedYesNo(tenancy.getHasCopyOfTenancyLicence());
+        p.showTenancyStartDate(tenancy.getStartDate() != null);
+        VerticalYesNo tenancyUploaded = tenancy.getHasCopyOfTenancyLicence();
+        p.tenancyUploadedYesNo(tenancyUploaded);
+        p.tenancyUploadedYes(tenancyUploaded == VerticalYesNo.YES);
+        p.tenancyUploadedNo(tenancyUploaded == VerticalYesNo.NO);
         p.tenancyNotUploadedReason(tenancy.getReasonsForNoTenancyLicence());
         p.rentAmount(tenancy.getRentAmount());
         p.rentCalculatedDescription(formatRentDescription(tenancy));
@@ -310,8 +431,12 @@ public class ClaimPackPayloadBuilder {
             return;
         }
         p.rentArrearsTotal(rent.getTotalRentArrears());
-        p.judgmentRequestedYesNo(rent.getArrearsJudgmentWanted());
-        p.hasPreviousStepsYesNo(rent.getRecoveryAttempted());
+        VerticalYesNo judgmentEnum = rent.getArrearsJudgmentWanted();
+        p.judgmentRequestedYesNo(judgmentEnum == null ? null : judgmentEnum.getLabel());
+        // "Details of previous steps" row only renders when previous-steps Y/N is YES.
+        VerticalYesNo prevStepsEnum = rent.getRecoveryAttempted();
+        p.hasPreviousStepsYesNo(prevStepsEnum == null ? null : prevStepsEnum.getLabel());
+        p.showPreviousStepsFreeText(prevStepsEnum == VerticalYesNo.YES);
         p.previousStepsFreeText(rent.getRecoveryAttemptDetails());
     }
 
@@ -323,18 +448,34 @@ public class ClaimPackPayloadBuilder {
         if (asb == null) {
             return;
         }
-        // §6.3.8
-        p.asbAllegedYesNo(asb.getAntisocialBehaviour());
+        // §6.3.8 — title-case Y/N strings for direct template rendering; per-row show
+        // flags follow each enum's YES/NO state.
+        VerticalYesNo asbEnum = asb.getAntisocialBehaviour();
+        p.asbAllegedYesNo(asbEnum == null ? null : asbEnum.getLabel());
+        p.showAsbDetails(asbEnum == VerticalYesNo.YES);
         p.asbDetailsFreeText(asb.getAntisocialBehaviourDetails());
-        p.illegalUseAllegedYesNo(asb.getIllegalPurposes());
+
+        VerticalYesNo illegalUseEnum = asb.getIllegalPurposes();
+        p.illegalUseAllegedYesNo(illegalUseEnum == null ? null : illegalUseEnum.getLabel());
+        p.showIllegalUseDetails(illegalUseEnum == VerticalYesNo.YES);
         p.illegalUseDetailsFreeText(asb.getIllegalPurposesDetails());
-        p.otherProhibitedAllegedYesNo(asb.getOtherProhibitedConduct());
+
+        VerticalYesNo otherProhibitedEnum = asb.getOtherProhibitedConduct();
+        p.otherProhibitedAllegedYesNo(otherProhibitedEnum == null ? null : otherProhibitedEnum.getLabel());
+        p.showOtherProhibitedDetails(otherProhibitedEnum == VerticalYesNo.YES);
         p.otherProhibitedDetailsFreeText(asb.getOtherProhibitedConductDetails());
 
         // §6.3.18 PCSC (Wales) — yes, same entity (see plan §13.2 note).
-        p.isPcscYesNo(asb.getClaimingStandardContract());
+        // Title-case labels + nested show-flags. showPcscSection (outer) is computed in
+        // mapClaimDetailsShowFlags since it depends on country.
+        VerticalYesNo pcscEnum = asb.getClaimingStandardContract();
+        p.isPcscYesNo(pcscEnum == null ? null : pcscEnum.getLabel());
+        p.showPcscDetails(pcscEnum == VerticalYesNo.YES);
         p.pcscReasonFreeText(asb.getClaimingStandardContractDetails());
-        p.pcscTermsAgreedYesNo(asb.getPeriodicContractAgreed());
+
+        VerticalYesNo pcscTermsEnum = asb.getPeriodicContractAgreed();
+        p.pcscTermsAgreedYesNo(pcscTermsEnum == null ? null : pcscTermsEnum.getLabel());
+        p.showPcscTermsFreeText(pcscTermsEnum == VerticalYesNo.YES);
         p.pcscTermsFreeText(asb.getPeriodicContractDetails());
     }
 
@@ -346,15 +487,25 @@ public class ClaimPackPayloadBuilder {
         if (alt == null) {
             return;
         }
-        p.isDemotionClaimYesNo(yesOrNoToVertical(alt.getDotRequested()));
+        // Demotion — optional Y/N: row hidden if user didn't answer; follow-ups gated on YES.
+        VerticalYesNo demotionEnum = yesOrNoToVertical(alt.getDotRequested());
+        p.showIsDemotionClaim(demotionEnum != null);
+        p.isDemotionClaimYesNo(demotionEnum == null ? null : demotionEnum.getLabel());
+        p.showDemotionDetails(demotionEnum == VerticalYesNo.YES);
         if (alt.getDotHousingActSection() != null) {
             p.demotionHousingActSection(alt.getDotHousingActSection().name());
         }
-        p.hasServedDemotionTermsYesNo(yesOrNoToVertical(alt.getDotStatementServed()));
+        VerticalYesNo demoTermsEnum = yesOrNoToVertical(alt.getDotStatementServed());
+        p.hasServedDemotionTermsYesNo(demoTermsEnum == null ? null : demoTermsEnum.getLabel());
+        p.showDemotionTermsFreeText(demoTermsEnum == VerticalYesNo.YES);
         p.demotionTermsFreeText(alt.getDotStatementDetails());
         p.demotionReasonsFreeText(alt.getDotReason());
 
-        p.isSuspensionClaimYesNo(yesOrNoToVertical(alt.getSuspensionOfRTB()));
+        // Suspension — same shape (optional Y/N + follow-ups gated on YES).
+        VerticalYesNo suspensionEnum = yesOrNoToVertical(alt.getSuspensionOfRTB());
+        p.showIsSuspensionClaim(suspensionEnum != null);
+        p.isSuspensionClaimYesNo(suspensionEnum == null ? null : suspensionEnum.getLabel());
+        p.showSuspensionDetails(suspensionEnum == VerticalYesNo.YES);
         if (alt.getSuspensionOfRTBHousingActSection() != null) {
             p.suspensionHousingActSection(alt.getSuspensionOfRTBHousingActSection().name());
         }
@@ -465,6 +616,27 @@ public class ClaimPackPayloadBuilder {
             return CombinedLicenceType.OTHER.name() + ": " + t.getOtherTypeDetails();
         }
         return t.getType() != null ? t.getType().name() : null;
+    }
+
+    /**
+     * Render-ready name: org name if set, else "first last" if either is set, else "Persons unknown".
+     * Mirrors how the template's {@code ((name))} designer placeholder is intended to read.
+     */
+    private static String deriveDisplayName(ClaimPackParty party) {
+        if (isPopulated(party.getOrgName())) {
+            return party.getOrgName();
+        }
+        boolean hasFirst = isPopulated(party.getFirstName());
+        boolean hasLast = isPopulated(party.getLastName());
+        if (hasFirst || hasLast) {
+            return (hasFirst ? party.getFirstName() : "") + (hasFirst && hasLast ? " " : "")
+                + (hasLast ? party.getLastName() : "");
+        }
+        return "Persons unknown";
+    }
+
+    private static boolean isPopulated(String s) {
+        return s != null && !s.isBlank();
     }
 
     private static String formatRentDescription(TenancyLicenceEntity t) {

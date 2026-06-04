@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackDefendantRow;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -66,6 +67,18 @@ class ClaimPackPayloadBuilderTest {
         }
 
         @Test
+        void isEnglandIsComplementOfIsWales() {
+            // Docmosis compact syntax can't negate, so the payload sends both.
+            ClaimPackFormPayload eng = builder.build(minimalCase(LegislativeCountry.ENGLAND));
+            ClaimPackFormPayload wal = builder.build(minimalCase(LegislativeCountry.WALES));
+
+            assertThat(eng.isEngland()).isTrue();
+            assertThat(eng.isWales()).isFalse();
+            assertThat(wal.isEngland()).isFalse();
+            assertThat(wal.isWales()).isTrue();
+        }
+
+        @Test
         void caseReferenceFormattedWithDashes() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.setCaseReference(1234567812345678L);
@@ -92,40 +105,182 @@ class ClaimPackPayloadBuilderTest {
             assertThat(payload.getClaimant().getAddress().getAddressLine1()).isEqualTo("1 High St");
         }
 
+    }
+
+    @Nested
+    class Defendants {
+
         @Test
-        void defendantWithNameKnownNoIsPersonsUnknownButAddressStillPopulated() {
-            // Address is always known — "persons unknown" only flips the NAME, not the address.
-            // Template §6.3.4 still renders address rows under the "Persons unknown" label.
+        void singleKnownDefendantProducesOneRow() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
-            PartyEntity claimant = party("A", "Owner", VerticalYesNo.YES, address("1 High St"));
-            PartyEntity unknownDef = party(null, null, VerticalYesNo.NO, address("99 Last Known Rd"));
-            attach(pcsCase, claimant, PartyRole.CLAIMANT, 1);
-            attach(pcsCase, unknownDef, PartyRole.DEFENDANT, 1);
+            attach(pcsCase, party("Alice", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            attach(pcsCase, party("Bob", "Tenant", VerticalYesNo.YES, address("42 Renters Way")),
+                PartyRole.DEFENDANT, 1);
 
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.getDefendant1()).isNotNull();
-            assertThat(payload.getDefendant1().isPersonsUnknown()).isTrue();
-            assertThat(payload.getDefendant1().getAddress()).isNotNull();
-            assertThat(payload.getDefendant1().getAddress().getAddressLine1())
-                .isEqualTo("99 Last Known Rd");
+            assertThat(payload.getDefendants()).hasSize(1);
+            ClaimPackDefendantRow row = payload.getDefendants().getFirst();
+            assertThat(row.getDefendantNumber()).isEqualTo(1);
+            assertThat(row.getHeading()).isEqualTo("Defendant 1 details");
+            assertThat(row.getDisplayName()).isEqualTo("Bob Tenant");
+            assertThat(row.getAddressLine1()).isEqualTo("42 Renters Way");
         }
 
         @Test
-        void multipleDefendantsSplitIntoFirstAndAdditional() {
+        void multipleKnownDefendantsAllGetSequentialHeadings() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
-            PartyEntity claimant = party("A", "Owner", VerticalYesNo.YES, address("1 High St"));
-            attach(pcsCase, claimant, PartyRole.CLAIMANT, 1);
-            attach(pcsCase, party("Bob", "One", VerticalYesNo.YES, address("X")), PartyRole.DEFENDANT, 1);
-            attach(pcsCase, party("Carol", "Two", VerticalYesNo.YES, address("Y")), PartyRole.DEFENDANT, 2);
-            attach(pcsCase, party("Dave", "Three", VerticalYesNo.YES, address("Z")), PartyRole.DEFENDANT, 3);
+            attach(pcsCase, party("A", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            attach(pcsCase, party("Bob", "One", VerticalYesNo.YES, address("X1")), PartyRole.DEFENDANT, 1);
+            attach(pcsCase, party("Carol", "Two", VerticalYesNo.YES, address("X2")), PartyRole.DEFENDANT, 2);
+            attach(pcsCase, party("Dave", "Three", VerticalYesNo.YES, address("X3")), PartyRole.DEFENDANT, 3);
 
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.getDefendant1().getLastName()).isEqualTo("One");
-            assertThat(payload.getAdditionalDefendants()).hasSize(2);
-            assertThat(payload.getAdditionalDefendants().get(0).getLastName()).isEqualTo("Two");
-            assertThat(payload.getAdditionalDefendants().get(1).getLastName()).isEqualTo("Three");
+            assertThat(payload.getDefendants()).hasSize(3);
+            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getHeading)
+                .containsExactly("Defendant 1 details", "Defendant 2 details", "Defendant 3 details");
+            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getDisplayName)
+                .containsExactly("Bob One", "Carol Two", "Dave Three");
+            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getAddressLine1)
+                .containsExactly("X1", "X2", "X3");
+        }
+
+        @Test
+        void personsUnknownDefendantRendersAsPersonsUnknownWithAddressStillPresent() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            attach(pcsCase, party("A", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            // nameKnown=NO is the "persons unknown" marker on the entity side.
+            attach(pcsCase, party(null, null, VerticalYesNo.NO, address("99 Last Known Rd")),
+                PartyRole.DEFENDANT, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getDefendants()).hasSize(1);
+            ClaimPackDefendantRow row = payload.getDefendants().getFirst();
+            assertThat(row.getDisplayName()).isEqualTo("Persons unknown");
+            // Address still rendered — spec: defendant address cannot be "Unknown".
+            assertThat(row.getAddressLine1()).isEqualTo("99 Last Known Rd");
+        }
+
+        @Test
+        void mixedKnownAndUnknownDefendantsRenderTogether() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            attach(pcsCase, party("A", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            attach(pcsCase, party(null, null, VerticalYesNo.NO, address("5 Maes Y Coed Rd")),
+                PartyRole.DEFENDANT, 1);
+            attach(pcsCase, party("Carwyn", "Jones", VerticalYesNo.YES, address("5 Maes Y Coed Rd")),
+                PartyRole.DEFENDANT, 2);
+            attach(pcsCase, party(null, null, VerticalYesNo.NO, address("5 Maes Y Coed Rd")),
+                PartyRole.DEFENDANT, 3);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getDefendants()).hasSize(3);
+            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getDisplayName)
+                .containsExactly("Persons unknown", "Carwyn Jones", "Persons unknown");
+            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getHeading)
+                .containsExactly("Defendant 1 details", "Defendant 2 details", "Defendant 3 details");
+        }
+
+        @Test
+        void defendantWithNoAddressFallsBackToPropertyAddress() {
+            // Spec: "If the claimant has not provided an address for the defendant then
+            // the address of the property to be possessed becomes the defendant's address."
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setPropertyAddress(address("99 Property Lane"));
+            attach(pcsCase, party("A", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            // Defendant with no own address — should pick up property address instead.
+            attach(pcsCase, party("Bob", "Tenant", VerticalYesNo.YES, null),
+                PartyRole.DEFENDANT, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            ClaimPackDefendantRow row = payload.getDefendants().getFirst();
+            assertThat(row.getDisplayName()).isEqualTo("Bob Tenant");
+            assertThat(row.getAddressLine1()).isEqualTo("99 Property Lane");
+        }
+    }
+
+    @Nested
+    class ClaimantDerivedFields {
+
+        @Test
+        void displayNameUsesOrgNameWhenSet() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            attach(pcsCase, orgParty("Possession Claims Solicitor Org", address("MOJ")), PartyRole.CLAIMANT, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getClaimantDisplayName()).isEqualTo("Possession Claims Solicitor Org");
+        }
+
+        @Test
+        void displayNameUsesFirstAndLastNameWhenNoOrg() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            attach(pcsCase, party("Alice", "Owner", VerticalYesNo.YES, address("X")), PartyRole.CLAIMANT, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getClaimantDisplayName()).isEqualTo("Alice Owner");
+        }
+
+        @Test
+        void displayNameFallsBackToPersonsUnknown() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            attach(pcsCase, party(null, null, VerticalYesNo.NO, address("X")), PartyRole.CLAIMANT, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getClaimantDisplayName()).isEqualTo("Persons unknown");
+        }
+
+        @Test
+        void addressLinePresenceFlagsReflectNullability() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            AddressEntity addr = AddressEntity.builder()
+                .addressLine1("Ministry Of Justice")
+                .addressLine2("Seventh Floor 102 Petty France")
+                .addressLine3(null)
+                .postTown("London")
+                .county(null)
+                .postcode("SW1H 9AJ")
+                .build();
+            attach(pcsCase, orgParty("Org", addr), PartyRole.CLAIMANT, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isHasClaimantAddressLine2()).isTrue();
+            assertThat(payload.isHasClaimantAddressLine3()).isFalse();
+            assertThat(payload.isHasClaimantCounty()).isFalse();
+        }
+
+        @Test
+        void exemptLandlordRenderedAsTitleCaseString() {
+            // VerticalYesNo.NO.getLabel() == "No" — payload exposes the title-case string
+            // so Docmosis renders "No" directly without further mapping.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            pcsCase.getClaims().getFirst().setIsExemptLandlord(VerticalYesNo.NO);
+            attach(pcsCase, orgParty("Org", address("X")), PartyRole.CLAIMANT, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getClaimantIsExemptLandlord()).isEqualTo("No");
+        }
+
+        @Test
+        void exemptLandlordNullWhenSourceNull() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            attach(pcsCase, orgParty("Org", address("X")), PartyRole.CLAIMANT, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getClaimantIsExemptLandlord()).isNull();
         }
     }
 
@@ -137,7 +292,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.getHasGroundsYesNo()).isEqualTo(VerticalYesNo.NO);
+            assertThat(payload.getHasGroundsYesNo()).isEqualTo("No");
             assertThat(payload.getGrounds()).isEmpty();
             assertThat(payload.isNoOrAbsoluteOrOtherGrounds()).isTrue();
             assertThat(payload.isHasRentArrearsGround()).isFalse();
@@ -160,7 +315,118 @@ class ClaimPackPayloadBuilderTest {
 
             assertThat(payload.isHasRentArrearsGround()).isTrue();
             assertThat(payload.getGrounds()).hasSize(1);
-            assertThat(payload.getHasGroundsYesNo()).isEqualTo(VerticalYesNo.YES);
+            assertThat(payload.getHasGroundsYesNo()).isEqualTo("Yes");
+        }
+    }
+
+    @Nested
+    class ClaimDetailsShowFlags {
+
+        @Test
+        void englandIntroDemotedOtherWithOtherGround_descriptionAndWhyClaimingShown() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
+                .code("OTHER")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowDescriptionOfGrounds()).isTrue();
+            assertThat(payload.isShowWhyClaimingPossession()).isTrue();
+        }
+
+        @Test
+        void englandIntroDemotedOtherWithRegularGround_descriptionAndWhyClaimingHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.ASSURED_MANDATORY)
+                .code("8")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
+            assertThat(payload.isShowWhyClaimingPossession()).isFalse();
+        }
+
+        @Test
+        void groundsWithReasonsListIncludesOnlyGroundsWithReasonText() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.ASSURED_MANDATORY)
+                .code("8")
+                .claim(claim)
+                .build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.ASSURED_DISCRETIONARY)
+                .code("10")
+                .reason("Defendant in continuous arrears for 18 months.")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).hasSize(2);
+            assertThat(payload.getGroundsWithReasons()).hasSize(1);
+            assertThat(payload.getGroundsWithReasons().getFirst().getReasonFreeText())
+                .isEqualTo("Defendant in continuous arrears for 18 months.");
+        }
+
+        @Test
+        void additionalReasonsNotProvided_freeTextRowHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setAdditionalReasonsProvided(VerticalYesNo.NO);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getHasAdditionalReasonsYesNo()).isEqualTo("No");
+            assertThat(payload.isAdditionalReasonsProvided()).isFalse();
+        }
+
+        @Test
+        void additionalReasonsProvided_freeTextRowShown() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setAdditionalReasonsProvided(VerticalYesNo.YES);
+            claim.setAdditionalReasons("Defendant has refused mediation.");
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getHasAdditionalReasonsYesNo()).isEqualTo("Yes");
+            assertThat(payload.isAdditionalReasonsProvided()).isTrue();
+            assertThat(payload.getAdditionalReasonsFreeText()).isEqualTo("Defendant has refused mediation.");
+        }
+
+        @Test
+        void walesJourneyEvenWithOtherGround_descriptionAndWhyClaimingStillHidden() {
+            // Spec: "N/A for Welsh journey" — both show-flags must stay false regardless.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
+                .code("OTHER")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
+            assertThat(payload.isShowWhyClaimingPossession()).isFalse();
         }
     }
 
@@ -283,6 +549,36 @@ class ClaimPackPayloadBuilderTest {
 
             assertThat(payload.isIntroDemotedOtherTenancy()).isFalse();
         }
+
+        @Test
+        void tenancyUploadedComplementaryBooleansDriveDocmosisBranches() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            TenancyLicenceEntity t = TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.ASSURED_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.YES)
+                .build();
+            pcsCase.setTenancyLicence(t);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isTenancyUploadedYes()).isTrue();
+            assertThat(payload.isTenancyUploadedNo()).isFalse();
+        }
+
+        @Test
+        void tenancyUploadedNoFlipsTheOtherDirection() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            TenancyLicenceEntity t = TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.ASSURED_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.NO)
+                .build();
+            pcsCase.setTenancyLicence(t);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isTenancyUploadedYes()).isFalse();
+            assertThat(payload.isTenancyUploadedNo()).isTrue();
+        }
     }
 
     @Nested
@@ -340,9 +636,169 @@ class ClaimPackPayloadBuilderTest {
 
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.getIsDemotionClaimYesNo()).isEqualTo(VerticalYesNo.YES);
+            assertThat(payload.getIsDemotionClaimYesNo()).isEqualTo("Yes");
             assertThat(payload.getDemotionReasonsFreeText()).isEqualTo("Anti-social behaviour");
-            assertThat(payload.getIsSuspensionClaimYesNo()).isEqualTo(VerticalYesNo.NO);
+            assertThat(payload.getIsSuspensionClaimYesNo()).isEqualTo("No");
+        }
+
+        @Test
+        void demotionNotAnswered_wholeSectionHidden() {
+            // Optional Y/N: when user didn't answer, the whole demotion section disappears.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            // PossessionAlternativesEntity not set at all.
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowIsDemotionClaim()).isFalse();
+            assertThat(payload.isShowDemotionDetails()).isFalse();
+            assertThat(payload.getIsDemotionClaimYesNo()).isNull();
+        }
+
+        @Test
+        void demotionYes_sectionVisibleWithFollowUps() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setPossessionAlternativesEntity(PossessionAlternativesEntity.builder()
+                .dotRequested(YesOrNo.YES)
+                .dotStatementServed(YesOrNo.YES)
+                .dotStatementDetails("Notice given on 1 March.")
+                .dotReason("Breach of conditions.")
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowIsDemotionClaim()).isTrue();
+            assertThat(payload.isShowDemotionDetails()).isTrue();
+            assertThat(payload.isShowDemotionTermsFreeText()).isTrue();
+            assertThat(payload.getHasServedDemotionTermsYesNo()).isEqualTo("Yes");
+        }
+
+        @Test
+        void demotionNo_sectionVisibleButFollowUpsHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setPossessionAlternativesEntity(PossessionAlternativesEntity.builder()
+                .dotRequested(YesOrNo.NO)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowIsDemotionClaim()).isTrue();   // Y/N row visible
+            assertThat(payload.isShowDemotionDetails()).isFalse();  // 4 follow-ups hidden
+            assertThat(payload.getIsDemotionClaimYesNo()).isEqualTo("No");
+        }
+
+        @Test
+        void demotionExpressTermsNo_termsDetailsHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setPossessionAlternativesEntity(PossessionAlternativesEntity.builder()
+                .dotRequested(YesOrNo.YES)
+                .dotStatementServed(YesOrNo.NO)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowDemotionDetails()).isTrue();
+            assertThat(payload.isShowDemotionTermsFreeText()).isFalse();
+        }
+
+        @Test
+        void suspensionYes_sectionVisibleWithFollowUps() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setPossessionAlternativesEntity(PossessionAlternativesEntity.builder()
+                .suspensionOfRTB(YesOrNo.YES)
+                .suspensionOfRTBReason("Reasons given.")
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowIsSuspensionClaim()).isTrue();
+            assertThat(payload.isShowSuspensionDetails()).isTrue();
+        }
+    }
+
+    @Nested
+    class Circumstances {
+
+        @Test
+        void claimantCircsYes_detailsRowShown() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setClaimantCircumstancesProvided(VerticalYesNo.YES);
+            claim.setClaimantCircumstances("Two children in the household.");
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getHasClaimantCircsYesNo()).isEqualTo("Yes");
+            assertThat(payload.isShowClaimantCircsFreeText()).isTrue();
+            assertThat(payload.getClaimantCircsFreeText()).isEqualTo("Two children in the household.");
+        }
+
+        @Test
+        void claimantCircsNo_detailsRowHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setClaimantCircumstancesProvided(VerticalYesNo.NO);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getHasClaimantCircsYesNo()).isEqualTo("No");
+            assertThat(payload.isShowClaimantCircsFreeText()).isFalse();
+        }
+
+        @Test
+        void defendantCircsYes_detailsRowShown() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setDefendantCircumstancesProvided(VerticalYesNo.YES);
+            claim.setDefendantCircumstances("Defendant has been unemployed.");
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getHasDefendantCircsYesNo()).isEqualTo("Yes");
+            assertThat(payload.isShowDefendantCircsFreeText()).isTrue();
+        }
+
+        @Test
+        void defendantCircsNo_detailsRowHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setDefendantCircumstancesProvided(VerticalYesNo.NO);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getHasDefendantCircsYesNo()).isEqualTo("No");
+            assertThat(payload.isShowDefendantCircsFreeText()).isFalse();
+        }
+    }
+
+    @Nested
+    class TenancyStartDate {
+
+        @Test
+        void startDatePopulated_rowShown() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.ASSURED_TENANCY)
+                .startDate(LocalDate.of(2024, 1, 1))
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowTenancyStartDate()).isTrue();
+            assertThat(payload.getTenancyStartDate()).isEqualTo(LocalDate.of(2024, 1, 1));
+        }
+
+        @Test
+        void startDateNull_rowHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.ASSURED_TENANCY)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowTenancyStartDate()).isFalse();
         }
     }
 
@@ -363,10 +819,193 @@ class ClaimPackPayloadBuilderTest {
 
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.getAsbAllegedYesNo()).isEqualTo(VerticalYesNo.YES);
+            assertThat(payload.getAsbAllegedYesNo()).isEqualTo("Yes");
             assertThat(payload.getAsbDetailsFreeText()).isEqualTo("Loud noise complaints");
-            assertThat(payload.getIsPcscYesNo()).isEqualTo(VerticalYesNo.YES);
+            assertThat(payload.getIsPcscYesNo()).isEqualTo("Yes");
             assertThat(payload.getPcscReasonFreeText()).isEqualTo("Reason for PCSC");
+        }
+    }
+
+    @Nested
+    class PcscSection {
+
+        @Test
+        void walesShowsPcscSection() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowPcscSection()).isTrue();
+        }
+
+        @Test
+        void englandHidesPcscSection() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowPcscSection()).isFalse();
+        }
+
+        @Test
+        void pcscYes_detailsShownAndTermsShownIfAgreedYes() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setAsbProhibitedConductEntity(AsbProhibitedConductEntity.builder()
+                .claimingStandardContract(VerticalYesNo.YES)
+                .periodicContractAgreed(VerticalYesNo.YES)
+                .periodicContractDetails("Standard 12-month PCSC terms.")
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getIsPcscYesNo()).isEqualTo("Yes");
+            assertThat(payload.isShowPcscDetails()).isTrue();
+            assertThat(payload.getPcscTermsAgreedYesNo()).isEqualTo("Yes");
+            assertThat(payload.isShowPcscTermsFreeText()).isTrue();
+        }
+
+        @Test
+        void pcscNo_detailsAndTermsHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setAsbProhibitedConductEntity(AsbProhibitedConductEntity.builder()
+                .claimingStandardContract(VerticalYesNo.NO)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getIsPcscYesNo()).isEqualTo("No");
+            assertThat(payload.isShowPcscDetails()).isFalse();
+            assertThat(payload.isShowPcscTermsFreeText()).isFalse();
+        }
+
+        @Test
+        void pcscYesButTermsNo_termsFreeTextHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setAsbProhibitedConductEntity(AsbProhibitedConductEntity.builder()
+                .claimingStandardContract(VerticalYesNo.YES)
+                .periodicContractAgreed(VerticalYesNo.NO)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowPcscDetails()).isTrue();
+            assertThat(payload.isShowPcscTermsFreeText()).isFalse();
+        }
+    }
+
+    @Nested
+    class RequiredDocumentsSection {
+
+        @Test
+        void walesShowsRequiredDocumentsSection() {
+            ClaimPackFormPayload payload = builder.build(minimalCase(LegislativeCountry.WALES));
+            assertThat(payload.isShowRequiredDocumentsSection()).isTrue();
+        }
+
+        @Test
+        void englandHidesRequiredDocumentsSection() {
+            ClaimPackFormPayload payload = builder.build(minimalCase(LegislativeCountry.ENGLAND));
+            assertThat(payload.isShowRequiredDocumentsSection()).isFalse();
+        }
+        // EPC/gas/EICR field data still §13.3 gap; show*NotUploadedReason booleans default to
+        // false (since the upload Y/N fields are null until source is wired).
+    }
+
+    @Nested
+    class AsbSection {
+
+        @Test
+        void englandJourneyHidesAsbSection() {
+            // Even if grounds include an English ASB ground, the section stays hidden
+            // — spec marks the whole block "WALES ONLY".
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                .code("S84A_CONDITION_1")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowAsbSection()).isFalse();
+        }
+
+        @Test
+        void walesWithoutAsbGroundHidesAsbSection() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_SECURE_DISCRETIONARY)
+                .code("OTHER_BREACH_OF_CONTRACT_S157")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowAsbSection()).isFalse();
+        }
+
+        @Test
+        void walesWithSecureContractAsbGroundShowsSection() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            // Wales secure contract ASB ground — persisted with code "ANTISOCIAL_BEHAVIOUR_S157"
+            // by WalesSecureClaimGroundService.
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_SECURE_DISCRETIONARY)
+                .code("ANTISOCIAL_BEHAVIOUR_S157")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowAsbSection()).isTrue();
+        }
+
+        @Test
+        void walesWithStandardContractAsbGroundAlsoShowsSection() {
+            // Same code, different category — both standard and secure contract Wales
+            // services persist ANTISOCIAL_BEHAVIOUR_S157 as the ASB ground code.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_STANDARD_OTHER_DISCRETIONARY)
+                .code("ANTISOCIAL_BEHAVIOUR_S157")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowAsbSection()).isTrue();
+        }
+
+        @Test
+        void detailsRowsGatedIndependentlyByEachYesNoAnswer() {
+            // showAsbDetails follows asbAlleged; showIllegalUseDetails follows illegalPurposes;
+            // showOtherProhibitedDetails follows otherProhibitedConduct — independently.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            AsbProhibitedConductEntity asb = AsbProhibitedConductEntity.builder()
+                .antisocialBehaviour(VerticalYesNo.YES)
+                .antisocialBehaviourDetails("Loud noise.")
+                .illegalPurposes(VerticalYesNo.NO)
+                .otherProhibitedConduct(VerticalYesNo.YES)
+                .otherProhibitedConductDetails("Damage to property.")
+                .build();
+            claim.setAsbProhibitedConductEntity(asb);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getAsbAllegedYesNo()).isEqualTo("Yes");
+            assertThat(payload.isShowAsbDetails()).isTrue();
+            assertThat(payload.getIllegalUseAllegedYesNo()).isEqualTo("No");
+            assertThat(payload.isShowIllegalUseDetails()).isFalse();
+            assertThat(payload.getOtherProhibitedAllegedYesNo()).isEqualTo("Yes");
+            assertThat(payload.isShowOtherProhibitedDetails()).isTrue();
         }
     }
 
@@ -388,9 +1027,211 @@ class ClaimPackPayloadBuilderTest {
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getRentArrearsTotal()).isEqualByComparingTo("1500.00");
-            assertThat(payload.getJudgmentRequestedYesNo()).isEqualTo(VerticalYesNo.YES);
-            assertThat(payload.getHasPreviousStepsYesNo()).isEqualTo(VerticalYesNo.YES);
+            assertThat(payload.getJudgmentRequestedYesNo()).isEqualTo("Yes");
+            assertThat(payload.getHasPreviousStepsYesNo()).isEqualTo("Yes");
             assertThat(payload.getPreviousStepsFreeText()).isEqualTo("Two letters sent");
+        }
+
+        @Test
+        void rentArrearsSectionGatedByHasRentArrearsGround() {
+            // England with a rent-arrears ground → hasRentArrearsGround = true.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.ASSURED_MANDATORY)
+                .code("8")
+                .isRentArrears(true)
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isHasRentArrearsGround()).isTrue();
+        }
+
+        @Test
+        void rentArrearsSectionHiddenWhenNoRentArrearsGround() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                .code("S84A_CONDITION_1")
+                .isRentArrears(false)
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isHasRentArrearsGround()).isFalse();
+        }
+
+        @Test
+        void walesRentArrearsS157AlsoSetsHasRentArrearsGround() {
+            // Wales: the WalesSecure/Standard services persist isRentArrears=true when the
+            // user selected RENT_ARREARS_S157.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_SECURE_DISCRETIONARY)
+                .code("RENT_ARREARS_S157")
+                .isRentArrears(true)
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isHasRentArrearsGround()).isTrue();
+        }
+
+        @Test
+        void previousStepsFreeTextShownWhenPreviousStepsYes() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setRentArrears(RentArrearsEntity.builder()
+                .recoveryAttempted(VerticalYesNo.YES)
+                .recoveryAttemptDetails("Three letters sent.")
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getHasPreviousStepsYesNo()).isEqualTo("Yes");
+            assertThat(payload.isShowPreviousStepsFreeText()).isTrue();
+            assertThat(payload.getPreviousStepsFreeText()).isEqualTo("Three letters sent.");
+        }
+
+        @Test
+        void previousStepsFreeTextHiddenWhenPreviousStepsNo() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setRentArrears(RentArrearsEntity.builder()
+                .recoveryAttempted(VerticalYesNo.NO)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getHasPreviousStepsYesNo()).isEqualTo("No");
+            assertThat(payload.isShowPreviousStepsFreeText()).isFalse();
+        }
+    }
+
+    @Nested
+    class ActionAlreadyTaken {
+
+        @Test
+        void preActionProtocolFollowedYes_reasonRowHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setPreActionProtocolFollowed(VerticalYesNo.YES);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getPreActionProtocolFollowedYesNo()).isEqualTo("Yes");
+            assertThat(payload.isShowPreActionProtocolNotFollowedReason()).isFalse();
+        }
+
+        @Test
+        void preActionProtocolNotFollowed_reasonRowShown() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setPreActionProtocolFollowed(VerticalYesNo.NO);
+            claim.setPreActionProtocolIncompleteExplanation("Defendant in hospital — couldn't deliver.");
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getPreActionProtocolFollowedYesNo()).isEqualTo("No");
+            assertThat(payload.isShowPreActionProtocolNotFollowedReason()).isTrue();
+            assertThat(payload.getPreActionProtocolNotFollowedReason())
+                .isEqualTo("Defendant in hospital — couldn't deliver.");
+        }
+
+        @Test
+        void mediationAndSettlementYNRenderedAsTitleCaseString() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setMediationAttempted(VerticalYesNo.YES);
+            claim.setSettlementAttempted(VerticalYesNo.NO);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getMediationAttemptedYesNo()).isEqualTo("Yes");
+            assertThat(payload.getSettlementAttemptedYesNo()).isEqualTo("No");
+        }
+    }
+
+    @Nested
+    class NoticeServed {
+
+        @Test
+        void noticeServedYes_whyNotServedRowHidden() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getNoticeServedYesNo()).isEqualTo("Yes");
+            assertThat(payload.isNoticeNotServedDisplayed()).isFalse();
+        }
+
+        @Test
+        void noticeServedNo_whyNotServedRowShown() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.NO)
+                .noticeStatement("Defendant address unknown — no notice possible.")
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getNoticeServedYesNo()).isEqualTo("No");
+            assertThat(payload.isNoticeNotServedDisplayed()).isTrue();
+            assertThat(payload.getNoticeNotServedReason())
+                .isEqualTo("Defendant address unknown — no notice possible.");
+        }
+
+        @Test
+        void walesAndNoticeServedYes_showNoticeTypeTrue() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeType("Section 173")
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowNoticeType()).isTrue();
+            assertThat(payload.getNoticeType()).isEqualTo("Section 173");
+        }
+
+        @Test
+        void walesAndNoticeServedNo_showNoticeTypeFalse() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.NO)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowNoticeType()).isFalse();
+        }
+
+        @Test
+        void englandJourneyHidesNoticeTypeEvenWhenServed() {
+            // Spec: Notice type is Wales-only — England never renders this row.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeType("Section 8")
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowNoticeType()).isFalse();
         }
     }
 
@@ -419,6 +1260,15 @@ class ClaimPackPayloadBuilderTest {
             .firstName(first)
             .lastName(last)
             .nameKnown(nameKnown)
+            .address(addr)
+            .claimParties(new HashSet<>())
+            .build();
+    }
+
+    private PartyEntity orgParty(String orgName, AddressEntity addr) {
+        return PartyEntity.builder()
+            .orgName(orgName)
+            .nameKnown(VerticalYesNo.YES)
             .address(addr)
             .claimParties(new HashSet<>())
             .build();
