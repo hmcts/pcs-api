@@ -1185,6 +1185,11 @@ export class CreateCaseAction implements IAction {
               ) {
                 return "Landlord’s notice in connection with end of fixed term given (section 186)";
               }
+              if (
+                item === "Estate management grounds s160"
+              ) {
+                return `Estate management grounds (section 160): ${formatText(submitPayLoad.secureGroundsWales_EstateManagementGrounds[0])} (ground A)`;
+              }
               return item;
             })
             .join(',')
@@ -1275,23 +1280,19 @@ export class CreateCaseAction implements IAction {
         }
         caseSummary.set(`Do you have any additional reasons for possession?`, formatWord(submitPayLoad.additionalReasonsForPossession.hasReasons));
         if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
-          caseSummary.set(`Details of additional reasons`, formatWord(submitPayLoad.additionalReasonsForPossession.reasons));
+          caseSummary.set(`Details of additional reasons`, submitPayLoad.additionalReasonsForPossession.reasons);
         }
         break;
       
       case 'Reasons for possession Wales':
-        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('ANTI_SOCIAL')) {
-          caseSummary.set(`Reasons for claiming possession under Antisocial behaviour`, submitPayLoad.antiSocialBehaviourGround);
+        if (submitPayLoad.secureGroundsWales_DiscretionaryGrounds?.includes('ESTATE_MANAGEMENT_GROUNDS_S160')) {
+          caseSummary.set(`Reasons for claiming possession under ground A`, submitPayLoad.walesSecureBuildingWorksReason);
         }
-        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('BREACH_OF_THE_TENANCY')) {
-          caseSummary.set(`Reasons for claiming possession under Breach of the tenancy`, submitPayLoad.breachOfTheTenancyGround);
-        }
-        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('ABSOLUTE_GROUNDS')) {
-          caseSummary.set(`Reasons for claiming possession under Absolute grounds`, submitPayLoad.absoluteGrounds);
-        }
-        caseSummary.set(`Do you have any additional reasons for possession?`, formatWord(submitPayLoad.additionalReasonsForPossession.hasReasons));
+        if (submitPayLoad.secureGroundsWales_MandatoryGrounds?.includes('LANDLORD_NOTICE_S186')) {
+          caseSummary.set(`Reasons for claiming possession under section 186`, submitPayLoad.walesSecureLandlordNoticeSection186Reason);
+        }        
         if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
-          caseSummary.set(`Details of additional reasons`, formatWord(submitPayLoad.additionalReasonsForPossession.reasons));
+          caseSummary.set(`Additional reasons for possession`, submitPayLoad.additionalReasonsForPossession.reasons);
         }
         break;
 

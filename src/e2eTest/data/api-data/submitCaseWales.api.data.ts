@@ -68,13 +68,18 @@ export const submitCaseApiDataWales = {
     licenceDocuments: [],
     secureGroundsWales_DiscretionaryGrounds: [
       'RENT_ARREARS_S157',
-      'ANTISOCIAL_BEHAVIOUR_S157'
+      'ANTISOCIAL_BEHAVIOUR_S157',
+      'ESTATE_MANAGEMENT_GROUNDS_S160'
+    ],
+    secureGroundsWales_EstateManagementGrounds: [
+      'BUILDING_WORKS'
     ],
     secureGroundsWales_MandatoryGrounds: [
       'LANDLORD_NOTICE_S186'
     ],
     showReasonsForGroundsPageWales: 'Yes',
     walesSecureLandlordNoticeSection186Reason: 'Test user input reason under section 186',
+    walesSecureBuildingWorksReason: 'building ground works test data',
     showASBQuestionsPageWales: 'Yes',
     walesAntisocialBehaviour: 'YES',
     walesAntisocialBehaviourDetails: 'Test data anti social',
