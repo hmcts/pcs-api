@@ -238,7 +238,8 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getRentArrearsDetails().getDailyRate()).isEqualTo("£12.30");
         assertThat(summaryTab.getRentArrearsDetails().getArrearsTotal()).isEqualTo("£450.75");
         assertThat(summaryTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Licence details");
+        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other");
+        assertThat(summaryTab.getTenancyDetails().getAgreementTypeDescription()).isEqualTo("Licence details");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("16/04/2024");
         assertThat(summaryTab.getNoticeDetails().getNoticeServedDate()).isEqualTo("11/05/2026, 5:02:00PM");
     }
@@ -415,6 +416,34 @@ public class CaseSummaryTabViewTest {
 
         // Then
         assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Assured tenancy");
+        assertThat(summaryTab.getTenancyDetails().getAgreementTypeDescription()).isNull();
+        assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
+    }
+
+    @Test
+    void shouldSetTenancyDetailsFromEnglandOtherTenancyLicenceType() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.OTHER)
+                                       .detailsOfOtherTypeOfTenancyLicence("Other tenancy details")
+                                       .build())
+            .build();
+
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
+        when(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase)).thenReturn(null);
+        when(reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase)).thenReturn(null);
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(null);
+        when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(null);
+        when(additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(null);
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other");
+        assertThat(summaryTab.getTenancyDetails().getAgreementTypeDescription()).isEqualTo("Other tenancy details");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
     }
 
@@ -472,6 +501,7 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getTenancyDetails()).isNull();
         assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementType())
             .isEqualTo(expectedAgreementType);
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementTypeDescription()).isNull();
         assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementStartDate()).isEqualTo("12/05/2025");
     }
 
@@ -499,7 +529,8 @@ public class CaseSummaryTabViewTest {
 
         // Then
         assertThat(summaryTab.getTenancyDetails()).isNull();
-        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementType())
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementType()).isEqualTo("Other");
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementTypeDescription())
             .isEqualTo("Other Welsh licence");
         assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementStartDate()).isNull();
     }
