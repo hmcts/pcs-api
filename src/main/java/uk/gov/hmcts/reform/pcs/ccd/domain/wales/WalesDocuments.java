@@ -26,7 +26,7 @@ public class WalesDocuments {
     public static final String NO_GAS_SAFETY_REPORT_REASON_LABEL =
         "Why can you not upload a copy of the gas safety report?";
     public static final String NO_ELECTRICAL_INSTALLATION_CONDITION_REPORT_REASON_LABEL =
-        "Why can you not upload a copy of the current Electrical Installation Condition Report (EICR)";
+        "Why can you not upload a copy of the current Electrical Installation Condition Report (EICR)?";
 
     @CCD(
         label = "Can you upload a copy of the energy performance certificate?"
