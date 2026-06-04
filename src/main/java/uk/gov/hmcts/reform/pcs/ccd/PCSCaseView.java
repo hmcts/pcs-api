@@ -8,8 +8,6 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
-import uk.gov.hmcts.ccd.sdk.type.SearchParty;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -38,13 +36,12 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.Arrays;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -82,6 +79,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final PartiesView partiesView;
     private final GenAppsView genAppsView;
     private final CaseFlagsView flagsView;
+    private final SearchCriteriaIndexer searchCriteriaIndexer;
 
 
     /**
@@ -111,61 +109,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         caseFieldsView.setCaseFields(pcsCase);
 
-        pcsCase.setSearchCriteria(buildSearchCriteriaForIndexing(pcsCase));
+        pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
 
         return pcsCase;
-    }
-
-    private SearchCriteria buildSearchCriteriaForIndexing(PCSCase pcsCase) {
-        List<SearchParty> searchParties = new ArrayList<>(
-            Optional.ofNullable(pcsCase.getParties())
-                .orElse(List.of())
-                .stream()
-                .map(ListValue::getValue)
-                .map(this::toSearchParty)
-                .toList());
-
-        // Global search only indexes postcodes that appear on a SearchParty.
-        // We add the property to be repossessed address as an extra SearchParty here to make it searchable.
-        SearchParty propertySearchParty = toPropertySearchParty(pcsCase.getPropertyAddress());
-        if (propertySearchParty != null) {
-            searchParties.add(propertySearchParty);
-        }
-
-        return SearchCriteria.builder()
-            .parties(ListValueUtils.wrapListItems(searchParties))
-            .build();
-    }
-
-    private SearchParty toPropertySearchParty(AddressUK propertyAddress) {
-        if (propertyAddress == null
-            || propertyAddress.getPostCode() == null
-            || propertyAddress.getPostCode().isBlank()) {
-            return null;
-        }
-
-        return SearchParty.builder()
-            .addressLine1(propertyAddress.getAddressLine1())
-            .postcode(propertyAddress.getPostCode())
-            .build();
-    }
-
-    private SearchParty toSearchParty(Party party) {
-        AddressUK address = party.getAddress();
-        return SearchParty.builder()
-            .name(joinNonBlank(party.getFirstName(), party.getLastName()))
-            .emailAddress(party.getEmailAddress())
-            .addressLine1(address == null ? null : address.getAddressLine1())
-            .postcode(address == null ? null : address.getPostCode())
-            .dateOfBirth(party.getDateOfBirth())
-            .build();
-    }
-
-    private static String joinNonBlank(String... parts) {
-        String joined = Arrays.stream(parts)
-            .filter(p -> p != null && !p.isBlank())
-            .collect(Collectors.joining(" "));
-        return joined.isEmpty() ? null : joined;
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {

@@ -11,7 +11,6 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
-import uk.gov.hmcts.ccd.sdk.type.SearchParty;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -43,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -120,6 +120,8 @@ class PCSCaseViewTest {
     private PartiesView partiesView;
     @Mock
     private CaseFlagsView caseFlagsView;
+    @Mock
+    private SearchCriteriaIndexer searchCriteriaIndexer;
 
     private PCSCaseView underTest;
 
@@ -133,7 +135,8 @@ class PCSCaseViewTest {
                                     alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView
+                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
+                                    searchCriteriaIndexer
         );
     }
 
@@ -196,87 +199,17 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldIndexPropertyPostcodeAsSearchPartyWithoutPollutingParties() {
-        // Given - a property address with a postcode and no real parties
-        AddressEntity addressEntity = mock(AddressEntity.class);
-        when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
-        AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
-        when(addressUK.getPostCode()).thenReturn("AB1 2CD");
-        when(addressUK.getAddressLine1()).thenReturn("1 Test Street");
+    void shouldSetSearchCriteriaFromIndexer() {
+        // Given
+        SearchCriteria searchCriteria = SearchCriteria.builder().build();
+        when(searchCriteriaIndexer.buildSearchCriteria(any(PCSCase.class))).thenReturn(searchCriteria);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
-        // Then - the property postcode is indexed as a SearchParty for global search
-        SearchCriteria searchCriteria = pcsCase.getSearchCriteria();
-        assertThat(searchCriteria.getParties())
-            .extracting(ListValue::getValue)
-            .extracting(SearchParty::getPostcode)
-            .contains("AB1 2CD");
-
-        // And the property is NOT added to the real parties list (no downstream pollution)
-        assertThat(pcsCase.getParties()).isEmpty();
-    }
-
-    @Test
-    void shouldIndexPropertyAddressLine1AndPostcodeOnSearchParty() {
-        // Given - a property address with both an address line and a postcode
-        AddressEntity addressEntity = mock(AddressEntity.class);
-        when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
-        AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
-        when(addressUK.getPostCode()).thenReturn("AB1 2CD");
-        when(addressUK.getAddressLine1()).thenReturn("1 Test Street");
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then - both fields are copied onto the property SearchParty
-        assertThat(pcsCase.getSearchCriteria().getParties())
-            .extracting(ListValue::getValue)
-            .anySatisfy(searchParty -> {
-                assertThat(searchParty.getAddressLine1()).isEqualTo("1 Test Street");
-                assertThat(searchParty.getPostcode()).isEqualTo("AB1 2CD");
-            });
-    }
-
-    @Test
-    void shouldNotIndexPropertyWhenAddressIsNull() {
-        // Given - no property address (pcsCaseEntity.getPropertyAddress() returns null)
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then - no property SearchParty is added
-        assertThat(pcsCase.getSearchCriteria().getParties()).isEmpty();
-    }
-
-    @Test
-    void shouldNotIndexPropertyWhenPostcodeIsNull() {
-        // Given - a property address with no postcode
-        AddressEntity addressEntity = mock(AddressEntity.class);
-        when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
-        stubAddressEntityModelMapper(addressEntity);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then - no property SearchParty is added
-        assertThat(pcsCase.getSearchCriteria().getParties()).isEmpty();
-    }
-
-    @Test
-    void shouldNotIndexPropertyWhenPostcodeIsBlank() {
-        // Given - a property address with a blank postcode
-        AddressEntity addressEntity = mock(AddressEntity.class);
-        when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
-        AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
-        when(addressUK.getPostCode()).thenReturn("   ");
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then - no property SearchParty is added
-        assertThat(pcsCase.getSearchCriteria().getParties()).isEmpty();
+        // Then - indexing is delegated to the indexer and its result is set on the case
+        verify(searchCriteriaIndexer).buildSearchCriteria(pcsCase);
+        assertThat(pcsCase.getSearchCriteria()).isSameAs(searchCriteria);
     }
 
     @Test
