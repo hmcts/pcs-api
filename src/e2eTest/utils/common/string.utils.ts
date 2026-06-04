@@ -48,10 +48,23 @@ export function getCurrentBSTTime(): string {
   return formatted.replace(/am|pm/, (match) => match.toUpperCase());
 }
 
-/* convert YYY-MM-DD to DD/MM/YYYY format */
-export function formatDate(dateStr: string): string {
+/* convert YYY-MM-DD to DD/MM/YYYY format or DD MONTH YYYY */
+export function formatDate(dateStr: string, formatType: string): string {
+
   const date = new Date(dateStr);
-  return date.toLocaleDateString("en-GB"); 
+  let finalDate: string = '';
+  if (formatType === 'DD/MM/YYYY') {
+    finalDate = date.toLocaleDateString("en-GB");
+  } else if (formatType === 'DD/MONTH/YYYY') {
+
+    const day = date.getDate();
+    const month = date.toLocaleString("en-GB", { month: "long" });
+    const year = date.getFullYear();
+
+    finalDate = `${day} ${month} ${year}`;
+  }
+  return finalDate;
+
 }
 
 /* convert string for ex RENT_ARREARS to Rent arrears */
@@ -92,4 +105,3 @@ export function formatDateTime(dateStr: string): string {
 
   return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}${ampm}`;
 }
-
