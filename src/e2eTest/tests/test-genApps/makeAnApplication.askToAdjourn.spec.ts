@@ -135,7 +135,6 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     });
     await performValidation('mainHeader', checkYourAnswersGenApps.mainHeader);
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
-    await performAction('retrieveCYATableData', { name: 'complex field table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
   });
@@ -185,6 +184,20 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
     option: whichLanguageDidYouUseToCompleteThisService.welshRadioOption,
   });
   await performValidation('mainHeader', statementOfTruth.mainHeader);
+  await performAction('selectStatementOfTruth', {
+    question: statementOfTruth.completedByTheDefendantsLegalParagraph,
+    option: statementOfTruth.theDefendantBelievesCheckBox,
+    label1: statementOfTruth.fullNameTextLabel,
+    input1: statementOfTruth.fullNameTextInput,
+    label2: statementOfTruth.nameOfFirmTextLabel,
+    input2: statementOfTruth.nameOfFirmTextInput,
+    label3: statementOfTruth.positionOrOfficeHeldTextLabel,
+    input3: statementOfTruth.positionOrOfficeHeldTextInput,
+  });
+  await performValidation('mainHeader', checkYourAnswersGenApps.mainHeader);
+  await performAction('retrieveCYATableData', { name: 'check your answers table' });
+  await performAction('validateCYA');
+  await performAction('clickButton', checkYourAnswersGenApps.submitButton);
 
 });
 });

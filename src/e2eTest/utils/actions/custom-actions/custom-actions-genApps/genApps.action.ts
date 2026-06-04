@@ -151,7 +151,6 @@ export class GenAppsAction implements IAction {
           : (confirmFeeHelp.input as string);
       await performAction('inputText', confirmFeeHelp.label, userInput);
       FieldsStore.update(confirmFeeHelp.label as string, userInput);
-      //FieldsStore.rename(confirmFeeHelp.label as string, 'What is your Help with Fees reference number?');
     } else {
       FieldsStore.delete(confirmFeeHelp.label as string);
     }
@@ -197,7 +196,6 @@ export class GenAppsAction implements IAction {
         ? generateRandomString(confirmOrder.input)
         : (confirmOrder.input as string);
     await performAction('inputText', confirmOrder.label, userInput);
-   //FieldsStore.rename(confirmOrder.label as string, 'What order do you want the court to make and why?');
     FieldsStore.update(confirmOrder.label as string, userInput);
     await performAction('clickButton', whatOrderDoYouWantTheCourtToMakeAndWhy.continueButton);
   }
@@ -254,6 +252,7 @@ export class GenAppsAction implements IAction {
     await performAction('inputText', sot.label1, sot.input1);
     await performAction('inputText', sot.label2, sot.input2);
     await performAction('inputText', sot.label3, sot.input3);
+    FieldsStore.delete(sot.question as string);
     await performAction('clickButton', statementOfTruth.continueButton);
   }
 
@@ -294,7 +293,6 @@ export class GenAppsAction implements IAction {
   private async retrieveCYATableData(page: Page,table: actionRecord) {
     const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
     const tableCount = await tables.count();
-    console.log('table count '+tableCount)
 
     if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
 
@@ -321,6 +319,7 @@ export class GenAppsAction implements IAction {
         }
       }
     }
+    cyaMap.delete('Add document');
 
     await test.step('Retrieved CYA values can be found in the console logs', async () => {
       console.log('\nThe Data Retrieved From Check Your Answers Page Are As Follows');
