@@ -177,7 +177,7 @@ public class PCSCase {
 
     @CCD(
         label = "Region Id",
-        access = InternalCaseFlagAccess.class
+        access = {InternalCaseFlagAccess.class, ClaimantAccess.class}
     )
     @Builder.Default
     private Integer regionId = 1;
