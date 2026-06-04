@@ -5,21 +5,20 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 
-import java.util.Comparator;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class GenAppVisibilityService {
 
-    private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
 
-    public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity, UUID currentUserId) {
+    public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity, String organisationId) {
         if (genAppEntity == null) {
             return false;
         }
@@ -29,19 +28,19 @@ public class GenAppVisibilityService {
         }
 
         PartyEntity applicantParty = genAppEntity.getParty();
-        if (applicantParty == null || currentUserId == null) {
+        if (applicantParty == null || organisationId == null) {
             return false;
         }
 
-        if (currentUserId.equals(applicantParty.getIdamId())) {
+        if (organisationId.equals(applicantParty.getOrganisationId())) {
             return true;
         }
 
-        return legalRepresentativeRepository
-            .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, applicantParty.getId());
+        return legalRepresentativeOrganisationRepository
+            .isRepresentativeOrganisationLinkedToPartyAndActive(organisationId, applicantParty.getId());
     }
 
-    public List<GenAppEntity> getVisibleGenAppsToUser(Collection<GenAppEntity> genApps, UUID userId) {
+    public List<GenAppEntity> getVisibleGenAppsToUser(Collection<GenAppEntity> genApps, String organisationId) {
         if (genApps == null || genApps.isEmpty()) {
             return List.of();
         }
@@ -52,7 +51,7 @@ public class GenAppVisibilityService {
                 GenAppEntity::getApplicationSubmittedDate,
                 Comparator.nullsLast(Comparator.reverseOrder())
             ))
-            .filter(genAppEntity -> isGenAppVisibleToUser(genAppEntity, userId))
+            .filter(genAppEntity -> isGenAppVisibleToUser(genAppEntity, organisationId))
             .toList();
     }
 }

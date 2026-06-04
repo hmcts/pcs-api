@@ -264,5 +264,5 @@ caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
 frontend:
-  url: ${FRONTEND_URL:http://localhost:3209}
+  url: ${PCS_FRONTEND_URL:http://localhost:3209}
 

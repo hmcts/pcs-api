@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 
@@ -18,14 +18,14 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplate
 @Component
 public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
 
-    private final SecurityContextService securityContextService;
+    private final OrganisationService organisationService;
     private final GenAppVisibilityService genAppVisibilityService;
 
     public ApplicationsTaskGroupEvaluator(
-        SecurityContextService securityContextService,
+        OrganisationService organisationService,
         GenAppVisibilityService genAppVisibilityService
     ) {
-        this.securityContextService = securityContextService;
+        this.organisationService = organisationService;
         this.genAppVisibilityService = genAppVisibilityService;
     }
 
@@ -58,7 +58,7 @@ public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
 
         return !genAppVisibilityService.getVisibleGenAppsToUser(
             ctx.caseEntity().getGenApps(),
-            securityContextService.getCurrentUserId()
+            organisationService.getOrganisationIdForCurrentUser()
         ).isEmpty();
     }
 }

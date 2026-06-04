@@ -5,21 +5,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.RelatedApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
@@ -30,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvalu
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,22 +54,22 @@ class DashboardJourneyServiceTest {
     private DefendantResponseService defendantResponseService;
 
     @Mock
-    private SecurityContextService securityContextService;
+    private OrganisationService organisationService;
 
     @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
+    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
 
     private GenAppVisibilityService genAppVisibilityService;
 
     @BeforeEach
     void setUp() {
-        genAppVisibilityService = new GenAppVisibilityService(legalRepresentativeRepository);
+        genAppVisibilityService = new GenAppVisibilityService(legalRepresentativeOrganisationRepository);
         underTest = new DashboardJourneyService(
             draftCaseDataService, defendantResponseService, List.of(
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
                 new ResponseTaskGroupEvaluator(),
-                new ApplicationsTaskGroupEvaluator(securityContextService, genAppVisibilityService),
+                new ApplicationsTaskGroupEvaluator(organisationService, genAppVisibilityService),
                 new HearingsTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
         ));
