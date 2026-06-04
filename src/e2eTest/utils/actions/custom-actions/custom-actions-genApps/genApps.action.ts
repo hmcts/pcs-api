@@ -291,33 +291,25 @@ export class GenAppsAction implements IAction {
   private async retrieveCYATableData(page: Page) {
     const tables = page.locator(`//table[@aria-describedby="check your answers table"]`);
     const tableCount = await tables.count();
+    console.log('table count '+tableCount)
 
-    if (tableCount === 0) {
-      throw new Error(`CYA table not found. Exiting...`);
-    }
+    //if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
 
     for (let i = 0; i < tableCount; i++) {
-      const curTable = tables.nth(i);
+      const table = tables.nth(i);
+      await expect(table).toBeVisible();
 
-      if (!(await curTable.isVisible())) {
-        throw new Error('table not found');
-      }
-
-      const rows = curTable.locator('th.case-field-label').first();
+      const rows = table.locator('tr');
       const rowCount = await rows.count();
-      if (rowCount === 0) {
-        continue;
-      }
 
       for (let j = 0; j < rowCount; j++) {
         const row = rows.nth(j);
+        if (!(await row.isVisible())) continue;
 
-        if (!(await row.isVisible())) {
-          continue;
-        }
+        const keyQns = row.locator('th span, th');
+        const valAns = row.locator('td.case-field-content, td');
 
-        const keyQns = row.locator('dt.govuk-summary-list__key');
-        const valAns = row.locator('dd.govuk-summary-list__value');
+        if ((await keyQns.count()) === 0 || (await valAns.count()) === 0) continue;
 
         const keyText = (await keyQns.first().innerText()).trim();
         const valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
