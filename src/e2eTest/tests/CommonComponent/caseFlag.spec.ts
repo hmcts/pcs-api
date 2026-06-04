@@ -47,14 +47,6 @@ test.beforeEach(async ({page, context}) => {
   await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
   await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  // await page.evaluate(() => {
-  //   try {
-  //     localStorage.clear();
-  //     sessionStorage.clear();
-  //   } catch (e) {
-  //     // Ignore if storage is not accessible
-  //   }
-  // });
   await dismissCookieBanner(page, 'additional');
 });
 
