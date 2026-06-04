@@ -6,7 +6,6 @@ import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -105,9 +104,11 @@ public class ClaimPackFormPayload implements FormPayload {
     // ---------- §6.3.9 Rent arrears ----------
     /** Drives R-RENT-ARREARS-GROUND (whole-section gate). */
     private boolean hasRentArrearsGround;
-    private BigDecimal rentAmount;
+    // Pre-formatted GBP currency strings (e.g. "£1,200.00") — Docmosis renders
+    // raw BigDecimal as "1200.0" which is wrong for a money column.
+    private String rentAmount;
     private String rentCalculatedDescription;
-    private BigDecimal rentArrearsTotal;
+    private String rentArrearsTotal;
     private String hasPreviousStepsYesNo;
     // Inner gate inside the rent arrears section — drives <<cs_showPreviousStepsFreeText>>.
     private boolean showPreviousStepsFreeText;

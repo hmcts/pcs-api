@@ -466,7 +466,7 @@ public class ClaimPackPayloadBuilder {
         p.tenancyUploadedYes(tenancyUploaded == VerticalYesNo.YES);
         p.tenancyUploadedNo(tenancyUploaded == VerticalYesNo.NO);
         p.tenancyNotUploadedReason(tenancy.getReasonsForNoTenancyLicence());
-        p.rentAmount(tenancy.getRentAmount());
+        p.rentAmount(formatGbp(tenancy.getRentAmount()));
         p.rentCalculatedDescription(formatRentDescription(tenancy));
     }
 
@@ -477,7 +477,7 @@ public class ClaimPackPayloadBuilder {
         if (rent == null) {
             return;
         }
-        p.rentArrearsTotal(rent.getTotalRentArrears());
+        p.rentArrearsTotal(formatGbp(rent.getTotalRentArrears()));
         VerticalYesNo judgmentEnum = rent.getArrearsJudgmentWanted();
         p.judgmentRequestedYesNo(judgmentEnum == null ? null : judgmentEnum.getLabel());
         // "Details of previous steps" row only renders when previous-steps Y/N is YES.
@@ -690,7 +690,16 @@ public class ClaimPackPayloadBuilder {
         if (t.getRentAmount() == null || t.getRentFrequency() == null) {
             return null;
         }
-        return "£" + t.getRentAmount() + " (" + t.getRentFrequency().name() + ")";
+        return formatGbp(t.getRentAmount()) + " (" + t.getRentFrequency().name() + ")";
+    }
+
+    /** Format a money value as a GBP currency string, e.g. £1,200.00. Null-safe. */
+    static String formatGbp(java.math.BigDecimal amount) {
+        if (amount == null) {
+            return null;
+        }
+        java.text.NumberFormat fmt = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.UK);
+        return fmt.format(amount);
     }
 
 }

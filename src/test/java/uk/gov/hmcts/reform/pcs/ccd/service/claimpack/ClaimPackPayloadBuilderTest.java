@@ -559,7 +559,7 @@ class ClaimPackPayloadBuilderTest {
 
             assertThat(payload.isIntroDemotedOtherTenancy()).isTrue();
             assertThat(payload.getTenancyStartDate()).isEqualTo(LocalDate.of(2024, 1, 1));
-            assertThat(payload.getRentAmount()).isEqualByComparingTo("100");
+            assertThat(payload.getRentAmount()).isEqualTo("£100.00");
         }
 
         @Test
@@ -1051,7 +1051,7 @@ class ClaimPackPayloadBuilderTest {
 
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.getRentArrearsTotal()).isEqualByComparingTo("1500.00");
+            assertThat(payload.getRentArrearsTotal()).isEqualTo("£1,500.00");
             assertThat(payload.getJudgmentRequestedYesNo()).isEqualTo("Yes");
             assertThat(payload.getHasPreviousStepsYesNo()).isEqualTo("Yes");
             assertThat(payload.getPreviousStepsFreeText()).isEqualTo("Two letters sent");
