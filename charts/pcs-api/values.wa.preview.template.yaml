@@ -56,6 +56,10 @@ postgresql:
 global:
   postgresUsername: hmcts
   postgresSecret: postgres
+  # The wa subchart's DB-backed pods (camunda, cft_task_db, wa-workflow-api,
+  # wa-case-event-handler) read global.postgresHost, while pcs's own templates and the
+  # am-org-role-mapping block read global.postgresHostname. Both must be set to the same host.
+  postgresHost: "pcs-preview.postgres.database.azure.com"
   postgresHostname: "pcs-preview.postgres.database.azure.com"
   databaseNamePrefix: "pr-${CHANGE_ID}-"
 
