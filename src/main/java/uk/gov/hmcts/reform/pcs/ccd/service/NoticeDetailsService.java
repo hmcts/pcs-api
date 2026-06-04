@@ -85,7 +85,7 @@ public class NoticeDetailsService {
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
-                noticeServedDetails.getUnableToUploadTxt(),
+                noticeServedDetails.getUnableToUploadReason(),
                 NOTICE_UNABLE_TO_UPLOAD_DOCUMENT_TXT,
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )

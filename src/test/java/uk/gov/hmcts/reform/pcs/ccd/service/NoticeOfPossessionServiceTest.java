@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -244,4 +246,26 @@ class NoticeOfPossessionServiceTest {
         assertThat(noticeOfPossessionEntity.getNoticeDetails()).isEqualTo(otherExplanation);
     }
 
+    @Test
+    void shouldSetUnableToUploadReason() {
+        // Given
+        String unableToUploadReason = "reason for unable to upload";
+        NoticeServedDetails details = NoticeServedDetails.builder()
+                        .noticeServiceMethod(NoticeServiceMethod.EMAIL)
+                        .noticeDocuments(List.of())
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.NO)
+                        .unableToUploadReason(unableToUploadReason)
+                        .build();
+        PCSCase caseData = PCSCase.builder()
+                        .noticeServed(YesOrNo.YES)
+                        .legislativeCountry(LegislativeCountry.ENGLAND)
+                        .noticeServedDetails(details)
+                        .build();
+
+        // When
+        NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(caseData);
+
+        // Then
+        assertThat(noticeOfPossessionEntity.getUnableToUploadReason()).isEqualTo(unableToUploadReason);
+    }
 }

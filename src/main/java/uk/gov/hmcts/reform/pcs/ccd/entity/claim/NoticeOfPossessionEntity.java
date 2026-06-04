@@ -58,6 +58,6 @@ public class NoticeOfPossessionEntity {
 
     private String noticeStatement;
 
-    private String unableToUploadTxt;
+    private String unableToUploadReason;
 
 }

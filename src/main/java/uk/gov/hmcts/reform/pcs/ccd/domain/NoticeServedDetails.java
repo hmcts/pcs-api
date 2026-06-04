@@ -122,5 +122,5 @@ public class NoticeServedDetails {
             label = "Why can you not upload a copy of the notice you served?",
             typeOverride = TextArea
     )
-    private String unableToUploadTxt;
+    private String unableToUploadReason;
 }

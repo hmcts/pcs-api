@@ -115,7 +115,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             .mandatory(NoticeServedDetails::getAbleToUploadDocument)
             .mandatory(NoticeServedDetails::getNoticeDocuments,
                     "notice_AbleToUploadDocument=\"YES\"")
-            .mandatory(NoticeServedDetails::getUnableToUploadTxt,
+            .mandatory(NoticeServedDetails::getUnableToUploadReason,
                     "notice_AbleToUploadDocument=\"NO\"")
             .label("noticeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

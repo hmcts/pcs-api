@@ -18,32 +18,28 @@ public class NoticeOfPossessionService {
 
         YesOrNo noticeServed = getNoticeServed(pcsCase);
         noticeOfPossessionEntity.setNoticeServed(noticeServed);
-        setWalesNoticeFields(pcsCase, noticeOfPossessionEntity);
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            setWalesNoticeFields(pcsCase, noticeOfPossessionEntity);
+        }
 
         if (noticeServed == YesOrNo.NO) {
             return noticeOfPossessionEntity;
         }
 
         NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
-        if (noticeServedDetails == null) {
-            return noticeOfPossessionEntity;
-        }
 
         NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getNoticeServiceMethod();
-        if (noticeServiceMethod == null) {
-            return noticeOfPossessionEntity;
-        }
 
         noticeOfPossessionEntity.setServingMethod(noticeServiceMethod);
-        noticeOfPossessionEntity.setUnableToUploadTxt(noticeServedDetails.getUnableToUploadTxt());
+        noticeOfPossessionEntity.setUnableToUploadReason(noticeServedDetails.getUnableToUploadReason());
 
         switch (noticeServiceMethod) {
-            case FIRST_CLASS_POST -> {
+            case FIRST_CLASS_POST ->
                 noticeOfPossessionEntity.setNoticeDate(noticeServedDetails.getNoticePostedDate());
-            }
-            case DELIVERED_PERMITTED_PLACE -> {
+
+            case DELIVERED_PERMITTED_PLACE ->
                 noticeOfPossessionEntity.setNoticeDate(noticeServedDetails.getNoticeDeliveredDate());
-            }
+
             case PERSONALLY_HANDED -> {
                 noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getNoticeHandedOverDateTime());
                 noticeOfPossessionEntity.setNoticeDetails(noticeServedDetails.getNoticePersonName());
@@ -67,15 +63,10 @@ public class NoticeOfPossessionService {
     }
 
     private static void setWalesNoticeFields(PCSCase pcsCase, NoticeOfPossessionEntity noticeOfPossessionEntity) {
-        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
-            WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
-            if (walesNoticeDetails == null) {
-                return;
-            }
+        WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
 
-            noticeOfPossessionEntity.setNoticeType(walesNoticeDetails.getTypeOfNoticeServed());
-            noticeOfPossessionEntity.setNoticeStatement(walesNoticeDetails.getNoticeStatement());
-        }
+        noticeOfPossessionEntity.setNoticeType(walesNoticeDetails.getTypeOfNoticeServed());
+        noticeOfPossessionEntity.setNoticeStatement(walesNoticeDetails.getNoticeStatement());
     }
 
     private static YesOrNo getNoticeServed(PCSCase pcsCase) {

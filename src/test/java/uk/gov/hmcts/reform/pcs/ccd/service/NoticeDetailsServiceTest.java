@@ -527,7 +527,7 @@ class NoticeDetailsServiceTest {
                     .noticeServed(YesOrNo.YES)
                     .noticeServedDetails(NoticeServedDetails.builder()
                             .noticeServiceMethod(NoticeServiceMethod.OTHER)
-                            .unableToUploadTxt("Unable to upload document due to technical issues")
+                            .unableToUploadReason("Unable to upload document due to technical issues")
                             .build())
                     .build();
 
@@ -547,7 +547,7 @@ class NoticeDetailsServiceTest {
                     .noticeServed(YesOrNo.YES)
                     .noticeServedDetails(NoticeServedDetails.builder()
                             .noticeServiceMethod(NoticeServiceMethod.OTHER)
-                            .unableToUploadTxt(longText)
+                            .unableToUploadReason(longText)
                             .build())
                     .build();
 
