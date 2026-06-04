@@ -791,7 +791,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createAdditionalDocumentsForParty(uploadedDocs, pcsCase, party, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -838,7 +838,7 @@ class DocumentServiceTest {
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
-        underTest.createAdditionalDocumentsForParty(uploadedDocs, pcsCase, party, selectedGenApp);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, selectedGenApp);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -885,7 +885,7 @@ class DocumentServiceTest {
         );
 
         // When
-        underTest.createAdditionalDocumentsForParty(uploadedDocs, pcsCase, party, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -915,7 +915,7 @@ class DocumentServiceTest {
         );
 
         // When
-        underTest.createAdditionalDocumentsForParty(uploadedDocs, pcsCase, party, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
 
         // Then
         verify(documentRepository, never()).saveAll(anyList());
@@ -928,8 +928,8 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
 
         // When
-        underTest.createAdditionalDocumentsForParty(null, pcsCase, party, null);
-        underTest.createAdditionalDocumentsForParty(Collections.emptyList(), pcsCase, party, null);
+        underTest.linkAdditionalDocumentsToCase(null, pcsCase, party, null);
+        underTest.linkAdditionalDocumentsToCase(Collections.emptyList(), pcsCase, party, null);
 
         // Then
         verify(documentRepository, never()).saveAll(anyList());

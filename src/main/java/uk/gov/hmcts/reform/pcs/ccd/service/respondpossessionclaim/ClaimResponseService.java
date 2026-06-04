@@ -99,9 +99,12 @@ public class ClaimResponseService {
         }
 
         AddressUK newAddress = defendantContactDetails.getParty().getAddress();
-        boolean addressNotConfirmed = defendantResponses.getCorrespondenceAddressConfirmation() == null;
+        // Persist the supplied address unless the defendant explicitly confirmed the claim-time
+        // address is correct (YES). null = page not yet visited, NO = defendant supplied a different one.
+        boolean addressUnconfirmedOrChanged =
+            defendantResponses.getCorrespondenceAddressConfirmation() != VerticalYesNo.YES;
 
-        if (addressNotConfirmed && newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
+        if (addressUnconfirmedOrChanged && newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
             AddressEntity existingAddress = party.getAddress();
 
             if (existingAddress != null) {
@@ -115,6 +118,14 @@ public class ClaimResponseService {
             } else {
                 party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
             }
+        }
+
+        // Defendant disagreed with the claim-recorded address and supplied a different one,
+        // so addressSameAsProperty no longer holds. On YES we leave the claim-time value alone:
+        //   claim YES + def YES → property still applies                            ✓
+        //   claim NO  + def YES → claimant-typed (on party.address) still applies   ✓
+        if (defendantResponses.getCorrespondenceAddressConfirmation() == VerticalYesNo.NO) {
+            party.setAddressSameAsProperty(VerticalYesNo.NO);
         }
     }
 

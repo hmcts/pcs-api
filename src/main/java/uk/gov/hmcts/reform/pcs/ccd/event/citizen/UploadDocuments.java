@@ -132,7 +132,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         PartyEntity uploadingParty = getCurrentPartyEntity(caseReference);
         GenAppEntity selectedGenApp = resolveSelectedGenApp(caseData, pcsCaseEntity);
 
-        documentService.createAdditionalDocumentsForParty(
+        documentService.linkAdditionalDocumentsToCase(
             caseData.getUploadedAdditionalDocuments(),
             pcsCaseEntity,
             uploadingParty,
