@@ -655,6 +655,6 @@ public class PCSCase {
     @JsonUnwrapped
     private LegalRepresentativeDetails legalRepresentativeDetails;
 
-    @CCD(searchable = false)
-    private VerticalYesNo legalRepUpdatedDetails;
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo legalRepUpdatedDetails;
 }

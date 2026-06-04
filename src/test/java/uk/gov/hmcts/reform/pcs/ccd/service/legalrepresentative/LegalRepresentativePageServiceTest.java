@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -51,19 +52,15 @@ class LegalRepresentativePageServiceTest {
         AddressUK address = AddressUK.builder().build();
         AddressEntity mappedAddress = new AddressEntity();
 
-        LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
+            new LegalRepresentativeOrganisationEntity();
+        final LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .differentPostalAddress(VerticalYesNo.YES)
             .updatedCorrespondenceAddress(address)
             .build();
-
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
-
         when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
-
         when(addressMapper.toAddressEntityAndNormalise(address))
             .thenReturn(mappedAddress);
 
@@ -72,6 +69,7 @@ class LegalRepresentativePageServiceTest {
 
         // then
         assertEquals(mappedAddress, legalRepresentativeOrganisationEntity.getAddress());
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
 
         verify(addressMapper).toAddressEntityAndNormalise(address);
         verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntity);
@@ -99,6 +97,7 @@ class LegalRepresentativePageServiceTest {
 
         // then
         assertThat(legalRepresentativeOrganisationEntity.getAddress()).isNull();
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
 
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntity);
@@ -125,6 +124,7 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntity);
     }
@@ -153,6 +153,7 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
         assertEquals(contactNumber, legalRepresentativeOrganisationEntity.getPhone());
     }
 
@@ -179,6 +180,7 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
         assertNull(legalRepresentativeOrganisationEntity.getPhone());
     }
 
@@ -204,6 +206,7 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
         assertNull(legalRepresentativeOrganisationEntity.getPhone());
     }
 
@@ -230,6 +233,7 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
         assertEquals(reference, legalRepresentativeOrganisationEntity.getContactReference());
     }
 
@@ -255,6 +259,7 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
         assertNull(legalRepresentativeOrganisationEntity.getContactReference());
     }
 
@@ -281,6 +286,7 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
         assertEquals(email, legalRepresentativeOrganisationEntity.getEmail());
     }
 
@@ -305,6 +311,7 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
         assertThat(legalRepresentativeOrganisationEntity.getEmail()).isNull();
     }
 
@@ -331,6 +338,7 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails);
 
         // then
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
         verify(securityContextService, never()).getCurrentUserId();
     }
 

@@ -37,8 +37,8 @@ public class LegalRepresentativeDetails {
     private VerticalYesNo provideContactPhoneNumber;
 
     @CCD(label = "Enter phone number",
-        regex = "^\\s*0\\d{10}\\s*$",
-        max = 11)
+        regex = "^(?:0[12](?:\\s*\\d){8,9}|0[3789](?:\\s*\\d){9})$",
+        max = 40)
     private String contactPhoneNumber;
 
     @CCD(label = """

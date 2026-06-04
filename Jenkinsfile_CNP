@@ -162,6 +162,12 @@ def setPreviewEnvVars() {
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
   env.E2E_SUITE= "pr"
+
+  if (apiLabels && apiLabels.size() > 0) {
+    def labelName = apiLabels[0]
+    def PCS_FRONTEND_CHANGE_ID = labelName.replace("pcs-frontend-pr:", "")
+    env.FRONTEND_URL = "https://pcs-frontend-pr-${PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
+  }
 }
 
 def setAatEnvVars() {
