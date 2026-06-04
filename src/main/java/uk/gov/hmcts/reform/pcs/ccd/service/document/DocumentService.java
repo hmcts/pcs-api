@@ -175,10 +175,10 @@ public class DocumentService {
 
     private void applyClaimFilename(List<DocumentHolder> allDocuments) {
         allDocuments.forEach(dh -> {
-                String uploadedFilename = dh.getDocument().getFilename();
-                dh.getDocument().setFilename(FilenameUtils.getBaseName(uploadedFilename) + " - " + CLAIMANT_1
-                        + "." + FilenameUtils.getExtension(uploadedFilename));
-            });
+            String uploadedFilename = dh.getDocument().getFilename();
+            dh.getDocument().setFilename(FilenameUtils.getBaseName(uploadedFilename) + " - " + CLAIMANT_1
+                    + "." + FilenameUtils.getExtension(uploadedFilename));
+        });
 
     }
 
