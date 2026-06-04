@@ -74,7 +74,7 @@ export const submitCaseApiDataWales = {
       'LANDLORD_NOTICE_S186'
     ],
     showReasonsForGroundsPageWales: 'Yes',
-    walesSecureLandlordNoticeSection186Reason: 'Test user input data',
+    walesSecureLandlordNoticeSection186Reason: 'Test user input reason under section 186',
     showASBQuestionsPageWales: 'Yes',
     walesAntisocialBehaviour: 'YES',
     walesAntisocialBehaviourDetails: 'Test data anti social',

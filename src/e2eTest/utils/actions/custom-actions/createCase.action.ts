@@ -1047,6 +1047,9 @@ export class CreateCaseAction implements IAction {
     let caseSummary = new Map<string, string>();
     let submitPayLoad = caseSummarySection.submitPayload as Record<string, any>;
     let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
+    const dateSubmitted = page.locator(`//th[@id="case-viewer-field-label"]/following-sibling::td`);
+    expect(await dateSubmitted.textContent()).toEqual(process.env.Submission_TIME);
+    
 
     switch (caseSummarySection.section) {
       case 'Defendant details':
@@ -1138,23 +1141,20 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Tenancy and Occupation':
-        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
-          .toLowerCase()
-          .replace(/_/g, " ")
-          .replace(/^\w/, (c: string) => c.toUpperCase())
-        );
+        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, formatText(submitPayLoad.tenancy_TypeOfTenancyLicence));
         caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate, 'DD/MM/YYYY'));
         break;
 
       case 'Tenancy and Occupation Case details':
-        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
-          .toLowerCase()
-          .replace(/_/g, " ")
-          .replace(/^\w/, (c: string) => c.toUpperCase())
-        );
+        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, formatText(submitPayLoad.tenancy_TypeOfTenancyLicence));
         caseSummary.set(`Tenancy, occupation contract or licence start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate, 'DD/MONTH/YYYY'));
         caseSummary.set(`Do you have a copy of the tenancy or licence agreement?`, formatWord(submitPayLoad.tenancy_HasCopyOfTenancyLicence));
         caseSummary.set(`Details of why you do not have a copy`, submitPayLoad.tenancy_ReasonsForNoTenancyLicenceDocuments);
+        break;
+      
+      case 'Occupation contract or licence':
+        caseSummary.set(`Occupation contract or licence agreement type`, formatText(submitPayLoad.occupationLicenceTypeWales));
+        caseSummary.set(`Occupation contract or licence start date`, formatDate(submitPayLoad.licenceStartDate, 'DD/MM/YYYY'))
         break;
 
       case 'Grounds of possession':
@@ -1168,8 +1168,8 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Grounds of possession Wales':
-        if (submitPayLoad.showReasonsForGroundsPageWales === 'YES') {
-          const combinedGrounds = [...submitPayLoad.secureGroundsWales_DiscretionaryGrounds, ...submitPayLoad.secureGroundsWales_MandatoryGrounds]
+        if (submitPayLoad.showReasonsForGroundsPageWales === 'Yes') {
+          const combinedGrounds = [...submitPayLoad.secureGroundsWales_MandatoryGrounds, ...submitPayLoad.secureGroundsWales_DiscretionaryGrounds]
           caseSummary.set(`Grounds`, combinedGrounds.map(formatText).
             map((item: string) => {
               if (item === "Antisocial behaviour s157") {
@@ -1264,6 +1264,22 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Reasons for possession':
+        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('ANTI_SOCIAL')) {
+          caseSummary.set(`Reasons for claiming possession under Antisocial behaviour`, submitPayLoad.antiSocialBehaviourGround);
+        }
+        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('BREACH_OF_THE_TENANCY')) {
+          caseSummary.set(`Reasons for claiming possession under Breach of the tenancy`, submitPayLoad.breachOfTheTenancyGround);
+        }
+        if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('ABSOLUTE_GROUNDS')) {
+          caseSummary.set(`Reasons for claiming possession under Absolute grounds`, submitPayLoad.absoluteGrounds);
+        }
+        caseSummary.set(`Do you have any additional reasons for possession?`, formatWord(submitPayLoad.additionalReasonsForPossession.hasReasons));
+        if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
+          caseSummary.set(`Details of additional reasons`, formatWord(submitPayLoad.additionalReasonsForPossession.reasons));
+        }
+        break;
+      
+      case 'Reasons for possession Wales':
         if (submitPayLoad.introGrounds_IntroductoryDemotedOrOtherGrounds?.includes('ANTI_SOCIAL')) {
           caseSummary.set(`Reasons for claiming possession under Antisocial behaviour`, submitPayLoad.antiSocialBehaviourGround);
         }
