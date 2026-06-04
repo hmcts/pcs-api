@@ -87,6 +87,7 @@ class DraftCaseJsonMergerTest {
                             "possessionClaimResponse",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
                             "casePartiesTab",
+                            "caseDetailsTab",
                             "summaryTab")
             .isEqualTo(existingCaseData);
 
