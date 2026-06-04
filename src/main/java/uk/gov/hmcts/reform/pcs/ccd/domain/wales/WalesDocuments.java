@@ -34,7 +34,7 @@ public class WalesDocuments {
     private VerticalYesNo hasEnergyPerformanceCertificate;
 
     @CCD(
-        label = "Add document"
+        label = "Upload energy performance certificate"
     )
     private List<ListValue<Document>> energyPerformance;
 
@@ -52,7 +52,7 @@ public class WalesDocuments {
     private VerticalYesNo hasGasSafetyReport;
 
     @CCD(
-        label = "Add document"
+        label = "Upload current gas safety report"
     )
     private List<ListValue<Document>> gasSafetyReport;
 
@@ -70,7 +70,7 @@ public class WalesDocuments {
     private VerticalYesNo hasElectricalInstallationConditionReport;
 
     @CCD(
-        label = "Add document"
+        label = "Upload current Electrical Installation Condition Report (EICR)"
     )
     private List<ListValue<Document>> electricalInstallation;
 
