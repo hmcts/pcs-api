@@ -17,7 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
-import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -32,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentCallbackStrategy;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentCallbackStrategyFactory;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -74,26 +74,27 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     @Mock
     private PaymentCallbackStrategy pretendStrategy;
 
-    private long caseReference;
     private String serviceCaseReference;
-    private FeeDto feeDto;
     private FeesAndPayTaskData feesAndPayTaskData;
     private ClaimEntity claimEntity;
 
     @BeforeEach
     void setUp() throws JsonProcessingException {
         serviceCaseReference = UUID.randomUUID().toString();
-        feesAndPayTaskData = Instancio.create(FeesAndPayTaskData.class);
-        feesAndPayTaskData.setCaseReference(CASE_REFERENCE);
-        feesAndPayTaskData.setPaymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM);
-        caseReference = feesAndPayTaskData.getCaseReference();
-        feeDto = Instancio.create(FeeDto.class);
-        feeDto.setCcdCaseNumber(String.valueOf(caseReference));
+        FeeDto feeDto = Instancio.create(FeeDto.class);
+        feeDto.setCcdCaseNumber(String.valueOf(CASE_REFERENCE));
         PcsCaseEntity pcsCaseEntity = establishTestCase();
         claimEntity = pcsCaseEntity.getClaims().getFirst();
         ClaimPartyEntity claimPartyEntity = claimEntity.getClaimParties().getFirst();
         UUID claimantPartyId = claimPartyEntity.getParty().getId();
-        feesAndPayTaskData.setResponsiblePartyId(claimantPartyId);
+
+        feesAndPayTaskData = Instancio.create(FeesAndPayTaskData.class);
+        feesAndPayTaskData.toBuilder()
+            .caseReference(CASE_REFERENCE)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
+            .responsiblePartyId(claimantPartyId)
+            .build();
+
         Mockito.when(paymentCallbackStrategyFactory.getStrategy(any())).thenReturn(pretendStrategy);
         establishFeePayment(serviceCaseReference);
     }
@@ -103,7 +104,7 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     void shouldProcessPaymentCallback() throws Exception {
         // Given
         PaymentStatusCallback paymentStatusCallback = Instancio.create(PaymentStatusCallback.class);
-        paymentStatusCallback.setCcdCaseNumber(String.valueOf(caseReference));
+        paymentStatusCallback.setCcdCaseNumber(String.valueOf(CASE_REFERENCE));
         paymentStatusCallback.setServiceRequestReference(serviceCaseReference);
         paymentStatusCallback.setServiceRequestStatus(PaymentStatus.PAID.getValue());
 
@@ -125,7 +126,7 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
 
     PcsCaseEntity establishTestCase() {
         return caseCreationHelper
-            .createTestCaseWithParty(caseReference, null, PartyRole.CLAIMANT);
+            .createTestCaseWithParty(CASE_REFERENCE, null, PartyRole.CLAIMANT);
     }
 
     void establishFeePayment(String serviceCaseReference) throws JsonProcessingException {
