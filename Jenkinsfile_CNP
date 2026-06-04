@@ -163,6 +163,7 @@ def setPreviewEnvVars() {
   env.ENVIRONMENT= "preview"
   env.E2E_SUITE= "pr"
 
+  def apiLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pcs-frontend-pr:")
   if (apiLabels && apiLabels.size() > 0) {
     def labelName = apiLabels[0]
     def PCS_FRONTEND_CHANGE_ID = labelName.replace("pcs-frontend-pr:", "")
