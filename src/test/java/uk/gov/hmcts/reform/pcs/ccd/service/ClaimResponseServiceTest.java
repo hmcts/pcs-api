@@ -72,6 +72,7 @@ class ClaimResponseServiceTest {
                 .contactByPost(VerticalYesNo.NO)
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
+                .propertyAddressConfirmation(VerticalYesNo.YES)
                 .build()
         );
 
@@ -243,6 +244,7 @@ class ClaimResponseServiceTest {
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPost(VerticalYesNo.YES)
+                .propertyAddressConfirmation(VerticalYesNo.YES)
                 .build()
         );
 
@@ -322,10 +324,13 @@ class ClaimResponseServiceTest {
 
     @Test
     void shouldUpdateAddressWhenClaimantDidNotProvideIt() {
-        // Given
+        // Given — Scenario B: claimant had no address, fallback to property, defendant provides their own
         final PossessionClaimResponse response = buildResponse(
             Party.builder().address(TEST_ADDRESS).build(),
-            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build()
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .propertyAddressConfirmation(VerticalYesNo.NO)
+                .build()
         );
 
         final AddressEntity addressEntity = new AddressEntity();
@@ -373,15 +378,12 @@ class ClaimResponseServiceTest {
             DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.NO).build()
         );
 
-        final AddressEntity addressEntity = new AddressEntity();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
-        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
-        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
     }
 
     @Test
