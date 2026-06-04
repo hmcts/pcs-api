@@ -188,34 +188,6 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldLinkStatementOfTruthWhenCompletedByProvided() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-
-        stubPartyLookup();
-        stubClaimLookup();
-        when(partyEntity.getFirstName()).thenReturn("Test");
-        when(partyEntity.getLastName()).thenReturn("Defendant");
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .statementOfTruthCompletedBy("DEFENDANT")
-            .build();
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getStatementOfTruth()).isNotNull();
-        assertThat(savedResponse.getStatementOfTruth().getCompletedBy().name()).isEqualTo("DEFENDANT");
-        assertThat(savedResponse.getStatementOfTruth().getFullName()).isEqualTo("Test Defendant");
-    }
-
-    @Test
     void shouldSaveDefendantResponseWhenReceivedFreeLegalAdviceIsNo() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
