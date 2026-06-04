@@ -240,6 +240,9 @@ public class CaseDetailsTabView {
 
         return TenancyLicenceTabDetails.builder()
             .typeOfTenancyLicence(tenancyType != null ? tenancyType.getLabel() : NO_ANSWER)
+            .tenancyLicenceDescription(
+                tenancyType == OTHER ? tenancyLicenceDetails.getDetailsOfOtherTypeOfTenancyLicence() : null
+            )
             .tenancyLicenceDate(tenancyDate != null ? tenancyDate.format(DATE_FORMATTER) : NO_ANSWER)
             .hasCopyOfTenancyLicence(hasTenancyLicence != null ? hasTenancyLicence.getLabel() : NO_ANSWER)
             .tenancyLicenceDocuments(tenancyLicenceDetails.getTenancyLicenceDocuments())
@@ -637,6 +640,10 @@ public class CaseDetailsTabView {
 
         return OccupationContractOrLicenceTabDetails.builder()
             .agreementType(agreementType != null ? agreementType.getLabel() : NO_ANSWER)
+            .agreementTypeDescription(
+                agreementType == OccupationLicenceTypeWales.OTHER
+                    ? occupationLicenceDetailsWales.getOtherLicenceTypeDetails() : null
+            )
             .agreementStartDate(startDate != null ? startDate.format(DATE_FORMATTER) : NO_ANSWER)
             .documents(documents)
             .documentsPlaceholder(CollectionUtils.isEmpty(documents) ? NO_ANSWER : null)

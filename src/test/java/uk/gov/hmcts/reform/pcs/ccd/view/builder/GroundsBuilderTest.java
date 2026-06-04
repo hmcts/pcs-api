@@ -177,8 +177,6 @@ public class GroundsBuilderTest {
             .build();
     }
 
-
-
     private static ListValue<ClaimGroundSummary> groundSummary(String label, String reason) {
         return listValue(ClaimGroundSummary.builder()
                              .label(label)

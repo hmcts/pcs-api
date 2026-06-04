@@ -180,7 +180,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.tab("caseDetails", "Case Details")
-            .label("Case details", null, "### Case details")
+            .label("Case details", null, "# Case details")
             .field("detailsTab_ClaimDetails")
             .field("detailsTab_PropertyAddress")
             .field("detailsTab_GroundsForPossessionDetails")
@@ -196,7 +196,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label(
                 "Claimant Details",
                 "detailsTab_ClaimantInformation!=\"\"",
-                "### Claimant Details"
+                "## Claimant Details"
             )
             .field("detailsTab_ClaimantInformation")
             .field("detailsTab_ClaimantAddress")
@@ -206,7 +206,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label(
                 "Defendant Details",
                 "detailsTab_DefendantInformationDetails!=\"\"",
-                "### Defendant Details"
+                "## Defendant Details"
             )
             .field("detailsTab_DefendantInformationDetails")
             .field("detailsTab_AdditionalDefendants")
@@ -214,26 +214,26 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label(
                 "Underlessee or mortgagee",
                 "detailsTab_MortgageDetails!=\"\"",
-                "### Underlessee or mortgagee entitled to claim relief against forfeiture"
+                "## Underlessee or mortgagee entitled to claim relief against forfeiture"
             )
             .field("detailsTab_MortgageOneDetails")
             .field("detailsTab_MortgageDetails")
             .label(
                 "Demotion of tenancy",
                 "detailsTab_DemotionOfTenancyDetails!=\"\"",
-                "### Demotion of tenancy"
+                "## Demotion of tenancy"
             )
             .field("detailsTab_DemotionOfTenancyDetails")
             .label(
                 "Suspension of right to buy",
                 "detailsTab_SuspensionOfRightToBuyDetails!=\"\"",
-                "### Suspension of right to buy"
+                "## Suspension of right to buy"
             )
             .field("detailsTab_SuspensionOfRightToBuyDetails")
             .label(
                 "Prohibited conduct standard contract",
                 "detailsTab_ProhibitedConductStandardContractDetails!=\"\"",
-                "### Prohibited conduct standard contract"
+                "## Prohibited conduct standard contract"
             )
             .field("detailsTab_ProhibitedConductStandardContractDetails")
             .field("detailsTab_RequiredDocumentsDetails");

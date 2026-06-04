@@ -183,6 +183,7 @@ public class CaseDetailsTabViewTest {
             .arrearsJudgmentWanted(VerticalYesNo.YES)
             .tenancyLicenceDetails(TenancyLicenceDetails.builder()
                                        .typeOfTenancyLicence(TenancyLicenceType.OTHER)
+                                       .detailsOfOtherTypeOfTenancyLicence("other tenancy details")
                                        .tenancyLicenceDate(LocalDate.of(2024, 4, 16))
                                        .hasCopyOfTenancyLicence(VerticalYesNo.NO)
                                        .reasonsForNoTenancyLicenceDocuments("Reasons")
@@ -327,6 +328,8 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTypeOfTenancyLicence())
             .isEqualTo("Other");
+        assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDescription())
+            .isEqualTo("other tenancy details");
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDate())
             .isEqualTo("16 April 2024");
         assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate())
@@ -772,6 +775,46 @@ public class CaseDetailsTabViewTest {
     }
 
     @Test
+    void shouldNotSetTenancyLicenceDescriptionWhenTenancyTypeIsNotOther() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                       .tenancyLicenceDate(LocalDate.of(2024, 4, 16))
+                                       .hasCopyOfTenancyLicence(VerticalYesNo.NO)
+                                       .reasonsForNoTenancyLicenceDocuments("Reasons")
+                                       .build())
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+        // Then
+        assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDescription()).isNull();
+    }
+
+    @Test
+    void shouldNotSetTenancyLicenceDescriptionWhenTenancyTypeIsNotOther() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                       .tenancyLicenceDate(LocalDate.of(2024, 4, 16))
+                                       .hasCopyOfTenancyLicence(VerticalYesNo.NO)
+                                       .reasonsForNoTenancyLicenceDocuments("Reasons")
+                                       .build())
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+        // Then
+        assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDescription()).isNull();
+    }
+
+    @Test
     void shouldSetCaseDetailsTabFieldsForWales() {
         AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
         AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
@@ -858,6 +901,7 @@ public class CaseDetailsTabViewTest {
             .occupationLicenceDetailsWales(
                 OccupationLicenceDetailsWales.builder()
                     .occupationLicenceTypeWales(OccupationLicenceTypeWales.OTHER)
+                    .otherLicenceTypeDetails("other licence details")
                     .licenceStartDate(LocalDate.of(2024, 4, 16))
                     .build()
             )
@@ -1017,6 +1061,8 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementType())
             .isEqualTo("Other");
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementTypeDescription())
+            .isEqualTo("other licence details");
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementStartDate())
             .isEqualTo("16 April 2024");
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocumentsPlaceholder()).isEqualTo(noAnswer);
@@ -1107,6 +1153,27 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getAntisocialAndConductDetails()).isNull();
         assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails()).isNull();
         assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
+    }
+
+    @Test
+    void shouldNotSetAgreementTypeDescriptionWhenAgreementTypeIsNotOther() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .occupationLicenceDetailsWales(
+                OccupationLicenceDetailsWales.builder()
+                    .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
+                    .otherLicenceTypeDetails("other licence details")
+                    .licenceStartDate(LocalDate.of(2024, 4, 16))
+                    .build()
+            )
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+        // Then
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementTypeDescription()).isNull();
     }
 
     @Test

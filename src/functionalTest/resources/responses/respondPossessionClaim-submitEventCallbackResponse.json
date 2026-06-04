@@ -18,9 +18,7 @@
           "party": {
             "address": {},
             "lastName": "Doe",
-            "firstName": "Jane",
-            "nameKnown": "YES",
-            "addressKnown": "NO"
+            "firstName": "Jane"
           }
         }
       }
