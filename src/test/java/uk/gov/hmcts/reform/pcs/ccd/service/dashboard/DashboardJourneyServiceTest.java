@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
@@ -26,8 +27,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEval
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,14 +54,23 @@ class DashboardJourneyServiceTest {
     @Mock
     private DefendantResponseService defendantResponseService;
 
+    @Mock
+    private SecurityContextService securityContextService;
+
+    @Mock
+    private LegalRepresentativeRepository legalRepresentativeRepository;
+
+    private GenAppVisibilityService genAppVisibilityService;
+
     @BeforeEach
     void setUp() {
+        genAppVisibilityService = new GenAppVisibilityService(legalRepresentativeRepository);
         underTest = new DashboardJourneyService(
             draftCaseDataService, defendantResponseService, List.of(
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
                 new ResponseTaskGroupEvaluator(),
-                new ApplicationsTaskGroupEvaluator(),
+                new ApplicationsTaskGroupEvaluator(securityContextService, genAppVisibilityService),
                 new HearingsTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
         ));
