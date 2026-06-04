@@ -82,6 +82,7 @@ class DraftCaseJsonMergerTest {
                             "claimGroundSummaries",
                             "parties",
                             "regionId",
+                            "caseManagementLocationNumber",
                             "allClaimants",
                             "allDefendants",
                             "allUnderlesseeOrMortgagees",
