@@ -50,7 +50,13 @@ import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.EntityTestStatusService;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -418,6 +424,7 @@ public class TestingSupportController {
         entityTestStatusService.updateDefendantResponseStatus(defendantResponseId, status);
         return ResponseEntity.ok().build();
     }
+
     @GetMapping("/fee-payment-info/{caseReference}")
     public ResponseEntity<List<FeePaymentEntity>> getFeePaymentInfo(
         @Parameter(
@@ -450,6 +457,4 @@ public class TestingSupportController {
             return ResponseEntity.internalServerError().build();
         }
     }
-
-
 }
