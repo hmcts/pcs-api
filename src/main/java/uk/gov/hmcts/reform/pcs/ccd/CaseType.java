@@ -175,7 +175,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("summaryTab_NoticeDetails");
     }
 
-    private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, UserRole> builder) {
+    private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseDetails", "Case Details")
             .label("Case details", null, "# Case details")
             .field("detailsTab_ClaimDetails")
