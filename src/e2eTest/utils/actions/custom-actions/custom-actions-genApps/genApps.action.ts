@@ -251,13 +251,7 @@ export class GenAppsAction implements IAction {
     await performAction('inputText', sot.label1, sot.input1);
     await performAction('inputText', sot.label2, sot.input2);
     await performAction('inputText', sot.label3, sot.input3);
-    const key = isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion as string;
-
-    const isKeyPresent = FieldsStore.has(key);
-    const value = isKeyPresent ? FieldsStore.get(key) : undefined;
     await performAction('clickButton', statementOfTruth.continueButton);
-
-
   }
 
   private async inputErrorValidationGenApp(validationArr: actionRecord) {
@@ -295,7 +289,7 @@ export class GenAppsAction implements IAction {
   }
 
   private async retrieveCYATableData(page: Page) {
-    const tables = page.locator(`//dl`);
+    const tables = page.locator(`//table[@aria-describedby="check your answers table"]`);
     const tableCount = await tables.count();
 
     if (tableCount === 0) {
@@ -309,7 +303,7 @@ export class GenAppsAction implements IAction {
         throw new Error('table not found');
       }
 
-      const rows = curTable.locator('.govuk-summary-list__row');
+      const rows = curTable.locator('th.case-field-label').first();
       const rowCount = await rows.count();
       if (rowCount === 0) {
         continue;
@@ -367,7 +361,6 @@ export class GenAppsAction implements IAction {
       }
     });
     cyaMap.clear();
-    await performAction('clickButton', checkYourAnswersGenApps.submitButton);
   }
 
   private async reviewCYA(page: Page, startPage: actionData) {

@@ -136,7 +136,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performValidation('mainHeader', checkYourAnswersGenApps.mainHeader);
     await performAction('retrieveCYATableData');
     await performAction('validateCYA');
-
+    await performAction('clickButton', checkYourAnswersGenApps.submitButton);
   });
 
 
