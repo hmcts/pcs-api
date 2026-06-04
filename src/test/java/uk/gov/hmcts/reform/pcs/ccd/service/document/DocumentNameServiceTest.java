@@ -79,4 +79,50 @@ class DocumentNameServiceTest {
         );
     }
 
+    @ParameterizedTest
+    @MethodSource("defendantResponseNamingScenarios")
+    void shouldAddPartyLabelToDefendantResponseDocument(PartyRole partyRole,
+                                                        String originalFilename,
+                                                        String expectedFilename) {
+        // Given
+        UUID applicantPartyId = UUID.randomUUID();
+
+        PartyEntity party1 = PartyEntity.builder()
+            .id(applicantPartyId)
+            .build();
+
+        ClaimPartyEntity claimParty1 = ClaimPartyEntity.builder()
+            .party(party1)
+            .rank(3)
+            .role(partyRole)
+            .build();
+
+        ClaimEntity mainClaim = ClaimEntity.builder()
+            .claimParties(List.of(claimParty1))
+            .build();
+
+        // When
+        String updatedFilename
+            = underTest.appendDefendantPostfix(originalFilename, mainClaim, applicantPartyId);
+
+        // Then
+        assertThat(updatedFilename).isEqualTo(expectedFilename);
+    }
+
+    private static Stream<Arguments> defendantResponseNamingScenarios() {
+        return Stream.of(
+            // Party role, original filename, expected updated filename
+            argumentSet("null filename",
+                        PartyRole.DEFENDANT, null, null),
+            argumentSet("no extension, defendant",
+                        PartyRole.DEFENDANT, "sample", "sample - Defendant 3"),
+            argumentSet("with extension, defendant",
+                        PartyRole.DEFENDANT, "sample.pdf", "sample - Defendant 3.pdf"),
+            argumentSet("with extension, claimant",
+                        PartyRole.CLAIMANT, "sample.pdf", "sample - Claimant 3.pdf"),
+            argumentSet("with extension, other party type",
+                        PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample.pdf")
+        );
+    }
+
 }

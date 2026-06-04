@@ -27,9 +27,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -61,7 +64,7 @@ class DocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentService(documentRepository, documentIdExtractor);
+        underTest = new DocumentService(documentRepository, documentIdExtractor, new DocumentNameService());
     }
 
     @Test
@@ -613,6 +616,7 @@ class DocumentServiceTest {
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
+        setUpDefendantParty(pcsCase, party, 2);
 
         UploadedDocument defDoc1 = UploadedDocument.builder()
             .document(Document.builder()
@@ -654,7 +658,7 @@ class DocumentServiceTest {
 
         assertThat(entities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("file1.pdf", "file2.xlsx");
+            .containsExactly("file1 - Defendant 2.pdf", "file2 - Defendant 2.xlsx");
 
         assertThat(entities)
             .extracting(DocumentEntity::getContentType)
@@ -706,6 +710,7 @@ class DocumentServiceTest {
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
+        setUpDefendantParty(pcsCase, party, 1);
 
         UploadedDocument validDoc = UploadedDocument.builder()
             .document(Document.builder()
@@ -728,7 +733,7 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
-        assertThat(entities.getFirst().getFileName()).isEqualTo("file1.pdf");
+        assertThat(entities.getFirst().getFileName()).isEqualTo("file1 - Defendant 1.pdf");
     }
 
     @Test
@@ -738,6 +743,7 @@ class DocumentServiceTest {
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
+        setUpDefendantParty(pcsCase, party, 1);
 
         UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder()
@@ -758,6 +764,25 @@ class DocumentServiceTest {
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities.getFirst().getContentType()).isNull();
         assertThat(entities.getFirst().getSize()).isNull();
+    }
+
+    private static void setUpDefendantParty(PcsCaseEntity pcsCase, PartyEntity party, int defendantRank) {
+        UUID defendantId = UUID.randomUUID();
+        when(party.getId()).thenReturn(defendantId);
+
+        PartyEntity claimParty = PartyEntity.builder()
+            .id(defendantId)
+            .build();
+
+        ClaimEntity mainClaim = ClaimEntity.builder()
+            .claimParties(List.of(ClaimPartyEntity.builder()
+                .party(claimParty)
+                .role(PartyRole.DEFENDANT)
+                .rank(defendantRank)
+                .build()))
+            .build();
+
+        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
     }
 
     private static Stream<Arguments> additionalDocumentCategoryScenarios() {
