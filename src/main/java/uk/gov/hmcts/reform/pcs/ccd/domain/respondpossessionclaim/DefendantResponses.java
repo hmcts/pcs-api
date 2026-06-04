@@ -121,4 +121,11 @@ public class DefendantResponses {
     private String otherConsiderationsDetails;
     @CCD
     private VerticalYesNo makeCounterClaim;
+
+    @CCD(
+        access = {CitizenAccess.class},
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "RespondToClaimSection"
+    )
+    private List<RespondToClaimSection> completedSections;
 }
