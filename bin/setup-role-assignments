@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -eu
 
-# LOCALLY:
-IDAM_DATA_STORE_SYSTEM_USER_USERNAME=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-username)
-IDAM_DATA_STORE_SYSTEM_USER_PASSWORD=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-password)
-ORG_ROLE_MAPPING_SERVICE_URL=http://am-org-role-mapping-service-aat.service.core-compute-aat.internal
+# Credentials and the target org-role-mapping URL fall back to AAT defaults for local use,
+# but honour values already in the environment (e.g. the WA preview deploy in Jenkins, which
+# injects the secrets and points ORG_ROLE_MAPPING_SERVICE_URL at the PR preview host).
+IDAM_DATA_STORE_SYSTEM_USER_USERNAME=${IDAM_DATA_STORE_SYSTEM_USER_USERNAME:-$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-username)}
+IDAM_DATA_STORE_SYSTEM_USER_PASSWORD=${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD:-$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-password)}
+ORG_ROLE_MAPPING_SERVICE_URL=${ORG_ROLE_MAPPING_SERVICE_URL:-http://am-org-role-mapping-service-aat.service.core-compute-aat.internal}
 
-export CCD_API_GATEWAY_IDAM_CLIENT_SECRET=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name ccd-api-gateway-oauth2-client-secret)
-export IDAM_API_BASE_URL=https://idam-api.aat.platform.hmcts.net
+export CCD_API_GATEWAY_IDAM_CLIENT_SECRET=${CCD_API_GATEWAY_IDAM_CLIENT_SECRET:-$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name ccd-api-gateway-oauth2-client-secret)}
+export IDAM_API_BASE_URL=${IDAM_API_BASE_URL:-https://idam-api.aat.platform.hmcts.net}
 
 BASEDIR=$(dirname "$0")
 S2S_TOKEN=$(${BASEDIR}/s2s-token.sh "am_org_role_mapping_service")
@@ -23,6 +25,15 @@ function send_curl_request() {
   fi
 
   local payload=$(cat "${json_file}")
+
+  # staff-idam-ids.json is not yet populated with preview caseworker IDs. Skip the POST when
+  # there are no userIds rather than sending an empty mapping (which would fail --fail and, with
+  # set -e, turn the build red after the WA pods have already deployed).
+  if ! echo "${payload}" | jq -e '.userIds | length > 0' >/dev/null 2>&1; then
+    echo "No userIds in $(basename "${json_file}") — skipping ${user_type} org mapping"
+    return 0
+  fi
+
   local url="${ORG_ROLE_MAPPING_SERVICE_URL}/am/testing-support/createOrgMapping?userType=${user_type}"
 
   curl --silent --show-error --fail "${url}" \

@@ -58,6 +58,15 @@ withPipeline(type, product, component) {
     } else {
       env.CCD_ENABLED = "false"
     }
+    // Work Allocation preview (pr-values:wa) — WA pods, Camunda and am-org-role-mapping-service
+    env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    env.TASK_MONITOR_API_URL = "https://wa-task-monitor-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    env.TASK_MANAGEMENT_API_URL = "https://wa-task-management-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    env.ROLE_ASSIGNMENT_API_URL = "https://am-org-role-mapping-service-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    def waPRLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa")
+    if (waPRLabels.contains("pr-values:wa-ft-tests")) {
+      env.WA_FUNCTIONAL_TESTS_ENABLED = true
+    }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
     }
@@ -135,6 +144,18 @@ withPipeline(type, product, component) {
     env.CCD_ENABLED = "true"
   }
 
+  afterSuccess('akschartsinstall') {
+    onPR {
+      for (label in githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa") ) {
+        println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
+        sh 'chmod -R +x ./bin'
+        uploadDmnDiagrams()
+        uploadBpmnDiagram()
+        setupRoleAssignments()
+      }
+    }
+  }
+
   afterAlways('smoketest:preview') {
     archiveSmokeTestReports()
   }
@@ -186,6 +207,32 @@ def generateDefinitions(builder) {
   builder.gradle('--rerun-tasks generateCCDConfig')
   sh "./bin/create-xlsx.sh ${env.ENVIRONMENT}"
   steps.archiveArtifacts artifacts: "build/definitions/*.xlsx"
+}
+
+def uploadDmnDiagrams() {
+  dir("${WORKSPACE}/bin") {
+    tenantId = "pcs"
+    product = "pcs"
+    sh "./wa/import-dmn-diagram.sh ${WORKSPACE} ${env} ${tenantId} ${product}"
+  }
+}
+
+def uploadBpmnDiagram() {
+  dir("${WORKSPACE}/bin") {
+    bpmnBranch = "master"
+    sh """
+      ./wa/pull-latest-camunda-wa-files.sh ${bpmnBranch}
+      ./wa/import-wa-bpmn-diagram.sh .
+    """
+  }
+}
+
+def setupRoleAssignments() {
+  dir("${WORKSPACE}/bin") {
+    withEnv(["ORG_ROLE_MAPPING_SERVICE_URL=${env.ROLE_ASSIGNMENT_API_URL}"]) {
+      sh "./setup-role-assignments"
+    }
+  }
 }
 
 def archiveFunctionalTestReports() {

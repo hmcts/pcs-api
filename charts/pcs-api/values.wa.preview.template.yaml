@@ -1,0 +1,182 @@
+# Work Allocation (WA) preview overlay.
+#
+# Selected by adding the `pr-values:wa` GitHub PR label, which the cnp-jenkins-library
+# layers on top of the base + `pr-values:ccd` overlays. Stands up the WA product chart
+# (Camunda BPM, task-management/monitor/workflow APIs, batch jobs) plus the
+# am-org-role-mapping-service alongside the pcs-api preview.
+#
+# NOTE: pcs-api does not yet publish CCD case events to Service Bus, so although the
+# `ccd-case-events` topic and wa-case-event-handler are provisioned here, WA tasks will
+# not actually be initiated from case events until pcs-api emits them. See the PR
+# description for the follow-up app-level change.
+java:
+  secrets:
+    AZURE_SERVICE_BUS_CONNECTION_STRING:
+      secretRef: pcs-sb-preview
+      key: connectionString
+    AZURE_SERVICE_BUS_PREVIEW_CONNECTION_STRING:
+      secretRef: pcs-sb-preview
+      key: connectionString
+  environment:
+    SPRING_JMS_SERVICEBUS_ENABLED: true
+    AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+    AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+
+servicebus:
+  enabled: true
+  releaseNameOverride: ${SERVICE_NAME}-asb
+  resourceGroup: pcs-aso-preview-rg
+  sbNamespace: pcs-servicebus-preview
+  setup:
+    topics:
+      - name: crd-topic
+        subscriptionNeeded: yes
+      - name: jrd-topic
+        subscriptionNeeded: yes
+      - name: ccd-case-events
+        subscriptionNeeded: yes
+        requiresSession: true
+
+# Full database list (CCD + WA) — Helm replaces list values across overlays rather than
+# merging, so this repeats the CCD overlay's databases to avoid clobbering them.
+postgresql:
+  enabled: true
+  flexibleserver: pcs-preview
+  setup:
+    databases:
+      - name: "pr-${CHANGE_ID}-data-store"
+      - name: "pr-${CHANGE_ID}-definition-store"
+      - name: "pr-${CHANGE_ID}-pcs"
+      - name: "pr-${CHANGE_ID}-camunda"
+      - name: "pr-${CHANGE_ID}-cft_task_db"
+      - name: "pr-${CHANGE_ID}-wa_workflow_api"
+      - name: "pr-${CHANGE_ID}-wa-case-event-handler"
+      - name: "pr-${CHANGE_ID}-org-role-mapping"
+
+global:
+  postgresUsername: hmcts
+  postgresSecret: postgres
+  postgresHostname: "pcs-preview.postgres.database.azure.com"
+  databaseNamePrefix: "pr-${CHANGE_ID}-"
+
+wa:
+  enabled: true
+
+  camunda-bpm:
+    java:
+      image: hmctsprod.azurecr.io/camunda/bpm:latest
+
+  wa-case-event-handler:
+    java:
+      secrets:
+        AZURE_SERVICE_BUS_CONNECTION_STRING:
+          secretRef: pcs-sb-preview
+          key: connectionString
+      environment:
+        AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+        AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+        AZURE_SERVICE_BUS_CCD_CASE_EVENTS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+
+  wa-task-management-api:
+    java:
+      ingressHost: wa-task-management-api-${SERVICE_FQDN}
+      environment:
+        # WA lower-cases the configured ids when matching. In preview the PCS case type is
+        # suffixed with the PR number (CASE_TYPE_SUFFIX=${CHANGE_ID}), so the deployed id is
+        # PCS-${CHANGE_ID} -> pcs-${CHANGE_ID}. The jurisdiction id is the plain (unsuffixed) PCS.
+        ALLOWED_CASE_TYPES: pcs-${CHANGE_ID}
+        ALLOWED_JURISDICTIONS: pcs
+
+  wa-task-monitor:
+    java:
+      ingressHost: wa-task-monitor-${SERVICE_FQDN}
+
+  wa-workflow-api:
+    java:
+      environment:
+        DB_READER_USERNAME: "hmcts"
+
+  wa-message-cron-service:
+    job:
+      schedule: "*/1 * * * *"
+
+  wa-initiation-batch:
+    job:
+      schedule: "*/1 * * * *"
+
+  wa-reconfiguration-batch:
+    job:
+      schedule: "*/1 * * * *"
+
+  wa-termination-batch:
+    job:
+      schedule: "*/1 * * * *"
+
+  #disable wa db as we are using the postgres flexible server
+  wa:
+    postgresql:
+      enabled: false
+
+am-org-role-mapping-service:
+  enabled: true
+  java:
+    image: 'hmctsprod.azurecr.io/am/org-role-mapping-service:latest'
+    ingressHost: am-org-role-mapping-service-${SERVICE_FQDN}
+    releaseNameOverride: ${SERVICE_NAME}-am-org-role-mapping-service
+    secrets:
+      SB_ACCESS_KEY:
+        secretRef: pcs-sb-preview
+        key: primaryKey
+      SB_CONNECTION_STRING:
+        secretRef: pcs-sb-preview
+        key: connectionString
+      ORG_ROLE_MAPPING_DB_PASSWORD:
+        secretRef: "{{ .Values.global.postgresSecret }}"
+        key: PASSWORD
+        disabled: false
+    keyVaults:
+      am:
+        secrets:
+          - name: app-insights-connection-string
+            alias: app-insights-connection-string
+          - name: am-org-role-mapping-service-s2s-secret
+            alias: AM_ORG_ROLE_MAPPING_SERVICE_SECRET
+          - name: orm-IDAM-CLIENT-ID
+            alias: ORM_IDAM_CLIENT_ID
+          - name: orm-IDAM-CLIENT-SECRET
+            alias: ORG_ROLE_MAPPING_IDAM_CLIENT_SECRET
+          - name: orm-IDAM-ADMIN-SECRET
+            alias: ORG_ROLE_MAPPING_IDAM_ADMIN_PASSWORD
+    devcpuRequests: 500m
+    devmemoryRequests: 1Gi
+    devcpuLimits: 1
+    devmemoryLimits: 4Gi
+    environment:
+      # PCS does not deploy its own role-assignment-service in preview (unlike sptribs); it uses
+      # the shared AAT instance, matching global.amRoleAssignmentServiceUrl in the ccd overlay.
+      ROLE_ASSIGNMENT_APP_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+      AMQP_SHARED_ACCESS_KEY_NAME: RootManageSharedAccessKey
+      AMQP_HOST: "pcs-sb-preview.servicebus.windows.net"
+      CRD_SUBSCRIPTION_NAME: "{{ .Release.Name}}-asb-crd-topic"
+      JRD_SUBSCRIPTION_NAME: "{{ .Release.Name}}-asb-jrd-topic"
+      CRD_TOPIC_NAME: "{{ .Release.Name}}-asb-crd-topic"
+      JRD_TOPIC_NAME: "{{ .Release.Name}}-asb-jrd-topic"
+      AMQP_CRD_SHARED_ACCESS_KEY_VALUE: "$(SB_ACCESS_KEY)"
+      AMQP_JRD_SHARED_ACCESS_KEY_VALUE: "$(SB_ACCESS_KEY)"
+      ORG_ROLE_MAPPING_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+      ORG_ROLE_MAPPING_DB_NAME: "pr-${CHANGE_ID}-org-role-mapping"
+      ORG_ROLE_MAPPING_DB_USERNAME: hmcts
+      ORG_ROLE_MAPPING_DB_PORT: 5432
+      ORG_ROLE_MAPPING_DB_OPTIONS: "?stringtype=unspecified&reWriteBatchedInserts=true&sslmode=require"
+      TESTING_SUPPORT_ENABLED: true
+      REFRESH_BULK_ASSIGNMENT_INCLUDE_BOOKINGS: true
+      ORM_ENV: pr
+
+xui-webapp:
+  nodejs:
+    environment:
+      SERVICES_WA_WORKFLOW_API_URL: http://{{ .Release.Name }}-wa-workflow-api
+      HEALTH_WORK_ALLOCATION_TASK_API: http://{{ .Release.Name }}-wa-task-management-api/health
+      SERVICES_WORK_ALLOCATION_TASK_API: http://{{ .Release.Name }}-wa-task-management-api
+      SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://{{ .Release.Name }}-am-org-role-mapping-service
+      WA_SUPPORTED_JURISDICTIONS: PCS
