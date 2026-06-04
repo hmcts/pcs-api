@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.UUID;
@@ -44,7 +45,7 @@ class NotificationErrorHandlerTest {
         mockCaseNotification = new CaseNotification();
         mockCaseNotification.setId(UUID.randomUUID());
         mockCaseNotification.setRecipient("test@example.com");
-        mockCaseNotification.setType("Email");
+        mockCaseNotification.setType(NotificationType.EMAIL);
     }
 
     @Nested
