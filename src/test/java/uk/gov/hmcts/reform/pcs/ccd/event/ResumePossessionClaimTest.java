@@ -40,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -101,6 +102,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
     @Mock
     private ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
+    @Mock
+    private NotificationService notificationService;
 
     @BeforeEach
     void setUp() {
@@ -114,7 +117,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, partyService, securityContextService,
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
-            moneyFormatter, resumePossessionClaimConfigurer, schedulingConfig
+            moneyFormatter, resumePossessionClaimConfigurer, schedulingConfig, notificationService
         );
 
         setEventUnderTest(underTest);
@@ -375,6 +378,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(submitResponse.getConfirmationBody()).contains("A draft of your claim has been saved");
+
+            verify(notificationService).sendClaimantDraftSavedForLater(TEST_CASE_REFERENCE, caseData);
         }
 
         @Test
@@ -389,6 +394,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any());
+            verify(notificationService).sendClaimantDraftSavedForLater(TEST_CASE_REFERENCE, caseData);
         }
     }
 
