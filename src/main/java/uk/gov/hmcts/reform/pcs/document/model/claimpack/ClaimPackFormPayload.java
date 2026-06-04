@@ -124,6 +124,8 @@ public class ClaimPackFormPayload implements FormPayload {
 
     // ---------- §6.3.11 Notice ----------
     private String noticeServedYesNo;
+    // Positive boolean — gates the whole "Method of service onwards" sub-table.
+    private boolean noticeServedYes;
     // Derived in builder; also gates the "why notice not served" template row.
     private boolean noticeNotServedDisplayed;
     private String noticeNotServedReason;
@@ -137,6 +139,13 @@ public class ClaimPackFormPayload implements FormPayload {
     /** Derived: servingMethod ∈ {PERSONALLY_HANDED, EMAIL, OTHER_ELECTRONIC, OTHER}. */
     private boolean methodRequiresTime;
     private LocalDate noticeServedOn;
+    // Per-value-presence show flags for optional notice rows (Excel mapping 37–42).
+    private boolean showNoticeServedOn;
+    private boolean showNoticeServedTime;
+    private boolean showNoticeLeftWithName;
+    private boolean showNoticeServedToEmail;
+    private boolean showNoticeOtherElectronicDetails;
+    private boolean showNoticeOtherMeansDetails;
     private LocalTime noticeServedTime;
     /** Four shared-storage detail fields — only one is populated per render, driven by methodOfService. */
     private String noticeLeftWithName;
@@ -170,9 +179,10 @@ public class ClaimPackFormPayload implements FormPayload {
     private String defendantCircsFreeText;
 
     // ---------- §6.3.15 Underlessees / mortgagees ----------
-    private VerticalYesNo hasUnderlesseeYesNo;
-    private ClaimPackParty underlessee1;
-    private List<ClaimPackParty> additionalUnderlessees;
+    // Flat list rendered by a single <<rs_underlessees>>...<<es_>> loop in the template
+    // (mirrors defendants pattern). Address-unknown semantic per Excel mapping row 58/60.
+    private String hasUnderlesseeYesNo;
+    private List<ClaimPackUnderlesseeRow> underlessees;
 
     // ---------- §6.3.16 Demotion of tenancy ----------
     // Three-layer gating: showIsDemotionClaim wraps whole section (Y/N row hidden if user

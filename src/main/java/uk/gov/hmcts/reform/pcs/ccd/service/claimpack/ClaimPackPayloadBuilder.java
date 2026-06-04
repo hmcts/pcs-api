@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackDefendantRow;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackGround;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackParty;
+import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackUnderlesseeRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
@@ -192,8 +193,9 @@ public class ClaimPackPayloadBuilder {
         p.additionalReasonsProvided(additionalReasonsEnum == VerticalYesNo.YES);
         p.additionalReasonsFreeText(claim.getAdditionalReasons());
 
-        // §6.3.15 yes/no gate (parties themselves are mapped separately)
-        p.hasUnderlesseeYesNo(claim.getUnderlesseeOrMortgagee());
+        // §6.3.15 yes/no gate — title-case for direct template rendering.
+        VerticalYesNo underlesseeEnum = claim.getUnderlesseeOrMortgagee();
+        p.hasUnderlesseeYesNo(underlesseeEnum == null ? null : underlesseeEnum.getLabel());
 
         // §6.3.2 Wales-only row — convert to title-case "Yes"/"No" string for direct Docmosis render.
         p.claimantIsExemptLandlord(
@@ -281,20 +283,43 @@ public class ClaimPackPayloadBuilder {
 
     // -----------------------------------------------------------------------
     // PartyEntity (underlessees / mortgagees) — §13.2 "From PartyEntity"
+    //
+    // Flat list with Address-unknown semantic per Excel row 58/60: address either
+    // provided (render 6 lines) or unknown (render "Address unknown" single line).
     // -----------------------------------------------------------------------
-    private void mapUnderlessees(List<PartyEntity> underlessees, ClaimPackFormPayload.ClaimPackFormPayloadBuilder p) {
-        if (!underlessees.isEmpty()) {
-            p.underlessee1(toClaimPackParty(underlessees.getFirst()));
-            if (underlessees.size() > 1) {
-                p.additionalUnderlessees(
-                    underlessees.subList(1, underlessees.size()).stream()
-                        .map(this::toClaimPackParty)
-                        .toList()
-                );
-            } else {
-                p.additionalUnderlessees(Collections.emptyList());
-            }
+    private void mapUnderlessees(List<PartyEntity> underlessees,
+                                 ClaimPackFormPayload.ClaimPackFormPayloadBuilder p) {
+        List<ClaimPackUnderlesseeRow> rows = new ArrayList<>(underlessees.size());
+        int number = 1;
+        for (PartyEntity u : underlessees) {
+            rows.add(toUnderlesseeRow(u, number++));
         }
+        p.underlessees(rows);
+    }
+
+    private ClaimPackUnderlesseeRow toUnderlesseeRow(PartyEntity u, int number) {
+        AddressEntity addr = u.getAddress();
+        boolean addressKnown = addr != null && isPopulated(addr.getAddressLine1());
+        ClaimPackUnderlesseeRow.ClaimPackUnderlesseeRowBuilder b = ClaimPackUnderlesseeRow.builder()
+            .underlesseeNumber(number)
+            .heading(number == 1
+                ? "Underlessee or mortgagee 1 details"
+                : "Additional underlessee or mortgagee " + (number - 1) + " details")
+            .displayName(derivePartyDisplayName(u))
+            .addressKnown(addressKnown)
+            .addressUnknown(!addressKnown);
+        if (addressKnown) {
+            b.addressLine1(addr.getAddressLine1());
+            b.addressLine2(addr.getAddressLine2());
+            b.addressLine3(addr.getAddressLine3());
+            b.postTown(addr.getPostTown());
+            b.county(addr.getCounty());
+            b.postcode(addr.getPostcode());
+            b.hasAddressLine2(isPopulated(addr.getAddressLine2()));
+            b.hasAddressLine3(isPopulated(addr.getAddressLine3()));
+            b.hasCounty(isPopulated(addr.getCounty()));
+        }
+        return b.build();
     }
 
     // -----------------------------------------------------------------------
@@ -363,6 +388,12 @@ public class ClaimPackPayloadBuilder {
         p.noticeServedYesNo(noticeServedEnum == null ? null : noticeServedEnum.getLabel());
         boolean notServed = noticeServedEnum == VerticalYesNo.NO;
         p.noticeNotServedDisplayed(notServed);
+        // Positive boolean — gates the "Method of service onwards" sub-table.
+        p.noticeServedYes(noticeServedEnum == VerticalYesNo.YES);
+
+        // Optional-value-presence show-flags (Excel mapping rows 37-42).
+        p.showNoticeServedOn(notice.getNoticeDate() != null);
+        p.showNoticeServedTime(notice.getNoticeDateTime() != null);
         p.noticeNotServedReason(notice.getNoticeStatement());
         p.noticeType(notice.getNoticeType());
 
@@ -382,10 +413,22 @@ public class ClaimPackPayloadBuilder {
         String details = notice.getNoticeDetails();
         if (method != null && details != null) {
             switch (method) {
-                case PERSONALLY_HANDED -> p.noticeLeftWithName(details);
-                case EMAIL -> p.noticeServedToEmail(details);
-                case OTHER_ELECTRONIC -> p.noticeOtherElectronicDetails(details);
-                case OTHER -> p.noticeOtherMeansDetails(details);
+                case PERSONALLY_HANDED -> {
+                    p.noticeLeftWithName(details);
+                    p.showNoticeLeftWithName(isPopulated(details));
+                }
+                case EMAIL -> {
+                    p.noticeServedToEmail(details);
+                    p.showNoticeServedToEmail(isPopulated(details));
+                }
+                case OTHER_ELECTRONIC -> {
+                    p.noticeOtherElectronicDetails(details);
+                    p.showNoticeOtherElectronicDetails(isPopulated(details));
+                }
+                case OTHER -> {
+                    p.noticeOtherMeansDetails(details);
+                    p.showNoticeOtherMeansDetails(isPopulated(details));
+                }
                 default -> {
                     // FIRST_CLASS_POST, DELIVERED_PERMITTED_PLACE — no detail row in §6.3.11.
                 }

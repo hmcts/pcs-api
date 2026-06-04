@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackDefendantRow;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackUnderlesseeRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
@@ -1232,6 +1233,140 @@ class ClaimPackPayloadBuilderTest {
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowNoticeType()).isFalse();
+        }
+
+        @Test
+        void noticeServedYesSetsPositiveBooleanForOuterSubTableGate() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeDate(LocalDate.of(2026, 3, 1))
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isNoticeServedYes()).isTrue();
+            assertThat(payload.isShowNoticeServedOn()).isTrue();
+        }
+
+        @Test
+        void emailMethodSetsOnlyEmailShowFlag() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .servingMethod(NoticeServiceMethod.EMAIL)
+                .noticeDetails("served@example.com")
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowNoticeServedToEmail()).isTrue();
+            assertThat(payload.isShowNoticeLeftWithName()).isFalse();
+            assertThat(payload.isShowNoticeOtherElectronicDetails()).isFalse();
+            assertThat(payload.isShowNoticeOtherMeansDetails()).isFalse();
+        }
+
+        @Test
+        void firstClassPostMethodSetsNoDetailShowFlags() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .servingMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowNoticeLeftWithName()).isFalse();
+            assertThat(payload.isShowNoticeServedToEmail()).isFalse();
+            assertThat(payload.isShowNoticeOtherElectronicDetails()).isFalse();
+            assertThat(payload.isShowNoticeOtherMeansDetails()).isFalse();
+        }
+    }
+
+    @Nested
+    class Underlessees {
+
+        @Test
+        void emptyListWhenNoUnderlessees() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            // No underlessees attached.
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getUnderlessees()).isEmpty();
+        }
+
+        @Test
+        void underlesseeWithAddressKnownRendersAddressBlock() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            attach(pcsCase, party("A", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            attach(pcsCase,
+                party("Building Society", "Ltd", VerticalYesNo.YES, address("100 King Street")),
+                PartyRole.UNDERLESSEE_OR_MORTGAGEE, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getUnderlessees()).hasSize(1);
+            ClaimPackUnderlesseeRow row = payload.getUnderlessees().getFirst();
+            assertThat(row.isAddressKnown()).isTrue();
+            assertThat(row.isAddressUnknown()).isFalse();
+            assertThat(row.getAddressLine1()).isEqualTo("100 King Street");
+            assertThat(row.getDisplayName()).isEqualTo("Building Society Ltd");
+        }
+
+        @Test
+        void underlesseeWithNoAddressRendersAddressUnknown() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            attach(pcsCase, party("A", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            // Underlessee with null address — should fall back to "Address unknown".
+            attach(pcsCase, party("Building", "Society", VerticalYesNo.YES, null),
+                PartyRole.UNDERLESSEE_OR_MORTGAGEE, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            ClaimPackUnderlesseeRow row = payload.getUnderlessees().getFirst();
+            assertThat(row.isAddressKnown()).isFalse();
+            assertThat(row.isAddressUnknown()).isTrue();
+            assertThat(row.getAddressLine1()).isNull();
+        }
+
+        @Test
+        void underlesseeWithNameUnknownRendersPersonsUnknown() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            attach(pcsCase, party("A", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            attach(pcsCase, party(null, null, VerticalYesNo.NO, address("Some address")),
+                PartyRole.UNDERLESSEE_OR_MORTGAGEE, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            ClaimPackUnderlesseeRow row = payload.getUnderlessees().getFirst();
+            assertThat(row.getDisplayName()).isEqualTo("Persons unknown");
+            assertThat(row.isAddressKnown()).isTrue();
+        }
+
+        @Test
+        void multipleUnderlesseesSequentialNumbering() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            attach(pcsCase, party("A", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            attach(pcsCase, party("First", "Ltd", VerticalYesNo.YES, address("Addr A")),
+                PartyRole.UNDERLESSEE_OR_MORTGAGEE, 1);
+            attach(pcsCase, party("Second", "Ltd", VerticalYesNo.YES, address("Addr B")),
+                PartyRole.UNDERLESSEE_OR_MORTGAGEE, 2);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getUnderlessees()).hasSize(2);
+            assertThat(payload.getUnderlessees()).extracting(ClaimPackUnderlesseeRow::getHeading)
+                .containsExactly(
+                    "Underlessee or mortgagee 1 details",
+                    "Additional underlessee or mortgagee 1 details");
         }
     }
 
