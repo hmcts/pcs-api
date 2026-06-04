@@ -26,11 +26,9 @@
         "party": {
           "firstName": "Jane",
           "lastName": "Doe",
-          "nameKnown": "YES",
           "address": {
 
-          },
-          "addressKnown": "NO"
+          }
         }
       }
     }
