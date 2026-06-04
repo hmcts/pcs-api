@@ -284,7 +284,7 @@ export const submitCaseApiData = {
     isClaimantNameCorrect: 'YES',
     claimantContactEmail: 'pcs-solicitor1@test.com',
     isCorrectClaimantContactEmail: 'YES',
-    orgAddressFound: "Yes",
+    orgAddressFound: 'Yes',
     organisationAddress: {
       AddressLine1: 'Ministry Of Justice',
       AddressLine2: 'Seventh Floor 102 Petty France',
@@ -303,7 +303,7 @@ export const submitCaseApiData = {
       correspondenceAddress: {
         AddressLine1: '6 Second Avenue',
         AddressLine2: 'Oxford Street',
-        AddressLine3: "",
+        AddressLine3: '',
         PostTown: 'London',
         County: '',
         Country: 'United Kingdom',
@@ -393,7 +393,7 @@ export const submitCaseApiData = {
     isClaimantNameCorrect: 'YES',
     claimantContactEmail: 'pcs-solicitor1@test.com',
     isCorrectClaimantContactEmail: 'YES',
-    orgAddressFound: "Yes",
+    orgAddressFound: 'Yes',
     organisationAddress: {
       AddressLine1: 'Ministry Of Justice',
       AddressLine2: 'Seventh Floor 102 Petty France',
@@ -412,7 +412,7 @@ export const submitCaseApiData = {
       correspondenceAddress: {
         AddressLine1: '6 Second Avenue',
         AddressLine2: 'Oxford Street',
-        AddressLine3: "",
+        AddressLine3: '',
         PostTown: 'London',
         County: '',
         Country: 'United Kingdom',
@@ -463,7 +463,7 @@ export const submitCaseApiData = {
     rentDetails_CalculatedDailyCharge: '3285',
     rentArrears_Total: '23999',
     rentArrears_RecoveryAttempted: 'NO',
-    arrearsJudgmentWanted: 'NO',    
+    arrearsJudgmentWanted: 'NO',
     claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
     claimantCircumstancesSelect: 'NO',
     hasDefendantCircumstancesInfo: 'NO',
@@ -476,6 +476,164 @@ export const submitCaseApiData = {
       reasons: null
     },
     hasUnderlesseeOrMortgagee: 'NO',
+    wantToUploadDocuments: 'NO',
+    applicationWithClaim: 'NO',
+    languageUsed: 'ENGLISH',
+    completionNextStep: 'SUBMIT_AND_PAY_NOW',
+    statementOfTruth: {
+      completedBy: 'CLAIMANT',
+      fullNameParty: 'fg',
+      positionParty: 'fg',
+      agreementClaimant: ['BELIEVE_TRUE'],
+    },
+  },
+  submitCasePayloadCaseDetails: {
+    legislativeCountry: 'England',
+    orgNameFound: 'Yes',
+    claimantType: {
+      value: {
+        code: 'PROVIDER_OF_SOCIAL_HOUSING',
+        label: 'Registered provider of social housing or local authority'
+      },
+      list_items: [
+        {
+          code: 'PRIVATE_LANDLORD',
+          label: 'Private landlord'
+        },
+        {
+          code: 'PROVIDER_OF_SOCIAL_HOUSING',
+          label: 'Registered provider of social housing or local authority'
+        },
+        {
+          code: 'MORTGAGE_LENDER',
+          label: 'Mortgage lender'
+        },
+        {
+          code: 'OTHER',
+          label: 'Other'
+        }
+      ],
+      valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
+    },
+    claimAgainstTrespassers: 'NO',
+    claimantName: 'Possession Claims Solicitor Org',
+    isClaimantNameCorrect: 'YES',
+    claimantContactEmail: 'pcs-solicitor1@test.com',
+    isCorrectClaimantContactEmail: 'YES',
+    orgAddressFound: 'Yes',
+    organisationAddress: {
+      AddressLine1: 'Ministry Of Justice',
+      AddressLine2: 'Seventh Floor 102 Petty France',
+      PostTown: 'London',
+      PostCode: 'SW1H 9AJ',
+      Country: 'United Kingdom'
+    },
+    formattedClaimantContactAddress: 'Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ',
+    isCorrectClaimantContactAddress: 'YES',
+    claimantProvidePhoneNumber: 'YES',
+    claimantContactPhoneNumber: '04469172429',
+    defendant1: {
+      nameKnown: 'YES',
+      addressKnown: 'YES',
+      addressSameAsPossession: 'NO',
+      correspondenceAddress: {
+        AddressLine1: '6 Second Avenue',
+        AddressLine2: 'Oxford Street',
+        AddressLine3: '',
+        PostTown: 'London',
+        County: '',
+        Country: 'United Kingdom',
+        PostCode: 'W3 7RX'
+      },
+      firstName: 'John',
+      lastName: 'Doe',
+    },
+    addAnotherDefendant: 'NO',
+    additionalDefendants: [
+      {
+        value: {
+          nameKnown: 'NO',
+          addressKnown: 'NO',
+          addressSameAsPossession: 'NO'
+        },
+        id: null
+      },
+      {
+        value: {
+          nameKnown: 'NO',
+          addressKnown: 'NO',
+          addressSameAsPossession: 'NO'
+        },
+        id: null
+      },
+    ],
+    tenancy_TypeOfTenancyLicence: 'DEMOTED_TENANCY',
+    tenancy_TenancyLicenceDate: '2020-10-02',
+    tenancy_HasCopyOfTenancyLicence: 'NO',
+    tenancy_ReasonsForNoTenancyLicenceDocuments: 'user input no tenancy documents',
+    showIntroductoryDemotedOtherGroundReasonPage: 'Yes',
+    introGrounds_HasIntroductoryDemotedOtherGroundsForPossession: 'YES',
+    introGrounds_IntroductoryDemotedOrOtherGrounds: ['RENT_ARREARS', 'ANTI_SOCIAL','BREACH_OF_THE_TENANCY','ABSOLUTE_GROUNDS'],
+    antiSocialBehaviourGround: 'Antisocial behaviour test input',
+    breachOfTheTenancyGround: 'breach of tenancy test data',
+    absoluteGrounds: 'absolute grounds test data',
+    rentDetails_CurrentRent: '125000',
+    rentDetails_Frequency: 'WEEKLY',
+    rentDetails_CalculatedDailyCharge: '1429',
+    rentArrears_StatementDocuments: [
+      {
+        id: '77d43175-cf1f-4feb-885f-0a0c454391c2',
+        value: {
+          document_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056',
+          document_binary_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056/binary',
+          document_filename: 'rentStatement.pdf',
+        }
+      }
+    ],
+    rentArrears_Total: '23999',
+    rentArrears_RecoveryAttempted: 'NO',
+    arrearsJudgmentWanted: 'YES',
+    preActionProtocolCompleted: 'YES',
+    mediationAttempted: 'YES',
+    settlementAttempted: 'YES',
+    noticeServed: 'YES',
+    notice_NoticePostedDate: '2025-11-10',
+    notice_NoticeDocuments: [],
+    notice_NoticeServiceMethod: 'FIRST_CLASS_POST',
+    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
+    claimantCircumstancesSelect: 'YES',
+    claimantCircumstancesDetails: 'claimant circumstances test data',
+    hasDefendantCircumstancesInfo: 'YES',
+    defendantCircumstancesInfo: 'User Input Defendants circumstances',
+    suspensionOfRTB_ShowHousingActsPage: 'No',
+    demotionOfTenancy_ShowHousingActsPage: 'Yes',
+    suspensionToBuyDemotionOfTenancyPages: 'No',
+    alternativesToPossession: ['DEMOTION_OF_TENANCY','SUSPENSION_OF_RIGHT_TO_BUY'],
+    suspensionOfRightToBuyActs: 'SECTION_6A_2',
+    demotionOfTenancyActs: 'SECTION_82A_2',
+    demotionOfTenancy_StatementOfExpressTermsServed: 'YES',
+    demotionOfTenancy_StatementOfExpressTermsDetails: 'User input terms',
+    demotionOrderReason: 'demotion reasons test data',
+    suspensionOrderReason: 'suspension of order reason',
+    additionalReasonsForPossession: {
+      hasReasons: 'YES',
+      reasons: 'User input for additional reasons'
+    },
+    hasUnderlesseeOrMortgagee: 'YES',
+    underlesseeOrMortgagee1: {
+    nameKnown: 'YES',
+    name: 'peter',
+    addressKnown: 'YES',
+    address: {
+      AddressLine1: '4 Second Avenue',
+      AddressLine2: 'Whirlpool Street',
+      AddressLine3: '',
+      PostTown: 'London',
+      County: '',
+      Country: 'United Kingdom',
+      PostCode: 'W3 7RX'
+    }
+  },
     wantToUploadDocuments: 'NO',
     applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
