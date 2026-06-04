@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.view;
+package uk.gov.hmcts.reform.pcs.ccd.view.builder;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -12,7 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
@@ -283,10 +285,31 @@ public class ClaimGroundSummaryBuilder {
                     .code(((Enum<?>) ground).name())
                     .label(ground.getLabel())
                     .reason(getDraftReason(draftCaseData, ground))
+                    .description(getDescription(draftCaseData, ground))
                     .build())
                 .map(summary -> ListValue.<ClaimGroundSummary>builder().value(summary).build())
                 .forEach(summaries::add);
         }
+    }
+
+    private String getDescription(PCSCase draftCaseData, PossessionGroundEnum ground) {
+        if (ground == IntroductoryDemotedOrOtherGrounds.OTHER) {
+            IntroductoryDemotedOtherGroundsForPossession otherGroundsForPossession =
+                draftCaseData.getIntroductoryDemotedOrOtherGroundsForPossession();
+            return otherGroundsForPossession != null ? otherGroundsForPossession.getOtherGroundDescription() : null;
+        }
+
+        if (ground == AssuredAdditionalOtherGround.OTHER) {
+            if (draftCaseData.getClaimDueToRentArrears() == YesOrNo.YES) {
+                AssuredRentArrearsPossessionGrounds grounds = draftCaseData.getAssuredRentArrearsPossessionGrounds();
+                return grounds != null ? grounds.getAdditionalOtherGroundDescription() : null;
+            } else {
+                AssuredNoArrearsPossessionGrounds grounds = draftCaseData.getNoRentArrearsGroundsOptions();
+                return grounds != null ? grounds.getOtherGroundDescription() : null;
+            }
+        }
+
+        return null;
     }
 
     private String getDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {
