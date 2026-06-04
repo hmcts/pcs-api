@@ -22,6 +22,7 @@ import {
   statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
+import {confirmGenApps} from "@data/page-data-figma/page-data-genApps-figma/confirmGenApps.page.data";
 
 test.use({ storageState: undefined });
 
@@ -137,6 +138,8 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
+    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
   });
 
 
@@ -198,6 +201,7 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
   await performAction('retrieveCYATableData', { name: 'check your answers table' });
   await performAction('validateCYA');
   await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-
+  await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+  await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
 });
 });
