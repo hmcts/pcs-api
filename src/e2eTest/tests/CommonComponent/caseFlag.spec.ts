@@ -231,10 +231,7 @@ test.describe('[Common Component Case Flags - Access control] @CC @caseFlags @ac
         await test.step(`Judicial user ${email}`, async () => {
           await performAction('login', {email, password});
           await dismissCookieBanner(page, 'analytics');
-          try {
-
-            await performAction('handleJudgeBookingPage');
-          } catch (e) {}
+          await performAction('handleJudgeBookingPage');
           await performAction('navigateToCaseSummary', 'yes');
           await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);
           await performAction('canViewCaseAndPartyFlag', 'yes');
