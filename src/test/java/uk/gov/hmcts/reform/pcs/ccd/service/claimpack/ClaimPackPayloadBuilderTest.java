@@ -142,7 +142,8 @@ class ClaimPackPayloadBuilderTest {
 
             assertThat(payload.getDefendants()).hasSize(3);
             assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getHeading)
-                .containsExactly("Defendant 1 details", "Defendant 2 details", "Defendant 3 details");
+                .containsExactly("Defendant 1 details",
+                    "Additional defendant 1 details", "Additional defendant 2 details");
             assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getDisplayName)
                 .containsExactly("Bob One", "Carol Two", "Dave Three");
             assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getAddressLine1)
@@ -185,7 +186,8 @@ class ClaimPackPayloadBuilderTest {
             assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getDisplayName)
                 .containsExactly("Persons unknown", "Carwyn Jones", "Persons unknown");
             assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getHeading)
-                .containsExactly("Defendant 1 details", "Defendant 2 details", "Defendant 3 details");
+                .containsExactly("Defendant 1 details",
+                    "Additional defendant 1 details", "Additional defendant 2 details");
         }
 
         @Test
@@ -205,6 +207,28 @@ class ClaimPackPayloadBuilderTest {
             ClaimPackDefendantRow row = payload.getDefendants().getFirst();
             assertThat(row.getDisplayName()).isEqualTo("Bob Tenant");
             assertThat(row.getAddressLine1()).isEqualTo("99 Property Lane");
+        }
+
+        @Test
+        void defendantHeadingsFollowAc06Sequence() {
+            // AC06: After "Defendant 1 details" the next sections must be
+            // "Additional defendant 1 details", "Additional defendant 2 details", … sequentially.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            attach(pcsCase, party("A", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            attach(pcsCase, party("Bob", "One", VerticalYesNo.YES, address("X1")), PartyRole.DEFENDANT, 1);
+            attach(pcsCase, party("Carol", "Two", VerticalYesNo.YES, address("X2")), PartyRole.DEFENDANT, 2);
+            attach(pcsCase, party("Dave", "Three", VerticalYesNo.YES, address("X3")), PartyRole.DEFENDANT, 3);
+            attach(pcsCase, party("Eve", "Four", VerticalYesNo.YES, address("X4")), PartyRole.DEFENDANT, 4);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getHeading)
+                .containsExactly(
+                    "Defendant 1 details",
+                    "Additional defendant 1 details",
+                    "Additional defendant 2 details",
+                    "Additional defendant 3 details");
         }
     }
 

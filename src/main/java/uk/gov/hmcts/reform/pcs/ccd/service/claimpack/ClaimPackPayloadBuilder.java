@@ -244,7 +244,11 @@ public class ClaimPackPayloadBuilder {
         AddressEntity addr = pickAddressOrFallback(def.getAddress(), propertyAddress);
         return ClaimPackDefendantRow.builder()
             .defendantNumber(number)
-            .heading("Defendant " + number + " details")
+            // AC06: first defendant is "Defendant 1 details", subsequent are
+            // "Additional defendant 1/2/3… details" with sequential numbering.
+            .heading(number == 1
+                ? "Defendant 1 details"
+                : "Additional defendant " + (number - 1) + " details")
             .displayName(derivePartyDisplayName(def))
             .addressLine1(addr.getAddressLine1())
             .addressLine2(addr.getAddressLine2())
