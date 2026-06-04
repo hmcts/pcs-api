@@ -134,7 +134,8 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       input3: statementOfTruth.positionOrOfficeHeldTextInput,
     });
     await performValidation('mainHeader', checkYourAnswersGenApps.mainHeader);
-    await performAction('retrieveCYATableData');
+    await performAction('retrieveCYATableData', { name: 'check your answers table' });
+    await performAction('retrieveCYATableData', { name: 'complex field table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
   });
