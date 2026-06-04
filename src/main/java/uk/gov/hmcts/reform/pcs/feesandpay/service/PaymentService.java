@@ -136,21 +136,8 @@ public class PaymentService {
             systemUpdateUserTokenProvider.getAuthToken()
         );
 
-        String status = govPayCardPaymentStatus.getStatus();
-
-        if (status.equals("Success")) {
-            String serviceRequestReference = govPayCardPaymentStatus.getPaymentGroupReference();
-            getFeePaymentEntity(serviceRequestReference)
-                .ifPresent(feePaymentEntity -> {
-                    if (feePaymentEntity.getPaymentStatus() != PaymentStatus.PAID) {
-                        feePaymentEntity.setPaymentStatus(PaymentStatus.PAID);
-                        callPaymentCallbackHandler(feePaymentEntity);
-                    }
-                });
-        }
-
         return CardPaymentStatusResponse.builder()
-            .status(status)
+            .status(govPayCardPaymentStatus.getStatus())
             .build();
     }
 
