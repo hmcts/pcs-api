@@ -43,8 +43,8 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
       confirmButton: serviceRequest.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
+      serviceReqLink: serviceRequest.viewServiceRequestsLink,
       serviceReqTab: caseSummary.servieRequestTab,
       historyTab: caseSummary.HistoryTab,
       status: serviceRequest.paidStatus,
@@ -77,8 +77,8 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
     await performAction('clickButton', confirmYourPayment.confirmButton);
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
+      serviceReqLink: serviceRequest.returnToServiceRequestLink,
       serviceReqTab: caseSummary.servieRequestTab,
       historyTab: caseSummary.HistoryTab,
       status: serviceRequest.paidStatus,
@@ -98,8 +98,8 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
     await performAction('clickButton', enterPaymentDetails.cancelPaymentButton);
     await performValidation('mainHeader', cancelPayment.mainHeader);
     await performAction('clickButton', cancelPayment.continueButton);
-    await performAction('clickButton', cancelPayment.returnServiceReqLink);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
+      serviceReqLink: cancelPayment.returnServiceReqLink,
       serviceReqTab: caseSummary.servieRequestTab,
       historyTab: caseSummary.HistoryTab,
       status: serviceRequest.notPaidStatus,
@@ -133,8 +133,8 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
     await performAction('clickButton', confirmYourPayment.cancelPaymentButton);
     await performValidation('mainHeader', cancelPayment.mainHeader);
     await performAction('clickButton', cancelPayment.continueButton);
-    await performAction('clickButton', cancelPayment.returnServiceReqLink);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
+      serviceReqLink: cancelPayment.returnServiceReqLink,
       serviceReqTab: caseSummary.servieRequestTab,
       historyTab: caseSummary.HistoryTab,
       status: serviceRequest.notPaidStatus,
