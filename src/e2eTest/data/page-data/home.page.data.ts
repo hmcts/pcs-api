@@ -10,5 +10,6 @@ export const home =
     caseParties: 'Case Parties',
     caseNotes: 'Notes',
     caseSummary: 'Summary',
+    caseDetails: 'Case Details',
     signOutButton: 'Sign out'
   }
