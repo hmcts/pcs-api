@@ -94,6 +94,7 @@ class DraftCaseJsonMergerTest {
                             "casePartiesTab.defendantOneDetails.firstName",
                             "casePartiesTab.defendantOneDetails.lastName",
                             "casePartiesTab.defendantOneDetails.serviceAddress",
+                            "caseDetailsTab",
                             "summaryTab")
             .isEqualTo(existingCaseData);
 
