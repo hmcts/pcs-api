@@ -41,8 +41,7 @@ public class WalesDocuments {
     @CCD(
         label = NO_ENERGY_PERFORMANCE_CERTIFICATE_REASON_LABEL,
         hint = "You can enter up to 500 characters",
-        typeOverride = FieldType.TextArea,
-        max = 500
+        typeOverride = FieldType.TextArea
     )
     private String noEpcReason;
 
@@ -59,8 +58,7 @@ public class WalesDocuments {
     @CCD(
         label = NO_GAS_SAFETY_REPORT_REASON_LABEL,
         hint = "You can enter up to 500 characters",
-        typeOverride = FieldType.TextArea,
-        max = 500
+        typeOverride = FieldType.TextArea
     )
     private String noGasReportReason;
 
@@ -77,8 +75,7 @@ public class WalesDocuments {
     @CCD(
         label = NO_ELECTRICAL_INSTALLATION_CONDITION_REPORT_REASON_LABEL,
         hint = "You can enter up to 500 characters",
-        typeOverride = FieldType.TextArea,
-        max = 500
+        typeOverride = FieldType.TextArea
     )
     private String noEicrReason;
 
