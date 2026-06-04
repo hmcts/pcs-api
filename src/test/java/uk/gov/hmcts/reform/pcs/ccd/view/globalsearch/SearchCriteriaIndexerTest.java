@@ -94,6 +94,71 @@ class SearchCriteriaIndexerTest {
     }
 
     @Test
+    void shouldUseOrgNameAsSearchPartyNameWhenPresent() {
+        // Given - an organisation party
+        Party party = Party.builder().orgName("Acme Ltd").build();
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(ListValueUtils.wrapListItems(List.of(party)))
+            .build();
+
+        // When
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+
+        // Then
+        assertThat(searchCriteria.getParties())
+            .extracting(ListValue::getValue)
+            .singleElement()
+            .extracting(SearchParty::getName)
+            .isEqualTo("Acme Ltd");
+    }
+
+    @Test
+    void shouldPreferOrgNameOverIndividualNameWhenBothPresent() {
+        // Given - a party with both an org name and individual name parts
+        Party party = Party.builder()
+            .orgName("Acme Ltd")
+            .firstName("Jane")
+            .lastName("Doe")
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(ListValueUtils.wrapListItems(List.of(party)))
+            .build();
+
+        // When
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+
+        // Then - the org name takes precedence
+        assertThat(searchCriteria.getParties())
+            .extracting(ListValue::getValue)
+            .singleElement()
+            .extracting(SearchParty::getName)
+            .isEqualTo("Acme Ltd");
+    }
+
+    @Test
+    void shouldFallBackToIndividualNameWhenOrgNameIsBlank() {
+        // Given - a blank org name but a known individual name
+        Party party = Party.builder()
+            .orgName("  ")
+            .firstName("Jane")
+            .lastName("Doe")
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(ListValueUtils.wrapListItems(List.of(party)))
+            .build();
+
+        // When
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+
+        // Then - the blank org name is ignored and the individual name is used
+        assertThat(searchCriteria.getParties())
+            .extracting(ListValue::getValue)
+            .singleElement()
+            .extracting(SearchParty::getName)
+            .isEqualTo("Jane Doe");
+    }
+
+    @Test
     void shouldHandlePartyWithNoAddress() {
         // Given - a party with no address
         Party party = Party.builder()

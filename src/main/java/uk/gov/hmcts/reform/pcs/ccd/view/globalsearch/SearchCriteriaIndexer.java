@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 /**
  * Builds the {@link SearchCriteria} used to index a case for global search.
  *
@@ -66,7 +68,9 @@ public class SearchCriteriaIndexer {
     private SearchParty toSearchParty(Party party) {
         AddressUK address = party.getAddress();
         return SearchParty.builder()
-            .name(joinNonBlank(party.getFirstName(), party.getLastName()))
+            .name(isNotBlank(party.getOrgName())
+                ? party.getOrgName()
+                : joinNonBlank(party.getFirstName(), party.getLastName()))
             .emailAddress(party.getEmailAddress())
             .addressLine1(address == null ? null : address.getAddressLine1())
             .postcode(address == null ? null : address.getPostCode())
