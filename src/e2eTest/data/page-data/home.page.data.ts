@@ -9,5 +9,6 @@ export const home =
     globalSearchTab: 'Search',
     caseNotes: 'Notes',
     caseSummary: 'Summary',
+    caseDetails: 'Case Details',
     signOutButton: 'Sign out'
   };
