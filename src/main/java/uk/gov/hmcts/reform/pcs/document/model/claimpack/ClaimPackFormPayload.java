@@ -184,6 +184,9 @@ public class ClaimPackFormPayload implements FormPayload {
     // Show flag — render the start-date row only if a date was provided.
     private boolean showTenancyStartDate;
     private VerticalYesNo tenancyUploadedYesNo;
+    // England-only gate for D49/D50 (Cook [35]/[36]): the Wales journey never captures the
+    // tenancy-copy answer, so these rows must hide on Wales rather than print a blank Yes/No.
+    private boolean showTenancyUploadedQuestion;
     // Complementary booleans drive <<cs_tenancyUploadedYes>>/<<cs_tenancyUploadedNo>> branches.
     private boolean tenancyUploadedYes;
     private boolean tenancyUploadedNo;

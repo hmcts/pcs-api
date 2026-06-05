@@ -634,6 +634,20 @@ class ClaimPackPayloadBuilderTest {
         }
 
         @Test
+        void tenancyUploadedQuestionShownForEnglandHiddenForWales() {
+            // D49/D50 are England-only (Cook [35]/[36]); Wales never captures the answer.
+            PcsCaseEntity england = minimalCase(LegislativeCountry.ENGLAND);
+            england.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.ASSURED_TENANCY).build());
+            assertThat(builder.build(england).isShowTenancyUploadedQuestion()).isTrue();
+
+            PcsCaseEntity wales = minimalCase(LegislativeCountry.WALES);
+            wales.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.SECURE_CONTRACT).build());
+            assertThat(builder.build(wales).isShowTenancyUploadedQuestion()).isFalse();
+        }
+
+        @Test
         void tenancyUploadedNoFlipsTheOtherDirection() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             TenancyLicenceEntity t = TenancyLicenceEntity.builder()

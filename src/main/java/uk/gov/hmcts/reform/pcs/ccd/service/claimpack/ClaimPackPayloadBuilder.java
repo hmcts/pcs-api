@@ -121,6 +121,8 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.showNoticeType(isWales && noticeServedYes);
         payloadBuilder.showPcscSection(isWales);
         payloadBuilder.showRequiredDocumentsSection(isWales);
+        // D49/D50 tenancy-copy rows are England-only (Wales never captures the answer).
+        payloadBuilder.showTenancyUploadedQuestion(isEngland);
     }
 
     private static boolean isWalesJourney(PcsCaseEntity pcsCase) {
