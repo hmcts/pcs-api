@@ -194,8 +194,11 @@ public class ClaimPackPayloadBuilder {
         // §6.3.10 — Y/N to title-case labels; "Why not followed" row gated by complementary boolean.
         VerticalYesNo preActionEnum = claim.getPreActionProtocolFollowed();
         payloadBuilder.preActionProtocolFollowedYesNo(toLabel(preActionEnum));
-        payloadBuilder.showPreActionProtocolNotFollowedReason(isNo(preActionEnum));
-        payloadBuilder.preActionProtocolNotFollowedReason(claim.getPreActionProtocolIncompleteExplanation());
+        // Drop-on-null: hide the "why not followed" row unless a reason was actually captured
+        // (e.g. the Wales journey doesn't capture it, so it would otherwise print blank).
+        String preActionReason = claim.getPreActionProtocolIncompleteExplanation();
+        payloadBuilder.showPreActionProtocolNotFollowedReason(isNo(preActionEnum) && isPopulated(preActionReason));
+        payloadBuilder.preActionProtocolNotFollowedReason(preActionReason);
 
         VerticalYesNo mediationEnum = claim.getMediationAttempted();
         payloadBuilder.mediationAttemptedYesNo(toLabel(mediationEnum));
@@ -405,8 +408,10 @@ public class ClaimPackPayloadBuilder {
         // YesOrNo (CCD SDK) → title-case label; same bridge but rendered directly.
         VerticalYesNo noticeServedEnum = yesOrNoToVertical(notice.getNoticeServed());
         payloadBuilder.noticeServedYesNo(toLabel(noticeServedEnum));
+        // Drop-on-null: show the "why not served" row only when a reason exists (England never
+        // captures it, so it would otherwise print blank).
         boolean notServed = isNo(noticeServedEnum);
-        payloadBuilder.noticeNotServedDisplayed(notServed);
+        payloadBuilder.noticeNotServedDisplayed(notServed && isPopulated(notice.getNoticeStatement()));
         // Positive boolean — gates the "Method of service onwards" sub-table.
         payloadBuilder.noticeServedYes(isYes(noticeServedEnum));
 

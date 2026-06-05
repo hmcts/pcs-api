@@ -1242,6 +1242,17 @@ class ClaimPackPayloadBuilderTest {
         }
 
         @Test
+        void preActionProtocolNotFollowedButNoReason_reasonRowHidden() {
+            // Drop-on-null: e.g. the Wales journey doesn't capture the reason → don't print a blank row.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            pcsCase.getClaims().getFirst().setPreActionProtocolFollowed(VerticalYesNo.NO);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowPreActionProtocolNotFollowedReason()).isFalse();
+        }
+
+        @Test
         void mediationAndSettlementYNRenderedAsTitleCaseString() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             ClaimEntity claim = pcsCase.getClaims().getFirst();
@@ -1287,6 +1298,20 @@ class ClaimPackPayloadBuilderTest {
             assertThat(payload.isNoticeNotServedDisplayed()).isTrue();
             assertThat(payload.getNoticeNotServedReason())
                 .isEqualTo("Defendant address unknown — no notice possible.");
+        }
+
+        @Test
+        void noticeServedNoButNoStatement_whyNotServedRowHidden() {
+            // Drop-on-null: England doesn't capture a 'why not served' reason → don't print a blank row.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.NO)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getNoticeServedYesNo()).isEqualTo("No");
+            assertThat(payload.isNoticeNotServedDisplayed()).isFalse();
         }
 
         @Test
