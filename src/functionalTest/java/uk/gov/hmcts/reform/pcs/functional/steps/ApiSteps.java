@@ -106,6 +106,7 @@ public class ApiSteps {
             case "POST" -> request.when().post(resourceAPI.getResource());
             case "GET" -> request.when().get(resourceAPI.getResource());
             case "DELETE" -> request.when().delete(resourceAPI.getResource());
+            case "PUT" -> request.when().put(resourceAPI.getResource());
             default -> throw new IllegalStateException("Unexpected value: " + method.toUpperCase());
         };
     }
@@ -267,9 +268,9 @@ public class ApiSteps {
 
 
     @Step("fee payment info details fetched")
-    public List<Object> getFeePaymentDetailsForCaseReference(Long caseReference) {
-        Callable<List<Object>> getPaymentInfo = () -> {
-            List<Object> paymentDetails = SerenityRest.given()
+    public List<Map<String, Object>> getFeePaymentDetailsForCaseReference(Long caseReference) {
+        Callable<List<Map<String, Object>>> getPaymentInfo = () -> {
+            List<Map<String,Object>> paymentDetails = SerenityRest.given()
                 .baseUri(baseUrl)
                 .contentType(ContentType.JSON)
                 .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
@@ -279,10 +280,11 @@ public class ApiSteps {
                 .then()
                 .statusCode(200)
                 .extract()
-                .as(new TypeRef<List<Object>>() {});
+                .as(new TypeRef<List<Map<String, Object>>>() {
+                });
 
             if (paymentDetails != null && !paymentDetails.isEmpty()) {
-                return Collections.singletonList(paymentDetails.listIterator());
+                return paymentDetails;
             }
             return null;
         };
@@ -295,7 +297,7 @@ public class ApiSteps {
                 .until(getPaymentInfo, notNullValue());
         } catch (ConditionTimeoutException e) {
             throw new RuntimeException(
-                "Access code not available for case: " + caseReference, e
+                "Error getting payment info details for case reference: " + caseReference, e
             );
         }
     }

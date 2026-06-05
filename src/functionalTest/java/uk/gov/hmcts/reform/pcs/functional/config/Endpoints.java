@@ -8,6 +8,7 @@ public enum Endpoints {
     ValidateAccessCode("/cases/{caseReference}/validate-access-code"),
     StartEventCallback("/callbacks/about-to-start"),
     SubmitEventCallback("/ccd-persistence/cases"),
+    PaymentUpdate("/payment-update"),
     GetPaymentInfoDetails("/testing-support/fee-payment-info/{caseReference}");
 
     private final String resource;
