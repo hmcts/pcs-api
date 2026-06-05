@@ -53,6 +53,8 @@ public class ClaimPackFormPayload implements FormPayload {
     private boolean hasClaimantAddressLine3;
     private boolean hasClaimantCounty;
     // Wales-only row in §6.3.2. Title-case "Yes"/"No" pre-converted from VerticalYesNo.getLabel().
+    // Housing (Wales) Act 2014 — captured only on the Wales journey, so the row is Wales-gated.
+    private boolean showExemptLandlordQuestion;
     private String claimantIsExemptLandlord;
 
     // ---------- §6.3.3 – §6.3.6 Defendants ----------

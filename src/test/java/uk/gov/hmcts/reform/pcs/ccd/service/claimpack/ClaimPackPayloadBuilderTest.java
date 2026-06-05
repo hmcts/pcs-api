@@ -297,6 +297,8 @@ class ClaimPackPayloadBuilderTest {
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getClaimantIsExemptLandlord()).isEqualTo("No");
+            // Housing (Wales) Act 2014 question — shown on Wales.
+            assertThat(payload.isShowExemptLandlordQuestion()).isTrue();
         }
 
         @Test
@@ -307,6 +309,8 @@ class ClaimPackPayloadBuilderTest {
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getClaimantIsExemptLandlord()).isNull();
+            // The Welsh-only exempt-landlord row must be hidden on England.
+            assertThat(payload.isShowExemptLandlordQuestion()).isFalse();
         }
     }
 

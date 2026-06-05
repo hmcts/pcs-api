@@ -124,6 +124,8 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.showNoticeType(isWales && noticeServedYes);
         payloadBuilder.showPcscSection(isWales);
         payloadBuilder.showRequiredDocumentsSection(isWales);
+        // D6/D7 exempt-landlord question is Housing (Wales) Act 2014 — Wales-only.
+        payloadBuilder.showExemptLandlordQuestion(isWales);
         // D49/D50 tenancy-copy rows are England-only (Wales never captures the answer).
         payloadBuilder.showTenancyUploadedQuestion(isEngland);
     }
