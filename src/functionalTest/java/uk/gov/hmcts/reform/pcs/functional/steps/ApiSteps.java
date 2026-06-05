@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
