@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
+import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
+import uk.gov.hmcts.reform.payments.request.CardPaymentServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
+import uk.gov.hmcts.reform.payments.response.CardPaymentServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -18,7 +21,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -100,6 +107,49 @@ public class PaymentService {
         saveNewFeePayment(feesAndPayTaskDataAsString, feesAndPayTaskData, claimEntity,
                           paymentServiceResponse.getServiceRequestReference());
         return paymentServiceResponse;
+    }
+
+    public CreateCardPaymentResponse createPaymentRequest(String serviceRequestReference,
+                                                          CreateCardPaymentRequest createCardPaymentRequest) {
+        CardPaymentServiceRequestDTO paymentRequest = CardPaymentServiceRequestDTO.builder()
+            .amount(createCardPaymentRequest.getAmount())
+            .language(createCardPaymentRequest.getLanguage())
+            .returnUrl(createCardPaymentRequest.getReturnUrl())
+            .build();
+
+        FeePaymentEntity feePaymentEntity = feePaymentRepository.findByRequestReference(serviceRequestReference)
+            .orElseThrow(
+                () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
+            );
+
+        if (feePaymentEntity.getPaymentStatus() != null) {
+            throw new IllegalStateException("Service request " + serviceRequestReference
+                                                + " already has a completed status");
+        }
+
+        CardPaymentServiceRequestResponse govPayCardPaymentResponse = paymentsClient.createGovPayCardPaymentRequest(
+            serviceRequestReference,
+            systemUpdateUserTokenProvider.getAuthToken(),
+            paymentRequest
+        );
+
+        return CreateCardPaymentResponse.builder()
+            .paymentReference(govPayCardPaymentResponse.getPaymentReference())
+            .status(govPayCardPaymentResponse.getStatus())
+            .nextUrl(govPayCardPaymentResponse.getNextUrl())
+            .build();
+    }
+
+
+    public CardPaymentStatusResponse getPaymentStatus(String paymentReference) {
+        PaymentDto govPayCardPaymentStatus = paymentsClient.getGovPayCardPaymentStatus(
+            paymentReference,
+            systemUpdateUserTokenProvider.getAuthToken()
+        );
+
+        return CardPaymentStatusResponse.builder()
+            .status(govPayCardPaymentStatus.getStatus())
+            .build();
     }
 
     private String getResponsiblePartyName(FeesAndPayTaskData feesAndPayTaskData) {
