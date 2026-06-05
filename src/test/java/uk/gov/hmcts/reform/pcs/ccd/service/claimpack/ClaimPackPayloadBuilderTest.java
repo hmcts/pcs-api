@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
@@ -342,6 +343,23 @@ class ClaimPackPayloadBuilderTest {
             assertThat(payload.getGrounds()).hasSize(1);
             assertThat(payload.getHasGroundsYesNo()).isEqualTo("Yes");
         }
+
+        @Test
+        void groundLabelRendersHumanReadableNotRawEnum() {
+            // D10/D12: the grounds list must show the ground label, not "<CATEGORY>: <code>".
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.ASSURED_MANDATORY)
+                .code("SERIOUS_RENT_ARREARS_GROUND8")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds().getFirst().getNameAndNumber())
+                .isEqualTo("Serious rent arrears (ground 8)");
+        }
     }
 
     @Nested
@@ -616,6 +634,31 @@ class ClaimPackPayloadBuilderTest {
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isIntroDemotedOtherTenancy()).isFalse();
+        }
+
+        @Test
+        void tenancyTypeAndRentFrequencyRenderHumanLabelsNotEnumNames() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.SECURE_TENANCY)
+                .rentAmount(new BigDecimal("500.00"))
+                .rentFrequency(RentPaymentFrequency.WEEKLY)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getTenancyTypeLabel()).isEqualTo("Secure tenancy");
+            assertThat(payload.getRentCalculatedDescription()).isEqualTo("£500.00 (Weekly)");
+        }
+
+        @Test
+        void walesContractTypeRendersHumanLabel() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.STANDARD_CONTRACT)
+                .build());
+
+            assertThat(builder.build(pcsCase).getTenancyTypeLabel()).isEqualTo("Standard contract");
         }
 
         @Test

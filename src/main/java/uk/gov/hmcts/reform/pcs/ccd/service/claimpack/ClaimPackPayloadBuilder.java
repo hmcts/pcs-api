@@ -4,7 +4,10 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PossessionGroundLabelResolver;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -679,19 +682,35 @@ public class ClaimPackPayloadBuilder {
     }
 
     private static String formatGroundLabel(ClaimGroundEntity g) {
-        // Placeholder formatter — refine once the ground-code to label convention is confirmed
-        // (see plan §13.5). For now: "<category>: <code>" so the template at least has a string.
-        if (g.getCode() == null) {
-            return g.getCategory() != null ? g.getCategory().name() : "";
-        }
-        return g.getCategory() != null ? g.getCategory().name() + ": " + g.getCode() : g.getCode();
+        // Resolve the persisted category + code to the ground's human-readable label
+        // (e.g. "Serious rent arrears (ground 8)"), not the raw enum identifier.
+        return PossessionGroundLabelResolver.label(g.getCategory(), g.getCode());
     }
 
     private static String formatTenancyLabel(TenancyLicenceEntity t) {
-        if (t.getType() == CombinedLicenceType.OTHER && t.getOtherTypeDetails() != null) {
-            return CombinedLicenceType.OTHER.name() + ": " + t.getOtherTypeDetails();
+        CombinedLicenceType type = t.getType();
+        if (type == null) {
+            return null;
         }
-        return t.getType() != null ? t.getType().name() : null;
+        String label = combinedLicenceLabel(type);
+        return type == CombinedLicenceType.OTHER && t.getOtherTypeDetails() != null
+            ? label + ": " + t.getOtherTypeDetails()
+            : label;
+    }
+
+    // CombinedLicenceType carries no label of its own — reuse the England/Wales source enums that do.
+    private static String combinedLicenceLabel(CombinedLicenceType type) {
+        for (TenancyLicenceType e : TenancyLicenceType.values()) {
+            if (e.getCombinedLicenceType() == type) {
+                return e.getLabel();
+            }
+        }
+        for (OccupationLicenceTypeWales e : OccupationLicenceTypeWales.values()) {
+            if (e.getCombinedLicenceType() == type) {
+                return e.getLabel();
+            }
+        }
+        return type.name();
     }
 
     /**
@@ -751,7 +770,7 @@ public class ClaimPackPayloadBuilder {
         if (t.getRentAmount() == null || t.getRentFrequency() == null) {
             return null;
         }
-        return formatGbp(t.getRentAmount()) + " (" + t.getRentFrequency().name() + ")";
+        return formatGbp(t.getRentAmount()) + " (" + t.getRentFrequency().getLabel() + ")";
     }
 
     /** Format a money value as a GBP currency string, e.g. £1,200.00. Null-safe. */
