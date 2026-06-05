@@ -1,40 +1,19 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.NO;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
-@ExtendWith(MockitoExtension.class)
 class CaseNameFormatterTest {
-
-    private static final String CLAIMANT_NAME = "Freeman";
-    private static final String DEFENDANT_LAST_NAME = "Jackson";
-    private static final String CLAIMANT_ORGANISATION_NAME = "Treetops Housing";
-
-    @Mock
-    private PCSCase pcsCase;
-    @Mock
-    private ListValue<Party> defendantPartyListValue;
-    @Mock
-    private ListValue<Party> claimantListValue;
-    @Mock
-    private Party defendantParty;
-    @Mock
-    private Party claimantParty;
 
     private CaseNameFormatter underTest;
 
@@ -43,139 +22,354 @@ class CaseNameFormatterTest {
         underTest = new CaseNameFormatter();
     }
 
-    @Nested
-    @DisplayName("Format case name from PcsCase")
-    class FormatFromPcsCaseTests {
+    @Test
+    void shouldFormatCaseNameFromPcsCase() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .allClaimants(List.of(listValue(individualClaimant("Sarah", "Freeman"))))
+            .allDefendants(List.of(listValue(defendant("David", "Jackson"))))
+            .build();
 
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsOrgAndDefendantIsKnown() {
-            // Given
-            when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
-            when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
-            when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
-            when(claimantListValue.getValue()).thenReturn(claimantParty);
-            when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
+        // When
+        String caseName = underTest.formatCaseName(pcsCase);
 
-            // When
-            String caseName = underTest.formatCaseName(pcsCase);
-
-            // Then
-            assertThat(caseName).isEqualTo("Treetops Housing vs Jackson");
-        }
-
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsCitizenAndDefendantIsKnown() {
-            // Given
-            when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
-            when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
-            when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
-            when(claimantListValue.getValue()).thenReturn(claimantParty);
-            when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
-
-            // When
-            String caseName = underTest.formatCaseName(pcsCase);
-
-            // Then
-            assertThat(caseName).isEqualTo("Freeman vs Jackson");
-        }
-
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsOrgAndMultipleDefendants() {
-            // Given
-            when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
-            when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue, defendantPartyListValue));
-            when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
-            when(claimantListValue.getValue()).thenReturn(claimantParty);
-            when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
-
-            // When
-            String caseName = underTest.formatCaseName(pcsCase);
-
-            // Then
-            assertThat(caseName).isEqualTo("Treetops Housing vs Jackson and Others");
-        }
-
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsCitizenAndDefendantUnknown() {
-            // Given
-            when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
-            when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
-            when(claimantListValue.getValue()).thenReturn(claimantParty);
-            when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
-            when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(NO);
-
-            // When
-            String caseName = underTest.formatCaseName(pcsCase);
-
-            // Then
-            assertThat(caseName).isEqualTo("Freeman vs persons unknown");
-        }
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs David Jackson");
     }
 
-    @Nested
-    @DisplayName("Format case name from lists of Party")
-    class FormatFromListOfPartyTests {
+    @Test
+    void shouldFormatCaseNameWhenClaimantIsOrganisationAndSingleDefendantIsKnown() {
+        // Given
+        Party claimant = organisationClaimant("Treetops Housing");
+        Party defendant = defendant("David", "Jackson");
 
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsOrgAndDefendantIsKnown() {
-            // Given
-            when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), List.of(defendant));
 
-            // When
-            String caseName = underTest.formatCaseName(List.of(claimantParty), List.of(defendantParty));
+        // Then
+        assertThat(caseName).isEqualTo("Treetops Housing vs David Jackson");
+    }
 
-            // Then
-            assertThat(caseName).isEqualTo("Treetops Housing vs Jackson");
-        }
+    @Test
+    void shouldFormatCaseNameWhenClaimantIsIndividualAndSingleDefendantIsKnown() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
+        Party defendant = defendant("David", "Jackson");
 
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsCitizenAndDefendantIsKnown() {
-            //Given
-            when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), List.of(defendant));
 
-            //When
-            String caseName = underTest.formatCaseName(List.of(claimantParty), List.of(defendantParty));
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs David Jackson");
+    }
 
-            // Then
-            assertThat(caseName).isEqualTo("Freeman vs Jackson");
-        }
+    @Test
+    void shouldFormatCaseNameWhenOnlyLastNamesAreAvailable() {
+        // Given
+        Party claimant = individualClaimant(null, "Freeman");
+        Party defendant = defendant(null, "Jackson");
 
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsOrgAndMultipleDefendants() {
-            //Given
-            when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), List.of(defendant));
 
-            //When
-            String caseName = underTest.formatCaseName(List.of(claimantParty), List.of(defendantParty, defendantParty));
+        // Then
+        assertThat(caseName).isEqualTo("Freeman vs Jackson");
+    }
 
-            // Then
-            assertThat(caseName).isEqualTo("Treetops Housing vs Jackson and Others");
-        }
+    @Test
+    void shouldFormatCaseNameWhenDefendantsAreNull() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
 
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsCitizenAndDefendantUnknown() {
-            //Given
-            when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(NO);
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), null);
 
-            //When
-            String caseName = underTest.formatCaseName(List.of(claimantParty), List.of(defendantParty, defendantParty));
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs Persons unknown");
+    }
 
-            // Then
-            assertThat(caseName).isEqualTo("Freeman vs persons unknown");
-        }
+    @Test
+    void shouldFormatCaseNameWhenDefendantsAreEmpty() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
+
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), List.of());
+
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs Persons unknown");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenClaimantIsOrganisationAndThereAreTwoDefendants() {
+        // Given
+        Party claimant = organisationClaimant("Treetops Housing");
+        Party defendantOne = defendant("David", "Jackson");
+        Party defendantTwo = defendant("Jane", "Smith");
+
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), List.of(defendantOne, defendantTwo));
+
+        // Then
+        assertThat(caseName).isEqualTo("Treetops Housing vs David Jackson and Jane Smith");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenClaimantIsIndividualAndThereAreMoreThanTwoDefendants() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
+        Party defendantOne = defendant("David", "Jackson");
+        Party defendantTwo = defendant("Jane", "Smith");
+        Party defendantThree = defendant("Sam", "Taylor");
+
+        // When
+        String caseName = underTest.formatCaseName(
+            List.of(claimant),
+            List.of(defendantOne, defendantTwo, defendantThree)
+        );
+
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs David Jackson, Jane Smith and Others");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenClaimantIsOrganisationAndThereAreMoreThanTwoDefendants() {
+        // Given
+        Party claimant = organisationClaimant("Treetops Housing");
+        Party defendantOne = defendant("David", "Jackson");
+        Party defendantTwo = defendant("Jane", "Smith");
+        Party defendantThree = defendant("Sam", "Taylor");
+
+        // When
+        String caseName = underTest.formatCaseName(
+            List.of(claimant),
+            List.of(defendantOne, defendantTwo, defendantThree)
+        );
+
+        // Then
+        assertThat(caseName).isEqualTo("Treetops Housing vs David Jackson, Jane Smith and Others");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenDefendantNameIsNotKnown() {
+        // Given
+        Party claimant = organisationClaimant("Treetops Housing");
+        Party defendant = Party.builder()
+            .nameKnown(NO)
+            .build();
+
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), List.of(defendant));
+
+        // Then
+        assertThat(caseName).isEqualTo("Treetops Housing vs Persons unknown");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenIndividualClaimantAndSingleDefendantNameIsNotKnown() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
+        Party defendant = unknownDefendant();
+
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), List.of(defendant));
+
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs Persons unknown");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenIndividualClaimantAndTwoDefendantNamesAreNotKnown() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
+        Party defendantOne = unknownDefendant();
+        Party defendantTwo = unknownDefendant();
+
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), List.of(defendantOne, defendantTwo));
+
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs Persons unknown and Persons unknown");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenOrganisationClaimantAndTwoDefendantNamesAreNotKnown() {
+        // Given
+        Party claimant = organisationClaimant("Treetops Housing");
+        Party defendantOne = unknownDefendant();
+        Party defendantTwo = unknownDefendant();
+
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), List.of(defendantOne, defendantTwo));
+
+        // Then
+        assertThat(caseName).isEqualTo("Treetops Housing vs Persons unknown and Persons unknown");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenDefendantEntryIsNull() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
+        List<Party> defendants = new ArrayList<>();
+        defendants.add(null);
+
+        // When
+        String caseName = underTest.formatCaseName(List.of(claimant), defendants);
+
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs Persons unknown");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenIndividualClaimantAndMoreThanTwoDefendantNamesAreNotKnown() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
+
+        // When
+        String caseName = underTest.formatCaseName(
+            List.of(claimant),
+            List.of(unknownDefendant(), unknownDefendant(), unknownDefendant())
+        );
+
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs Persons unknown, Persons unknown and Others");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenOrganisationClaimantAndMoreThanTwoDefendantNamesAreNotKnown() {
+        // Given
+        Party claimant = organisationClaimant("Treetops Housing");
+
+        // When
+        String caseName = underTest.formatCaseName(
+            List.of(claimant),
+            List.of(unknownDefendant(), unknownDefendant(), unknownDefendant())
+        );
+
+        // Then
+        assertThat(caseName).isEqualTo("Treetops Housing vs Persons unknown, Persons unknown and Others");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenIndividualClaimantAndSecondDefendantNameIsNotKnown() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
+
+        // When
+        String caseName = underTest.formatCaseName(
+            List.of(claimant),
+            List.of(defendant("David", "Jackson"), unknownDefendant())
+        );
+
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs David Jackson and Persons unknown");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenOrganisationClaimantAndSecondDefendantNameIsNotKnown() {
+        // Given
+        Party claimant = organisationClaimant("Treetops Housing");
+
+        // When
+        String caseName = underTest.formatCaseName(
+            List.of(claimant),
+            List.of(defendant("David", "Jackson"), unknownDefendant())
+        );
+
+        // Then
+        assertThat(caseName).isEqualTo("Treetops Housing vs David Jackson and Persons unknown");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenIndividualClaimantAndFirstDefendantNameIsNotKnown() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
+
+        // When
+        String caseName = underTest.formatCaseName(
+            List.of(claimant),
+            List.of(unknownDefendant(), defendant("David", "Jackson"))
+        );
+
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs Persons unknown and David Jackson");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenOrganisationClaimantAndFirstDefendantNameIsNotKnown() {
+        // Given
+        Party claimant = organisationClaimant("Treetops Housing");
+
+        // When
+        String caseName = underTest.formatCaseName(
+            List.of(claimant),
+            List.of(unknownDefendant(), defendant("David", "Jackson"))
+        );
+
+        // Then
+        assertThat(caseName).isEqualTo("Treetops Housing vs Persons unknown and David Jackson");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenIndividualClaimantAndMoreThanTwoDefendantsIncludeUnknownName() {
+        // Given
+        Party claimant = individualClaimant("Sarah", "Freeman");
+
+        // When
+        String caseName = underTest.formatCaseName(
+            List.of(claimant),
+            List.of(defendant("David", "Jackson"), unknownDefendant(), defendant("Sam", "Taylor"))
+        );
+
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs David Jackson, Persons unknown and Others");
+    }
+
+    @Test
+    void shouldFormatCaseNameWhenOrganisationClaimantAndMoreThanTwoDefendantsIncludeUnknownName() {
+        // Given
+        Party claimant = organisationClaimant("Treetops Housing");
+
+        // When
+        String caseName = underTest.formatCaseName(
+            List.of(claimant),
+            List.of(defendant("David", "Jackson"), unknownDefendant(), defendant("Sam", "Taylor"))
+        );
+
+        // Then
+        assertThat(caseName).isEqualTo("Treetops Housing vs David Jackson, Persons unknown and Others");
+    }
+
+    private static Party organisationClaimant(String organisationName) {
+        return Party.builder()
+            .orgName(organisationName)
+            .build();
+    }
+
+    private static Party individualClaimant(String firstName, String lastName) {
+        return Party.builder()
+            .firstName(firstName)
+            .lastName(lastName)
+            .build();
+    }
+
+    private static Party defendant(String firstName, String lastName) {
+        return Party.builder()
+            .nameKnown(YES)
+            .firstName(firstName)
+            .lastName(lastName)
+            .build();
+    }
+
+    private static Party unknownDefendant() {
+        return Party.builder()
+            .nameKnown(NO)
+            .build();
+    }
+
+    private static <T> ListValue<T> listValue(T value) {
+        return ListValue.<T>builder()
+            .value(value)
+            .build();
     }
 }
