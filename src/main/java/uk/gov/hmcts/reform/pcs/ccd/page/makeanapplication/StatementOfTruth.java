@@ -5,7 +5,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 
 @Slf4j
 public class StatementOfTruth implements CcdPageConfiguration {
@@ -32,12 +31,10 @@ public class StatementOfTruth implements CcdPageConfiguration {
             .label("statementOfTruth-lineSeparator", "---")
             .label("statementOfTruth-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
-            .complex(XuiGenAppRequest::getStatementOfTruth)
-            .mandatory(StatementOfTruthDetails::getAgreementDefendantLegalRep)
-            .mandatory(StatementOfTruthDetails::getFullNameLegalRep)
-            .mandatory(StatementOfTruthDetails::getFirmNameLegalRep)
-            .mandatory(StatementOfTruthDetails::getPositionLegalRep)
-            .done()
+            .mandatory(XuiGenAppRequest::getAgreementDefendantLegalRep)
+            .mandatory(XuiGenAppRequest::getSotFullName)
+            .mandatory(XuiGenAppRequest::getSotFirmName)
+            .mandatory(XuiGenAppRequest::getSotPositionHeld)
             .done();
     }
 

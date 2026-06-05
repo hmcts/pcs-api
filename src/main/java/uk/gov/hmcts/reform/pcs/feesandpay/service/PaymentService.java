@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
@@ -115,6 +116,16 @@ public class PaymentService {
             .language(createCardPaymentRequest.getLanguage())
             .returnUrl(createCardPaymentRequest.getReturnUrl())
             .build();
+
+        FeePaymentEntity feePaymentEntity = feePaymentRepository.findByServiceRequestReference(serviceRequestReference)
+            .orElseThrow(
+                () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
+            );
+
+        if (feePaymentEntity.getPaymentStatus() != null) {
+            throw new IllegalStateException("Service request " + serviceRequestReference
+                                                + " already has a completed status");
+        }
 
         CardPaymentServiceRequestResponse govPayCardPaymentResponse = paymentsClient.createGovPayCardPaymentRequest(
             serviceRequestReference,
