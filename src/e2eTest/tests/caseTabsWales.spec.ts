@@ -31,7 +31,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Case tabs - Wales Journey] @nightly', async () => {
-  test('Case tabs Wales - Case Details tab test @MAC @regression', async () => {
+  test('Case tabs Wales - Case Details tab test @MAC @regression @PR', async () => {
     await performAction('clickTab', home.caseDetails);
     await performAction('validateCaseSummaryDetails', {
       defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
