@@ -140,7 +140,6 @@ public class PaymentService {
             .build();
     }
 
-
     public CardPaymentStatusResponse getPaymentStatus(String paymentReference) {
         PaymentDto govPayCardPaymentStatus = paymentsClient.getGovPayCardPaymentStatus(
             paymentReference,
@@ -172,7 +171,7 @@ public class PaymentService {
     public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback) {
         log.info("PaymentStatusCallback status: {}", paymentStatusCallback.getServiceRequestStatus());
         Optional<FeePaymentEntity> byCaseReference = feePaymentRepository
-            .findByRequestReference(paymentStatusCallback.getServiceRequestReference());
+            .findByServiceRequestReference(paymentStatusCallback.getServiceRequestReference());
         if (byCaseReference.isPresent()) {
             FeePaymentEntity feePaymentEntity = byCaseReference.get();
             feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
@@ -198,10 +197,11 @@ public class PaymentService {
                  feesAndPayTaskData.getCaseReference(), serviceRequestReference);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
-            .requestReference(serviceRequestReference)
+            .serviceRequestReference(serviceRequestReference)
             .amount(feesAndPayTaskData.getFeeDetails().getFeeAmount())
             .paymentCallbackHandlerType(feesAndPayTaskData.getPaymentCallbackHandlerType())
             .taskData(feesAndPayTaskDataAsString)
+            .relatedEntityId(feesAndPayTaskData.getRelatedEntityId())
             .build();
         feePaymentRepository.save(feePaymentEntity);
     }

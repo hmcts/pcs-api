@@ -22,13 +22,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collections;
@@ -70,6 +74,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
+    @Mock
+    private CounterClaimRepository counterClaimRepository;
+    @Mock
+    private PartyService partyService;
+    @Mock
+    private FeeService feeService;
+    @Mock
+    private PaymentService paymentService;
+    @Mock
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
@@ -86,7 +100,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
             draftCaseDataService,
             claimResponseService,
-            defendantResponseService
+            defendantResponseService,
+            counterClaimRepository,
+            securityContextService,
+            partyService,
+            feeService,
+            paymentService,
+            objectMapper
         );
 
         setEventUnderTest(new RespondPossessionClaim(

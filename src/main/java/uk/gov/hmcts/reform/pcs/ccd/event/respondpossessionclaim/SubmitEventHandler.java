@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -9,15 +11,34 @@ import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondPossessionClaimSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE;
 
 @Component
 @Slf4j
@@ -27,6 +48,12 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final DraftCaseDataService draftCaseDataService;
     private final ClaimResponseService claimResponseService;
     private final DefendantResponseService defendantResponseService;
+    private final CounterClaimRepository counterClaimRepository;
+    private final SecurityContextService securityContextService;
+    private final PartyService partyService;
+    private final FeeService feeService;
+    private final PaymentService paymentService;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     @Override
@@ -57,10 +84,12 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
 
+        SubmitResponse<State> submitResponse = success(caseReference, responseDraftData);
+
         //delete draft as it's no longer needed
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
         log.info("Successfully saved defendant response for case: {}", caseReference);
-        return success();
+        return submitResponse;
     }
 
     private SubmitResponse<State> validate(PossessionClaimResponse possessionClaimResponse, long caseReference) {
@@ -77,8 +106,114 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         return null;
     }
 
-    private SubmitResponse<State> success() {
-        return SubmitResponse.defaultResponse();
+    private SubmitResponse<State> success(long caseReference, PossessionClaimResponse possessionClaimResponse) {
+        if (!isCounterClaimPaymentRequired(possessionClaimResponse)) {
+            return SubmitResponse.defaultResponse();
+        }
+
+        CounterClaim counterClaim = possessionClaimResponse.getDefendantResponses().getCounterClaim();
+        FeeType feeType = resolveCounterClaimFeeType(counterClaim);
+        FeeDetails feeDetails = feeService.getFee(feeType);
+        PartyEntity responsibleParty = getCurrentUserParty(caseReference);
+        UUID counterClaimEntityId = getPendingCounterClaimEntityId(caseReference, responsibleParty.getId());
+
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeDetails(feeDetails)
+            .ccdCaseNumber(String.valueOf(caseReference))
+            .caseReference(caseReference)
+            .responsiblePartyId(responsibleParty.getId())
+            .paymentCallbackHandlerType(COUNTER_CLAIM_ISSUE)
+            .relatedEntityId(counterClaimEntityId)
+            .build();
+
+        PaymentServiceResponse paymentServiceResponse = paymentService.createServiceRequest(taskData);
+
+        RespondPossessionClaimSubmitResponse response = RespondPossessionClaimSubmitResponse.builder()
+            .state(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+            .serviceRequestReference(paymentServiceResponse.getServiceRequestReference())
+            .feeAmount(feeDetails.getFeeAmount())
+            .build();
+
+        return SubmitResponse.<State>builder()
+            .confirmationBody(writeAsString(response))
+            .build();
+    }
+
+    private boolean isCounterClaimPaymentRequired(PossessionClaimResponse possessionClaimResponse) {
+        if (possessionClaimResponse == null || possessionClaimResponse.getDefendantResponses() == null) {
+            return false;
+        }
+        if (possessionClaimResponse.getDefendantResponses().getMakeCounterClaim() != VerticalYesNo.YES) {
+            return false;
+        }
+        CounterClaim counterClaim = possessionClaimResponse.getDefendantResponses().getCounterClaim();
+        if (counterClaim == null) {
+            return false;
+        }
+        String hwfReference = counterClaim.getHwfReferenceNumber();
+        return hwfReference == null || hwfReference.trim().isEmpty();
+    }
+
+    private FeeType resolveCounterClaimFeeType(CounterClaim counterClaim) {
+        if (counterClaim == null || counterClaim.getClaimType() == null) {
+            throw new IllegalStateException("Counterclaim fee type cannot be determined without claim type");
+        }
+        if (counterClaim.getClaimType() == CounterClaimType.SOMETHING_ELSE) {
+            return FeeType.COUNTER_CLAIM_FLAT_FEE_FEE0450;
+        }
+
+        BigDecimal claimAmount = getCounterClaimAmount(counterClaim);
+        if (claimAmount == null || claimAmount.signum() < 0) {
+            return FeeType.COUNTER_CLAIM;
+        }
+        if (claimAmount.compareTo(new BigDecimal("5000")) <= 0) {
+            return FeeType.COUNTER_CLAIM_RANGED;
+        }
+        return FeeType.COUNTER_CLAIM;
+    }
+
+    private BigDecimal getCounterClaimAmount(CounterClaim counterClaim) {
+        if (counterClaim.getIsClaimAmountKnown() == VerticalYesNo.YES) {
+            return counterClaim.getClaimAmount();
+        }
+        if (counterClaim.getIsClaimAmountKnown() == VerticalYesNo.NO) {
+            return counterClaim.getEstimatedMaxClaimAmount();
+        }
+        return null;
+    }
+
+    private PartyEntity getCurrentUserParty(long caseReference) {
+        UUID currentUserId = securityContextService.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new IllegalStateException("Current user IDAM ID is null");
+        }
+        return partyService.getPartyEntityByIdamId(currentUserId, caseReference);
+    }
+
+    private UUID getPendingCounterClaimEntityId(long caseReference, UUID partyId) {
+        CounterClaimEntity counterClaimEntity =
+            counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdAndStatusOrderByClaimSubmittedDateDesc(
+                    caseReference,
+                    partyId,
+                    CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED
+                )
+                .or(() -> counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdOrderByClaimSubmittedDateDesc(
+                    caseReference,
+                    partyId
+                ))
+                .orElseThrow(() -> new IllegalStateException(
+                    "Counterclaim not found for case %d and party %s".formatted(caseReference, partyId)
+                ));
+
+        return counterClaimEntity.getId();
+    }
+
+    private String writeAsString(RespondPossessionClaimSubmitResponse submitResponse) {
+        try {
+            return objectMapper.writeValueAsString(submitResponse);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Unable to serialise respond possession claim submit response", e);
+        }
     }
 
     private SubmitResponse<State> error(String errorMessage) {

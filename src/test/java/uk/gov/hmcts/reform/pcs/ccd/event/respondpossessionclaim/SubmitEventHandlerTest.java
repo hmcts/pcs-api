@@ -15,14 +15,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -51,6 +56,18 @@ class SubmitEventHandlerTest {
     private ClaimResponseService claimResponseService;
     @Mock
     private DefendantResponseService defendantResponseService;
+    @Mock
+    private CounterClaimRepository counterClaimRepository;
+    @Mock
+    private SecurityContextService securityContextService;
+    @Mock
+    private PartyService partyService;
+    @Mock
+    private FeeService feeService;
+    @Mock
+    private PaymentService paymentService;
+    @Mock
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     private SubmitEventHandler underTest;
 
@@ -59,7 +76,13 @@ class SubmitEventHandlerTest {
         underTest = new SubmitEventHandler(
             draftCaseDataService,
             claimResponseService,
-            defendantResponseService
+            defendantResponseService,
+            counterClaimRepository,
+            securityContextService,
+            partyService,
+            feeService,
+            paymentService,
+            objectMapper
         );
     }
 
