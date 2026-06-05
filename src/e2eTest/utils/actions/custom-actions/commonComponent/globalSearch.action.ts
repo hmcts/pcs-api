@@ -68,8 +68,7 @@ export class GlobalSearchCaseAction implements IAction {
     await expect (resultRow).toContainText(searchResults.locationLabel);
     await expect(resultRow.getByRole('link', { name: searchResults.viewLinkText })).toBeVisible();
     await resultRow.getByRole('link', { name: searchResults.viewLinkText }).click();
-    const firstTab = page.locator('.mat-tab-label .mat-tab-label-content, .mat-mdc-tab .mdc-tab__text-label').first();
-    await firstTab.waitFor({ state: 'visible' });
-    await firstTab.click();
+    await performAction('clickTab', home.caseSummary);
+    await performValidation('text', {text: 'Summary',elementType: 'subHeading'});
   }
 }
