@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.util.UUID;
 
@@ -22,14 +23,14 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
     private final GenAppDocumentGenerator genAppDocumentGenerator;
 
     @Override
-    public void handle(FeePaymentEntity feePaymentEntity) {
+    public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
         UUID genAppId = feePaymentEntity.getRelatedEntityId();
 
         log.info("Handling callback for gen app payment for gen app ID {}", genAppId);
 
         GenAppEntity genAppEntity = findGenAppEntity(genAppId);
 
-        if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
+        if (feePaymentEntity.getPaymentStatus() == PaymentStatus.PAID) {
             if (genAppEntity.getState() != GenAppState.GEN_APP_ISSUED) {
                 genAppEntity.setState(GenAppState.GEN_APP_ISSUED);
                 long caseReference = genAppEntity.getPcsCase().getCaseReference();

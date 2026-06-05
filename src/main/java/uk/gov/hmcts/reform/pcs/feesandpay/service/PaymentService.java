@@ -179,18 +179,20 @@ public class PaymentService {
                     feePaymentEntity
                         .setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
 
-                    callPaymentCallbackHandler(feePaymentEntity);
+                    callPaymentCallbackHandler(paymentStatusCallback, feePaymentEntity);
 
                     feePaymentRepository.save(feePaymentEntity);
                 });
     }
 
-    private void callPaymentCallbackHandler(FeePaymentEntity feePaymentEntity) {
+    private void callPaymentCallbackHandler(PaymentStatusCallback paymentStatusCallback,
+                                            FeePaymentEntity feePaymentEntity) {
+
         PaymentCallbackStrategy paymentCallbackStrategy = paymentCallbackStrategyFactory
             .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
 
         if (paymentCallbackStrategy != null) {
-            paymentCallbackStrategy.handle(feePaymentEntity);
+            paymentCallbackStrategy.handle(paymentStatusCallback, feePaymentEntity);
         } else {
             log.warn("No handler found for type {}", feePaymentEntity.getPaymentCallbackHandlerType());
         }

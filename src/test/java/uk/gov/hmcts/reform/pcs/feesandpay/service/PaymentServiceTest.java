@@ -272,7 +272,7 @@ class PaymentServiceTest {
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(strategy).handle(feePaymentEntity);
+            verify(strategy).handle(paymentStatusCallback, feePaymentEntity);
             verify(feePaymentRepository).save(feePaymentEntity);
         }
 

@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -69,9 +70,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
         claimEntity.setPcsCase(pcsCase);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
             .paymentStatus(paymentStatus).paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
-        underTest.handle(feePaymentEntity);
+        underTest.handle(callback, feePaymentEntity);
 
         // Then
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
@@ -90,9 +92,11 @@ class MakeAClaimPaymentCallbackHandlerTest {
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(new ClaimEntity()).taskData("aasdfsdf{{")
             .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
 
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
+
         // When / Then
         assertThatExceptionOfType(PaymentCallbackException.class)
-            .isThrownBy(() -> underTest.handle(feePaymentEntity))
+            .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .withMessageContaining("Unable to process");
     }
 
@@ -110,8 +114,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().taskData(taskDataJson)
             .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
 
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
+
         // When
-        Throwable throwable = catchThrowable(() -> underTest.handle(feePaymentEntity));
+        Throwable throwable = catchThrowable(() -> underTest.handle(callback, feePaymentEntity));
 
         // Then
         assertThat(throwable).isEqualTo(expectedException);

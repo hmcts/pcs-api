@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +34,8 @@ class GenAppPaymentCallbackHandlerTest {
     private GenAppRepository genAppRepository;
     @Mock
     private GenAppDocumentGenerator genAppDocumentGenerator;
+    @Mock
+    private PaymentStatusCallback paymentStatusCallback;
 
     private GenAppPaymentCallbackHandler underTest;
 
@@ -59,7 +62,7 @@ class GenAppPaymentCallbackHandlerTest {
         when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
 
         // When
-        underTest.handle(feePaymentEntity);
+        underTest.handle(paymentStatusCallback, feePaymentEntity);
 
         // Then
         verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
@@ -80,7 +83,7 @@ class GenAppPaymentCallbackHandlerTest {
         when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
 
         // When
-        underTest.handle(feePaymentEntity);
+        underTest.handle(paymentStatusCallback, feePaymentEntity);
 
         // Then
         verify(genAppDocumentGenerator, never()).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
@@ -96,7 +99,7 @@ class GenAppPaymentCallbackHandlerTest {
         when(genAppRepository.findById(unknownGenAppId)).thenReturn(Optional.empty());
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.handle(feePaymentEntity));
+        Throwable throwable = catchThrowable(() -> underTest.handle(paymentStatusCallback, feePaymentEntity));
 
         // Then
         assertThat(throwable).isInstanceOf(GenAppNotFoundException.class);
