@@ -598,6 +598,7 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.signedByLegalRep(legalRep);
         payloadBuilder.signedByClaimant(!legalRep);
         payloadBuilder.sotFullName(sot.getFullName());
+        // D80 (Excel): "N/A for this release phase" — populated but the template row is removed for now.
         payloadBuilder.sotFirmName(sot.getFirmName());
         payloadBuilder.sotPositionHeld(sot.getPositionHeld());
     }
