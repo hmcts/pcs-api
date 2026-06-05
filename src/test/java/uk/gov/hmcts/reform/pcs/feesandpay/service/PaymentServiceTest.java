@@ -462,7 +462,8 @@ class PaymentServiceTest {
                 .status(expectedStatus)
                 .build();
 
-            when(paymentsClient.getGovPayCardPaymentStatus(paymentReference, SYSTEM_TOKEN)).thenReturn(paymentDto);
+            when(paymentsClient.getGovPayCardPaymentStatusWithCallback(paymentReference, SYSTEM_TOKEN))
+                .thenReturn(paymentDto);
 
             // When
             CardPaymentStatusResponse paymentStatusResponse = underTest.getPaymentStatus(paymentReference);

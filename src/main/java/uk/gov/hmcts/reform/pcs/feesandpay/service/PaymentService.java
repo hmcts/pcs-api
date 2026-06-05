@@ -140,9 +140,9 @@ public class PaymentService {
             .build();
     }
 
-    public CardPaymentStatusResponse getPaymentStatus(String paymentReference) {
-        PaymentDto govPayCardPaymentStatus = paymentsClient.getGovPayCardPaymentStatus(
-            paymentReference,
+    public CardPaymentStatusResponse getPaymentStatus(String internalReference) {
+        PaymentDto govPayCardPaymentStatus = paymentsClient.getGovPayCardPaymentStatusWithCallback(
+            internalReference,
             systemUpdateUserTokenProvider.getAuthToken()
         );
 
