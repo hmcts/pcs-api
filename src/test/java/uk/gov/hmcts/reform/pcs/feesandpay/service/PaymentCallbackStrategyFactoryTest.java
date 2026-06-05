@@ -19,7 +19,7 @@ class PaymentCallbackStrategyFactoryTest {
     private PaymentCallbackStrategyFactory underTest;
 
     @Test
-    void shouldReturnMakeAClaimStrategyForResumePossessionClaim() {
+    void shouldReturnMakeAClaimCallbackHandlerForResumePossessionClaim() {
         // When
         PaymentCallbackStrategy result = underTest.getStrategy(PaymentCallbackHandlerType.CLAIM);
 

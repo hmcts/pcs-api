@@ -862,7 +862,7 @@ class NotificationServiceTest {
             );
 
             Map<String, Object> result =
-                factory.forClaimant(1234567890L, pcsCase).toMap();
+                factory.forClaimant(1234567890L, pcsCase).toMap().toMap();
 
             assertThat(result)
                 .containsEntry("toLineClaimantName", "Override Name")
@@ -882,7 +882,7 @@ class NotificationServiceTest {
             );
 
             Map<String, Object> result =
-                factory.forClaimant(1234567890L, pcsCase).toMap();
+                factory.forClaimant(1234567890L, pcsCase).toMap().toMap();
 
             assertThat(result)
                 .containsEntry("toLineClaimantName", "Jane Smith")
