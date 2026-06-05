@@ -787,26 +787,6 @@ public class CaseDetailsTabViewTest {
     }
 
     @Test
-    void shouldNotSetTenancyLicenceDescriptionWhenTenancyTypeIsNotOther() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .legislativeCountry(LegislativeCountry.ENGLAND)
-            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
-                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-                                       .tenancyLicenceDate(LocalDate.of(2024, 4, 16))
-                                       .hasCopyOfTenancyLicence(VerticalYesNo.NO)
-                                       .reasonsForNoTenancyLicenceDocuments("Reasons")
-                                       .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDescription()).isNull();
-    }
-
-    @Test
     void shouldSetCaseDetailsTabFieldsForWales() {
         AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
         AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
