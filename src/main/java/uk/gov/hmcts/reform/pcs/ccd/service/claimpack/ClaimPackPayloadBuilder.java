@@ -4,10 +4,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PossessionGroundLabelResolver;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -38,6 +35,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatDefendantHeading;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatGbp;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatGroundLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatRentDescription;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatTenancyLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatUnderlesseeHeading;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isNo;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isPopulated;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isYes;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.toLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.yesOrNoToVertical;
 
 /**
  * Builds {@link ClaimPackFormPayload} from a {@link PcsCaseEntity}.
@@ -628,48 +637,7 @@ public class ClaimPackPayloadBuilder {
             .build();
     }
 
-    // Bridge from the CCD SDK YesOrNo (some entities) to the payload's VerticalYesNo; null-safe.
-    private static VerticalYesNo yesOrNoToVertical(uk.gov.hmcts.ccd.sdk.type.YesOrNo yesOrNo) {
-        if (yesOrNo == null) {
-            return null;
-        }
-        return yesOrNo == uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
-    }
-
-    private static String formatGroundLabel(ClaimGroundEntity ground) {
-        return PossessionGroundLabelResolver.label(ground.getCategory(), ground.getCode());
-    }
-
-    private static String formatTenancyLabel(TenancyLicenceEntity tenancy) {
-        CombinedLicenceType type = tenancy.getType();
-        if (type == null) {
-            return null;
-        }
-        String label = combinedLicenceLabel(type);
-        return type == CombinedLicenceType.OTHER && tenancy.getOtherTypeDetails() != null
-            ? label + ": " + tenancy.getOtherTypeDetails()
-            : label;
-    }
-
-    // CombinedLicenceType carries no label of its own — reuse the England/Wales source enums that do.
-    private static String combinedLicenceLabel(CombinedLicenceType type) {
-        for (TenancyLicenceType englandType : TenancyLicenceType.values()) {
-            if (englandType.getCombinedLicenceType() == type) {
-                return englandType.getLabel();
-            }
-        }
-        for (OccupationLicenceTypeWales walesType : OccupationLicenceTypeWales.values()) {
-            if (walesType.getCombinedLicenceType() == type) {
-                return walesType.getLabel();
-            }
-        }
-        return type.name();
-    }
-
-    /**
-     * Render-ready name: org name if set, else "first last" if either is set, else "Persons unknown".
-     * Mirrors how the template's {@code ((name))} designer placeholder is intended to read.
-     */
+    // org name if set, else "first last" if either is set, else "Persons unknown".
     private static String deriveDisplayName(ClaimPackParty party) {
         if (isPopulated(party.getOrgName())) {
             return party.getOrgName();
@@ -681,58 +649,6 @@ public class ClaimPackPayloadBuilder {
                 + (hasLast ? party.getLastName() : "");
         }
         return "Persons unknown";
-    }
-
-    private static boolean isPopulated(String text) {
-        return text != null && !text.isBlank();
-    }
-
-    /** AC06: first party "Defendant 1 details", subsequent "Additional defendant N details". */
-    static String formatDefendantHeading(int defendantNumber) {
-        return defendantNumber == 1
-            ? "Defendant 1 details"
-            : "Additional defendant " + (defendantNumber - 1) + " details";
-    }
-
-    /** Same numbering convention as defendants but underlessee/mortgagee phrasing. */
-    static String formatUnderlesseeHeading(int underlesseeNumber) {
-        return underlesseeNumber == 1
-            ? "Underlessee or mortgagee 1 details"
-            : "Additional underlessee or mortgagee " + (underlesseeNumber - 1) + " details";
-    }
-
-    /** Null-safe title-case label for direct rendering — VerticalYesNo.YES → "Yes". */
-    private static String toLabel(VerticalYesNo yesNo) {
-        return yesNo == null ? null : yesNo.getLabel();
-    }
-
-    /** Null-safe label for NoticeServiceMethod (used inside the notice section). */
-    private static String toLabel(NoticeServiceMethod method) {
-        return method == null ? null : method.getLabel();
-    }
-
-    private static boolean isYes(VerticalYesNo yesNo) {
-        return yesNo == VerticalYesNo.YES;
-    }
-
-    private static boolean isNo(VerticalYesNo yesNo) {
-        return yesNo == VerticalYesNo.NO;
-    }
-
-    private static String formatRentDescription(TenancyLicenceEntity tenancy) {
-        if (tenancy.getRentAmount() == null || tenancy.getRentFrequency() == null) {
-            return null;
-        }
-        return formatGbp(tenancy.getRentAmount()) + " (" + tenancy.getRentFrequency().getLabel() + ")";
-    }
-
-    /** Format a money value as a GBP currency string, e.g. £1,200.00. Null-safe. */
-    static String formatGbp(java.math.BigDecimal amount) {
-        if (amount == null) {
-            return null;
-        }
-        java.text.NumberFormat fmt = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.UK);
-        return fmt.format(amount);
     }
 
 }
