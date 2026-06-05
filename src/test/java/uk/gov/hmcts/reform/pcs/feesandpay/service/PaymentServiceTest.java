@@ -8,6 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -30,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
@@ -51,6 +54,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -377,6 +381,9 @@ class PaymentServiceTest {
                                                                any(CardPaymentServiceRequestDTO.class)))
                 .thenReturn(paymentServiceResponse);
 
+            when(feePaymentRepository.findByRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(mock(FeePaymentEntity.class)));
+
             // When
             CreateCardPaymentResponse cardPaymentResponse = underTest.createPaymentRequest(
                 serviceRequestReference,
@@ -397,6 +404,47 @@ class PaymentServiceTest {
             assertThat(cardPaymentResponse.getPaymentReference()).isEqualTo(expectedPaymentReference);
             assertThat(cardPaymentResponse.getStatus()).isEqualTo(expectedPaymentStatus);
             assertThat(cardPaymentResponse.getNextUrl()).isEqualTo(expectedNextUrl);
+        }
+
+        @Test
+        void shouldThrowExceptionCreatingPaymentRequestForUnknownServiceRequest() {
+            // Given
+            String serviceRequestReference = "SR-1234";
+            CreateCardPaymentRequest cardPaymentRequest = mock(CreateCardPaymentRequest.class);
+
+            when(feePaymentRepository.findByRequestReference(serviceRequestReference))
+                .thenReturn(Optional.empty());
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.createPaymentRequest(
+                serviceRequestReference,
+                cardPaymentRequest
+            ));
+
+            // Then
+            assertThat(throwable).isInstanceOf(FeePaymentNotFoundException.class);
+        }
+
+        @ParameterizedTest
+        @EnumSource(PaymentStatus.class)
+        void shouldThrowExceptionIfServiceRequestAlreadyHasAPaymentStatus(PaymentStatus paymentStatus) {
+            // Given
+            String serviceRequestReference = "SR-1234";
+            CreateCardPaymentRequest cardPaymentRequest = mock(CreateCardPaymentRequest.class);
+
+            FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
+            when(feePaymentRepository.findByRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(feePaymentEntity));
+            when(feePaymentEntity.getPaymentStatus()).thenReturn(paymentStatus);
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.createPaymentRequest(
+                serviceRequestReference,
+                cardPaymentRequest
+            ));
+
+            // Then
+            assertThat(throwable).isInstanceOf(IllegalStateException.class);
         }
     }
 
