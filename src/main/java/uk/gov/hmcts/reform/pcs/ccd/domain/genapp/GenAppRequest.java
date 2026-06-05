@@ -37,6 +37,10 @@ public interface GenAppRequest {
 
     String getSotFullName();
 
+    String getSotFirmName();
+
+    String getSotPositionHeld();
+
     default String getClientReference() {
         return null;
     }
