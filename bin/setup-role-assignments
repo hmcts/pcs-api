@@ -22,18 +22,18 @@ if [[ "${has_ids}" == false ]]; then
   exit 0
 fi
 
-# Credentials and the target org-role-mapping URL fall back to AAT defaults for local use,
-# but honour values already in the environment (e.g. the WA preview deploy in Jenkins, which
-# injects the secrets and points ORG_ROLE_MAPPING_SERVICE_URL at the PR preview host).
-IDAM_DATA_STORE_SYSTEM_USER_USERNAME=${IDAM_DATA_STORE_SYSTEM_USER_USERNAME:-$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-username)}
-IDAM_DATA_STORE_SYSTEM_USER_PASSWORD=${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD:-$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-password)}
-ORG_ROLE_MAPPING_SERVICE_URL=${ORG_ROLE_MAPPING_SERVICE_URL:-http://am-org-role-mapping-service-aat.service.core-compute-aat.internal}
+# In the pipeline these credentials are injected as env vars by loadVaultSecrets (the ccd-${env}
+# vault block in Jenkinsfile_CNP). To run locally, uncomment the lines below to read them from the
+# key vault yourself (requires `az login`):
+#IDAM_DATA_STORE_SYSTEM_USER_USERNAME=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-username)
+#IDAM_DATA_STORE_SYSTEM_USER_PASSWORD=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-password)
+#export CCD_API_GATEWAY_IDAM_CLIENT_SECRET=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name ccd-api-gateway-oauth2-client-secret)
 
-export CCD_API_GATEWAY_IDAM_CLIENT_SECRET=${CCD_API_GATEWAY_IDAM_CLIENT_SECRET:-$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name ccd-api-gateway-oauth2-client-secret)}
+ORG_ROLE_MAPPING_SERVICE_URL=${ORG_ROLE_MAPPING_SERVICE_URL:-http://am-org-role-mapping-service-aat.service.core-compute-aat.internal}
 export IDAM_API_BASE_URL=${IDAM_API_BASE_URL:-https://idam-api.aat.platform.hmcts.net}
 
 S2S_TOKEN=$(${BASEDIR}/s2s-token.sh "am_org_role_mapping_service")
-IDAM_TOKEN=$(${BASEDIR}/idam-user-token.sh $IDAM_DATA_STORE_SYSTEM_USER_USERNAME $IDAM_DATA_STORE_SYSTEM_USER_PASSWORD)
+IDAM_TOKEN=$(${BASEDIR}/idam-user-token.sh "${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}" "${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}")
 
 function send_curl_request() {
   local json_file=$1
