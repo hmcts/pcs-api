@@ -1,6 +1,27 @@
 #!/usr/bin/env bash
 set -eu
 
+BASEDIR=$(dirname "$0")
+
+# The mapping inputs (currently only staff-idam-ids.json) are not yet populated with preview
+# caseworker IDs. Bail before fetching any credentials or leasing tokens when there is nothing
+# to seed — the credential lookups below need `az login` / cluster access that the seeding step
+# doesn't otherwise require, so doing them eagerly turned the build red after the WA pods had
+# already deployed. Re-evaluate this guard once the id files are populated.
+ID_FILES=("${BASEDIR}/staff-idam-ids.json")
+has_ids=false
+for json_file in "${ID_FILES[@]}"; do
+  if [[ -f "${json_file}" ]] && jq -e '.userIds | length > 0' "${json_file}" >/dev/null 2>&1; then
+    has_ids=true
+    break
+  fi
+done
+
+if [[ "${has_ids}" == false ]]; then
+  echo "No userIds in any mapping file — skipping org role mapping setup"
+  exit 0
+fi
+
 # Credentials and the target org-role-mapping URL fall back to AAT defaults for local use,
 # but honour values already in the environment (e.g. the WA preview deploy in Jenkins, which
 # injects the secrets and points ORG_ROLE_MAPPING_SERVICE_URL at the PR preview host).
@@ -11,7 +32,6 @@ ORG_ROLE_MAPPING_SERVICE_URL=${ORG_ROLE_MAPPING_SERVICE_URL:-http://am-org-role-
 export CCD_API_GATEWAY_IDAM_CLIENT_SECRET=${CCD_API_GATEWAY_IDAM_CLIENT_SECRET:-$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name ccd-api-gateway-oauth2-client-secret)}
 export IDAM_API_BASE_URL=${IDAM_API_BASE_URL:-https://idam-api.aat.platform.hmcts.net}
 
-BASEDIR=$(dirname "$0")
 S2S_TOKEN=$(${BASEDIR}/s2s-token.sh "am_org_role_mapping_service")
 IDAM_TOKEN=$(${BASEDIR}/idam-user-token.sh $IDAM_DATA_STORE_SYSTEM_USER_USERNAME $IDAM_DATA_STORE_SYSTEM_USER_PASSWORD)
 
@@ -19,20 +39,7 @@ function send_curl_request() {
   local json_file=$1
   local user_type=$2
 
-  if [[ ! -f "${json_file}" ]]; then
-    echo "File not found: ${json_file}"
-    return 1
-  fi
-
   local payload=$(cat "${json_file}")
-
-  # staff-idam-ids.json is not yet populated with preview caseworker IDs. Skip the POST when
-  # there are no userIds rather than sending an empty mapping (which would fail --fail and, with
-  # set -e, turn the build red after the WA pods have already deployed).
-  if ! echo "${payload}" | jq -e '.userIds | length > 0' >/dev/null 2>&1; then
-    echo "No userIds in $(basename "${json_file}") — skipping ${user_type} org mapping"
-    return 0
-  fi
 
   local url="${ORG_ROLE_MAPPING_SERVICE_URL}/am/testing-support/createOrgMapping?userType=${user_type}"
 
