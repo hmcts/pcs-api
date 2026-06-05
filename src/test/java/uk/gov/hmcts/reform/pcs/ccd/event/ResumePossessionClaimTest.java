@@ -64,7 +64,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.SCOTLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
@@ -446,7 +446,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
+            FeesAndPayTaskData taskData = getScheduledTaskData(FEES_AND_PAY_TASK_DESCRIPTOR);
             assertThat(taskData.getResponsiblePartyId()).isEqualTo(claimantPartyId);
         }
 
@@ -463,8 +463,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
-            assertThat(taskData.getFeeType()).isEqualTo(FeeType.CASE_ISSUE_FEE.getCode());
+            FeesAndPayTaskData taskData = getScheduledTaskData(FEES_AND_PAY_TASK_DESCRIPTOR);
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
             assertThat(taskData.getCaseReference()).isEqualTo(TEST_CASE_REFERENCE);
             assertThat(taskData.getCcdCaseNumber()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));

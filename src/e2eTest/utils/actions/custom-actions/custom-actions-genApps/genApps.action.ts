@@ -6,6 +6,7 @@ import {
   haveTheyAlreadyAppliedForHelpWithFees,
   helpPayingTheFee,
   isTheCourtHearingInTheNext14Days,
+  uploadDocumentsToSupportDefendantsApplication,
   whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
 } from '@data/page-data-figma/page-data-genApps-figma';
@@ -19,6 +20,7 @@ import { defaultJourney, journeys } from '@utils/common/journeyMappingGenApps';
 import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selectParty.page.data';
 import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
+import {performActions} from "@utils/controller";
 
 
 export const addressInfo = {
@@ -43,6 +45,8 @@ export class GenAppsAction implements IAction {
         'reasonsApplicationShouldNotBeShared',
         () => this.reasonsApplicationShouldNotBeShared(fieldName as actionRecord),
       ],
+      ['confirmDocumentToUpload', () => this.confirmDocumentToUpload(fieldName as actionRecord)],
+      ['uploadFilesGenApps', () => this.uploadFilesGenApps(fieldName as actionRecord)],
       ['selectLanguageUsedToComplete', () => this.selectLanguageUsedToComplete(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
       ['inputErrorValidationGenApp', () => this.inputErrorValidationGenApp(fieldName as actionRecord)],
@@ -94,7 +98,7 @@ export class GenAppsAction implements IAction {
 
   private async selectApplicant(applicant: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', applicant);
     await performAction('clickRadioButton', { question: applicant.question, option: applicant.option });
     await performAction('clickButton', selectParty.continueButton);
@@ -111,7 +115,7 @@ export class GenAppsAction implements IAction {
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', courtHearing);
     await performAction('clickRadioButton', {
       question: courtHearing.question,
@@ -122,7 +126,7 @@ export class GenAppsAction implements IAction {
 
   private async doYouNeedHelpPayingFee(feeHelp: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', feeHelp);
     await performAction('clickRadioButton', {
       question: feeHelp.question,
@@ -133,7 +137,7 @@ export class GenAppsAction implements IAction {
 
   private async confirmYouHaveAppliedForFeeHelp(confirmFeeHelp: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', confirmFeeHelp);
     await performAction('clickRadioButton', {
       question: confirmFeeHelp.question,
@@ -166,7 +170,7 @@ export class GenAppsAction implements IAction {
 
   private async reasonsApplicationShouldNotBeShared(reason: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', reason);
     await performAction('clickRadioButton', {
       question: reason.question,
@@ -185,7 +189,7 @@ export class GenAppsAction implements IAction {
 
   private async confirmOrderDoYouWant(confirmOrder: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', confirmOrder);
     const userInput =
       typeof confirmOrder.input === 'number'
@@ -197,7 +201,36 @@ export class GenAppsAction implements IAction {
     await performAction('clickButton', whatOrderDoYouWantTheCourtToMakeAndWhy.continueButton);
   }
 
+  private async confirmDocumentToUpload(confirmUpload: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
+    await performAction('recordUserEntry', confirmUpload);
+    await performAction('clickRadioButton', {
+      question: confirmUpload.question,
+      option: confirmUpload.option,
+    });
+    await performAction('clickButton', doYouWantToUploadDocumentsToSupportDefendantsApplication.continueButton);
+  }
+  private async uploadFilesGenApps(uploadDocs: actionRecord): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
+    await performAction('recordUserEntry', uploadDocs);
+    if (Array.isArray(uploadDocs.documents)) {
+      for (let fileIndex = 0; fileIndex < uploadDocs.documents.length; fileIndex++) {
+        const document = uploadDocs.documents[fileIndex]; await performActions(
+          'Add Document',
+          ['uploadFile', document.fileName],
+          ['select', {dropdown: uploadDocumentsToSupportDefendantsApplication.typeOfDocumentHiddenTextLabel, index: fileIndex}, document.type],
+        )
+        FieldsStore.set('Upload documents', String(document));
+      }
+    }
+    await performAction('clickButton', uploadDocumentsToSupportDefendantsApplication.continueButton);
+  }
+
   private async selectLanguageUsedToComplete(selectLanguageData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', selectLanguageData);
     await performAction('clickRadioButton', {
       question: selectLanguageData.question,
