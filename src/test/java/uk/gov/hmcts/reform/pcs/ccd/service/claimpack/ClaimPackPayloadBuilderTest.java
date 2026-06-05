@@ -386,6 +386,51 @@ class ClaimPackPayloadBuilderTest {
         }
 
         @Test
+        void englandIntroDemotedOtherWithAbsoluteGround_whyClaimingShownDescriptionHidden() {
+            // D13 (Cook [17]): absolute grounds triggers "Why claiming possession?". Absolute grounds
+            // are identified by the code ABSOLUTE_GROUNDS, not by the category.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
+                .code("ABSOLUTE_GROUNDS")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowWhyClaimingPossession()).isTrue();
+            assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
+            assertThat(payload.isHasOtherGround()).isFalse();
+            assertThat(payload.getHasGroundsYesNo()).isEqualTo("Yes");
+        }
+
+        @Test
+        void englandIntroDemotedOtherCategoryNonOtherCode_otherFlagsStayFalse() {
+            // Regression: category INTRODUCTORY_DEMOTED_OTHER contains the substring "OTHER", but a
+            // non-OTHER code (RENT_ARREARS) must NOT count as the "Other" ground.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
+                .code("RENT_ARREARS")
+                .claim(claim)
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isHasOtherGround()).isFalse();
+            assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
+            assertThat(payload.isShowWhyClaimingPossession()).isFalse();
+        }
+
+        @Test
         void groundsWithReasonsListIncludesOnlyGroundsWithReasonText() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             ClaimEntity claim = pcsCase.getClaims().getFirst();

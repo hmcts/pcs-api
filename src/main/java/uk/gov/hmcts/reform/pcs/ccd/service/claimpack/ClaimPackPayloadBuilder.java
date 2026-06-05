@@ -101,13 +101,12 @@ public class ClaimPackPayloadBuilder {
         boolean isWales = isWalesJourney(pcsCase);
         boolean isEngland = !isWales;
         boolean isIntroDemotedOther = isIntroDemotedOtherTenancy(pcsCase.getTenancyLicence());
-        // Strip the "No grounds" sentinel (written when the claimant answered "No" to D9)
-        // before deriving any grounds-based flag: its category INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS
-        // contains "OTHER" (false-positives hasOtherGround) and its presence masks hasNoGrounds.
+        // Strip the "No grounds" sentinel (written when the claimant answered "No" to D9) before
+        // deriving the flags below — its presence would otherwise make the set non-empty and mask hasNoGrounds.
         List<ClaimGroundEntity> grounds = realGrounds(claim.getClaimGrounds());
         boolean hasNoGrounds = grounds.isEmpty();
         boolean hasOtherGround = anyGroundIsOther(grounds);
-        boolean hasAbsoluteGround = anyGroundHasCategory(grounds, "ABSOLUTE");
+        boolean hasAbsoluteGround = anyGroundHasCode(grounds, "ABSOLUTE_GROUNDS");
         boolean hasWalesAsbGround = anyGroundHasCode(grounds, "ANTISOCIAL_BEHAVIOUR_S157");
         boolean noticeServedYes = isNoticeServedYes(claim.getNoticeOfPossession());
 
@@ -143,13 +142,11 @@ public class ClaimPackPayloadBuilder {
             .toList();
     }
 
+    // "Other" ground identity lives in the code, not the category — both the assured and the
+    // intro/demoted/other journeys persist it as code "OTHER". (Category names like
+    // INTRODUCTORY_DEMOTED_OTHER contain the substring "OTHER" but are not the Other ground.)
     private static boolean anyGroundIsOther(Collection<ClaimGroundEntity> grounds) {
-        if (grounds == null) {
-            return false;
-        }
-        return grounds.stream()
-            .filter(g -> g.getCategory() != null && g.getCode() != null)
-            .anyMatch(g -> g.getCategory().name().contains("OTHER") || "OTHER".equals(g.getCode()));
+        return anyGroundHasCode(grounds, "OTHER");
     }
 
     /**
@@ -162,15 +159,6 @@ public class ClaimPackPayloadBuilder {
             return false;
         }
         return grounds.stream().anyMatch(g -> code.equals(g.getCode()));
-    }
-
-    private static boolean anyGroundHasCategory(Collection<ClaimGroundEntity> grounds, String categorySubstring) {
-        if (grounds == null) {
-            return false;
-        }
-        return grounds.stream()
-            .filter(g -> g.getCategory() != null)
-            .anyMatch(g -> g.getCategory().name().contains(categorySubstring));
     }
 
     private static boolean isNoticeServedYes(NoticeOfPossessionEntity notice) {
@@ -392,22 +380,18 @@ public class ClaimPackPayloadBuilder {
             .anyMatch(g -> g.getCategory().name().contains("ANTISOCIAL"));
         payloadBuilder.hasAsbGround(hasAsb);
 
-        boolean hasOther = grounds.stream()
-            .filter(g -> g.getCategory() != null && g.getCode() != null)
-            .anyMatch(g -> g.getCategory().name().contains("OTHER") || "OTHER".equals(g.getCode()));
+        boolean hasOther = anyGroundIsOther(grounds);
         payloadBuilder.hasOtherGround(hasOther);
 
-        // First "Other" ground's description, if any — see plan §13.5 (refine once code conventions confirmed).
+        // First "Other" ground's description, if any.
         grounds.stream()
-            .filter(g -> g.getCategory() != null && g.getCategory().name().contains("OTHER"))
+            .filter(g -> "OTHER".equals(g.getCode()))
             .map(ClaimGroundEntity::getDescription)
             .filter(d -> d != null && !d.isBlank())
             .findFirst()
             .ifPresent(payloadBuilder::otherGroundsDescription);
 
-        boolean hasAbsolute = grounds.stream()
-            .filter(g -> g.getCategory() != null)
-            .anyMatch(g -> g.getCategory().name().contains("ABSOLUTE"));
+        boolean hasAbsolute = anyGroundHasCode(grounds, "ABSOLUTE_GROUNDS");
         payloadBuilder.isNoOrAbsoluteOrOtherGrounds(hasAbsolute || hasOther);
     }
 
