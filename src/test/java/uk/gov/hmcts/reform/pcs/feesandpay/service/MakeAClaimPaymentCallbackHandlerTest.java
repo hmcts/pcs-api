@@ -78,7 +78,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Then
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+            verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference(), claimEntity);
         } else {
             verifyNoInteractions(ccdPaymentStateUpdateService);
         }
