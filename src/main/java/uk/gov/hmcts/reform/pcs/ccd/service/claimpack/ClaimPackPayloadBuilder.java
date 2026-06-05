@@ -54,13 +54,6 @@ public class ClaimPackPayloadBuilder {
         CombinedLicenceType.OTHER
     );
 
-    private static final Set<NoticeServiceMethod> METHODS_REQUIRING_TIME = Set.of(
-        NoticeServiceMethod.PERSONALLY_HANDED,
-        NoticeServiceMethod.EMAIL,
-        NoticeServiceMethod.OTHER_ELECTRONIC,
-        NoticeServiceMethod.OTHER
-    );
-
     private final CaseReferenceFormatter caseReferenceFormatter;
     private final CaseNameFormatter caseNameFormatter;
 
@@ -109,11 +102,17 @@ public class ClaimPackPayloadBuilder {
         Set<ClaimGroundEntity> grounds = claim.getClaimGrounds();
         boolean hasNoGrounds = grounds == null || grounds.isEmpty();
         boolean hasOtherGround = anyGroundIsOther(grounds);
+        boolean hasAbsoluteGround = anyGroundHasCategory(grounds, "ABSOLUTE");
         boolean hasWalesAsbGround = anyGroundHasCode(grounds, "ANTISOCIAL_BEHAVIOUR_S157");
         boolean noticeServedYes = isNoticeServedYes(claim.getNoticeOfPossession());
 
+        // Row D9 — no country qualifier in the spec, only the tenancy-type check.
+        // (D11 and D13 below ARE explicitly English journey per spec; they keep isEngland.)
+        payloadBuilder.showGroundsYesNoQuestion(isIntroDemotedOther);
         payloadBuilder.showDescriptionOfGrounds(isEngland && isIntroDemotedOther && hasOtherGround);
-        payloadBuilder.showWhyClaimingPossession(isEngland && isIntroDemotedOther && (hasNoGrounds || hasOtherGround));
+        // D13 trigger per Cook [17]: no grounds, absolute grounds, OR Other.
+        payloadBuilder.showWhyClaimingPossession(
+            isEngland && isIntroDemotedOther && (hasNoGrounds || hasAbsoluteGround || hasOtherGround));
         payloadBuilder.showAsbSection(isWales && hasWalesAsbGround);
         payloadBuilder.showNoticeType(isWales && noticeServedYes);
         payloadBuilder.showPcscSection(isWales);
@@ -149,6 +148,15 @@ public class ClaimPackPayloadBuilder {
             return false;
         }
         return grounds.stream().anyMatch(g -> code.equals(g.getCode()));
+    }
+
+    private static boolean anyGroundHasCategory(Set<ClaimGroundEntity> grounds, String categorySubstring) {
+        if (grounds == null) {
+            return false;
+        }
+        return grounds.stream()
+            .filter(g -> g.getCategory() != null)
+            .anyMatch(g -> g.getCategory().name().contains(categorySubstring));
     }
 
     private static boolean isNoticeServedYes(NoticeOfPossessionEntity notice) {
@@ -407,7 +415,6 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.methodOfService(method);
         if (method != null) {
             payloadBuilder.methodOfServiceLabel(method.getLabel());
-            payloadBuilder.methodRequiresTime(METHODS_REQUIRING_TIME.contains(method));
         }
 
         payloadBuilder.noticeServedOn(notice.getNoticeDate());
@@ -550,7 +557,7 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.isDemotionClaimYesNo(toLabel(demotionEnum));
         payloadBuilder.showDemotionDetails(isYes(demotionEnum));
         if (alt.getDotHousingActSection() != null) {
-            payloadBuilder.demotionHousingActSection(alt.getDotHousingActSection().name());
+            payloadBuilder.demotionHousingActSection(alt.getDotHousingActSection().getLabel());
         }
         VerticalYesNo demoTermsEnum = yesOrNoToVertical(alt.getDotStatementServed());
         payloadBuilder.hasServedDemotionTermsYesNo(toLabel(demoTermsEnum));
@@ -564,7 +571,7 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.isSuspensionClaimYesNo(toLabel(suspensionEnum));
         payloadBuilder.showSuspensionDetails(isYes(suspensionEnum));
         if (alt.getSuspensionOfRTBHousingActSection() != null) {
-            payloadBuilder.suspensionHousingActSection(alt.getSuspensionOfRTBHousingActSection().name());
+            payloadBuilder.suspensionHousingActSection(alt.getSuspensionOfRTBHousingActSection().getLabel());
         }
         payloadBuilder.suspensionReasonsFreeText(alt.getSuspensionOfRTBReason());
     }
@@ -574,8 +581,10 @@ public class ClaimPackPayloadBuilder {
         if (sot == null) {
             return;
         }
-        payloadBuilder.signedByLegalRep(sot.getCompletedBy() != null
-            && "LEGAL_REPRESENTATIVE".equals(sot.getCompletedBy().name()));
+        boolean legalRep = sot.getCompletedBy() != null
+            && "LEGAL_REPRESENTATIVE".equals(sot.getCompletedBy().name());
+        payloadBuilder.signedByLegalRep(legalRep);
+        payloadBuilder.signedByClaimant(!legalRep);
         payloadBuilder.sotFullName(sot.getFullName());
         payloadBuilder.sotFirmName(sot.getFirmName());
         payloadBuilder.sotPositionHeld(sot.getPositionHeld());

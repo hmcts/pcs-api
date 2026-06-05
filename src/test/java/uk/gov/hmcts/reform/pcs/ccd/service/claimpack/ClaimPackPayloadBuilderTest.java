@@ -514,7 +514,6 @@ class ClaimPackPayloadBuilderTest {
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getMethodOfService()).isEqualTo(NoticeServiceMethod.EMAIL);
-            assertThat(payload.isMethodRequiresTime()).isTrue();
             assertThat(payload.getNoticeServedToEmail()).isEqualTo("served@example.com");
             assertThat(payload.getNoticeLeftWithName()).isNull();
             assertThat(payload.getNoticeOtherElectronicDetails()).isNull();
@@ -534,7 +533,6 @@ class ClaimPackPayloadBuilderTest {
 
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.isMethodRequiresTime()).isFalse();
             assertThat(payload.getNoticeLeftWithName()).isNull();
             assertThat(payload.getNoticeServedToEmail()).isNull();
             assertThat(payload.getNoticeOtherElectronicDetails()).isNull();

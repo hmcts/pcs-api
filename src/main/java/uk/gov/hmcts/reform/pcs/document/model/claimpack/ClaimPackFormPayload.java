@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.document.model.claimpack;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
@@ -32,9 +33,15 @@ public class ClaimPackFormPayload implements FormPayload {
     private LocalDate submittedOn;
     /**
      * Drives every {@code R-COUNTRY-*} rule in §6.5.
+     *
+     * <p>{@code @JsonProperty} overrides Jackson's Bean-Property convention that strips
+     * the {@code is} prefix from boolean getters — the template tag {@code <<cs_isWales>>}
+     * requires the wire JSON key to remain {@code isWales}, not {@code wales}.</p>
      */
+    @JsonProperty("isWales")
     private boolean isWales;
     // Complement of isWales — Docmosis compact syntax can't negate, so we send both.
+    @JsonProperty("isEngland")
     private boolean isEngland;
 
     // ---------- §6.3.2 Claimant ----------
@@ -60,9 +67,15 @@ public class ClaimPackFormPayload implements FormPayload {
     private boolean hasPropertyAddressLine3;
     private boolean hasPropertyCounty;
     /** Drives R-TENANCY-INTRO-DEMOTED-OTHER. */
+    @JsonProperty("isIntroDemotedOtherTenancy")
     private boolean isIntroDemotedOtherTenancy;
     // Title-case "Yes"/"No" — rendered directly by <<hasGroundsYesNo>>.
     private String hasGroundsYesNo;
+    // Gate for the "Does the claimant have grounds for possession?" row.
+    // Excel mapping row D9 + Cook comment [12]: "Mandatory to be displayed only if the
+    // tenancy type is intro, demoted or other" — no country qualifier (compare D11/D13
+    // which explicitly say "English journey"). So this is purely a tenancy-type check.
+    private boolean showGroundsYesNoQuestion;
     private List<ClaimPackGround> grounds;
     // Filtered subset of grounds with reasonFreeText — drives the
     // <<rs_groundsWithReasons>>...<<es_>> loop in the template.
@@ -73,6 +86,7 @@ public class ClaimPackFormPayload implements FormPayload {
     // England + isIntroDemotedOtherTenancy + hasOtherGround.
     private boolean showDescriptionOfGrounds;
     /** Drives R-NO-OR-ABSOLUTE-OR-OTHER-GROUNDS. */
+    @JsonProperty("isNoOrAbsoluteOrOtherGrounds")
     private boolean isNoOrAbsoluteOrOtherGrounds;
     /** §13.3 gap (2) — null until source field is identified. */
     private String whyClaimingPossession;
@@ -137,8 +151,6 @@ public class ClaimPackFormPayload implements FormPayload {
     /** Used to drive R-METHOD-* gates inside the template. */
     private NoticeServiceMethod methodOfService;
     private String methodOfServiceLabel;
-    /** Derived: servingMethod ∈ {PERSONALLY_HANDED, EMAIL, OTHER_ELECTRONIC, OTHER}. */
-    private boolean methodRequiresTime;
     private LocalDate noticeServedOn;
     // Per-value-presence show flags for optional notice rows (Excel mapping 37–42).
     private boolean showNoticeServedOn;
@@ -234,8 +246,10 @@ public class ClaimPackFormPayload implements FormPayload {
     private String eicrNotUploadedReason;
 
     // ---------- §6.3.20 / §6.3.21 Statement of truth ----------
-    /** false = claimant signs (§6.3.20), true = legal rep (§6.3.21). */
+    /** Template gates: {@code <<cs_signedByClaimant>>} wraps the §6.3.20 block;
+     *  {@code <<cs_signedByLegalRep>>} wraps the §6.3.21 block. Exactly one renders. */
     private boolean signedByLegalRep;
+    private boolean signedByClaimant;
     private String sotFullName;
     /** Legal-rep variant only. */
     private String sotFirmName;
