@@ -117,7 +117,7 @@ public class PaymentService {
             .returnUrl(createCardPaymentRequest.getReturnUrl())
             .build();
 
-        FeePaymentEntity feePaymentEntity = feePaymentRepository.findByRequestReference(serviceRequestReference)
+        FeePaymentEntity feePaymentEntity = feePaymentRepository.findByServiceRequestReference(serviceRequestReference)
             .orElseThrow(
                 () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
             );

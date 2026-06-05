@@ -381,7 +381,7 @@ class PaymentServiceTest {
                                                                any(CardPaymentServiceRequestDTO.class)))
                 .thenReturn(paymentServiceResponse);
 
-            when(feePaymentRepository.findByRequestReference(serviceRequestReference))
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
                 .thenReturn(Optional.of(mock(FeePaymentEntity.class)));
 
             // When
@@ -412,7 +412,7 @@ class PaymentServiceTest {
             String serviceRequestReference = "SR-1234";
             CreateCardPaymentRequest cardPaymentRequest = mock(CreateCardPaymentRequest.class);
 
-            when(feePaymentRepository.findByRequestReference(serviceRequestReference))
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
                 .thenReturn(Optional.empty());
 
             // When
@@ -433,7 +433,7 @@ class PaymentServiceTest {
             CreateCardPaymentRequest cardPaymentRequest = mock(CreateCardPaymentRequest.class);
 
             FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
-            when(feePaymentRepository.findByRequestReference(serviceRequestReference))
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(feePaymentEntity.getPaymentStatus()).thenReturn(paymentStatus);
 
