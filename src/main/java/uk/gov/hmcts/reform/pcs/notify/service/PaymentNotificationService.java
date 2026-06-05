@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -62,6 +63,5 @@ public class PaymentNotificationService {
 
         log.info("Sending counterclaim payment success email for claim {}", claim.getId());
         notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
-        notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
     }
 }
