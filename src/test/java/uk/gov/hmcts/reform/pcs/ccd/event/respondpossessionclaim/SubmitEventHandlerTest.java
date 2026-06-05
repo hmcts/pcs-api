@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,22 +18,32 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,11 +54,17 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE;
 
 @ExtendWith(MockitoExtension.class)
 class SubmitEventHandlerTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
+    private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final UUID PARTY_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
+    private static final UUID COUNTER_CLAIM_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
+    private static final String SERVICE_REQUEST_REFERENCE = "SR-5806-TEST";
+    private static final BigDecimal FEE_AMOUNT = new BigDecimal("404.00");
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
@@ -66,8 +84,8 @@ class SubmitEventHandlerTest {
     private FeeService feeService;
     @Mock
     private PaymentService paymentService;
-    @Mock
-    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private SubmitEventHandler underTest;
 
@@ -372,6 +390,150 @@ class SubmitEventHandlerTest {
     }
 
     @Test
+    void shouldCreateServiceRequestAndReturnConfirmationBodyWhenCounterClaimPaymentRequired() throws Exception {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .isClaimAmountKnown(VerticalYesNo.YES)
+            .claimAmount(new BigDecimal("6000"))
+            .build();
+        PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
+        stubDraft(caseData);
+        stubCounterClaimPaymentDependencies();
+
+        FeeDetails feeDetails = FeeDetails.builder()
+            .code("FEE0441")
+            .description("Counterclaim fee")
+            .feeAmount(FEE_AMOUNT)
+            .version(1)
+            .build();
+        when(feeService.getFee(FeeType.COUNTER_CLAIM)).thenReturn(feeDetails);
+        when(paymentService.createServiceRequest(any(FeesAndPayTaskData.class)))
+            .thenReturn(PaymentServiceResponse.builder().serviceRequestReference(SERVICE_REQUEST_REFERENCE).build());
+
+        SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
+
+        assertThat(result.getErrors()).isNullOrEmpty();
+        assertThat(result.getConfirmationBody()).isNotBlank();
+
+        JsonNode confirmation = objectMapper.readTree(result.getConfirmationBody());
+        assertThat(confirmation.get("state").asText()).isEqualTo(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED.name());
+        assertThat(confirmation.get("serviceRequestReference").asText()).isEqualTo(SERVICE_REQUEST_REFERENCE);
+        assertThat(confirmation.get("feeAmount").decimalValue()).isEqualByComparingTo(FEE_AMOUNT);
+
+        ArgumentCaptor<FeesAndPayTaskData> taskDataCaptor = ArgumentCaptor.forClass(FeesAndPayTaskData.class);
+        verify(paymentService).createServiceRequest(taskDataCaptor.capture());
+        FeesAndPayTaskData taskData = taskDataCaptor.getValue();
+        assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(taskData.getCcdCaseNumber()).isEqualTo(String.valueOf(CASE_REFERENCE));
+        assertThat(taskData.getResponsiblePartyId()).isEqualTo(PARTY_ID);
+        assertThat(taskData.getPaymentCallbackHandlerType()).isEqualTo(COUNTER_CLAIM_ISSUE);
+        assertThat(taskData.getRelatedEntityId()).isEqualTo(COUNTER_CLAIM_ID);
+        assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
+    }
+
+    @Test
+    void shouldReturnDefaultResponseWhenCounterClaimHasHwfReference() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .hwfReferenceNumber("HWF-123-456")
+            .build();
+        PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
+        stubDraft(caseData);
+
+        SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
+
+        assertThat(result.getErrors()).isNullOrEmpty();
+        assertThat(result.getConfirmationBody()).isNull();
+        verify(paymentService, never()).createServiceRequest(any(FeesAndPayTaskData.class));
+    }
+
+    @Test
+    void shouldReturnDefaultResponseWhenMakeCounterClaimIsNotYes() {
+        DefendantResponses responses = DefendantResponses.builder()
+            .makeCounterClaim(VerticalYesNo.NO)
+            .counterClaim(CounterClaim.builder()
+                .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+                .build())
+            .build();
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder().defendantResponses(responses).build())
+            .build();
+        stubDraft(caseData);
+
+        SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
+
+        assertThat(result.getErrors()).isNullOrEmpty();
+        assertThat(result.getConfirmationBody()).isNull();
+        verify(paymentService, never()).createServiceRequest(any(FeesAndPayTaskData.class));
+    }
+
+    @Test
+    void shouldUseCounterClaimFlatFeeWhenClaimTypeIsSomethingElse() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.SOMETHING_ELSE)
+            .build();
+        PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
+        stubDraft(caseData);
+        stubCounterClaimPaymentDependencies();
+        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_FLAT_FEE_FEE0450);
+
+        underTest.submit(createEventPayload(caseData));
+
+        verify(feeService).getFee(FeeType.COUNTER_CLAIM_FLAT_FEE_FEE0450);
+    }
+
+    @Test
+    void shouldUseCounterClaimRangedFeeWhenKnownAmountIsFiveThousandOrLess() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .isClaimAmountKnown(VerticalYesNo.YES)
+            .claimAmount(new BigDecimal("5000"))
+            .build();
+        PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
+        stubDraft(caseData);
+        stubCounterClaimPaymentDependencies();
+        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_RANGED);
+
+        underTest.submit(createEventPayload(caseData));
+
+        verify(feeService).getFee(FeeType.COUNTER_CLAIM_RANGED);
+    }
+
+    @Test
+    void shouldUseCounterClaimFeeWhenKnownAmountExceedsFiveThousand() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .isClaimAmountKnown(VerticalYesNo.YES)
+            .claimAmount(new BigDecimal("5001"))
+            .build();
+        PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
+        stubDraft(caseData);
+        stubCounterClaimPaymentDependencies();
+        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM);
+
+        underTest.submit(createEventPayload(caseData));
+
+        verify(feeService).getFee(FeeType.COUNTER_CLAIM);
+    }
+
+    @Test
+    void shouldUseEstimatedMaxAmountWhenClaimAmountIsUnknown() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .isClaimAmountKnown(VerticalYesNo.NO)
+            .estimatedMaxClaimAmount(new BigDecimal("2500"))
+            .build();
+        PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
+        stubDraft(caseData);
+        stubCounterClaimPaymentDependencies();
+        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_RANGED);
+
+        underTest.submit(createEventPayload(caseData));
+
+        verify(feeService).getFee(FeeType.COUNTER_CLAIM_RANGED);
+    }
+
+    @Test
     void shouldCallContactPreferencesServiceBeforeReturningSuccess() {
         // Given
         Party party = Party.builder()
@@ -428,5 +590,44 @@ class SubmitEventHandlerTest {
         return PCSCase.builder()
             .possessionClaimResponse(response)
             .build();
+    }
+
+    private PCSCase createCounterClaimPaymentDraft(CounterClaim counterClaim) {
+        DefendantResponses responses = DefendantResponses.builder()
+            .makeCounterClaim(VerticalYesNo.YES)
+            .counterClaim(counterClaim)
+            .build();
+
+        return PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder().defendantResponses(responses).build())
+            .build();
+    }
+
+    private void stubCounterClaimPaymentDependencies() {
+        PartyEntity partyEntity = PartyEntity.builder().id(PARTY_ID).build();
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(COUNTER_CLAIM_ID)
+            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdAndStatusOrderByClaimSubmittedDateDesc(
+            CASE_REFERENCE,
+            PARTY_ID,
+            CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED
+        )).thenReturn(Optional.of(counterClaimEntity));
+    }
+
+    private void stubFeeLookupAndServiceRequest(FeeType feeType) {
+        FeeDetails feeDetails = FeeDetails.builder()
+            .code("FEE0441")
+            .description("Counterclaim fee")
+            .feeAmount(FEE_AMOUNT)
+            .version(1)
+            .build();
+        when(feeService.getFee(feeType)).thenReturn(feeDetails);
+        when(paymentService.createServiceRequest(any(FeesAndPayTaskData.class)))
+            .thenReturn(PaymentServiceResponse.builder().serviceRequestReference(SERVICE_REQUEST_REFERENCE).build());
     }
 }
