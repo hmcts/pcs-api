@@ -35,9 +35,6 @@ class DefendantResponseNotificationServiceTest {
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
 
-    @Mock
-    private CounterClaimRepository counterClaimRepository;
-
     private DefendantResponseNotificationService underTest;
 
     @BeforeEach

@@ -115,16 +115,6 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendClaimantDraftSavedForLater(long caseReference, PCSCase pcsCase) {
-        return sendClaimantEmail(
-            caseReference,
-            pcsCase,
-            EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER,
-            NotificationClaimType.POSSESSION_CLAIM,
-            NotificationService::buildBasePersonalisation
-        );
-    }
-
     /**
      * Schedules an email notification to be sent based on the provided request data.
      * The method generates a unique task ID and notification ID, creates the necessary
@@ -427,23 +417,5 @@ public class NotificationService {
             response.getClaim(),
             PartyRole.DEFENDANT
         );
-    }
-
-    private static String getClaimantEmailAddress(ClaimantContactPreferences claimantContactPreferences) {
-        VerticalYesNo isCorrectClaimantContactEmail = claimantContactPreferences.getIsCorrectClaimantContactEmail();
-        return isCorrectClaimantContactEmail == null || isCorrectClaimantContactEmail.toBoolean()
-            ? claimantContactPreferences.getClaimantContactEmail()
-            : claimantContactPreferences.getOverriddenClaimantContactEmail();
-    }
-
-    private static String getClaimantName(ClaimantInformation claimantInformation) {
-        VerticalYesNo isClaimantNameOverridden = claimantInformation.getIsClaimantNameCorrect();
-        return isClaimantNameOverridden == null || isClaimantNameOverridden.toBoolean()
-            ? claimantInformation.getClaimantName()
-            : claimantInformation.getOverriddenClaimantName();
-    }
-
-    private static String formatNameUpperForNotification(String firstName, String lastName) {
-        return String.format("%s %s", firstName, lastName).toUpperCase(Locale.ROOT);
     }
 }

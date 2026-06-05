@@ -66,7 +66,6 @@ class PaymentNotificationServiceTest {
 
         DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
         when(defendantResponse.getParty()).thenReturn(defendant);
-        when(defendantResponse.getClaim()).thenReturn(claim);
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(pcsCase.getClaims()).thenReturn(List.of(claim));
