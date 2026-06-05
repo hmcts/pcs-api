@@ -363,6 +363,7 @@ public class ClaimPackPayloadBuilder {
             payloadBuilder.grounds(Collections.emptyList());
             payloadBuilder.groundsWithReasons(Collections.emptyList());
             payloadBuilder.hasGroundsYesNo(VerticalYesNo.NO.getLabel());
+            payloadBuilder.showGroundsList(false);
             payloadBuilder.hasRentArrearsGround(false);
             payloadBuilder.hasAsbGround(false);
             payloadBuilder.hasOtherGround(false);
@@ -380,6 +381,7 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.grounds(mapped);
         payloadBuilder.groundsWithReasons(mapped.stream().filter(ClaimPackGround::isHasReason).toList());
         payloadBuilder.hasGroundsYesNo(VerticalYesNo.YES.getLabel());
+        payloadBuilder.showGroundsList(true);
 
         boolean hasRentArrears = grounds.stream()
             .anyMatch(g -> Boolean.TRUE.equals(g.getIsRentArrears()));

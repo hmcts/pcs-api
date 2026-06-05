@@ -76,6 +76,10 @@ public class ClaimPackFormPayload implements FormPayload {
     // tenancy type is intro, demoted or other" — no country qualifier (compare D11/D13
     // which explicitly say "English journey"). So this is purely a tenancy-type check.
     private boolean showGroundsYesNoQuestion;
+    // Gate for the "Grounds for possession" list row (Excel D10): hide the row entirely
+    // when no grounds are selected (e.g. claimant answered "No" to D9) rather than printing
+    // a bare label with no value.
+    private boolean showGroundsList;
     private List<ClaimPackGround> grounds;
     // Filtered subset of grounds with reasonFreeText — drives the
     // <<rs_groundsWithReasons>>...<<es_>> loop in the template.
