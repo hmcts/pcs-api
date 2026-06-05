@@ -88,6 +88,7 @@ withPipeline(type, product, component) {
     ])
     enableHighLevelDataSetup("", true)
     setAatEnvVars()
+    env.CAMUNDA_BASE_URL = "http://camunda-api-aat.service.core-compute-aat.internal"
     enableE2eTest()
   }
 
@@ -147,6 +148,7 @@ withPipeline(type, product, component) {
   afterSuccess('akschartsinstall') {
     onPR {
       for (label in githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa") ) {
+        env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
         sh 'chmod -R +x ./bin'
         uploadDmnDiagrams()
@@ -154,6 +156,24 @@ withPipeline(type, product, component) {
         setupRoleAssignments()
       }
     }
+  }
+
+  // WA DMN/BPMN deployment for AAT. Unlike preview these always run (WA is part of the
+  // AAT/prod topology, not label-gated) and role-assignment seeding is omitted — AAT/prod
+  // role mappings are managed outside this pipeline.
+  before('functionalTest:aat') {
+    sh 'chmod -R +x ./bin'
+    uploadDmnDiagrams()
+    uploadBpmnDiagram()
+  }
+
+  // Promote the WA Camunda diagrams to prod after AAT functional tests pass.
+  afterSuccess('functionalTest:aat') {
+    env.ENVIRONMENT = "prod"
+    env.CAMUNDA_BASE_URL = "http://camunda-api-prod.service.core-compute-prod.internal"
+    sh 'chmod -R +x ./bin'
+    uploadDmnDiagrams()
+    uploadBpmnDiagram()
   }
 
   afterAlways('smoketest:preview') {
@@ -213,7 +233,7 @@ def uploadDmnDiagrams() {
   dir("${WORKSPACE}/bin") {
     tenantId = "pcs"
     product = "pcs"
-    sh "./wa/import-dmn-diagram.sh ${WORKSPACE} preview ${tenantId} ${product}"
+    sh "./wa/import-dmn-diagram.sh ${WORKSPACE} ${env.ENVIRONMENT} ${tenantId} ${product}"
   }
 }
 
