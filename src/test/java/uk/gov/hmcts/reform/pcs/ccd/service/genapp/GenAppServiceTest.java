@@ -60,6 +60,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
 
 @ExtendWith(MockitoExtension.class)
 class GenAppServiceTest {
@@ -112,7 +113,7 @@ class GenAppServiceTest {
 
         // When
         GenAppEntity returnedGenAppEntity = underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty,
-                                                                         GenAppState.PENDING_GEN_APP_ISSUED
+                                                                         PENDING_GEN_APP_ISSUED
         );
 
         // Then
@@ -133,7 +134,7 @@ class GenAppServiceTest {
         when(genAppRepository.save(isA(GenAppEntity.class))).thenReturn(savedGenAppEntity);
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(pcsCaseEntity).addGenApp(genAppEntityCaptor.capture());
@@ -150,7 +151,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -182,7 +183,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -199,7 +200,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -218,7 +219,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -240,7 +241,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -262,7 +263,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -284,7 +285,7 @@ class GenAppServiceTest {
         genAppRequest.setSotAccepted(VerticalYesNo.YES);
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -306,7 +307,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -323,7 +324,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -370,7 +371,7 @@ class GenAppServiceTest {
             .thenReturn(expectedDocumentType);
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -415,7 +416,7 @@ class GenAppServiceTest {
         when(documentRepository.saveAll(anyList())).thenReturn(savedDocumentEntities);
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -446,7 +447,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         InOrder inOrder = inOrder(pcsCaseEntity, documentNameService);
@@ -465,7 +466,7 @@ class GenAppServiceTest {
                 .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -480,7 +481,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -498,7 +499,7 @@ class GenAppServiceTest {
 
         // When
         Throwable throwable = catchThrowable(
-            () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty)
+            () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED)
         );
 
         // Then
@@ -517,7 +518,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GenAppState.PENDING_GEN_APP_ISSUED);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
@@ -537,7 +538,7 @@ class GenAppServiceTest {
 
         // When
         Throwable throwable = catchThrowable(
-            () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty)
+            () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED)
         );
 
         // Then
@@ -561,7 +562,7 @@ class GenAppServiceTest {
             .build();
 
         // When
-        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
         // Then
         verify(genAppRepository).save(genAppEntityCaptor.capture());
