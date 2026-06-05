@@ -1,15 +1,18 @@
 package uk.gov.hmcts.reform.pcs.notify.listener;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.notify.event.DefendantResponseStatusUpdatedEvent;
+import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.task.DefendantResponseSubmittedNotificationTaskComponent;
 
 import java.util.UUID;
 
@@ -24,7 +27,7 @@ import static org.mockito.Mockito.when;
 class DefendantResponseEntityListenerTest {
 
     @Mock
-    private ApplicationEventPublisher applicationEventPublisher;
+    private SchedulerClient schedulerClient;
 
     @InjectMocks
     private DefendantResponseEntityListener underTest;
@@ -40,7 +43,7 @@ class DefendantResponseEntityListenerTest {
     }
 
     @Test
-    void shouldPublishEventOnPostPersistWhenStatusIsSubmitted() {
+    void shouldScheduleNotificationOnPostPersistWhenStatusIsSubmitted() {
         UUID defendantResponseId = UUID.randomUUID();
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.SUBMITTED);
@@ -48,23 +51,26 @@ class DefendantResponseEntityListenerTest {
 
         underTest.onPostPersist(entity);
 
-        ArgumentCaptor<DefendantResponseStatusUpdatedEvent> eventCaptor =
-            ArgumentCaptor.forClass(DefendantResponseStatusUpdatedEvent.class);
-        verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
+        ArgumentCaptor<SchedulableInstance<?>> taskInstanceCaptor = ArgumentCaptor.forClass(SchedulableInstance.class);
+        verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture());
 
-        DefendantResponseStatusUpdatedEvent event = eventCaptor.getValue();
-        assertEquals(defendantResponseId, event.getEntityId());
-        assertEquals(DefendantResponseStatus.SUBMITTED, event.getNewStatus());
+        SchedulableInstance<?> schedulableInstance = taskInstanceCaptor.getValue();
+        TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
+        assertEquals(DefendantResponseSubmittedNotificationTaskComponent.DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR
+                         .getTaskName(),
+                     taskInstance.getTaskName());
+        DefendantResponseStatusChangeTaskData data = (DefendantResponseStatusChangeTaskData) taskInstance.getData();
+        assertEquals(defendantResponseId, data.getDefendantResponseId());
     }
 
     @Test
-    void shouldNotPublishEventOnPostPersistWhenStatusIsNotSubmitted() {
+    void shouldNotScheduleNotificationOnPostPersistWhenStatusIsNotSubmitted() {
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.CREATED);
 
         underTest.onPostPersist(entity);
 
-        verify(applicationEventPublisher, never()).publishEvent(any());
+        verify(schedulerClient, never()).scheduleIfNotExists(any());
     }
 
     @Test
@@ -75,11 +81,11 @@ class DefendantResponseEntityListenerTest {
 
         underTest.onPostUpdate(entity);
 
-        verify(applicationEventPublisher, never()).publishEvent(any());
+        verify(schedulerClient, never()).scheduleIfNotExists(any());
     }
 
     @Test
-    void shouldPublishEventOnPostUpdateWhenStatusChangesToSubmitted() {
+    void shouldScheduleNotificationOnPostUpdateWhenStatusChangesToSubmitted() {
         UUID defendantResponseId = UUID.randomUUID();
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.SUBMITTED);
@@ -88,24 +94,26 @@ class DefendantResponseEntityListenerTest {
 
         underTest.onPostUpdate(entity);
 
-        ArgumentCaptor<DefendantResponseStatusUpdatedEvent> eventCaptor =
-            ArgumentCaptor.forClass(DefendantResponseStatusUpdatedEvent.class);
-        verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
+        ArgumentCaptor<SchedulableInstance<?>> taskInstanceCaptor = ArgumentCaptor.forClass(SchedulableInstance.class);
+        verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture());
 
-        DefendantResponseStatusUpdatedEvent event = eventCaptor.getValue();
-        assertEquals(defendantResponseId, event.getEntityId());
-        assertEquals(DefendantResponseStatus.CREATED, event.getPreviousStatus());
-        assertEquals(DefendantResponseStatus.SUBMITTED, event.getNewStatus());
+        SchedulableInstance<?> schedulableInstance = taskInstanceCaptor.getValue();
+        TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
+        assertEquals(DefendantResponseSubmittedNotificationTaskComponent.DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR
+                .getTaskName(),
+                     taskInstance.getTaskName());
+        DefendantResponseStatusChangeTaskData data = (DefendantResponseStatusChangeTaskData) taskInstance.getData();
+        assertEquals(defendantResponseId, data.getDefendantResponseId());
     }
 
     @Test
-    void shouldNotPublishEventOnPostUpdateWhenStatusChangesToSomethingElse() {
+    void shouldNotScheduleNotificationOnPostUpdateWhenStatusChangesToSomethingElse() {
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.CREATED);
         when(entity.getPreviousStatus()).thenReturn(null);
 
         underTest.onPostUpdate(entity);
 
-        verify(applicationEventPublisher, never()).publishEvent(any());
+        verify(schedulerClient, never()).scheduleIfNotExists(any());
     }
 }
