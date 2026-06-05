@@ -80,6 +80,23 @@ wa:
         AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
         AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
         AZURE_SERVICE_BUS_CCD_CASE_EVENTS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+      # The bundled wa umbrella chart drops app-insights-connection-string from each component's
+      # wa keyVault (the standalone wa-* charts include it). The WA image bakes
+      # connectionString=${file:/mnt/secrets/wa/app-insights-connection-string} into
+      # applicationinsights.json, so the AI Java agent crashes the JVM at startup when the file
+      # is absent. Re-add it; Helm replaces list values, so the chart-default secrets must be
+      # repeated here rather than appended.
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: s2s-secret-case-event-handler
+              alias: S2S_SECRET_CASE_EVENT_HANDLER
+            - name: ld-secret
+              alias: LAUNCH_DARKLY_SDK_KEY
+            - name: wa-idam-client-secret
+              alias: WA_IDAM_CLIENT_SECRET
 
   wa-task-management-api:
     java:
@@ -90,15 +107,52 @@ wa:
         # PCS-${CHANGE_ID} -> pcs-${CHANGE_ID}. The jurisdiction id is the plain (unsuffixed) PCS.
         ALLOWED_CASE_TYPES: pcs-${CHANGE_ID}
         ALLOWED_JURISDICTIONS: pcs
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: wa-system-username
+              alias: WA_SYSTEM_USERNAME
+            - name: wa-system-password
+              alias: WA_SYSTEM_PASSWORD
+            - name: wa-idam-client-secret
+              alias: WA_IDAM_CLIENT_SECRET
+            - name: s2s-secret-task-management-api
+              alias: S2S_SECRET_TASK_MANAGEMENT_API
+            - name: ld-secret
+              alias: LAUNCH_DARKLY_SDK_KEY
 
   wa-task-monitor:
     java:
       ingressHost: wa-task-monitor-${SERVICE_FQDN}
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: s2s-secret-task-monitor
+              alias: S2S_SECRET_TASK_MONITOR
+            - name: wa-system-username
+              alias: WA_SYSTEM_USERNAME
+            - name: wa-system-password
+              alias: WA_SYSTEM_PASSWORD
+            - name: wa-idam-client-secret
+              alias: WA_IDAM_CLIENT_SECRET
 
   wa-workflow-api:
     java:
       environment:
         DB_READER_USERNAME: "hmcts"
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: s2s-secret-workflow-api
+              alias: S2S_SECRET_WORKFLOW_API
+            - name: ld-secret
+              alias: LAUNCH_DARKLY_SDK_KEY
 
   wa-message-cron-service:
     job:
