@@ -416,7 +416,8 @@ class SubmitEventHandlerTest {
         assertThat(result.getConfirmationBody()).isNotBlank();
 
         JsonNode confirmation = objectMapper.readTree(result.getConfirmationBody());
-        assertThat(confirmation.get("state").asText()).isEqualTo(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED.name());
+        assertThat(confirmation.get("state").asText())
+            .isEqualTo(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED.name());
         assertThat(confirmation.get("serviceRequestReference").asText()).isEqualTo(SERVICE_REQUEST_REFERENCE);
         assertThat(confirmation.get("feeAmount").decimalValue()).isEqualByComparingTo(FEE_AMOUNT);
 
