@@ -98,4 +98,153 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
       table: 'Notice details'
     });
   });
+
+  test('Case tabs Wales - Case Details tab test @MAC @regression', async () => {
+      await performAction('clickTab', home.caseDetails);
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Claim details',
+        table: 'Claim details'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Address of property',
+        table: 'Address of property to be repossessed'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Claimant details',
+        table: 'Claimant'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Claimant address',
+        table: 'Claimant address for service'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Claimant contact details',
+        table: 'Claimant contact details'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Claimant circumstances',
+        table: 'Claimant circumstances'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Defendant Case details',
+        table: 'Defendant 1'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Defendant circumstances',
+        table: 'Defendant circumstances'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Grounds of possession',
+        table: 'Grounds for possession'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Rent arrears Case details',
+        table: 'Details of rent arrears'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Tenancy and Occupation Case details',
+        table: 'Tenancy, occupation contract or licence details'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Notice Case details',
+        table: 'Notice details'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Actions taken',
+        table: 'Actions already taken'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Reasons for possession',
+        table: 'Reasons for possession'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Applications',
+        table: 'Applications'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Demotion of tenancy',
+        table: 'Demotion of tenancy claim'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Suspension of right to buy',
+        table: 'Suspension of right to buy claim'
+      });
+      await performAction('validateCaseSummaryDetails', {
+        defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+        additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+        createPayload: createCaseApiWalesData.createCasePayload,
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+        section: 'Underlessee or mortgagee',
+        table: 'Underlessee or mortgagee 1'
+      });
+  
+    });
 });
