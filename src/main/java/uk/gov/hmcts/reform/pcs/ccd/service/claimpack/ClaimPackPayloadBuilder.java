@@ -42,13 +42,10 @@ import java.util.Set;
 /**
  * Builds {@link ClaimPackFormPayload} from a {@link PcsCaseEntity}.
  *
- * <p>Field-by-field source mapping is in plan §13.2; the section-by-section visibility rules are
- * in §6.5. Gap fields (§13.3) are left null/false — the template's {@code <<? cond>>} blocks
- * simply don't render until the gap is closed.</p>
- *
- * <p>Layout: one {@code mapXxx} method per source entity, matching the §13.2 by-class tables.
- * Each helper takes the source entity (nullable for optional relations) plus the payload builder
- * and writes its fields. The top-level {@link #build(PcsCaseEntity)} orchestrates.</p>
+ * <p>One {@code mapXxx} method per source entity; each takes that entity (nullable for optional
+ * relations) plus the payload builder and writes its fields. {@link #build(PcsCaseEntity)}
+ * orchestrates. Fields with no data source yet are left null/false — the template's conditional
+ * blocks simply don't render them.</p>
  */
 @Service
 public class ClaimPackPayloadBuilder {
@@ -190,53 +187,37 @@ public class ClaimPackPayloadBuilder {
     }
 
     private void mapClaim(ClaimEntity claim, ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        // §6.3.1
         if (claim.getClaimSubmittedDate() != null) {
             payloadBuilder.submittedOn(claim.getClaimSubmittedDate().toLocalDate());
         }
-        // issueDateSealed is §13.3 gap (1) — left null.
 
-        // §6.3.10 — Y/N to title-case labels; "Why not followed" row gated by complementary boolean.
-        VerticalYesNo preActionEnum = claim.getPreActionProtocolFollowed();
-        payloadBuilder.preActionProtocolFollowedYesNo(toLabel(preActionEnum));
-        // Drop-on-null: hide the "why not followed" row unless a reason was actually captured
-        // (e.g. the Wales journey doesn't capture it, so it would otherwise print blank).
+        VerticalYesNo preActionFollowed = claim.getPreActionProtocolFollowed();
+        payloadBuilder.preActionProtocolFollowedYesNo(toLabel(preActionFollowed));
         String preActionReason = claim.getPreActionProtocolIncompleteExplanation();
-        payloadBuilder.showPreActionProtocolNotFollowedReason(isNo(preActionEnum) && isPopulated(preActionReason));
+        // Hide the "why not followed" row unless a reason exists (Wales doesn't capture one → would print blank).
+        payloadBuilder.showPreActionProtocolNotFollowedReason(isNo(preActionFollowed) && isPopulated(preActionReason));
         payloadBuilder.preActionProtocolNotFollowedReason(preActionReason);
 
-        VerticalYesNo mediationEnum = claim.getMediationAttempted();
-        payloadBuilder.mediationAttemptedYesNo(toLabel(mediationEnum));
-        VerticalYesNo settlementEnum = claim.getSettlementAttempted();
-        payloadBuilder.settlementAttemptedYesNo(toLabel(settlementEnum));
+        payloadBuilder.mediationAttemptedYesNo(toLabel(claim.getMediationAttempted()));
+        payloadBuilder.settlementAttemptedYesNo(toLabel(claim.getSettlementAttempted()));
 
-        // §6.3.13 / §6.3.14 — title-case labels + details show-flag gated on YES.
-        VerticalYesNo claimantCircsEnum = claim.getClaimantCircumstancesProvided();
-        payloadBuilder.hasClaimantCircsYesNo(toLabel(claimantCircsEnum));
-        payloadBuilder.showClaimantCircsFreeText(isYes(claimantCircsEnum));
+        VerticalYesNo claimantCircumstances = claim.getClaimantCircumstancesProvided();
+        payloadBuilder.hasClaimantCircsYesNo(toLabel(claimantCircumstances));
+        payloadBuilder.showClaimantCircsFreeText(isYes(claimantCircumstances));
         payloadBuilder.claimantCircsFreeText(claim.getClaimantCircumstances());
 
-        VerticalYesNo defendantCircsEnum = claim.getDefendantCircumstancesProvided();
-        payloadBuilder.hasDefendantCircsYesNo(toLabel(defendantCircsEnum));
-        payloadBuilder.showDefendantCircsFreeText(isYes(defendantCircsEnum));
+        VerticalYesNo defendantCircumstances = claim.getDefendantCircumstancesProvided();
+        payloadBuilder.hasDefendantCircsYesNo(toLabel(defendantCircumstances));
+        payloadBuilder.showDefendantCircsFreeText(isYes(defendantCircumstances));
         payloadBuilder.defendantCircsFreeText(claim.getDefendantCircumstances());
 
-        // §6.3.7 additional reasons row — title-case label for direct Docmosis render.
-        VerticalYesNo additionalReasonsEnum = claim.getAdditionalReasonsProvided();
-        payloadBuilder.hasAdditionalReasonsYesNo(toLabel(additionalReasonsEnum));
-        payloadBuilder.additionalReasonsProvided(isYes(additionalReasonsEnum));
+        VerticalYesNo additionalReasonsProvided = claim.getAdditionalReasonsProvided();
+        payloadBuilder.hasAdditionalReasonsYesNo(toLabel(additionalReasonsProvided));
+        payloadBuilder.additionalReasonsProvided(isYes(additionalReasonsProvided));
         payloadBuilder.additionalReasonsFreeText(claim.getAdditionalReasons());
 
-        // §6.3.15 yes/no gate — title-case for direct template rendering.
-        VerticalYesNo underlesseeEnum = claim.getUnderlesseeOrMortgagee();
-        payloadBuilder.hasUnderlesseeYesNo(toLabel(underlesseeEnum));
-
-        // §6.3.2 Wales-only row — convert to title-case "Yes"/"No" string for direct Docmosis render.
-        payloadBuilder.claimantIsExemptLandlord(
-            toLabel(claim.getIsExemptLandlord())
-        );
-
-        // whyClaimingPossession is §13.3 gap (2) — left null.
+        payloadBuilder.hasUnderlesseeYesNo(toLabel(claim.getUnderlesseeOrMortgagee()));
+        payloadBuilder.claimantIsExemptLandlord(toLabel(claim.getIsExemptLandlord()));
     }
 
     private void mapClaimants(List<PartyEntity> claimants,
@@ -254,13 +235,8 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.hasClaimantCounty(addr != null && isPopulated(addr.getCounty()));
     }
 
-    // -----------------------------------------------------------------------
-    // PartyEntity (defendants) — §13.2 "From PartyEntity"
-    //
-    // Produces one flat list rendered by a single <<rs_defendants>>...<<es_>> loop.
-    // Address fallback: defendant.address used if its addressLine1 is populated,
-    // otherwise the property address (spec: "address cannot be Unknown").
-    // -----------------------------------------------------------------------
+    // A defendant with no address of their own falls back to the property address
+    // (the claim form can't show a defendant address as "unknown").
     private void mapDefendants(List<PartyEntity> defendants,
                                AddressEntity propertyAddress,
                                ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
@@ -313,12 +289,7 @@ public class ClaimPackPayloadBuilder {
             + (hasLast ? party.getLastName() : "");
     }
 
-    // -----------------------------------------------------------------------
-    // PartyEntity (underlessees / mortgagees) — §13.2 "From PartyEntity"
-    //
-    // Flat list with Address-unknown semantic per Excel row 58/60: address either
-    // provided (render 6 lines) or unknown (render "Address unknown" single line).
-    // -----------------------------------------------------------------------
+    // Each underlessee/mortgagee renders either a full address or a single "Address unknown" line.
     private void mapUnderlessees(List<PartyEntity> underlessees,
                                  ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
         List<ClaimPackUnderlesseeRow> rows = new ArrayList<>(underlessees.size());
@@ -438,14 +409,11 @@ public class ClaimPackPayloadBuilder {
         }
 
         routeNoticeDetailByMethod(method, notice.getNoticeDetails(), payloadBuilder);
-        applyNoticeUploadGapPlaceholder(payloadBuilder);
+        clearUnsourcedNoticeUploadFlags(payloadBuilder);
     }
 
-    /**
-     * The {@code noticeDetails} column on the entity carries one of four distinct fields depending
-     * on {@code servingMethod}. Route to the right payload slot; FIRST_CLASS_POST and
-     * DELIVERED_PERMITTED_PLACE have no detail row (§6.3.11).
-     */
+    // The entity's single noticeDetails field means different things per serving method; route it
+    // to the matching payload slot. First-class-post and delivered-to-permitted-place have no detail.
     private void routeNoticeDetailByMethod(NoticeServiceMethod method, String details,
                                            ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
         if (method == null || details == null) {
@@ -474,11 +442,10 @@ public class ClaimPackPayloadBuilder {
         }
     }
 
-    /** Plan §13.3 gap (3): noticeUploadedYesNo source field is pending. Both branches false. */
-    private void applyNoticeUploadGapPlaceholder(ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        VerticalYesNo uploaded = null;
-        payloadBuilder.noticeUploadedYes(isYes(uploaded));
-        payloadBuilder.noticeUploadedNo(isNo(uploaded));
+    // The "can you upload the notice?" answer has no data source yet, so neither branch renders.
+    private void clearUnsourcedNoticeUploadFlags(ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+        payloadBuilder.noticeUploadedYes(false);
+        payloadBuilder.noticeUploadedNo(false);
     }
 
     private void mapTenancyLicence(TenancyLicenceEntity tenancy,
@@ -545,11 +512,8 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.otherProhibitedDetailsFreeText(asb.getOtherProhibitedConductDetails());
     }
 
-    /**
-     * PCSC (Wales) is captured on the same entity as ASB — see plan §13.2.
-     * The outer section gate {@code showPcscSection} lives in {@link #mapClaimDetailsShowFlags}
-     * because it depends on country, which this method doesn't see.
-     */
+    // PCSC (Wales) is captured on the same entity as ASB. Its outer section gate (showPcscSection)
+    // lives in mapClaimDetailsShowFlags, which is where the country is known.
     private void mapPcscDetails(AsbProhibitedConductEntity asb,
                                 ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
         VerticalYesNo pcscEnum = asb.getClaimingStandardContract();
@@ -563,34 +527,33 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.pcscTermsFreeText(asb.getPeriodicContractDetails());
     }
 
-    private void mapPossessionAlternatives(PossessionAlternativesEntity alt,
+    private void mapPossessionAlternatives(PossessionAlternativesEntity alternatives,
                                                ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        if (alt == null) {
+        if (alternatives == null) {
             return;
         }
-        // Demotion — optional Y/N: row hidden if user didn't answer; follow-ups gated on YES.
-        VerticalYesNo demotionEnum = yesOrNoToVertical(alt.getDotRequested());
-        payloadBuilder.showIsDemotionClaim(demotionEnum != null);
-        payloadBuilder.isDemotionClaimYesNo(toLabel(demotionEnum));
-        payloadBuilder.showDemotionDetails(isYes(demotionEnum));
-        if (alt.getDotHousingActSection() != null) {
-            payloadBuilder.demotionHousingActSection(alt.getDotHousingActSection().getLabel());
+        // Optional Y/N: the row is hidden if unanswered; the follow-up rows show only on "Yes".
+        VerticalYesNo demotionClaimed = yesOrNoToVertical(alternatives.getDotRequested());
+        payloadBuilder.showIsDemotionClaim(demotionClaimed != null);
+        payloadBuilder.isDemotionClaimYesNo(toLabel(demotionClaimed));
+        payloadBuilder.showDemotionDetails(isYes(demotionClaimed));
+        if (alternatives.getDotHousingActSection() != null) {
+            payloadBuilder.demotionHousingActSection(alternatives.getDotHousingActSection().getLabel());
         }
-        VerticalYesNo demoTermsEnum = yesOrNoToVertical(alt.getDotStatementServed());
-        payloadBuilder.hasServedDemotionTermsYesNo(toLabel(demoTermsEnum));
-        payloadBuilder.showDemotionTermsFreeText(isYes(demoTermsEnum));
-        payloadBuilder.demotionTermsFreeText(alt.getDotStatementDetails());
-        payloadBuilder.demotionReasonsFreeText(alt.getDotReason());
+        VerticalYesNo demotionTermsServed = yesOrNoToVertical(alternatives.getDotStatementServed());
+        payloadBuilder.hasServedDemotionTermsYesNo(toLabel(demotionTermsServed));
+        payloadBuilder.showDemotionTermsFreeText(isYes(demotionTermsServed));
+        payloadBuilder.demotionTermsFreeText(alternatives.getDotStatementDetails());
+        payloadBuilder.demotionReasonsFreeText(alternatives.getDotReason());
 
-        // Suspension — same shape (optional Y/N + follow-ups gated on YES).
-        VerticalYesNo suspensionEnum = yesOrNoToVertical(alt.getSuspensionOfRTB());
-        payloadBuilder.showIsSuspensionClaim(suspensionEnum != null);
-        payloadBuilder.isSuspensionClaimYesNo(toLabel(suspensionEnum));
-        payloadBuilder.showSuspensionDetails(isYes(suspensionEnum));
-        if (alt.getSuspensionOfRTBHousingActSection() != null) {
-            payloadBuilder.suspensionHousingActSection(alt.getSuspensionOfRTBHousingActSection().getLabel());
+        VerticalYesNo suspensionClaimed = yesOrNoToVertical(alternatives.getSuspensionOfRTB());
+        payloadBuilder.showIsSuspensionClaim(suspensionClaimed != null);
+        payloadBuilder.isSuspensionClaimYesNo(toLabel(suspensionClaimed));
+        payloadBuilder.showSuspensionDetails(isYes(suspensionClaimed));
+        if (alternatives.getSuspensionOfRTBHousingActSection() != null) {
+            payloadBuilder.suspensionHousingActSection(alternatives.getSuspensionOfRTBHousingActSection().getLabel());
         }
-        payloadBuilder.suspensionReasonsFreeText(alt.getSuspensionOfRTBReason());
+        payloadBuilder.suspensionReasonsFreeText(alternatives.getSuspensionOfRTBReason());
     }
 
     private void mapStatementOfTruth(StatementOfTruthEntity sot,
@@ -608,9 +571,6 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.sotPositionHeld(sot.getPositionHeld());
     }
 
-    // -----------------------------------------------------------------------
-    // Derived — §13.2 "From helpers / computed"
-    // -----------------------------------------------------------------------
     private void mapCaseName(List<PartyEntity> claimants,
                              List<PartyEntity> defendants,
                              ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
@@ -621,10 +581,6 @@ public class ClaimPackPayloadBuilder {
         List<Party> defendantDomain = defendants.stream().map(ClaimPackPayloadBuilder::toDomainParty).toList();
         payloadBuilder.caseName(caseNameFormatter.formatCaseName(claimantDomain, defendantDomain));
     }
-
-    // =====================================================================
-    // Small helpers
-    // =====================================================================
 
     private List<PartyEntity> partiesByRole(ClaimEntity claim, PartyRole role) {
         if (claim.getClaimParties() == null) {
@@ -663,53 +619,48 @@ public class ClaimPackPayloadBuilder {
             .build();
     }
 
-    private static Party toDomainParty(PartyEntity e) {
+    private static Party toDomainParty(PartyEntity party) {
         return Party.builder()
-            .firstName(e.getFirstName())
-            .lastName(e.getLastName())
-            .orgName(e.getOrgName())
-            .nameKnown(e.getNameKnown())
+            .firstName(party.getFirstName())
+            .lastName(party.getLastName())
+            .orgName(party.getOrgName())
+            .nameKnown(party.getNameKnown())
             .build();
     }
 
-    /**
-     * Bridge from the CCD SDK {@code YesOrNo} (used by some entities) to PCS's {@code VerticalYesNo}
-     * (used by the payload). Returns null for null input. Tolerates either spelling defensively.
-     */
-    private static VerticalYesNo yesOrNoToVertical(uk.gov.hmcts.ccd.sdk.type.YesOrNo y) {
-        if (y == null) {
+    // Bridge from the CCD SDK YesOrNo (some entities) to the payload's VerticalYesNo; null-safe.
+    private static VerticalYesNo yesOrNoToVertical(uk.gov.hmcts.ccd.sdk.type.YesOrNo yesOrNo) {
+        if (yesOrNo == null) {
             return null;
         }
-        return y == uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
+        return yesOrNo == uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
     }
 
-    private static String formatGroundLabel(ClaimGroundEntity g) {
-        // Resolve the persisted category + code to the ground's human-readable label
-        // (e.g. "Serious rent arrears (ground 8)"), not the raw enum identifier.
-        return PossessionGroundLabelResolver.label(g.getCategory(), g.getCode());
+    private static String formatGroundLabel(ClaimGroundEntity ground) {
+        return PossessionGroundLabelResolver.label(ground.getCategory(), ground.getCode());
     }
 
-    private static String formatTenancyLabel(TenancyLicenceEntity t) {
-        CombinedLicenceType type = t.getType();
+    private static String formatTenancyLabel(TenancyLicenceEntity tenancy) {
+        CombinedLicenceType type = tenancy.getType();
         if (type == null) {
             return null;
         }
         String label = combinedLicenceLabel(type);
-        return type == CombinedLicenceType.OTHER && t.getOtherTypeDetails() != null
-            ? label + ": " + t.getOtherTypeDetails()
+        return type == CombinedLicenceType.OTHER && tenancy.getOtherTypeDetails() != null
+            ? label + ": " + tenancy.getOtherTypeDetails()
             : label;
     }
 
     // CombinedLicenceType carries no label of its own — reuse the England/Wales source enums that do.
     private static String combinedLicenceLabel(CombinedLicenceType type) {
-        for (TenancyLicenceType e : TenancyLicenceType.values()) {
-            if (e.getCombinedLicenceType() == type) {
-                return e.getLabel();
+        for (TenancyLicenceType englandType : TenancyLicenceType.values()) {
+            if (englandType.getCombinedLicenceType() == type) {
+                return englandType.getLabel();
             }
         }
-        for (OccupationLicenceTypeWales e : OccupationLicenceTypeWales.values()) {
-            if (e.getCombinedLicenceType() == type) {
-                return e.getLabel();
+        for (OccupationLicenceTypeWales walesType : OccupationLicenceTypeWales.values()) {
+            if (walesType.getCombinedLicenceType() == type) {
+                return walesType.getLabel();
             }
         }
         return type.name();
@@ -768,11 +719,11 @@ public class ClaimPackPayloadBuilder {
         return yesNo == VerticalYesNo.NO;
     }
 
-    private static String formatRentDescription(TenancyLicenceEntity t) {
-        if (t.getRentAmount() == null || t.getRentFrequency() == null) {
+    private static String formatRentDescription(TenancyLicenceEntity tenancy) {
+        if (tenancy.getRentAmount() == null || tenancy.getRentFrequency() == null) {
             return null;
         }
-        return formatGbp(t.getRentAmount()) + " (" + t.getRentFrequency().getLabel() + ")";
+        return formatGbp(tenancy.getRentAmount()) + " (" + tenancy.getRentFrequency().getLabel() + ")";
     }
 
     /** Format a money value as a GBP currency string, e.g. £1,200.00. Null-safe. */
