@@ -7,7 +7,7 @@ export * from './doYouWantToUploadDocumentsToSupportDefendantsApplication.page.d
 export * from './hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.page.data';
 export * from './haveTheyAlreadyAppliedForHelpWithFees.page.data';
 export * from './isTheCourtHearingInTheNext14Days.page.data';
-export * from './uploadDocumentsToSupportYourApplication.page.data';
+export * from './uploadDocumentsToSupportDefendantsApplication.page.data';
 export * from './whatOrderDoYouWantTheCourtToMakeAndWhy.page.data';
 export * from './whichLanguageDidYouUseToCompleteThisService.page.data';
 export * from './askTheCourtToSetAsideTheOrder.page.data';
@@ -15,3 +15,4 @@ export * from './askTheCourtToMakeAnOrder.page.data';
 export * from './areThereAnyReasonsThatThisApplicationShouldNotBeShared.page.data';
 export * from './youNeedToApplyForHelpWithYourApplicationFee.page.data';
 export * from './selectParty.page.data';
+export * from './statementOfTruth.page.data';
