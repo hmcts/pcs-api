@@ -7,8 +7,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PossessionGroundLabelResolver;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
+import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackAddress;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -62,6 +64,21 @@ final class ClaimPackFormatter {
 
     static String formatGroundLabel(ClaimGroundEntity ground) {
         return PossessionGroundLabelResolver.label(ground.getCategory(), ground.getCode());
+    }
+
+    static ClaimPackAddress toClaimPackAddress(AddressEntity address) {
+        if (address == null) {
+            return null;
+        }
+        return ClaimPackAddress.builder()
+            .addressLine1(address.getAddressLine1())
+            .addressLine2(address.getAddressLine2())
+            .addressLine3(address.getAddressLine3())
+            .postTown(address.getPostTown())
+            .county(address.getCounty())
+            .postcode(address.getPostcode())
+            .country(address.getCountry())
+            .build();
     }
 
     static String formatTenancyLabel(TenancyLicenceEntity tenancy) {

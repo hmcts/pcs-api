@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
@@ -19,14 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackAddress;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackDefendantRow;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackGround;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackParty;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackUnderlesseeRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
@@ -36,15 +30,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatDefendantHeading;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatGbp;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatGroundLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatRentDescription;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatTenancyLabel;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatUnderlesseeHeading;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isNo;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isPopulated;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isYes;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.toClaimPackAddress;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.toLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.yesOrNoToVertical;
 
@@ -66,12 +59,12 @@ public class ClaimPackPayloadBuilder {
     );
 
     private final CaseReferenceFormatter caseReferenceFormatter;
-    private final CaseNameFormatter caseNameFormatter;
+    private final ClaimPackPartyMapper partyMapper;
 
     public ClaimPackPayloadBuilder(CaseReferenceFormatter caseReferenceFormatter,
-                                   CaseNameFormatter caseNameFormatter) {
+                                   ClaimPackPartyMapper partyMapper) {
         this.caseReferenceFormatter = caseReferenceFormatter;
-        this.caseNameFormatter = caseNameFormatter;
+        this.partyMapper = partyMapper;
     }
 
     public ClaimPackFormPayload build(PcsCaseEntity pcsCase) {
@@ -83,9 +76,9 @@ public class ClaimPackPayloadBuilder {
 
         final List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         final List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);
-        mapClaimants(claimants, payloadBuilder);
-        mapDefendants(defendants, pcsCase.getPropertyAddress(), payloadBuilder);
-        mapUnderlessees(partiesByRole(claim, PartyRole.UNDERLESSEE_OR_MORTGAGEE), payloadBuilder);
+        partyMapper.mapClaimant(claimants, payloadBuilder);
+        partyMapper.mapDefendants(defendants, pcsCase.getPropertyAddress(), payloadBuilder);
+        partyMapper.mapUnderlessees(partiesByRole(claim, PartyRole.UNDERLESSEE_OR_MORTGAGEE), payloadBuilder);
 
         mapGrounds(claim.getClaimGrounds(), payloadBuilder);
         mapNotice(claim.getNoticeOfPossession(), payloadBuilder);
@@ -95,7 +88,7 @@ public class ClaimPackPayloadBuilder {
         mapPossessionAlternatives(claim.getPossessionAlternativesEntity(), payloadBuilder);
         mapStatementOfTruth(claim.getStatementOfTruth(), payloadBuilder);
 
-        mapCaseName(claimants, defendants, payloadBuilder);
+        partyMapper.mapCaseName(claimants, defendants, payloadBuilder);
         mapClaimDetailsShowFlags(pcsCase, claim, payloadBuilder);
 
         return payloadBuilder.build();
@@ -227,109 +220,6 @@ public class ClaimPackPayloadBuilder {
 
         payloadBuilder.hasUnderlesseeYesNo(toLabel(claim.getUnderlesseeOrMortgagee()));
         payloadBuilder.claimantIsExemptLandlord(toLabel(claim.getIsExemptLandlord()));
-    }
-
-    private void mapClaimants(List<PartyEntity> claimants,
-                            ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        if (claimants.isEmpty()) {
-            return;
-        }
-        PartyEntity head = claimants.getFirst();
-        ClaimPackParty mapped = toClaimPackParty(head);
-        payloadBuilder.claimant(mapped);
-        payloadBuilder.claimantDisplayName(deriveDisplayName(mapped));
-        ClaimPackAddress addr = mapped.getAddress();
-        payloadBuilder.hasClaimantAddressLine2(addr != null && isPopulated(addr.getAddressLine2()));
-        payloadBuilder.hasClaimantAddressLine3(addr != null && isPopulated(addr.getAddressLine3()));
-        payloadBuilder.hasClaimantCounty(addr != null && isPopulated(addr.getCounty()));
-    }
-
-    // A defendant with no address of their own falls back to the property address
-    // (the claim form can't show a defendant address as "unknown").
-    private void mapDefendants(List<PartyEntity> defendants,
-                               AddressEntity propertyAddress,
-                               ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        List<ClaimPackDefendantRow> rows = new ArrayList<>(defendants.size());
-        int number = 1;
-        for (PartyEntity defendant : defendants) {
-            rows.add(toDefendantRow(defendant, number++, propertyAddress));
-        }
-        payloadBuilder.defendants(rows);
-    }
-
-    private ClaimPackDefendantRow toDefendantRow(PartyEntity defendant, int number, AddressEntity propertyAddress) {
-        AddressEntity addr = pickAddressOrFallback(defendant.getAddress(), propertyAddress);
-        return ClaimPackDefendantRow.builder()
-            .defendantNumber(number)
-            .heading(formatDefendantHeading(number))
-            .displayName(derivePartyDisplayName(defendant))
-            .addressLine1(addr.getAddressLine1())
-            .addressLine2(addr.getAddressLine2())
-            .addressLine3(addr.getAddressLine3())
-            .postTown(addr.getPostTown())
-            .county(addr.getCounty())
-            .postcode(addr.getPostcode())
-            .hasAddressLine2(isPopulated(addr.getAddressLine2()))
-            .hasAddressLine3(isPopulated(addr.getAddressLine3()))
-            .hasCounty(isPopulated(addr.getCounty()))
-            .build();
-    }
-
-    private static AddressEntity pickAddressOrFallback(AddressEntity defendantAddress, AddressEntity propertyAddress) {
-        if (defendantAddress != null && isPopulated(defendantAddress.getAddressLine1())) {
-            return defendantAddress;
-        }
-        return propertyAddress;
-    }
-
-    private static String derivePartyDisplayName(PartyEntity party) {
-        if (isPopulated(party.getOrgName())) {
-            return party.getOrgName();
-        }
-        if (isNo(party.getNameKnown())) {
-            return "Persons unknown";
-        }
-        boolean hasFirst = isPopulated(party.getFirstName());
-        boolean hasLast = isPopulated(party.getLastName());
-        if (!hasFirst && !hasLast) {
-            return "Persons unknown";
-        }
-        return (hasFirst ? party.getFirstName() : "") + (hasFirst && hasLast ? " " : "")
-            + (hasLast ? party.getLastName() : "");
-    }
-
-    // Each underlessee/mortgagee renders either a full address or a single "Address unknown" line.
-    private void mapUnderlessees(List<PartyEntity> underlessees,
-                                 ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        List<ClaimPackUnderlesseeRow> rows = new ArrayList<>(underlessees.size());
-        int number = 1;
-        for (PartyEntity underlessee : underlessees) {
-            rows.add(toUnderlesseeRow(underlessee, number++));
-        }
-        payloadBuilder.underlessees(rows);
-    }
-
-    private ClaimPackUnderlesseeRow toUnderlesseeRow(PartyEntity underlessee, int number) {
-        AddressEntity addr = underlessee.getAddress();
-        boolean addressKnown = addr != null && isPopulated(addr.getAddressLine1());
-        ClaimPackUnderlesseeRow.ClaimPackUnderlesseeRowBuilder rowBuilder = ClaimPackUnderlesseeRow.builder()
-            .underlesseeNumber(number)
-            .heading(formatUnderlesseeHeading(number))
-            .displayName(derivePartyDisplayName(underlessee))
-            .addressKnown(addressKnown)
-            .addressUnknown(!addressKnown);
-        if (addressKnown) {
-            rowBuilder.addressLine1(addr.getAddressLine1());
-            rowBuilder.addressLine2(addr.getAddressLine2());
-            rowBuilder.addressLine3(addr.getAddressLine3());
-            rowBuilder.postTown(addr.getPostTown());
-            rowBuilder.county(addr.getCounty());
-            rowBuilder.postcode(addr.getPostcode());
-            rowBuilder.hasAddressLine2(isPopulated(addr.getAddressLine2()));
-            rowBuilder.hasAddressLine3(isPopulated(addr.getAddressLine3()));
-            rowBuilder.hasCounty(isPopulated(addr.getCounty()));
-        }
-        return rowBuilder.build();
     }
 
     private void mapGrounds(Set<ClaimGroundEntity> allGrounds,
@@ -580,17 +470,6 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.sotPositionHeld(sot.getPositionHeld());
     }
 
-    private void mapCaseName(List<PartyEntity> claimants,
-                             List<PartyEntity> defendants,
-                             ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        if (claimants.isEmpty() && defendants.isEmpty()) {
-            return;
-        }
-        List<Party> claimantDomain = claimants.stream().map(ClaimPackPayloadBuilder::toDomainParty).toList();
-        List<Party> defendantDomain = defendants.stream().map(ClaimPackPayloadBuilder::toDomainParty).toList();
-        payloadBuilder.caseName(caseNameFormatter.formatCaseName(claimantDomain, defendantDomain));
-    }
-
     private List<PartyEntity> partiesByRole(ClaimEntity claim, PartyRole role) {
         if (claim.getClaimParties() == null) {
             return List.of();
@@ -600,55 +479,6 @@ public class ClaimPackPayloadBuilder {
             .toList());
         filtered.sort(Comparator.comparingInt(ClaimPartyEntity::getRank));
         return filtered.stream().map(ClaimPartyEntity::getParty).toList();
-    }
-
-    private ClaimPackParty toClaimPackParty(PartyEntity party) {
-        boolean isPersonsUnknown = isNo(party.getNameKnown());
-        return ClaimPackParty.builder()
-            .firstName(party.getFirstName())
-            .lastName(party.getLastName())
-            .orgName(party.getOrgName())
-            .isPersonsUnknown(isPersonsUnknown)
-            .address(toClaimPackAddress(party.getAddress()))
-            .build();
-    }
-
-    private ClaimPackAddress toClaimPackAddress(AddressEntity address) {
-        if (address == null) {
-            return null;
-        }
-        return ClaimPackAddress.builder()
-            .addressLine1(address.getAddressLine1())
-            .addressLine2(address.getAddressLine2())
-            .addressLine3(address.getAddressLine3())
-            .postTown(address.getPostTown())
-            .county(address.getCounty())
-            .postcode(address.getPostcode())
-            .country(address.getCountry())
-            .build();
-    }
-
-    private static Party toDomainParty(PartyEntity party) {
-        return Party.builder()
-            .firstName(party.getFirstName())
-            .lastName(party.getLastName())
-            .orgName(party.getOrgName())
-            .nameKnown(party.getNameKnown())
-            .build();
-    }
-
-    // org name if set, else "first last" if either is set, else "Persons unknown".
-    private static String deriveDisplayName(ClaimPackParty party) {
-        if (isPopulated(party.getOrgName())) {
-            return party.getOrgName();
-        }
-        boolean hasFirst = isPopulated(party.getFirstName());
-        boolean hasLast = isPopulated(party.getLastName());
-        if (hasFirst || hasLast) {
-            return (hasFirst ? party.getFirstName() : "") + (hasFirst && hasLast ? " " : "")
-                + (hasLast ? party.getLastName() : "");
-        }
-        return "Persons unknown";
     }
 
 }

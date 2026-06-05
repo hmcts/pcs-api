@@ -51,7 +51,7 @@ class ClaimPackPayloadBuilderTest {
     void setUp() {
         builder = new ClaimPackPayloadBuilder(
             new CaseReferenceFormatter(),
-            new CaseNameFormatter()
+            new ClaimPackPartyMapper(new CaseNameFormatter())
         );
     }
 
