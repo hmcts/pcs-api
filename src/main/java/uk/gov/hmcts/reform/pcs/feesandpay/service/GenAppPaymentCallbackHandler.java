@@ -18,7 +18,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
 
-    // TODO: Add tests
     private final GenAppRepository genAppRepository;
     private final GenAppDocumentGenerator genAppDocumentGenerator;
 

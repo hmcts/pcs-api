@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.pcs.feesandpay.model;
 
 import lombok.Getter;
 
-import java.util.Arrays;
-
 @Getter
 public enum FeeType {
     CASE_ISSUE_FEE("caseIssueFee"),
@@ -18,13 +16,5 @@ public enum FeeType {
     FeeType(String code) {
         this.code = code;
     }
-
-    public static FeeType fromCode(String code) {
-        return Arrays.stream(values())
-            .filter(type -> type.getCode().equals(code))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Unknown fee type " + code));
-    }
-
 }
 
