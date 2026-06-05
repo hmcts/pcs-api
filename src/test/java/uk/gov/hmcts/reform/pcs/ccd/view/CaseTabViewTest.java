@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,12 +24,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,8 +51,19 @@ class CaseTabViewTest {
     @Mock
     private CaseDetailsTabView caseDetailsTabView;
 
+    @Mock
+    private SecurityContextService securityContextService;
+
     @InjectMocks
     private CaseTabView underTest;
+
+    @BeforeEach
+    void setUp() {
+        UserInfo userInfo = UserInfo.builder()
+            .roles(List.of("caseworker-pcs"))
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+    }
 
     @Test
     void shouldSetClaimantDetailsInCasePartiesTab() {
@@ -881,14 +896,56 @@ class CaseTabViewTest {
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
         verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
-        verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseSummaryTabView, never()).buildSummaryTab(pcsCase);
+        verify(caseDetailsTabView, never()).buildCaseDetailsTab(pcsCase);
 
         SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
         assertThat(suspensionOfRightToBuy).isNull();
 
         DemotionOfTenancy demotionOfTenancy = draftCaseData.getDemotionOfTenancy();
         assertThat(demotionOfTenancy).isNull();
+    }
+
+    @Test
+    void shouldNotSetCaseTabsWhenUserIsCitizen() {
+        // Given
+        UserInfo userInfo = UserInfo.builder()
+            .roles(List.of("citizen"))
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        verify(caseSummaryTabView, never()).buildSummaryTab(pcsCase);
+        verify(caseDetailsTabView, never()).buildCaseDetailsTab(pcsCase);
+        assertThat(pcsCase.getCasePartiesTab()).isNull();
+        assertThat(pcsCase.getSummaryTab()).isNull();
+        assertThat(pcsCase.getCaseDetailsTab()).isNull();
+    }
+
+    @Test
+    void shouldNotSetDraftCaseTabsWhenUserIsCitizen() {
+        // Given
+        UserInfo userInfo = UserInfo.builder()
+            .roles(List.of("citizen"))
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+
+        PCSCase pcsCase = PCSCase.builder().build();
+        PCSCase draftCaseData = PCSCase.builder().build();
+
+        // When
+        underTest.setDraftCaseTabFields(pcsCase, draftCaseData);
+
+        // Then
+        verify(caseSummaryTabView, never()).buildSummaryTab(draftCaseData);
+        verify(caseDetailsTabView, never()).buildCaseDetailsTab(draftCaseData);
+        assertThat(pcsCase.getSummaryTab()).isNull();
+        assertThat(pcsCase.getCaseDetailsTab()).isNull();
     }
 
     private static <T> ListValue<T> listValue(T value) {

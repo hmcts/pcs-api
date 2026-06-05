@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +37,16 @@ public class CaseTabView {
 
     public static final String NAME_UNKNOWN = "Person unknown";
 
+    private final SecurityContextService securityContextService;
     private final ClaimGroundSummaryBuilder claimGroundSummaryBuilder;
     private final CaseSummaryTabView caseSummaryTabView;
     private final CaseDetailsTabView caseDetailsTabView;
 
     public void setCaseTabFields(PCSCase pcsCase) {
+        if (shouldNotBuildCaseTabs()) {
+            return;
+        }
+
         CasePartiesTab casePartiesTab = buildCasePartiesTab(pcsCase);
         SummaryTab summaryTab = caseSummaryTabView.buildSummaryTab(pcsCase);
         CaseDetailsTab detailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
@@ -49,6 +56,10 @@ public class CaseTabView {
     }
 
     public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draftCaseData) {
+        if (shouldNotBuildCaseTabs()) {
+            return;
+        }
+
         if (draftCaseData.getDefendant1() != null) {
             draftCaseData.setAllDefendants(buildDefendants(draftCaseData));
         }
@@ -227,5 +238,10 @@ public class CaseTabView {
             .firstName(defendantFirstName)
             .lastName(defendantLastName)
             .build();
+    }
+
+    private boolean shouldNotBuildCaseTabs() {
+        List<String> roles =  securityContextService.getCurrentUserDetails().getRoles();
+        return roles.contains(UserRole.CITIZEN.getRole());
     }
 }
