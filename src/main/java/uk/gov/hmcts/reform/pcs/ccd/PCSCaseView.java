@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -79,6 +80,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final PartiesView partiesView;
     private final GenAppsView genAppsView;
     private final CaseFlagsView flagsView;
+    private final CaseListView caseListView;
 
 
     /**
@@ -131,6 +133,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
             .allDocuments(mapAndWrapDocuments(pcsCaseEntity))
             .dateSubmitted(getClaimSubmittedDate(pcsCaseEntity))
+            .dateIssued(getClaimIssuedDate(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -150,6 +153,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
+        caseListView.setCaseFields(pcsCase);
 
         return pcsCase;
     }
@@ -158,6 +162,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return pcsCaseEntity.getClaims().stream()
             .findFirst()
             .map(ClaimEntity::getClaimSubmittedDate)
+            .orElse(null);
+    }
+
+    private LocalDateTime getClaimIssuedDate(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getClaims().stream()
+            .findFirst()
+            .map(ClaimEntity::getClaimIssuedDate)
             .orElse(null);
     }
 

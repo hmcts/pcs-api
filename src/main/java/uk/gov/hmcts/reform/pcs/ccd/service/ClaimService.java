@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -26,6 +28,7 @@ public class ClaimService {
     private final RentArrearsService rentArrearsService;
     private final NoticeOfPossessionService noticeOfPossessionService;
     private final StatementOfTruthService statementOfTruthService;
+    private final Clock utcClock;
 
     public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
         ClaimEntity claimEntity = buildClaimEntity(pcsCase);
@@ -86,6 +89,11 @@ public class ClaimService {
             .languageUsed(pcsCase.getLanguageUsed())
             .isExemptLandlord(pcsCase.getIsExemptLandlord())
             .build();
+    }
+
+    public void setClaimIssuedDate(ClaimEntity claimEntity) {
+        claimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
+        claimRepository.save(claimEntity);
     }
 
 }

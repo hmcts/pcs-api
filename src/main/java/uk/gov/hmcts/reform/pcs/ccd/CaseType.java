@@ -68,9 +68,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.searchResultFields()
             .caseReferenceField();
 
-        builder.workBasketResultFields()
-            .caseReferenceField()
-            .field(PCSCase::getPropertyAddress, "Property Address");
+        buildCaseListView(builder);
 
         builder.tab("nextSteps", "Next steps")
             .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -170,5 +168,15 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                    "summaryTab_NoticeDetails!=\"\"",
                    "## Notice")
             .field("summaryTab_NoticeDetails");
+    }
+
+    private void buildCaseListView(ConfigBuilder<PCSCase, State, UserRole> builder) {
+        builder.workBasketResultFields()
+            .caseReferenceField()
+            .field(PCSCase::getDateIssuedString, "Date issued")
+            .field(PCSCase::getClaimantNames, "Claimant names")
+            .field(PCSCase::getDefendantNames, "Defendant names")
+            .field(PCSCase::getPostCode, "Postcode")
+            .field("[STATE]", "State");
     }
 }
