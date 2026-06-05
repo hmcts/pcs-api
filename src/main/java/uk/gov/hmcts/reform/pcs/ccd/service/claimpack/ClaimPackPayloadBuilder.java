@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackUnderlesseeRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -99,8 +101,11 @@ public class ClaimPackPayloadBuilder {
         boolean isWales = isWalesJourney(pcsCase);
         boolean isEngland = !isWales;
         boolean isIntroDemotedOther = isIntroDemotedOtherTenancy(pcsCase.getTenancyLicence());
-        Set<ClaimGroundEntity> grounds = claim.getClaimGrounds();
-        boolean hasNoGrounds = grounds == null || grounds.isEmpty();
+        // Strip the "No grounds" sentinel (written when the claimant answered "No" to D9)
+        // before deriving any grounds-based flag: its category INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS
+        // contains "OTHER" (false-positives hasOtherGround) and its presence masks hasNoGrounds.
+        List<ClaimGroundEntity> grounds = realGrounds(claim.getClaimGrounds());
+        boolean hasNoGrounds = grounds.isEmpty();
         boolean hasOtherGround = anyGroundIsOther(grounds);
         boolean hasAbsoluteGround = anyGroundHasCategory(grounds, "ABSOLUTE");
         boolean hasWalesAsbGround = anyGroundHasCode(grounds, "ANTISOCIAL_BEHAVIOUR_S157");
@@ -129,7 +134,16 @@ public class ClaimPackPayloadBuilder {
             && INTRO_DEMOTED_OTHER_TYPES.contains(tenancy.getType());
     }
 
-    private static boolean anyGroundIsOther(Set<ClaimGroundEntity> grounds) {
+    private static List<ClaimGroundEntity> realGrounds(Collection<ClaimGroundEntity> grounds) {
+        if (grounds == null) {
+            return Collections.emptyList();
+        }
+        return grounds.stream()
+            .filter(g -> g.getCategory() != ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS)
+            .toList();
+    }
+
+    private static boolean anyGroundIsOther(Collection<ClaimGroundEntity> grounds) {
         if (grounds == null) {
             return false;
         }
@@ -143,14 +157,14 @@ public class ClaimPackPayloadBuilder {
      * WalesSecureClaimGroundService and WalesStandardClaimGroundService persist
      * {@code ANTISOCIAL_BEHAVIOUR_S157} as the code under a non-ASB category.
      */
-    private static boolean anyGroundHasCode(Set<ClaimGroundEntity> grounds, String code) {
+    private static boolean anyGroundHasCode(Collection<ClaimGroundEntity> grounds, String code) {
         if (grounds == null) {
             return false;
         }
         return grounds.stream().anyMatch(g -> code.equals(g.getCode()));
     }
 
-    private static boolean anyGroundHasCategory(Set<ClaimGroundEntity> grounds, String categorySubstring) {
+    private static boolean anyGroundHasCategory(Collection<ClaimGroundEntity> grounds, String categorySubstring) {
         if (grounds == null) {
             return false;
         }
@@ -340,9 +354,12 @@ public class ClaimPackPayloadBuilder {
         return rowBuilder.build();
     }
 
-    private void mapGrounds(Set<ClaimGroundEntity> grounds,
+    private void mapGrounds(Set<ClaimGroundEntity> allGrounds,
                             ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        if (grounds == null || grounds.isEmpty()) {
+        // Exclude the explicit "No grounds" sentinel so it never lists as a real ground (D10)
+        // and so an explicit-No answer reports hasGroundsYesNo = No (D9).
+        List<ClaimGroundEntity> grounds = realGrounds(allGrounds);
+        if (grounds.isEmpty()) {
             payloadBuilder.grounds(Collections.emptyList());
             payloadBuilder.groundsWithReasons(Collections.emptyList());
             payloadBuilder.hasGroundsYesNo(VerticalYesNo.NO.getLabel());
