@@ -188,7 +188,6 @@ public class ClaimEntity {
     @Column(updatable = false, nullable = false)
     private LocalDateTime claimSubmittedDate;
 
-    @Column(updatable = false, nullable = false)
     private LocalDateTime claimIssuedDate;
 
     @OneToOne(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
