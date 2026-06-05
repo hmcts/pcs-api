@@ -324,7 +324,7 @@ class ClaimResponseServiceTest {
 
     @Test
     void shouldUpdateAddressWhenClaimantDidNotProvideIt() {
-        // Given — Scenario B: claimant had no address, fallback to property, defendant provides their own
+        // Given
         final PossessionClaimResponse response = buildResponse(
             Party.builder().address(TEST_ADDRESS).build(),
             DefendantResponses.builder()
