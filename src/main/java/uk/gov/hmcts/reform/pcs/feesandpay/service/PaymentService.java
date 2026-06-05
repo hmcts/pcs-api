@@ -111,16 +111,17 @@ public class PaymentService {
 
     public CreateCardPaymentResponse createPaymentRequest(String serviceRequestReference,
                                                           CreateCardPaymentRequest createCardPaymentRequest) {
-        CardPaymentServiceRequestDTO paymentRequest = CardPaymentServiceRequestDTO.builder()
-            .amount(createCardPaymentRequest.getAmount())
-            .language(createCardPaymentRequest.getLanguage())
-            .returnUrl(createCardPaymentRequest.getReturnUrl())
-            .build();
 
         FeePaymentEntity feePaymentEntity = feePaymentRepository.findByServiceRequestReference(serviceRequestReference)
             .orElseThrow(
                 () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
             );
+
+        CardPaymentServiceRequestDTO paymentRequest = CardPaymentServiceRequestDTO.builder()
+            .amount(createCardPaymentRequest.getAmount())
+            .language(createCardPaymentRequest.getLanguage())
+            .returnUrl(createCardPaymentRequest.getReturnUrl())
+            .build();
 
         if (feePaymentEntity.getPaymentStatus() != null) {
             throw new IllegalStateException("Service request " + serviceRequestReference

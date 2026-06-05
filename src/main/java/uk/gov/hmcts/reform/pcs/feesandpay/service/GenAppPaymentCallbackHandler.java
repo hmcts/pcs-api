@@ -28,9 +28,9 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
 
         log.info("Handling callback for gen app payment for gen app ID {}", genAppId);
 
-        GenAppEntity genAppEntity = findGenAppEntity(genAppId);
 
         if (feePaymentEntity.getPaymentStatus() == PaymentStatus.PAID) {
+            GenAppEntity genAppEntity = findGenAppEntity(genAppId);
             if (genAppEntity.getState() != GenAppState.GEN_APP_ISSUED) {
                 genAppEntity.setState(GenAppState.GEN_APP_ISSUED);
                 long caseReference = genAppEntity.getPcsCase().getCaseReference();
@@ -41,8 +41,8 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
                 log.warn("Gen app {} was already in GEN_APP_ISSUED state. Ignoring payment callback", genAppId);
             }
         } else {
-            log.warn("The payment was not successful [{}] for gen app {} on case: {}",
-                     feePaymentEntity.getPaymentStatus(), genAppId, genAppEntity.getPcsCase().getCaseReference());
+            log.warn("The payment was not successful [{}] for gen app {} on case {}",
+                     feePaymentEntity.getPaymentStatus(), genAppId, paymentStatusCallback.getCcdCaseNumber());
         }
     }
 
