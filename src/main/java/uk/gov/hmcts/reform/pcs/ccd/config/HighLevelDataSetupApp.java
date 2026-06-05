@@ -31,6 +31,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         new CcdRoleConfig("fee-paid-judge", "PUBLIC"),
         new CcdRoleConfig("circuit-judge", "PUBLIC"),
         new CcdRoleConfig("leadership-judge", "PUBLIC"),
+        new CcdRoleConfig("pcs-system-update", "PUBLIC")
     };
 
 
@@ -79,12 +80,6 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     public void createRoleAssignments() {
         // Do not create role assignments.
         BeftaUtils.defaultLog("Will NOT create role assignments!");
-    }
-
-    @Override
-    protected boolean shouldTolerateDataSetupFailure() {
-        var env = getDataSetupEnvironment();
-        return CcdEnvironment.PERFTEST == env || CcdEnvironment.DEMO == env || CcdEnvironment.ITHC == env;
     }
 
     @Override

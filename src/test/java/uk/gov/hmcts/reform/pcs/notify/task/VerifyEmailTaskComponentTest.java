@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.service.notify.Notification;
 import uk.gov.service.notify.NotificationClient;
@@ -49,7 +49,7 @@ class VerifyEmailTaskComponentTest {
     private NotificationErrorHandler errorHandler;
 
     @Mock
-    private TaskInstance<EmailState> taskInstance;
+    private TaskInstance<SendEmailTaskData> taskInstance;
 
     @Mock
     private ExecutionContext executionContext;
@@ -59,7 +59,7 @@ class VerifyEmailTaskComponentTest {
 
     private final Duration statusCheckBackoffDelay = Duration.ofMinutes(2);
 
-    private EmailState emailState;
+    private SendEmailTaskData sendEmailTaskData;
     private final UUID dbNotificationId = UUID.randomUUID();
     private final String taskId = "verify-task-123";
     private final String notificationId = "notification-456";
@@ -78,7 +78,7 @@ class VerifyEmailTaskComponentTest {
 
         String templateId = "template-789";
         String emailAddress = "test@example.com";
-        emailState = EmailState.builder()
+        sendEmailTaskData = SendEmailTaskData.builder()
             .id(taskId)
             .dbNotificationId(dbNotificationId)
             .notificationId(notificationId)
@@ -87,7 +87,7 @@ class VerifyEmailTaskComponentTest {
             .personalisation(personalisation)
             .build();
 
-        when(taskInstance.getData()).thenReturn(emailState);
+        when(taskInstance.getData()).thenReturn(sendEmailTaskData);
         when(taskInstance.getId()).thenReturn(taskId);
     }
 
@@ -99,13 +99,13 @@ class VerifyEmailTaskComponentTest {
         @DisplayName("Should create task descriptor with correct name and type")
         void shouldCreateTaskDescriptorWithCorrectNameAndType() {
             assertThat(VerifyEmailTaskComponent.verifyEmailTask.getTaskName()).isEqualTo("verify-email-task");
-            assertThat(VerifyEmailTaskComponent.verifyEmailTask.getDataClass()).isEqualTo(EmailState.class);
+            assertThat(VerifyEmailTaskComponent.verifyEmailTask.getDataClass()).isEqualTo(SendEmailTaskData.class);
         }
 
         @Test
         @DisplayName("Should create verify email task bean")
         void shouldCreateVerifyEmailTaskBean() {
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
             assertThat(task).isNotNull();
         }
@@ -122,9 +122,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, deliveredStatus);
@@ -138,9 +138,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, deliveredStatus);
@@ -154,9 +154,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, deliveredStatus);
@@ -170,9 +170,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(originalStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, originalStatus);
@@ -192,9 +192,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(status);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
@@ -208,9 +208,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(failedStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
@@ -224,9 +224,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(pendingStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
@@ -240,9 +240,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(customStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
@@ -261,8 +261,8 @@ class VerifyEmailTaskComponentTest {
                 new RuntimeException());
             when(notificationClient.getNotificationById(notificationId)).thenThrow(exception);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
             verify(notificationClient).getNotificationById(notificationId);
             verify(errorHandler).handleFetchException(exception, notificationId);
@@ -276,8 +276,8 @@ class VerifyEmailTaskComponentTest {
                 new RuntimeException());
             when(notificationClient.getNotificationById(notificationId)).thenThrow(exception);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
             verify(notificationClient).getNotificationById(notificationId);
             verify(errorHandler).handleFetchException(exception, notificationId);
@@ -291,7 +291,7 @@ class VerifyEmailTaskComponentTest {
                 new RuntimeException());
             when(notificationClient.getNotificationById(notificationId)).thenThrow(exception);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
             task.execute(taskInstance, executionContext);
 
@@ -310,9 +310,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, deliveredStatus);
@@ -322,7 +322,7 @@ class VerifyEmailTaskComponentTest {
         @Test
         @DisplayName("Should handle email state with minimum required fields")
         void shouldHandleEmailStateWithMinimumRequiredFields() throws Exception {
-            EmailState minimalEmailState = EmailState.builder()
+            SendEmailTaskData minimalEmailState = SendEmailTaskData.builder()
                 .id(taskId)
                 .dbNotificationId(dbNotificationId)
                 .notificationId(notificationId)
@@ -333,9 +333,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, deliveredStatus);
@@ -346,7 +346,7 @@ class VerifyEmailTaskComponentTest {
         @DisplayName("Should handle different notification ID formats")
         void shouldHandleDifferentNotificationIdFormats() throws Exception {
             String uuidNotificationId = UUID.randomUUID().toString();
-            EmailState uuidEmailState = emailState.toBuilder()
+            SendEmailTaskData uuidEmailState = sendEmailTaskData.toBuilder()
                 .notificationId(uuidNotificationId)
                 .build();
             when(taskInstance.getData()).thenReturn(uuidEmailState);
@@ -355,9 +355,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(uuidNotificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(uuidNotificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, deliveredStatus);
@@ -372,7 +372,7 @@ class VerifyEmailTaskComponentTest {
         @Test
         @DisplayName("Should configure task with correct failure handlers")
         void shouldConfigureTaskWithCorrectFailureHandlers() {
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
             assertThat(task).isNotNull();
         }
@@ -388,7 +388,7 @@ class VerifyEmailTaskComponentTest {
                 Duration.ofMinutes(5)
             );
 
-            CustomTask<EmailState> task = component.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = component.verifyEmailTask();
             assertThat(task).isNotNull();
         }
     }
@@ -404,7 +404,7 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(originalDeliveredStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
             task.execute(taskInstance, executionContext);
 
@@ -418,7 +418,7 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(customStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
             task.execute(taskInstance, executionContext);
 
@@ -431,7 +431,7 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(null);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
             try {
                 task.execute(taskInstance, executionContext);
@@ -448,9 +448,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(emptyStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
@@ -464,7 +464,7 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(mixedCaseDelivered);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
             task.execute(taskInstance, executionContext);
 
@@ -483,9 +483,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, deliveredStatus);
@@ -499,8 +499,8 @@ class VerifyEmailTaskComponentTest {
                 new RuntimeException());
             when(notificationClient.getNotificationById(notificationId)).thenThrow(exception);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
             verify(notificationClient).getNotificationById(notificationId);
             verify(errorHandler).handleFetchException(exception, notificationId);
@@ -514,9 +514,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(failedStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
@@ -530,9 +530,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(mixedCaseDelivered);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, mixedCaseDelivered);
@@ -549,7 +549,7 @@ class VerifyEmailTaskComponentTest {
         void shouldHandleNotificationClientReturningNullNotification() throws Exception {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(null);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
             try {
                 task.execute(taskInstance, executionContext);
@@ -566,9 +566,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(mixedCaseStatus);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, mixedCaseStatus);
@@ -582,9 +582,9 @@ class VerifyEmailTaskComponentTest {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(statusWithSpaces);
 
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+            CustomTask<SendEmailTaskData> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            CompletionHandler<SendEmailTaskData> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());

@@ -7,5 +7,7 @@ export const home =
     findCaseTab: 'Find case',
     caseParties: 'Case Parties',
     caseNotes: 'Notes',
+    caseSummary: 'Summary',
+    caseDetails: 'Case Details',
     signOutButton: 'Sign out'
   }

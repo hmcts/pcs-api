@@ -155,6 +155,7 @@ notify:
     counterclaim-payment-required: 258081b1-786d-4c20-9793-b45c0a1b029b
     counterclaim-payment-success: 8d726681-78a7-4ed5-9201-4354bb04f8ad
     counterclaim-no-payment-required: a6a6e7ce-e47f-4a85-9d98-cc9c924bdb5e
+    make-a-claim-claim-saved-for-later: bf648abe-5a45-4cc2-8d5b-d1e817ace18b
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}
@@ -223,8 +224,8 @@ fees:
       amountOrVolume: 1
       keyword: SealWrit
   request:
-    max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
-    backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
+    max-retries: ${FEES_AND_PAY_TASK_MAX_RETRIES:5}
+    backoff-delay-seconds: ${FEES_AND_PAY_TASK_BACKOFF_DELAY_SECONDS:600s}
 
 access-code:
   hash-pins-enabled: ${HASH_PINS_ENABLED:false}
@@ -236,6 +237,16 @@ role-assignment:
   request:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}
     backoff-delay-seconds: ${ROLE_ASSIGNMENT_BACKOFF_DELAY_SECONDS:3600s}
+
+counter-claim-notification:
+  request:
+    max-retries: ${COUNTER_CLAIM_NOTIFICATION_MAX_RETRIES:5}
+    backoff-delay-seconds: ${COUNTER_CLAIM_NOTIFICATION_BACKOFF_DELAY_SECONDS:3600s}
+
+defendant-response-notification:
+  request:
+    max-retries: ${DEFENDANT_RESPONSE_NOTIFICAITON_MAX_RETRIES:5}
+    backoff-delay-seconds: ${DEFENDANT_RESPONSE_NOTIFICAITON_BACKOFF_DELAY_SECONDS:3600s}
 
 payments:
   api:
