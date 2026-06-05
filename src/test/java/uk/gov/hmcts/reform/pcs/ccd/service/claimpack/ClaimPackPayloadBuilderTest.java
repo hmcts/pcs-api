@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
@@ -36,6 +39,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -369,6 +373,26 @@ class ClaimPackPayloadBuilderTest {
     @Nested
     class ClaimDetailsShowFlags {
 
+        @ParameterizedTest
+        @MethodSource("countryGatedSections")
+        void countryOnlySectionsAreGatedByLegislativeCountry(LegislativeCountry country, boolean wales) {
+            ClaimPackFormPayload payload = builder.build(minimalCase(country));
+
+            // Wales-only sections.
+            assertThat(payload.isShowPcscSection()).isEqualTo(wales);
+            assertThat(payload.isShowRequiredDocumentsSection()).isEqualTo(wales);
+            assertThat(payload.isShowExemptLandlordQuestion()).isEqualTo(wales);
+            // England-only section.
+            assertThat(payload.isShowTenancyUploadedQuestion()).isEqualTo(!wales);
+        }
+
+        private static Stream<Arguments> countryGatedSections() {
+            return Stream.of(
+                Arguments.argumentSet("England", LegislativeCountry.ENGLAND, false),
+                Arguments.argumentSet("Wales", LegislativeCountry.WALES, true)
+            );
+        }
+
         @Test
         void englandIntroDemotedOtherWithOtherGround_descriptionAndWhyClaimingShown() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
@@ -640,29 +664,66 @@ class ClaimPackPayloadBuilderTest {
             assertThat(payload.isIntroDemotedOtherTenancy()).isFalse();
         }
 
-        @Test
-        void tenancyTypeAndRentFrequencyRenderHumanLabelsNotEnumNames() {
+        @ParameterizedTest
+        @MethodSource("tenancyTypeLabels")
+        void tenancyTypeRendersHumanLabelNotEnumName(LegislativeCountry country,
+                                                     CombinedLicenceType type, String expectedLabel) {
+            PcsCaseEntity pcsCase = minimalCase(country);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder().type(type).build());
+
+            assertThat(builder.build(pcsCase).getTenancyTypeLabel()).isEqualTo(expectedLabel);
+        }
+
+        @ParameterizedTest
+        @MethodSource("rentFrequencyDescriptions")
+        void rentFrequencyRendersHumanLabelNotEnumName(RentPaymentFrequency frequency, String expectedDescription) {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
-                .type(CombinedLicenceType.SECURE_TENANCY)
+                .type(CombinedLicenceType.ASSURED_TENANCY)
                 .rentAmount(new BigDecimal("500.00"))
-                .rentFrequency(RentPaymentFrequency.WEEKLY)
+                .rentFrequency(frequency)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
-
-            assertThat(payload.getTenancyTypeLabel()).isEqualTo("Secure tenancy");
-            assertThat(payload.getRentCalculatedDescription()).isEqualTo("£500.00 (Weekly)");
+            assertThat(builder.build(pcsCase).getRentCalculatedDescription()).isEqualTo(expectedDescription);
         }
 
         @Test
-        void walesContractTypeRendersHumanLabel() {
-            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+        void otherTenancyTypeAppendsTheFreeTextDetails() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
-                .type(CombinedLicenceType.STANDARD_CONTRACT)
+                .type(CombinedLicenceType.OTHER)
+                .otherTypeDetails("Lifetime tenancy")
                 .build());
 
-            assertThat(builder.build(pcsCase).getTenancyTypeLabel()).isEqualTo("Standard contract");
+            assertThat(builder.build(pcsCase).getTenancyTypeLabel()).isEqualTo("Other: Lifetime tenancy");
+        }
+
+        private static Stream<Arguments> tenancyTypeLabels() {
+            return Stream.of(
+                Arguments.argumentSet("England assured", LegislativeCountry.ENGLAND,
+                    CombinedLicenceType.ASSURED_TENANCY, "Assured tenancy"),
+                Arguments.argumentSet("England secure", LegislativeCountry.ENGLAND,
+                    CombinedLicenceType.SECURE_TENANCY, "Secure tenancy"),
+                Arguments.argumentSet("England introductory", LegislativeCountry.ENGLAND,
+                    CombinedLicenceType.INTRODUCTORY_TENANCY, "Introductory tenancy"),
+                Arguments.argumentSet("England flexible", LegislativeCountry.ENGLAND,
+                    CombinedLicenceType.FLEXIBLE_TENANCY, "Flexible tenancy"),
+                Arguments.argumentSet("England demoted", LegislativeCountry.ENGLAND,
+                    CombinedLicenceType.DEMOTED_TENANCY, "Demoted tenancy"),
+                Arguments.argumentSet("Wales secure contract", LegislativeCountry.WALES,
+                    CombinedLicenceType.SECURE_CONTRACT, "Secure contract"),
+                Arguments.argumentSet("Wales standard contract", LegislativeCountry.WALES,
+                    CombinedLicenceType.STANDARD_CONTRACT, "Standard contract")
+            );
+        }
+
+        private static Stream<Arguments> rentFrequencyDescriptions() {
+            return Stream.of(
+                Arguments.argumentSet("weekly", RentPaymentFrequency.WEEKLY, "£500.00 (Weekly)"),
+                Arguments.argumentSet("fortnightly", RentPaymentFrequency.FORTNIGHTLY, "£500.00 (Fortnightly)"),
+                Arguments.argumentSet("monthly", RentPaymentFrequency.MONTHLY, "£500.00 (Monthly)"),
+                Arguments.argumentSet("other", RentPaymentFrequency.OTHER, "£500.00 (Other)")
+            );
         }
 
         @Test
