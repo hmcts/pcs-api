@@ -101,6 +101,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
     @Mock
     private ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
+    @Mock
+    private uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackService claimPackService;
 
     @BeforeEach
     void setUp() {
@@ -114,7 +116,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, partyService, securityContextService,
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
-            moneyFormatter, resumePossessionClaimConfigurer, schedulingConfig
+            moneyFormatter, resumePossessionClaimConfigurer, schedulingConfig, claimPackService
         );
 
         setEventUnderTest(underTest);
