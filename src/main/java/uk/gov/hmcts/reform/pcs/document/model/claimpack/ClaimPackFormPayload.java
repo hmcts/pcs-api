@@ -110,6 +110,8 @@ public class ClaimPackFormPayload implements FormPayload {
     private boolean showAsbSection;
     // Title-case "Yes"/"No" rendered directly by the template.
     private String asbAllegedYesNo;
+    // Gate for the D16 Yes/No row — hide when unanswered (parity with the D18/D20 null-gates).
+    private boolean showAsbAlleged;
     private boolean showAsbDetails;
     private String asbDetailsFreeText;
     private String illegalUseAllegedYesNo;

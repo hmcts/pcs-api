@@ -517,6 +517,8 @@ public class ClaimPackPayloadBuilder {
                                ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
         VerticalYesNo asbEnum = asb.getAntisocialBehaviour();
         payloadBuilder.asbAllegedYesNo(toLabel(asbEnum));
+        // Hide the D16 Yes/No row when unanswered — matches the null-gate on its D18/D20 siblings.
+        payloadBuilder.showAsbAlleged(asbEnum != null);
         payloadBuilder.showAsbDetails(isYes(asbEnum));
         payloadBuilder.asbDetailsFreeText(asb.getAntisocialBehaviourDetails());
 

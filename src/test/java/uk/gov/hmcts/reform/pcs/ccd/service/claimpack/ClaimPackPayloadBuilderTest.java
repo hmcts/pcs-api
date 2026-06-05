@@ -1075,6 +1075,22 @@ class ClaimPackPayloadBuilderTest {
             assertThat(payload.getOtherProhibitedAllegedYesNo()).isEqualTo("Yes");
             assertThat(payload.isShowOtherProhibitedDetails()).isTrue();
         }
+
+        @Test
+        void asbAllegedRowGatedOnAnswerPresence() {
+            // D16 Yes/No row hides when unanswered (parity with D18/D20 null-gates).
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setAsbProhibitedConductEntity(AsbProhibitedConductEntity.builder()
+                .antisocialBehaviour(VerticalYesNo.NO)
+                .build());
+
+            assertThat(builder.build(pcsCase).isShowAsbAlleged()).isTrue();
+
+            claim.setAsbProhibitedConductEntity(AsbProhibitedConductEntity.builder().build());
+
+            assertThat(builder.build(pcsCase).isShowAsbAlleged()).isFalse();
+        }
     }
 
     @Nested
