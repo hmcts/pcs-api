@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -159,7 +158,9 @@ public class ClaimPackFormPayload implements FormPayload {
     /** Used to drive R-METHOD-* gates inside the template. */
     private NoticeServiceMethod methodOfService;
     private String methodOfServiceLabel;
-    private LocalDate noticeServedOn;
+    // Pre-formatted "10 January 2024" — derived per serving method in the builder (date-only
+    // methods use noticeDate; date+time methods derive the date from noticeDateTime).
+    private String noticeServedOn;
     // Per-value-presence show flags for optional notice rows (Excel mapping 37–42).
     private boolean showNoticeServedOn;
     private boolean showNoticeServedTime;
@@ -167,12 +168,18 @@ public class ClaimPackFormPayload implements FormPayload {
     private boolean showNoticeServedToEmail;
     private boolean showNoticeOtherElectronicDetails;
     private boolean showNoticeOtherMeansDetails;
-    private LocalTime noticeServedTime;
+    // Pre-formatted "2:30pm" — only populated for the date+time serving methods.
+    private String noticeServedTime;
     /** Four shared-storage detail fields — only one is populated per render, driven by methodOfService. */
     private String noticeLeftWithName;
     private String noticeServedToEmail;
     private String noticeOtherElectronicDetails;
     private String noticeOtherMeansDetails;
+    // Whole-row gate (<<cr_showNoticeUploadQuestion>>) for the "can you upload the notice?" rows
+    // (R43/R44). Currently always false — no entity captures the answer — so the row is HIDDEN
+    // rather than printing an orphaned label with a blank value. Set to (answer present) once a
+    // source field is added.
+    private boolean showNoticeUploadQuestion;
     private VerticalYesNo noticeUploadedYesNo;
     // Complementary booleans drive <<cs_noticeUploadedYes>>/<<cs_noticeUploadedNo>> branches.
     private boolean noticeUploadedYes;
@@ -182,7 +189,8 @@ public class ClaimPackFormPayload implements FormPayload {
 
     // ---------- §6.3.12 Tenancy / licence ----------
     private String tenancyTypeLabel;
-    private LocalDate tenancyStartDate;
+    // Pre-formatted "1 April 2022" (consistent with the served-notice date).
+    private String tenancyStartDate;
     // Show flag — render the start-date row only if a date was provided.
     private boolean showTenancyStartDate;
     private VerticalYesNo tenancyUploadedYesNo;
@@ -261,6 +269,17 @@ public class ClaimPackFormPayload implements FormPayload {
      *  {@code <<cs_signedByLegalRep>>} wraps the §6.3.21 block. Exactly one renders. */
     private boolean signedByLegalRep;
     private boolean signedByClaimant;
+    /**
+     * Signer name and position. The labels "Full name" / "Position or office held" are STATIC
+     * text in the Docmosis template, not payload data — these fields carry only the values.
+     *
+     * <p><b>Template note:</b> the template MUST render these as a fixed two-column label|value
+     * table row (label cell | {@code <<sotFullName>>} cell), matching every other question/answer
+     * row, with the conditional gate wrapping the whole row. Do NOT revert the signer rows to
+     * tabs, manual spaces, or free text: without the table the values render bare ("John" /
+     * "Solicitor" with no labels, left of the value column), which is the misalignment bug this
+     * layout fixes.</p>
+     */
     private String sotFullName;
     /** Legal-rep variant only. */
     private String sotFirmName;

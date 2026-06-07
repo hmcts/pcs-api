@@ -78,20 +78,25 @@ class ClaimPackPartyMapper {
     // (the claim form can't show a defendant address as "unknown").
     private ClaimPackDefendantRow toDefendantRow(PartyEntity defendant, int number, AddressEntity propertyAddress) {
         AddressEntity address = pickAddressOrFallback(defendant.getAddress(), propertyAddress);
-        return ClaimPackDefendantRow.builder()
+        ClaimPackDefendantRow.ClaimPackDefendantRowBuilder rowBuilder = ClaimPackDefendantRow.builder()
             .defendantNumber(number)
             .heading(formatDefendantHeading(number))
-            .displayName(derivePartyDisplayName(defendant))
-            .addressLine1(address.getAddressLine1())
-            .addressLine2(address.getAddressLine2())
-            .addressLine3(address.getAddressLine3())
-            .postTown(address.getPostTown())
-            .county(address.getCounty())
-            .postcode(address.getPostcode())
-            .hasAddressLine2(isPopulated(address.getAddressLine2()))
-            .hasAddressLine3(isPopulated(address.getAddressLine3()))
-            .hasCounty(isPopulated(address.getCounty()))
-            .build();
+            .displayName(derivePartyDisplayName(defendant));
+        // Both the defendant's own address and the property fallback can be absent — guard the
+        // dereference (the address rows simply don't render rather than NPE).
+        if (address != null) {
+            rowBuilder
+                .addressLine1(address.getAddressLine1())
+                .addressLine2(address.getAddressLine2())
+                .addressLine3(address.getAddressLine3())
+                .postTown(address.getPostTown())
+                .county(address.getCounty())
+                .postcode(address.getPostcode())
+                .hasAddressLine2(isPopulated(address.getAddressLine2()))
+                .hasAddressLine3(isPopulated(address.getAddressLine3()))
+                .hasCounty(isPopulated(address.getCounty()));
+        }
+        return rowBuilder.build();
     }
 
     // Each underlessee/mortgagee renders either a full address or a single "Address unknown" line.

@@ -14,6 +14,9 @@ import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackAddress;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 /**
@@ -24,6 +27,10 @@ final class ClaimPackFormatter {
 
     private ClaimPackFormatter() {
     }
+
+    // Long display date / served-notice time — "10 January 2024" / "2:30pm".
+    private static final DateTimeFormatter LONG_DATE_FORMAT = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
+    private static final DateTimeFormatter NOTICE_TIME_FORMAT = DateTimeFormatter.ofPattern("h:mma", Locale.UK);
 
     static boolean isPopulated(String text) {
         return text != null && !text.isBlank();
@@ -60,6 +67,16 @@ final class ClaimPackFormatter {
             return null;
         }
         return NumberFormat.getCurrencyInstance(Locale.UK).format(amount);
+    }
+
+    // Long display date, e.g. "10 January 2024" (served-notice date, tenancy start date). Null-safe.
+    static String formatLongDate(LocalDate date) {
+        return date == null ? null : date.format(LONG_DATE_FORMAT);
+    }
+
+    // Served-notice time, e.g. "2:30pm". Null-safe.
+    static String formatNoticeTime(LocalTime time) {
+        return time == null ? null : time.format(NOTICE_TIME_FORMAT).toLowerCase(Locale.UK);
     }
 
     static String formatGroundLabel(ClaimGroundEntity ground) {

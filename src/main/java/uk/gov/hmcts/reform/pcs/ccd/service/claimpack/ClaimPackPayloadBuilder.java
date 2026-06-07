@@ -23,6 +23,8 @@ import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackGround;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +34,8 @@ import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatGbp;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatGroundLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatLongDate;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatNoticeTime;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatRentDescription;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatTenancyLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isNo;
@@ -125,8 +129,11 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.showRequiredDocumentsSection(isWales);
         // D6/D7 exempt-landlord question is Housing (Wales) Act 2014 — Wales-only.
         payloadBuilder.showExemptLandlordQuestion(isWales);
-        // D49/D50 tenancy-copy rows are England-only (Wales never captures the answer).
-        payloadBuilder.showTenancyUploadedQuestion(isEngland);
+        // D49/D50 tenancy-copy rows: England-only (Wales never captures it) AND only when the
+        // claimant actually answered — hide the row rather than print a blank label when unanswered.
+        TenancyLicenceEntity tenancyLicence = pcsCase.getTenancyLicence();
+        boolean tenancyCopyAnswered = tenancyLicence != null && tenancyLicence.getHasCopyOfTenancyLicence() != null;
+        payloadBuilder.showTenancyUploadedQuestion(isEngland && tenancyCopyAnswered);
     }
 
     private static boolean isWalesJourney(PcsCaseEntity pcsCase) {
@@ -290,9 +297,21 @@ public class ClaimPackPayloadBuilder {
         // Positive boolean — gates the "Method of service onwards" sub-table.
         payloadBuilder.noticeServedYes(isYes(noticeServedEnum));
 
-        // Optional-value-presence show-flags (Excel mapping rows 37-42).
-        payloadBuilder.showNoticeServedOn(notice.getNoticeDate() != null);
-        payloadBuilder.showNoticeServedTime(notice.getNoticeDateTime() != null);
+        // Date/time the notice was served (Excel R37/R38). Per serving method the entity stores
+        // EITHER a date-only value (FIRST_CLASS_POST / DELIVERED_PERMITTED_PLACE → noticeDate) OR a
+        // date+time (PERSONALLY_HANDED / EMAIL / OTHER_ELECTRONIC / OTHER → noticeDateTime). Derive
+        // the served DATE from whichever field holds it (so it renders for every method, not only
+        // the date-only ones), and the served TIME only when a date+time was captured.
+        LocalDate servedDate = notice.getNoticeDate() != null
+            ? notice.getNoticeDate()
+            : (notice.getNoticeDateTime() != null ? notice.getNoticeDateTime().toLocalDate() : null);
+        LocalTime servedTime = notice.getNoticeDateTime() != null
+            ? notice.getNoticeDateTime().toLocalTime()
+            : null;
+        payloadBuilder.showNoticeServedOn(servedDate != null);
+        payloadBuilder.noticeServedOn(formatLongDate(servedDate));
+        payloadBuilder.showNoticeServedTime(servedTime != null);
+        payloadBuilder.noticeServedTime(formatNoticeTime(servedTime));
         payloadBuilder.noticeNotServedReason(notice.getNoticeStatement());
         payloadBuilder.noticeType(notice.getNoticeType());
 
@@ -300,11 +319,6 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.methodOfService(method);
         if (method != null) {
             payloadBuilder.methodOfServiceLabel(method.getLabel());
-        }
-
-        payloadBuilder.noticeServedOn(notice.getNoticeDate());
-        if (notice.getNoticeDateTime() != null) {
-            payloadBuilder.noticeServedTime(notice.getNoticeDateTime().toLocalTime());
         }
 
         routeNoticeDetailByMethod(method, notice.getNoticeDetails(), payloadBuilder);
@@ -341,8 +355,11 @@ public class ClaimPackPayloadBuilder {
         }
     }
 
-    // The "can you upload the notice?" answer has no data source yet, so neither branch renders.
+    // The "can you upload the notice?" answer has no data source yet — hide the whole row (rather
+    // than printing a label with a blank value). Flip showNoticeUploadQuestion to the answer's
+    // presence once an entity field exists.
     private void clearUnsourcedNoticeUploadFlags(ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+        payloadBuilder.showNoticeUploadQuestion(false);
         payloadBuilder.noticeUploadedYes(false);
         payloadBuilder.noticeUploadedNo(false);
     }
@@ -356,7 +373,7 @@ public class ClaimPackPayloadBuilder {
             payloadBuilder.isIntroDemotedOtherTenancy(INTRO_DEMOTED_OTHER_TYPES.contains(tenancy.getType()));
             payloadBuilder.tenancyTypeLabel(formatTenancyLabel(tenancy));
         }
-        payloadBuilder.tenancyStartDate(tenancy.getStartDate());
+        payloadBuilder.tenancyStartDate(formatLongDate(tenancy.getStartDate()));
         payloadBuilder.showTenancyStartDate(tenancy.getStartDate() != null);
         VerticalYesNo tenancyUploaded = tenancy.getHasCopyOfTenancyLicence();
         payloadBuilder.tenancyUploadedYesNo(tenancyUploaded);

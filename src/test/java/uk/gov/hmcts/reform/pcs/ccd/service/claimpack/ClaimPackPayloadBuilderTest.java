@@ -215,6 +215,24 @@ class ClaimPackPayloadBuilderTest {
         }
 
         @Test
+        void defendantWithNoAddressAndNoPropertyAddressDoesNotThrow() {
+            // Defensive: both the defendant's own address and the property fallback can be absent.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setPropertyAddress(null);
+            attach(pcsCase, party("A", "Owner", VerticalYesNo.YES, address("1 High St")),
+                PartyRole.CLAIMANT, 1);
+            attach(pcsCase, party("Bob", "Tenant", VerticalYesNo.YES, null),
+                PartyRole.DEFENDANT, 1);
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            ClaimPackDefendantRow row = payload.getDefendants().getFirst();
+            assertThat(row.getDisplayName()).isEqualTo("Bob Tenant");
+            assertThat(row.getAddressLine1()).isNull();
+            assertThat(row.isHasAddressLine2()).isFalse();
+        }
+
+        @Test
         void defendantHeadingsFollowAc06Sequence() {
             // AC06: After "Defendant 1 details" the next sections must be
             // "Additional defendant 1 details", "Additional defendant 2 details", … sequentially.
@@ -382,8 +400,7 @@ class ClaimPackPayloadBuilderTest {
             assertThat(payload.isShowPcscSection()).isEqualTo(wales);
             assertThat(payload.isShowRequiredDocumentsSection()).isEqualTo(wales);
             assertThat(payload.isShowExemptLandlordQuestion()).isEqualTo(wales);
-            // England-only section.
-            assertThat(payload.isShowTenancyUploadedQuestion()).isEqualTo(!wales);
+            // (showTenancyUploadedQuestion is England-only AND answer-gated — covered separately.)
         }
 
         private static Stream<Arguments> countryGatedSections() {
@@ -647,7 +664,7 @@ class ClaimPackPayloadBuilderTest {
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isIntroDemotedOtherTenancy()).isTrue();
-            assertThat(payload.getTenancyStartDate()).isEqualTo(LocalDate.of(2024, 1, 1));
+            assertThat(payload.getTenancyStartDate()).isEqualTo("1 January 2024");
             assertThat(payload.getRentAmount()).isEqualTo("£100.00");
         }
 
@@ -742,17 +759,37 @@ class ClaimPackPayloadBuilderTest {
         }
 
         @Test
-        void tenancyUploadedQuestionShownForEnglandHiddenForWales() {
-            // D49/D50 are England-only (Cook [35]/[36]); Wales never captures the answer.
+        void tenancyUploadedQuestionShownForEnglandWhenAnswered() {
+            // D49/D50 are England-only (Cook [35]/[36]); shown only when the claimant answered.
             PcsCaseEntity england = minimalCase(LegislativeCountry.ENGLAND);
             england.setTenancyLicence(TenancyLicenceEntity.builder()
-                .type(CombinedLicenceType.ASSURED_TENANCY).build());
+                .type(CombinedLicenceType.ASSURED_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.YES).build());
             assertThat(builder.build(england).isShowTenancyUploadedQuestion()).isTrue();
 
             PcsCaseEntity wales = minimalCase(LegislativeCountry.WALES);
             wales.setTenancyLicence(TenancyLicenceEntity.builder()
-                .type(CombinedLicenceType.SECURE_CONTRACT).build());
+                .type(CombinedLicenceType.SECURE_CONTRACT)
+                .hasCopyOfTenancyLicence(VerticalYesNo.YES).build());
             assertThat(builder.build(wales).isShowTenancyUploadedQuestion()).isFalse();
+        }
+
+        @Test
+        void tenancyUploadedQuestionHiddenWhenUnanswered() {
+            // Hide the row (don't print a blank label) when the England claimant didn't answer.
+            PcsCaseEntity england = minimalCase(LegislativeCountry.ENGLAND);
+            england.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.ASSURED_TENANCY).build());  // no hasCopyOfTenancyLicence
+            assertThat(builder.build(england).isShowTenancyUploadedQuestion()).isFalse();
+        }
+
+        @Test
+        void noticeUploadQuestionHiddenWhileUnsourced() {
+            // R43/R44 has no entity source yet → row hidden, not a blank label.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES).build());
+            assertThat(builder.build(pcsCase).isShowNoticeUploadQuestion()).isFalse();
         }
 
         @Test
@@ -976,7 +1013,7 @@ class ClaimPackPayloadBuilderTest {
             ClaimPackFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowTenancyStartDate()).isTrue();
-            assertThat(payload.getTenancyStartDate()).isEqualTo(LocalDate.of(2024, 1, 1));
+            assertThat(payload.getTenancyStartDate()).isEqualTo("1 January 2024");
         }
 
         @Test
@@ -1513,6 +1550,44 @@ class ClaimPackPayloadBuilderTest {
             assertThat(payload.isShowNoticeServedToEmail()).isFalse();
             assertThat(payload.isShowNoticeOtherElectronicDetails()).isFalse();
             assertThat(payload.isShowNoticeOtherMeansDetails()).isFalse();
+        }
+
+        @Test
+        void dateOnlyMethodRendersFormattedDateAndNoTime() {
+            // FIRST_CLASS_POST / DELIVERED_PERMITTED_PLACE store a date-only value (noticeDate).
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .servingMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                .noticeDate(LocalDate.of(2024, 1, 10))
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowNoticeServedOn()).isTrue();
+            assertThat(payload.getNoticeServedOn()).isEqualTo("10 January 2024");
+            assertThat(payload.isShowNoticeServedTime()).isFalse();
+            assertThat(payload.getNoticeServedTime()).isNull();
+        }
+
+        @Test
+        void dateTimeMethodRendersBothFormattedDateAndTime() {
+            // Regression: PERSONALLY_HANDED / EMAIL / OTHER_ELECTRONIC / OTHER store a date+time
+            // (noticeDateTime). The served DATE must still render — it was previously dropped
+            // because the date was sourced only from noticeDate (null for these methods).
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setNoticeOfPossession(NoticeOfPossessionEntity.builder()
+                .noticeServed(YesOrNo.YES)
+                .servingMethod(NoticeServiceMethod.PERSONALLY_HANDED)
+                .noticeDateTime(LocalDateTime.of(2024, 1, 10, 14, 30))
+                .build());
+
+            ClaimPackFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowNoticeServedOn()).isTrue();
+            assertThat(payload.getNoticeServedOn()).isEqualTo("10 January 2024");
+            assertThat(payload.isShowNoticeServedTime()).isTrue();
+            assertThat(payload.getNoticeServedTime()).isEqualTo("2:30pm");
         }
     }
 
