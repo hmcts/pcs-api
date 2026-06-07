@@ -5,7 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.PossessionGroundLabelResolver;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -80,7 +80,7 @@ final class ClaimPackFormatter {
     }
 
     static String formatGroundLabel(ClaimGroundEntity ground) {
-        return PossessionGroundLabelResolver.label(ground.getCategory(), ground.getCode());
+        return ClaimGroundSummary.labelFor(ground.getCategory(), ground.getCode());
     }
 
     static ClaimPackAddress toClaimPackAddress(AddressEntity address) {

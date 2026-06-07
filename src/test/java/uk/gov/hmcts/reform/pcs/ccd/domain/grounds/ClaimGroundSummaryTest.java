@@ -17,28 +17,28 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PossessionGroundLabelResolverTest {
+class ClaimGroundSummaryTest {
 
     @ParameterizedTest
     @MethodSource("allGroundCodes")
     void resolvesEveryGroundCodeToItsHumanLabel(ClaimGroundCategory category, String code, String expectedLabel) {
-        assertThat(PossessionGroundLabelResolver.label(category, code)).isEqualTo(expectedLabel);
+        assertThat(ClaimGroundSummary.labelFor(category, code)).isEqualTo(expectedLabel);
     }
 
     @Test
     void returnsRawCodeWhenCategoryNull() {
-        assertThat(PossessionGroundLabelResolver.label(null, "SERIOUS_RENT_ARREARS_GROUND8"))
+        assertThat(ClaimGroundSummary.labelFor(null, "SERIOUS_RENT_ARREARS_GROUND8"))
             .isEqualTo("SERIOUS_RENT_ARREARS_GROUND8");
     }
 
     @Test
     void returnsNullWhenCodeNull() {
-        assertThat(PossessionGroundLabelResolver.label(ClaimGroundCategory.ASSURED_MANDATORY, null)).isNull();
+        assertThat(ClaimGroundSummary.labelFor(ClaimGroundCategory.ASSURED_MANDATORY, null)).isNull();
     }
 
     @Test
     void fallsBackToRawCodeWhenCodeUnknownForCategory() {
-        assertThat(PossessionGroundLabelResolver.label(ClaimGroundCategory.ASSURED_MANDATORY, "NOT_A_REAL_CODE"))
+        assertThat(ClaimGroundSummary.labelFor(ClaimGroundCategory.ASSURED_MANDATORY, "NOT_A_REAL_CODE"))
             .isEqualTo("NOT_A_REAL_CODE");
     }
 
