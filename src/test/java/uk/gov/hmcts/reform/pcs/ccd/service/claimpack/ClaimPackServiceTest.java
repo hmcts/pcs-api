@@ -50,7 +50,7 @@ class ClaimPackServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(loaded);
         when(loaded.getClaims()).thenReturn(List.of(claim));
-        when(claim.getSubmissionDocument()).thenReturn(null);
+        when(claim.getClaimPackDocument()).thenReturn(null);
         when(payloadBuilder.build(loaded)).thenReturn(payload);
         when(documentGenerator.generate(payload)).thenReturn(DM_STORE_URL);
         when(documentImportService.addDocumentToCase(
@@ -58,14 +58,14 @@ class ClaimPackServiceTest {
 
         claimPackService.generateAndAttach(CASE_REFERENCE);
 
-        // load → build → generate → store-in-CDAM → attach-to-claim, in order.
+        // load, build, generate, store, then attach, in order.
         InOrder order = inOrder(pcsCaseService, payloadBuilder, documentGenerator, documentImportService, claim);
         order.verify(pcsCaseService).loadCase(CASE_REFERENCE);
         order.verify(payloadBuilder).build(loaded);
         order.verify(documentGenerator).generate(payload);
         order.verify(documentImportService)
             .addDocumentToCase(CASE_REFERENCE, DM_STORE_URL, CaseFileCategory.STATEMENTS_OF_CASE);
-        order.verify(claim).setSubmissionDocument(document);
+        order.verify(claim).setClaimPackDocument(document);
     }
 
     @Test
@@ -74,12 +74,12 @@ class ClaimPackServiceTest {
         PcsCaseEntity loaded = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(loaded);
         when(loaded.getClaims()).thenReturn(List.of(claim));
-        when(claim.getSubmissionDocument()).thenReturn(DocumentEntity.builder().build());
+        when(claim.getClaimPackDocument()).thenReturn(DocumentEntity.builder().build());
 
         claimPackService.generateAndAttach(CASE_REFERENCE);
 
-        // Idempotency (§3.1): no render, no store, no second attach.
+        // Already attached: no render, no store, no second attach.
         verifyNoInteractions(payloadBuilder, documentGenerator, documentImportService);
-        verify(claim, never()).setSubmissionDocument(org.mockito.ArgumentMatchers.any());
+        verify(claim, never()).setClaimPackDocument(org.mockito.ArgumentMatchers.any());
     }
 }

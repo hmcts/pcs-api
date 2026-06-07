@@ -194,8 +194,8 @@ public class ClaimEntity {
 
     // The generated claim pack PDF, attached once payment succeeds and the document is rendered.
     @OneToOne(cascade = ALL, orphanRemoval = true)
-    @JoinColumn(name = "submission_document_id")
-    private DocumentEntity submissionDocument;
+    @JoinColumn(name = "claim_pack_document_id")
+    private DocumentEntity claimPackDocument;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {

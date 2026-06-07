@@ -47,7 +47,7 @@ public class ClaimPackService {
     public void generateAndAttach(long caseReference) {
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
         ClaimEntity claim = pcsCase.getClaims().getFirst();
-        if (claim.getSubmissionDocument() != null) {
+        if (claim.getClaimPackDocument() != null) {
             log.info("Claim pack already attached for case {}, skipping", caseReference);
             return;
         }
@@ -56,7 +56,7 @@ public class ClaimPackService {
         String dmStoreUrl = documentGenerator.generate(payload);
         DocumentEntity document = documentImportService.addDocumentToCase(
             caseReference, dmStoreUrl, CaseFileCategory.STATEMENTS_OF_CASE);
-        claim.setSubmissionDocument(document);
+        claim.setClaimPackDocument(document);
         log.info("Generated and attached claim pack for case {}: {}", caseReference, dmStoreUrl);
     }
 
