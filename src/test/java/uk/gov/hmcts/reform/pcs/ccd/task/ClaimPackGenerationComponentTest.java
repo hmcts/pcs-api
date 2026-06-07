@@ -61,12 +61,11 @@ class ClaimPackGenerationComponentTest {
     void successfulExecutionReturnsOnCompleteRemove() {
         ClaimPackTaskData data = ClaimPackTaskData.builder().caseReference("1234567812345678").build();
         when(taskInstance.getData()).thenReturn(data);
-        when(claimPackService.generateAndRender(1234567812345678L)).thenReturn("https://dm-store/abc");
 
         CustomTask<ClaimPackTaskData> task = component.claimPackGenerationTask();
         CompletionHandler<ClaimPackTaskData> result = task.execute(taskInstance, executionContext);
 
-        verify(claimPackService).generateAndRender(1234567812345678L);
+        verify(claimPackService).generateAndAttach(1234567812345678L);
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
 
@@ -76,12 +75,12 @@ class ClaimPackGenerationComponentTest {
         ClaimPackTaskData data = ClaimPackTaskData.builder().caseReference("999").build();
         when(taskInstance.getData()).thenReturn(data);
         when(executionContext.getExecution()).thenReturn(execution);
-        doThrow(mock(RuntimeException.class)).when(claimPackService).generateAndRender(999L);
+        doThrow(mock(RuntimeException.class)).when(claimPackService).generateAndAttach(999L);
 
         CustomTask<ClaimPackTaskData> task = component.claimPackGenerationTask();
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
-        verify(claimPackService).generateAndRender(999L);
+        verify(claimPackService).generateAndAttach(999L);
     }
 }

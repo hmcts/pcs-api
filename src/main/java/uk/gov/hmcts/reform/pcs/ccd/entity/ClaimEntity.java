@@ -192,6 +192,12 @@ public class ClaimEntity {
     @JsonManagedReference
     private FeePaymentEntity feePayment;
 
+    // The generated claim pack PDF (stored in CDAM/dm-store), attached after a successful
+    // payment+render. Owning side — mirrors GenAppEntity.submissionDocument.
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "submission_document_id")
+    private DocumentEntity submissionDocument;
+
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
             this.asbProhibitedConductEntity.setClaim(null);

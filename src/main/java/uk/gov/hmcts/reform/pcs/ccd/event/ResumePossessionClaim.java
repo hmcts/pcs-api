@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -71,10 +70,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final MoneyFormatter moneyFormatter;
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     private final SchedulingConfig schedulingConfig;
-    // TEMPORARY (HDPI-6478): synchronous claim-pack render inside submitClaim() for local
-    // PDF testing — bypasses MakeAClaimPaymentCallbackHandler → ClaimPackScheduler chain.
-    // Revert via `git revert <sha>` once payment-callback flow is exercised in PR/AAT.
-    private final ClaimPackService claimPackService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -179,15 +174,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         pcsCaseService.createMainClaimOnCase(caseReference, pcsCase);
 
-        // TEMPORARY (HDPI-6478): render claim pack inline so testing-support/create-case
-        // produces a PDF URL in the logs without waiting for payment + scheduler.
-        // Failure is logged, not propagated — submit must still succeed.
-        try {
-            String url = claimPackService.generateAndRender(caseReference);
-            log.info("[TEST-ONLY] Claim pack rendered inline for case {}: {}", caseReference, url);
-        } catch (Exception e) {
-            log.error("[TEST-ONLY] Claim pack render failed for case {}", caseReference, e);
-        }
+        // Claim pack is generated via the real path: payment PAID callback → ClaimPackScheduler →
+        // generateAndAttach. (Temp inline-render hook removed for end-to-end-with-payment testing.)
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 

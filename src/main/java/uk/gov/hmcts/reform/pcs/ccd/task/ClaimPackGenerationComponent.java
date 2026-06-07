@@ -62,8 +62,8 @@ public class ClaimPackGenerationComponent {
                 log.debug("Starting claim pack generation for case: {}", caseReference);
 
                 try {
-                    String dmStoreUrl = claimPackService.generateAndRender(caseReference);
-                    log.info("Claim pack generated for case {} → {}", caseReference, dmStoreUrl);
+                    claimPackService.generateAndAttach(caseReference);
+                    log.info("Claim pack generated and attached for case {}", caseReference);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     log.error("Claim pack generation failed for case: {}. Attempt {}/{}",
