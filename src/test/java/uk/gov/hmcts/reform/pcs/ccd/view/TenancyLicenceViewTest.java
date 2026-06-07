@@ -7,17 +7,20 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -70,6 +73,13 @@ class TenancyLicenceViewTest {
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
         when(tenancyLicenceEntity.getHasCopyOfTenancyLicence()).thenReturn(hasCopyOfTenancyLicence);
         when(tenancyLicenceEntity.getReasonsForNoTenancyLicence()).thenReturn(reasonsForNoTenancyLicence);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+            List.of(
+                DocumentEntity.builder()
+                    .type(DocumentType.TENANCY_LICENCE)
+                    .build()
+            )
+        );
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -88,6 +98,7 @@ class TenancyLicenceViewTest {
         assertThat(tenancyLicenceDetails.getHasCopyOfTenancyLicence()).isEqualTo(hasCopyOfTenancyLicence);
         assertThat(tenancyLicenceDetails.getReasonsForNoTenancyLicenceDocuments())
             .isEqualTo(reasonsForNoTenancyLicence);
+        assertThat(tenancyLicenceDetails.getTenancyLicenceDocuments()).hasSize(1);
     }
 
     @Test
