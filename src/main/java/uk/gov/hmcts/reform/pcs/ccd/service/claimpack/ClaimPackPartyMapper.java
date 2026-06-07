@@ -82,8 +82,8 @@ class ClaimPackPartyMapper {
             .defendantNumber(number)
             .heading(formatDefendantHeading(number))
             .displayName(derivePartyDisplayName(defendant));
-        // Both the defendant's own address and the property fallback can be absent — guard the
-        // dereference (the address rows simply don't render rather than NPE).
+        // Both the defendant's own address and the property fallback can be absent, so guard the
+        // dereference; the address rows then don't render instead of throwing.
         if (address != null) {
             rowBuilder
                 .addressLine1(address.getAddressLine1())

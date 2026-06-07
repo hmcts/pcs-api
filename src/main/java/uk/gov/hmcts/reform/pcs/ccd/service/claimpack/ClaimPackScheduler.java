@@ -9,13 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.task.ClaimPackGenerationComponent;
 import java.time.Instant;
 
 /**
- * Schedules the claim-pack-generation db-scheduler task. Producer-side gate for the §3.1
- * invariant — "a claim pack exists for a case if and only if the fee payment succeeded,
- * and at most one pack per case".
+ * Schedules the claim-pack-generation task once a fee payment has succeeded.
  *
- * <p>The case reference is used as the db-scheduler <strong>instance id</strong> (not a random
- * UUID), so {@code scheduleIfNotExists} naturally dedupes a re-fired payment callback — only the
- * first call inserts a row; subsequent calls for the same case are no-ops.</p>
+ * <p>The case reference is used as the db-scheduler instance id, so {@code scheduleIfNotExists}
+ * only inserts on the first call; a re-fired payment callback for the same case is a no-op.</p>
  */
 @Component
 @Slf4j
@@ -43,8 +40,7 @@ public class ClaimPackScheduler {
         if (scheduled) {
             log.info("Scheduled claim pack generation for case {}", caseReference);
         } else {
-            log.info("Claim pack generation already scheduled for case {} — no-op (re-fired callback?)",
-                     caseReference);
+            log.info("Claim pack generation already scheduled for case {}, skipping", caseReference);
         }
     }
 }

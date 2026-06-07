@@ -7,11 +7,11 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 
 /**
  * Thin Docmosis wrapper for the claim pack. Mirrors
- * {@link uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator} but doesn't deal in
- * filenames-with-postfixes — the claim pack is one document per case so a constant filename is fine.
+ * {@link uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator} but uses a constant
+ * filename, since there is one claim pack per case.
  *
- * <p>Single template covers both England and Wales — Welsh-only sections are gated by
- * {@code isWales} conditionals inside the {@code .docx} (see plan §6.1 + §9 Q1).</p>
+ * <p>A single template covers England and Wales; Welsh-only sections are gated by
+ * {@code isWales} conditionals inside the {@code .docx}.</p>
  */
 @Service
 public class ClaimPackDocumentGenerator {
@@ -26,7 +26,7 @@ public class ClaimPackDocumentGenerator {
     }
 
     /**
-     * Render the claim pack PDF via Docmosis + dg-docassembly.
+     * Renders the claim pack PDF via Docmosis and dg-docassembly.
      *
      * @param payload populated payload (typically from {@link ClaimPackPayloadBuilder})
      * @return dm-store URL of the generated PDF

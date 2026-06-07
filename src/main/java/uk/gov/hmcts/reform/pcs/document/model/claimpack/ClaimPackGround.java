@@ -4,10 +4,10 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * One row in §6.3.7 "Grounds for possession" repeat block.
+ * One row in the "Grounds for possession" repeat block.
  *
- * <p>{@code hasReason} drives the {@code R-GROUND-REQUIRES-REASON} per-row gate so the
- * "reason for claiming possession under ground X" row only renders when the user provided one.</p>
+ * <p>{@code hasReason} gates the per-row "reason for claiming possession under ground X" row, so
+ * it only renders when the user provided a reason.</p>
  */
 @Data
 @Builder

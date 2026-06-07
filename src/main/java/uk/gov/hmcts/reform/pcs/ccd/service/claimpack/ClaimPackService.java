@@ -12,13 +12,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
 
 /**
- * Orchestrator for claim pack rendering — Commit 1 of plan §12.
+ * Builds the payload, renders the claim pack PDF via Docmosis, stores it, and attaches it to
+ * the claim.
  *
- * <p>Renders the PDF via Docmosis, stores it in CDAM/dm-store, and attaches the resulting document
- * to the claim via {@code DocumentImportService} + {@code ClaimEntity.submissionDocument}
- * (plan §12.8). Idempotent per the §3.1 invariant.</p>
- *
- * <p>Transactional so the payload builder can navigate lazy JPA relations
+ * <p>Runs in a transaction so the payload builder can read lazy JPA relations
  * ({@code claim.noticeOfPossession}, {@code claim.rentArrears}, etc.) without
  * {@code LazyInitializationException}.</p>
  */
@@ -42,19 +39,16 @@ public class ClaimPackService {
     }
 
     /**
-     * Build the payload, render the PDF via Docmosis, store it in CDAM/dm-store, and attach the
-     * resulting document to the claim ({@code claim.submissionDocument}) so the case references its
-     * own claim pack — and it lands in the "Statements of case" Case File View folder.
-     *
-     * <p>Consumer-side idempotency for the §3.1 invariant ("at most one pack per case"): a claim that
-     * already has a submission document is a no-op, so a re-fired task never produces a second pack.</p>
+     * Renders the claim pack and attaches it to the claim, where it shows under "Statements of
+     * case". Skips generation when the claim already has a pack, so a re-run never creates a
+     * second one.
      */
     @Transactional
     public void generateAndAttach(long caseReference) {
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
         ClaimEntity claim = pcsCase.getClaims().getFirst();
         if (claim.getSubmissionDocument() != null) {
-            log.info("Claim pack already attached for case {} — skipping regeneration", caseReference);
+            log.info("Claim pack already attached for case {}, skipping", caseReference);
             return;
         }
 
@@ -63,7 +57,7 @@ public class ClaimPackService {
         DocumentEntity document = documentImportService.addDocumentToCase(
             caseReference, dmStoreUrl, CaseFileCategory.STATEMENTS_OF_CASE);
         claim.setSubmissionDocument(document);
-        log.info("Generated and attached claim pack for case {} → {}", caseReference, dmStoreUrl);
+        log.info("Generated and attached claim pack for case {}: {}", caseReference, dmStoreUrl);
     }
 
 }

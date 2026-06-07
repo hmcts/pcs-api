@@ -49,9 +49,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.y
  * Builds {@link ClaimPackFormPayload} from a {@link PcsCaseEntity}.
  *
  * <p>One {@code mapXxx} method per source entity; each takes that entity (nullable for optional
- * relations) plus the payload builder and writes its fields. {@link #build(PcsCaseEntity)}
- * orchestrates. Fields with no data source yet are left null/false — the template's conditional
- * blocks simply don't render them.</p>
+ * relations) plus the payload builder and writes its fields. {@link #build(PcsCaseEntity)} runs
+ * them in turn. Fields with no data source yet are left null or false, so the template's
+ * conditional blocks do not render them.</p>
  */
 @Service
 public class ClaimPackPayloadBuilder {
@@ -99,16 +99,16 @@ public class ClaimPackPayloadBuilder {
     }
 
     /**
-     * Cross-cutting section visibility flags. Depend on country + tenancy + grounds + notice,
-     * so they're computed after the individual mappers have populated source data.
+     * Section visibility flags that depend on country, tenancy, grounds and notice, so they are
+     * computed after the individual mappers have populated their source data.
      */
     private void mapClaimDetailsShowFlags(PcsCaseEntity pcsCase, ClaimEntity claim,
                                           ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
         boolean isWales = isWalesJourney(pcsCase);
         boolean isEngland = !isWales;
         boolean isIntroDemotedOther = isIntroDemotedOtherTenancy(pcsCase.getTenancyLicence());
-        // Strip the "No grounds" sentinel (written when the claimant answered "No" to D9) before
-        // deriving the flags below — its presence would otherwise make the set non-empty and mask hasNoGrounds.
+        // Strip the "No grounds" sentinel (written when the claimant answered "No") before deriving
+        // the flags below, otherwise it makes the set non-empty and masks hasNoGrounds.
         List<ClaimGroundEntity> grounds = realGrounds(claim.getClaimGrounds());
         boolean hasNoGrounds = grounds.isEmpty();
         boolean hasOtherGround = anyGroundIsOther(grounds);
@@ -116,21 +116,21 @@ public class ClaimPackPayloadBuilder {
         boolean hasWalesAsbGround = anyGroundHasCode(grounds, "ANTISOCIAL_BEHAVIOUR_S157");
         boolean noticeServedYes = isNoticeServedYes(claim.getNoticeOfPossession());
 
-        // Row D9 — no country qualifier in the spec, only the tenancy-type check.
-        // (D11 and D13 below ARE explicitly English journey per spec; they keep isEngland.)
+        // The grounds Yes/No question has no country qualifier, only the tenancy-type check;
+        // the description and why-claiming rows below are England-only.
         payloadBuilder.showGroundsYesNoQuestion(isIntroDemotedOther);
         payloadBuilder.showDescriptionOfGrounds(isEngland && isIntroDemotedOther && hasOtherGround);
-        // D13 trigger per Cook [17]: no grounds, absolute grounds, OR Other.
+        // Shown when there are no grounds, absolute grounds, or an Other ground.
         payloadBuilder.showWhyClaimingPossession(
             isEngland && isIntroDemotedOther && (hasNoGrounds || hasAbsoluteGround || hasOtherGround));
         payloadBuilder.showAsbSection(isWales && hasWalesAsbGround);
         payloadBuilder.showNoticeType(isWales && noticeServedYes);
         payloadBuilder.showPcscSection(isWales);
         payloadBuilder.showRequiredDocumentsSection(isWales);
-        // D6/D7 exempt-landlord question is Housing (Wales) Act 2014 — Wales-only.
+        // The exempt-landlord question comes from the Housing (Wales) Act 2014, so it is Wales-only.
         payloadBuilder.showExemptLandlordQuestion(isWales);
-        // D49/D50 tenancy-copy rows: England-only (Wales never captures it) AND only when the
-        // claimant actually answered — hide the row rather than print a blank label when unanswered.
+        // Tenancy-copy rows are England-only (Wales never captures the answer) and show only when
+        // the claimant answered, so an unanswered question hides the row instead of a blank value.
         TenancyLicenceEntity tenancyLicence = pcsCase.getTenancyLicence();
         boolean tenancyCopyAnswered = tenancyLicence != null && tenancyLicence.getHasCopyOfTenancyLicence() != null;
         payloadBuilder.showTenancyUploadedQuestion(isEngland && tenancyCopyAnswered);
@@ -155,16 +155,16 @@ public class ClaimPackPayloadBuilder {
             .toList();
     }
 
-    // "Other" ground identity lives in the code, not the category — both the assured and the
-    // intro/demoted/other journeys persist it as code "OTHER". (Category names like
-    // INTRODUCTORY_DEMOTED_OTHER contain the substring "OTHER" but are not the Other ground.)
+    // The "Other" ground is identified by its code, not its category: both the assured and the
+    // intro/demoted/other journeys store it as code "OTHER". Category names such as
+    // INTRODUCTORY_DEMOTED_OTHER contain "OTHER" but are not the Other ground.
     private static boolean anyGroundIsOther(Collection<ClaimGroundEntity> grounds) {
         return anyGroundHasCode(grounds, "OTHER");
     }
 
     /**
-     * Wales ASB ground identity lives in the {@code code} field, not the category — both
-     * WalesSecureClaimGroundService and WalesStandardClaimGroundService persist
+     * The Wales ASB ground is identified by its {@code code}, not its category: both
+     * WalesSecureClaimGroundService and WalesStandardClaimGroundService store
      * {@code ANTISOCIAL_BEHAVIOUR_S157} as the code under a non-ASB category.
      */
     private static boolean anyGroundHasCode(Collection<ClaimGroundEntity> grounds, String code) {
@@ -203,7 +203,7 @@ public class ClaimPackPayloadBuilder {
         VerticalYesNo preActionFollowed = claim.getPreActionProtocolFollowed();
         payloadBuilder.preActionProtocolFollowedYesNo(toLabel(preActionFollowed));
         String preActionReason = claim.getPreActionProtocolIncompleteExplanation();
-        // Hide the "why not followed" row unless a reason exists (Wales doesn't capture one → would print blank).
+        // Hide the "why not followed" row unless a reason exists (Wales doesn't capture one).
         payloadBuilder.showPreActionProtocolNotFollowedReason(isNo(preActionFollowed) && isPopulated(preActionReason));
         payloadBuilder.preActionProtocolNotFollowedReason(preActionReason);
 
@@ -231,8 +231,8 @@ public class ClaimPackPayloadBuilder {
 
     private void mapGrounds(Set<ClaimGroundEntity> allGrounds,
                             ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        // Exclude the explicit "No grounds" sentinel so it never lists as a real ground (D10)
-        // and so an explicit-No answer reports hasGroundsYesNo = No (D9).
+        // Exclude the "No grounds" sentinel so it never lists as a real ground, and an explicit-No
+        // answer reports hasGroundsYesNo = No.
         List<ClaimGroundEntity> grounds = realGrounds(allGrounds);
         if (grounds.isEmpty()) {
             payloadBuilder.grounds(Collections.emptyList());
@@ -242,7 +242,7 @@ public class ClaimPackPayloadBuilder {
             payloadBuilder.hasRentArrearsGround(false);
             payloadBuilder.hasAsbGround(false);
             payloadBuilder.hasOtherGround(false);
-            payloadBuilder.isNoOrAbsoluteOrOtherGrounds(true); // no grounds case
+            payloadBuilder.isNoOrAbsoluteOrOtherGrounds(true);
             return;
         }
 
@@ -287,21 +287,20 @@ public class ClaimPackPayloadBuilder {
         if (notice == null) {
             return;
         }
-        // YesOrNo (CCD SDK) → title-case label; same bridge but rendered directly.
+        // Convert the CCD SDK YesOrNo to its display label.
         VerticalYesNo noticeServedEnum = yesOrNoToVertical(notice.getNoticeServed());
         payloadBuilder.noticeServedYesNo(toLabel(noticeServedEnum));
-        // Drop-on-null: show the "why not served" row only when a reason exists (England never
-        // captures it, so it would otherwise print blank).
+        // Show the "why not served" row only when a reason exists (England never captures it, so it
+        // would otherwise print blank).
         boolean notServed = isNo(noticeServedEnum);
         payloadBuilder.noticeNotServedDisplayed(notServed && isPopulated(notice.getNoticeStatement()));
-        // Positive boolean — gates the "Method of service onwards" sub-table.
+        // Gates the "Method of service onwards" sub-table.
         payloadBuilder.noticeServedYes(isYes(noticeServedEnum));
 
-        // Date/time the notice was served (Excel R37/R38). Per serving method the entity stores
-        // EITHER a date-only value (FIRST_CLASS_POST / DELIVERED_PERMITTED_PLACE → noticeDate) OR a
-        // date+time (PERSONALLY_HANDED / EMAIL / OTHER_ELECTRONIC / OTHER → noticeDateTime). Derive
-        // the served DATE from whichever field holds it (so it renders for every method, not only
-        // the date-only ones), and the served TIME only when a date+time was captured.
+        // The serving method decides which field holds the served date and time: first-class post
+        // and delivered-to-permitted-place store a date only (noticeDate); personally handed, email,
+        // other electronic and other store a date and time (noticeDateTime). Take the date from
+        // whichever is set so it renders for every method, and the time only when one was captured.
         LocalDate servedDate = notice.getNoticeDate() != null
             ? notice.getNoticeDate()
             : (notice.getNoticeDateTime() != null ? notice.getNoticeDateTime().toLocalDate() : null);
@@ -350,14 +349,14 @@ public class ClaimPackPayloadBuilder {
                 payloadBuilder.showNoticeOtherMeansDetails(isPopulated(details));
             }
             default -> {
-                // FIRST_CLASS_POST, DELIVERED_PERMITTED_PLACE — no detail row.
+                // First-class post and delivered-to-permitted-place have no detail row.
             }
         }
     }
 
-    // The "can you upload the notice?" answer has no data source yet — hide the whole row (rather
-    // than printing a label with a blank value). Flip showNoticeUploadQuestion to the answer's
-    // presence once an entity field exists.
+    // The "can you upload the notice?" answer has no data source yet, so hide the whole row instead
+    // of printing a label with a blank value. Set showNoticeUploadQuestion from the answer once an
+    // entity field exists.
     private void clearUnsourcedNoticeUploadFlags(ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
         payloadBuilder.showNoticeUploadQuestion(false);
         payloadBuilder.noticeUploadedYes(false);
@@ -412,7 +411,7 @@ public class ClaimPackPayloadBuilder {
                                ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
         VerticalYesNo asbEnum = asb.getAntisocialBehaviour();
         payloadBuilder.asbAllegedYesNo(toLabel(asbEnum));
-        // Hide the D16 Yes/No row when unanswered — matches the null-gate on its D18/D20 siblings.
+        // Hide the Yes/No row when unanswered, matching the null-gate on the sibling rows below.
         payloadBuilder.showAsbAlleged(asbEnum != null);
         payloadBuilder.showAsbDetails(isYes(asbEnum));
         payloadBuilder.asbDetailsFreeText(asb.getAntisocialBehaviourDetails());
@@ -482,7 +481,7 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.signedByLegalRep(legalRep);
         payloadBuilder.signedByClaimant(!legalRep);
         payloadBuilder.sotFullName(sot.getFullName());
-        // D80 (Excel): "N/A for this release phase" — populated but the template row is removed for now.
+        // Firm name is not shown this release: the value is populated but the template row is removed.
         payloadBuilder.sotFirmName(sot.getFirmName());
         payloadBuilder.sotPositionHeld(sot.getPositionHeld());
     }

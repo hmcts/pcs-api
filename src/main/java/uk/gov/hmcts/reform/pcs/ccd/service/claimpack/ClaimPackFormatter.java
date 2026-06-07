@@ -20,15 +20,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 /**
- * Stateless value formatters and predicates shared across the claim-pack mapping — keeps
- * {@link ClaimPackPayloadBuilder} focused on orchestration rather than string-fiddling.
+ * Value formatting helpers for the claim-pack payload mapping, kept out of
+ * {@link ClaimPackPayloadBuilder}.
  */
 final class ClaimPackFormatter {
 
     private ClaimPackFormatter() {
     }
 
-    // Long display date / served-notice time — "10 January 2024" / "2:30pm".
+    // Formats: "10 January 2024" and "2:30pm".
     private static final DateTimeFormatter LONG_DATE_FORMAT = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
     private static final DateTimeFormatter NOTICE_TIME_FORMAT = DateTimeFormatter.ofPattern("h:mma", Locale.UK);
 
@@ -44,7 +44,7 @@ final class ClaimPackFormatter {
         return yesNo == VerticalYesNo.NO;
     }
 
-    // Null-safe title-case label for direct rendering — VerticalYesNo.YES → "Yes".
+    // VerticalYesNo to its display label ("Yes"/"No"), null-safe.
     static String toLabel(VerticalYesNo yesNo) {
         return yesNo == null ? null : yesNo.getLabel();
     }
@@ -53,7 +53,7 @@ final class ClaimPackFormatter {
         return method == null ? null : method.getLabel();
     }
 
-    // Bridge from the CCD SDK YesOrNo (some entities) to the payload's VerticalYesNo; null-safe.
+    // Converts the CCD SDK YesOrNo to the payload's VerticalYesNo, null-safe.
     static VerticalYesNo yesOrNoToVertical(YesOrNo yesOrNo) {
         if (yesOrNo == null) {
             return null;
@@ -69,7 +69,7 @@ final class ClaimPackFormatter {
         return NumberFormat.getCurrencyInstance(Locale.UK).format(amount);
     }
 
-    // Long display date, e.g. "10 January 2024" (served-notice date, tenancy start date). Null-safe.
+    // Long date, e.g. "10 January 2024". Null-safe.
     static String formatLongDate(LocalDate date) {
         return date == null ? null : date.format(LONG_DATE_FORMAT);
     }
@@ -116,7 +116,7 @@ final class ClaimPackFormatter {
         return formatGbp(tenancy.getRentAmount()) + " (" + tenancy.getRentFrequency().getLabel() + ")";
     }
 
-    // AC06: first party "Defendant 1 details", subsequent "Additional defendant N details".
+    // "Defendant 1 details", then "Additional defendant N details" for later defendants.
     static String formatDefendantHeading(int defendantNumber) {
         return defendantNumber == 1
             ? "Defendant 1 details"
@@ -129,7 +129,7 @@ final class ClaimPackFormatter {
             : "Additional underlessee or mortgagee " + (underlesseeNumber - 1) + " details";
     }
 
-    // CombinedLicenceType carries no label of its own — reuse the England/Wales source enums that do.
+    // CombinedLicenceType has no label of its own; look it up from the England or Wales source enum.
     private static String combinedLicenceLabel(CombinedLicenceType type) {
         for (TenancyLicenceType englandType : TenancyLicenceType.values()) {
             if (englandType.getCombinedLicenceType() == type) {

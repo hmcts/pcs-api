@@ -34,9 +34,7 @@ public class ClaimGroundSummary {
     @JsonIgnore
     private int groundRank;
 
-    /**
-     * Resolve a persisted ground ({@link ClaimGroundCategory} + code) to its ground enum.
-     */
+    /** Maps a stored category and code to the ground enum. */
     public static PossessionGroundEnum resolveGround(ClaimGroundCategory category, String code) {
         return switch (category) {
             case ASSURED_MANDATORY -> AssuredMandatoryGround.valueOf(code);
@@ -59,10 +57,7 @@ public class ClaimGroundSummary {
         };
     }
 
-    /**
-     * Human-readable label for a persisted ground, falling back to the raw code if it can't be
-     * resolved (so a malformed code never breaks rendering).
-     */
+    /** Ground label, or the raw code if the category and code don't map to a known ground. */
     public static String labelFor(ClaimGroundCategory category, String code) {
         if (category == null || code == null) {
             return code;

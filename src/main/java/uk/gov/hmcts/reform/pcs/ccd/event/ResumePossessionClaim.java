@@ -179,9 +179,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         pcsCaseService.createMainClaimOnCase(caseReference, pcsCase);
 
-        // Claim pack is generated via the real path: payment PAID callback → ClaimPackScheduler →
-        // generateAndAttach. (Temp inline-render hook removed for end-to-end-with-payment testing.)
-
+        // Claim pack generation is triggered later by the payment-success callback, not here.
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
         schedulePartyAccessCodeGeneration(caseReference);

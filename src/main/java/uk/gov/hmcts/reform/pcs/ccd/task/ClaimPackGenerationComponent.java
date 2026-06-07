@@ -16,11 +16,8 @@ import java.time.Duration;
 
 /**
  * db-scheduler {@code CustomTask} bean for claim pack generation. Mirrors
- * {@link AccessCodeGenerationComponent}; same retry shape (MaxRetries + ExponentialBackoff),
- * same {@code OnCompleteRemove} cleanup.
- *
- * <p>Consumer side of the §3.1 invariant. The pipeline ends at the dm-store URL — attaching
- * to the case is the follow-up slice (plan §12.8).</p>
+ * {@link AccessCodeGenerationComponent}, with the same retry shape (MaxRetries and
+ * ExponentialBackoff) and {@code OnCompleteRemove} cleanup.
  */
 @Slf4j
 @Component
@@ -45,9 +42,8 @@ public class ClaimPackGenerationComponent {
     }
 
     /**
-     * Scheduled task: render the claim pack via Docmosis and log the dm-store URL. On success,
-     * removes its own row from {@code scheduled_tasks}. On failure, retries with exponential
-     * backoff up to {@code maxRetries}.
+     * Renders the claim pack and attaches it to the case. On success removes its own row from
+     * {@code scheduled_tasks}; on failure retries with exponential backoff up to {@code maxRetries}.
      */
     @Bean
     public CustomTask<ClaimPackTaskData> claimPackGenerationTask() {

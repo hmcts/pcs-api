@@ -6,13 +6,13 @@ import lombok.Data;
 /**
  * One row in the {@code defendants} repeating section of the claim pack template.
  *
- * <p>All display logic is pre-resolved by {@code ClaimPackPayloadBuilder} — the template just
- * renders the fields. {@code heading} is the rendered "Defendant N details" string,
- * {@code displayName} is "First Last" / orgName / "Persons unknown", and the address fields are
- * the defendant's own address OR the property address (fallback when defendant has none).</p>
+ * <p>{@code ClaimPackPayloadBuilder} resolves every field, so the template just renders them.
+ * {@code heading} is the "Defendant N details" string, {@code displayName} is "First Last", an
+ * org name, or "Persons unknown", and the address fields are the defendant's own address, or the
+ * property address when the defendant has none.</p>
  *
- * <p>{@code hasAddressLine2}/{@code hasAddressLine3}/{@code hasCounty} drive paragraph-removal
- * conditionals so null address lines don't render as blank rows.</p>
+ * <p>{@code hasAddressLine2}, {@code hasAddressLine3} and {@code hasCounty} drive paragraph
+ * removal so empty address lines don't render as blank rows.</p>
  */
 @Data
 @Builder
