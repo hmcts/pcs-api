@@ -118,13 +118,12 @@ public class ClaimPackPayloadBuilder {
         boolean hasWalesAsbGround = anyGroundHasCode(grounds, "ANTISOCIAL_BEHAVIOUR_S157");
         boolean noticeServedYes = isNoticeServedYes(claim.getNoticeOfPossession());
 
+        boolean noOrAbsoluteOrOtherGrounds = hasNoGrounds || hasAbsoluteGround || hasOtherGround;
         // The grounds Yes/No question has no country qualifier, only the tenancy-type check;
         // the description and why-claiming rows below are England-only.
         payloadBuilder.showGroundsYesNoQuestion(isIntroDemotedOther);
         payloadBuilder.showDescriptionOfGrounds(isEngland && isIntroDemotedOther && hasOtherGround);
-        // Shown when there are no grounds, absolute grounds, or an Other ground.
-        payloadBuilder.showWhyClaimingPossession(
-            isEngland && isIntroDemotedOther && (hasNoGrounds || hasAbsoluteGround || hasOtherGround));
+        payloadBuilder.showWhyClaimingPossession(isEngland && isIntroDemotedOther && noOrAbsoluteOrOtherGrounds);
         payloadBuilder.showAsbSection(isWales && hasWalesAsbGround);
         payloadBuilder.showNoticeType(isWales && noticeServedYes);
         payloadBuilder.showPcscSection(isWales);
@@ -286,26 +285,14 @@ public class ClaimPackPayloadBuilder {
         if (notice == null) {
             return;
         }
-        // Convert the CCD SDK YesOrNo to its display label.
         VerticalYesNo noticeServedEnum = yesOrNoToVertical(notice.getNoticeServed());
         payloadBuilder.noticeServedYesNo(toLabel(noticeServedEnum));
-        // Show the "why not served" row only when a reason exists (England never captures it, so it
-        // would otherwise print blank).
         boolean notServed = isNo(noticeServedEnum);
         payloadBuilder.noticeNotServedDisplayed(notServed && isPopulated(notice.getNoticeStatement()));
-        // Gates the "Method of service onwards" sub-table.
         payloadBuilder.noticeServedYes(isYes(noticeServedEnum));
 
-        // The serving method decides which field holds the served date and time: first-class post
-        // and delivered-to-permitted-place store a date only (noticeDate); personally handed, email,
-        // other electronic and other store a date and time (noticeDateTime). Take the date from
-        // whichever is set so it renders for every method, and the time only when one was captured.
-        LocalDate servedDate = notice.getNoticeDate() != null
-            ? notice.getNoticeDate()
-            : (notice.getNoticeDateTime() != null ? notice.getNoticeDateTime().toLocalDate() : null);
-        LocalTime servedTime = notice.getNoticeDateTime() != null
-            ? notice.getNoticeDateTime().toLocalTime()
-            : null;
+        LocalDate servedDate = servedDate(notice);
+        LocalTime servedTime = servedTime(notice);
         payloadBuilder.showNoticeServedOn(servedDate != null);
         payloadBuilder.noticeServedOn(formatLongDate(servedDate));
         payloadBuilder.showNoticeServedTime(servedTime != null);
@@ -323,8 +310,17 @@ public class ClaimPackPayloadBuilder {
         clearUnsourcedNoticeUploadFlags(payloadBuilder);
     }
 
-    // The entity's single noticeDetails field means different things per serving method; route it
-    // to the matching payload slot. First-class-post and delivered-to-permitted-place have no detail.
+    private static LocalDate servedDate(NoticeOfPossessionEntity notice) {
+        if (notice.getNoticeDate() != null) {
+            return notice.getNoticeDate();
+        }
+        return notice.getNoticeDateTime() != null ? notice.getNoticeDateTime().toLocalDate() : null;
+    }
+
+    private static LocalTime servedTime(NoticeOfPossessionEntity notice) {
+        return notice.getNoticeDateTime() != null ? notice.getNoticeDateTime().toLocalTime() : null;
+    }
+
     private void routeNoticeDetailByMethod(NoticeServiceMethod method, String details,
                                            ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
         if (method == null || details == null) {
@@ -390,7 +386,6 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.rentArrearsTotal(formatGbp(rent.getTotalRentArrears()));
         VerticalYesNo judgmentEnum = rent.getArrearsJudgmentWanted();
         payloadBuilder.judgmentRequestedYesNo(toLabel(judgmentEnum));
-        // "Details of previous steps" row only renders when previous-steps Y/N is YES.
         VerticalYesNo prevStepsEnum = rent.getRecoveryAttempted();
         payloadBuilder.hasPreviousStepsYesNo(toLabel(prevStepsEnum));
         payloadBuilder.showPreviousStepsFreeText(isYes(prevStepsEnum));
