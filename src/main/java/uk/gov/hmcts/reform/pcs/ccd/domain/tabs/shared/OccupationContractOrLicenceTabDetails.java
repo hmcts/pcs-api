@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary;
+package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,14 +10,14 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TenancyTabDetails {
+public class OccupationContractOrLicenceTabDetails {
 
-    @CCD(label = "Tenancy, occupation contract or licence agreement type")
+    @CCD(label = "Occupation contract or licence agreement type")
     private String agreementType;
 
     @CCD(label = "Description of contract type")
     private String agreementTypeDescription;
 
-    @CCD(label = "Tenancy, occupation contract or licence agreement start date")
+    @CCD(label = "Occupation contract or licence start date")
     private String agreementStartDate;
 }
