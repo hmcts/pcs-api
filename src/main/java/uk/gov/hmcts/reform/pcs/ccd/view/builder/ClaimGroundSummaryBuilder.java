@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.view;
+package uk.gov.hmcts.reform.pcs.ccd.view.builder;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -6,13 +6,16 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
@@ -25,8 +28,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryG
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -137,6 +146,78 @@ public class ClaimGroundSummaryBuilder {
                 SecureOrFlexibleGroundsReasons::getUnderOccupancySuccessionGround)
         );
 
+    private static final Map<PossessionGroundEnum, Function<GroundsReasonsWales, String>>
+        WALES_DRAFT_REASON_LOOKUP = Map.ofEntries(
+            walesReasonEntry(MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170,
+                GroundsReasonsWales::getFailToGiveUpS170Reason),
+            walesReasonEntry(MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178,
+                GroundsReasonsWales::getLandlordNoticePeriodicS178Reason),
+            walesReasonEntry(MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181,
+                GroundsReasonsWales::getSeriousArrearsPeriodicS181Reason),
+            walesReasonEntry(MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186,
+                GroundsReasonsWales::getLandlordNoticeFtEndS186Reason),
+            walesReasonEntry(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187,
+                GroundsReasonsWales::getSeriousArrearsFixedTermS187Reason),
+            walesReasonEntry(MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191,
+                GroundsReasonsWales::getFailToGiveUpBreakNoticeS191Reason),
+            walesReasonEntry(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199,
+                GroundsReasonsWales::getLandlordBreakClauseS199Reason),
+            walesReasonEntry(MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2,
+                GroundsReasonsWales::getConvertedFixedTermSch1225B2Reason),
+            walesReasonEntry(DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157,
+                GroundsReasonsWales::getOtherBreachSection157Reason),
+            walesReasonEntry(EstateManagementGroundsWales.BUILDING_WORKS,
+                GroundsReasonsWales::getBuildingWorksReason),
+            walesReasonEntry(EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES,
+                GroundsReasonsWales::getRedevelopmentSchemesReason),
+            walesReasonEntry(EstateManagementGroundsWales.CHARITIES,
+                GroundsReasonsWales::getCharitiesReason),
+            walesReasonEntry(EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING,
+                GroundsReasonsWales::getDisabledSuitableDwellingReason),
+            walesReasonEntry(EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS,
+                GroundsReasonsWales::getHousingAssociationsAndTrustsReason),
+            walesReasonEntry(EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS,
+                GroundsReasonsWales::getSpecialNeedsDwellingsReason),
+            walesReasonEntry(EstateManagementGroundsWales.RESERVE_SUCCESSORS,
+                GroundsReasonsWales::getReserveSuccessorsReason),
+            walesReasonEntry(EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS,
+                GroundsReasonsWales::getJointContractHoldersReason),
+            walesReasonEntry(EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS,
+                GroundsReasonsWales::getOtherEstateManagementReasonsReason),
+            walesReasonEntry(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170,
+                GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection170Reason),
+            walesReasonEntry(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186,
+                GroundsReasonsWales::getSecureLandlordNoticeSection186Reason),
+            walesReasonEntry(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191,
+                GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection191Reason),
+            walesReasonEntry(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199,
+                GroundsReasonsWales::getSecureLandlordNoticeSection199Reason),
+            walesReasonEntry(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157,
+                GroundsReasonsWales::getSecureOtherBreachOfContractReason)
+        );
+
+    private static final Map<PossessionGroundEnum, Function<GroundsReasonsWales, String>>
+        WALES_SECURE_ESTATE_MANAGEMENT_DRAFT_REASON_LOOKUP = Map.ofEntries(
+            walesReasonEntry(EstateManagementGroundsWales.BUILDING_WORKS,
+                GroundsReasonsWales::getSecureBuildingWorksReason),
+            walesReasonEntry(EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES,
+                GroundsReasonsWales::getSecureRedevelopmentSchemesReason),
+            walesReasonEntry(EstateManagementGroundsWales.CHARITIES,
+                GroundsReasonsWales::getSecureCharitiesReason),
+            walesReasonEntry(EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING,
+                GroundsReasonsWales::getSecureDisabledSuitableDwellingReason),
+            walesReasonEntry(EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS,
+                GroundsReasonsWales::getSecureHousingAssociationsAndTrustsReason),
+            walesReasonEntry(EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS,
+                GroundsReasonsWales::getSecureSpecialNeedsDwellingsReason),
+            walesReasonEntry(EstateManagementGroundsWales.RESERVE_SUCCESSORS,
+                GroundsReasonsWales::getSecureReserveSuccessorsReason),
+            walesReasonEntry(EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS,
+                GroundsReasonsWales::getSecureJointContractHoldersReason),
+            walesReasonEntry(EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS,
+                GroundsReasonsWales::getSecureOtherEstateManagementReasonsReason)
+        );
+
     public List<ListValue<ClaimGroundSummary>> buildClaimGroundSummariesFromDraft(PCSCase draftCaseData) {
         List<ListValue<ClaimGroundSummary>> summaries = new ArrayList<>();
 
@@ -146,18 +227,18 @@ public class ClaimGroundSummaryBuilder {
 
         if (occupationLicenceType == OccupationLicenceTypeWales.SECURE_CONTRACT) {
             Optional.ofNullable(draftCaseData.getSecureContractGroundsForPossessionWales()).ifPresent(selected -> {
-                addGrounds(summaries, selected.getMandatoryGrounds());
-                addGrounds(summaries, selected.getDiscretionaryGrounds());
-                addGrounds(summaries, selected.getEstateManagementGrounds());
+                addGrounds(summaries, selected.getMandatoryGrounds(), draftCaseData);
+                addGrounds(summaries, selected.getDiscretionaryGrounds(), draftCaseData);
+                addSecureWalesEstateManagementGrounds(summaries, selected.getEstateManagementGrounds(), draftCaseData);
             });
 
             return summaries;
         } else if (occupationLicenceType == OccupationLicenceTypeWales.STANDARD_CONTRACT
             || occupationLicenceType == OccupationLicenceTypeWales.OTHER) {
             Optional.ofNullable(draftCaseData.getGroundsForPossessionWales()).ifPresent(selected -> {
-                addGrounds(summaries, selected.getMandatoryGrounds());
-                addGrounds(summaries, selected.getDiscretionaryGrounds());
-                addGrounds(summaries, selected.getEstateManagementGrounds());
+                addGrounds(summaries, selected.getMandatoryGrounds(), draftCaseData);
+                addGrounds(summaries, selected.getDiscretionaryGrounds(), draftCaseData);
+                addGrounds(summaries, selected.getEstateManagementGrounds(), draftCaseData);
             });
 
             return summaries;
@@ -283,10 +364,74 @@ public class ClaimGroundSummaryBuilder {
                     .code(((Enum<?>) ground).name())
                     .label(ground.getLabel())
                     .reason(getDraftReason(draftCaseData, ground))
+                    .description(getDescription(draftCaseData, ground))
+                    .isRentArrears(YesOrNo.from(isRentArrearsGround(draftCaseData, ground)))
                     .build())
                 .map(summary -> ListValue.<ClaimGroundSummary>builder().value(summary).build())
                 .forEach(summaries::add);
         }
+    }
+
+    private void addSecureWalesEstateManagementGrounds(List<ListValue<ClaimGroundSummary>> summaries,
+                                                       Set<? extends PossessionGroundEnum> grounds,
+                                                       PCSCase draftCaseData) {
+        if (!CollectionUtils.isEmpty(grounds)) {
+            addSecureWalesEstateManagementGrounds(summaries, List.copyOf(grounds), draftCaseData);
+        }
+    }
+
+    private void addSecureWalesEstateManagementGrounds(List<ListValue<ClaimGroundSummary>> summaries,
+                                                       List<? extends PossessionGroundEnum> grounds,
+                                                       PCSCase draftCaseData) {
+        if (!CollectionUtils.isEmpty(grounds)) {
+            grounds.stream()
+                .map(ground -> ClaimGroundSummary.builder()
+                    .code(((Enum<?>) ground).name())
+                    .label(ground.getLabel())
+                    .reason(getSecureWalesEstateManagementDraftReason(draftCaseData, ground))
+                    .isRentArrears(YesOrNo.from(isRentArrearsGround(draftCaseData, ground)))
+                    .build())
+                .map(summary -> ListValue.<ClaimGroundSummary>builder().value(summary).build())
+                .forEach(summaries::add);
+        }
+    }
+
+    private boolean isRentArrearsGround(PCSCase draftCaseData, PossessionGroundEnum ground) {
+        return ground == AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8
+            || ground == AssuredDiscretionaryGround.RENT_ARREARS_GROUND10
+            || ground == AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11
+            || ground == IntroductoryDemotedOrOtherGrounds.RENT_ARREARS
+            || ground == MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181
+            || ground == MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187
+            || ground == DiscretionaryGroundWales.RENT_ARREARS_S157
+            || ground == SecureContractDiscretionaryGroundsWales.RENT_ARREARS_S157
+            || isSecureOrFlexibleRentArrearsGround(draftCaseData, ground);
+    }
+
+    private boolean isSecureOrFlexibleRentArrearsGround(PCSCase draftCaseData, PossessionGroundEnum ground) {
+        return ground == SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY
+            && !CollectionUtils.isEmpty(draftCaseData.getRentArrearsOrBreachOfTenancy())
+            && draftCaseData.getRentArrearsOrBreachOfTenancy().contains(RentArrearsOrBreachOfTenancy.RENT_ARREARS);
+    }
+
+    private String getDescription(PCSCase draftCaseData, PossessionGroundEnum ground) {
+        if (ground == IntroductoryDemotedOrOtherGrounds.OTHER) {
+            IntroductoryDemotedOtherGroundsForPossession otherGroundsForPossession =
+                draftCaseData.getIntroductoryDemotedOrOtherGroundsForPossession();
+            return otherGroundsForPossession != null ? otherGroundsForPossession.getOtherGroundDescription() : null;
+        }
+
+        if (ground == AssuredAdditionalOtherGround.OTHER) {
+            if (draftCaseData.getClaimDueToRentArrears() == YesOrNo.YES) {
+                AssuredRentArrearsPossessionGrounds grounds = draftCaseData.getAssuredRentArrearsPossessionGrounds();
+                return grounds != null ? grounds.getAdditionalOtherGroundDescription() : null;
+            } else {
+                AssuredNoArrearsPossessionGrounds grounds = draftCaseData.getNoRentArrearsGroundsOptions();
+                return grounds != null ? grounds.getOtherGroundDescription() : null;
+            }
+        }
+
+        return null;
     }
 
     private String getDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {
@@ -300,7 +445,12 @@ public class ClaimGroundSummaryBuilder {
             return reason;
         }
 
-        return getSecureOrFlexibleDraftReason(draftCaseData, ground);
+        reason = getSecureOrFlexibleDraftReason(draftCaseData, ground);
+        if (reason != null) {
+            return reason;
+        }
+
+        return getWalesDraftReason(draftCaseData, ground);
     }
 
     private String getAssuredDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {
@@ -366,6 +516,33 @@ public class ClaimGroundSummaryBuilder {
             SecureOrFlexibleGroundsReasons reasons = builder.getSecureOrFlexibleReason(draftCaseData);
             return reasons == null ? null : reasonAccessor.apply(reasons);
         });
+    }
+
+    private static Map.Entry<PossessionGroundEnum, Function<GroundsReasonsWales, String>>
+        walesReasonEntry(PossessionGroundEnum ground,
+                         Function<GroundsReasonsWales, String> reasonAccessor) {
+        return Map.entry(ground, reasonAccessor);
+    }
+
+    private String getWalesDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {
+        return getWalesDraftReason(draftCaseData, ground, WALES_DRAFT_REASON_LOOKUP);
+    }
+
+    private String getWalesDraftReason(
+        PCSCase draftCaseData,
+        PossessionGroundEnum ground,
+        Map<PossessionGroundEnum, Function<GroundsReasonsWales, String>> reasonLookup
+    ) {
+        GroundsReasonsWales reasons = draftCaseData.getGroundsReasonsWales();
+        return Optional.ofNullable(reasonLookup.get(ground))
+            .map(reasonAccessor -> Optional.ofNullable(reasons)
+                .map(reasonAccessor)
+                .orElse(null))
+            .orElse(null);
+    }
+
+    private String getSecureWalesEstateManagementDraftReason(PCSCase draftCaseData, PossessionGroundEnum ground) {
+        return getWalesDraftReason(draftCaseData, ground, WALES_SECURE_ESTATE_MANAGEMENT_DRAFT_REASON_LOOKUP);
     }
 
     private String getSection84ACondition1Reason(PCSCase draftCaseData) {
