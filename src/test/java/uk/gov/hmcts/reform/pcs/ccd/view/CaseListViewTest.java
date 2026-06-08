@@ -116,7 +116,53 @@ public class CaseListViewTest {
         caseListView.setCaseFields(pcsCase);
 
         // Then
-        assertThat(pcsCase.getDefendantNames()).isEqualTo("Persons Unknown, Persons Unknown");
+        assertThat(pcsCase.getDefendantNames()).isEqualTo("persons unknown, persons unknown");
+    }
+
+    @Test
+    void shouldPersonsUnknownWhenOnlyDefendantOneNameNotKnown() {
+        // Given
+        ListValue<Party> defendant1ListValue = ListValue.<Party>builder()
+            .value(Party.builder().nameKnown(VerticalYesNo.NO).lastName("One").build())
+            .build();
+        ListValue<Party> defendant2ListValue = ListValue.<Party>builder()
+            .value(Party.builder().nameKnown(VerticalYesNo.YES).lastName("Two").build())
+            .build();
+        ListValue<Party> defendant3ListValue = ListValue.<Party>builder()
+            .value(Party.builder().nameKnown(VerticalYesNo.YES).lastName("Three").build())
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(List.of(defendant1ListValue, defendant2ListValue, defendant3ListValue))
+            .build();
+
+        // When
+        caseListView.setCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getDefendantNames()).isEqualTo("persons unknown, Two and Others");
+    }
+
+    @Test
+    void shouldPersonsUnknownWhenOnlyDefendantTwoNameNotKnown() {
+        // Given
+        ListValue<Party> defendant1ListValue = ListValue.<Party>builder()
+            .value(Party.builder().nameKnown(VerticalYesNo.YES).lastName("One").build())
+            .build();
+        ListValue<Party> defendant2ListValue = ListValue.<Party>builder()
+            .value(Party.builder().nameKnown(VerticalYesNo.NO).lastName("Two").build())
+            .build();
+        ListValue<Party> defendant3ListValue = ListValue.<Party>builder()
+            .value(Party.builder().nameKnown(VerticalYesNo.YES).lastName("Three").build())
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(List.of(defendant1ListValue, defendant2ListValue, defendant3ListValue))
+            .build();
+
+        // When
+        caseListView.setCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getDefendantNames()).isEqualTo("One, persons unknown and Others");
     }
 
     @Test

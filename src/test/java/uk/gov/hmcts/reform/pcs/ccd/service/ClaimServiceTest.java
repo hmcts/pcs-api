@@ -316,6 +316,20 @@ class ClaimServiceTest {
         assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(TEST_UTC_DATE_TIME);
     }
 
+    @Test
+    void shouldSetNotClaimIssuedDateIfAlreadySet() {
+        // Given
+        LocalDateTime date = LocalDateTime.of(2025, 12, 1, 9, 0, 0);
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .claimIssuedDate(date)
+            .build();
+
+        // When
+        claimService.setClaimIssuedDate(claimEntity);
+        verify(claimRepository, never()).save(claimEntity);
+        assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(date);
+    }
+
     private static Stream<Arguments> claimantTypeScenarios() {
         return Stream.of(
             arguments(ClaimantType.PRIVATE_LANDLORD),

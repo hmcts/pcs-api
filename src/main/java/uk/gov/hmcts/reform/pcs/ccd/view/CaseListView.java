@@ -15,7 +15,7 @@ import java.util.List;
 @Component
 public class CaseListView {
 
-    private static final String PERSON_UNKNOWN = "Persons Unknown";
+    private static final String PERSON_UNKNOWN = "persons unknown";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public void setCaseFields(PCSCase pcsCase) {
