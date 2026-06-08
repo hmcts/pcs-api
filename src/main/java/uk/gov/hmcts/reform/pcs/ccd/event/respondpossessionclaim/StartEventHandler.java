@@ -38,7 +38,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
  * <p>Claim data (tenancy, rent, notices) comes from view classes (TenancyLicenceView, RentDetailsView, etc.)
  * and is already in eventPayload.caseData(). Only defendant's editable contact details need initialization.
  */
-@Component
+@Component("respondToClaimStartEventHandler")
 @Slf4j
 @RequiredArgsConstructor
 public class StartEventHandler implements Start<PCSCase, State> {
