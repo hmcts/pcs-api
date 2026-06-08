@@ -40,7 +40,7 @@ import java.util.UUID;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE;
 
-@Component
+@Component("respondToClaimSubmitEventHandler")
 @Slf4j
 @RequiredArgsConstructor
 public class SubmitEventHandler implements Submit<PCSCase, State> {
