@@ -69,6 +69,6 @@ export class GlobalSearchCaseAction implements IAction {
     await expect(resultRow.getByRole('link', { name: searchResults.viewLinkText })).toBeVisible();
     await resultRow.getByRole('link', { name: searchResults.viewLinkText }).click();
     await performAction('clickTab', home.caseSummary);
-    await performValidation('text', {text: 'Summary',elementType: 'subHeading'});
+    await performValidation('mainHeader', home.caseSummary);
   }
 }
