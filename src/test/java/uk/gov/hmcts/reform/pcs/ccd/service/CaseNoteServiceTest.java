@@ -84,6 +84,7 @@ class CaseNoteServiceTest {
         PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
         assertThat(persistedCaseEntity.getCaseNotes()).hasSize(1);
         CaseNoteEntity persistedCaseNote = persistedCaseEntity.getCaseNotes().getFirst();
+        assertThat(persistedCaseNote.getPcsCase()).isEqualTo(persistedCaseEntity);
         assertThat(persistedCaseNote.getNote()).isEqualTo(note);
         assertThat(persistedCaseNote.getCreatedBy()).isEqualTo(name);
         assertThat(persistedCaseNote.getCreatedOn()).isEqualTo(FIXED_INSTANT);
