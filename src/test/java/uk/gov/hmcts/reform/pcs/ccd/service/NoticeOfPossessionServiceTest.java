@@ -41,7 +41,7 @@ class NoticeOfPossessionServiceTest {
     @BeforeEach
     void setUp() {
         when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(NoticeServiceMethod.EMAIL);
+        when(noticeServedDetails.getServiceMethod()).thenReturn(NoticeServiceMethod.EMAIL);
 
         underTest = new NoticeOfPossessionService();
     }
@@ -137,7 +137,7 @@ class NoticeOfPossessionServiceTest {
     void shouldSetNoticeServedMethod(NoticeServiceMethod noticeServedMethod) {
         // Given
         when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
-        when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(noticeServedMethod);
+        when(noticeServedDetails.getServiceMethod()).thenReturn(noticeServedMethod);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
@@ -150,8 +150,8 @@ class NoticeOfPossessionServiceTest {
     void shouldSetNoticeServedDateForPost() {
         // Given
         LocalDate postedDate = mock(LocalDate.class);
-        when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(NoticeServiceMethod.FIRST_CLASS_POST);
-        when(noticeServedDetails.getNoticePostedDate()).thenReturn(postedDate);
+        when(noticeServedDetails.getServiceMethod()).thenReturn(NoticeServiceMethod.FIRST_CLASS_POST);
+        when(noticeServedDetails.getPostedDate()).thenReturn(postedDate);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
@@ -164,8 +164,8 @@ class NoticeOfPossessionServiceTest {
     void shouldSetNoticeServedDateForDelivered() {
         // Given
         LocalDate deliveredDate = mock(LocalDate.class);
-        when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE);
-        when(noticeServedDetails.getNoticeDeliveredDate()).thenReturn(deliveredDate);
+        when(noticeServedDetails.getServiceMethod()).thenReturn(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE);
+        when(noticeServedDetails.getDeliveredDate()).thenReturn(deliveredDate);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
@@ -180,9 +180,9 @@ class NoticeOfPossessionServiceTest {
         LocalDateTime handedOverDateTime = mock(LocalDateTime.class);
         String recipientName = "some recipient";
 
-        when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(NoticeServiceMethod.PERSONALLY_HANDED);
-        when(noticeServedDetails.getNoticeHandedOverDateTime()).thenReturn(handedOverDateTime);
-        when(noticeServedDetails.getNoticePersonName()).thenReturn(recipientName);
+        when(noticeServedDetails.getServiceMethod()).thenReturn(NoticeServiceMethod.PERSONALLY_HANDED);
+        when(noticeServedDetails.getHandedOverDateTime()).thenReturn(handedOverDateTime);
+        when(noticeServedDetails.getPersonName()).thenReturn(recipientName);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
@@ -198,9 +198,9 @@ class NoticeOfPossessionServiceTest {
         LocalDateTime emailSentDateTime = mock(LocalDateTime.class);
         String emailAddress = "name@example.com";
 
-        when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(NoticeServiceMethod.EMAIL);
-        when(noticeServedDetails.getNoticeEmailSentDateTime()).thenReturn(emailSentDateTime);
-        when(noticeServedDetails.getNoticeEmailAddress()).thenReturn(emailAddress);
+        when(noticeServedDetails.getServiceMethod()).thenReturn(NoticeServiceMethod.EMAIL);
+        when(noticeServedDetails.getEmailSentDateTime()).thenReturn(emailSentDateTime);
+        when(noticeServedDetails.getEmailAddress()).thenReturn(emailAddress);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
@@ -216,9 +216,9 @@ class NoticeOfPossessionServiceTest {
         LocalDateTime otherElectronicDateTime = mock(LocalDateTime.class);
         String details = "details";
 
-        when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(NoticeServiceMethod.OTHER_ELECTRONIC);
-        when(noticeServedDetails.getNoticeOtherElectronicDateTime()).thenReturn(otherElectronicDateTime);
-        when(noticeServedDetails.getNoticeOtherElectronicMethodExplanation()).thenReturn(details);
+        when(noticeServedDetails.getServiceMethod()).thenReturn(NoticeServiceMethod.OTHER_ELECTRONIC);
+        when(noticeServedDetails.getOtherElectronicDateTime()).thenReturn(otherElectronicDateTime);
+        when(noticeServedDetails.getOtherElectronicExplanation()).thenReturn(details);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
@@ -234,9 +234,9 @@ class NoticeOfPossessionServiceTest {
         LocalDateTime otherDateTime = mock(LocalDateTime.class);
         String otherExplanation = "some other details";
 
-        when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(NoticeServiceMethod.OTHER);
-        when(noticeServedDetails.getNoticeOtherDateTime()).thenReturn(otherDateTime);
-        when(noticeServedDetails.getNoticeOtherExplanation()).thenReturn(otherExplanation);
+        when(noticeServedDetails.getServiceMethod()).thenReturn(NoticeServiceMethod.OTHER);
+        when(noticeServedDetails.getOtherDateTime()).thenReturn(otherDateTime);
+        when(noticeServedDetails.getOtherExplanation()).thenReturn(otherExplanation);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
@@ -247,12 +247,12 @@ class NoticeOfPossessionServiceTest {
     }
 
     @Test
-    void shouldSetUnableToUploadReason() {
+    void shouldSetUnableToUploadReasonIfAbleToUploadDocumentIsFalse() {
         // Given
         String unableToUploadReason = "reason for unable to upload";
         NoticeServedDetails details = NoticeServedDetails.builder()
-                        .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                        .noticeDocuments(List.of())
+                        .serviceMethod(NoticeServiceMethod.EMAIL)
+                        .documents(List.of())
                         .ableToUploadDocument(CanUploadNoticeServedDocument.NO)
                         .unableToUploadReason(unableToUploadReason)
                         .build();
@@ -266,6 +266,31 @@ class NoticeOfPossessionServiceTest {
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(caseData);
 
         // Then
+        assertThat(noticeOfPossessionEntity.getIsAbleToUploadDocument()).isEqualTo(YesOrNo.NO);
         assertThat(noticeOfPossessionEntity.getUnableToUploadReason()).isEqualTo(unableToUploadReason);
+    }
+
+    @Test
+    void shouldNotSetUnableToUploadReasonIfAbleToUploadDocumentIsTrue() {
+        // Given
+        String unableToUploadReason = "reason for unable to upload";
+        NoticeServedDetails details = NoticeServedDetails.builder()
+                .serviceMethod(NoticeServiceMethod.EMAIL)
+                .documents(List.of())
+                .ableToUploadDocument(CanUploadNoticeServedDocument.YES)
+                .unableToUploadReason(unableToUploadReason)
+                .build();
+        PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .legislativeCountry(LegislativeCountry.ENGLAND)
+                .noticeServedDetails(details)
+                .build();
+
+        // When
+        NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(caseData);
+
+        // Then
+        assertThat(noticeOfPossessionEntity.getIsAbleToUploadDocument()).isEqualTo(YesOrNo.YES);
+        assertThat(noticeOfPossessionEntity.getUnableToUploadReason()).isNull();
     }
 }

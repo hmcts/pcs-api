@@ -50,7 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class CaseSummaryTabViewTest {
+class CaseSummaryTabViewTest {
 
     @Mock
     private GroundsBuilder groundsBuilder;
@@ -135,8 +135,8 @@ public class CaseSummaryTabViewTest {
                                        .tenancyLicenceDate(LocalDate.of(2024, 4, 16))
                                        .build())
             .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                                     .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
+                                     .serviceMethod(NoticeServiceMethod.EMAIL)
+                                     .emailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
                                      .build())
             .build();
 
@@ -360,7 +360,7 @@ public class CaseSummaryTabViewTest {
         // Given
         PCSCase pcsCase = PCSCase.builder()
             .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.OTHER)
+                                     .serviceMethod(NoticeServiceMethod.OTHER)
                                      .build())
             .build();
 
@@ -376,7 +376,7 @@ public class CaseSummaryTabViewTest {
         // Given
         PCSCase pcsCase = PCSCase.builder()
             .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
+                                     .emailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
                                      .build())
             .build();
 
@@ -534,43 +534,43 @@ public class CaseSummaryTabViewTest {
         return Stream.of(
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                    .noticePostedDate(LocalDate.of(2026, 5, 11))
+                    .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .postedDate(LocalDate.of(2026, 5, 11))
                     .build(),
                 "11/05/2026"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
-                    .noticeDeliveredDate(LocalDate.of(2026, 5, 12))
+                    .serviceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
+                    .deliveredDate(LocalDate.of(2026, 5, 12))
                     .build(),
                 "12/05/2026"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                    .noticeHandedOverDateTime(LocalDateTime.of(2026, 5, 13, 9, 30))
+                    .serviceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
+                    .handedOverDateTime(LocalDateTime.of(2026, 5, 13, 9, 30))
                     .build(),
                 "13/05/2026, 9:30:00AM"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                    .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 14, 17, 2))
+                    .serviceMethod(NoticeServiceMethod.EMAIL)
+                    .emailSentDateTime(LocalDateTime.of(2026, 5, 14, 17, 2))
                     .build(),
                 "14/05/2026, 5:02:00PM"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
-                    .noticeOtherElectronicDateTime(LocalDateTime.of(2026, 5, 15, 10, 15))
+                    .serviceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
+                    .otherElectronicDateTime(LocalDateTime.of(2026, 5, 15, 10, 15))
                     .build(),
                 "15/05/2026, 10:15:00AM"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.OTHER)
-                    .noticeOtherDateTime(LocalDateTime.of(2026, 5, 16, 18, 45))
+                    .serviceMethod(NoticeServiceMethod.OTHER)
+                    .otherDateTime(LocalDateTime.of(2026, 5, 16, 18, 45))
                     .build(),
                 "16/05/2026, 6:45:00PM"
             )
@@ -581,12 +581,5 @@ public class CaseSummaryTabViewTest {
         return ListValue.<T>builder()
             .value(value)
             .build();
-    }
-
-    private static ListValue<ClaimGroundSummary> groundSummary(String label, String reason) {
-        return listValue(ClaimGroundSummary.builder()
-                             .label(label)
-                             .reason(reason)
-                             .build());
     }
 }

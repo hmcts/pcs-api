@@ -13,8 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
@@ -47,15 +45,12 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTa
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.DEMOTION_OF_TENANCY;
@@ -64,17 +59,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENA
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.DEMOTED_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.INTRODUCTORY_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
+import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.DATE_FORMATTER;
+import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.NO_ANSWER;
+import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.formatSubmittedDate;
 
 @AllArgsConstructor
 @Component
 public class CaseDetailsTabView {
-
-    private static final String NO_ANSWER = " ";
-    private static final DateTimeFormatter DATE_FORMATTER =
-        DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
-        DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm:ssa", Locale.UK);
 
     private final GroundsBuilder groundsBuilder;
     private final RentArrearsTabDetailsBuilder rentArrearsTabDetailsBuilder;
@@ -82,12 +73,13 @@ public class CaseDetailsTabView {
     private final ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
     private final DefendantInformationTabDetailsBuilder defendantInformationTabDetailsBuilder;
     private final AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
+    private final NoticeDetailsBuilder noticeDetailsBuilder;
 
     public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
         GroundsForPossessionTabDetails groundsForPossessionTabDetails = buildGroundsForPossessionTabDetails(pcsCase);
         TenancyLicenceTabDetails tenancyLicenceTabDetails = buildTenancyLicenceTabDetails(pcsCase);
-        NoticeTabDetails noticeTabDetails = buildNoticeTabDetails(pcsCase);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase);
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
         RentArrearsTabDetails rentArrearsTabDetails =
             rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase);
@@ -223,68 +215,6 @@ public class CaseDetailsTabView {
             .build();
     }
 
-    private NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase) {
-        if (pcsCase.getNoticeServed() == null) {
-            return NoticeTabDetails.builder()
-                .noticeServed(NO_ANSWER)
-                .noticeMethod(NO_ANSWER)
-                .noticeDate(NO_ANSWER)
-                .build();
-        }
-
-        YesOrNo noticeServed = pcsCase.getNoticeServed();
-        NoticeTabDetails noticeTabDetails = NoticeTabDetails.builder()
-            .noticeServed(noticeServed.getValue())
-            .noticeMethod(NO_ANSWER)
-            .noticeDate(NO_ANSWER)
-            .build();
-
-        NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
-        if (noticeServed == YesOrNo.YES && noticeTabDetails != null) {
-            NoticeServiceMethod method = noticeServedDetails.getNoticeServiceMethod();
-            noticeTabDetails.setNoticeDocuments(noticeServedDetails.getNoticeDocuments());
-
-            if (method != null) {
-                noticeTabDetails.setNoticeMethod(method.getLabel());
-                switch (method) {
-                    case FIRST_CLASS_POST -> {
-                        LocalDate date = noticeServedDetails.getNoticePostedDate();
-                        noticeTabDetails.setNoticeDate(date != null ? date.format(DATE_FORMATTER) : NO_ANSWER);
-                    }
-                    case DELIVERED_PERMITTED_PLACE -> {
-                        LocalDate date = noticeServedDetails.getNoticeDeliveredDate();
-                        noticeTabDetails.setNoticeDate(date != null ? date.format(DATE_FORMATTER) : NO_ANSWER);
-                    }
-                    case PERSONALLY_HANDED -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeHandedOverDateTime();
-                        String name = noticeServedDetails.getNoticePersonName();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
-                        noticeTabDetails.setNoticePersonName(name != null ? name : NO_ANSWER);
-                    }
-                    case EMAIL -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeEmailSentDateTime();
-                        String emailAddress = noticeServedDetails.getNoticeEmailAddress();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
-                        noticeTabDetails.setNoticeEmailAddress(emailAddress != null ? emailAddress : NO_ANSWER);
-                    }
-                    case OTHER_ELECTRONIC -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeOtherElectronicDateTime();
-                        String details = noticeServedDetails.getNoticeOtherElectronicMethodExplanation();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
-                        noticeTabDetails.setNoticeOtherElectronicDetails(details != null ? details : NO_ANSWER);
-                    }
-                    case OTHER -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeOtherDateTime();
-                        String explanation = noticeServedDetails.getNoticeOtherExplanation();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
-                        noticeTabDetails.setNoticeOtherExplanation(explanation != null ? explanation : NO_ANSWER);
-                    }
-                };
-            }
-        }
-
-        return noticeTabDetails;
-    }
 
     private ActionsTakenTabDetails buildActionsTakenTabDetails(PCSCase pcsCase) {
         VerticalYesNo preactionProtocol = pcsCase.getPreActionProtocolCompleted();
@@ -438,7 +368,7 @@ public class CaseDetailsTabView {
     ) {
         List<ListValue<Party>> underlesseeMortgageParties = pcsCase.getAllUnderlesseeOrMortgagees();
         if (CollectionUtils.isEmpty(underlesseeMortgageParties) || underlesseeMortgageParties.size() < 2) {
-            return null;
+            return List.of();
         }
 
         return underlesseeMortgageParties.stream()
@@ -530,20 +460,4 @@ public class CaseDetailsTabView {
             .build();
     }
 
-    private String formatSubmittedDate(LocalDateTime dateSubmitted) {
-        if (dateSubmitted == null) {
-            return null;
-        }
-
-        LocalDateTime ukDateSubmitted = dateSubmitted
-            .atZone(ZoneId.systemDefault())
-            .withZoneSameInstant(UK_ZONE_ID)
-            .toLocalDateTime();
-
-        return formatDateTime(ukDateSubmitted);
-    }
-
-    private String formatDateTime(LocalDateTime localDateTime) {
-        return localDateTime.format(DATE_TIME_FORMATTER).replace("am", "AM").replace("pm", "PM");
-    }
 }

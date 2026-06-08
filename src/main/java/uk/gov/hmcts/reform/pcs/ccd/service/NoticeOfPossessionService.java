@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -28,34 +29,37 @@ public class NoticeOfPossessionService {
 
         NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
 
-        NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getNoticeServiceMethod();
+        NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getServiceMethod();
 
         noticeOfPossessionEntity.setServingMethod(noticeServiceMethod);
-        noticeOfPossessionEntity.setUnableToUploadReason(noticeServedDetails.getUnableToUploadReason());
+        noticeOfPossessionEntity.setIsAbleToUploadDocument(getIsAbleToUploadDocument(noticeServedDetails));
+        if (getIsAbleToUploadDocument(noticeServedDetails) == YesOrNo.NO) {
+            noticeOfPossessionEntity.setUnableToUploadReason(noticeServedDetails.getUnableToUploadReason());
+        }
 
         switch (noticeServiceMethod) {
             case FIRST_CLASS_POST ->
-                noticeOfPossessionEntity.setNoticeDate(noticeServedDetails.getNoticePostedDate());
+                noticeOfPossessionEntity.setNoticeDate(noticeServedDetails.getPostedDate());
 
             case DELIVERED_PERMITTED_PLACE ->
-                noticeOfPossessionEntity.setNoticeDate(noticeServedDetails.getNoticeDeliveredDate());
+                noticeOfPossessionEntity.setNoticeDate(noticeServedDetails.getDeliveredDate());
 
             case PERSONALLY_HANDED -> {
-                noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getNoticeHandedOverDateTime());
-                noticeOfPossessionEntity.setNoticeDetails(noticeServedDetails.getNoticePersonName());
+                noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getHandedOverDateTime());
+                noticeOfPossessionEntity.setNoticeDetails(noticeServedDetails.getPersonName());
             }
             case EMAIL -> {
-                noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getNoticeEmailSentDateTime());
-                noticeOfPossessionEntity.setNoticeDetails(noticeServedDetails.getNoticeEmailAddress());
+                noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getEmailSentDateTime());
+                noticeOfPossessionEntity.setNoticeDetails(noticeServedDetails.getEmailAddress());
             }
             case OTHER_ELECTRONIC -> {
-                noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime());
+                noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getOtherElectronicDateTime());
                 noticeOfPossessionEntity
-                    .setNoticeDetails(noticeServedDetails.getNoticeOtherElectronicMethodExplanation());
+                    .setNoticeDetails(noticeServedDetails.getOtherElectronicExplanation());
             }
             case OTHER -> {
-                noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getNoticeOtherDateTime());
-                noticeOfPossessionEntity.setNoticeDetails(noticeServedDetails.getNoticeOtherExplanation());
+                noticeOfPossessionEntity.setNoticeDateTime(noticeServedDetails.getOtherDateTime());
+                noticeOfPossessionEntity.setNoticeDetails(noticeServedDetails.getOtherExplanation());
             }
         }
 
@@ -78,4 +82,11 @@ public class NoticeOfPossessionService {
         }
     }
 
+    private static YesOrNo getIsAbleToUploadDocument(NoticeServedDetails noticeServedDetails) {
+        if (noticeServedDetails.getAbleToUploadDocument() == CanUploadNoticeServedDocument.YES) {
+            return YesOrNo.YES;
+        } else {
+            return YesOrNo.NO;
+        }
+    }
 }

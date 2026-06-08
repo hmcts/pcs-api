@@ -79,7 +79,7 @@ public class DocumentService {
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getNoticeServedDetails())
-                    .map(NoticeServedDetails::getNoticeDocuments)
+                    .map(NoticeServedDetails::getDocuments)
                     .orElse(null), DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION));
 
         return allDocuments;

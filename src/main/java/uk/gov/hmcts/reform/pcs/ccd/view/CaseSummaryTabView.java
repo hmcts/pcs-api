@@ -148,18 +148,18 @@ public class CaseSummaryTabView {
             return null;
         }
 
-        NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getNoticeServiceMethod();
+        NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getServiceMethod();
         if (noticeServiceMethod == null) {
             return null;
         }
 
         return switch (noticeServiceMethod) {
-            case FIRST_CLASS_POST -> formatSummaryDate(noticeServedDetails.getNoticePostedDate());
-            case DELIVERED_PERMITTED_PLACE -> formatSummaryDate(noticeServedDetails.getNoticeDeliveredDate());
-            case PERSONALLY_HANDED -> formatSummaryDateTime(noticeServedDetails.getNoticeHandedOverDateTime());
-            case EMAIL -> formatSummaryDateTime(noticeServedDetails.getNoticeEmailSentDateTime());
-            case OTHER_ELECTRONIC -> formatSummaryDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime());
-            case OTHER -> formatSummaryDateTime(noticeServedDetails.getNoticeOtherDateTime());
+            case FIRST_CLASS_POST -> formatSummaryDate(noticeServedDetails.getPostedDate());
+            case DELIVERED_PERMITTED_PLACE -> formatSummaryDate(noticeServedDetails.getDeliveredDate());
+            case PERSONALLY_HANDED -> formatSummaryDateTime(noticeServedDetails.getHandedOverDateTime());
+            case EMAIL -> formatSummaryDateTime(noticeServedDetails.getEmailSentDateTime());
+            case OTHER_ELECTRONIC -> formatSummaryDateTime(noticeServedDetails.getOtherElectronicDateTime());
+            case OTHER -> formatSummaryDateTime(noticeServedDetails.getOtherDateTime());
         };
     }
 
