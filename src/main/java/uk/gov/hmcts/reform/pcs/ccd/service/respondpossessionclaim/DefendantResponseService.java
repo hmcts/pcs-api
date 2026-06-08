@@ -47,6 +47,7 @@ public class DefendantResponseService {
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final DefendantResponseRepository defendantResponseRepository;
+    private final DefendantResponseReadMapper defendantResponseReadMapper;
     private final SecurityContextService securityContextService;
     private final ReasonableAdjustmentsService reasonableAdjustmentsService;
     private final HouseholdCircumstancesService householdCircumstancesService;
@@ -59,6 +60,7 @@ public class DefendantResponseService {
                                     PartyRepository partyRepository,
                                     ClaimRepository claimRepository,
                                     DefendantResponseRepository defendantResponseRepository,
+                                    DefendantResponseReadMapper defendantResponseReadMapper,
                                     SecurityContextService securityContextService,
                                     ReasonableAdjustmentsService reasonableAdjustmentsService,
                                     HouseholdCircumstancesService householdCircumstancesService,
@@ -70,6 +72,7 @@ public class DefendantResponseService {
         this.partyRepository = partyRepository;
         this.claimRepository = claimRepository;
         this.defendantResponseRepository = defendantResponseRepository;
+        this.defendantResponseReadMapper = defendantResponseReadMapper;
         this.securityContextService = securityContextService;
         this.reasonableAdjustmentsService = reasonableAdjustmentsService;
         this.householdCircumstancesService = householdCircumstancesService;
@@ -258,5 +261,19 @@ public class DefendantResponseService {
             return false;
         }
         return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
+    }
+    
+    @Transactional(readOnly = true)
+    public PossessionClaimResponse getSubmittedResponse(long caseReference) {
+        UUID userId = securityContextService.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("No submitted defendant response for case " + caseReference);
+        }
+
+        DefendantResponseEntity entity = defendantResponseRepository
+            .findWithDetailsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId)
+            .orElseThrow(() -> new IllegalStateException("No submitted defendant response for case " + caseReference));
+
+        return defendantResponseReadMapper.toPossessionClaimResponse(entity);
     }
 }

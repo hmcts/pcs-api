@@ -16,24 +16,22 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -45,12 +43,10 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -81,6 +77,8 @@ class PCSCaseViewTest {
     private CaseTitleService caseTitleService;
     @Mock
     private ClaimView claimView;
+    @Mock
+    private DocumentsView documentsView;
     @Mock
     private TenancyLicenceView tenancyLicenceView;
     @Mock
@@ -118,6 +116,8 @@ class PCSCaseViewTest {
     private PartiesView partiesView;
     @Mock
     private CaseFlagsView caseFlagsView;
+    @Mock
+    private DefendantResponseView defendantResponseView;
 
     private PCSCaseView underTest;
 
@@ -127,11 +127,12 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
-                                    caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
-                                    alternativesToPossessionView, asbProhibitedConductView,
+                                    caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
+                                    rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView
+                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView, 
+                                    defendantResponseView
         );
     }
 
@@ -239,67 +240,6 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldReturnEmptyListWhenNoDocumentsExist() {
-        // Given
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getAllDocuments()).isEmpty();
-    }
-
-    @Test
-    void shouldMapDocuments() {
-        // Given
-        Instant submittedDate = Instant.parse("2026-05-14T09:30:00Z");
-        DocumentEntity entity1 = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .fileName("doc1.pdf")
-            .url("url1")
-            .submittedDate(submittedDate)
-            .build();
-
-        DocumentEntity entity2 = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .fileName("doc2.pdf")
-            .url("url2")
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(entity1,entity2));
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        //Then
-        assertThat(pcsCase.getAllDocuments()).hasSize(2);
-        assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getFilename())
-            .containsExactly("doc1.pdf", "doc2.pdf");
-        assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getUploadTimestamp())
-            .containsExactly(LocalDateTime.of(2026, 5, 14, 9, 30), null);
-    }
-
-    private static ListValue<Party> asListValue(UUID id, Party party) {
-        return ListValue.<Party>builder().id(id.toString()).value(party).build();
-    }
-
-    private ClaimPartyEntity createClaimPartyEntity(Party party, UUID partyId, PartyRole partyRole) {
-        PartyEntity partyEntity = mock(PartyEntity.class);
-
-        when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
-
-        ClaimPartyId claimPartyId = new ClaimPartyId();
-        claimPartyId.setPartyId(partyId);
-
-        return ClaimPartyEntity.builder()
-            .id(claimPartyId)
-            .role(partyRole)
-            .party(partyEntity)
-            .build();
-    }
-
-    @Test
     void shouldSetCaseFieldsInViewHelpers() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -307,6 +247,7 @@ class PCSCaseViewTest {
         // Then
         verify(partiesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
@@ -317,6 +258,9 @@ class PCSCaseViewTest {
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(defendantResponseView).setCaseFields(pcsCase, pcsCaseEntity);
+
+        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     @Test

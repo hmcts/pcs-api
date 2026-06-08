@@ -19,7 +19,7 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
-@Component
+@Component("respondToClaimSubmitEventHandler")
 @Slf4j
 @RequiredArgsConstructor
 public class SubmitEventHandler implements Submit<PCSCase, State> {

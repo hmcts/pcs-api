@@ -40,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseReadMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.HouseholdCircumstancesService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PartyAttributeAssertationService;
@@ -84,6 +85,8 @@ class DefendantResponseServiceTest {
     private ClaimRepository claimRepository;
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
+    @Mock 
+    private DefendantResponseReadMapper defendantResponseReadMapper;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
@@ -120,6 +123,7 @@ class DefendantResponseServiceTest {
             partyRepository,
             claimRepository,
             defendantResponseRepository,
+            defendantResponseReadMapper,
             securityContextService,
             reasonableAdjustmentsService,
             householdCircumstancesService,
