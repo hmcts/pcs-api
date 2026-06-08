@@ -105,7 +105,7 @@ public class PcsCaseService {
             List<CourtVenue> courtVenues = locationReferenceService
                 .getCourtVenues(List.of(pcsCase.getCaseManagementLocationNumber()));
             if (courtVenues != null && !courtVenues.isEmpty()) {
-                pcsCase.setRegionId(courtVenues.getFirst().epimmsId());
+                pcsCase.setRegionId(Integer.valueOf(courtVenues.getFirst().regionId()));
             }
         }
     }

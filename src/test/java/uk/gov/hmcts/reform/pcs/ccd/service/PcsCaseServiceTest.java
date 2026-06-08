@@ -454,7 +454,7 @@ class PcsCaseServiceTest {
             .propertyAddress(AddressUK.builder().postCode(postCode).build())
             .build();
         when(postCodeCourtService.getCourtManagementLocation(postCode)).thenReturn(caseManagementLocation);
-        CourtVenue courtVenue = new CourtVenue(123, 456, "Test");
+        CourtVenue courtVenue = newCourtVenue();
         when(locationReferenceService.getCourtVenues(any())).thenReturn(List.of(courtVenue));
 
         // When
@@ -462,7 +462,27 @@ class PcsCaseServiceTest {
 
         // Then
         verify(postCodeCourtService).getCourtManagementLocation(postCode);
-        assertThat(caseData.getRegionId()).isEqualTo(courtVenue.epimmsId());
+        assertThat(caseData.getRegionId()).isEqualTo(Integer.valueOf(courtVenue.regionId()));
+        assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
+    }
+
+    @Test
+    void shouldNotAllocateRegionId_WhenAnEmptyListIsReturned() {
+        // Given
+        Integer caseManagementLocation = 123;
+        String postCode = "MK10 8RD";
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().postCode(postCode).build())
+            .build();
+        when(postCodeCourtService.getCourtManagementLocation(postCode)).thenReturn(caseManagementLocation);
+        when(locationReferenceService.getCourtVenues(any())).thenReturn(List.of());
+
+        // When
+        underTest.allocateRegionId(caseData);
+
+        // Then
+        verify(postCodeCourtService).getCourtManagementLocation(postCode);
+        assertThat(caseData.getRegionId()).isNull();
         assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
     }
 
@@ -566,6 +586,28 @@ class PcsCaseServiceTest {
         return LinkReason.builder()
             .reason(reason)
             .build();
+    }
+
+    CourtVenue newCourtVenue() {
+        return new CourtVenue(
+            "123",
+            "locationName",
+            "456",
+            "YES",
+            "County",
+            "London",
+            "1",
+            "London Cluster",
+            "1",
+            "",
+            "TW8 0JJ",
+            "Brentford County Court, Alexandra Road",
+            "020 1234 5678",
+            "",
+            "DX 12345 Brentford",
+            "",
+            ""
+        );
     }
 
 }
