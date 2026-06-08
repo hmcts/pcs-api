@@ -22,6 +22,11 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
     await performAction('getCaseAPI', 'Claim Submission Time');
     await performAction('fetchCurrentUserAPI', 'Claimant');
+  } else if (testInfo.title.includes('Notes')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
+    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
