@@ -16,12 +16,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.task.FeePaymentPaidNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -79,7 +81,8 @@ class FeePaymentEntityListenerTest {
         verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture());
 
         SchedulableInstance<?> schedulableInstance = taskInstanceCaptor.getValue();
-        assertThat(schedulableInstance.getTaskName()).isEqualTo("fee-payment-paid-task");
+        assertThat(schedulableInstance.getTaskName())
+            .isEqualTo(FeePaymentPaidNotificationTaskComponent.FEE_PAYMENT_PAID_TASK_DESCRIPTOR.getTaskName());
         TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
         FeePaymentStatusChangeTaskData data = (FeePaymentStatusChangeTaskData) taskInstance.getData();
         assertThat(data.getFeePaymentId()).isEqualTo(feePaymentEntity.getId());
@@ -119,5 +122,42 @@ class FeePaymentEntityListenerTest {
         underTest.onPostUpdate(feePaymentEntity);
 
         verifyNoInteractions(schedulerClient);
+    }
+
+    @Test
+    void shouldNotScheduleTaskWhenPartyIsNull() {
+        feePaymentEntity.setParty(null);
+        underTest.onPostLoad(feePaymentEntity);
+        feePaymentEntity.setPaymentStatus(PaymentStatus.PAID);
+
+        underTest.onPostUpdate(feePaymentEntity);
+
+        verifyNoInteractions(schedulerClient);
+    }
+
+    @Test
+    void shouldScheduleTaskWhenClaimIdsAreDifferentInstancesButSameValue() {
+        UUID claimId = claim.getId();
+        UUID sameValueClaimId = UUID.fromString(claimId.toString());
+
+        assertThat(sameValueClaimId).isNotSameAs(claimId);
+        assertThat(sameValueClaimId).isEqualTo(claimId);
+
+        ClaimEntity differentClaimInstanceSameId = new ClaimEntity();
+        differentClaimInstanceSameId.setId(sameValueClaimId);
+
+        claimParty = ClaimPartyEntity.builder()
+            .claim(differentClaimInstanceSameId)
+            .party(party)
+            .role(PartyRole.CLAIMANT)
+            .build();
+        party.setClaimParties(Set.of(claimParty));
+
+        underTest.onPostLoad(feePaymentEntity);
+        feePaymentEntity.setPaymentStatus(PaymentStatus.PAID);
+
+        underTest.onPostUpdate(feePaymentEntity);
+
+        verify(schedulerClient).scheduleIfNotExists(any());
     }
 }

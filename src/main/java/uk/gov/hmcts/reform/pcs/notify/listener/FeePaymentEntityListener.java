@@ -33,6 +33,14 @@ public class FeePaymentEntityListener {
             return;
         }
 
+        if (entity.getParty() == null) {
+            log.warn(
+                "Skipping fee payment notification because no party is associated with fee payment {}",
+                entity.getId()
+            );
+            return;
+        }
+
         String taskId = UUID.randomUUID().toString();
         UUID feePaymentId = entity.getId();
         log.info("Scheduling fee payment paid notification for: {}, with task id: {}",
@@ -42,7 +50,7 @@ public class FeePaymentEntityListener {
         UUID claimId = entity.getClaim().getId();
         boolean isClaimantFeePayment = entity.getParty().getClaimParties().stream()
             .anyMatch(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT
-                && claimParty.getClaim().getId() == claimId);
+                && claimParty.getClaim().getId().equals(claimId));
 
         if (entity.getPaymentStatus() == PaymentStatus.PAID && isClaimantFeePayment) {
             schedulerClient.scheduleIfNotExists(
