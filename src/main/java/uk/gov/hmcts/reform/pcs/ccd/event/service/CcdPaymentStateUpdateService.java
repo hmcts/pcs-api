@@ -12,8 +12,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.payment;
@@ -27,9 +25,8 @@ public class CcdPaymentStateUpdateService {
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi coreCaseDataApi;
     private final ObjectMapper objectMapper;
-    private final NotificationService notificationService;
 
-    public CaseResource submitPaymentSuccess(long caseId, ClaimEntity claim) {
+    public CaseResource submitPaymentSuccess(long caseId) {
         String serviceAuthorization = authTokenGenerator.generate();
         String idamToken = systemUpdateUserTokenProvider.getAuthToken();
         log.debug("Submitting payment event for case: {}", caseId);
@@ -40,11 +37,9 @@ public class CcdPaymentStateUpdateService {
         CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
                                                                 String.valueOf(caseId), submitContent);
         log.debug("CaseResource response : {}", caseResource);
-
-        notificationService.sendClaimantClaimIssuedEmailNotification(claim);
-
         return caseResource;
     }
+
 
     private JsonNode toJsonNode(PCSCase pcsCase) {
         return objectMapper.valueToTree(pcsCase);

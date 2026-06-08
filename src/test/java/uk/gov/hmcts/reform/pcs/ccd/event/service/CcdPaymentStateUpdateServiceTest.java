@@ -65,7 +65,7 @@ class CcdPaymentStateUpdateServiceTest {
         when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
 
         // When
-        CaseResource result = underTest.submitPaymentSuccess(CASE_ID, claim);
+        CaseResource result = underTest.submitPaymentSuccess(CASE_ID);
 
         // Then
         assertThat(result).isSameAs(expectedCaseResource);
@@ -76,7 +76,5 @@ class CcdPaymentStateUpdateServiceTest {
         CaseDataContent submitted = contentCaptor.getValue();
         assertThat(submitted.getEventToken()).isEqualTo(IDAM_TOKEN);
         assertThat(submitted.getEvent().getId()).isEqualTo(payment.name());
-
-        verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
     }
 }

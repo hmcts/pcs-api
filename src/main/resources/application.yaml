@@ -251,6 +251,11 @@ defendant-response-notification:
     max-retries: ${DEFENDANT_RESPONSE_NOTIFICAITON_MAX_RETRIES:5}
     backoff-delay-seconds: ${DEFENDANT_RESPONSE_NOTIFICAITON_BACKOFF_DELAY_SECONDS:3600s}
 
+fee-payment-notification:
+  request:
+    max-retries: ${FEE_PAYMENT_NOTIFICATION_MAX_RETRIES:5}
+    backoff-delay-seconds: ${FEE_PAYMENT_NOTIFICATION_BACKOFF_DELAY_SECONDS:3600s}
+
 payments:
   api:
     url: ${PAYMENT_API_URL:http://localhost:8083/payments}
