@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -50,6 +51,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
     private final PartyService partyService;
     private final SecurityContextService securityContextService;
     private final DocumentService documentService;
+    private final GenAppVisibilityService genAppVisibilityService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -70,8 +72,10 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        UUID currentUserId = securityContextService.getCurrentUserId();
 
         List<ListValue<RelatedApplicationOption>> options = visibleGenApps(pcsCaseEntity)
+            .filter(genApp -> genAppVisibilityService.isGenAppVisibleToUser(genApp, currentUserId))
             .map(this::toOption)
             .filter(Objects::nonNull)
             .sorted(Comparator.comparing(
