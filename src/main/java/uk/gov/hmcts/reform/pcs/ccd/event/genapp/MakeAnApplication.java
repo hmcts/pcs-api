@@ -198,10 +198,14 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             applicantParty
         );
 
-        DocumentEntity documentEntity = documentImportService
-            .addDocumentToCase(caseReference, documentUrl, CaseFileCategory.APPLICATIONS);
+        DocumentEntity importedDocumentEntity = documentImportService.addDocumentToCase(
+            caseReference,
+            documentUrl,
+            CaseFileCategory.APPLICATIONS
+        );
 
-        genAppEntity.setSubmissionDocument(documentEntity);
+        importedDocumentEntity.setGeneralApplication(genAppEntity);
+        genAppEntity.setSubmissionDocument(importedDocumentEntity);
     }
 
     @SuppressWarnings("SameParameterValue")
