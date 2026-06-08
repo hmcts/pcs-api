@@ -527,7 +527,7 @@ public class PCSCase {
     )
     private WaysToPay waysToPay;
 
-    @CCD
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private StatementOfTruthDetails statementOfTruth;
 
     @CCD(searchable = false)
