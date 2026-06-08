@@ -42,6 +42,9 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -59,6 +62,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -842,6 +846,26 @@ class NotificationServiceTest {
 
             verifyNoInteractions(notificationRepository, schedulerClient);
         }
+
+        @Test
+        @DisplayName("Should not throw exception when draft saved email fails")
+        void shouldNotThrowExceptionWhenDraftSavedEmailFails() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                TEST_EMAIL,
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                "Override Name"
+            );
+
+            when(templateConfiguration.getTemplateId(any())).thenThrow(new RuntimeException("Config error"));
+
+            EmailNotificationResponse response =
+                notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+
+            assertThat(response).isNull();
+        }
     }
 
     @Nested
@@ -950,6 +974,82 @@ class NotificationServiceTest {
             assertThat(saved.getPcsCase()).isEqualTo(pcsCase);
             assertThat(saved.getClaimId()).isEqualTo(claim);
             assertThat(saved.getPartyId()).isEqualTo(party);
+        }
+    }
+
+    @Nested
+    @DisplayName("Send Email Tests")
+    class SendEmailTests {
+
+        @Test
+        @DisplayName("Should skip email when both party and email are null")
+        void shouldSkipEmailWhenBothPartyAndEmailAreNull() {
+            NotificationRecipient recipient = new NotificationRecipient(
+                null,
+                null,
+                mock(PcsCaseEntity.class),
+                null,
+                PartyRole.CLAIMANT
+            );
+
+            EmailNotificationResponse response = notificationService.sendEmail(
+                recipient,
+                EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER,
+                NotificationClaimType.POSSESSION_CLAIM,
+                mock(TemplatePersonalisation.class)
+            );
+
+            assertThat(response).isNull();
+        }
+
+        @Test
+        @DisplayName("Should send email when party is null but email is present")
+        void shouldSendEmailWhenPartyIsNullButEmailIsPresent() {
+            NotificationRecipient recipient = new NotificationRecipient(
+                TEST_EMAIL,
+                null,
+                createCase(),
+                null,
+                PartyRole.CLAIMANT
+            );
+
+            when(templateConfiguration.getTemplateId(any())).thenReturn(TEMPLATE_ID);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+            when(notificationRepository.save(any())).thenReturn(new CaseNotification());
+
+            EmailNotificationResponse response = notificationService.sendEmail(
+                recipient,
+                EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER,
+                NotificationClaimType.POSSESSION_CLAIM,
+                mock(TemplatePersonalisation.class)
+            );
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+        }
+
+        @Test
+        @DisplayName("Should skip email when party exists but cannot send email")
+        void shouldSkipEmailWhenPartyCannotSendEmail() {
+            PartyEntity party = createParty();
+            NotificationRecipient recipient = new NotificationRecipient(
+                TEST_EMAIL,
+                party,
+                createCase(),
+                null,
+                PartyRole.CLAIMANT
+            );
+
+            when(partyService.canSendEmailNotification(eq(party), eq(PartyRole.CLAIMANT))).thenReturn(false);
+
+            EmailNotificationResponse response = notificationService.sendEmail(
+                recipient,
+                EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER,
+                NotificationClaimType.POSSESSION_CLAIM,
+                mock(TemplatePersonalisation.class)
+            );
+
+            assertThat(response).isNull();
         }
     }
 
