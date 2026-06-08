@@ -171,9 +171,6 @@ public class ReasonsForPossessionTabDetails {
     @CCD(label = "Reasons for claiming possession under No grounds")
     private String noGrounds;
 
-    @CCD(label = "Additional reasons for possession")
-    private String additionalReasonsForPossession;
-
     @CCD(label = "Do you have any additional reasons for possession?")
     private String hasAdditionalReasons;
 
