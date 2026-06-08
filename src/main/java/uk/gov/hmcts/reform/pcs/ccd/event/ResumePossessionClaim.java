@@ -172,11 +172,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         if (pcsCase.getCompletionNextStep() == SUBMIT_AND_PAY_NOW) {
             return submitClaim(caseReference, pcsCase);
         } else {
-            try {
-                notificationService.sendClaimantDraftSavedForLater(caseReference, pcsCase);
-            } catch (NotificationException e) {
-                log.error("Failed to send draft saved notification for case reference {}", caseReference, e);
-            }
+            notificationService.sendClaimantDraftSavedForLater(caseReference, pcsCase);
             return saveForLater();
         }
     }
