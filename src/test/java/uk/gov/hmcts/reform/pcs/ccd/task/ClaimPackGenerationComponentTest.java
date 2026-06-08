@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.model.ClaimPackTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackService;
 
 import java.time.Duration;
@@ -33,6 +34,9 @@ class ClaimPackGenerationComponentTest {
     private ClaimPackService claimPackService;
 
     @Mock
+    private ClaimActivityLogService claimActivityLogService;
+
+    @Mock
     private TaskInstance<ClaimPackTaskData> taskInstance;
 
     @Mock
@@ -46,7 +50,8 @@ class ClaimPackGenerationComponentTest {
 
     @BeforeEach
     void setUp() {
-        component = new ClaimPackGenerationComponent(claimPackService, maxRetries, backoffDelay);
+        component = new ClaimPackGenerationComponent(
+            claimPackService, claimActivityLogService, maxRetries, backoffDelay);
     }
 
     @Test
@@ -82,5 +87,23 @@ class ClaimPackGenerationComponentTest {
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
         verify(claimPackService).generateAndAttach(999L);
+        // AC01: failure recorded in the activity log (separate transaction) before the retry.
+        verify(claimActivityLogService).logGenerationFailure(999L);
+    }
+
+    @Test
+    @DisplayName("A failure while logging the failure does not mask the original exception")
+    void loggingFailureDoesNotMaskOriginalException() {
+        ClaimPackTaskData data = ClaimPackTaskData.builder().caseReference("999").build();
+        when(taskInstance.getData()).thenReturn(data);
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(new RuntimeException("generation failed")).when(claimPackService).generateAndAttach(999L);
+        doThrow(new RuntimeException("log write failed")).when(claimActivityLogService).logGenerationFailure(999L);
+
+        CustomTask<ClaimPackTaskData> task = component.claimPackGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("generation failed");
     }
 }

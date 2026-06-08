@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.ClaimPackTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackService;
 
 import java.time.Duration;
@@ -28,15 +29,18 @@ public class ClaimPackGenerationComponent {
         TaskDescriptor.of(CLAIM_PACK_GENERATION_TASK_NAME, ClaimPackTaskData.class);
 
     private final ClaimPackService claimPackService;
+    private final ClaimActivityLogService claimActivityLogService;
     private final int maxRetries;
     private final Duration backoffDelay;
 
     public ClaimPackGenerationComponent(
         ClaimPackService claimPackService,
+        ClaimActivityLogService claimActivityLogService,
         @Value("${claim-pack.request.max-retries}") int maxRetries,
         @Value("${claim-pack.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.claimPackService = claimPackService;
+        this.claimActivityLogService = claimActivityLogService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
     }
@@ -67,6 +71,15 @@ public class ClaimPackGenerationComponent {
                               executionContext.getExecution().consecutiveFailures + 1,
                               maxRetries,
                               e);
+                    // Runs after generateAndAttach's transaction has rolled back; logGenerationFailure
+                    // uses REQUIRES_NEW so its row survives. Guarded so a logging error can't mask the
+                    // original failure or break the retry.
+                    try {
+                        claimActivityLogService.logGenerationFailure(caseReference);
+                    } catch (Exception logException) {
+                        log.error("Failed to record claim pack generation failure for case {}",
+                                  caseReference, logException);
+                    }
                     throw e;
                 }
             });

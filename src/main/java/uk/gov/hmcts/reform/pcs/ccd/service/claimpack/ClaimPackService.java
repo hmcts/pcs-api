@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -27,15 +28,18 @@ public class ClaimPackService {
     private final ClaimPackPayloadBuilder payloadBuilder;
     private final ClaimPackDocumentGenerator documentGenerator;
     private final DocumentImportService documentImportService;
+    private final ClaimActivityLogService claimActivityLogService;
 
     public ClaimPackService(PcsCaseService pcsCaseService,
                             ClaimPackPayloadBuilder payloadBuilder,
                             ClaimPackDocumentGenerator documentGenerator,
-                            DocumentImportService documentImportService) {
+                            DocumentImportService documentImportService,
+                            ClaimActivityLogService claimActivityLogService) {
         this.pcsCaseService = pcsCaseService;
         this.payloadBuilder = payloadBuilder;
         this.documentGenerator = documentGenerator;
         this.documentImportService = documentImportService;
+        this.claimActivityLogService = claimActivityLogService;
     }
 
     /**
@@ -56,7 +60,10 @@ public class ClaimPackService {
         String dmStoreUrl = documentGenerator.generate(payload);
         DocumentEntity document = documentImportService.addDocumentToCase(
             caseReference, dmStoreUrl, CaseFileCategory.STATEMENTS_OF_CASE);
+        document.setType(DocumentType.CLAIM);
         claim.setClaimPackDocument(document);
+        // Success log shares this transaction, so the pack and its activity-log row commit together.
+        claimActivityLogService.logGenerationSuccess(caseReference);
         log.info("Generated and attached claim pack for case {}: {}", caseReference, dmStoreUrl);
     }
 

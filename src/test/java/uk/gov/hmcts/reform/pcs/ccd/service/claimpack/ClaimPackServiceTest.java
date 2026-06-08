@@ -7,6 +7,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -37,6 +39,8 @@ class ClaimPackServiceTest {
     private ClaimPackDocumentGenerator documentGenerator;
     @Mock
     private DocumentImportService documentImportService;
+    @Mock
+    private ClaimActivityLogService claimActivityLogService;
 
     @InjectMocks
     private ClaimPackService claimPackService;
@@ -66,6 +70,10 @@ class ClaimPackServiceTest {
         order.verify(documentImportService)
             .addDocumentToCase(CASE_REFERENCE, DM_STORE_URL, CaseFileCategory.STATEMENTS_OF_CASE);
         order.verify(claim).setClaimPackDocument(document);
+
+        // AC01: document typed as a Claim, and a success activity-log entry written in this transaction.
+        assertThat(document.getType()).isEqualTo(DocumentType.CLAIM);
+        verify(claimActivityLogService).logGenerationSuccess(CASE_REFERENCE);
     }
 
     @Test
@@ -78,8 +86,8 @@ class ClaimPackServiceTest {
 
         claimPackService.generateAndAttach(CASE_REFERENCE);
 
-        // Already attached: no render, no store, no second attach.
-        verifyNoInteractions(payloadBuilder, documentGenerator, documentImportService);
+        // Already attached: no render, no store, no second attach, no activity-log entry.
+        verifyNoInteractions(payloadBuilder, documentGenerator, documentImportService, claimActivityLogService);
         verify(claim, never()).setClaimPackDocument(org.mockito.ArgumentMatchers.any());
     }
 }
