@@ -1,0 +1,11 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/payment-web/card-payment"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "payment-web/card-payment-web.tmpl.html",
+    "transformers": ["response-template"]
+  }
+}
