@@ -229,7 +229,6 @@ export class CreateCaseAPIAction implements IAction {
     const fetchUserCaseApi = Axios.create(fetchCurrentUserTokenApiData.fetchCurrentUserTokenApiInstance());
 
     try {
-
       if (typeof getUser === 'string' && getUser === 'Claimant') {
         const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchCurrentUserApiEndPoint());
         process.env.Display_NAME = await userResponse.data.displayName;
@@ -237,7 +236,6 @@ export class CreateCaseAPIAction implements IAction {
         console.log(`Successfully fetched Current User: ${process.env.Display_NAME}`);
       } else {
         const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchDefendantSolicitorUserApiEndPoint());
-        console.log('defendant solicitor:' + JSON.stringify(userResponse.data));
         process.env.Defendant_SOLICITOR = JSON.stringify(await userResponse.data);
         process.env.Display_NAME = await userResponse.data.displayName;
         console.log(`\n✅ FETCH CURRENT USER:`);
