@@ -10,6 +10,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -18,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
@@ -31,8 +36,11 @@ import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -70,6 +78,9 @@ class NotificationServiceTest {
     @Mock
     private PartyService partyService;
 
+    @Mock
+    private PcsCaseService pcsCaseService;
+
     private NotificationService notificationService;
 
     private static final String TEST_EMAIL = "test@example.com";
@@ -81,7 +92,7 @@ class NotificationServiceTest {
     @BeforeEach
     void setUp() {
         notificationService = new NotificationService(
-            notificationRepository, schedulerClient, templateConfiguration, partyService
+            notificationRepository, schedulerClient, templateConfiguration, partyService, pcsCaseService
         );
     }
 
@@ -186,7 +197,7 @@ class NotificationServiceTest {
 
             CaseNotification firstSave = notificationCaptor.getAllValues().getFirst();
             assertThat(firstSave.getStatus()).isEqualTo(NotificationStatus.PENDING_SCHEDULE);
-            assertThat(firstSave.getType()).isEqualTo("Email");
+            assertThat(firstSave.getType()).isEqualTo(NotificationType.EMAIL);
             assertThat(firstSave.getRecipient()).isEqualTo(TEST_EMAIL);
 
             CaseNotification secondSave = notificationCaptor.getAllValues().get(1);
@@ -321,7 +332,7 @@ class NotificationServiceTest {
         @DisplayName("Should create service with dependencies")
         void shouldCreateServiceWithDependencies() {
             NotificationService service = new NotificationService(
-                notificationRepository, schedulerClient, templateConfiguration, partyService
+                notificationRepository, schedulerClient, templateConfiguration, partyService, pcsCaseService
             );
 
             assertThat(service).isNotNull();
@@ -526,12 +537,12 @@ class NotificationServiceTest {
 
     @Nested
     @DisplayName("buildBasePersonalisation")
-    class BuildBasePersonalisationTests {
+    class BuildBaseTemplatePersonalisationTests {
         @Test
         @DisplayName("Should build correct base personalisation")
         void shouldBuildBasePersonalisation() {
             Map<String, Object> result =
-                NotificationService.buildBasePersonalisation(createDefendantResponse());
+                NotificationService.buildBasePersonalisation(createDefendantResponse()).toMap();
 
             assertThat(result)
                 .hasSize(5)
@@ -549,7 +560,7 @@ class NotificationServiceTest {
             response.getClaim().getClaimParties().getFirst().getParty().setOrgName("Claimant Corp");
 
             Map<String, Object> result =
-                NotificationService.buildBasePersonalisation(response);
+                NotificationService.buildBasePersonalisation(response).toMap();
 
             assertThat(result)
                 .containsEntry("claimantName", "CLAIMANT CORP");
@@ -577,7 +588,7 @@ class NotificationServiceTest {
             response.getClaim().setFeePayment(feePayment);
 
             Map<String, Object> result =
-                NotificationService.buildCounterclaimPaymentSuccessPersonalisation(response);
+                NotificationService.buildCounterclaimPaymentSuccessPersonalisation(response).toMap();
 
             assertThat(result)
                 .containsKey("paymentReferenceNumber")
@@ -606,8 +617,7 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should build request with all fields")
         void shouldBuildRequest() {
-            Map<String, Object> personalisation = Map.of("key", "value");
-
+            TemplatePersonalisation personalisation = () -> Map.of("key", "value");
             EmailNotificationRequest request = NotificationService.buildRequest(
                 "template-1",
                 "test@example.com",
@@ -617,31 +627,267 @@ class NotificationServiceTest {
             assertThat(request.getTemplateId()).isEqualTo("template-1");
             assertThat(request.getEmailAddress()).isEqualTo("test@example.com");
             assertThat(request.getClaimType()).isEqualTo(NotificationClaimType.COUNTER_CLAIM);
-            assertThat(request.getPersonalisation()).isEqualTo(personalisation);
+            assertThat(request.getPersonalisation().get("key")).isEqualTo("value");
+        }
+    }
+
+    @Nested
+    @DisplayName("Claimant Draft Saved For Later Tests")
+    class ClaimantDraftSavedForLaterTests {
+        @Test
+        @DisplayName("Should use claimant email when contact email flag is YES")
+        void shouldUseClaimantEmailWhenFlagIsYes() {
+            when(templateConfiguration.getTemplateId(
+                EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                "override@example.com",
+                VerticalYesNo.YES,
+                "Jane Smith",
+                "Override Name"
+            );
+
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+
+            ArgumentCaptor<CaseNotification> captor =
+                ArgumentCaptor.forClass(CaseNotification.class);
+
+            verify(notificationRepository, times(2)).save(captor.capture());
+
+            assertThat(captor.getAllValues().getFirst().getRecipient())
+                .isEqualTo("claimant@example.com");
         }
 
         @Test
-        @DisplayName("Should allow null personalisation")
-        void shouldAllowNullPersonalisation() {
-            EmailNotificationRequest request = NotificationService.buildRequest(
-                "template-1",
-                "test@example.com",
-                NotificationClaimType.COUNTER_CLAIM,
-                null);
+        @DisplayName("Should use overridden claimant email when contact email flag is NO")
+        void shouldUseOverriddenClaimantEmailWhenFlagIsNo() {
+            when(templateConfiguration.getTemplateId(
+                EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER))
+                .thenReturn(TEMPLATE_ID);
 
-            assertThat(request.getPersonalisation()).isNull();
+            CaseNotification savedNotification = createCaseNotification();
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.NO,
+                "claimant@example.com",
+                "override@example.com",
+                VerticalYesNo.YES,
+                "Jane Smith",
+                "Override Name"
+            );
+
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+
+            ArgumentCaptor<CaseNotification> captor =
+                ArgumentCaptor.forClass(CaseNotification.class);
+
+            verify(notificationRepository, times(2)).save(captor.capture());
+
+            assertThat(captor.getAllValues().getFirst().getRecipient())
+                .isEqualTo("override@example.com");
         }
 
         @Test
-        @DisplayName("Should allow empty personalisation")
-        void shouldAllowEmptyPersonalisation() {
-            EmailNotificationRequest request = NotificationService.buildRequest(
-                "template-1",
-                "test@example.com",
-                NotificationClaimType.COUNTER_CLAIM,
-                Map.of());
+        @DisplayName("Should default to claimant email when contact email flag is null")
+        void shouldDefaultToClaimantEmailWhenFlagIsNull() {
+            when(templateConfiguration.getTemplateId(
+                EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER))
+                .thenReturn(TEMPLATE_ID);
 
-            assertThat(request.getPersonalisation()).isEmpty();
+            CaseNotification savedNotification = createCaseNotification();
+            PCSCase pcsCase = createPcsCase(
+                null,
+                "claimant@example.com",
+                "override@example.com",
+                VerticalYesNo.YES,
+                "Jane Smith",
+                "Override Name"
+            );
+
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+
+            ArgumentCaptor<CaseNotification> captor =
+                ArgumentCaptor.forClass(CaseNotification.class);
+
+            verify(notificationRepository, times(2)).save(captor.capture());
+
+            assertThat(captor.getAllValues().getFirst().getRecipient())
+                .isEqualTo("claimant@example.com");
+        }
+
+        @Test
+        @DisplayName("Should send claimant saved for later email")
+        void shouldSendClaimantSavedForLaterEmail() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                "override@example.com",
+                VerticalYesNo.YES,
+                "Jane Smith",
+                "Override Name"
+            );
+
+            when(templateConfiguration.getTemplateId(
+                EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus())
+                .isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration)
+                .getTemplateId(EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER);
+
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should skip claimant email when claimant email is null")
+        void shouldSkipClaimantEmailWhenEmailIsNull() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                null,
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                "Override Name"
+            );
+
+            EmailNotificationResponse response =
+                notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+
+            assertThat(response).isNull();
+
+            verifyNoInteractions(notificationRepository, schedulerClient);
+        }
+    }
+
+    @Nested
+    @DisplayName("TemplatePersonalisation Method Tests")
+    class TemplatePersonalisationMethodTests {
+
+        @Test
+        @DisplayName("Should use overridden claimant name when name flag is NO")
+        void shouldUseOverriddenClaimantNameWhenFlagIsNo() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                "override@example.com",
+                VerticalYesNo.NO,
+                "Jane Smith",
+                "Override Name"
+            );
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("toLineClaimantName", "Override Name")
+                .containsEntry("claimantName", "OVERRIDE NAME");
+        }
+
+        @Test
+        @DisplayName("Should default to claimant name when name flag is null")
+        void shouldDefaultToClaimantNameWhenFlagIsNull() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                "override@example.com",
+                null,
+                "Jane Smith",
+                "Override Name"
+            );
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("toLineClaimantName", "Jane Smith")
+                .containsEntry("claimantName", "JANE SMITH");
+        }
+
+        @Test
+        @DisplayName("Should persist claim type into notification")
+        void shouldPersistClaimTypeIntoNotification() {
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL)
+                .templateId(TEMPLATE_ID)
+                .claimType(NotificationClaimType.COUNTER_CLAIM)
+                .build();
+
+            CaseNotification savedNotification = createCaseNotification();
+
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            notificationService.scheduleEmailNotification(
+                request,
+                createCase(),
+                new ClaimEntity(),
+                createParty()
+            );
+
+            ArgumentCaptor<CaseNotification> captor =
+                ArgumentCaptor.forClass(CaseNotification.class);
+
+            verify(notificationRepository, times(2)).save(captor.capture());
+
+            assertThat(captor.getAllValues().getFirst().getClaimType())
+                .isEqualTo(NotificationClaimType.COUNTER_CLAIM);
+        }
+
+        @Test
+        @DisplayName("Should persist pcsCase claim and party into notification")
+        void shouldPersistPcsCaseClaimAndPartyIntoNotification() {
+            EmailNotificationRequest request = createValidEmailRequest();
+
+            PcsCaseEntity pcsCase = createCase();
+            ClaimEntity claim = new ClaimEntity();
+            PartyEntity party = createParty();
+
+            CaseNotification savedNotification = createCaseNotification();
+
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            notificationService.scheduleEmailNotification(
+                request,
+                pcsCase,
+                claim,
+                party
+            );
+
+            ArgumentCaptor<CaseNotification> captor =
+                ArgumentCaptor.forClass(CaseNotification.class);
+
+            verify(notificationRepository, times(2)).save(captor.capture());
+
+            CaseNotification saved = captor.getAllValues().getFirst();
+
+            assertThat(saved.getPcsCase()).isEqualTo(pcsCase);
+            assertThat(saved.getClaimId()).isEqualTo(claim);
+            assertThat(saved.getPartyId()).isEqualTo(party);
         }
 
         @Test
@@ -650,11 +896,147 @@ class NotificationServiceTest {
             DefendantResponseEntity response = createDefendantResponse();
             response.getPcsCase().setCaseReference(1234567890123456L);
 
-            Map<String, Object> result =
+            DefendantBasePersonalisation result =
                 NotificationService.buildBasePersonalisation(response);
 
-            assertThat(result)
+            assertThat(result.toMap())
                 .containsEntry("caseNumber", "1234-5678-9012-3456");
+        }
+
+        @Test
+        @DisplayName("Should return formatted name when name is known and first/last names are present")
+        void shouldReturnFormattedNameWhenNameIsKnownAndNamesArePresent() {
+            DefendantDetails defendant = new DefendantDetails();
+            defendant.setNameKnown(VerticalYesNo.YES);
+            defendant.setFirstName("John");
+            defendant.setLastName("Doe");
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            pcsCase.setDefendant1(defendant);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "JOHN DOE");
+        }
+
+        @Test
+        @DisplayName("Should return PERSONS UNKNOWN when name is not known even if first/last names are present")
+        void shouldReturnPersonsUnknownWhenNameIsNotKnownEvenIfNamesArePresent() {
+            DefendantDetails defendant = new DefendantDetails();
+            defendant.setNameKnown(VerticalYesNo.NO);
+            defendant.setFirstName("John");
+            defendant.setLastName("Doe");
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            pcsCase.setDefendant1(defendant);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should return PERSONS UNKNOWN when nameKnown is null")
+        void shouldReturnPersonsUnknownWhenNameKnownIsNull() {
+            DefendantDetails defendant = new DefendantDetails();
+            defendant.setNameKnown(null);
+            defendant.setFirstName("John");
+            defendant.setLastName("Doe");
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            pcsCase.setDefendant1(defendant);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should return PERSONS UNKNOWN when both defendant names are missing")
+        void shouldReturnPersonsUnknownWhenBothDefendantNamesAreMissing() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            pcsCase.setDefendant1(new DefendantDetails());
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should return PERSONS UNKNOWN when defendant first name is missing")
+        void shouldReturnPersonsUnknownWhenDefendantFirstNameIsMissing() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            DefendantDetails defendant = new DefendantDetails();
+            defendant.setLastName("Doe");
+            pcsCase.setDefendant1(defendant);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should return PERSONS UNKNOWN when defendant last name is missing")
+        void shouldReturnPersonsUnknownWhenDefendantLastNameIsMissing() {
+            PCSCase pcsCase = createPcsCase(
+                VerticalYesNo.YES,
+                "claimant@example.com",
+                null,
+                VerticalYesNo.YES,
+                "Jane Smith",
+                null
+            );
+            DefendantDetails defendant = new DefendantDetails();
+            defendant.setFirstName("John");
+            pcsCase.setDefendant1(defendant);
+
+            Map<String, Object> result =
+                NotificationService.buildBasePersonalisation(1234567890L, pcsCase).toMap();
+
+            assertThat(result)
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
         }
     }
 
@@ -677,7 +1059,7 @@ class NotificationServiceTest {
         notification.setId(NOTIFICATION_ID);
         notification.setPcsCase(createCase());
         notification.setRecipient(TEST_EMAIL);
-        notification.setType("Email");
+        notification.setType(NotificationType.EMAIL);
         notification.setStatus(NotificationStatus.PENDING_SCHEDULE);
         return notification;
     }
@@ -724,5 +1106,34 @@ class NotificationServiceTest {
         defendantResponse.setClaim(claim);
 
         return defendantResponse;
+    }
+
+    private PCSCase createPcsCase(
+        VerticalYesNo emailFlag,
+        String claimantEmail,
+        String overriddenEmail,
+        VerticalYesNo nameFlag,
+        String claimantName,
+        String overriddenName
+    ) {
+        ClaimantContactPreferences contactPreferences = new ClaimantContactPreferences();
+        contactPreferences.setIsCorrectClaimantContactEmail(emailFlag);
+        contactPreferences.setClaimantContactEmail(claimantEmail);
+        contactPreferences.setOverriddenClaimantContactEmail(overriddenEmail);
+
+        ClaimantInformation claimantInformation = new ClaimantInformation();
+        claimantInformation.setIsClaimantNameCorrect(nameFlag);
+        claimantInformation.setClaimantName(claimantName);
+        claimantInformation.setOverriddenClaimantName(overriddenName);
+
+        DefendantDetails defendant = new DefendantDetails();
+        defendant.setFirstName("John");
+        defendant.setLastName("Doe");
+
+        return PCSCase.builder()
+            .claimantContactPreferences(contactPreferences)
+            .claimantInformation(claimantInformation)
+            .defendant1(defendant)
+            .build();
     }
 }
