@@ -8,8 +8,9 @@ export const home =
     findButton: 'Find',
     caseReferenceSearchLabel: '16-digit case reference:',
     caseParties: 'Case Parties',
+    globalSearchTab: 'Search',
     caseNotes: 'Notes',
     caseSummary: 'Summary',
     caseDetails: 'Case Details',
     signOutButton: 'Sign out'
-  }
+  };

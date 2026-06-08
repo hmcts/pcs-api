@@ -46,7 +46,11 @@ export default {
   'resumePossessionClaimreasonsForRequestingASuspensionAndDemotionOrder': 'suspensionToBuyDemotionOfTenancyOrderReasons',
   'resumePossessionClaimstatementOfExpressTerms': 'statementOfExpressTerms',
   'resumePossessionClaimunderlesseeMortgageeDetails': 'underlesseeMortgageeDetails',
+  'search': 'globalSearch',
   'createFlagscaseworkerCaseFlag': 'whereShouldThisFlagBeAdded',
   'submit': 'reviewFlagDetails',
   'addCaseNoteaddCaseNote': 'addCaseNote',
+  'booking': 'workAccess',
+  'noresults': 'noResultFound',
+  'results': 'searchResults'
 };
