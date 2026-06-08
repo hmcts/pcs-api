@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.genapp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
@@ -28,8 +29,10 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,6 +40,7 @@ import java.util.UUID;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.GEN_APP_ISSUE;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
 @Component("genAppSubmitEventHandler")
 @RequiredArgsConstructor
@@ -52,6 +56,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final LegalRepresentativeRepository legalRepresentativeRepository;
     private final ConfirmationScreenFactory confirmationScreenFactory;
     private final PaymentService paymentService;
+    private final SchedulerClient schedulerClient;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -79,20 +84,23 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
 
         if (isXuiJourney(createGenAppRequest)) {
-            return handleXuiSubmit(caseReference, createGenAppRequest, genAppEntity, feeDetails);
+            return handleXuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, feeDetails);
         } else {
             return handleCuiSubmit(paymentRequired, caseReference, genAppEntity, initialState, feeDetails);
         }
     }
 
-    private SubmitResponse<State> handleXuiSubmit(long caseReference,
+    private SubmitResponse<State> handleXuiSubmit(boolean paymentRequired,
+                                                  long caseReference,
                                                   GenAppRequest genAppRequest,
                                                   GenAppEntity genAppEntity,
                                                   FeeDetails feeDetails) {
 
-        // TODO: Schedule service request task for ExUI journey (HDPI-6034)
-        genAppDocumentGenerator
-            .createSubmissionDocument(caseReference, genAppEntity);
+        if (!paymentRequired) {
+            genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
+        } else {
+            schedulePaymentServiceRequest(genAppEntity, caseReference, feeDetails);
+        }
 
         return confirmationScreenFactory
             .buildConfirmationScreenResponse(genAppRequest, caseReference, feeDetails);
@@ -117,7 +125,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         } else {
 
-            String serviceRequestReference = createPaymentServiceRequest(genAppEntity, feeDetails, caseReference);
+            String serviceRequestReference = createPaymentServiceRequest(genAppEntity, caseReference, feeDetails);
 
             MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
                 .state(initialState)
@@ -131,22 +139,38 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         }
     }
 
-    private String createPaymentServiceRequest(GenAppEntity genAppEntity, FeeDetails feeDetails, long caseReference) {
-        UUID currentUserId = securityContextService.getCurrentUserId();
-        PartyEntity responsibleParty = partyService.getPartyEntityByIdamId(currentUserId, caseReference);
+    private void schedulePaymentServiceRequest(GenAppEntity genAppEntity, long caseReference, FeeDetails feeDetails) {
+        FeesAndPayTaskData taskData = createFeesAndPayTaskData(genAppEntity, caseReference, feeDetails);
 
-        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+        schedulerClient.scheduleIfNotExists(
+            FEES_AND_PAY_TASK_DESCRIPTOR
+                .instance(UUID.randomUUID().toString())
+                .data(taskData)
+                .scheduledTo(Instant.now())
+        );
+    }
+
+    private String createPaymentServiceRequest(GenAppEntity genAppEntity, long caseReference, FeeDetails feeDetails) {
+        FeesAndPayTaskData taskData = createFeesAndPayTaskData(genAppEntity, caseReference, feeDetails);
+
+        PaymentServiceResponse paymentServiceResponse = paymentService.createServiceRequest(taskData);
+        return paymentServiceResponse.getServiceRequestReference();
+    }
+
+    private FeesAndPayTaskData createFeesAndPayTaskData(GenAppEntity genAppEntity,
+                                                        long caseReference,
+                                                        FeeDetails feeDetails) {
+
+        UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
+
+        return FeesAndPayTaskData.builder()
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(caseReference)
-            .responsiblePartyId(responsibleParty.getId())
+            .responsiblePartyName(currentUserDetails.getName())
             .paymentCallbackHandlerType(GEN_APP_ISSUE)
             .relatedEntityId(genAppEntity.getId())
             .build();
-
-        PaymentServiceResponse paymentServiceResponse = paymentService.createServiceRequest(taskData);
-
-        return paymentServiceResponse.getServiceRequestReference();
     }
 
     private PartyEntity getApplicantParty(long caseReference, PCSCase caseData) {

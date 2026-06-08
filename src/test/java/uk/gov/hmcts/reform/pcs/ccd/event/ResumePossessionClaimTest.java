@@ -34,7 +34,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
-import uk.gov.hmcts.reform.pcs.config.SchedulingConfig;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -97,8 +96,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private FeeService feeService;
     @Mock
     private MoneyFormatter moneyFormatter;
-    @Mock
-    private SchedulingConfig schedulingConfig;
 
     @Mock
     private ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
@@ -117,7 +114,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, partyService, securityContextService,
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
-            moneyFormatter, resumePossessionClaimConfigurer, schedulingConfig, notificationService
+            moneyFormatter, resumePossessionClaimConfigurer, notificationService
         );
 
         setEventUnderTest(underTest);
@@ -431,7 +428,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         }
 
         @Test
-        void shouldSchedulePaymentTaskWithResponsiblePartyIdAsClaimantParty() {
+        void shouldSchedulePaymentTaskWithResponsiblePartyIdAndName() {
             // Given
             stubFeeService();
 
@@ -440,7 +437,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .build();
 
             UUID claimantPartyId = UUID.randomUUID();
+            String claimantName = "Some party name";
             when(claimantPartyEntity.getId()).thenReturn(claimantPartyId);
+            when(partyService.getPartyName(claimantPartyEntity)).thenReturn(claimantName);
 
             // When
             callSubmitHandler(caseData);
@@ -448,6 +447,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Then
             FeesAndPayTaskData taskData = getScheduledTaskData(FEES_AND_PAY_TASK_DESCRIPTOR);
             assertThat(taskData.getResponsiblePartyId()).isEqualTo(claimantPartyId);
+            assertThat(taskData.getResponsiblePartyName()).isEqualTo(claimantName);
         }
 
         @Test

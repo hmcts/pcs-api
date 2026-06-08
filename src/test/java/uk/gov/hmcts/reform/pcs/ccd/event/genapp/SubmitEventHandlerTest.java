@@ -2,14 +2,20 @@ package uk.gov.hmcts.reform.pcs.ccd.event.genapp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
@@ -35,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
@@ -51,6 +58,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.GEN_APP_ISSUE;
@@ -60,12 +68,14 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerTyp
 class SubmitEventHandlerTest {
 
     private static final long TEST_CASE_REFERENCE = 1234L;
+    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_FULL_NAME = "current user full name";
 
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
     private PartyService partyService;
-    @Mock
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private SecurityContextService securityContextService;
     @Mock
     private GenAppService genAppService;
@@ -82,16 +92,22 @@ class SubmitEventHandlerTest {
     @Mock
     private PaymentService paymentService;
     @Mock
+    private SchedulerClient schedulerClient;
+    @Mock
     private ObjectMapper objectMapper;
+    @Captor
+    private ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor;
 
     private SubmitEventHandler underTest;
 
     @BeforeEach
     void setUp() {
+        stubCurrentUser();
+
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
                                            legalRepresentativeRepository, confirmationScreenFactory,
-                                           paymentService, objectMapper
+                                           paymentService, schedulerClient, objectMapper
         );
     }
 
@@ -137,6 +153,57 @@ class SubmitEventHandlerTest {
             // Then
             verify(genAppService)
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, representedParty, PENDING_GEN_APP_ISSUED);
+        }
+
+        @ParameterizedTest
+        @ValueSource(booleans = {true, false})
+        void shouldSchedulePaymentServiceRequestOnlyWhenFeeApplies(boolean feeApplies) {
+            // Given
+            UUID representedPartyUuid = UUID.randomUUID();
+            PartyEntity representedParty = mock(PartyEntity.class);
+
+            XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .build();
+
+            when(partyService.getPartyEntityByEntityId(representedPartyUuid, TEST_CASE_REFERENCE))
+                .thenReturn(representedParty);
+
+            stubLegalRepForParty(representedPartyUuid);
+
+            UUID expectedGenAppEntityId = UUID.randomUUID();
+            GenAppEntity genAppEntity = stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
+            when(genAppEntity.getId()).thenReturn(expectedGenAppEntityId);
+
+            if (feeApplies) {
+                stubApplicationFeeCalculation(genAppRequest);
+            } else {
+                stubNoApplicationFee(genAppRequest);
+            }
+
+            PCSCase caseData = PCSCase.builder()
+                .currentRepresentedPartyId(representedPartyUuid.toString())
+                .xuiGenAppRequest(genAppRequest)
+                .build();
+
+            // When
+            underTest.submit(eventPayload(caseData));
+
+            // Then
+
+            if (feeApplies) {
+                verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+                SchedulableInstance<FeesAndPayTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+                FeesAndPayTaskData feesAndPayTaskData = schedulableInstance.getTaskInstance().getData();
+
+                assertThat(feesAndPayTaskData.getCcdCaseNumber()).isEqualTo(Long.toString(TEST_CASE_REFERENCE));
+                assertThat(feesAndPayTaskData.getCaseReference()).isEqualTo(TEST_CASE_REFERENCE);
+                assertThat(feesAndPayTaskData.getResponsiblePartyName()).isEqualTo(CURRENT_USER_FULL_NAME);
+                assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
+                assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
+            } else {
+                verifyNoInteractions(schedulerClient);
+            }
         }
 
         @Test
@@ -210,15 +277,6 @@ class SubmitEventHandlerTest {
                 .thenReturn(true);
         }
 
-    }
-
-    private FeeDetails stubApplicationFeeCalculation(GenAppRequest genAppRequest) {
-        BigDecimal applicationFee = new BigDecimal("55.00");
-        FeeDetails feeDetails = FeeDetails.builder()
-            .feeAmount(applicationFee)
-            .build();
-        when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.of(feeDetails));
-        return feeDetails;
     }
 
     @Nested
@@ -315,8 +373,6 @@ class SubmitEventHandlerTest {
         void shouldCreateServiceRequestWhenFeeDue() throws JsonProcessingException {
             // Given
             final PartyEntity applicantParty = mock(PartyEntity.class);
-            UUID applicantPartyId = UUID.randomUUID();
-            when(applicantParty.getId()).thenReturn(applicantPartyId);
 
             CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
                 .applicationType(GenAppType.SET_ASIDE)
@@ -353,7 +409,7 @@ class SubmitEventHandlerTest {
             FeesAndPayTaskData feesAndPayTaskData = feesAndPayTaskDataCaptor.getValue();
             assertThat(feesAndPayTaskData.getCcdCaseNumber()).isEqualTo(Long.toString(TEST_CASE_REFERENCE));
             assertThat(feesAndPayTaskData.getCaseReference()).isEqualTo(TEST_CASE_REFERENCE);
-            assertThat(feesAndPayTaskData.getResponsiblePartyId()).isEqualTo(applicantPartyId);
+            assertThat(feesAndPayTaskData.getResponsiblePartyName()).isEqualTo(CURRENT_USER_FULL_NAME);
             assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
             assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
         }
@@ -371,9 +427,14 @@ class SubmitEventHandlerTest {
             stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
             final String expectedServiceRequestReference = stubPaymentServiceResponse();
 
-            UUID currentUserId = UUID.randomUUID();
-            given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
-            given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
+            stubCurrentUser();
+
+            given(partyService.getPartyEntityByIdamId(CURRENT_USER_ID, TEST_CASE_REFERENCE)).willReturn(applicantParty);
+
+            UserInfo userInfo = UserInfo.builder()
+                .name(CURRENT_USER_FULL_NAME)
+                .build();
+            given(securityContextService.getCurrentUserDetails()).willReturn(userInfo);
 
             final FeeDetails feeDetails = stubApplicationFeeCalculation(genAppRequest);
 
@@ -418,18 +479,38 @@ class SubmitEventHandlerTest {
         return new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
     }
 
+    private void stubCurrentUser() {
+        UserInfo userInfo = UserInfo.builder()
+            .name(CURRENT_USER_FULL_NAME)
+            .build();
+
+        given(securityContextService.getCurrentUserId()).willReturn(CURRENT_USER_ID);
+        given(securityContextService.getCurrentUserDetails()).willReturn(userInfo);
+    }
+
     private PartyEntity stubCurrentUserParty() {
         PartyEntity currentUserParty = mock(PartyEntity.class);
-        UUID currentUserId = UUID.randomUUID();
-        given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
-        given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(currentUserParty);
+        given(partyService.getPartyEntityByIdamId(CURRENT_USER_ID, TEST_CASE_REFERENCE)).willReturn(currentUserParty);
         return currentUserParty;
+    }
+
+    private void stubNoApplicationFee(GenAppRequest genAppRequest) {
+        when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.empty());
+    }
+
+    private FeeDetails stubApplicationFeeCalculation(GenAppRequest genAppRequest) {
+        BigDecimal applicationFee = new BigDecimal("55.00");
+        FeeDetails feeDetails = FeeDetails.builder()
+            .feeAmount(applicationFee)
+            .build();
+        when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.of(feeDetails));
+        return feeDetails;
     }
 
     private GenAppEntity stubCreateGenAppEntity(GenAppRequest genAppRequest,
                                                 PcsCaseEntity pcsCaseEntity,
                                                 PartyEntity applicantParty) {
-        GenAppEntity genAppEntity = mock(GenAppEntity.class);
+        GenAppEntity genAppEntity = mock(GenAppEntity.class, withSettings().strictness(Strictness.LENIENT));
         when(genAppService
                  .createGenAppEntity(eq(genAppRequest), eq(pcsCaseEntity), eq(applicantParty), any(GenAppState.class)))
             .thenReturn(genAppEntity);
