@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatGbp;
@@ -109,9 +110,7 @@ public class ClaimPackPayloadBuilder {
         boolean isWales = isWalesClaim(pcsCase);
         boolean isEngland = !isWales;
         boolean isIntroDemotedOther = isIntroDemotedOtherTenancy(pcsCase.getTenancyLicence());
-        // Strip the "No grounds" sentinel (written when the claimant answered "No") before deriving
-        // the flags below, otherwise it makes the set non-empty and masks hasNoGrounds.
-        List<ClaimGroundEntity> grounds = realGrounds(claim.getClaimGrounds());
+        List<ClaimGroundEntity> grounds = groundsExcludingNoGroundsSentinel(claim.getClaimGrounds());
         boolean hasNoGrounds = grounds.isEmpty();
         boolean hasOtherGround = anyGroundIsOther(grounds);
         boolean hasAbsoluteGround = anyGroundHasCode(grounds, "ABSOLUTE_GROUNDS");
@@ -147,13 +146,21 @@ public class ClaimPackPayloadBuilder {
             && INTRO_DEMOTED_OTHER_TYPES.contains(tenancy.getType());
     }
 
-    private static List<ClaimGroundEntity> realGrounds(Collection<ClaimGroundEntity> grounds) {
+    private static List<ClaimGroundEntity> groundsExcludingNoGroundsSentinel(Collection<ClaimGroundEntity> grounds) {
         if (grounds == null) {
             return Collections.emptyList();
         }
         return grounds.stream()
             .filter(g -> g.getCategory() != ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS)
             .toList();
+    }
+
+    private static Optional<String> firstOtherGroundDescription(Collection<ClaimGroundEntity> grounds) {
+        return grounds.stream()
+            .filter(g -> "OTHER".equals(g.getCode()))
+            .map(ClaimGroundEntity::getDescription)
+            .filter(description -> isPopulated(description))
+            .findFirst();
     }
 
     // The "Other" ground is identified by its code, not its category: both the assured and the
@@ -230,9 +237,7 @@ public class ClaimPackPayloadBuilder {
 
     private void mapGrounds(Set<ClaimGroundEntity> allGrounds,
                             ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        // Exclude the "No grounds" sentinel so it never lists as a real ground, and an explicit-No
-        // answer reports hasGroundsYesNo = No.
-        List<ClaimGroundEntity> grounds = realGrounds(allGrounds);
+        List<ClaimGroundEntity> grounds = groundsExcludingNoGroundsSentinel(allGrounds);
         if (grounds.isEmpty()) {
             payloadBuilder.grounds(Collections.emptyList());
             payloadBuilder.groundsWithReasons(Collections.emptyList());
@@ -268,13 +273,7 @@ public class ClaimPackPayloadBuilder {
         boolean hasOther = anyGroundIsOther(grounds);
         payloadBuilder.hasOtherGround(hasOther);
 
-        // First "Other" ground's description, if any.
-        grounds.stream()
-            .filter(g -> "OTHER".equals(g.getCode()))
-            .map(ClaimGroundEntity::getDescription)
-            .filter(d -> d != null && !d.isBlank())
-            .findFirst()
-            .ifPresent(payloadBuilder::otherGroundsDescription);
+        firstOtherGroundDescription(grounds).ifPresent(payloadBuilder::otherGroundsDescription);
 
         boolean hasAbsolute = anyGroundHasCode(grounds, "ABSOLUTE_GROUNDS");
         payloadBuilder.isNoOrAbsoluteOrOtherGrounds(hasAbsolute || hasOther);
