@@ -49,27 +49,16 @@ class DispatchingPartyAccessCodeHashingServiceTest {
     }
 
     @Test
-    void shouldRouteFindMatchingToHashedWhenFlagOn() {
+    void shouldAlwaysVerifyViaHashedImplAndIgnoreFlag() {
         PartyAccessCodeRepository repository = mock(PartyAccessCodeRepository.class);
         UUID caseId = UUID.randomUUID();
         PartyAccessCodeEntity entity = PartyAccessCodeEntity.builder().build();
-        when(featureToggle.isAccessCodeHashingEnabled()).thenReturn(true);
         when(hashedImpl.findMatchingAccessCode(repository, caseId, "CODE")).thenReturn(Optional.of(entity));
 
+        // Reads never consult the flag, so codes minted under either scheme keep verifying after a
+        // flip in either direction. verifyNoInteractions(featureToggle) is the rollback-safety guard.
         assertThat(underTest.findMatchingAccessCode(repository, caseId, "CODE")).contains(entity);
         verify(hashedImpl).findMatchingAccessCode(repository, caseId, "CODE");
-        verifyNoInteractions(cleartextImpl);
-    }
-
-    @Test
-    void shouldRouteFindMatchingToCleartextWhenFlagOff() {
-        PartyAccessCodeRepository repository = mock(PartyAccessCodeRepository.class);
-        UUID caseId = UUID.randomUUID();
-        when(featureToggle.isAccessCodeHashingEnabled()).thenReturn(false);
-        when(cleartextImpl.findMatchingAccessCode(repository, caseId, "CODE")).thenReturn(Optional.empty());
-
-        assertThat(underTest.findMatchingAccessCode(repository, caseId, "CODE")).isEmpty();
-        verify(cleartextImpl).findMatchingAccessCode(repository, caseId, "CODE");
-        verifyNoInteractions(hashedImpl);
+        verifyNoInteractions(cleartextImpl, featureToggle);
     }
 }

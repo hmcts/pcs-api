@@ -17,7 +17,8 @@ public class FeatureToggleService {
     private final FeatureToggleApi featureToggleApi;
 
     public boolean isAccessCodeHashingEnabled() {
-        // Default false preserves today's cleartext behaviour if LD is unreachable.
-        return featureToggleApi.isFeatureEnabled(ACCESS_CODE_HASHING, false);
+        // Fail safe to hashing when LD is unreachable. Prod runs offline (no SDK key) and must
+        // always hash; only non-prod envs mount a key and toggle this off for testing.
+        return featureToggleApi.isFeatureEnabled(ACCESS_CODE_HASHING, true);
     }
 }

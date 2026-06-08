@@ -24,6 +24,9 @@ java:
           alias: PCS_PRD_ADMIN_USERNAME
         - name: pcs-prd-admin-password
           alias: PCS_PRD_ADMIN_PASSWORD
+        # Mounted only in preview: the one env where the access-code-hashing flag can be toggled at runtime.
+        - name: launchdarkly-sdk-key
+          alias: LAUNCHDARKLY_SDK_KEY
   environment:
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
@@ -32,7 +35,7 @@ java:
     SPRING_FLYWAY_LOCATIONS: "classpath:db/migration,classpath:db/testdata"
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
-    LAUNCHDARKLY_ENV: "aat"
+    LAUNCHDARKLY_ENV: "preview"
     DB_SCHEDULER_EXECUTOR_ENABLED: true
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net

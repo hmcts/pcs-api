@@ -23,17 +23,18 @@ class FeatureToggleServiceTest {
     private FeatureToggleService underTest;
 
     @Test
-    void shouldReturnTrueWhenFlagEnabled() {
-        when(featureToggleApi.isFeatureEnabled(FLAG_KEY, false)).thenReturn(true);
+    void shouldReturnFalseWhenLdDisablesTheFlag() {
+        when(featureToggleApi.isFeatureEnabled(FLAG_KEY, true)).thenReturn(false);
 
-        assertThat(underTest.isAccessCodeHashingEnabled()).isTrue();
+        assertThat(underTest.isAccessCodeHashingEnabled()).isFalse();
     }
 
     @Test
-    void shouldDefaultToFalseWhenFlagDisabled() {
-        when(featureToggleApi.isFeatureEnabled(FLAG_KEY, false)).thenReturn(false);
+    void shouldFailSafeToHashingWithTrueDefault() {
+        when(featureToggleApi.isFeatureEnabled(FLAG_KEY, true)).thenReturn(true);
 
-        assertThat(underTest.isAccessCodeHashingEnabled()).isFalse();
-        verify(featureToggleApi).isFeatureEnabled(FLAG_KEY, false);
+        assertThat(underTest.isAccessCodeHashingEnabled()).isTrue();
+        // The true default is what makes prod (offline) and any LD outage fail safe to hashing.
+        verify(featureToggleApi).isFeatureEnabled(FLAG_KEY, true);
     }
 }

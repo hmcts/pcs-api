@@ -10,10 +10,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Routes access-code encoding/verification to the cleartext or BCrypt implementation
- * per call, based on the {@code access-code-hashing-enabled} LaunchDarkly flag. Flipping
- * the flag switches hashing on/off at runtime with no redeploy. Replaces the old
- * {@code @ConditionalOnProperty} env-var selection.
+ * Gates how new access codes are stored on the {@code access-code-hashing-enabled} LaunchDarkly
+ * flag, while verification stays scheme-agnostic. Only the write path follows the flag; reads always
+ * go through the BCrypt impl, which verifies both BCrypt-stored and cleartext-stored codes. That
+ * keeps codes verifiable when the flag is flipped either way (no broken rollback). Flipping the flag
+ * switches hashing on/off at runtime with no redeploy. Replaces the old {@code @ConditionalOnProperty}.
  */
 @Service
 @Primary
@@ -26,7 +27,10 @@ public class DispatchingPartyAccessCodeHashingService implements PartyAccessCode
 
     @Override
     public String encodeForStorage(String accessCode) {
-        return delegate().encodeForStorage(accessCode);
+        // WRITE: the flag decides how new codes are stored.
+        return featureToggle.isAccessCodeHashingEnabled()
+            ? hashedImpl.encodeForStorage(accessCode)
+            : cleartextImpl.encodeForStorage(accessCode);
     }
 
     @Override
@@ -35,10 +39,8 @@ public class DispatchingPartyAccessCodeHashingService implements PartyAccessCode
         UUID caseId,
         String accessCode
     ) {
-        return delegate().findMatchingAccessCode(repository, caseId, accessCode);
-    }
-
-    private PartyAccessCodeHashingService delegate() {
-        return featureToggle.isAccessCodeHashingEnabled() ? hashedImpl : cleartextImpl;
+        // READ: never consult the flag. hashedImpl verifies BCrypt-stored (encoder.matches) and
+        // cleartext-stored (equality fallback) codes, so verification survives a flag flip either way.
+        return hashedImpl.findMatchingAccessCode(repository, caseId, accessCode);
     }
 }

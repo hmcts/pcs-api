@@ -29,8 +29,6 @@ java:
           alias: PCS_PRD_ADMIN_PASSWORD
         - name: ccd-elastic-search-hosts
           alias: ELASTIC_SEARCH_HOSTS
-        - name: launchdarkly-sdk-key
-          alias: LAUNCHDARKLY_SDK_KEY
   environment:
     PCS_DB_PORT: "5432"
     PCS_DB_USER_NAME: pgadmin
@@ -48,7 +46,9 @@ java:
     PAY_CALLBACK_URL: "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/payment-update"
     FLYWAY_NOOP_STRATEGY: "false"
     SPRING_FLYWAY_ENABLED: "true"
-    LAUNCHDARKLY_ENV: "{{ .Values.global.environment }}"
+    # No LaunchDarkly SDK key mounted here: prod and other envs run the LD client offline, so the
+    # access-code-hashing flag falls back to its true code-default (always hashed). Only preview
+    # mounts a key and can toggle. See FeatureToggleService.
     CCD_DATA_STORE_URL: "http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     RD_PROFESSIONAL_API_URL: "http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
 servicebus:
