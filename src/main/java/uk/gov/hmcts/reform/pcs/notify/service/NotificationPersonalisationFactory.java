@@ -46,12 +46,10 @@ public class NotificationPersonalisationFactory {
 
         boolean isNameKnown = primaryDefendantDetails.getNameKnown() != null
             && primaryDefendantDetails.getNameKnown().toBoolean();
-        String firstName = primaryDefendantDetails.getFirstName();
-        String lastName = primaryDefendantDetails.getLastName();
-
-        String primaryDefendantName = isNameKnown && firstName != null && lastName != null
-            ? formatNameUpperForNotification(firstName, lastName)
-            : "PERSONS UNKNOWN";
+        String primaryDefendantName = getDefendantName(
+            isNameKnown,
+            primaryDefendantDetails.getFirstName(),
+            primaryDefendantDetails.getLastName());
 
         return ClaimantBasePersonalisation.builder()
             .toLineClaimantName(toLineClaimantName)
@@ -84,8 +82,11 @@ public class NotificationPersonalisationFactory {
         String claimantName = primaryClaimant.getOrgName() != null
             ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
             : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
-        String primaryDefendantName
-            = formatNameUpperForNotification(primaryDefendant.getFirstName(), primaryDefendant.getLastName());
+
+        String primaryDefendantName = getDefendantName(
+            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
+            primaryDefendant.getFirstName(),
+            primaryDefendant.getLastName());
 
         return BasePersonalisation.builder()
             .firstName(emailRecipient.getFirstName() != null
@@ -103,6 +104,12 @@ public class NotificationPersonalisationFactory {
         return isClaimantNameOverridden == null || isClaimantNameOverridden.toBoolean()
             ? claimantInformation.getClaimantName()
             : claimantInformation.getOverriddenClaimantName();
+    }
+
+    private static String getDefendantName(boolean isNameKnown, String firstName, String lastName) {
+        return isNameKnown && firstName != null && lastName != null
+            ? formatNameUpperForNotification(firstName, lastName)
+            : "PERSONS UNKNOWN";
     }
 
     private static String formatNameUpperForNotification(String firstName, String lastName) {

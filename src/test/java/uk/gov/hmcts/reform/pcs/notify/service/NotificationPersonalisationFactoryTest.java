@@ -106,6 +106,18 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("firstName", "Defendant Corp")
                 .containsEntry("lastName", "");
         }
+
+        @Test
+        @DisplayName("Should use PERSONS UNKNOWN when defendant name is not known")
+        void shouldUsePersonsUnknownWhenDefendantNameNotKnown() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            BasePersonalisation result = factory.forDefendant(response);
+
+            assertThat(result.toMap()).containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
     }
 
     @Nested
@@ -143,6 +155,18 @@ class NotificationPersonalisationFactoryTest {
             assertThat(map)
                 .containsEntry("firstName", "Claimant Corp")
                 .containsEntry("lastName", "");
+        }
+
+        @Test
+        @DisplayName("Should use PERSONS UNKNOWN when defendant name is not known")
+        void shouldUsePersonsUnknownWhenDefendantNameNotKnown() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
+            ClaimEntity claim = createClaim(claimantParty, defendantParty);
+
+            BasePersonalisation result = factory.forClaimant(claim);
+
+            assertThat(result.toMap()).containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
         }
     }
 
@@ -327,7 +351,12 @@ class NotificationPersonalisationFactoryTest {
     }
 
     private PartyEntity stubDefendantParty() {
+        return stubDefendantParty(VerticalYesNo.YES);
+    }
+
+    private PartyEntity stubDefendantParty(VerticalYesNo nameKnown) {
         PartyEntity defendantParty = createParty("John", "Doe");
+        defendantParty.setNameKnown(nameKnown);
         when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(defendantParty);
         return defendantParty;
     }
@@ -337,16 +366,19 @@ class NotificationPersonalisationFactoryTest {
         PartyEntity party = new PartyEntity();
         party.setFirstName(firstName);
         party.setLastName(lastName);
+        party.setNameKnown(VerticalYesNo.YES);
         return party;
     }
 
     private ClaimEntity createClaim(PartyEntity claimantParty) {
+        return createClaim(claimantParty, stubDefendantParty());
+    }
+
+    private ClaimEntity createClaim(PartyEntity claimantParty, PartyEntity defendantParty) {
         ClaimEntity claim = new ClaimEntity();
         claim.setPcsCase(pcsCaseEntity);
 
         claim.addParty(claimantParty, PartyRole.CLAIMANT);
-
-        PartyEntity defendantParty = stubDefendantParty();
         claim.addParty(defendantParty, PartyRole.DEFENDANT);
 
         return claim;
@@ -357,7 +389,7 @@ class NotificationPersonalisationFactoryTest {
         response.setId(UUID.randomUUID());
         response.setPcsCase(pcsCaseEntity);
         response.setParty(defendantParty);
-        response.setClaim(createClaim(claimantParty));
+        response.setClaim(createClaim(claimantParty, defendantParty));
         return response;
     }
 
