@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
 
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -104,7 +106,7 @@ public class ClaimPackPayloadBuilder {
      */
     private void mapClaimDetailsShowFlags(PcsCaseEntity pcsCase, ClaimEntity claim,
                                           ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        boolean isWales = isWalesJourney(pcsCase);
+        boolean isWales = isWalesClaim(pcsCase);
         boolean isEngland = !isWales;
         boolean isIntroDemotedOther = isIntroDemotedOtherTenancy(pcsCase.getTenancyLicence());
         // Strip the "No grounds" sentinel (written when the claimant answered "No") before deriving
@@ -136,7 +138,7 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.showTenancyUploadedQuestion(isEngland && tenancyCopyAnswered);
     }
 
-    private static boolean isWalesJourney(PcsCaseEntity pcsCase) {
+    private static boolean isWalesClaim(PcsCaseEntity pcsCase) {
         return pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
     }
 
@@ -175,13 +177,11 @@ public class ClaimPackPayloadBuilder {
     }
 
     private static boolean isNoticeServedYes(NoticeOfPossessionEntity notice) {
-        return notice != null
-            && notice.getNoticeServed() != null
-            && "YES".equalsIgnoreCase(notice.getNoticeServed().name());
+        return notice != null && notice.getNoticeServed() == YesOrNo.YES;
     }
 
     private void mapCase(PcsCaseEntity pcsCase, ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
-        boolean isWales = pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
+        boolean isWales = isWalesClaim(pcsCase);
         payloadBuilder.isWales(isWales);
         payloadBuilder.isEngland(!isWales);
         AddressEntity propertyAddress = pcsCase.getPropertyAddress();
@@ -263,8 +263,7 @@ public class ClaimPackPayloadBuilder {
         payloadBuilder.hasRentArrearsGround(hasRentArrears);
 
         boolean hasAsb = grounds.stream()
-            .filter(g -> g.getCategory() != null)
-            .anyMatch(g -> g.getCategory().name().contains("ANTISOCIAL"));
+            .anyMatch(g -> g.getCategory() == ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL);
         payloadBuilder.hasAsbGround(hasAsb);
 
         boolean hasOther = anyGroundIsOther(grounds);
@@ -476,8 +475,7 @@ public class ClaimPackPayloadBuilder {
         if (sot == null) {
             return;
         }
-        boolean legalRep = sot.getCompletedBy() != null
-            && "LEGAL_REPRESENTATIVE".equals(sot.getCompletedBy().name());
+        boolean legalRep = sot.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE;
         payloadBuilder.signedByLegalRep(legalRep);
         payloadBuilder.signedByClaimant(!legalRep);
         payloadBuilder.sotFullName(sot.getFullName());
