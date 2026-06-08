@@ -31,6 +31,74 @@ test.afterEach(async () => {
 });
 
 test.describe('[Case tabs - Wales Journey] @nightly', async () => {
+  test('Case tabs Wales - Summary tab test @MAC @regression', async () => {
+    await performAction('clickTab', home.caseSummary);
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiWalesData.createCasePayload,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+      section: 'Address of property',
+      table: 'Address of property to be repossessed'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiWalesData.createCasePayload,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+      section: 'Grounds of possession Wales',
+      table: 'Grounds for possession'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiWalesData.createCasePayload,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+      section: 'Reasons for possession Wales',
+      table: 'Reasons for possession',
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiWalesData.createCasePayload,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+      section: 'Claimant details',
+      table: 'Claimant'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiWalesData.createCasePayload,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+      section: 'Defendant details',
+      table: 'Defendant 1'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiWalesData.createCasePayload,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+      section: 'Rent arrears',
+      table: 'Details of rent arrears'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiWalesData.createCasePayload,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+      section: 'Occupation contract or licence',
+      table: 'Occupation contract or licence details'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiWalesData.createCasePayload,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+      section: 'Notice',
+      table: 'Notice details'
+    });
+  });
+  
   test('Case tabs Wales - Case Details tab test @MAC @regression', async () => {
     await performAction('clickTab', home.caseDetails);
     await performAction('validateCaseSummaryDetails', {

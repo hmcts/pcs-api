@@ -13,7 +13,7 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
-  askTheCourtToSetAsideTheOrder, chooseAnApplication,
+  askTheCourtToSetAsideTheOrder, checkYourAnswersGenApps, chooseAnApplication,
   doYouWantToUploadDocumentsToSupportDefendantsApplication,
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty,
@@ -21,6 +21,7 @@ import {
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
+import {confirmGenApps} from "@data/page-data-figma/page-data-genApps-figma/confirmGenApps.page.data";
 
 test.use({ storageState: undefined });
 
@@ -68,7 +69,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Set aside @regression @smoke', async () => {
+  test('Select an Application - Ask to Set aside @regression @PR @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
@@ -117,6 +118,21 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       option: whichLanguageDidYouUseToCompleteThisService.englishRadioOption,
     });
     await performValidation('mainHeader', statementOfTruth.mainHeader);
+    await performAction('selectStatementOfTruth', {
+      question: statementOfTruth.completedByTheDefendantsLegalParagraph,
+      option: statementOfTruth.theDefendantBelievesCheckBox,
+      label1: statementOfTruth.fullNameTextLabel,
+      input1: statementOfTruth.fullNameTextInput,
+      label2: statementOfTruth.nameOfFirmTextLabel,
+      input2: statementOfTruth.nameOfFirmTextInput,
+      label3: statementOfTruth.positionOrOfficeHeldTextLabel,
+      input3: statementOfTruth.positionOrOfficeHeldTextInput,
+    });
+    await performValidation('mainHeader', checkYourAnswersGenApps.mainHeader);
+    await performAction('retrieveCYATableData', { name: 'check your answers table' });
+    await performAction('validateCYA');
+    await performAction('clickButton', checkYourAnswersGenApps.submitButton);
+    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
   });
-
 });
