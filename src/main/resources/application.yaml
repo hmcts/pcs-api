@@ -228,10 +228,16 @@ fees:
     backoff-delay-seconds: ${FEES_AND_PAY_TASK_BACKOFF_DELAY_SECONDS:600s}
 
 access-code:
-  hash-pins-enabled: ${HASH_PINS_ENABLED:false}
   request:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
+
+# Env-var names match the SDK docs (no separator). Blank sdk-key starts the client offline.
+launchdarkly:
+  sdk-key: ${LAUNCHDARKLY_SDK_KEY:}
+  offline-mode: ${LAUNCHDARKLY_OFFLINE:false}
+  env: ${LAUNCHDARKLY_ENV:default}
+  file: ${LAUNCHDARKLY_FILE:}
 
 role-assignment:
   request:

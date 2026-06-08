@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.service;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
@@ -8,8 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import java.util.Optional;
 import java.util.UUID;
 
+// Cleartext impl; selected at runtime by DispatchingPartyAccessCodeHashingService when the LD flag is off.
 @Service
-@ConditionalOnProperty(name = "access-code.hash-pins-enabled", havingValue = "false", matchIfMissing = true)
 public class SimplePartyAccessCodeService implements PartyAccessCodeHashingService {
 
     @Override
