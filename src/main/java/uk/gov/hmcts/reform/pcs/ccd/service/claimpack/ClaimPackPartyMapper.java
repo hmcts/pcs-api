@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackAddress;
+import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackAddressRow;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackDefendantRow;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackParty;
@@ -37,7 +38,7 @@ class ClaimPackPartyMapper {
         }
         ClaimPackParty claimant = toClaimPackParty(claimants.getFirst());
         payloadBuilder.claimant(claimant);
-        payloadBuilder.claimantDisplayName(deriveDisplayName(claimant));
+        payloadBuilder.claimantDisplayName(derivePartyDisplayName(claimants.getFirst()));
         ClaimPackAddress address = claimant.getAddress();
         payloadBuilder.hasClaimantAddressLine2(address != null && isPopulated(address.getAddressLine2()));
         payloadBuilder.hasClaimantAddressLine3(address != null && isPopulated(address.getAddressLine3()));
@@ -77,50 +78,45 @@ class ClaimPackPartyMapper {
     // A defendant with no address of their own falls back to the property address
     // (the claim form can't show a defendant address as "unknown").
     private ClaimPackDefendantRow toDefendantRow(PartyEntity defendant, int number, AddressEntity propertyAddress) {
-        AddressEntity address = pickAddressOrFallback(defendant.getAddress(), propertyAddress);
-        ClaimPackDefendantRow.ClaimPackDefendantRowBuilder rowBuilder = ClaimPackDefendantRow.builder()
+        ClaimPackDefendantRow row = ClaimPackDefendantRow.builder()
             .defendantNumber(number)
             .heading(formatDefendantHeading(number))
-            .displayName(derivePartyDisplayName(defendant));
-        // Both the defendant's own address and the property fallback can be absent, so guard the
-        // dereference; the address rows then don't render instead of throwing.
-        if (address != null) {
-            rowBuilder
-                .addressLine1(address.getAddressLine1())
-                .addressLine2(address.getAddressLine2())
-                .addressLine3(address.getAddressLine3())
-                .postTown(address.getPostTown())
-                .county(address.getCounty())
-                .postcode(address.getPostcode())
-                .hasAddressLine2(isPopulated(address.getAddressLine2()))
-                .hasAddressLine3(isPopulated(address.getAddressLine3()))
-                .hasCounty(isPopulated(address.getCounty()));
-        }
-        return rowBuilder.build();
+            .displayName(derivePartyDisplayName(defendant))
+            .build();
+        applyAddress(row, pickAddressOrFallback(defendant.getAddress(), propertyAddress));
+        return row;
     }
 
     // Each underlessee/mortgagee renders either a full address or a single "Address unknown" line.
     private ClaimPackUnderlesseeRow toUnderlesseeRow(PartyEntity underlessee, int number) {
         AddressEntity address = underlessee.getAddress();
         boolean addressKnown = address != null && isPopulated(address.getAddressLine1());
-        ClaimPackUnderlesseeRow.ClaimPackUnderlesseeRowBuilder rowBuilder = ClaimPackUnderlesseeRow.builder()
+        ClaimPackUnderlesseeRow row = ClaimPackUnderlesseeRow.builder()
             .underlesseeNumber(number)
             .heading(formatUnderlesseeHeading(number))
             .displayName(derivePartyDisplayName(underlessee))
             .addressKnown(addressKnown)
-            .addressUnknown(!addressKnown);
-        if (addressKnown) {
-            rowBuilder.addressLine1(address.getAddressLine1());
-            rowBuilder.addressLine2(address.getAddressLine2());
-            rowBuilder.addressLine3(address.getAddressLine3());
-            rowBuilder.postTown(address.getPostTown());
-            rowBuilder.county(address.getCounty());
-            rowBuilder.postcode(address.getPostcode());
-            rowBuilder.hasAddressLine2(isPopulated(address.getAddressLine2()));
-            rowBuilder.hasAddressLine3(isPopulated(address.getAddressLine3()));
-            rowBuilder.hasCounty(isPopulated(address.getCounty()));
+            .addressUnknown(!addressKnown)
+            .build();
+        applyAddress(row, addressKnown ? address : null);
+        return row;
+    }
+
+    // Populate the shared address fields. A null address (or unknown underlessee address) leaves the
+    // rows unset so they don't render.
+    private static void applyAddress(ClaimPackAddressRow row, AddressEntity address) {
+        if (address == null) {
+            return;
         }
-        return rowBuilder.build();
+        row.setAddressLine1(address.getAddressLine1());
+        row.setAddressLine2(address.getAddressLine2());
+        row.setAddressLine3(address.getAddressLine3());
+        row.setPostTown(address.getPostTown());
+        row.setCounty(address.getCounty());
+        row.setPostcode(address.getPostcode());
+        row.setHasAddressLine2(isPopulated(address.getAddressLine2()));
+        row.setHasAddressLine3(isPopulated(address.getAddressLine3()));
+        row.setHasCounty(isPopulated(address.getCounty()));
     }
 
     private static AddressEntity pickAddressOrFallback(AddressEntity defendantAddress, AddressEntity propertyAddress) {
@@ -149,22 +145,13 @@ class ClaimPackPartyMapper {
             .build();
     }
 
-    // From a PartyEntity: org name, else "Persons unknown" if name not known or absent, else "first last".
+    // Org name, else "Persons unknown" when the name isn't known or is absent, else "first last".
     private static String derivePartyDisplayName(PartyEntity party) {
         if (isPopulated(party.getOrgName())) {
             return party.getOrgName();
         }
         if (isNo(party.getNameKnown())) {
             return "Persons unknown";
-        }
-        String name = joinName(party.getFirstName(), party.getLastName());
-        return name.isEmpty() ? "Persons unknown" : name;
-    }
-
-    // From the mapped ClaimPackParty: org name, else "first last", else "Persons unknown".
-    private static String deriveDisplayName(ClaimPackParty party) {
-        if (isPopulated(party.getOrgName())) {
-            return party.getOrgName();
         }
         String name = joinName(party.getFirstName(), party.getLastName());
         return name.isEmpty() ? "Persons unknown" : name;

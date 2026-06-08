@@ -16,7 +16,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class ClaimPackUnderlesseeRow {
+public class ClaimPackUnderlesseeRow implements ClaimPackAddressRow {
 
     private int underlesseeNumber;
     private String heading;
