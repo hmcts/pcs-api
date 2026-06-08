@@ -9,5 +9,8 @@ export default {
   'makeAnApplicationappliedForHelpWithFees': 'haveTheyAlreadyAppliedForHelpWithFees',
   'makeAnApplicationotherPartiesAgreed': 'hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication',
   'makeAnApplicationreasonsNotToShare': 'areThereAnyReasonsThatThisApplicationShouldNotBeShared',
-  'makeAnApplicationwhatOrderWanted': 'whatOrderDoYouWantTheCourtToMakeAndWhy'
+  'makeAnApplicationwhatOrderWanted': 'whatOrderDoYouWantTheCourtToMakeAndWhy',
+  'makeAnApplicationdocumentUploadWanted' : 'doYouWantToUploadDocumentsToSupportDefendantsApplication',
+  'makeAnApplicationuploadSupportingDocuments': 'uploadDocumentsToSupportDefendantsApplication',
+  'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService',
 };
