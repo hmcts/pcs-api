@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
@@ -935,6 +937,33 @@ class DocumentServiceTest {
         verify(documentRepository, never()).saveAll(anyList());
     }
 
+    @Test
+    void shouldThrowClaimNotFoundExceptionWhenCaseHasNoClaims() {
+        // Given
+        long caseReference = 1234567890123456L;
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCase.getClaims()).thenReturn(Collections.emptyList());
+        when(pcsCase.getCaseReference()).thenReturn(caseReference);
+
+        UploadedDocument uploaded = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-new").filename("file-new.pdf").binaryUrl("bin-new").build())
+            .build();
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
+        );
+
+        // When / Then
+        assertThatThrownBy(() ->
+            underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null))
+            .isInstanceOf(ClaimNotFoundException.class)
+            .hasMessageContaining(String.valueOf(caseReference));
+
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
     private static Stream<Arguments> additionalDocumentCategoryScenarios() {
         return Stream.of(
             Arguments.of(
@@ -957,60 +986,4 @@ class DocumentServiceTest {
         );
     }
 
-    private static Stream<Arguments> additionalDocumentTypeScenarios() {
-        return Stream.of(
-            Arguments.of(
-                AdditionalDocumentType.WITNESS_STATEMENT,
-                DocumentType.WITNESS_STATEMENT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.RENT_STATEMENT,
-                DocumentType.RENT_STATEMENT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.TENANCY_AGREEMENT,
-                DocumentType.TENANCY_AGREEMENT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.CERTIFICATE_OF_SERVICE,
-                DocumentType.CERTIFICATE_OF_SERVICE
-            ),
-            Arguments.of(
-                AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT,
-                DocumentType.CORRESPONDENCE_FROM_DEFENDANT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT,
-                DocumentType.CORRESPONDENCE_FROM_CLAIMANT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.POSSESSION_NOTICE,
-                DocumentType.POSSESSION_NOTICE
-            ),
-            Arguments.of(
-                AdditionalDocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
-                DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION
-            ),
-            Arguments.of(
-                AdditionalDocumentType.PHOTOGRAPHIC_EVIDENCE,
-                DocumentType.PHOTOGRAPHIC_EVIDENCE
-            ),
-            Arguments.of(
-                AdditionalDocumentType.INSPECTION_OR_REPORT,
-                DocumentType.INSPECTION_OR_REPORT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF,
-                DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF
-            ),
-            Arguments.of(
-                AdditionalDocumentType.LEGAL_AID_CERTIFICATE,
-                DocumentType.LEGAL_AID_CERTIFICATE
-            ),
-            Arguments.of(
-                AdditionalDocumentType.OTHER,
-                DocumentType.OTHER
-            )
-        );
-    }
 }

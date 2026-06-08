@@ -279,6 +279,19 @@ class UploadDocumentsTest extends BaseEventTest {
         }
 
         @Test
+        void shouldExcludeGenAppsWithNoApplicationSubmittedDate() {
+            GenAppEntity undated = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, null);
+
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(undated));
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions()).isEmpty();
+            assertThat(result.getDocumentUploadDetails().getShowRelatedApplicationsPage())
+                .isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
         void shouldSortOptionsByLatestSubmittedDateDescending() {
             LocalDateTime now = LocalDateTime.now();
             GenAppEntity oldestAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, now.minusDays(10));
