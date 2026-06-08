@@ -32,8 +32,8 @@ public class LocationReferenceService {
         }
         String formattedEpimIds = formatEpimIds(epimIds);
         log.debug("Getting County courts from /refdata/location/court-venues for EpimIds {}", formattedEpimIds);
-        return locationReferenceApi.getCourtVenues(authTokenGenerator.generate(),
-                                                    systemUpdateUserTokenProvider.getAuthToken(),
+        return locationReferenceApi.getCourtVenues(systemUpdateUserTokenProvider.getAuthToken(),
+                                                   authTokenGenerator.generate(),
                                                     formattedEpimIds, countyCourtTypeId);
     }
 

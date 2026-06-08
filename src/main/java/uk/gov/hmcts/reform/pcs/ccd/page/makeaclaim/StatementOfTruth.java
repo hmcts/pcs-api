@@ -57,7 +57,9 @@ public class StatementOfTruth implements CcdPageConfiguration {
         if (allocateRegionId) {
             pcsCaseService.allocateRegionId(details.getData());
         }
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().build();
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(details.getData())
+            .build();
     }
 
 }

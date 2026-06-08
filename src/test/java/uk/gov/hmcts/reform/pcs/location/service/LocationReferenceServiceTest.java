@@ -29,12 +29,13 @@ public class LocationReferenceServiceTest {
 
     private static final String SERVICE_AUTH_TOKEN = "service-auth-token";
     private static final String SYSTEM_USER_TOKEN = "Bearer system-user-token";
-    private static final Integer BRENTFORD_COURT_EPIM_ID = 36791;
-    private static final Integer LONDON_COURT_EPIM_ID = 20262;
+    private static final String BRENTFORD_COURT_EPIM_ID = "36791";
+    private static final String LONDON_COURT_EPIM_ID = "20262";
     private static final int COUNTY_COURT_TYPE_ID = 10;
-    public static final List<@NotNull Integer> EPIM_IDS = List.of(BRENTFORD_COURT_EPIM_ID, LONDON_COURT_EPIM_ID);
-    private final String multipleEpimIdsJoined = String.join(",", BRENTFORD_COURT_EPIM_ID.toString(),
-            LONDON_COURT_EPIM_ID.toString());
+    public static final List<@NotNull Integer> EPIM_IDS = List.of(
+        Integer.valueOf(BRENTFORD_COURT_EPIM_ID), Integer.valueOf(LONDON_COURT_EPIM_ID));
+    private final String multipleEpimIdsJoined = String.join(",", BRENTFORD_COURT_EPIM_ID,
+            LONDON_COURT_EPIM_ID);
 
     @Mock
     private LocationReferenceApi locationReferenceApi;
@@ -57,23 +58,26 @@ public class LocationReferenceServiceTest {
     @Test
     void shouldReturnCourtVenues_whenCalledWithValidSingleEpimId() {
         List<CourtVenue> expectedCourtVenues = List.of(
-                new CourtVenue(BRENTFORD_COURT_EPIM_ID, 40838, "Brentford County Court And Family Court")
-        );
+            newCourtVenue(
+                "123",
+                "Brentford County Court And Family Court",
+                BRENTFORD_COURT_EPIM_ID));
         when(locationReferenceApi.getCourtVenues(
-            SERVICE_AUTH_TOKEN,
             SYSTEM_USER_TOKEN,
-            BRENTFORD_COURT_EPIM_ID.toString(),
+            SERVICE_AUTH_TOKEN,
+            BRENTFORD_COURT_EPIM_ID,
             COUNTY_COURT_TYPE_ID))
             .thenReturn(expectedCourtVenues);
 
-        List<CourtVenue> actualCourtVenues = locationReferenceService.getCourtVenues(List.of(BRENTFORD_COURT_EPIM_ID));
+        List<CourtVenue> actualCourtVenues = locationReferenceService
+            .getCourtVenues(List.of(Integer.valueOf(BRENTFORD_COURT_EPIM_ID)));
 
         assertThat(expectedCourtVenues).isEqualTo(actualCourtVenues);
         verify(authTokenGenerator).generate();
         verify(locationReferenceApi).getCourtVenues(
-            SERVICE_AUTH_TOKEN,
             SYSTEM_USER_TOKEN,
-            BRENTFORD_COURT_EPIM_ID.toString(),
+            SERVICE_AUTH_TOKEN,
+            BRENTFORD_COURT_EPIM_ID,
             COUNTY_COURT_TYPE_ID
         );
     }
@@ -81,12 +85,18 @@ public class LocationReferenceServiceTest {
     @Test
     void shouldReturnCourtVenues_whenCalledWithValidMultipleEpimIds() {
         List<CourtVenue> expectedCourtVenues = List.of(
-                new CourtVenue(BRENTFORD_COURT_EPIM_ID, 40838, "Brentford County Court And Family Court"),
-                new CourtVenue(LONDON_COURT_EPIM_ID, 40827, "Central London County Court")
+            newCourtVenue(
+                "123",
+                "Brentford County Court And Family Court",
+                BRENTFORD_COURT_EPIM_ID),
+            newCourtVenue(
+                "456",
+                "Central London County Court",
+                LONDON_COURT_EPIM_ID)
         );
         when(locationReferenceApi.getCourtVenues(
-            SERVICE_AUTH_TOKEN,
             SYSTEM_USER_TOKEN,
+            SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
             COUNTY_COURT_TYPE_ID))
                 .thenReturn(expectedCourtVenues);
@@ -96,8 +106,8 @@ public class LocationReferenceServiceTest {
         assertThat(expectedCourtVenues).isEqualTo(actualCourtVenues);
         verify(authTokenGenerator).generate();
         verify(locationReferenceApi).getCourtVenues(
-            SERVICE_AUTH_TOKEN,
             SYSTEM_USER_TOKEN,
+            SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
             COUNTY_COURT_TYPE_ID
         );
@@ -106,8 +116,8 @@ public class LocationReferenceServiceTest {
     @Test
     void shouldReturnEmptyCourtVenuesList_whenCalledWithValidMultipleEpimIds() {
         when(locationReferenceApi.getCourtVenues(
-            SERVICE_AUTH_TOKEN,
             SYSTEM_USER_TOKEN,
+            SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
             COUNTY_COURT_TYPE_ID
         )).thenReturn(Collections.emptyList());
@@ -118,8 +128,8 @@ public class LocationReferenceServiceTest {
 
         verify(authTokenGenerator).generate();
         verify(locationReferenceApi).getCourtVenues(
-            SERVICE_AUTH_TOKEN,
             SYSTEM_USER_TOKEN,
+            SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
             COUNTY_COURT_TYPE_ID
         );
@@ -138,8 +148,8 @@ public class LocationReferenceServiceTest {
     @Test
     void shouldThrow404NotfoundExceptionFromLocationReferenceThenReceiveEmptyListInResponse() {
         when(locationReferenceApi.getCourtVenues(
-            SERVICE_AUTH_TOKEN,
             SYSTEM_USER_TOKEN,
+            SERVICE_AUTH_TOKEN,
             "425094",
             COUNTY_COURT_TYPE_ID
         )).thenThrow(new RuntimeException("No matching courts found for LE2 0QB", null));
@@ -152,10 +162,32 @@ public class LocationReferenceServiceTest {
 
         verify(authTokenGenerator).generate();
         verify(locationReferenceApi).getCourtVenues(
-            SERVICE_AUTH_TOKEN,
             SYSTEM_USER_TOKEN,
+            SERVICE_AUTH_TOKEN,
             "425094",
             COUNTY_COURT_TYPE_ID
+        );
+    }
+
+    CourtVenue newCourtVenue(String courtLocationId, String locationName, String epimId) {
+        return new CourtVenue(
+            courtLocationId,
+            locationName,
+            epimId,
+            "YES",
+            "County",
+            "London",
+            "1",
+            "London Cluster",
+            "1",
+            "",
+            "TW8 0JJ",
+            "Brentford County Court, Alexandra Road",
+            "020 1234 5678",
+            "",
+            "DX 12345 Brentford",
+            "",
+            ""
         );
     }
 }

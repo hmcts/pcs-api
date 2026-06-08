@@ -35,7 +35,7 @@ public class PostCodeCourtService {
             return null;
         }
         if (results.size() > 1) {
-            log.error("Multiple EpimId's found, Court management location not allocated for postcode: {}", postCode);
+            log.error("Multiple EpimIds found, Court management location not allocated for postcode: {}", postCode);
             return null;
         }
         log.info("Court management location allocated for postcode {}", postCode);
