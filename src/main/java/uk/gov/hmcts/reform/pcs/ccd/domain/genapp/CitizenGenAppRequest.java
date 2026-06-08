@@ -53,4 +53,10 @@ public class CitizenGenAppRequest implements GenAppRequest {
     @CCD(max = 60)
     private String clientReference;
 
+    @CCD(max = 100)
+    protected String sotFirmName;
+
+    @CCD(max = 100)
+    protected String sotPositionHeld;
+
 }
