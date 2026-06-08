@@ -1,0 +1,30 @@
+{
+  "userEmails": [
+    "pcs-caseworker@test.com",
+    "pcs-staff-admin@test.com",
+    "pcs-ctsc-admin-01@justice.gov.uk",
+    "pcs-ctsc-admin-ca-01@justice.gov.uk",
+    "pcs-ctsc-admin-ts-01@justice.gov.uk",
+    "pcs-ctsc-admin-ts-ca-01@justice.gov.uk",
+    "pcs-ctsc-team-leader-01@justice.gov.uk",
+    "pcs-ctsc-team-leader-ca-01@justice.gov.uk",
+    "pcs-ctsc-team-leader-ts-01@justice.gov.uk",
+    "pcs-ctsc-team-leader-ts-ca-01@justice.gov.uk",
+    "pcs-wlu-administrator-01@justice.gov.uk",
+    "pcs-wlu-administrator-ca-01@justice.gov.uk",
+    "pcs-wlu-administrator-ts-01@justice.gov.uk",
+    "pcs-wlu-administrator-ts-ca-01@justice.gov.uk",
+    "pcs-wlu-team-leader-01@justice.gov.uk",
+    "pcs-wlu-team-leader-ca-01@justice.gov.uk",
+    "pcs-wlu-team-leader-ts-01@justice.gov.uk",
+    "pcs-wlu-team-leader-ts-ca-01@justice.gov.uk",
+    "pcs-hearing-centre-team-leader-01@justice.gov.uk",
+    "pcs-hearing-centre-team-leader-ca-01@justice.gov.uk",
+    "pcs-hearing-centre-team-leader-ts-01@justice.gov.uk",
+    "pcs-hearing-centre-team-leader-ts-ca-01@justice.gov.uk",
+    "pcs-hearing-centre-administrator-01@justice.gov.uk",
+    "pcs-hearing-centre-administrator-ca-01@justice.gov.uk",
+    "pcs-hearing-centre-administrator-ts-01@justice.gov.uk",
+    "pcs-hearing-centre-administrator-ts-ca-01@justice.gov.uk"
+  ]
+}
