@@ -440,6 +440,26 @@ public class CaseDetailsTabViewTest {
     }
 
     @Test
+    void shouldNotThrowWhenUnderlesseeMortgageNameKnownOrAddressKnownIsNull() {
+        PCSCase pcsCase = PCSCase.builder()
+            .allUnderlesseeOrMortgagees(List.of(
+                listValue(
+                    Party.builder()
+                        .orgName("underlessee name")
+                        .build()
+                )
+            ))
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+        // Then
+        assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddressKnown()).isEqualTo(noAnswer);
+    }
+
+    @Test
     void shouldSetPlaceholderValuesIfOnlyAlternativesToPossessionIsSet() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
