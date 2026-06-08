@@ -34,7 +34,15 @@ public class ClaimGroundSummary {
     @JsonIgnore
     private int groundRank;
 
-    /** Maps a stored category and code to the ground enum. */
+    /**
+     * Maps a stored category and code to the ground enum.
+     *
+     * <p>Shared by the case-view grounds tab ({@code ClaimGroundsView}) and the claim pack
+     * ({@code ClaimPackFormatter.formatGroundLabel} via {@link #labelFor}). The claim pack is
+     * bulk-printed and posted to defendants, so a change to a ground's label or to this mapping
+     * changes that posted legal document. If you add or change grounds here, re-verify the claim
+     * pack render and bulk-print output.</p>
+     */
     public static PossessionGroundEnum resolveGround(ClaimGroundCategory category, String code) {
         return switch (category) {
             case ASSURED_MANDATORY -> AssuredMandatoryGround.valueOf(code);
