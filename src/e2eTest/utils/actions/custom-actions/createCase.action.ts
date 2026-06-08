@@ -1179,6 +1179,11 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`Do you have a copy of the tenancy or licence agreement?`, formatWord(submitPayLoad.tenancy_HasCopyOfTenancyLicence));
         caseSummary.set(`Details of why you do not have a copy`, submitPayLoad.tenancy_ReasonsForNoTenancyLicenceDocuments);
         break;
+      
+      case 'Occupation contract or licence':
+        caseSummary.set(`Occupation contract or licence agreement type`, formatText(submitPayLoad.occupationLicenceTypeWales));
+        caseSummary.set(`Occupation contract or licence start date`, formatDate(submitPayLoad.licenceStartDate, 'DD/MM/YYYY'))
+        break;
 
       case 'Occupation contract or licence':
         caseSummary.set(`Occupation contract or licence agreement type`, formatText(submitPayLoad.occupationLicenceTypeWales));
@@ -1355,7 +1360,6 @@ export class CreateCaseAction implements IAction {
           caseSummary.set(`Details of additional reasons`, submitPayLoad.additionalReasonsForPossession.reasons);
         }
         break;
-
       case 'Reasons for possession Wales':
         if (submitPayLoad.secureGroundsWales_DiscretionaryGrounds?.includes('ESTATE_MANAGEMENT_GROUNDS_S160')) {
           caseSummary.set(`Reasons for claiming possession under ground A`, submitPayLoad.walesSecureBuildingWorksReason);
@@ -1364,7 +1368,7 @@ export class CreateCaseAction implements IAction {
           caseSummary.set(`Reasons for claiming possession under section 186`, submitPayLoad.walesSecureLandlordNoticeSection186Reason);
         }
         if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
-          caseSummary.set(`Additional reasons for possession`, submitPayLoad.additionalReasonsForPossession.reasons);
+          caseSummary.set(`Details of additional reasons`, submitPayLoad.additionalReasonsForPossession.reasons);
         }
         break;
 

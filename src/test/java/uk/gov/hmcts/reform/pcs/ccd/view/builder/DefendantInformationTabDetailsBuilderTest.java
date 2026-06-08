@@ -50,10 +50,10 @@ public class DefendantInformationTabDetailsBuilderTest {
             .buildSummaryDefendantOneDetails(pcsCase);
 
         // Then
-        assertThat(defendantInformationTabDetails.getNameKnown()).isNull();
+        assertThat(defendantInformationTabDetails.getNameKnown()).isEqualTo("Yes");
         assertThat(defendantInformationTabDetails.getFirstName()).isEqualTo(firstName);
         assertThat(defendantInformationTabDetails.getLastName()).isEqualTo(lastName);
-        assertThat(defendantInformationTabDetails.getAddressKnown()).isNull();
+        assertThat(defendantInformationTabDetails.getAddressKnown()).isEqualTo("Yes");
         assertThat(defendantInformationTabDetails.getAddressForService()).isEqualTo(address);
     }
 
@@ -85,10 +85,10 @@ public class DefendantInformationTabDetailsBuilderTest {
             .buildSummaryDefendantOneDetails(pcsCase);
 
         // Then
-        assertThat(defendantInformationTabDetails.getNameKnown()).isNull();
+        assertThat(defendantInformationTabDetails.getNameKnown()).isEqualTo("No");
         assertThat(defendantInformationTabDetails.getFirstName()).isEqualTo(CaseTabView.NAME_UNKNOWN);
         assertThat(defendantInformationTabDetails.getLastName()).isEqualTo(CaseTabView.NAME_UNKNOWN);
-        assertThat(defendantInformationTabDetails.getAddressKnown()).isNull();
+        assertThat(defendantInformationTabDetails.getAddressKnown()).isEqualTo("Yes");
         assertThat(defendantInformationTabDetails.getAddressForService()).isEqualTo(address);
     }
 
@@ -109,10 +109,10 @@ public class DefendantInformationTabDetailsBuilderTest {
             .buildSummaryDefendantOneDetails(pcsCase);
 
         // Then
-        assertThat(defendantInformationTabDetails.getNameKnown()).isNull();
+        assertThat(defendantInformationTabDetails.getNameKnown()).isEqualTo("No");
         assertThat(defendantInformationTabDetails.getFirstName()).isEqualTo(CaseTabView.NAME_UNKNOWN);
         assertThat(defendantInformationTabDetails.getLastName()).isEqualTo(CaseTabView.NAME_UNKNOWN);
-        assertThat(defendantInformationTabDetails.getAddressKnown()).isNull();
+        assertThat(defendantInformationTabDetails.getAddressKnown()).isEqualTo("No");
         assertThat(defendantInformationTabDetails.getAddressForService()).isEqualTo(propertyAddress);
     }
 
