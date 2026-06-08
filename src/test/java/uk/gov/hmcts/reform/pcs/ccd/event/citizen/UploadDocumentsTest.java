@@ -378,7 +378,8 @@ class UploadDocumentsTest extends BaseEventTest {
         void shouldExcludeWithoutNoticeGenAppFromNonApplicant() {
             // Visibility service denies the entity for the current user (without-notice + not applicant/legal rep).
             // Frontend then skips the confirm page because options is empty.
-            GenAppEntity withoutNotice = stubGenApp(GenAppType.SOMETHING_ELSE, GenAppState.SUBMITTED, LocalDateTime.now());
+            GenAppEntity withoutNotice = stubGenApp(
+                GenAppType.SOMETHING_ELSE, GenAppState.SUBMITTED, LocalDateTime.now());
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(withoutNotice));
             when(genAppVisibilityService.isGenAppVisibleToUser(withoutNotice, currentUserId)).thenReturn(false);
 
@@ -409,7 +410,8 @@ class UploadDocumentsTest extends BaseEventTest {
         void shouldOnlyRenderVisibleGenAppsWhenMixedWithNoticeAndWithoutNotice() {
             LocalDateTime now = LocalDateTime.now();
             GenAppEntity visibleWithNotice = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, now);
-            GenAppEntity hiddenWithoutNotice = stubGenApp(GenAppType.SOMETHING_ELSE, GenAppState.SUBMITTED, now.minusDays(1));
+            GenAppEntity hiddenWithoutNotice = stubGenApp(
+                GenAppType.SOMETHING_ELSE, GenAppState.SUBMITTED, now.minusDays(1));
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(visibleWithNotice, hiddenWithoutNotice));
             when(genAppVisibilityService.isGenAppVisibleToUser(visibleWithNotice, currentUserId)).thenReturn(true);
             when(genAppVisibilityService.isGenAppVisibleToUser(eq(hiddenWithoutNotice), any())).thenReturn(false);
