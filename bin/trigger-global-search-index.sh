@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -e
 
 S2S_TOKEN=$(curl -s -X POST "${IDAM_S2S_AUTH_URL}/testing-support/lease" \
   -H 'Content-Type: application/json' \
