@@ -1,16 +1,25 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim;
 
+import lombok.AllArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+@AllArgsConstructor
 public class StatementOfTruth implements CcdPageConfiguration {
+
+    private final boolean allocateRegionId;
+    private final PcsCaseService pcsCaseService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        pageBuilder.page("statementOfTruth")
+        pageBuilder.page("statementOfTruth", this::midEvent)
             .pageLabel("Statement of truth")
             .showCondition("completionNextStep=\"SUBMIT_AND_PAY_NOW\"")
             .label("statementOfTruth-body",
@@ -42,4 +51,13 @@ public class StatementOfTruth implements CcdPageConfiguration {
             .done()
             .label("statementOfTruth-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        if (allocateRegionId) {
+            pcsCaseService.allocateRegionId(details.getData());
+        }
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().build();
+    }
+
 }

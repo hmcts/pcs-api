@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -15,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
@@ -35,6 +36,7 @@ public class PcsCaseService {
     private final CaseLinkService caseLinkService;
     private final CaseFlagService caseFlagService;
     private final PostCodeCourtService postCodeCourtService;
+    private final LocationReferenceService locationReferenceService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -60,6 +62,7 @@ public class PcsCaseService {
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
+        pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
@@ -90,13 +93,20 @@ public class PcsCaseService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
-    @Transactional
-    public void allocateCaseManagementLocation(long caseReference) {
-        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+    public void allocateCaseManagementLocation(PCSCase pcsCase) {
         Integer caseManagementLocation =
-            postCodeCourtService.getCourtManagementLocation(pcsCaseEntity.getPropertyAddress().getPostcode());
-        if (caseManagementLocation != null) {
-            pcsCaseEntity.setCaseManagementLocation(caseManagementLocation);
+            postCodeCourtService.getCourtManagementLocation(pcsCase.getPropertyAddress().getPostCode());
+        pcsCase.setCaseManagementLocationNumber(caseManagementLocation);
+    }
+
+    public void allocateRegionId(PCSCase pcsCase) {
+        allocateCaseManagementLocation(pcsCase);
+        if (pcsCase.getCaseManagementLocationNumber() != null) {
+            List<CourtVenue> courtVenues = locationReferenceService
+                .getCourtVenues(List.of(pcsCase.getCaseManagementLocationNumber()));
+            if (courtVenues != null && !courtVenues.isEmpty()) {
+                pcsCase.setRegionId(courtVenues.getFirst().epimmsId());
+            }
         }
     }
 
