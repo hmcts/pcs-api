@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -171,7 +172,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         if (pcsCase.getCompletionNextStep() == SUBMIT_AND_PAY_NOW) {
             return submitClaim(caseReference, pcsCase);
         } else {
-            notificationService.sendClaimantDraftSavedForLater(caseReference, pcsCase);
+            try {
+                notificationService.sendClaimantDraftSavedForLater(caseReference, pcsCase);
+            } catch (NotificationException e) {
+                log.error("Failed to send draft saved notification for case reference {}", caseReference, e);
+            }
             return saveForLater();
         }
     }
