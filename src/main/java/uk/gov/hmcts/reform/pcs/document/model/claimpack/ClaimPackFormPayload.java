@@ -65,7 +65,6 @@ public class ClaimPackFormPayload implements FormPayload {
     private boolean hasPropertyCounty;
     @JsonProperty("isIntroDemotedOtherTenancy")
     private boolean isIntroDemotedOtherTenancy;
-    // "Yes"/"No" rendered directly by <<hasGroundsYesNo>>.
     private String hasGroundsYesNo;
     // Gate for the "Does the claimant have grounds for possession?" row. Shown only when the
     // tenancy type is introductory, demoted or other; no country qualifier.
@@ -86,7 +85,6 @@ public class ClaimPackFormPayload implements FormPayload {
     private String whyClaimingPossession;
     // England and isIntroDemotedOtherTenancy and (no grounds or an Other ground).
     private boolean showWhyClaimingPossession;
-    // "Yes"/"No".
     private String hasAdditionalReasonsYesNo;
     private boolean additionalReasonsProvided;
     private String additionalReasonsFreeText;
@@ -96,7 +94,6 @@ public class ClaimPackFormPayload implements FormPayload {
     private boolean hasAsbGround;
     // Wales-only section gate: isWales and any ground has code "ANTISOCIAL_BEHAVIOUR_S157".
     private boolean showAsbSection;
-    // "Yes"/"No" rendered directly by the template.
     private String asbAllegedYesNo;
     // Hide the Yes/No row when unanswered (parity with the sibling null-gates).
     private boolean showAsbAlleged;
