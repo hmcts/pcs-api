@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -32,6 +33,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -49,11 +52,14 @@ class UploadDocumentsTest extends BaseEventTest {
     private SecurityContextService securityContextService;
     @Mock
     private DocumentService documentService;
+    @Mock
+    private GenAppVisibilityService genAppVisibilityService;
 
     @BeforeEach
     void setUp() {
         UploadDocuments underTest = new UploadDocuments(pcsCaseService, partyService,
-                                                        securityContextService, documentService);
+                                                        securityContextService, documentService,
+                                                        genAppVisibilityService);
         setEventUnderTest(underTest);
     }
 
@@ -199,9 +205,14 @@ class UploadDocumentsTest extends BaseEventTest {
         @Mock
         private PcsCaseEntity pcsCaseEntity;
 
+        private UUID currentUserId;
+
         @BeforeEach
         void setUp() {
             given(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).willReturn(pcsCaseEntity);
+            currentUserId = UUID.randomUUID();
+            lenient().when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
+            lenient().when(genAppVisibilityService.isGenAppVisibleToUser(any(), any())).thenReturn(true);
         }
 
         @Test
@@ -345,6 +356,71 @@ class UploadDocumentsTest extends BaseEventTest {
                     assertThat(option.getId()).isEqualTo(genAppId.toString());
                     assertThat(option.getValue().getGenAppId()).isEqualTo(genAppId.toString());
                 });
+        }
+
+        @Test
+        void shouldRenderWithNoticeGenAppOption() {
+            // Visibility service permits the entity (the with-notice contract). Option must surface.
+            GenAppEntity withNotice = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, LocalDateTime.now());
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(withNotice));
+            when(genAppVisibilityService.isGenAppVisibleToUser(withNotice, currentUserId)).thenReturn(true);
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            DocumentUploadDetails details = result.getDocumentUploadDetails();
+            assertThat(details.getRelatedApplicationOptions())
+                .extracting(option -> option.getValue().getCategory())
+                .containsExactly(DocumentUploadCategory.ADJOURN_HEARING_APPLICATION);
+            assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.YES);
+        }
+
+        @Test
+        void shouldExcludeWithoutNoticeGenAppFromNonApplicant() {
+            // Visibility service denies the entity for the current user (without-notice + not applicant/legal rep).
+            // Frontend then skips the confirm page because options is empty.
+            GenAppEntity withoutNotice = stubGenApp(GenAppType.SOMETHING_ELSE, GenAppState.SUBMITTED, LocalDateTime.now());
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(withoutNotice));
+            when(genAppVisibilityService.isGenAppVisibleToUser(withoutNotice, currentUserId)).thenReturn(false);
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            DocumentUploadDetails details = result.getDocumentUploadDetails();
+            assertThat(details.getRelatedApplicationOptions()).isEmpty();
+            assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
+        void shouldIncludeWithoutNoticeGenAppWhenCurrentUserIsApplicantOrLegalRep() {
+            // Same without-notice entity, but the service permits because user owns it.
+            GenAppEntity withoutNotice = stubGenApp(GenAppType.SET_ASIDE, GenAppState.SUBMITTED, LocalDateTime.now());
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(withoutNotice));
+            when(genAppVisibilityService.isGenAppVisibleToUser(withoutNotice, currentUserId)).thenReturn(true);
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            DocumentUploadDetails details = result.getDocumentUploadDetails();
+            assertThat(details.getRelatedApplicationOptions())
+                .extracting(option -> option.getValue().getCategory())
+                .containsExactly(DocumentUploadCategory.SET_ASIDE_ORDER_APPLICATION);
+            assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.YES);
+        }
+
+        @Test
+        void shouldOnlyRenderVisibleGenAppsWhenMixedWithNoticeAndWithoutNotice() {
+            LocalDateTime now = LocalDateTime.now();
+            GenAppEntity visibleWithNotice = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, now);
+            GenAppEntity hiddenWithoutNotice = stubGenApp(GenAppType.SOMETHING_ELSE, GenAppState.SUBMITTED, now.minusDays(1));
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(visibleWithNotice, hiddenWithoutNotice));
+            when(genAppVisibilityService.isGenAppVisibleToUser(visibleWithNotice, currentUserId)).thenReturn(true);
+            when(genAppVisibilityService.isGenAppVisibleToUser(eq(hiddenWithoutNotice), any())).thenReturn(false);
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            DocumentUploadDetails details = result.getDocumentUploadDetails();
+            assertThat(details.getRelatedApplicationOptions())
+                .extracting(option -> option.getValue().getCategory())
+                .containsExactly(DocumentUploadCategory.ADJOURN_HEARING_APPLICATION);
+            assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.YES);
         }
 
         @Test
