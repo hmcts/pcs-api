@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.List;
 import java.util.Objects;
@@ -23,16 +24,17 @@ public class LocationReferenceService {
 
     private final LocationReferenceApi locationReferenceApi;
     private final AuthTokenGenerator authTokenGenerator;
+    private final IdamTokenProvider systemUpdateUserTokenProvider;
 
-
-    public List<CourtVenue> getCountyCourts(String authorisation, List<Integer> epimIds) {
+    public List<CourtVenue> getCourtVenues(List<Integer> epimIds) {
         if (Objects.isNull(epimIds) || epimIds.isEmpty()) {
             throw new IllegalArgumentException("epimIds cannot be null or empty");
         }
         String formattedEpimIds = formatEpimIds(epimIds);
         log.debug("Getting County courts from /refdata/location/court-venues for EpimIds {}", formattedEpimIds);
-        return locationReferenceApi.getCountyCourts(authorisation, authTokenGenerator.generate(),
-                formattedEpimIds, countyCourtTypeId);
+        return locationReferenceApi.getCourtVenues(authTokenGenerator.generate(),
+                                                    systemUpdateUserTokenProvider.getAuthToken(),
+                                                    formattedEpimIds, countyCourtTypeId);
     }
 
     private String formatEpimIds(List<Integer> epimIds) {

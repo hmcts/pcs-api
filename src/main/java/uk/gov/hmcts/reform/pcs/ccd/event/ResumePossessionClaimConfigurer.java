@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -61,11 +60,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 @Component
 @AllArgsConstructor
@@ -91,17 +86,13 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
     private final StatementOfExpressTerms statementOfExpressTerms;
     private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
-    private final OrganisationService organisationService;
     private final ClaimantInformationPage claimantInformationPage;
     private final ExemptLandlord exemptLandlord;
     private final ProhibitedConductWales prohibitedConductWalesPage;
-    private final SchedulerClient schedulerClient;
-    private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     private final GroundsForPossessionWalesPage groundsForPossessionWales;
     private final SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     private final ReasonsForPossessionWales reasonsForPossessionWales;
-    private final AddressFormatter addressFormatter;
     private final RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final AssuredNoArrearsGroundsForPossessionPage noRentArrearsGroundsForPossessionOptions;
@@ -109,11 +100,10 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final WalesCheckingNotice walesCheckingNotice;
     private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
-    private final FeeService feeService;
-    private final MoneyFormatter moneyFormatter;
     private final RentDetailsPage rentDetailsPage;
     private final RentArrears rentArrears;
     private final PreActionProtocol preActionProtocol;
+    private final PcsCaseService pcsCaseService;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
@@ -168,13 +158,13 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(additionalReasonsForPossession)
             .add(new UnderlesseeOrMortgageeEntitledToClaimRelief())
             .add(underlesseeOrMortgageeDetailsPage)
-            //TO DO will be routed later on  correctly using tech debt ticket
+            //TO DO will be routed later on correctly using tech debt ticket
             .add(new WantToUploadDocuments())
             .add(uploadAdditionalDocumentsDetails)
             .add(new GeneralApplication())
             .add(new LanguageUsed())
             .add(new CompletingYourClaim())
-            .add(new StatementOfTruth());
+            .add(new StatementOfTruth(true, pcsCaseService));
     }
 
 }

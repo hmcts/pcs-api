@@ -26,7 +26,6 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
 
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final PartyService partyService;
-    private final PcsCaseService pcsCaseService;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
     private final ClaimRepository claimRepository;
@@ -37,7 +36,6 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
         feePaymentEntity.setParty(claimParty);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            pcsCaseService.allocateCaseManagementLocation(feesAndPayTaskData.getCaseReference());
             ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
             issueClaim(feePaymentEntity);
         } else {

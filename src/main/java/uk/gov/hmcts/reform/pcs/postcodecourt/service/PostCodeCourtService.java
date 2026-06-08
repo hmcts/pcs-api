@@ -29,18 +29,16 @@ public class PostCodeCourtService {
     }
 
     public Integer getCourtManagementLocation(String postCode) {
-
         List<PostCodeCourtEntity> results = getPostcodeCourtMappings(postCode);
-
         if (results.isEmpty()) {
-            log.error("EpimId not found, Case management location couldn't be allocated for postcode: {}", postCode);
+            log.error("EpimId not found, Court management location couldn't be allocated for postcode: {}", postCode);
             return null;
         }
         if (results.size() > 1) {
-            log.error("Multiple EpimId's found, Case management location not allocated for postcode: {}", postCode);
+            log.error("Multiple EpimId's found, Court management location not allocated for postcode: {}", postCode);
             return null;
         }
-        log.info("Case management location allocated for postcode {}", postCode);
+        log.info("Court management location allocated for postcode {}", postCode);
         return results.getFirst().getId().getEpimsId();
     }
 

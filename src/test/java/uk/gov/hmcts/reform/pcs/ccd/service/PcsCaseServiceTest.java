@@ -10,27 +10,29 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
-import uk.gov.hmcts.ccd.sdk.type.LinkReason;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.LinkReason;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
@@ -42,14 +44,14 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -75,6 +77,8 @@ class PcsCaseServiceTest {
     private CaseFlagService caseFlagService;
     @Mock
     private PostCodeCourtService postCodeCourtService;
+    @Mock
+    private LocationReferenceService locationReferenceService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -93,7 +97,8 @@ class PcsCaseServiceTest {
             addressMapper,
             caseLinkService,
             caseFlagService,
-            postCodeCourtService
+            postCodeCourtService,
+            locationReferenceService
         );
     }
 
@@ -149,42 +154,16 @@ class PcsCaseServiceTest {
         // Given
         String postcode = "SW1A 1AA";
         int epimsId = 123456;
-        AddressEntity propertyAddress = AddressEntity.builder().postcode(postcode).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(CASE_REFERENCE)
-            .propertyAddress(propertyAddress)
-            .build();
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        AddressUK addressUK = AddressUK.builder().postCode(postcode).build();
+        PCSCase pcsCase = PCSCase.builder().propertyAddress(addressUK).build();
         when(postCodeCourtService.getCourtManagementLocation(postcode)).thenReturn(epimsId);
 
         // When
-        underTest.allocateCaseManagementLocation(CASE_REFERENCE);
+        underTest.allocateCaseManagementLocation(pcsCase);
 
         // Then
-        assertThat(pcsCaseEntity.getCaseManagementLocation()).isEqualTo(epimsId);
-        verify(pcsCaseRepository, never()).save(pcsCaseEntity);
-    }
-
-    @Test
-    void shouldNotUpdateCaseManagementLocationWhenPostcodeCannotBeAllocated() {
-        // Given
-        String postcode = "SW1A 1AA";
-        int existingEpimsId = 123456;
-        AddressEntity propertyAddress = AddressEntity.builder().postcode(postcode).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(CASE_REFERENCE)
-            .propertyAddress(propertyAddress)
-            .caseManagementLocation(existingEpimsId)
-            .build();
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(postCodeCourtService.getCourtManagementLocation(postcode)).thenReturn(null);
-
-        // When
-        underTest.allocateCaseManagementLocation(CASE_REFERENCE);
-
-        // Then
-        assertThat(pcsCaseEntity.getCaseManagementLocation()).isEqualTo(existingEpimsId);
-        verify(pcsCaseRepository, never()).save(pcsCaseEntity);
+        assertThat(pcsCase.getCaseManagementLocationNumber()).isEqualTo(epimsId);
+        verify(postCodeCourtService).getCourtManagementLocation(postcode);
     }
 
     @Test
@@ -194,41 +173,16 @@ class PcsCaseServiceTest {
         int existingEpimsId = 123456;
         int newEpimsId = 654321;
         AddressEntity propertyAddress = AddressEntity.builder().postcode(postcode).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(CASE_REFERENCE)
-            .propertyAddress(propertyAddress)
-            .caseManagementLocation(existingEpimsId)
-            .build();
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        AddressUK addressUK = AddressUK.builder().postCode(postcode).build();
+        PCSCase pcsCase = PCSCase.builder().propertyAddress(addressUK).build();
         when(postCodeCourtService.getCourtManagementLocation(postcode)).thenReturn(newEpimsId);
 
         // When
-        underTest.allocateCaseManagementLocation(CASE_REFERENCE);
+        underTest.allocateCaseManagementLocation(pcsCase);
 
         // Then
-        assertThat(pcsCaseEntity.getCaseManagementLocation()).isEqualTo(newEpimsId);
-        verify(pcsCaseRepository, never()).save(pcsCaseEntity);
-    }
-
-    @Test
-    void shouldPropagateExceptionWhenCaseManagementLocationLookupFails() {
-        // Given
-        String postcode = "SW1A 1AA";
-        RuntimeException expectedException = new RuntimeException("Lookup failed");
-        AddressEntity propertyAddress = AddressEntity.builder().postcode(postcode).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(CASE_REFERENCE)
-            .propertyAddress(propertyAddress)
-            .build();
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(postCodeCourtService.getCourtManagementLocation(postcode)).thenThrow(expectedException);
-
-        // When
-        Throwable throwable = catchThrowable(() -> underTest.allocateCaseManagementLocation(CASE_REFERENCE));
-
-        // Then
-        assertThat(throwable).isSameAs(expectedException);
-        verify(pcsCaseRepository, never()).save(pcsCaseEntity);
+        assertThat(pcsCase.getCaseManagementLocationNumber()).isEqualTo(newEpimsId);
+        verify(postCodeCourtService).getCourtManagementLocation(postcode);
     }
 
     @Test
@@ -237,7 +191,10 @@ class PcsCaseServiceTest {
         PcsCaseEntity pcsCaseEntity = stubFindCase();
         ClaimEntity mainClaimEntity = stubClaimCreation();
 
-        PCSCase caseData = PCSCase.builder().build();
+        PCSCase caseData = PCSCase.builder()
+            .regionId(123)
+            .caseManagementLocationNumber(456)
+            .build();
 
         // When
         underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
@@ -245,6 +202,8 @@ class PcsCaseServiceTest {
         // Then
         verify(claimService).createMainClaimEntity(caseData);
         verify(pcsCaseEntity).addClaim(mainClaimEntity);
+        verify(pcsCaseEntity).setRegionId(caseData.getRegionId());
+        verify(pcsCaseEntity).setCaseManagementLocation(caseData.getCaseManagementLocationNumber());
     }
 
     @Test
@@ -348,15 +307,12 @@ class PcsCaseServiceTest {
 
     @Test
     void shouldThrowExceptionWhenCaseDataIsNull() {
-        // Given
-        PCSCase caseData = null;
-
-        // When
+        // Given // When
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, caseData));
+                                                          () -> underTest.patchCaseFlags(CASE_REFERENCE, null));
 
         // Then
-        assertEquals("PCSCase cannot be null", exception.getMessage());
+        assertThat("PCSCase cannot be null").isEqualTo(exception.getMessage());
     }
 
     @Test
@@ -469,6 +425,63 @@ class PcsCaseServiceTest {
 
         // Then
         assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
+    }
+
+    @Test
+    void shouldAllocateCaseManagementLocation() {
+        // Given
+        Integer caseManagementLocation = 123;
+        String postCode = "MK10 8RD";
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().postCode(postCode).build())
+            .build();
+        when(postCodeCourtService.getCourtManagementLocation(postCode)).thenReturn(caseManagementLocation);
+
+        // When
+        underTest.allocateCaseManagementLocation(caseData);
+
+        // Then
+        verify(postCodeCourtService).getCourtManagementLocation(postCode);
+        assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
+    }
+
+    @Test
+    void shouldAllocateRegionId() {
+        // Given
+        Integer caseManagementLocation = 123;
+        String postCode = "MK10 8RD";
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().postCode(postCode).build())
+            .build();
+        when(postCodeCourtService.getCourtManagementLocation(postCode)).thenReturn(caseManagementLocation);
+        CourtVenue courtVenue = new CourtVenue(123, 456, "Test");
+        when(locationReferenceService.getCourtVenues(any())).thenReturn(List.of(courtVenue));
+
+        // When
+        underTest.allocateRegionId(caseData);
+
+        // Then
+        verify(postCodeCourtService).getCourtManagementLocation(postCode);
+        assertThat(caseData.getRegionId()).isEqualTo(courtVenue.epimmsId());
+        assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
+    }
+
+    @Test
+    void shouldNotAllocateRegionIdWhenCaseManagementLocationIsNull() {
+        // Given
+        String postCode = "MK10 8RD";
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().postCode(postCode).build())
+            .build();
+        when(postCodeCourtService.getCourtManagementLocation(postCode)).thenReturn(null);
+
+        // When
+        underTest.allocateRegionId(caseData);
+
+        // Then
+        verify(postCodeCourtService).getCourtManagementLocation(postCode);
+        verify(locationReferenceService, never()).getCourtVenues(anyList());
+        assertThat(caseData.getRegionId()).isNull();
     }
 
     private Flags createFlags(List<ListValue<FlagDetail>> flagDetails) {
