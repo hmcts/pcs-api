@@ -192,7 +192,6 @@ public class ClaimEntity {
     @JsonManagedReference
     private FeePaymentEntity feePayment;
 
-    // The generated claim pack PDF, attached once payment succeeds and the document is rendered.
     @OneToOne(cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "claim_pack_document_id")
     private DocumentEntity claimPackDocument;
