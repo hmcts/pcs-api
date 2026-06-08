@@ -96,6 +96,7 @@ class GenAppPaymentCallbackHandlerTest {
 
         FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
         when(feePaymentEntity.getRelatedEntityId()).thenReturn(unknownGenAppId);
+        when(feePaymentEntity.getPaymentStatus()).thenReturn(PaymentStatus.PAID);
         when(genAppRepository.findById(unknownGenAppId)).thenReturn(Optional.empty());
 
         // When
