@@ -943,7 +943,7 @@ export class CreateCaseAction implements IAction {
       
       case 'Defendant-Representative':
         const defendantSolicitor = JSON.parse(process.env.Defendant_SOLICITOR || '');
-        defendant.set(`Representative’s first name`, defendantSolicitor.forename);
+        defendant.set(`Representative’s first name`, defendantSolicitor.displayName);
         defendant.set(`Representative’s last name`, defendantSolicitor.surname);
         defendant.set(`Email address`, defendantSolicitor.email);
         defendant.set(`Name`, 'Possession Claim Service Org1')
@@ -958,8 +958,8 @@ export class CreateCaseAction implements IAction {
         break;
     }
     if (defendantsDetails.defendant1NameKnown === 'YES') {
-      defendant.set(`Defendant’s first name`, `${submitPayload.defendant1.firstName}`);
-      defendant.set(`Defendant’s last name`, `${submitPayload.defendant1.lastName}`);
+      expect(await this.getTableDataValue(page,`Defendant’s first name`)).toEqual(`${submitPayload.defendant1.firstName}`);
+      expect(await this.getTableDataValue(page,`Defendant’s last name`)).toEqual(`${submitPayload.defendant1.lastName}`);
     } else {
       defendant.set(`Defendant’s first name`, `null`);
       defendant.set(`Defendant’s last name`, `null`);
@@ -982,9 +982,9 @@ export class CreateCaseAction implements IAction {
           console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
         }
         console.log(`\n**********  END OF FAILURE LIST. ***************`);
-        throw new Error(`Case Parties (Defendant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+        throw new Error(`Case Parties section "Defendant ${defendantsDetails.subTable}" validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
       } else {
-        console.log('\n✅ Case Parties (Defendant) VALIDATION PASSED!\n');
+        console.log(`\n✅ Case Parties section "Defendant ${defendantsDetails.subTable}" VALIDATIONS PASSED!\n`);
       }
     
     caseTabMap.clear();
@@ -1027,7 +1027,7 @@ export class CreateCaseAction implements IAction {
         console.log(`\n**********  END OF FAILURE LIST. ***************`);
         throw new Error(`Case Parties (Claimant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
       } else {
-        console.log('\n✅ Case Parties (Claimant) VALIDATION PASSED!\n');
+        console.log('\n✅ Case Parties (Claimant) VALIDATIONS PASSED!\n');
       }
     
     caseTabMap.clear();
@@ -1529,4 +1529,9 @@ export class CreateCaseAction implements IAction {
       }
     }
   };
+
+  public async getTableDataValue(page: Page, tableHeader: string): Promise<string> {
+    const tdLocator = page.locator(`//span[text()="${tableHeader}"]/ancestor::tr[1]/child::td`);
+    return ((await tdLocator.textContent()) || '').trim();
+  }
 }
