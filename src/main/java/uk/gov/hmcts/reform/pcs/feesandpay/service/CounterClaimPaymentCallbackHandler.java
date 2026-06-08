@@ -50,6 +50,15 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         feePaymentEntity.setParty(counterClaimEntity.getParty());
 
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
+            if (counterClaimEntity.getStatus() != CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED) {
+                log.warn(
+                    "Ignoring paid counterclaim payment callback for counterClaimId {} in status {}",
+                    counterClaimId,
+                    counterClaimEntity.getStatus()
+                );
+                return;
+            }
+
             counterClaimEntity.setStatus(CounterClaimStatus.COUNTER_CLAIM_ISSUED);
             counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
             counterClaimRepository.save(counterClaimEntity);

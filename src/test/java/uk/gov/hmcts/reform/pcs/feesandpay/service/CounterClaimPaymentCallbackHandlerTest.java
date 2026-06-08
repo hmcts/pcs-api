@@ -98,6 +98,49 @@ class CounterClaimPaymentCallbackHandlerTest {
     }
 
     @Test
+    void shouldNotIssueCounterClaimWhenAlreadyIssued() throws Exception {
+        UUID counterClaimId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+        LocalDateTime existingIssuedDate = LocalDateTime.of(2026, 5, 1, 9, 0);
+
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(counterClaimId)
+            .status(CounterClaimStatus.COUNTER_CLAIM_ISSUED)
+            .claimIssuedDate(existingIssuedDate)
+            .party(PartyEntity.builder().id(partyId).build())
+            .build();
+
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeDetails(FeeDetails.builder().feeAmount(BigDecimal.TEN).build())
+            .caseReference(1234567890123456L)
+            .ccdCaseNumber("1234567890123456")
+            .responsiblePartyId(partyId)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
+            .relatedEntityId(counterClaimId)
+            .build();
+
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .paymentStatus(PaymentStatus.PAID)
+            .taskData("task-data")
+            .build();
+
+        PaymentStatusCallback callback = PaymentStatusCallback.builder()
+            .serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(Payment.builder().paymentReference("RC-126").build())
+            .build();
+
+        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+
+        underTest.handle(callback, feePaymentEntity);
+
+        assertThat(feePaymentEntity.getParty()).isEqualTo(counterClaimEntity.getParty());
+        assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimStatus.COUNTER_CLAIM_ISSUED);
+        assertThat(counterClaimEntity.getClaimIssuedDate()).isEqualTo(existingIssuedDate);
+        verify(counterClaimRepository, never()).save(counterClaimEntity);
+    }
+
+    @Test
     void shouldNotUpdateCounterClaimWhenPaymentIsNotPaid() throws Exception {
         UUID counterClaimId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
