@@ -241,7 +241,7 @@ class CaseDetailsTabViewTest {
             ReasonsForPossessionTabDetails.builder()
                 .ground10("Ground 10 reason")
                 .condition1OfSection84A("Condition 1 reason")
-                .additionalReasonsForPossession("Additional reasons")
+                .additionalReasonsDetails("Additional reasons")
                 .build()
         );
 
@@ -303,7 +303,7 @@ class CaseDetailsTabViewTest {
             .isEqualTo("Ground 10 reason");
         assertThat(caseDetailsTab.getReasonsForPossessionDetails().getCondition1OfSection84A())
             .isEqualTo("Condition 1 reason");
-        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getAdditionalReasonsForPossession())
+        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getAdditionalReasonsDetails())
             .isEqualTo("Additional reasons");
         assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
         assertThat(caseDetailsTab.getClaimantInformation().getClaimantName()).isEqualTo("Claimant");
@@ -460,6 +460,26 @@ class CaseDetailsTabViewTest {
             .isEqualTo("Yes");
         assertThat(caseDetailsTab.getMortgageOneDetails().getAddress())
             .isEqualTo(underlesseeAddress);
+    }
+
+    @Test
+    void shouldNotThrowWhenUnderlesseeMortgageNameKnownOrAddressKnownIsNull() {
+        PCSCase pcsCase = PCSCase.builder()
+            .allUnderlesseeOrMortgagees(List.of(
+                listValue(
+                    Party.builder()
+                        .orgName("underlessee name")
+                        .build()
+                )
+            ))
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+
+        // Then
+        assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddressKnown()).isEqualTo(noAnswer);
     }
 
     @Test

@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBu
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -159,7 +160,7 @@ class CaseSummaryTabViewTest {
             ReasonsForPossessionTabDetails.builder()
                 .ground10("Ground 10 reason")
                 .condition1OfSection84A("Condition 1 reason")
-                .additionalReasonsForPossession("Additional reasons")
+                .additionalReasonsDetails("Additional reasons")
                 .build()
         );
 
@@ -171,8 +172,10 @@ class CaseSummaryTabViewTest {
 
         when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(
             DefendantInformationTabDetails.builder()
+                .nameKnown("Yes")
                 .firstName("Defendant")
                 .lastName("One")
+                .addressKnown("Yes")
                 .addressForService(propertyAddress)
                 .build()
         );
@@ -210,12 +213,14 @@ class CaseSummaryTabViewTest {
         assertThat(summaryTab.getReasonsForPossession().getGround10()).isEqualTo("Ground 10 reason");
         assertThat(summaryTab.getReasonsForPossession().getCondition1OfSection84A())
             .isEqualTo("Condition 1 reason");
-        assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsForPossession())
+        assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsDetails())
             .isEqualTo("Additional reasons");
         assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
         assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Fallback claimant");
+        assertThat(summaryTab.getDefendantDetails().getNameKnown()).isEqualTo("Yes");
         assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("One");
+        assertThat(summaryTab.getDefendantDetails().getAddressKnown()).isEqualTo("Yes");
         assertThat(summaryTab.getDefendantDetails().getAddressForService()).isEqualTo(propertyAddress);
         assertThat(summaryTab.getAdditionalDefendants()).hasSize(2);
         assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getFirstName()).isEqualTo("Defendant");
@@ -233,7 +238,8 @@ class CaseSummaryTabViewTest {
         assertThat(summaryTab.getRentArrearsDetails().getDailyRate()).isEqualTo("£12.30");
         assertThat(summaryTab.getRentArrearsDetails().getArrearsTotal()).isEqualTo("£450.75");
         assertThat(summaryTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Licence details");
+        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other");
+        assertThat(summaryTab.getTenancyDetails().getAgreementTypeDescription()).isEqualTo("Licence details");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("16/04/2024");
         assertThat(summaryTab.getNoticeDetails().getNoticeServedDate()).isEqualTo("11/05/2026, 5:02:00PM");
     }
@@ -336,6 +342,7 @@ class CaseSummaryTabViewTest {
         assertThat(summaryTab.getAdditionalDefendants()).isNull();
         assertThat(summaryTab.getRentArrearsDetails()).isNull();
         assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails()).isNull();
         assertThat(summaryTab.getNoticeDetails()).isNull();
     }
 
@@ -409,6 +416,34 @@ class CaseSummaryTabViewTest {
 
         // Then
         assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Assured tenancy");
+        assertThat(summaryTab.getTenancyDetails().getAgreementTypeDescription()).isNull();
+        assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
+    }
+
+    @Test
+    void shouldSetTenancyDetailsFromEnglandOtherTenancyLicenceType() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.OTHER)
+                                       .detailsOfOtherTypeOfTenancyLicence("Other tenancy details")
+                                       .build())
+            .build();
+
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
+        when(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase)).thenReturn(null);
+        when(reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase)).thenReturn(null);
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(null);
+        when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(null);
+        when(additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(null);
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other");
+        assertThat(summaryTab.getTenancyDetails().getAgreementTypeDescription()).isEqualTo("Other tenancy details");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
     }
 
@@ -423,6 +458,7 @@ class CaseSummaryTabViewTest {
         PCSCase pcsCase = PCSCase.builder()
             .tenancyLicenceDetails(tenancyLicenceDetails)
             .occupationLicenceDetailsWales(occupationLicenceDetailsWales)
+            .legislativeCountry(LegislativeCountry.WALES)
             .build();
 
         // When
@@ -430,11 +466,12 @@ class CaseSummaryTabViewTest {
 
         // Then
         assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails()).isNull();
     }
 
     @ParameterizedTest
     @MethodSource("walesOccupationLicenceTypeLabelScenarios")
-    void shouldSetTenancyDetailsFromWalesOccupationLicenceTypeLabelWhenEnglandTenancyDetailsAreUnavailable(
+    void shouldSetOccupationContractOrLicenceDetailsFromWalesOccupationLicenceTypeLabel(
         TenancyLicenceDetails tenancyLicenceDetails,
         OccupationLicenceTypeWales occupationLicenceType,
         String expectedAgreementType
@@ -446,6 +483,7 @@ class CaseSummaryTabViewTest {
                                                .occupationLicenceTypeWales(occupationLicenceType)
                                                .licenceStartDate(LocalDate.of(2025, 5, 12))
                                                .build())
+            .legislativeCountry(LegislativeCountry.WALES)
             .build();
 
         when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
@@ -460,18 +498,22 @@ class CaseSummaryTabViewTest {
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
         // Then
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo(expectedAgreementType);
-        assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("12/05/2025");
+        assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementType())
+            .isEqualTo(expectedAgreementType);
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementTypeDescription()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementStartDate()).isEqualTo("12/05/2025");
     }
 
     @Test
-    void shouldSetTenancyDetailsFromWalesOtherOccupationLicenceType() {
+    void shouldSetOccupationContractOrLicenceDetailsFromWalesOtherOccupationLicenceType() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
             .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
                                                .occupationLicenceTypeWales(OccupationLicenceTypeWales.OTHER)
                                                .otherLicenceTypeDetails("Other Welsh licence")
                                                .build())
+            .legislativeCountry(LegislativeCountry.WALES)
             .build();
 
         when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
@@ -486,8 +528,11 @@ class CaseSummaryTabViewTest {
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
         // Then
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other Welsh licence");
-        assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
+        assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementType()).isEqualTo("Other");
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementTypeDescription())
+            .isEqualTo("Other Welsh licence");
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementStartDate()).isNull();
     }
 
     private static Stream<Arguments> unavailableTenancyDetailsScenarios() {

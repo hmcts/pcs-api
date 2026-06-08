@@ -389,9 +389,9 @@ public class CaseDetailsTabView {
         AddressUK address = addressKnown == VerticalYesNo.YES ? underlesseeMortgageeParty.getAddress() : null;
 
         return UnderlesseeOrMortgageInformationTabDetails.builder()
-            .nameKnown(nameKnown.getLabel())
+            .nameKnown(nameKnown != null ? nameKnown.getLabel() : NO_ANSWER)
             .name(name)
-            .addressKnown(addressKnown.getLabel())
+            .addressKnown(addressKnown != null ? addressKnown.getLabel() : NO_ANSWER)
             .address(address)
             .build();
     }
