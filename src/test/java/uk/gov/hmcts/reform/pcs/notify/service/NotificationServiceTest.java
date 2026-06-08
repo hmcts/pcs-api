@@ -542,14 +542,27 @@ class NotificationServiceTest {
             when(notificationRepository.save(any())).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
+            ClaimEntity claim = defendantResponse.getClaim();
             EmailNotificationResponse response =
-                notificationService.sendClaimantClaimIssuedEmailNotification(defendantResponse.getClaim());
+                notificationService.sendClaimantClaimIssuedEmailNotification(claim);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
 
             verify(templateConfiguration).getTemplateId(EmailTemplate.MAKE_A_CLAIM_CLAIM_ISSUED);
-            verify(notificationRepository, times(2)).save(any());
+
+            ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
+            verify(notificationRepository, times(2)).save(notificationCaptor.capture());
+
+            CaseNotification firstSave = notificationCaptor.getAllValues().get(0);
+            assertThat(firstSave.getPartyId()).isEqualTo(claimantParty);
+            assertThat(firstSave.getClaimId()).isEqualTo(claim);
+            assertThat(firstSave.getClaimType()).isEqualTo(NotificationClaimType.POSSESSION_CLAIM);
+            assertThat(firstSave.getStatus()).isEqualTo(NotificationStatus.PENDING_SCHEDULE);
+
+            CaseNotification secondSave = notificationCaptor.getAllValues().get(1);
+            assertThat(secondSave.getStatus()).isEqualTo(NotificationStatus.SCHEDULED);
+
             verify(schedulerClient).scheduleIfNotExists(any());
         }
 
