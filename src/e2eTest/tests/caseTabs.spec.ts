@@ -15,6 +15,12 @@ test.beforeEach(async ({ page }, testInfo) => {
   if (testInfo.title.includes('Summary')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseSummary });
+    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('fetchCurrentUserAPI');
+  } else if (testInfo.title.includes('Details')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
+    await performAction('getCaseAPI', 'Claim Submission Time');
     await performAction('fetchCurrentUserAPI');
   } else if (testInfo.title.includes('Details')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -23,6 +29,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
+    await performAction('getCaseAPI', 'Claim Submission Time');
     await performAction('fetchCurrentUserAPI');
   }
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
