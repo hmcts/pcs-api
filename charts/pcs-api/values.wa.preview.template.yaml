@@ -1,14 +1,3 @@
-# Work Allocation (WA) preview overlay.
-#
-# Selected by adding the `pr-values:wa` GitHub PR label, which the cnp-jenkins-library
-# layers on top of the base + `pr-values:ccd` overlays. Stands up the WA product chart
-# (Camunda BPM, task-management/monitor/workflow APIs, batch jobs) plus the
-# am-org-role-mapping-service alongside the pcs-api preview.
-#
-# NOTE: pcs-api does not yet publish CCD case events to Service Bus, so although the
-# `ccd-case-events` topic and wa-case-event-handler are provisioned here, WA tasks will
-# not actually be initiated from case events until pcs-api emits them. See the PR
-# description for the follow-up app-level change.
 java:
   secrets:
     AZURE_SERVICE_BUS_CONNECTION_STRING:
@@ -37,8 +26,6 @@ servicebus:
         subscriptionNeeded: yes
         requiresSession: true
 
-# Full database list (CCD + WA) — Helm replaces list values across overlays rather than
-# merging, so this repeats the CCD overlay's databases to avoid clobbering them.
 postgresql:
   enabled: true
   flexibleserver: pcs-preview
@@ -56,9 +43,6 @@ postgresql:
 global:
   postgresUsername: hmcts
   postgresSecret: postgres
-  # The wa subchart's DB-backed pods (camunda, cft_task_db, wa-workflow-api,
-  # wa-case-event-handler) read global.postgresHost, while pcs's own templates and the
-  # am-org-role-mapping block read global.postgresHostname. Both must be set to the same host.
   postgresHost: "pcs-preview.postgres.database.azure.com"
   postgresHostname: "pcs-preview.postgres.database.azure.com"
   databaseNamePrefix: "pr-${CHANGE_ID}-"
@@ -80,12 +64,6 @@ wa:
         AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
         AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
         AZURE_SERVICE_BUS_CCD_CASE_EVENTS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
-      # The bundled wa umbrella chart drops app-insights-connection-string from each component's
-      # wa keyVault (the standalone wa-* charts include it). The WA image bakes
-      # connectionString=${file:/mnt/secrets/wa/app-insights-connection-string} into
-      # applicationinsights.json, so the AI Java agent crashes the JVM at startup when the file
-      # is absent. Re-add it; Helm replaces list values, so the chart-default secrets must be
-      # repeated here rather than appended.
       keyVaults:
         wa:
           secrets:
@@ -102,9 +80,6 @@ wa:
     java:
       ingressHost: wa-task-management-api-${SERVICE_FQDN}
       environment:
-        # WA lower-cases the configured ids when matching. In preview the PCS case type is
-        # suffixed with the PR number (CASE_TYPE_SUFFIX=${CHANGE_ID}), so the deployed id is
-        # PCS-${CHANGE_ID} -> pcs-${CHANGE_ID}. The jurisdiction id is the plain (unsuffixed) PCS.
         ALLOWED_CASE_TYPES: pcs-${CHANGE_ID}
         ALLOWED_JURISDICTIONS: pcs
       keyVaults:

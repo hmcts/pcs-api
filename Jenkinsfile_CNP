@@ -157,7 +157,6 @@ withPipeline(type, product, component) {
       for (label in githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa") ) {
         env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
-        sh 'chmod -R +x ./bin'
         uploadDmnDiagrams()
         uploadBpmnDiagram()
         setupRoleAssignments()
@@ -169,7 +168,6 @@ withPipeline(type, product, component) {
   // AAT/prod topology, not label-gated) and role-assignment seeding is omitted — AAT/prod
   // role mappings are managed outside this pipeline.
   before('functionalTest:aat') {
-    sh 'chmod -R +x ./bin'
     uploadDmnDiagrams()
     uploadBpmnDiagram()
   }
@@ -178,7 +176,6 @@ withPipeline(type, product, component) {
   afterSuccess('functionalTest:aat') {
     env.ENVIRONMENT = "prod"
     env.CAMUNDA_BASE_URL = "http://camunda-api-prod.service.core-compute-prod.internal"
-    sh 'chmod -R +x ./bin'
     uploadDmnDiagrams()
     uploadBpmnDiagram()
   }
