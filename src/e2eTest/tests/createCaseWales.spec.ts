@@ -41,7 +41,8 @@ import {
   exemptLandlord,
   occupationLicenceDetailsWales,
   prohibitedConductWales,
-  underlesseeMortgageeDetails
+  underlesseeMortgageeDetails,
+  uploadRequiredDocumentsWales
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -152,6 +153,11 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
+    await performValidation('mainHeader', uploadRequiredDocumentsWales.mainHeader);
+    await performAction('requiredDocumentsUpload',{
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
+    })
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
