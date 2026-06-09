@@ -17,7 +17,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.IndividualOrOrganisation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -936,17 +935,14 @@ class PartyServiceTest {
 
             UnderlesseeMortgageeDetails underlessee1Details = UnderlesseeMortgageeDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
-                .partyType(IndividualOrOrganisation.INDIVIDUAL)
-                .firstName("underlessee 1 first name")
-                .lastName("underlessee 1 last name")
+                .name("underlessee 1 name")
                 .addressKnown(VerticalYesNo.YES)
                 .address(underlessee1Address)
                 .build();
 
             UnderlesseeMortgageeDetails underlessee2Details = UnderlesseeMortgageeDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
-                .partyType(IndividualOrOrganisation.ORGANISATION)
-                .organisationName("underlessee 2 name")
+                .name("underlessee 2 name")
                 .addressKnown(VerticalYesNo.NO)
                 .build();
 
@@ -963,8 +959,7 @@ class PartyServiceTest {
 
             PartyEntity expectedUnderlessee1 = PartyEntity.builder()
                 .nameKnown(VerticalYesNo.YES)
-                .firstName("underlessee 1 first name")
-                .lastName("underlessee 1 last name")
+                .orgName("underlessee 1 name")
                 .addressKnown(VerticalYesNo.YES)
                 .address(mappedUnderlessee1Address)
                 .build();
@@ -1012,16 +1007,14 @@ class PartyServiceTest {
 
             UnderlesseeMortgageeDetails underlessee1Details = UnderlesseeMortgageeDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
-                .partyType(IndividualOrOrganisation.ORGANISATION)
-                .organisationName("underlessee 1 name")
+                .name("underlessee 1 name")
                 .addressKnown(VerticalYesNo.YES)
                 .address(underlessee1Address)
                 .build();
 
             UnderlesseeMortgageeDetails underlessee2Details = UnderlesseeMortgageeDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
-                .partyType(IndividualOrOrganisation.ORGANISATION)
-                .organisationName("underlessee 2 name")
+                .name("underlessee 2 name")
                 .addressKnown(VerticalYesNo.NO)
                 .build();
 
@@ -1063,27 +1056,23 @@ class PartyServiceTest {
                         .build()
                 ),
                 argumentSet(
-                    "Individual name known, address not known",
+                    "Name known, address not known",
                     UnderlesseeMortgageeDetails.builder()
                         .nameKnown(VerticalYesNo.YES)
-                        .partyType(IndividualOrOrganisation.INDIVIDUAL)
-                        .firstName("expected first name")
-                        .lastName("expected last name")
+                        .name("expected underlessee name")
                         .addressKnown(VerticalYesNo.NO)
                         .build(),
                     PartyEntity.builder()
                         .nameKnown(VerticalYesNo.YES)
-                        .firstName("expected first name")
-                        .lastName("expected last name")
+                        .orgName("expected underlessee name")
                         .addressKnown(VerticalYesNo.NO)
                         .build()
                 ),
                 argumentSet(
-                    "Organisation name known, address known",
+                    "Name known, address known",
                     UnderlesseeMortgageeDetails.builder()
                         .nameKnown(VerticalYesNo.YES)
-                        .partyType(IndividualOrOrganisation.ORGANISATION)
-                        .organisationName("expected underlessee name")
+                        .name("expected underlessee name")
                         .addressKnown(VerticalYesNo.YES)
                         .address(correspondenceAddress)
                         .build(),

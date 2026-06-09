@@ -24,29 +24,12 @@ public class UnderlesseeMortgageeDetails {
     @CCD(label = "Do you know the underlessee or mortgagee’s name?")
     private VerticalYesNo nameKnown;
 
-    @CCD(label = "Is the underlessee or mortgagee an individual or an organisation?",
-        showCondition = "nameKnown=\"YES\""
-    )
-    private IndividualOrOrganisation partyType;
-
-    @CCD(label = "First name",
-        showCondition = "nameKnown=\"YES\" AND partyType=\"INDIVIDUAL\"",
+    @CCD(label = "What is their name?",
+        hint = "Enter their first and last name, or the company or organisation name",
+        showCondition = "nameKnown=\"YES\"",
         max = 60
     )
-    private String firstName;
-
-    @CCD(label = "Last name",
-        showCondition = "nameKnown=\"YES\" AND partyType=\"INDIVIDUAL\"",
-        max = 60
-    )
-    private String lastName;
-
-    @CCD(label = "What is the organisation’s name?",
-        hint = "Enter the company or organisation name",
-        showCondition = "nameKnown=\"YES\" AND partyType=\"ORGANISATION\"",
-        max = 60
-    )
-    private String organisationName;
+    private String name;
 
     @CCD(label = """
                     ---
