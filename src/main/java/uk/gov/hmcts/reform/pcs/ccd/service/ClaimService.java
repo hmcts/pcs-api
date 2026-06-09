@@ -45,9 +45,7 @@ public class ClaimService {
         claimEntity.setNoticeOfPossession(noticeOfPossessionService.createNoticeOfPossessionEntity(pcsCase));
         claimEntity.setStatementOfTruth(statementOfTruthService.createStatementOfTruthEntity(pcsCase));
 
-        claimRepository.save(claimEntity);
-
-        return claimEntity;
+        return claimRepository.save(claimEntity);
     }
 
 
