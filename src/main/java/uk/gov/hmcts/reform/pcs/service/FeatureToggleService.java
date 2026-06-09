@@ -14,7 +14,7 @@ public class FeatureToggleService {
     private final FeatureToggleApi featureToggleApi;
 
     public boolean isAccessCodeHashingEnabled() {
-        // default true: prod runs offline and must always hash
+        // default true: stays hashed if LD is unreachable, so prod is hashed unless explicitly toggled off
         return featureToggleApi.isFeatureEnabled(ACCESS_CODE_HASHING, true);
     }
 }

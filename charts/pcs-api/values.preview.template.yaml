@@ -24,7 +24,6 @@ java:
           alias: PCS_PRD_ADMIN_USERNAME
         - name: pcs-prd-admin-password
           alias: PCS_PRD_ADMIN_PASSWORD
-        # Mounted only in preview: the one env where the access-code-hashing flag can be toggled at runtime.
         - name: launchdarkly-sdk-key
           alias: LAUNCHDARKLY_SDK_KEY
   environment:
