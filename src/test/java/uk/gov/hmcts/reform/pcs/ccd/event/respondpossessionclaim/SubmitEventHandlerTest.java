@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
@@ -32,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
@@ -76,7 +76,7 @@ class SubmitEventHandlerTest {
     @Mock
     private DefendantResponseService defendantResponseService;
     @Mock
-    private CounterClaimRepository counterClaimRepository;
+    private CounterClaimService counterClaimService;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
@@ -96,7 +96,7 @@ class SubmitEventHandlerTest {
             draftCaseDataService,
             claimResponseService,
             defendantResponseService,
-            counterClaimRepository,
+            counterClaimService,
             securityContextService,
             partyService,
             feeService,
@@ -418,10 +418,11 @@ class SubmitEventHandlerTest {
         assertThat(result.getConfirmationBody()).isNotBlank();
 
         JsonNode confirmation = objectMapper.readTree(result.getConfirmationBody());
-        assertThat(confirmation.get("state").asText())
+        JsonNode counterClaimNode = confirmation.get("counterClaim");
+        assertThat(counterClaimNode.get("status").asText())
             .isEqualTo(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED.name());
-        assertThat(confirmation.get("serviceRequestReference").asText()).isEqualTo(SERVICE_REQUEST_REFERENCE);
-        assertThat(confirmation.get("feeAmount").decimalValue()).isEqualByComparingTo(FEE_AMOUNT);
+        assertThat(counterClaimNode.get("serviceRequestReference").asText()).isEqualTo(SERVICE_REQUEST_REFERENCE);
+        assertThat(counterClaimNode.get("feeAmount").decimalValue()).isEqualByComparingTo(FEE_AMOUNT);
 
         ArgumentCaptor<FeesAndPayTaskData> taskDataCaptor = ArgumentCaptor.forClass(FeesAndPayTaskData.class);
         verify(paymentService).createServiceRequest(taskDataCaptor.capture());
@@ -615,11 +616,8 @@ class SubmitEventHandlerTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdAndStatusOrderByClaimSubmittedDateDesc(
-            CASE_REFERENCE,
-            PARTY_ID,
-            CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED
-        )).thenReturn(Optional.of(counterClaimEntity));
+        when(counterClaimService.saveCounterClaim(eq(CASE_REFERENCE), any(CounterClaim.class)))
+            .thenReturn(Optional.of(counterClaimEntity));
     }
 
     private void stubFeeLookupAndServiceRequest(FeeType feeType) {

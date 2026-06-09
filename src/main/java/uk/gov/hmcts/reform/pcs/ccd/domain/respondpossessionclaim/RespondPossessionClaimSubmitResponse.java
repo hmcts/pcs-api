@@ -4,14 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 @Builder
 @Data
 @AllArgsConstructor
 public class RespondPossessionClaimSubmitResponse {
 
-    private final CounterClaimStatus state;
-    private final String serviceRequestReference;
-    private final BigDecimal feeAmount;
+    private final CounterClaimSubmitResponse counterClaim;
 }

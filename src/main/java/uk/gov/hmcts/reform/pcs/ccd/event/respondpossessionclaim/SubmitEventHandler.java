@@ -14,14 +14,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondPossessionClaimSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -34,6 +35,7 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
@@ -47,7 +49,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final DraftCaseDataService draftCaseDataService;
     private final ClaimResponseService claimResponseService;
     private final DefendantResponseService defendantResponseService;
-    private final CounterClaimRepository counterClaimRepository;
+    private final CounterClaimService counterClaimService;
     private final SecurityContextService securityContextService;
     private final PartyService partyService;
     private final FeeService feeService;
@@ -66,27 +68,28 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private SubmitResponse<State> processFinalSubmit(long caseReference) {
         log.info("Processing final submission for case {}", caseReference);
 
-        //load draft data
         PCSCase draftData = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
             .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
-        //get only possession response from draft
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
 
-        //validate draft data
         SubmitResponse<State> validationError = validate(responseDraftData, caseReference);
         if (validationError != null) {
             return validationError;
         }
 
-        //call services to save to relevant tables
         claimResponseService.saveDraftData(responseDraftData, caseReference);
-
         defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
 
-        SubmitResponse<State> submitResponse = success(caseReference, responseDraftData);
+        CounterClaim counterClaim = responseDraftData.getDefendantResponses().getCounterClaim();
+        Optional<CounterClaimEntity> savedCounterClaim = counterClaimService.saveCounterClaim(caseReference, counterClaim);
 
-        //delete draft as it's no longer needed
+        SubmitResponse<State> submitResponse = buildSubmitResponse(
+            caseReference,
+            responseDraftData,
+            savedCounterClaim.orElse(null)
+        );
+
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
         log.info("Successfully saved defendant response for case: {}", caseReference);
         return submitResponse;
@@ -98,7 +101,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return error("Invalid submission: missing response data");
         }
 
-        // Only persist the defendant response and its related entities if there is actual defendant response draft data
         if (possessionClaimResponse.getDefendantResponses() == null) {
             log.error("Submit failed for case {}: defendant responses is null", caseReference);
             return error("Invalid submission: missing defendant response data");
@@ -106,16 +108,23 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         return null;
     }
 
-    private SubmitResponse<State> success(long caseReference, PossessionClaimResponse possessionClaimResponse) {
+    private SubmitResponse<State> buildSubmitResponse(
+        long caseReference,
+        PossessionClaimResponse possessionClaimResponse,
+        CounterClaimEntity counterClaimEntity
+    ) {
         if (!isCounterClaimPaymentRequired(possessionClaimResponse)) {
             return SubmitResponse.defaultResponse();
+        }
+
+        if (counterClaimEntity == null) {
+            throw new IllegalStateException("Counterclaim entity required for payment flow");
         }
 
         CounterClaim counterClaim = possessionClaimResponse.getDefendantResponses().getCounterClaim();
         FeeType feeType = counterClaimFeeCalculator.resolveFeeType(counterClaim);
         FeeDetails feeDetails = feeService.getFee(feeType);
         PartyEntity responsibleParty = getCurrentUserParty(caseReference);
-        UUID counterClaimEntityId = getPendingCounterClaimEntityId(caseReference, responsibleParty.getId());
 
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
             .feeDetails(feeDetails)
@@ -123,15 +132,19 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .caseReference(caseReference)
             .responsiblePartyId(responsibleParty.getId())
             .paymentCallbackHandlerType(COUNTER_CLAIM_ISSUE)
-            .relatedEntityId(counterClaimEntityId)
+            .relatedEntityId(counterClaimEntity.getId())
             .build();
 
         PaymentServiceResponse paymentServiceResponse = paymentService.createServiceRequest(taskData);
 
-        RespondPossessionClaimSubmitResponse response = RespondPossessionClaimSubmitResponse.builder()
-            .state(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+        CounterClaimSubmitResponse counterClaimSubmitResponse = CounterClaimSubmitResponse.builder()
+            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
             .serviceRequestReference(paymentServiceResponse.getServiceRequestReference())
             .feeAmount(feeDetails.getFeeAmount())
+            .build();
+
+        RespondPossessionClaimSubmitResponse response = RespondPossessionClaimSubmitResponse.builder()
+            .counterClaim(counterClaimSubmitResponse)
             .build();
 
         return SubmitResponse.<State>builder()
@@ -160,24 +173,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             throw new IllegalStateException("Current user IDAM ID is null");
         }
         return partyService.getPartyEntityByIdamId(currentUserId, caseReference);
-    }
-
-    private UUID getPendingCounterClaimEntityId(long caseReference, UUID partyId) {
-        CounterClaimEntity counterClaimEntity =
-            counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdAndStatusOrderByClaimSubmittedDateDesc(
-                    caseReference,
-                    partyId,
-                    CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED
-                )
-                .or(() -> counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdOrderByClaimSubmittedDateDesc(
-                    caseReference,
-                    partyId
-                ))
-                .orElseThrow(() -> new IllegalStateException(
-                    "Counterclaim not found for case %d and party %s".formatted(caseReference, partyId)
-                ));
-
-        return counterClaimEntity.getId();
     }
 
     private String writeAsString(RespondPossessionClaimSubmitResponse submitResponse) {

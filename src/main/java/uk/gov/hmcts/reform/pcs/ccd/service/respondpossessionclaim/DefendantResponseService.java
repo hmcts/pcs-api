@@ -6,15 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
@@ -24,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -139,8 +133,6 @@ public class DefendantResponseService {
 
         buildAndLinkChildEntities(responseEntity, responses);
 
-        saveCounterClaim(responses, partyRef, claimRef);
-
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
         if (!CollectionUtils.isEmpty(responses.getDefendantDocuments())) {
@@ -208,50 +200,6 @@ public class DefendantResponseService {
                 response.getPaymentAgreement()
             )
         );
-    }
-
-    private void saveCounterClaim(DefendantResponses responses, PartyEntity partyRef, ClaimEntity claimRef) {
-        CounterClaim cc = responses.getCounterClaim();
-        if (cc == null) {
-            return;
-        }
-
-        boolean claimAmountApplies = cc.getClaimType() != null && cc.getClaimType() != CounterClaimType.SOMETHING_ELSE;
-
-        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
-            .claimType(cc.getClaimType())
-            .isClaimAmountKnown(claimAmountApplies ? cc.getIsClaimAmountKnown() : null)
-            .claimAmount(claimAmountApplies && cc.getIsClaimAmountKnown() == VerticalYesNo.YES
-                             ? cc.getClaimAmount() : null)
-            .estimatedMaxClaimAmount(claimAmountApplies && cc.getIsClaimAmountKnown() == VerticalYesNo.NO
-                                         ? cc.getEstimatedMaxClaimAmount() : null)
-            .counterClaimFor(cc.getCounterClaimFor())
-            .counterClaimReasons(cc.getCounterClaimReasons())
-            .otherOrderRequestDetails(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
-                                          ? cc.getOtherOrderRequestDetails() : null)
-            .otherOrderRequestFacts(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
-                                        ? cc.getOtherOrderRequestFacts() : null)
-            .needHelpWithFees(cc.getNeedHelpWithFees())
-            .appliedForHwf(cc.getAppliedForHwf())
-            .hwfReferenceNumber(cc.getHwfReferenceNumber())
-            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
-            .claimSubmittedDate(LocalDateTime.now(utcClock))
-            .party(partyRef)
-            .build();
-
-        if (cc.getCounterClaimAgainst() != null) {
-            counterClaimEntity.getCounterClaimParties().addAll(
-                cc.getCounterClaimAgainst().stream()
-                    .filter(lv -> lv.getId() != null)
-                    .map(lv -> CounterClaimPartyEntity.builder()
-                        .counterClaim(counterClaimEntity)
-                        .party(partyRepository.getReferenceById(UUID.fromString(lv.getId())))
-                        .build())
-                    .toList()
-            );
-        }
-
-        claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
     }
 
     public boolean hasSubmittedResponse(long caseReference) {

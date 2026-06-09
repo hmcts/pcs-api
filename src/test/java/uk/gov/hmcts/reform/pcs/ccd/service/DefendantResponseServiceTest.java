@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
@@ -31,7 +30,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
@@ -106,9 +104,6 @@ class DefendantResponseServiceTest {
 
     @Captor
     private ArgumentCaptor<DefendantResponseEntity> responseCaptor;
-    @Captor
-    private ArgumentCaptor<CounterClaimEntity> counterClaimCaptor;
-
     private static final Clock FIXED_UTC_CLOCK = Clock.fixed(
         Instant.parse("2026-04-22T21:00:00Z"), ZoneOffset.UTC);
 
@@ -919,245 +914,26 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldSaveCounterClaimWithAllFields() {
-        // Given
+    void shouldNotPersistCounterClaimWhenSavingDefendantResponse() {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubPartyLookup();
         stubClaimLookup();
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenAnswer(inv -> inv.getArgument(0));
 
         CounterClaim counterClaim = CounterClaim.builder()
-            .isClaimAmountKnown(VerticalYesNo.YES)
-            .claimAmount(new BigDecimal("250.00"))
-            .estimatedMaxClaimAmount(new BigDecimal("500.00"))
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
-            .counterClaimFor("Damage to property")
-            .counterClaimReasons("Landlord failed to maintain property")
-            .otherOrderRequestDetails("Request for compensation")
-            .otherOrderRequestFacts("Property was in disrepair for 6 months")
-            .needHelpWithFees(VerticalYesNo.YES)
-            .appliedForHwf(VerticalYesNo.NO)
-            .hwfReferenceNumber("HWF-123-456")
-            .build();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .counterClaim(counterClaim)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-
-        // Then
-        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
-        CounterClaimEntity saved = counterClaimCaptor.getValue();
-        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(VerticalYesNo.YES);
-        assertThat(saved.getClaimType()).isEqualTo(CounterClaimType.PAYMENT_OR_COMPENSATION);
-        assertThat(saved.getCounterClaimFor()).isEqualTo("Damage to property");
-        assertThat(saved.getCounterClaimReasons()).isEqualTo("Landlord failed to maintain property");
-        assertThat(saved.getOtherOrderRequestDetails()).isNull();
-        assertThat(saved.getOtherOrderRequestFacts()).isNull();
-        assertThat(saved.getNeedHelpWithFees()).isEqualTo(VerticalYesNo.YES);
-        assertThat(saved.getAppliedForHwf()).isEqualTo(VerticalYesNo.NO);
-        assertThat(saved.getHwfReferenceNumber()).isEqualTo("HWF-123-456");
-        assertThat(saved.getStatus()).isEqualTo(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
-        assertThat(saved.getClaimSubmittedDate()).isEqualTo("2026-04-22T21:00");
-        assertThat(saved.getParty()).isEqualTo(partyEntity);
-    }
-
-    @ParameterizedTest
-    @MethodSource("otherOrderRequestScenarios")
-    void shouldOnlySaveOtherOrderRequestFieldsWhenClaimTypeIsSomethingElse(
-        CounterClaimType claimType,
-        String orderDetails,
-        String inputFacts,
-        String expectedOrderDetails,
-        String expectedFacts
-    ) {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubPartyLookup();
-        stubClaimLookup();
-
-        CounterClaim counterClaim = CounterClaim.builder()
-            .claimType(claimType)
-            .otherOrderRequestDetails(orderDetails)
-            .otherOrderRequestFacts(inputFacts)
-            .build();
-
-        PossessionClaimResponse request = PossessionClaimResponse.builder()
             .defendantResponses(DefendantResponses.builder().counterClaim(counterClaim).build())
             .build();
 
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, request);
-
-        // Then
-        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
-        CounterClaimEntity saved = counterClaimCaptor.getValue();
-        assertThat(saved.getOtherOrderRequestDetails()).isEqualTo(expectedOrderDetails);
-        assertThat(saved.getOtherOrderRequestFacts()).isEqualTo(expectedFacts);
-    }
-
-    private static Stream<Arguments> otherOrderRequestScenarios() {
-        return Stream.of(
-            Arguments.of(CounterClaimType.SOMETHING_ELSE, "Some details", "Some reasons",
-                         "Some details", "Some reasons"),
-            Arguments.of(CounterClaimType.PAYMENT_OR_COMPENSATION, "Some details", "Some facts", null, null),
-            Arguments.of(CounterClaimType.BOTH, "Some details", "Some facts", null, null)
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("amountSelectionScenarios")
-    void shouldPersistCorrectAmountsBasedOnSelection(
-        CounterClaimType claimType,
-        VerticalYesNo claimantAmountKnown,
-        VerticalYesNo expectedIsClaimAmountKnown,
-        BigDecimal claimAmountInput,
-        BigDecimal expectedClaimAmount,
-        BigDecimal estimatedInput,
-        BigDecimal expectedEstimatedAmount
-    ) {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-
-        stubPartyLookup();
-        stubClaimLookup();
-
-        CounterClaim counterClaim = CounterClaim.builder()
-            .claimType(claimType)
-            .isClaimAmountKnown(claimantAmountKnown)
-            .claimAmount(claimAmountInput)
-            .estimatedMaxClaimAmount(estimatedInput)
-            .build();
-
-        PossessionClaimResponse request = PossessionClaimResponse.builder()
-            .defendantResponses(
-                DefendantResponses.builder()
-                    .counterClaim(counterClaim)
-                    .build()
-            )
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, request);
-
-        // Then
-        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
-        CounterClaimEntity saved = counterClaimCaptor.getValue();
-
-        assertThat(saved.getIsClaimAmountKnown()).isEqualTo(expectedIsClaimAmountKnown);
-        assertBigDecimalEquals(saved.getClaimAmount(), expectedClaimAmount);
-        assertBigDecimalEquals(saved.getEstimatedMaxClaimAmount(), expectedEstimatedAmount);
-    }
-
-    private void assertBigDecimalEquals(BigDecimal actual, BigDecimal expected) {
-        if (expected == null) {
-            assertThat(actual).isNull();
-        } else {
-            assertThat(actual).isEqualByComparingTo(expected);
-        }
-    }
-
-    private static Stream<Arguments> amountSelectionScenarios() {
-        return Stream.of(
-            Arguments.of(
-                CounterClaimType.PAYMENT_OR_COMPENSATION,
-                VerticalYesNo.YES, VerticalYesNo.YES,
-                new BigDecimal("250.00"), new BigDecimal("250.00"),
-                new BigDecimal("999.00"), null
-            ),
-            Arguments.of(
-                CounterClaimType.PAYMENT_OR_COMPENSATION,
-                VerticalYesNo.NO, VerticalYesNo.NO,
-                new BigDecimal("999.00"), null,
-                new BigDecimal("500.00"), new BigDecimal("500.00")
-            ),
-            Arguments.of(
-                CounterClaimType.SOMETHING_ELSE,
-                VerticalYesNo.YES, null,
-                new BigDecimal("250.00"), null,
-                new BigDecimal("999.00"), null
-            ),
-            Arguments.of(
-                CounterClaimType.SOMETHING_ELSE,
-                null, null,
-                new BigDecimal("999.00"), null,
-                new BigDecimal("500.00"), null
-            ),
-            Arguments.of(
-                null,
-                null, null,
-                new BigDecimal("250.00"), null,
-                new BigDecimal("999.00"), null
-            )
-        );
-    }
-
-    @Test
-    void shouldNotSaveCounterClaimWhenNull() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubPartyLookup();
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .counterClaim(null)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
 
-        // Then
         verify(pcsCaseEntity, never()).addCounterClaim(any(CounterClaimEntity.class));
-    }
-
-    @Test
-    void shouldSaveCounterClaimWithOnlyClaimAmount() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubPartyLookup();
-        stubClaimLookup();
-
-        CounterClaim counterClaim = CounterClaim.builder()
-            .claimType(CounterClaimType.BOTH)
-            .isClaimAmountKnown(VerticalYesNo.YES)
-            .claimAmount(new BigDecimal("1000.50"))
-            .build();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .counterClaim(counterClaim)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-
-        // Then
-        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
-        CounterClaimEntity saved = counterClaimCaptor.getValue();
-        assertThat(saved.getClaimAmount()).isEqualByComparingTo(new BigDecimal("1000.50"));
-        assertThat(saved.getEstimatedMaxClaimAmount()).isNull();
     }
 
     @ParameterizedTest(name = "languageUsed={0}")
@@ -1260,106 +1036,6 @@ class DefendantResponseServiceTest {
             Arguments.of("Need adjustments for court attendance"),
             Arguments.of((String) null)
         );
-    }
-
-    @Test
-    void shouldSaveCounterClaimPartiesWhenCounterclaimAgainstIsPopulated() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubPartyLookup();
-        stubClaimLookup();
-
-        UUID claimantPartyId = UUID.randomUUID();
-        UUID defendantPartyId = UUID.randomUUID();
-        PartyEntity claimantPartyRef = mock(PartyEntity.class);
-        PartyEntity defendantPartyRef = mock(PartyEntity.class);
-        when(partyRepository.getReferenceById(claimantPartyId)).thenReturn(claimantPartyRef);
-        when(partyRepository.getReferenceById(defendantPartyId)).thenReturn(defendantPartyRef);
-
-        CounterClaim counterClaim = CounterClaim.builder()
-            .counterClaimAgainst(List.of(
-                ListValue.<Party>builder().id(claimantPartyId.toString()).value(Party.builder().build())
-                    .build(),
-                ListValue.<Party>builder().id(defendantPartyId.toString()).value(Party.builder().build())
-                    .build()
-            ))
-            .build();
-
-        PossessionClaimResponse request = PossessionClaimResponse.builder()
-            .defendantResponses(DefendantResponses.builder().counterClaim(counterClaim).build())
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, request);
-
-        // Then
-        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
-        CounterClaimEntity saved = counterClaimCaptor.getValue();
-        assertThat(saved.getCounterClaimParties()).hasSize(2);
-        assertThat(saved.getCounterClaimParties())
-            .extracting(CounterClaimPartyEntity::getParty)
-            .containsExactly(claimantPartyRef, defendantPartyRef);
-    }
-
-    @Test
-    void shouldNotAddPartiesWhenCounterclaimAgainstIsNull() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubPartyLookup();
-        stubClaimLookup();
-
-        CounterClaim counterClaim = CounterClaim.builder()
-            .counterClaimAgainst(null)
-            .build();
-
-        PossessionClaimResponse request = PossessionClaimResponse.builder()
-            .defendantResponses(DefendantResponses.builder().counterClaim(counterClaim).build())
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, request);
-
-        // Then
-        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
-        assertThat(counterClaimCaptor.getValue().getCounterClaimParties()).isEmpty();
-    }
-
-    @Test
-    void shouldSkipCounterclaimAgainstEntriesWithNullId() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubPartyLookup();
-        stubClaimLookup();
-
-        UUID validPartyId = UUID.randomUUID();
-        PartyEntity validPartyRef = mock(PartyEntity.class);
-        when(partyRepository.getReferenceById(validPartyId)).thenReturn(validPartyRef);
-
-        CounterClaim counterClaim = CounterClaim.builder()
-            .counterClaimAgainst(List.of(
-                ListValue.<Party>builder().id(null).value(Party.builder().build()).build(),
-                ListValue.<Party>builder().id(validPartyId.toString()).value(Party.builder().build()).build()
-            ))
-            .build();
-
-        PossessionClaimResponse request = PossessionClaimResponse.builder()
-            .defendantResponses(DefendantResponses.builder().counterClaim(counterClaim).build())
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, request);
-
-        // Then
-        verify(pcsCaseEntity).addCounterClaim(counterClaimCaptor.capture());
-        CounterClaimEntity saved = counterClaimCaptor.getValue();
-        assertThat(saved.getCounterClaimParties()).hasSize(1);
-        assertThat(saved.getCounterClaimParties().get(0).getParty()).isEqualTo(validPartyRef);
     }
 
     @ParameterizedTest(name = "makeCounterClaim={0}")
