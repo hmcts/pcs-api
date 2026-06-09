@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class CaseListView {
@@ -39,14 +40,14 @@ public class CaseListView {
             return;
         }
 
-        String names = getDefendantName(defendants.getFirst().getValue());
-
-        if (defendants.size() > 1) {
-            names = names + ", " + getDefendantName(defendants.get(1).getValue());
-        }
+        String names = defendants.stream()
+            .limit(2)
+            .map(ListValue::getValue)
+            .map(this::getDefendantName)
+            .collect(Collectors.joining(", "));
 
         if (defendants.size() > 2) {
-            names = names + " and Others";
+            names += " and Others";
         }
 
         pcsCase.setDefendantNames(names);
@@ -62,19 +63,15 @@ public class CaseListView {
 
     private void setDateIssuedString(PCSCase pcsCase) {
         LocalDateTime dateIssued = pcsCase.getDateIssued();
-        if (dateIssued == null) {
-            return;
+        if (dateIssued != null) {
+            pcsCase.setDateIssuedString(dateIssued.format(DATE_FORMATTER));
         }
-
-        pcsCase.setDateIssuedString(dateIssued.format(DATE_FORMATTER));
     }
 
     private void setPostCode(PCSCase pcsCase) {
         AddressUK address = pcsCase.getPropertyAddress();
-        if (address == null) {
-            return;
+        if (address != null) {
+            pcsCase.setPostCode(address.getPostCode());
         }
-
-        pcsCase.setPostCode(address.getPostCode());
     }
 }

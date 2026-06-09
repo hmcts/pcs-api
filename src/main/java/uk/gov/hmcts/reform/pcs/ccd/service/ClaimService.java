@@ -92,10 +92,8 @@ public class ClaimService {
     }
 
     public void setClaimIssuedDate(ClaimEntity claimEntity) {
-        if (claimEntity.getClaimIssuedDate() == null) {
-            claimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
-            claimRepository.save(claimEntity);
-        }
+        claimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
+        claimRepository.save(claimEntity);
     }
 
 }

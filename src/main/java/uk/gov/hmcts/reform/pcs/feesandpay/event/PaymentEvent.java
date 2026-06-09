@@ -35,8 +35,11 @@ public class PaymentEvent implements CCDConfig<PCSCase, State, UserRole> {
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         log.info("Received: {}", eventPayload);
-        long caseReference = eventPayload.caseReference();
-        pcsCaseService.setCaseIssuedDate(caseReference);
+        PCSCase caseData = eventPayload.caseData();
+        if (caseData.getDateIssued() == null) {
+            long caseReference = eventPayload.caseReference();
+            pcsCaseService.setCaseIssuedDate(caseReference);
+        }
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
     }
 
