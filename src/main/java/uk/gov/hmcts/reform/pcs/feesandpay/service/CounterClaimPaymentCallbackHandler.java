@@ -47,8 +47,6 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         CounterClaimEntity counterClaimEntity = counterClaimRepository.findById(counterClaimId)
             .orElseThrow(() -> new IllegalArgumentException("Counterclaim not found: " + counterClaimId));
 
-        feePaymentEntity.setParty(counterClaimEntity.getParty());
-
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             if (counterClaimEntity.getStatus() != CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED) {
                 log.warn(

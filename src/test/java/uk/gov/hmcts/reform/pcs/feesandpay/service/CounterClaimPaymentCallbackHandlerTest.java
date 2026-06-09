@@ -89,7 +89,6 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         underTest.handle(callback, feePaymentEntity);
 
-        assertThat(feePaymentEntity.getParty()).isEqualTo(counterClaimEntity.getParty());
         ArgumentCaptor<CounterClaimEntity> captor = ArgumentCaptor.forClass(CounterClaimEntity.class);
         verify(counterClaimRepository).save(captor.capture());
         CounterClaimEntity savedCounterClaim = captor.getValue();
@@ -134,7 +133,6 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         underTest.handle(callback, feePaymentEntity);
 
-        assertThat(feePaymentEntity.getParty()).isEqualTo(counterClaimEntity.getParty());
         assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimStatus.COUNTER_CLAIM_ISSUED);
         assertThat(counterClaimEntity.getClaimIssuedDate()).isEqualTo(existingIssuedDate);
         verify(counterClaimRepository, never()).save(counterClaimEntity);
@@ -175,7 +173,6 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         underTest.handle(callback, feePaymentEntity);
 
-        assertThat(feePaymentEntity.getParty()).isEqualTo(counterClaimEntity.getParty());
         verify(counterClaimRepository, never()).save(counterClaimEntity);
     }
 
