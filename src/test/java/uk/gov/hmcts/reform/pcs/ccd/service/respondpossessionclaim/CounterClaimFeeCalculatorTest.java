@@ -55,6 +55,25 @@ class CounterClaimFeeCalculatorTest {
     }
 
     @Test
+    void shouldNotRequirePaymentWhenHwfReferenceIsPresent() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .hwfReferenceNumber("HWF-123-456")
+            .build();
+
+        assertThat(underTest.isPaymentRequired(counterClaim)).isFalse();
+    }
+
+    @Test
+    void shouldRequirePaymentWhenHwfReferenceIsMissing() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .build();
+
+        assertThat(underTest.isPaymentRequired(counterClaim)).isTrue();
+    }
+
+    @Test
     void shouldThrowWhenClaimTypeIsMissing() {
         assertThatThrownBy(() -> underTest.resolveFeeType(CounterClaim.builder().build()))
             .isInstanceOf(IllegalStateException.class)
