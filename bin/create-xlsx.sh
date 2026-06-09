@@ -9,7 +9,7 @@ if [ -z "$env" ]; then
 fi
 
 # Authenticate with Azure Container Registry
-az acr login --name hmctsprod --subscription DCD-CNP-PROD
+env AZURE_CONFIG_DIR=/opt/jenkins/.azure-nonprod az acr login --name hmctsprod --subscription DCD-CNP-PROD
 
 for case_dir in "$run_dir"/build/definitions/*/; do
   case_type=$(basename "$case_dir")
