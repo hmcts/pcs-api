@@ -69,7 +69,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     });
 
     await performAction('validateClaimantDetails', {
-      payLoad: submitCaseApiData.submitCasePayloadCaseTab,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseTab,
       table: 'Claimant'
     });
   });

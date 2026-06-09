@@ -994,7 +994,7 @@ export class CreateCaseAction implements IAction {
   private async validateClaimantDetails(page: Page, defendantsDetails: actionRecord) {
 
     const claimant = new Map<string, string>();
-    const payLoad = defendantsDetails.payLoad as Record<string, any>;
+    const payLoad = defendantsDetails.submitPayLoad as Record<string, any>;
 
     claimant.set(`Name`, payLoad.claimantName);
     claimant.set(`Email address`, payLoad.claimantContactEmail);
