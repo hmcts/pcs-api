@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -67,11 +66,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -129,18 +123,18 @@ public class ResumePossessionClaimConfigurerTest {
     private StatementOfExpressTerms statementOfExpressTerms;
     @Mock
     private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
-    @Mock
-    private OrganisationService organisationService;
+    //@Mock
+    //private OrganisationService organisationService;
     @Mock
     private ClaimantInformationPage claimantInformationPage;
     @Mock
     private ExemptLandlord exemptLandlord;
     @Mock
     private ProhibitedConductWales prohibitedConductWalesPage;
-    @Mock
-    private SchedulerClient schedulerClient;
-    @Mock
-    private DraftCaseDataService draftCaseDataService;
+    //@Mock
+    //private SchedulerClient schedulerClient;
+    //@Mock
+    //private DraftCaseDataService draftCaseDataService;
     @Mock
     private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     @Mock
@@ -149,8 +143,6 @@ public class ResumePossessionClaimConfigurerTest {
     private SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     @Mock
     private ReasonsForPossessionWales reasonsForPossessionWales;
-    @Mock
-    private AddressFormatter addressFormatter;
     @Mock
     private RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
     @Mock
@@ -166,15 +158,13 @@ public class ResumePossessionClaimConfigurerTest {
     @Mock
     private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     @Mock
-    private FeeService feeService;
-    @Mock
-    private MoneyFormatter moneyFormatter;
-    @Mock
     private RentDetailsPage rentDetailsPage;
     @Mock
     private RentArrears rentArrears;
     @Mock
     private PreActionProtocol preActionProtocol;
+    @Mock
+    private StatementOfTruth statementOfTruth;
 
     @Test
     @SuppressWarnings("squid:S5961")
@@ -220,7 +210,7 @@ public class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, rentArrearsGroundsForPossessionReasons, verificationCount);
         verifyAndCount(inOrder, pageBuilder, noRentArrearsGroundsForPossessionOptions, verificationCount);
         verifyAndCount(inOrder, pageBuilder, noRentArrearsGroundsForPossessionReason, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, PreActionProtocol.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, preActionProtocol, verificationCount);
         verifyAndCount(inOrder, pageBuilder, mediationAndSettlement, verificationCount);
         verifyAndCount(inOrder, pageBuilder, checkingNotice, verificationCount);
         verifyAndCount(inOrder, pageBuilder, walesCheckingNotice, verificationCount);
@@ -247,7 +237,7 @@ public class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, GeneralApplication.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LanguageUsed.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, CompletingYourClaim.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, StatementOfTruth.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, statementOfTruth, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);

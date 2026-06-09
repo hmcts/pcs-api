@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -104,7 +105,7 @@ public class PcsCaseService {
         if (pcsCase.getCaseManagementLocationNumber() != null) {
             List<CourtVenue> courtVenues = locationReferenceService
                 .getCourtVenues(List.of(pcsCase.getCaseManagementLocationNumber()));
-            if (courtVenues != null && !courtVenues.isEmpty()) {
+            if (!CollectionUtils.isEmpty(courtVenues)) {
                 pcsCase.setRegionId(Integer.valueOf(courtVenues.getFirst().regionId()));
             }
         }
