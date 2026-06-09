@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -273,6 +274,7 @@ class NoticeOfPossessionViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
+                    .id(UUID.randomUUID())
                     .type(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION)
                     .build()
             )
