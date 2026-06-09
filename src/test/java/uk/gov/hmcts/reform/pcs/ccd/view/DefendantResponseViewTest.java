@@ -62,6 +62,7 @@ class DefendantResponseViewTest {
 
         PartyEntity claimant = caseEntity.getClaims().getFirst().getClaimParties().getFirst().getParty();
         AddressEntity addressEntity = claimant.getAddress();
+        when(claimant.getOrgName()).thenReturn("Example Claimant Ltd");
         AddressUK mappedAddress = AddressUK.builder().build();
         when(addressMapper.toAddressUK(addressEntity)).thenReturn(mappedAddress);
 
@@ -70,6 +71,9 @@ class DefendantResponseViewTest {
 
         assertThat(pcsCase.getPossessionClaimResponse()).isSameAs(response);
         assertThat(pcsCase.getPossessionClaimResponse().getClaimantServiceAddress()).isEqualTo(mappedAddress);
+        assertThat(pcsCase.getPossessionClaimResponse().getClaimantOrganisations()).hasSize(1);
+        assertThat(pcsCase.getPossessionClaimResponse().getClaimantOrganisations().getFirst().getValue())
+            .isEqualTo("Example Claimant Ltd");
 
         verify(accessValidator).validateAndGetDefendant(caseEntity, userId);
     }
