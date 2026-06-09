@@ -5,7 +5,7 @@ export const user = {
     uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
   },
   ctscAdministrator:  {
-    email: 'pcs-ctsc-admin-02@hmcts.net',
+    email: 'pcs-ctsc-admin-01@justice.gov.uk',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
   defendantSolicitor:  {
@@ -14,6 +14,10 @@ export const user = {
   },
   caseworker:  {
     email: 'pcs-caseworker@test.com',
+    password: process.env.IDAM_PCS_USER_PASSWORD
+  },
+  judge:  {
+    email: 'DeputyMaster.Bruce@ejudiciary.net',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
 };
