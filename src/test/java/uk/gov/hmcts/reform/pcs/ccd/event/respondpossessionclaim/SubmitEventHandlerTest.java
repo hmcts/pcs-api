@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
@@ -100,6 +101,7 @@ class SubmitEventHandlerTest {
             partyService,
             feeService,
             paymentService,
+            new CounterClaimFeeCalculator(),
             objectMapper
         );
     }
@@ -476,11 +478,11 @@ class SubmitEventHandlerTest {
         PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
         stubDraft(caseData);
         stubCounterClaimPaymentDependencies();
-        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_FLAT_FEE_FEE0450);
+        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_FLAT_FEE);
 
         underTest.submit(createEventPayload(caseData));
 
-        verify(feeService).getFee(FeeType.COUNTER_CLAIM_FLAT_FEE_FEE0450);
+        verify(feeService).getFee(FeeType.COUNTER_CLAIM_FLAT_FEE);
     }
 
     @Test
