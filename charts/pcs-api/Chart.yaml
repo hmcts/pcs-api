@@ -34,3 +34,6 @@ dependencies:
     version: 1.7.17
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: ccd-case-document-am-api.enabled
+  - name: ccd-data-store-api
+    version: 2.0.40
+    repository: 'oci://hmctsprod.azurecr.io/helm'
