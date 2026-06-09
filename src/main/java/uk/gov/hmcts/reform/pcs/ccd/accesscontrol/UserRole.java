@@ -43,6 +43,7 @@ public enum UserRole implements HasRole {
     JUDGE("judge", Set.of(R), RAS),
     SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM);
 
+
     @JsonValue
     private final String role;
     private final Set<Permission> caseTypePermissions;
