@@ -203,7 +203,7 @@ class PcsCaseServiceTest {
         verify(claimService).createMainClaimEntity(caseData);
         verify(pcsCaseEntity).addClaim(mainClaimEntity);
         verify(pcsCaseEntity).setRegionId(caseData.getRegionId());
-        verify(pcsCaseEntity).setCaseManagementLocation(caseData.getCaseManagementLocationNumber());
+        verify(pcsCaseEntity).setBaseLocation(caseData.getCaseManagementLocationNumber());
     }
 
     @Test
