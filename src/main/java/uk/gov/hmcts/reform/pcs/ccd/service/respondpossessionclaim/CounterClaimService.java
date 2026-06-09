@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -95,7 +95,7 @@ public class CounterClaimService {
             .needHelpWithFees(counterClaim.getNeedHelpWithFees())
             .appliedForHwf(counterClaim.getAppliedForHwf())
             .hwfReferenceNumber(counterClaim.getHwfReferenceNumber())
-            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .claimSubmittedDate(LocalDateTime.now(utcClock))
             .party(partyRef)
             .pcsCase(claimRef.getPcsCase())

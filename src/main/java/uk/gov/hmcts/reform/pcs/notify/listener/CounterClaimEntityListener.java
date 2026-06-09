@@ -7,7 +7,7 @@ import jakarta.persistence.PostUpdate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
@@ -30,7 +30,7 @@ public class CounterClaimEntityListener {
 
     @PostPersist
     public void onPostPersist(CounterClaimEntity entity) {
-        if (entity.getStatus() == CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED) {
+        if (entity.getStatus() == CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED) {
             schedulePendingCounterClaimIssuedNotification(entity);
         }
     }

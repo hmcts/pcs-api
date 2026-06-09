@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -420,7 +420,7 @@ class SubmitEventHandlerTest {
         JsonNode confirmation = objectMapper.readTree(result.getConfirmationBody());
         JsonNode counterClaimNode = confirmation.get("counterClaim");
         assertThat(counterClaimNode.get("status").asText())
-            .isEqualTo(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED.name());
+            .isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED.name());
         assertThat(counterClaimNode.get("serviceRequestReference").asText()).isEqualTo(SERVICE_REQUEST_REFERENCE);
         assertThat(counterClaimNode.get("feeAmount").decimalValue()).isEqualByComparingTo(FEE_AMOUNT);
 
@@ -611,7 +611,7 @@ class SubmitEventHandlerTest {
         PartyEntity partyEntity = PartyEntity.builder().id(PARTY_ID).build();
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .id(COUNTER_CLAIM_ID)
-            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);

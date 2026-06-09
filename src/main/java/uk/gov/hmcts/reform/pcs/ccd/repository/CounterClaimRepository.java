@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
 import java.util.Optional;
@@ -14,7 +14,7 @@ public interface CounterClaimRepository extends JpaRepository<CounterClaimEntity
     Optional<CounterClaimEntity> findFirstByPcsCaseCaseReferenceAndPartyIdAndStatusOrderByClaimSubmittedDateDesc(
         long caseReference,
         UUID partyId,
-        CounterClaimStatus status
+        CounterClaimState status
     );
 
     Optional<CounterClaimEntity> findFirstByPcsCaseCaseReferenceAndPartyIdOrderByClaimSubmittedDateDesc(

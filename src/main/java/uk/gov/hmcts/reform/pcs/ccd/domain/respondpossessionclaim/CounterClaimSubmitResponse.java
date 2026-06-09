@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class CounterClaimSubmitResponse {
 
-    private final CounterClaimStatus status;
+    private final CounterClaimState status;
     private final String serviceRequestReference;
     private final BigDecimal feeAmount;
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
@@ -48,7 +48,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             .orElseThrow(() -> new IllegalArgumentException("Counterclaim not found: " + counterClaimId));
 
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            if (counterClaimEntity.getStatus() != CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED) {
+            if (counterClaimEntity.getStatus() != CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED) {
                 log.warn(
                     "Ignoring paid counterclaim payment callback for counterClaimId {} in status {}",
                     counterClaimId,
@@ -57,7 +57,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                 return;
             }
 
-            counterClaimEntity.setStatus(CounterClaimStatus.COUNTER_CLAIM_ISSUED);
+            counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
             counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
             counterClaimRepository.save(counterClaimEntity);
             return;

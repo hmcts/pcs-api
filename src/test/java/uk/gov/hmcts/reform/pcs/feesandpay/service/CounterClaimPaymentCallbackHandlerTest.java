@@ -7,7 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -61,7 +61,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .party(PartyEntity.builder().id(partyId).build())
             .build();
 
@@ -92,7 +92,7 @@ class CounterClaimPaymentCallbackHandlerTest {
         ArgumentCaptor<CounterClaimEntity> captor = ArgumentCaptor.forClass(CounterClaimEntity.class);
         verify(counterClaimRepository).save(captor.capture());
         CounterClaimEntity savedCounterClaim = captor.getValue();
-        assertThat(savedCounterClaim.getStatus()).isEqualTo(CounterClaimStatus.COUNTER_CLAIM_ISSUED);
+        assertThat(savedCounterClaim.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         assertThat(savedCounterClaim.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2026, 6, 1, 10, 0));
     }
 
@@ -104,7 +104,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CounterClaimStatus.COUNTER_CLAIM_ISSUED)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
             .claimIssuedDate(existingIssuedDate)
             .party(PartyEntity.builder().id(partyId).build())
             .build();
@@ -133,7 +133,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         underTest.handle(callback, feePaymentEntity);
 
-        assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimStatus.COUNTER_CLAIM_ISSUED);
+        assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         assertThat(counterClaimEntity.getClaimIssuedDate()).isEqualTo(existingIssuedDate);
         verify(counterClaimRepository, never()).save(counterClaimEntity);
     }
@@ -145,7 +145,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .party(PartyEntity.builder().id(partyId).build())
             .build();
 

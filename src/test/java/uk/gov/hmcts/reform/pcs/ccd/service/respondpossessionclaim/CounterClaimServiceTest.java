@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -109,7 +109,7 @@ class CounterClaimServiceTest {
         CounterClaimEntity captured = counterClaimCaptor.getValue();
         assertThat(saved).contains(captured);
         assertThat(captured.getClaimType()).isEqualTo(CounterClaimType.PAYMENT_OR_COMPENSATION);
-        assertThat(captured.getStatus()).isEqualTo(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
+        assertThat(captured.getStatus()).isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
         assertThat(captured.getParty()).isEqualTo(partyEntity);
         assertThat(captured.getPcsCase()).isEqualTo(pcsCaseEntity);
     }

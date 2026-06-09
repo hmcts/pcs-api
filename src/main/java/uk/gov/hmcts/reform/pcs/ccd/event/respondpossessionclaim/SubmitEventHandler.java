@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondPossessionClaimSubmitResponse;
@@ -139,7 +139,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         PaymentServiceResponse paymentServiceResponse = paymentService.createServiceRequest(taskData);
 
         CounterClaimSubmitResponse counterClaimSubmitResponse = CounterClaimSubmitResponse.builder()
-            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .serviceRequestReference(paymentServiceResponse.getServiceRequestReference())
             .feeAmount(feeDetails.getFeeAmount())
             .build();

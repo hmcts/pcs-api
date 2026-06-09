@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -33,16 +33,16 @@ class EntityTestStatusServiceTest {
     private EntityTestStatusService underTest;
 
     @Test
-    void shouldUpdateCounterClaimStatus() {
+    void shouldUpdateCounterClaimState() {
         UUID counterClaimId = UUID.randomUUID();
         CounterClaimEntity counterClaim = new CounterClaimEntity();
         counterClaim.setId(counterClaimId);
-        counterClaim.setStatus(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
-        CounterClaimStatus newStatus = CounterClaimStatus.COUNTER_CLAIM_ISSUED;
+        counterClaim.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+        CounterClaimState newStatus = CounterClaimState.COUNTER_CLAIM_ISSUED;
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
 
-        underTest.updateCounterClaimStatus(counterClaimId, newStatus);
+        underTest.updateCounterClaimState(counterClaimId, newStatus);
 
         assertEquals(newStatus, counterClaim.getStatus());
         verify(counterClaimRepository).save(counterClaim);
@@ -54,7 +54,7 @@ class EntityTestStatusServiceTest {
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class,
-                     () -> underTest.updateCounterClaimStatus(counterClaimId, CounterClaimStatus.COUNTER_CLAIM_ISSUED));
+                     () -> underTest.updateCounterClaimState(counterClaimId, CounterClaimState.COUNTER_CLAIM_ISSUED));
     }
 
     @Test
