@@ -96,6 +96,7 @@ class CaseTypeTest {
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
         when(builder.categories(AccessProfile.PCS_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.PCS_SOLICITOR));
+
         // When
         caseType.configure(builder);
         final Tab<PCSCase, AccessProfile> nextStepsTab = nextStepsTabBuilder.build();
@@ -120,5 +121,7 @@ class CaseTypeTest {
         assertThat(caseFileViewTab.getFields().size()).isEqualTo(1);
         assertThat(casePartiesTab.getFields()).extracting(TabField::getId).contains("casePartiesTab_ClaimantDetails");
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
+        assertThat(summaryTab.getFields()).extracting(TabField::getId)
+            .contains("summaryTab_OccupationContractOrLicenceDetails");
     }
 }
