@@ -29,7 +29,7 @@ test.beforeEach(async ({ page }) => {
     // 🔹 log each case number immediately
     console.log(`Created Case ${i + 1}: ${caseNumber}`);
   }
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#`);
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({
