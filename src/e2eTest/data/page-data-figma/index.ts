@@ -44,6 +44,7 @@ export * from '@data/page-data-figma/rentArrearsOrBreachOfTenancyGround.page.dat
 export * from '@data/page-data-figma/demotionOfTenancyHousingActOptions.page.data';
 export * from '@data/page-data-figma/suspensionOfRightToBuyHousingActOptions.page.data';
 export * from '@data/page-data-figma/suspensionToBuyDemotionOfTenancyActs.page.data';
+export * from '@data/page-data-figma/uploadRequiredDocumentsWales.page.data'
 export * from '@data/page-data-figma/page-data-common-component/whereShouldThisFlagBeAdded.page.data';
 export * from '@data/page-data-figma/page-data-common-component/selectFlagType.page.data';
 export * from '@data/page-data-figma/page-data-common-component/addCommentsForFlag.page.data';
