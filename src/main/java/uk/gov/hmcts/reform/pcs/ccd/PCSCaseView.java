@@ -129,9 +129,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
-            .caseManagementLocationNumber(20262)
-            .regionId(1)
-            .allDocuments(mapAndWrapDocuments(pcsCaseEntity))
             .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
             .dateSubmitted(getClaimSubmittedDate(pcsCaseEntity))
             .build();

@@ -175,18 +175,14 @@ public class PCSCase {
     private YesOrNo userPcqIdSet;
 
     @CCD(
-        label = "Case management location",
-        access = {InternalCaseFlagAccess.class, ClaimantAccess.class}
+        label = "Case management location"
     )
-    @Builder.Default
-    private Integer caseManagementLocationNumber = 20262;
+    private Integer caseManagementLocationNumber;
 
     @CCD(
-        label = "Region Id",
-        access = {InternalCaseFlagAccess.class, ClaimantAccess.class}
+        label = "Region Id"
     )
-    @Builder.Default
-    private Integer regionId = 1;
+    private Integer regionId;
 
     @CCD(access = {InternalCaseFlagAccess.class},
         label = "Party")
