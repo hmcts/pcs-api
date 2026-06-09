@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim;
 
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -11,10 +12,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetai
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+@Component
 @AllArgsConstructor
 public class StatementOfTruth implements CcdPageConfiguration {
 
-    private final boolean allocateRegionId;
     private final PcsCaseService pcsCaseService;
 
     @Override
@@ -54,9 +55,7 @@ public class StatementOfTruth implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-        if (allocateRegionId) {
-            pcsCaseService.allocateRegionId(details.getData());
-        }
+        pcsCaseService.allocateRegionId(details.getData());
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(details.getData())
             .build();

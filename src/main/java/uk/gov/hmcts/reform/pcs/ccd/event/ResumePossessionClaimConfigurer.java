@@ -60,7 +60,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 @Component
 @AllArgsConstructor
@@ -103,7 +102,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final RentDetailsPage rentDetailsPage;
     private final RentArrears rentArrears;
     private final PreActionProtocol preActionProtocol;
-    private final PcsCaseService pcsCaseService;
+    private final StatementOfTruth statementOfTruth;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
@@ -164,7 +163,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(new GeneralApplication())
             .add(new LanguageUsed())
             .add(new CompletingYourClaim())
-            .add(new StatementOfTruth(true, pcsCaseService));
+            .add(statementOfTruth);
     }
 
 }
