@@ -1,11 +1,8 @@
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller';
-import { ActionRegistry } from '@utils/registry/action.registry';
 import { addressInfo, caseNumber } from '../createCase.action';
-import {caseInfo} from "@utils/actions/custom-actions";
 import {expect} from "@utils/test-fixtures";
-import {LONG_TIMEOUT} from "../../../../playwright.config";
 import {caseSummary, caseList} from "@data/page-data";
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import {
@@ -120,33 +117,14 @@ export class CaseFlagAction implements IAction {
     await performAction('clickButton', commentUpdate.continueButton);
   }
 
-  private async navigateToCaseSummary(option: actionData, page: Page): Promise<void> {
+  private async navigateToCaseSummary(option: actionData): Promise<void> {
     const summaryUrl = `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`;
-    const summaryUrlPattern = `${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`;
+    await performAction('navigateToUrl', summaryUrl);
 
     if (option === 'no') {
-      await performAction('navigateToUrl', summaryUrl);
       await performValidation('mainHeader', caseList.noResultsFoundHeader);
       return;
     }
-
-    const isOnSummary = () => page.url().includes('#Summary');
-    const trySearch = async (action: string): Promise<boolean> => {
-      try {
-        await ActionRegistry.getAction(action).execute(page, action, caseInfo.fid);
-        return isOnSummary();
-      } catch {
-        return false;
-      }
-    };
-
-    if (!(await trySearch('searchCaseFromFindCase')) && !(await trySearch('searchCase'))) {
-      await ActionRegistry.getAction('navigateToUrl').execute(page, 'navigateToUrl', summaryUrl);
-    }
-
-    await expect(async () => {
-      await page.waitForURL(summaryUrlPattern);
-    }).toPass({ timeout: LONG_TIMEOUT });
   }
 
   private async assertCaseFlagsNotInNextStep(flag: String, page: Page): Promise<void> {

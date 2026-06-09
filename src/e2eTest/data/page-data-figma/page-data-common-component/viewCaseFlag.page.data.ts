@@ -1,15 +1,5 @@
 export const viewCaseFlag = {
     viewFlagLink: 'View case flags',
     caseFlagsTab: 'Case flags',
-    caseFlagsViewHeader: 'Case flags',
-    jenParkerCaption: 'Jen Parker',
-    johnDoeCaption: 'John Doe',
-    peterParkerCaption: 'Peter Parker',
-    caseLevelFlagsCaption: 'Case level flags',
-    partyLevelFlagsColumnHeader: 'Party level flags',
-    caseFlagsColumnHeader: 'Case flags',
-    commentsColumnHeader: 'Comments',
-    creationDateColumnHeader: 'Creation date',
-    lastModifiedColumnHeader: 'Last modified',
-    flagStatusColumnHeader: 'Flag status',
+    caseFlagsViewHeader: 'Case flags'
 };
