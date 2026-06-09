@@ -166,6 +166,12 @@ class CaseNameFormatterTest {
                 List.of(organisationClaimant("Treetops Housing")),
                 List.of(defendant("David", "Jackson"), unknownDefendant(), defendant("Sam", "Taylor")),
                 "Treetops Housing vs David Jackson, Persons unknown and Others"
+            ),
+            Arguments.argumentSet(
+                "All claimants is empty",
+                List.of(),
+                List.of(defendant("David", "Jackson")),
+                "null vs David Jackson"
             )
         );
     }
