@@ -11,7 +11,6 @@ import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSubmitResponse;
@@ -34,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -114,15 +114,20 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         PossessionClaimResponse possessionClaimResponse,
         CounterClaimEntity counterClaimEntity
     ) {
-        if (!isCounterClaimPaymentRequired(possessionClaimResponse)) {
+        if (counterClaimEntity == null) {
             return SubmitResponse.defaultResponse();
         }
 
-        if (counterClaimEntity == null) {
-            throw new IllegalStateException("Counterclaim entity required for payment flow");
+        CounterClaim counterClaim = possessionClaimResponse.getDefendantResponses().getCounterClaim();
+        if (!counterClaimFeeCalculator.isPaymentRequired(counterClaim)) {
+            CounterClaimEntity issuedCounterClaim = counterClaimService.issueCounterClaim(counterClaimEntity);
+            return buildCounterClaimConfirmationResponse(
+                issuedCounterClaim.getStatus(),
+                null,
+                null
+            );
         }
 
-        CounterClaim counterClaim = possessionClaimResponse.getDefendantResponses().getCounterClaim();
         FeeType feeType = counterClaimFeeCalculator.resolveFeeType(counterClaim);
         FeeDetails feeDetails = feeService.getFee(feeType);
         PartyEntity responsibleParty = getCurrentUserParty(caseReference);
@@ -138,34 +143,34 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         PaymentServiceResponse paymentServiceResponse = paymentService.createServiceRequest(taskData);
 
-        CounterClaimSubmitResponse counterClaimSubmitResponse = CounterClaimSubmitResponse.builder()
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .serviceRequestReference(paymentServiceResponse.getServiceRequestReference())
-            .feeAmount(feeDetails.getFeeAmount())
-            .build();
+        return buildCounterClaimConfirmationResponse(
+            CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED,
+            paymentServiceResponse.getServiceRequestReference(),
+            feeDetails.getFeeAmount()
+        );
+    }
+
+    private SubmitResponse<State> buildCounterClaimConfirmationResponse(
+        CounterClaimState status,
+        String serviceRequestReference,
+        BigDecimal feeAmount
+    ) {
+        CounterClaimSubmitResponse.CounterClaimSubmitResponseBuilder counterClaimResponseBuilder =
+            CounterClaimSubmitResponse.builder().status(status);
+        if (serviceRequestReference != null) {
+            counterClaimResponseBuilder.serviceRequestReference(serviceRequestReference);
+        }
+        if (feeAmount != null) {
+            counterClaimResponseBuilder.feeAmount(feeAmount);
+        }
 
         RespondPossessionClaimSubmitResponse response = RespondPossessionClaimSubmitResponse.builder()
-            .counterClaim(counterClaimSubmitResponse)
+            .counterClaim(counterClaimResponseBuilder.build())
             .build();
 
         return SubmitResponse.<State>builder()
             .confirmationBody(writeAsString(response))
             .build();
-    }
-
-    private boolean isCounterClaimPaymentRequired(PossessionClaimResponse possessionClaimResponse) {
-        if (possessionClaimResponse == null || possessionClaimResponse.getDefendantResponses() == null) {
-            return false;
-        }
-        if (possessionClaimResponse.getDefendantResponses().getMakeCounterClaim() != VerticalYesNo.YES) {
-            return false;
-        }
-        CounterClaim counterClaim = possessionClaimResponse.getDefendantResponses().getCounterClaim();
-        if (counterClaim == null) {
-            return false;
-        }
-        String hwfReference = counterClaim.getHwfReferenceNumber();
-        return hwfReference == null || hwfReference.trim().isEmpty();
     }
 
     private PartyEntity getCurrentUserParty(long caseReference) {

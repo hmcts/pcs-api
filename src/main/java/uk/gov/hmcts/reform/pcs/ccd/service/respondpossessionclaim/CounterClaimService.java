@@ -115,4 +115,12 @@ public class CounterClaimService {
 
         return counterClaimEntity;
     }
+
+    public CounterClaimEntity issueCounterClaim(CounterClaimEntity counterClaimEntity) {
+        counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
+        counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
+        CounterClaimEntity issuedCounterClaim = counterClaimRepository.save(counterClaimEntity);
+        log.info("Issued counterclaim {}", issuedCounterClaim.getId());
+        return issuedCounterClaim;
+    }
 }

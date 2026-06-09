@@ -436,19 +436,39 @@ class SubmitEventHandlerTest {
     }
 
     @Test
-    void shouldReturnDefaultResponseWhenCounterClaimHasHwfReference() {
+    void shouldIssueCounterClaimAndReturnConfirmationBodyWhenCounterClaimHasHwfReference() throws Exception {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .hwfReferenceNumber("HWF-123-456")
             .build();
         PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
         stubDraft(caseData);
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(COUNTER_CLAIM_ID)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+        when(counterClaimService.saveCounterClaim(eq(CASE_REFERENCE), any(CounterClaim.class)))
+            .thenReturn(Optional.of(counterClaimEntity));
+        when(counterClaimService.issueCounterClaim(any(CounterClaimEntity.class)))
+            .thenAnswer(invocation -> {
+                CounterClaimEntity entity = invocation.getArgument(0);
+                entity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
+                return entity;
+            });
 
         SubmitResponse<State> result = underTest.submit(createEventPayload(caseData));
 
         assertThat(result.getErrors()).isNullOrEmpty();
-        assertThat(result.getConfirmationBody()).isNull();
+        assertThat(result.getConfirmationBody()).isNotBlank();
+
+        JsonNode confirmation = objectMapper.readTree(result.getConfirmationBody());
+        assertThat(confirmation.get("counterClaim").get("status").asText())
+            .isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED.name());
+        assertThat(confirmation.get("counterClaim").hasNonNull("serviceRequestReference")).isFalse();
+        assertThat(confirmation.get("counterClaim").hasNonNull("feeAmount")).isFalse();
+
         verify(paymentService, never()).createServiceRequest(any(FeesAndPayTaskData.class));
+        verify(counterClaimService).issueCounterClaim(any(CounterClaimEntity.class));
     }
 
     @Test
