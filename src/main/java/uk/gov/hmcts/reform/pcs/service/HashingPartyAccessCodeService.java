@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-// BCrypt impl; selected at runtime by DispatchingPartyAccessCodeHashingService when the LD flag is on.
+// BCrypt impl, used when the hashing flag is on.
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -41,8 +41,7 @@ public class HashingPartyAccessCodeService implements PartyAccessCodeHashingServ
             .findFirst();
     }
 
-    // Codes minted before the hashing flag was switched on are stored cleartext; fall back to an
-    // equality check so they keep verifying. Drop this branch once the cleartext validity window expires.
+    // pre-flag codes are stored cleartext: fall back to equality so they still verify
     private boolean matches(String accessCode, String storedCode) {
         return encoder.matches(accessCode, storedCode) || accessCode.equals(storedCode);
     }

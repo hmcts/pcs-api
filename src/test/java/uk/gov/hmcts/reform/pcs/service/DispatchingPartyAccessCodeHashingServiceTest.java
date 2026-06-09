@@ -55,8 +55,7 @@ class DispatchingPartyAccessCodeHashingServiceTest {
         PartyAccessCodeEntity entity = PartyAccessCodeEntity.builder().build();
         when(hashedImpl.findMatchingAccessCode(repository, caseId, "CODE")).thenReturn(Optional.of(entity));
 
-        // Reads never consult the flag, so codes minted under either scheme keep verifying after a
-        // flip in either direction. verifyNoInteractions(featureToggle) is the rollback-safety guard.
+        // reads ignore the flag, so a flip never breaks verification
         assertThat(underTest.findMatchingAccessCode(repository, caseId, "CODE")).contains(entity);
         verify(hashedImpl).findMatchingAccessCode(repository, caseId, "CODE");
         verifyNoInteractions(cleartextImpl, featureToggle);

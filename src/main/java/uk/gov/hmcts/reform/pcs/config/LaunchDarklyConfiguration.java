@@ -21,14 +21,13 @@ import java.util.stream.Stream;
 @Slf4j
 public class LaunchDarklyConfiguration {
 
-    // Placeholder key only used when starting offline; LD never contacts the network in that mode.
     private static final String OFFLINE_PLACEHOLDER_KEY = "offline-placeholder";
 
     @Bean
     public LDClient ldClient(@Value("${launchdarkly.sdk-key:}") String sdkKey,
                              @Value("${launchdarkly.offline-mode:false}") Boolean offlineMode,
                              @Value("${launchdarkly.file:}") String[] flagFiles) {
-        // No key supplied (local dev, CI) -> degrade gracefully to offline rather than failing startup.
+        // blank key: run offline instead of failing startup
         if (StringUtils.isBlank(sdkKey)) {
             log.warn("LAUNCHDARKLY_SDK_KEY is blank - starting LaunchDarkly client in offline mode");
             return new LDClient(OFFLINE_PLACEHOLDER_KEY, new LDConfig.Builder().offline(true).build());

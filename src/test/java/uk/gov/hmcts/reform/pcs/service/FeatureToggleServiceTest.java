@@ -34,7 +34,6 @@ class FeatureToggleServiceTest {
         when(featureToggleApi.isFeatureEnabled(FLAG_KEY, true)).thenReturn(true);
 
         assertThat(underTest.isAccessCodeHashingEnabled()).isTrue();
-        // The true default is what makes prod (offline) and any LD outage fail safe to hashing.
         verify(featureToggleApi).isFeatureEnabled(FLAG_KEY, true);
     }
 }

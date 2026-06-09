@@ -8,10 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
-/**
- * Thin wrapper over the LaunchDarkly Java SDK. Builds the evaluation context and
- * exposes raw flag lookups; typed flag methods live in {@link uk.gov.hmcts.reform.pcs.service.FeatureToggleService}.
- */
+// Wraps the LD SDK; typed flag methods live in FeatureToggleService.
 @Slf4j
 @Service
 public class FeatureToggleApi {
@@ -32,7 +29,7 @@ public class FeatureToggleApi {
     }
 
     private LDContext createContext() {
-        // environment drives per-env targeting rules in the LD UI.
+        // environment drives per-env targeting in LD
         return LDContext.builder(SERVICE_KEY)
             .set("environment", environment)
             .build();
