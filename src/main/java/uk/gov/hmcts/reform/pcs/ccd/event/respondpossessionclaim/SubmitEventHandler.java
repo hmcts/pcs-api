@@ -82,7 +82,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
 
         CounterClaim counterClaim = responseDraftData.getDefendantResponses().getCounterClaim();
-        Optional<CounterClaimEntity> savedCounterClaim = counterClaimService.saveCounterClaim(caseReference, counterClaim);
+        Optional<CounterClaimEntity> savedCounterClaim =
+            counterClaimService.saveCounterClaim(caseReference, counterClaim);
 
         SubmitResponse<State> submitResponse = buildSubmitResponse(
             caseReference,
