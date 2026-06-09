@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -47,7 +48,7 @@ public class CaseNameFormatter {
     }
 
     private Party getFirstClaimant(final List<Party> claimants) {
-        if (claimants == null || claimants.isEmpty()) {
+        if (CollectionUtils.isEmpty(claimants)) {
             return null;
         }
 
@@ -82,7 +83,7 @@ public class CaseNameFormatter {
     }
 
     private String formatDefendantName(Party defendant) {
-        return isDefendantNameKnown(defendant)
+        return isPartyNameKnown(defendant)
             ? formatFullName(defendant)
             : PERSONS_UNKNOWN;
     }
@@ -93,8 +94,8 @@ public class CaseNameFormatter {
             .collect(Collectors.joining(" "));
     }
 
-    private boolean isDefendantNameKnown(final Party defendant) {
-        return defendant != null && defendant.getNameKnown() == VerticalYesNo.YES;
+    private boolean isPartyNameKnown(final Party party) {
+        return party != null && party.getNameKnown() == VerticalYesNo.YES;
     }
 
 }
