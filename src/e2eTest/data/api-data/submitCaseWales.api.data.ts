@@ -143,6 +143,12 @@ export const submitCaseApiDataWales = {
       }
     },
     addAdditionalUnderlesseeOrMortgagee: 'NO',
+    walesDocs_HasEnergyPerformanceCertificate: 'NO',
+    walesDocs_NoEpcReason: 'no energy performance certificate',
+    walesDocs_HasGasSafetyReport: 'NO',
+    walesDocs_NoGasReportReason: 'no gas safety report',
+    walesDocs_HasElectricalInstallationConditionReport: 'NO',
+    walesDocs_NoEicrReason: 'no copy of EICR',
     wantToUploadDocuments: 'NO',
     applicationWithClaim: 'YES',
     languageUsed: 'WELSH',

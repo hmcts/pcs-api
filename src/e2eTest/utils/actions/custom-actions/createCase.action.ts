@@ -1292,7 +1292,7 @@ export class CreateCaseAction implements IAction {
           caseSummary.set(`Reasons for claiming possession under section 186`, submitPayLoad.walesSecureLandlordNoticeSection186Reason);
         }        
         if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
-          caseSummary.set(`Additional reasons for possession`, submitPayLoad.additionalReasonsForPossession.reasons);
+          caseSummary.set(`Details of additional reasons`, submitPayLoad.additionalReasonsForPossession.reasons);
         }
         break;
 
