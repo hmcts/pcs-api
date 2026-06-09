@@ -991,10 +991,10 @@ export class CreateCaseAction implements IAction {
 
   }
 
-  private async validateClaimantDetails(page: Page, defendantsDetails: actionRecord) {
+  private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
     const claimant = new Map<string, string>();
-    const payLoad = defendantsDetails.submitPayLoad as Record<string, any>;
+    const payLoad = claimantDetails.submitPayload as Record<string, any>;
 
     claimant.set(`Name`, payLoad.claimantName);
     claimant.set(`Email address`, payLoad.claimantContactEmail);
@@ -1009,7 +1009,7 @@ export class CreateCaseAction implements IAction {
       claimant.set(`Postcode/Zipcode`, payLoad.organisationAddress.PostCode);
       claimant.set('Country', payLoad.organisationAddress.Country)
     }
-    await this.caseTabTableData(page, defendantsDetails.table as string);
+    await this.caseTabTableData(page, claimantDetails.table as string);
 
     const misMatchMap = compareMaps(claimant, caseTabMap, {
       name1: 'Claimant',
