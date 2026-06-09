@@ -143,8 +143,17 @@ export const submitCaseApiDataWales = {
       }
     },
     addAdditionalUnderlesseeOrMortgagee: 'NO',
-    walesDocs_HasEnergyPerformanceCertificate: 'NO',
-    walesDocs_NoEpcReason: 'no energy performance certificate',
+    walesDocs_HasEnergyPerformanceCertificate: 'YES',
+    walesDocs_EnergyPerformance: [
+      {
+        id: 'a66903c1-ce7e-453e-b82e-174984654f7e',
+        value: {
+          document_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/3ab9f8fe-0d71-4a82-bbda-c754c39a4780',
+          document_binary_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/3ab9f8fe-0d71-4a82-bbda-c754c39a4780/binary',
+          document_filename: `noticeForService.pdf`,
+        }
+      }
+    ],
     walesDocs_HasGasSafetyReport: 'NO',
     walesDocs_NoGasReportReason: 'no gas safety report',
     walesDocs_HasElectricalInstallationConditionReport: 'NO',
