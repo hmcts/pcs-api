@@ -53,6 +53,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -180,8 +181,38 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedResponse.getResponseSubmittedDate())
+            .isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);
 
+    }
+
+    @Test
+    void shouldLinkStatementOfTruthWithoutCompletedByWhenStatementOfTruthAcknowledged() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+
+        stubPartyLookup();
+        stubClaimLookup();
+        when(partyEntity.getFirstName()).thenReturn("Test");
+        when(partyEntity.getLastName()).thenReturn("Defendant");
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruthCompletedBy("DEFENDANT")
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getStatementOfTruth()).isNotNull();
+        assertThat(savedResponse.getStatementOfTruth().getCompletedBy()).isNull();
+        assertThat(savedResponse.getStatementOfTruth().getFullName()).isEqualTo("Test Defendant");
     }
 
     @Test
