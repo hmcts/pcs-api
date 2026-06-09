@@ -33,6 +33,7 @@ public class PaymentNotificationService {
 
         FeePaymentEntity feePayment = pcsCase.getClaims().stream()
             .filter(claim -> claim.getFeePayment() != null
+                && claim.getFeePayment().getParty() != null
                 && claim.getFeePayment().getParty().getId().equals(defendant.getId()))
             .map(ClaimEntity::getFeePayment)
             .findFirst()
