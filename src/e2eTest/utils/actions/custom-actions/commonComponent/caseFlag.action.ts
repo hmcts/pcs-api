@@ -29,7 +29,7 @@ export class CaseFlagAction implements IAction {
       ['viewCaseFlags', () => this.viewCaseFlags(fieldName as actionRecord, page)],
       ['manageCaseFlags', () => this.manageCaseFlags(fieldName as actionRecord, page)],
       ['makeFlagInactive', () => this.makeFlagInactive(fieldName as actionRecord)],
-      ['navigateToCaseSummary', () => this.navigateToCaseSummary((fieldName ?? 'yes') as actionData, page)],
+      ['navigateToCaseSummary', () => this.navigateToCaseSummary((fieldName ?? 'yes') as actionData)],
       ['canCreateCaseLevelFlag', () => this.canCreateCaseLevelFlag(fieldName as actionRecord, page)],
       ['canCreatePartyLevelFlag', () => this.canCreatePartyLevelFlag(fieldName as actionRecord, page)],
       ['canManageCaseLevelFlag', () => this.canManageCaseLevelFlag(fieldName as actionRecord, page)],
