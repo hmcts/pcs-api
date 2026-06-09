@@ -160,7 +160,7 @@ public class CaseSummaryTabViewTest {
             ReasonsForPossessionTabDetails.builder()
                 .ground10("Ground 10 reason")
                 .condition1OfSection84A("Condition 1 reason")
-                .additionalReasonsForPossession("Additional reasons")
+                .additionalReasonsDetails("Additional reasons")
                 .build()
         );
 
@@ -213,7 +213,7 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getReasonsForPossession().getGround10()).isEqualTo("Ground 10 reason");
         assertThat(summaryTab.getReasonsForPossession().getCondition1OfSection84A())
             .isEqualTo("Condition 1 reason");
-        assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsForPossession())
+        assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsDetails())
             .isEqualTo("Additional reasons");
         assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
         assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Fallback claimant");
