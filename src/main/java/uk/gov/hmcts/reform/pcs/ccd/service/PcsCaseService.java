@@ -62,7 +62,7 @@ public class PcsCaseService {
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
-        pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
+        pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
