@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.paymentClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 
 @ExtendWith(MockitoExtension.class)
 class CcdPaymentStateUpdateServiceTest {
@@ -49,7 +49,7 @@ class CcdPaymentStateUpdateServiceTest {
         when(s2sAuthTokenGenerator.generate()).thenReturn(S2S_TOKEN);
 
         StartEventResponse startEventResponse = StartEventResponse.builder().token(IDAM_TOKEN).build();
-        when(coreCaseDataApi.startEvent(IDAM_TOKEN, S2S_TOKEN, String.valueOf(CASE_ID), paymentClaim.name()))
+        when(coreCaseDataApi.startEvent(IDAM_TOKEN, S2S_TOKEN, String.valueOf(CASE_ID), claimIssuePayment.name()))
             .thenReturn(startEventResponse);
 
         CaseResource expectedCaseResource = new CaseResource();
@@ -63,12 +63,12 @@ class CcdPaymentStateUpdateServiceTest {
 
         // Then
         assertThat(result).isSameAs(expectedCaseResource);
-        verify(coreCaseDataApi).startEvent(IDAM_TOKEN, S2S_TOKEN, String.valueOf(CASE_ID), paymentClaim.name());
+        verify(coreCaseDataApi).startEvent(IDAM_TOKEN, S2S_TOKEN, String.valueOf(CASE_ID), claimIssuePayment.name());
         ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
         verify(coreCaseDataApi).createEvent(eq(IDAM_TOKEN), eq(S2S_TOKEN), eq(String.valueOf(CASE_ID)),
                                             contentCaptor.capture());
         CaseDataContent submitted = contentCaptor.getValue();
         assertThat(submitted.getEventToken()).isEqualTo(IDAM_TOKEN);
-        assertThat(submitted.getEvent().getId()).isEqualTo(paymentClaim.name());
+        assertThat(submitted.getEvent().getId()).isEqualTo(claimIssuePayment.name());
     }
 }

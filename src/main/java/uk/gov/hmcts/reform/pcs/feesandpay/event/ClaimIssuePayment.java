@@ -13,17 +13,17 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.paymentClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 
 @Component
 @AllArgsConstructor
 @Slf4j
-public class PaymentEvent implements CCDConfig<PCSCase, State, UserRole> {
+public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(paymentClaim.name(), this::submit)
+            .decentralisedEvent(claimIssuePayment.name(), this::submit)
             .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
             .name("Payment Confirmation")
             .showCondition(ShowConditions.NEVER_SHOW)
