@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.launchdarkly.FeatureToggleApi;
@@ -19,18 +18,17 @@ class FeatureToggleServiceTest {
     @Mock
     private FeatureToggleApi featureToggleApi;
 
-    @InjectMocks
-    private FeatureToggleService underTest;
-
     @Test
-    void shouldReturnFalseWhenLdDisablesTheFlag() {
-        when(featureToggleApi.isFeatureEnabled(FLAG_KEY, true)).thenReturn(false);
+    void shouldReturnLdValueOverTheDefault() {
+        FeatureToggleService underTest = new FeatureToggleService(featureToggleApi, false);
+        when(featureToggleApi.isFeatureEnabled(FLAG_KEY, false)).thenReturn(true);
 
-        assertThat(underTest.isAccessCodeHashingEnabled()).isFalse();
+        assertThat(underTest.isAccessCodeHashingEnabled()).isTrue();
     }
 
     @Test
-    void shouldFailSafeToHashingWithTrueDefault() {
+    void shouldPassPerEnvDefaultToLd() {
+        FeatureToggleService underTest = new FeatureToggleService(featureToggleApi, true);
         when(featureToggleApi.isFeatureEnabled(FLAG_KEY, true)).thenReturn(true);
 
         assertThat(underTest.isAccessCodeHashingEnabled()).isTrue();

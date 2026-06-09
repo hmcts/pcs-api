@@ -35,6 +35,7 @@ java:
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
     LAUNCHDARKLY_ENV: "preview"
+    ACCESS_CODE_HASHING_DEFAULT: "false"
     DB_SCHEDULER_EXECUTOR_ENABLED: true
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
