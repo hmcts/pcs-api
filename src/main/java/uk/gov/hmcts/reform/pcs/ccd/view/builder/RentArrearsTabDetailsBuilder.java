@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 
 import java.math.BigDecimal;
@@ -21,6 +22,10 @@ public class RentArrearsTabDetailsBuilder {
     private static final String NO_ANSWER = " ";
 
     public RentArrearsTabDetails buildRentArrearsTabDetails(PCSCase pcsCase) {
+        if (hasCurrentGroundSummariesWithoutRentArrears(pcsCase)) {
+            return null;
+        }
+
         RentDetails rentDetails = pcsCase.getRentDetails();
         RentArrearsSection rentArrears = pcsCase.getRentArrears();
 
@@ -46,6 +51,27 @@ public class RentArrearsTabDetailsBuilder {
             .arrearsTotal(arrearsTotal)
             .judgmentRequested(judgmentRequested)
             .build();
+    }
+
+    private boolean hasCurrentGroundSummariesWithoutRentArrears(PCSCase pcsCase) {
+        if (CollectionUtils.isEmpty(pcsCase.getClaimGroundSummaries())) {
+            return false;
+        }
+
+        boolean hasRentArrearsFlag = false;
+        for (ListValue<ClaimGroundSummary> summaryListValue : pcsCase.getClaimGroundSummaries()) {
+            ClaimGroundSummary summary = summaryListValue.getValue();
+            if (summary == null || summary.getIsRentArrears() == null) {
+                continue;
+            }
+
+            hasRentArrearsFlag = true;
+            if (summary.getIsRentArrears() == YesOrNo.YES) {
+                return false;
+            }
+        }
+
+        return hasRentArrearsFlag;
     }
 
     public RentArrearsTabDetails buildDetailedRentArrearsTabDetails(PCSCase pcsCase) {
