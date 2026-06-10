@@ -29,7 +29,9 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
                             .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                             .name("Manage case links")
                             .description("To manage link related cases")
-                            .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN))
+                            .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN,
+                                   UserRole.CIRCUIT_JUDGE, UserRole.FEE_PAID_JUDGE,
+                                   UserRole.JUDGE, UserRole.LEADERSHIP_JUDGE))
             .page("maintainCaseLink")
             .pageLabel("Case Link")
             .optional(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher = \"DONOTSHOW\"", null, true)

@@ -8,9 +8,14 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.CIRCUIT_JUDGE_WRITE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.FEE_PAID_JUDGE_WRITE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.JUDGE_WRITE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.LEADERSHIP_JUDGE_WRITE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.WLU_ADMIN_READ;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.WLU_ADMIN_READ;
+
 
 class CaseLinkingAccessTest {
 
@@ -26,6 +31,10 @@ class CaseLinkingAccessTest {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
         assertThat(grants.asMap()).contains(entry(CTSC_ADMIN, Permission.CRU));
         assertThat(grants.asMap()).contains(entry(HEARING_CENTRE_ADMIN, Permission.CRU));
+        assertThat(grants.asMap()).contains(entry(CIRCUIT_JUDGE_WRITE, Permission.CRU));
+        assertThat(grants.asMap()).contains(entry(FEE_PAID_JUDGE_WRITE, Permission.CRU));
+        assertThat(grants.asMap()).contains(entry(JUDGE_WRITE, Permission.CRU));
+        assertThat(grants.asMap()).contains(entry(LEADERSHIP_JUDGE_WRITE, Permission.CRU));
         assertThat(grants.get(WLU_ADMIN_READ)).contains(Permission.R);
     }
 }

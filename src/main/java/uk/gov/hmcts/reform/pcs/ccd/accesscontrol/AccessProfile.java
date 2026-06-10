@@ -30,6 +30,10 @@ public enum AccessProfile implements HasRole {
     HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU),
     WLU_ADMIN("wlu-admin", Permission.CRU),
     WLU_ADMIN_READ("wlu-admin",Set.of(R)),
+    LEADERSHIP_JUDGE_WRITE("leadership-judge", Permission.CRU),
+    CIRCUIT_JUDGE_WRITE("circuit-judge", Permission.CRU),
+    JUDGE_WRITE("judge", Permission.CRU),
+    FEE_PAID_JUDGE_WRITE("fee-paid-judge", Permission.CRU),
     GS_PROFILE("GS_profile", Set.of(R)),
     SYSTEM_USER("pcs-system-update", CRU);
 
