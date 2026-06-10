@@ -934,7 +934,7 @@ class NotificationServiceTest {
             when(templateConfiguration.getTemplateId(any())).thenThrow(new RuntimeException("Config error"));
 
             EmailNotificationResponse response =
-                notificationService.sendClaimantDraftSavedForLater(1234567890L, pcsCase);
+                notificationService.sendClaimantDraftSavedForLaterEmailNotification(1234567890L, pcsCase);
 
             assertThat(response).isNull();
         }
