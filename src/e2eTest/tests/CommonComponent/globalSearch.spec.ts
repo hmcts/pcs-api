@@ -111,7 +111,7 @@ const runGlobalSearchScenarios = () => {
   { roleName: 'CTSC User', account: user.ctscAdministrator },
   { roleName: 'Judge User', account: user.judge }
 ].forEach(({ roleName, account }) => {
-  test.describe(`[Common Component Global Search - ${roleName}] @CC @globalSearch @nightly`, () => {
+  test.describe(`[Common Component Global Search - ${roleName}] @CC @globalSearch @nightly @PR`, () => {
     test.beforeEach(async ({ page, context }) => {
       await setupGlobalSearchUser(page, context, account);
     });
