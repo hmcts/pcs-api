@@ -117,10 +117,19 @@ class TenancyLicenceViewTest {
 
         String otherTypeDetails = "other type details";
         LocalDate tenancyStartDate = mock(LocalDate.class);
+        final UUID tenancyLicenceDocumentId = UUID.randomUUID();
 
         when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_CONTRACT);
         when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+            List.of(
+                DocumentEntity.builder()
+                    .id(tenancyLicenceDocumentId)
+                    .type(DocumentType.OCCUPATION_LICENCE)
+                    .build()
+            )
+        );
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -137,6 +146,9 @@ class TenancyLicenceViewTest {
             .isEqualTo(OccupationLicenceTypeWales.SECURE_CONTRACT);
         assertThat(occupationLicenceDetails.getOtherLicenceTypeDetails()).isEqualTo(otherTypeDetails);
         assertThat(occupationLicenceDetails.getLicenceStartDate()).isEqualTo(tenancyStartDate);
+        List<ListValue<Document>> licenceDocuments = occupationLicenceDetails.getLicenceDocuments();
+        assertThat(licenceDocuments).hasSize(1);
+        assertThat(licenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
     }
 
 }
