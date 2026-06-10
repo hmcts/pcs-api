@@ -81,9 +81,6 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
-        if (pcsCaseEntity == null) {
-            return List.of();
-        }
         return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
     }
 
