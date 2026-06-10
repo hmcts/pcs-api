@@ -29,8 +29,8 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Fee And Pay] @CC' , async () => {
-  test('Fee And Pay - Pay by account PBA @nightly @feeAndPay', async () => {
+test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async () => {
+  test('Fee And Pay - Pay by account PBA', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
