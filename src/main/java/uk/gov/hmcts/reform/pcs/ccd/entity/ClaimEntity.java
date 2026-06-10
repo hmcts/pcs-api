@@ -187,6 +187,8 @@ public class ClaimEntity {
     @JsonManagedReference
     private FeePaymentEntity feePayment;
 
+    private LocalDateTime claimIssuedDate;
+
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
             this.asbProhibitedConductEntity.setClaim(null);
