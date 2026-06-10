@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -11,9 +10,9 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import java.util.Optional;
 import java.util.UUID;
 
+// BCrypt impl, used when the hashing flag is on.
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "access-code.hash-pins-enabled", havingValue = "true")
 @Slf4j
 public class HashingPartyAccessCodeService implements PartyAccessCodeHashingService {
 
@@ -38,8 +37,13 @@ public class HashingPartyAccessCodeService implements PartyAccessCodeHashingServ
         }
         return repository.findAllByPcsCase_Id(caseId).stream()
             .filter(entity -> entity.getCode() != null)
-            .filter(entity -> encoder.matches(accessCode, entity.getCode()))
+            .filter(entity -> matches(accessCode, entity.getCode()))
             .findFirst();
+    }
+
+    // pre-flag codes are stored cleartext: fall back to equality so they still verify
+    private boolean matches(String accessCode, String storedCode) {
+        return encoder.matches(accessCode, storedCode) || accessCode.equals(storedCode);
     }
 }
 
