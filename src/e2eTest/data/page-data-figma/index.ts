@@ -53,3 +53,7 @@ export * from '@data/page-data-figma/page-data-common-component/updateFlagCommen
 export * from '@data/page-data-figma/page-data-common-component/manageCaseFlags.page.data';
 export * from '@data/page-data-figma/page-data-common-component/viewCaseFlag.page.data';
 export * from '@data/page-data-figma/addCaseNote.page.data';
+export * from '@data/page-data-figma/page-data-common-component/globalSearch.page.data';
+export * from '@data/page-data-figma/page-data-common-component/noResultFound.page.data';
+export * from '@data/page-data-figma/page-data-common-component/searchResults.page.data';
+export * from '@data/page-data-figma/page-data-common-component/workAccess.page.data';

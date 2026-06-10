@@ -34,7 +34,7 @@ test.beforeEach(async ({ page, context }) => {
   FieldsStore.clear();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-  await performAction('getCaseAPI');
+  await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getDefendantDetails', {
     defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
     additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
