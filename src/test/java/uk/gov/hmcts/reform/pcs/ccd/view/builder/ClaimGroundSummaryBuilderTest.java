@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.view;
+package uk.gov.hmcts.reform.pcs.ccd.view.builder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
@@ -43,6 +44,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,12 +128,17 @@ class ClaimGroundSummaryBuilderTest {
                                                         ))
                                                         .discretionaryGrounds(Set.of(
                                                             SecureContractDiscretionaryGroundsWales
-                                                                .ANTISOCIAL_BEHAVIOUR_S157
+                                                                .OTHER_BREACH_OF_CONTRACT_S157
                                                         ))
                                                         .estateManagementGrounds(Set.of(
                                                             EstateManagementGroundsWales.RESERVE_SUCCESSORS
                                                         ))
                                                         .build())
+            .groundsReasonsWales(GroundsReasonsWales.builder()
+                                      .secureLandlordNoticeSection186Reason("secure section 186 reason")
+                                      .secureOtherBreachOfContractReason("secure other breach reason")
+                                      .secureReserveSuccessorsReason("secure reserve successors reason")
+                                      .build())
             .build();
 
         // When
@@ -152,6 +159,9 @@ class ClaimGroundSummaryBuilderTest {
         assertReason(summaries, "Breach of tenancy conditions (ground 12)", "Breach reason");
         assertNoReason(summaries, "Serious rent arrears (ground 8)");
         assertNoReason(summaries, "Rent arrears (ground 10)");
+        assertRentArrearsFlag(summaries, "Serious rent arrears (ground 8)", YesOrNo.YES);
+        assertRentArrearsFlag(summaries, "Rent arrears (ground 10)", YesOrNo.YES);
+        assertRentArrearsFlag(summaries, "Owner occupier (ground 1)", YesOrNo.NO);
     }
 
     @Test
@@ -279,12 +289,17 @@ class ClaimGroundSummaryBuilderTest {
                                                         ))
                                                         .discretionaryGrounds(Set.of(
                                                             SecureContractDiscretionaryGroundsWales
-                                                                .ANTISOCIAL_BEHAVIOUR_S157
+                                                                .OTHER_BREACH_OF_CONTRACT_S157
                                                         ))
                                                         .estateManagementGrounds(Set.of(
                                                             EstateManagementGroundsWales.RESERVE_SUCCESSORS
                                                         ))
                                                         .build())
+            .groundsReasonsWales(GroundsReasonsWales.builder()
+                                      .secureLandlordNoticeSection186Reason("secure section 186 reason")
+                                      .secureOtherBreachOfContractReason("secure other breach reason")
+                                      .secureReserveSuccessorsReason("secure reserve successors reason")
+                                      .build())
             .build();
 
         // When
@@ -297,9 +312,15 @@ class ClaimGroundSummaryBuilderTest {
             .map(ClaimGroundSummary::getLabel)
             .containsExactlyInAnyOrder(
                 SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186.getLabel(),
-                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157.getLabel(),
+                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
                 EstateManagementGroundsWales.RESERVE_SUCCESSORS.getLabel()
             );
+        assertReason(summaries, SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186.getLabel(),
+                     "secure section 186 reason");
+        assertReason(summaries, SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
+                     "secure other breach reason");
+        assertReason(summaries, EstateManagementGroundsWales.RESERVE_SUCCESSORS.getLabel(),
+                     "secure reserve successors reason");
     }
 
     @Test
@@ -310,12 +331,23 @@ class ClaimGroundSummaryBuilderTest {
                                                .occupationLicenceTypeWales(OccupationLicenceTypeWales.STANDARD_CONTRACT)
                                                .build())
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
-                                           .mandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
-                                           .discretionaryGrounds(Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157))
+                                           .mandatoryGrounds(Set.of(
+                                               MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181,
+                                               MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199
+                                           ))
+                                           .discretionaryGrounds(Set.of(
+                                               DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
+                                           ))
                                            .estateManagementGrounds(Set.of(
                                                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
                                            ))
                                            .build())
+            .groundsReasonsWales(GroundsReasonsWales.builder()
+                                      .landlordBreakClauseS199Reason("section 199 reason")
+                                      .seriousArrearsPeriodicS181Reason("section 181 reason")
+                                      .otherBreachSection157Reason("other breach reason")
+                                      .redevelopmentSchemesReason("redevelopment schemes reason")
+                                      .build())
             .build();
 
         // When
@@ -327,10 +359,19 @@ class ClaimGroundSummaryBuilderTest {
             .map(ListValue::getValue)
             .map(ClaimGroundSummary::getLabel)
             .containsExactlyInAnyOrder(
+                MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.getLabel(),
                 MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
-                DiscretionaryGroundWales.RENT_ARREARS_S157.getLabel(),
+                DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel()
             );
+        assertReason(summaries, MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.getLabel(), "section 181 reason");
+        assertReason(summaries, MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(), "section 199 reason");
+        assertReason(summaries, DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
+                     "other breach reason");
+        assertReason(summaries, EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel(),
+                     "redevelopment schemes reason");
+        assertRentArrearsFlag(summaries, MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.getLabel(), YesOrNo.YES);
+        assertRentArrearsFlag(summaries, MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(), YesOrNo.NO);
     }
 
     @Test
@@ -342,11 +383,18 @@ class ClaimGroundSummaryBuilderTest {
                                                .build())
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
                                            .mandatoryGrounds(Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
-                                           .discretionaryGrounds(Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157))
+                                           .discretionaryGrounds(Set.of(
+                                               DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
+                                           ))
                                            .estateManagementGrounds(Set.of(
                                                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
                                            ))
                                            .build())
+            .groundsReasonsWales(GroundsReasonsWales.builder()
+                                      .landlordBreakClauseS199Reason("other occupation section 199 reason")
+                                      .otherBreachSection157Reason("other occupation breach reason")
+                                      .redevelopmentSchemesReason("other occupation redevelopment reason")
+                                      .build())
             .build();
 
         // When
@@ -359,9 +407,15 @@ class ClaimGroundSummaryBuilderTest {
             .map(ClaimGroundSummary::getLabel)
             .containsExactlyInAnyOrder(
                 MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
-                DiscretionaryGroundWales.RENT_ARREARS_S157.getLabel(),
+                DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel()
             );
+        assertReason(summaries, MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
+                     "other occupation section 199 reason");
+        assertReason(summaries, DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
+                     "other occupation breach reason");
+        assertReason(summaries, EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel(),
+                     "other occupation redevelopment reason");
     }
 
     @Test
@@ -666,6 +720,101 @@ class ClaimGroundSummaryBuilderTest {
         assertThat(summaries).isEmpty();
     }
 
+    @Test
+    void shouldAddDescriptionForIntroductoryDemotedOrOtherGrounds() {
+        // Given
+        String description = "Other description";
+        Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds = new HashSet<>();
+        introductoryDemotedOrOtherGrounds.add(IntroductoryDemotedOrOtherGrounds.OTHER);
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(introductoryDemotedOrOtherGrounds)
+                .otherGroundDescription(description)
+                .build();
+
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                   .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                   .build())
+            .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries.size()).isEqualTo(1);
+        ClaimGroundSummary claimGroundSummary = summaries.getFirst().getValue();
+        assertThat(claimGroundSummary.getDescription()).isEqualTo(description);
+    }
+
+    @Test
+    void shouldAddDescriptionForAssuredAdditionalOtherGroundWithRentArrears() {
+        // Given
+        String description = "Other description";
+        Set<AssuredAdditionalOtherGround> additionalOtherGround = new HashSet<>();
+        additionalOtherGround.add(AssuredAdditionalOtherGround.OTHER);
+
+        AssuredRentArrearsPossessionGrounds assuredRentArrearsPossessionGrounds =
+            AssuredRentArrearsPossessionGrounds.builder()
+                .additionalOtherGround(additionalOtherGround)
+                .additionalOtherGroundDescription(description)
+                .build();
+
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build())
+            .assuredRentArrearsPossessionGrounds(assuredRentArrearsPossessionGrounds)
+            .claimDueToRentArrears(YesOrNo.YES)
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries.size()).isEqualTo(1);
+        ClaimGroundSummary claimGroundSummary = summaries.getFirst().getValue();
+        assertThat(claimGroundSummary.getDescription()).isEqualTo(description);
+    }
+
+    @Test
+    void shouldAddDescriptionForAssuredAdditionalOtherGroundWithNoRentArrears() {
+        // Given
+        String description = "Other description";
+        Set<AssuredAdditionalOtherGround> additionalOtherGround = new HashSet<>();
+        additionalOtherGround.add(AssuredAdditionalOtherGround.OTHER);
+
+        AssuredNoArrearsPossessionGrounds assuredNoRentArrearsPossessionGrounds =
+            AssuredNoArrearsPossessionGrounds.builder()
+                .otherGround(additionalOtherGround)
+                .otherGroundDescription(description)
+                .build();
+
+        PCSCase draftCaseData = PCSCase.builder()
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build())
+            .noRentArrearsGroundsOptions(assuredNoRentArrearsPossessionGrounds)
+            .claimDueToRentArrears(YesOrNo.NO)
+            .build();
+
+        // When
+        List<ListValue<ClaimGroundSummary>> summaries =
+            claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
+
+        // Then
+        assertThat(summaries.size()).isEqualTo(1);
+        ClaimGroundSummary claimGroundSummary = summaries.getFirst().getValue();
+        assertThat(claimGroundSummary.getDescription()).isEqualTo(description);
+    }
+
     private static Stream<Arguments> introductoryDemotedOrOtherTenancyDrafts() {
         return Stream.of(
             Arguments.of(
@@ -753,6 +902,17 @@ class ClaimGroundSummaryBuilderTest {
             .singleElement()
             .extracting(ClaimGroundSummary::getReason)
             .isNull();
+    }
+
+    private static void assertRentArrearsFlag(List<ListValue<ClaimGroundSummary>> summaries,
+                                              String label,
+                                              YesOrNo expected) {
+        assertThat(summaries)
+            .map(ListValue::getValue)
+            .filteredOn(summary -> label.equals(summary.getLabel()))
+            .singleElement()
+            .extracting(ClaimGroundSummary::getIsRentArrears)
+            .isEqualTo(expected);
     }
 
 
