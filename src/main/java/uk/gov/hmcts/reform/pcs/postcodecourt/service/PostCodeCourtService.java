@@ -38,14 +38,14 @@ public class PostCodeCourtService {
         List<PostCodeCourtEntity> results = getPostcodeCourtMappings(postCode, legislativeCountry);
 
         if (results.isEmpty()) {
-            log.error("EpimId not found, Case management location couldn't be allocated for postcode: {}", postCode);
+            log.error("EpimId not found for postcode: {}", postCode);
             return null;
         }
         if (results.size() > 1) {
-            log.error("Multiple EpimId's found, Case management location not allocated for postcode: {}", postCode);
+            log.error("Multiple EpimIds found for postcode: {}", postCode);
             return null;
         }
-        log.info("Case management location allocated for postcode {}", postCode);
+        log.info("EpimId found for postcode {}", postCode);
         return results.getFirst().getId().getEpimsId();
     }
 
@@ -73,7 +73,7 @@ public class PostCodeCourtService {
 
         if (filteredResults.size() > 1) {
             log.error(
-                "Multiple active EpimId's found for postcode:{} count:{}",
+                "Multiple active EpimIds found for postcode:{} count:{}",
                 longestPostcodeMatch,
                 filteredResults.size()
             );

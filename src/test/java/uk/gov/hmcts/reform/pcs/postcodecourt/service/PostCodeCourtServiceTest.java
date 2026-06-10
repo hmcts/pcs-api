@@ -78,6 +78,25 @@ class PostCodeCourtServiceTest {
         assertThat(actualEpimsId).isNull();
     }
 
+    @Test
+    void shouldReturnNullWhenMultipleActiveMappingsAreFound() {
+        // Given
+        when(partialPostcodesGenerator.generateForPostcode(POSTCODE)).thenReturn(PARTIAL_POSTCODES);
+        when(postCodeCourtRepository.findActiveByPostCodeIn(PARTIAL_POSTCODES, TEST_DATE))
+            .thenReturn(List.of(
+                postCodeCourtEntity("AB123CD", 123456),
+                postCodeCourtEntity("AB123CD", 654321)
+            ));
+
+        // When
+        Integer actualEpimsId = underTest.getCourtManagementLocation(POSTCODE);
+
+        // Then
+        assertThat(actualEpimsId).isNull();
+        verify(partialPostcodesGenerator).generateForPostcode(POSTCODE);
+        verify(postCodeCourtRepository).findActiveByPostCodeIn(PARTIAL_POSTCODES, TEST_DATE);
+    }
+
     @ParameterizedTest
     @MethodSource("activeMappingScenarios")
     void shouldResolveCourtManagementLocationFromActiveMappings(List<PostCodeCourtEntity> activeMappings,

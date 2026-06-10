@@ -93,13 +93,13 @@ public class PcsCaseService {
     @Transactional
     public void allocateCaseManagementLocation(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
-        Integer caseManagementLocation =
+        Integer epimsId =
             postCodeCourtService.getCourtManagementLocation(
                 pcsCaseEntity.getPropertyAddress().getPostcode(),
                 pcsCaseEntity.getLegislativeCountry()
             );
-        if (caseManagementLocation != null) {
-            pcsCaseEntity.setCaseManagementLocation(caseManagementLocation);
+        if (epimsId != null) {
+            pcsCaseEntity.setCaseManagementLocation(epimsId);
         }
     }
 
