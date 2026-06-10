@@ -101,12 +101,17 @@ public class NotificationService {
             return null;
         }
 
-        return sendEmail(
-            recipient,
-            EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER,
-            NotificationClaimType.POSSESSION_CLAIM,
-            notificationPersonalisationFactory.forClaimant(caseReference, pcsCase)
-        );
+        try {
+            return sendEmail(
+                recipient,
+                EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER,
+                NotificationClaimType.POSSESSION_CLAIM,
+                notificationPersonalisationFactory.forClaimant(caseReference, pcsCase)
+            );
+        } catch (Exception e) {
+            log.error("Failed to send draft saved email notification for case reference: {}", caseReference, e);
+            return null;
+        }
     }
 
     public EmailNotificationResponse sendClaimantDefendantHasMadeCounterclaimEmailNotification(ClaimEntity claim) {
@@ -349,7 +354,7 @@ public class NotificationService {
         }
     }
 
-    private EmailNotificationResponse sendEmail(
+    public EmailNotificationResponse sendEmail(
         NotificationRecipient recipient,
         EmailTemplate template,
         NotificationClaimType claimType,
@@ -357,7 +362,12 @@ public class NotificationService {
     ) {
         PartyEntity party = recipient.party();
 
-        if (!partyService.canSendEmailNotification(party, recipient.recipientRole())) {
+        if (party == null) {
+            if (recipient.email() == null) {
+                log.info("Skipping email notification because both party and recipient email are null");
+                return null;
+            }
+        } else if (!partyService.canSendEmailNotification(party, recipient.recipientRole())) {
             log.info("Skipping email notification to user: {}", party.getId());
             return null;
         }
