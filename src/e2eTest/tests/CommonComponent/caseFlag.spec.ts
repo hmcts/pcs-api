@@ -1,44 +1,53 @@
-import {
-  initializeExecutor,
-  performAction,
-  performValidation
-} from '@utils/controller';
-import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-import { expect, test } from '@utils/test-fixtures';
-import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { getCaseTypeId } from '@utils/common/caseType.utils';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import {initializeExecutor, performAction, performValidation} from '@utils/controller';
+import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
+import {test} from '@utils/test-fixtures';
+import {createCaseApiData, submitCaseApiData} from '@data/api-data';
 import {caseSummary, user} from '@data/page-data';
-import { specialMeasureForFlag, whereShouldThisFlagBeAdded,selectFlagType, addCommentsForFlag, reviewFlagDetails, viewCaseFlag, manageCaseFlags, updateFlagComments } from '@data/page-data-figma';
-import {dismissCookieBanner} from "@config/cookie-banner";
+import {staff} from '@data/user-data/staff.user.data';
+import {judicialEmails} from '@data/user-data/judicial.user.data';
+import {
+  addCommentsForFlag,
+  manageCaseFlags,
+  reviewFlagDetails,
+  selectFlagType,
+  specialMeasureForFlag,
+  updateFlagComments,
+  viewCaseFlag,
+  whereShouldThisFlagBeAdded
+} from '@data/page-data-figma';
+import {dismissCookieBanner} from '@config/cookie-banner';
+import {BrowserContext, Page} from '@playwright/test';
+import {
+  logUserTestResultsAndAssert,
+  recordUserTestFailure,
+  UserTestResult
+} from '@utils/common/userTestResults.utils';
 
-test.use({ storageState: undefined });
+const staffUserEmails = Object.values(staff);
+const judicialUserEmails = Object.values(judicialEmails);
+const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
 
-test.beforeEach(async ({ page, context }) => {
+async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
   await context.clearCookies();
-  initializeExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await page.evaluate(() => {
     try {
       localStorage.clear();
       sessionStorage.clear();
-    } catch (e) {
+    } catch {
       // Ignore if storage is not accessible
     }
   });
+}
 
+test.use({storageState: undefined});
+
+test.beforeEach(async ({page, context}) => {
+  await context.clearCookies();
+  initializeExecutor(page);
+  await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
+  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.ctscAdministrator);
-  await dismissCookieBanner(page, 'analytics');
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
-  await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
-  }).toPass({
-    timeout: VERY_LONG_TIMEOUT,
-  });
 });
 
 test.afterEach(async () => {
@@ -47,8 +56,24 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Case Flags] @CC @caseFlags @nightly', async () => {
-  test('Case Flags - Create case level Flag', async () => {
+test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () => {
+
+  test('Case Flags - Verify the create and manage case flag menu @smoke', async ({page}) => {
+    await performAction('login', user.ctscAdministrator);
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToCaseSummary');
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
+    await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
+    await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
+    await performAction('clickButton', manageCaseFlags.goButton);
+    await performAction('clickButton', manageCaseFlags.cancelButton);
+  });
+  test('Case Flags - Create case level Flag', async ({page}) => {
+    await performAction('login', user.ctscAdministrator);
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
@@ -103,7 +128,10 @@ test.describe('[Common Component Case Flags] @CC @caseFlags @nightly', async () 
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
 
-  test('Case Flags - Create Party Level Case Flag', async () => {
+  test('Case Flags - Create Party Level Case Flag', async ({page}) => {
+    await performAction('login', user.ctscAdministrator);
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
@@ -163,13 +191,80 @@ test.describe('[Common Component Case Flags] @CC @caseFlags @nightly', async () 
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
-  test('Case Flags - Verify the create and manage case flag menu @smoke', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
-    await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
-    await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
-    await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
-    await performAction('clickButton', manageCaseFlags.goButton);
-    await performAction('clickButton', manageCaseFlags.cancelButton);
+});
+
+test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags @nightly', async () => {
+
+  test('Staff users can create, manage and view case-level and party-level flags', async ({page, context}) => {
+    test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
+    const results: UserTestResult[] = [];
+    const password = process.env.IDAM_PCS_USER_PASSWORD as string;
+    for (const email of staffUserEmails) {
+      try {
+        await test.step(`Staff user ${email}`, async () => {
+          await performAction('login', {email, password});
+          await dismissCookieBanner(page, 'analytics');
+          await performAction('navigateToCaseSummary', 'yes');
+          await performAction('canCreateCaseLevelFlag', 'yes');
+          await performAction('canCreatePartyLevelFlag', 'yes');
+          await performAction('canManageCaseLevelFlag', 'yes');
+          await performAction('canManagePartyLevelFlag', 'yes');
+          await performAction('canViewCaseAndPartyFlag', 'yes');
+          await clearBrowserSession(page, context);
+        });
+        results.push({email, status: 'PASS'});
+      } catch (error) {
+        recordUserTestFailure(results, email, error);
+        await clearBrowserSession(page, context).catch(() => {
+        });
+      }
+    }
+    logUserTestResultsAndAssert('STAFF USER RESULTS', results);
+  });
+
+  test('Judicial users can only view case-level and party-level flags and cannot create or manage flags', async ({page, context}) => {
+    test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
+    const results: UserTestResult[] = [];
+    const password = process.env.IDAM_PCS_USER_PASSWORD as string;
+    for (const email of judicialUserEmails) {
+      try {
+        await test.step(`Judicial user ${email}`, async () => {
+          await performAction('login', {email, password});
+          await dismissCookieBanner(page, 'analytics');
+          await performAction('handleJudgeBookingPage');
+          await performAction('navigateToCaseSummary', 'yes');
+          await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);
+          await performAction('canViewCaseAndPartyFlag', 'yes');
+          await clearBrowserSession(page, context);
+        });
+        results.push({email, status: 'PASS'});
+      } catch (error) {
+        recordUserTestFailure(results, email, error);
+        await clearBrowserSession(page, context).catch(() => {
+        });
+      }
+    }
+    logUserTestResultsAndAssert('JUDICIAL USER RESULTS', results);
+  });
+
+  test('Solicitor user cannot view, create or manage case-level and party-level flags', async ({page, context}) => {
+    const {email, password} = user.claimantSolicitor;
+    await performAction('login', {email, password});
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToCaseSummary', 'yes');
+    await performAction('canCreateCaseLevelFlag', 'no');
+    await performAction('canCreatePartyLevelFlag', 'no');
+    await performAction('canManageCaseLevelFlag', 'no');
+    await performAction('canManagePartyLevelFlag', 'no');
+    await performAction('canViewCaseAndPartyFlag', 'no');
+    await clearBrowserSession(page, context);
+  });
+
+  test('User with Caseworker IDAM role without AM roles cannot view, create or manage case-level and party-level flags', async ({page, context}) => {
+    const {email, password} = user.caseworker;
+    await performAction('login', {email, password});
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToCaseSummary', 'no');
+    await clearBrowserSession(page, context);
   });
 });
