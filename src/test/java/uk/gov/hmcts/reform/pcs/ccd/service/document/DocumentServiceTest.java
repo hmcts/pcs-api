@@ -705,6 +705,31 @@ class DocumentServiceTest {
     }
 
     @Test
+    void shouldReturnEmptyListWhenNoClaimsOnCase() {
+        // Given
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        when(pcsCase.getClaims()).thenReturn(Collections.emptyList());
+
+        UploadedDocument defDoc = UploadedDocument.builder()
+            .document(Document.builder().url("url1").filename("file1.pdf").binaryUrl("bin1").build())
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
+        );
+
+        // When
+        List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(
+            uploadedDocs, response, pcsCase, party);
+
+        // Then
+        assertThat(result).isEmpty();
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
     void shouldFilterOutNullValuesFromDefendantEvidenceDocuments() {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);

@@ -195,6 +195,10 @@ public class DocumentService {
             return Collections.emptyList();
         }
 
+        if (pcsCase.getClaims().isEmpty()) {
+            return Collections.emptyList();
+        }
+
         ClaimEntity mainClaim = pcsCase.getClaims().getFirst();
 
         List<DocumentEntity> documentEntities = defendantDocuments.stream()
