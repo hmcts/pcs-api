@@ -158,7 +158,7 @@ notify:
     make-a-claim-claim-saved-for-later: bf648abe-5a45-4cc2-8d5b-d1e817ace18b
 
 testing-support:
-  enabled: ${ENABLE_TESTING_SUPPORT:true}
+  enabled: ${ENABLE_TESTING_SUPPORT:false}
 
 # Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:
