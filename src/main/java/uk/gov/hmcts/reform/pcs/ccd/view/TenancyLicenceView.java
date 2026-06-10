@@ -64,7 +64,7 @@ public class TenancyLicenceView {
 
     private static List<ListValue<Document>> getTenancyLicenceDocument(PcsCaseEntity pcsCaseEntity) {
         if (pcsCaseEntity.getDocuments().isEmpty()) {
-            return null;
+            return List.of();
         }
 
         return pcsCaseEntity.getDocuments().stream()
