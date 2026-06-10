@@ -13,11 +13,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepresentativeRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.hearings.model.OrganisationDetails;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +55,13 @@ class LegalRepSubmissionEventStrategyTest {
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     private LegalRepSubmissionEventStrategy underTest;
+    @Mock
+    private LegalRepresentativeRetriever legalRepresentativeRetriever;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
+    @Mock
+    private SecurityContextService securityContextService;
+
 
     @BeforeEach
     void setUp() {
@@ -59,7 +70,10 @@ class LegalRepSubmissionEventStrategyTest {
             claimResponseService,
             defendantResponseService,
             selectedPartyRetriever,
-            submitResponseFactory
+            submitResponseFactory,
+            legalRepresentativeRetriever,
+            organisationDetailsService,
+            securityContextService
         );
     }
 
@@ -67,6 +81,10 @@ class LegalRepSubmissionEventStrategyTest {
     void shouldSubmitLegalRepresentativeDraftForSelectedParty() {
         // given
         UUID representedPartyId = UUID.randomUUID();
+        UUID legalRepOrganisationIdForUser = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        String organisationId = "";
+        UUID legalRepOrgId = UUID.randomUUID();
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
@@ -84,11 +102,16 @@ class LegalRepSubmissionEventStrategyTest {
             .build();
 
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId,
+                                                         legalRepOrgId))
             .thenReturn(Optional.of(caseData));
         when(submitResponseFactory.success()).thenReturn(submitResponse);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
+        when(legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(CASE_REFERENCE,organisationId))
+            .thenReturn(legalRepOrgId);
 
         // when
         SubmitResponse<State> result = underTest.process(eventPayload);
@@ -141,6 +164,10 @@ class LegalRepSubmissionEventStrategyTest {
     void shouldReturnValidationErrors() {
         // given
         UUID representedPartyId = UUID.randomUUID();
+        UUID legalRepOrganisationIdForUser = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        String organisationId = "";
+        UUID legalRepOrgId = UUID.randomUUID();
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
@@ -159,12 +186,17 @@ class LegalRepSubmissionEventStrategyTest {
             .build();
 
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId,
+                                                         legalRepOrgId))
             .thenReturn(Optional.of(caseData));
         when(submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE))
             .thenReturn(Optional.of(submitResponse));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
+        when(legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(CASE_REFERENCE,organisationId))
+            .thenReturn(legalRepOrgId);
 
         // when
         SubmitResponse<State> result = underTest.process(eventPayload);
@@ -184,11 +216,19 @@ class LegalRepSubmissionEventStrategyTest {
     void shouldThrowExceptionWhenNoDraft() {
         // Given
         UUID representedPartyId = UUID.randomUUID();
+        UUID legalRepOrganisationIdForUser = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        String organisationId = "";
+        UUID legalRepOrgId = UUID.randomUUID();
         PCSCase caseData = PCSCase.builder()
             .build();
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
+        when(legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(CASE_REFERENCE,organisationId))
+            .thenReturn(legalRepOrgId);
 
         // When
         assertThatThrownBy(() -> underTest.process(eventPayload))

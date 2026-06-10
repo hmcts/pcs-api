@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepresentativeRetriever;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -47,6 +48,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantRespo
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
@@ -115,6 +117,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private SubmitResponseFactory submitResponseFactory;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
+    @Mock
+    private LegalRepresentativeRetriever legalRepresentativeRetriever;
 
     @BeforeEach
     void setUp() {
@@ -138,22 +144,29 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                                                      defendantResponseRepository,
                                                                                      draftCaseDataService,
                                                                                      responseMapper,
-                                                                                     possessionClaimMerger))
+                                                                                     possessionClaimMerger),
+                                                   organisationDetailsService,
+                                                   legalRepresentativeRetriever)
             )
         );
 
+
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
-            List.of(new CitizenSubmissionEventStrategy(draftCaseDataService,
+            List.of(new LegalRepSubmissionEventStrategy(draftCaseDataService,
+                                                        claimResponseService,
+                                                        defendantResponseService,
+                                                        selectedPartyRetriever,
+                                                        submitResponseFactory,
+                                                        legalRepresentativeRetriever,
+                                                        organisationDetailsService,
+                                                        securityContextService),
+
+                    new CitizenSubmissionEventStrategy(draftCaseDataService,
                                                        claimResponseService,
                                                        defendantResponseService,
-                                                       submitResponseFactory),
-                    new LegalRepSubmissionEventStrategy(draftCaseDataService,
-                                                   claimResponseService,
-                                                   defendantResponseService,
-                                                   selectedPartyRetriever,
-                                                        submitResponseFactory)
-            ),
-            securityContextService
+                                                       submitResponseFactory)
+            ),securityContextService
+
         );
 
         setEventUnderTest(new RespondPossessionClaim(
