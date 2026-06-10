@@ -111,6 +111,7 @@ public class DefendantResponses {
     private LanguageUsed languageUsed;
 
     private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
+
     @CCD
     private VerticalYesNo otherConsiderations;
 
@@ -119,6 +120,9 @@ public class DefendantResponses {
 
     @CCD
     private VerticalYesNo makeCounterClaim;
+
+    @CCD
+    private VerticalYesNo counterClaimWantToUploadFiles;
 
     @CCD(
         access = {CitizenAccess.class},

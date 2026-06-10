@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RTCStatementOfT
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RTCStatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircum
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.ReasonableAdjustmentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -98,6 +100,8 @@ class DefendantResponseServiceTest {
     @Mock
     private PartyAttributeAssertationService partyAttributeAssertationService;
     @Mock
+    private CounterClaimRepository counterClaimRepository;
+    @Mock
     private PartyEntity partyEntity;
     @Mock
     private ClaimEntity claimEntity;
@@ -127,6 +131,7 @@ class DefendantResponseServiceTest {
             paymentAgreementService,
             documentService,
             partyAttributeAssertationService,
+            counterClaimRepository,
             FIXED_UTC_CLOCK
         );
     }
@@ -1455,5 +1460,41 @@ class DefendantResponseServiceTest {
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
         assertThat(responseCaptor.getValue().getStatementOfTruth()).isNull();
+    }
+
+    @ParameterizedTest(name = "counterClaimWantToUploadFiles={0}")
+    @MethodSource("counterClaimWantToUploadFilesPersistenceScenarios")
+    void shouldPersistCounterClaimWantToUploadFiles(VerticalYesNo counterClaimWantToUploadFiles) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaimWantToUploadFiles(counterClaimWantToUploadFiles)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getCounterClaimWantToUploadFiles()).isEqualTo(counterClaimWantToUploadFiles);
+    }
+
+    private static Stream<Arguments> counterClaimWantToUploadFilesPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
+        );
     }
 }

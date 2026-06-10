@@ -15,6 +15,9 @@ public class TenancyTabDetails {
     @CCD(label = "Tenancy, occupation contract or licence agreement type")
     private String agreementType;
 
+    @CCD(label = "Description of contract type")
+    private String agreementTypeDescription;
+
     @CCD(label = "Tenancy, occupation contract or licence agreement start date")
     private String agreementStartDate;
 }
